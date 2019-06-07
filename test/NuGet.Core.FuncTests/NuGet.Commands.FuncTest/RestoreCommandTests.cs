@@ -6,11 +6,13 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -100,7 +102,7 @@ namespace NuGet.Commands.FuncTest
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { "https://www.nuget.org/api/v2/" },
+                    Sources = new List<string>() { "https://api.nuget.org/v3/index.json" },
                     GlobalPackagesFolder = packagesDir,
                     Log = logger,
                     CacheContext = new SourceCacheContext()
@@ -136,7 +138,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -269,7 +271,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -485,7 +487,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -541,7 +543,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -599,7 +601,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -657,7 +659,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -718,7 +720,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -770,7 +772,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -824,7 +826,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -871,7 +873,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -926,7 +928,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -974,7 +976,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1029,7 +1031,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1096,7 +1098,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1140,7 +1142,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1262,7 +1264,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1305,7 +1307,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1417,7 +1419,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1455,7 +1457,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1497,7 +1499,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1541,7 +1543,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1590,7 +1592,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1642,7 +1644,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1860,7 +1862,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -1901,7 +1903,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1944,7 +1946,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1985,7 +1987,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2025,7 +2027,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2074,7 +2076,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2123,7 +2125,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2172,7 +2174,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2221,7 +2223,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource.json"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2270,7 +2272,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2319,7 +2321,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2368,7 +2370,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource.json"),
-                new PackageSource("https://www.nuget.org/api/v2/")
+                new PackageSource("https://api.nuget.org/v3/index.json")
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2407,6 +2409,189 @@ namespace NuGet.Commands.FuncTest
                     // Assert
                     Assert.True(result.Success);
                 }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_RuntimeIdentifierGraph_SelectsCorrectRuntimeAssemblies()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectPath = Path.Combine(pathContext.SolutionRoot, "TestProject");
+
+
+                // Set up the package and source
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net46/a.dll");
+                packageA.AddFile("ref/net46/a.dll");
+                packageA.AddFile("runtimes/win7/lib/net46/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                // Set up the rid graph
+                var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
+                File.WriteAllText(ridGraphPath, GetResource("NuGet.Commands.FuncTest.compiler.resources.runtime.json"));
+
+                // set up the project
+
+                var json = $@"
+                {{
+                    ""frameworks"": {{
+                        ""net46"": {{
+                            ""dependencies"" : {{
+                                    ""a"": {{
+                                        ""version"": ""1.0.0"",
+                                    }},
+                            }},
+                            ""runtimeIdentifierGraphPath"" : ""{ridGraphPath.Replace($"{Path.DirectorySeparatorChar}", $"{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}")}""
+                        }}
+                    }},
+                    ""runtimes"": {{
+                      ""win7-x86"": {{
+                        ""#import"": []
+                        }}
+                    }}
+                }}";
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(JObject.Parse(json).ToString(), "TestProject", Path.Combine(projectPath, "spec.json")).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(string.Empty, logger.ShowErrors());
+                Assert.Equal(string.Empty, logger.ShowWarnings());
+                Assert.Equal(1, result.GetAllInstalled().Count);
+                Assert.Equal("a", result.GetAllInstalled().Single().Name);
+                Assert.Equal("1.0.0", result.GetAllInstalled().Single().Version.ToNormalizedString());
+                Assert.Equal(2, result.LockFile.Targets.Count);
+                Assert.Equal("runtimes/win7/lib/net46/a.dll",
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier)).Libraries.Single().RuntimeAssemblies.Select( e => e.Path)));
+                Assert.Equal("ref/net46/a.dll",
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WithFrameworkSpecificRuntimeIdentifierGraph_SelectsCorrectRuntimeAssemblies()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectPath = Path.Combine(pathContext.SolutionRoot, "TestProject");
+
+
+                // Set up the package and source
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net46/a.dll");
+                packageA.AddFile("ref/net46/a.dll");
+                packageA.AddFile("runtimes/win7/lib/net46/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                // Set up the rid graph
+                var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
+                File.WriteAllText(ridGraphPath, GetResource("NuGet.Commands.FuncTest.compiler.resources.runtime.json"));
+
+                // set up the project
+
+                var json = $@"
+                {{
+                    ""frameworks"": {{
+                        ""net46"": {{
+                            ""dependencies"" : {{
+                                    ""a"": {{
+                                        ""version"": ""1.0.0"",
+                                    }},
+                            }},
+                            ""runtimeIdentifierGraphPath"" : ""{ridGraphPath.Replace($"{Path.DirectorySeparatorChar}", $"{Path.DirectorySeparatorChar}{Path.DirectorySeparatorChar}")}""
+                        }},
+                        ""net47"": {{
+                            ""dependencies"" : {{
+                                    ""a"": {{
+                                        ""version"": ""1.0.0"",
+                                    }},
+                            }}
+                        }}
+                    }},
+                    ""runtimes"": {{
+                      ""win7-x86"": {{
+                        ""#import"": []
+                        }}
+                    }}
+                }}";
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(JObject.Parse(json).ToString(), "TestProject", Path.Combine(projectPath, "spec.json")).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
+                Assert.Equal(string.Empty, logger.ShowErrors());
+                Assert.Equal(string.Empty, logger.ShowWarnings());
+                Assert.Equal(1, result.GetAllInstalled().Count);
+                Assert.Equal("a", result.GetAllInstalled().Single().Name);
+                Assert.Equal("1.0.0", result.GetAllInstalled().Single().Version.ToNormalizedString());
+                Assert.Equal(4, result.LockFile.Targets.Count);
+                Assert.Equal("runtimes/win7/lib/net46/a.dll",
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net46")).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/net46/a.dll",
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net46")).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+
+                Assert.Equal("lib/net46/a.dll",
+                                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net47")).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/net46/a.dll",
+                    string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net47")).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+            }
+        }
+        public string GetResource(string name)
+        {
+            using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name)))
+            {
+                return reader.ReadToEnd();
             }
         }
 

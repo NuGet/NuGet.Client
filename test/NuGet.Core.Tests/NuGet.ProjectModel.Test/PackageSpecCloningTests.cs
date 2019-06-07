@@ -629,6 +629,7 @@ namespace NuGet.ProjectModel.Test
             // Assert
             Assert.Equal(originalTargetFrameworkInformation, clone);
             Assert.False(ReferenceEquals(originalTargetFrameworkInformation, clone));
+            Assert.Equal(originalTargetFrameworkInformation.GetHashCode(), clone.GetHashCode());
 
             // Act
             originalTargetFrameworkInformation.Imports.Clear();
