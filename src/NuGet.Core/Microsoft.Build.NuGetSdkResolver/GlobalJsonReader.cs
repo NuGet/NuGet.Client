@@ -17,9 +17,9 @@ namespace Microsoft.Build.NuGetSdkResolver
     {
         public const string GlobalJsonFileName = "global.json";
 
-        private static readonly Regex MsBuildSdksSectionRegex = new Regex("\\\"msbuild-sdks\\\"\\s*:\\s*\\{(?<Packages>[^}]+)\\}");
+        private static readonly Regex MsBuildSdksSectionRegex = new Regex("\\\"msbuild-sdks\\\"\\s*:\\s*\\{(?<Packages>[^}]+)\\}", RegexOptions.None, TimeSpan.FromSeconds(1));
 
-        private static readonly Regex MsBuildSdksContentsRegex = new Regex("\\\"(?<Id>[^\\\"]+)\\\"\\s*:\\s*\\\"(?<Version>[^\\\"]+)\\\"");
+        private static readonly Regex MsBuildSdksContentsRegex = new Regex("\\\"(?<Id>[^\\\"]+)\\\"\\s*:\\s*\\\"(?<Version>[^\\\"]+)\\\"", RegexOptions.None, TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// Walks up the directory tree to find the first global.json and reads the msbuild-sdks section.
@@ -45,7 +45,7 @@ namespace Microsoft.Build.NuGetSdkResolver
 
             try
             {
-                Dictionary<string, string> packages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var packages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
                 var matches = MsBuildSdksContentsRegex.Matches(match.Groups["Packages"].Value);
                 for (int i = 0; i < matches.Count; i++)
                 {
