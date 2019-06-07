@@ -53,33 +53,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
-        public void InvalidJsonLogsMessage()
-        {
-            var expectedVersions = new Dictionary<string, string>
-            {
-                {"foo", "1.0.0"},
-                {"bar", "2.0.0"}
-            };
-
-            using (var testEnvironment = TestEnvironment.Create())
-            {
-                var testFolder = testEnvironment.CreateFolder();
-                var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
-
-
-                var globalJsonPath = WriteGlobalJson(testFolder.FolderPath, expectedVersions, additionalcontent: ", abc");
-
-                var context = new MockSdkResolverContext(projectFile.Path);
-
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
-
-                context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
-                context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
-                    $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path \'msbuild-sdks\', line 6, position 5.");
-            }
-        }
-
-        [Fact]
         public void SdkVersionsAreSuccessfullyLoaded()
         {
             var expectedVersions = new Dictionary<string, string>

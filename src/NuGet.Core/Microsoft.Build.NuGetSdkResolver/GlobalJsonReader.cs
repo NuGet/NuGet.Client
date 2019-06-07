@@ -1,13 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.Build.Shared;
-using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Framework;
 
 namespace Microsoft.Build.NuGetSdkResolver
@@ -19,7 +17,9 @@ namespace Microsoft.Build.NuGetSdkResolver
     {
         public const string GlobalJsonFileName = "global.json";
 
-        public const string MSBuildSdksPropertyName = "msbuild-sdks";
+        private static readonly Regex MsBuildSdksSectionRegex = new Regex("\\\"msbuild-sdks\\\"\\s*:\\s*\\{(?<Packages>[^}]+)\\}");
+
+        private static readonly Regex MsBuildSdksContentsRegex = new Regex("\\\"(?<Id>[^\\\"]+)\\\"\\s*:\\s*\\\"(?<Version>[^\\\"]+)\\\"");
 
         /// <summary>
         /// Walks up the directory tree to find the first global.json and reads the msbuild-sdks section.
@@ -35,19 +35,27 @@ namespace Microsoft.Build.NuGetSdkResolver
             {
                 return null;
             }
+            
+            var match = MsBuildSdksSectionRegex.Match(File.ReadAllText(globalJsonPath));
 
-            var contents = File.ReadAllText(globalJsonPath);
-
-            // Look ahead in the contents to see if there is an msbuild-sdks section.  Deserializing the file requires us to load
-            // Newtonsoft.Json which is 500 KB while a global.json is usually ~100 bytes of text.
-            if (contents.IndexOf(MSBuildSdksPropertyName, StringComparison.Ordinal) == -1)
+            if (!match.Success || !match.Groups["Packages"].Success)
             {
                 return null;
             }
 
             try
             {
-                return Deserialize(contents);
+                Dictionary<string, string> packages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+                var matches = MsBuildSdksContentsRegex.Matches(match.Groups["Packages"].Value);
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    if (matches[i].Success && matches[i].Groups["Id"].Success && matches[i].Groups["Version"].Success)
+                    {
+                        packages[matches[i].Groups["Id"].Value] = matches[i].Groups["Version"].Value;
+                    }
+                }
+
+                return packages;
             }
             catch (Exception e)
             {
@@ -56,20 +64,6 @@ namespace Microsoft.Build.NuGetSdkResolver
                 context.Logger.LogMessage(message);
                 return null;
             }
-        }
-
-        /// <summary>
-        /// Deserializes a global.json and returns the MSBuild SDK versions
-        /// </summary>
-        private static Dictionary<string, string> Deserialize(string value)
-        {
-            return JsonConvert.DeserializeObject<GlobalJsonFile>(value).MSBuildSdks;
-        }
-
-        private sealed class GlobalJsonFile
-        {
-            [JsonProperty(MSBuildSdksPropertyName)]
-            public Dictionary<string, string> MSBuildSdks { get; set; }
         }
 
         /// <summary>
