@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task TryGetSourceAgnosticPluginAsync_WhenCacheFileIndicatesIndicatesNoSupportedOperationClaims_PluginIsCreated()
+        public async Task TryGetSourceAgnosticPluginAsync_WhenCacheFileIndicatesIndicatesNoSupportedOperationClaims_PluginIsNotCreated()
         {
             var operationClaims = Array.Empty<OperationClaim>();
 
@@ -124,16 +124,10 @@ namespace NuGet.Protocol.Plugins.Tests
                 bool wasSomethingCreated = result.Item1;
                 PluginCreationResult creationResult = result.Item2;
 
-                Assert.True(wasSomethingCreated);
-                Assert.NotNull(creationResult);
+                Assert.False(wasSomethingCreated);
+                Assert.Null(creationResult);
 
                 Assert.True(File.Exists(test.PluginCacheEntry.CacheFileName));
-
-                Assert.Null(creationResult.Message);
-                Assert.Null(creationResult.Exception);
-                Assert.Same(test.Plugin, creationResult.Plugin);
-                Assert.NotNull(creationResult.PluginMulticlientUtilities);
-                Assert.Equal(operationClaims, creationResult.Claims);
             }
         }
 

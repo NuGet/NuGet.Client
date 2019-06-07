@@ -197,6 +197,8 @@ namespace NuGet.Protocol.Plugins
             PluginCreationResult pluginCreationResult = null;
             var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectoryPath.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
+            ConcurrencyUtilities.ExecuteWithFileLocked(cacheEntry.CacheFileName, cacheEntry.LoadFromFile);
+
             if (cacheEntry.OperationClaims == null || cacheEntry.OperationClaims.Contains(requestedOperationClaim))
             {
                 try
