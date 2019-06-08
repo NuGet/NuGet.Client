@@ -50,6 +50,10 @@
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="compiler\resources\runtime.json" />
+  </ItemGroup>
     
   <PropertyGroup>
     <PostBuildEvent>
@@ -58,6 +62,6 @@
       xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)</PostBuildEvent>
   </PropertyGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

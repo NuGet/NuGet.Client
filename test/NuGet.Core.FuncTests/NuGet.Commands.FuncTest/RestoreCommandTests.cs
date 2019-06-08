@@ -2580,14 +2580,14 @@ namespace NuGet.Commands.FuncTest
                     string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net46")).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
                 Assert.Equal("ref/net46/a.dll",
                     string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net46")).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
-
                 Assert.Equal("lib/net46/a.dll",
                                     string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net47")).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
                 Assert.Equal("ref/net46/a.dll",
                     string.Join(";", result.LockFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), "net47")).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
             }
         }
-        public string GetResource(string name)
+
+        private string GetResource(string name)
         {
             using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name)))
             {
