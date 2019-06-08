@@ -309,4 +309,15 @@
     </ItemGroup>
   </Target>
 
+  <!--
+    ============================================================
+    EnsureNewtonsoftJsonVersion ensures that the resolved version of Newtonsoft.Json is the version that ships with VS/.NET Core SDK
+    ============================================================
+  -->
+  <Target Name="EnsureNewtonsoftJsonVersion" AfterTargets="ResolveAssemblyReferences">
+    <Error
+      Text="Newtonsoft.Json must be version $(NewtonsoftJsonVersionCore) but resolved %(Reference.NuGetPackageVersion)"
+      Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonVersionCore)' " />
+  </Target>
+
 </Project>
