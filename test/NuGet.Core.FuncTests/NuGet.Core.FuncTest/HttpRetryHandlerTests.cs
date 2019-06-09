@@ -122,7 +122,11 @@ namespace NuGet.Core.FuncTest
             var exception = await ThrowsException<HttpRequestException>(server);
 #if IS_CORECLR
             Assert.Null(exception.InnerException);
+#if IS_NETCORE30
+            Assert.Equal("Received an invalid status code: 'BAD'.", exception.Message);
+#else
             Assert.Equal("The server returned an invalid or unrecognized response.", exception.Message);
+#endif
 #else
             var innerException = Assert.IsType<WebException>(exception.InnerException);
             Assert.Equal(WebExceptionStatus.ServerProtocolViolation, innerException.Status);
