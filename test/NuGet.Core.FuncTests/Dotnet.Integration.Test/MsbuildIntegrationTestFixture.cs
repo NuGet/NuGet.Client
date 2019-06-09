@@ -19,6 +19,9 @@ namespace Dotnet.Integration.Test
 {
     public class MsbuildIntegrationTestFixture : IDisposable
     {
+        private string NuGetClient;
+        private string Handle64Exe;
+
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
@@ -26,6 +29,14 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
+            var paths = _dotnetCli.Split('\\');
+            var len = paths.Length;
+            var len1 = paths.ElementAt(len - 1).Length;
+            var len2 = paths.ElementAt(len - 2).Length;
+            NuGetClient = _dotnetCli.Substring(0, _dotnetCli.Length - (len1 + len2 + 1));
+            var handleFolder = Path.Combine(NuGetClient, "Handle");
+            Handle64Exe = Path.Combine(handleFolder, "handle64.exe");
+
             var cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
 
@@ -61,6 +72,15 @@ namespace Dotnet.Integration.Test
                 CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
             }
         }
+        internal CommandRunnerResult RunHandle64(string args)
+        {
+            var result = CommandRunner.Run(Handle64Exe,
+                                            NuGetClient,
+                                            args,
+                                            waitForExit: true);
+            return result;
+        }
+
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
@@ -448,15 +468,21 @@ namespace Dotnet.Integration.Test
         /// Depth-first recursive delete, with handling for descendant 
         /// directories open in Windows Explorer or used by another process
         /// </summary>
-        private static void DeleteDirectory(string path)
+        private void DeleteDirectory(string path)
         {
+            var handleArgs = " /accepteula " + path;
             foreach (string directory in Directory.GetDirectories(path))
             {
                 DeleteDirectory(directory);
             }
-
+            var resultbefore = "";
             try
             {
+                var result64 = RunHandle64(handleArgs);
+                resultbefore = "@@@@before delete : \n" + "The path is : " + path + "\n" +
+                                "  @@@@The reuslts of running handle64.exe is : \n" +
+                                result64.AllOutput + "\n\n";
+
                 Directory.Delete(path, true);
             }
             catch (IOException)
@@ -465,7 +491,19 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                Directory.Delete(path, true);
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    var result64 = RunHandle64(handleArgs);
+                    throw new UnauthorizedAccessException(resultbefore + "throw unauthorizedAccessException customized by Heng : \n" +
+                        "The path is : " + path + "\n" +
+                        "  %%%%The reuslts of running handle.exe is : \n" +
+                        result64.AllOutput + "\n");
+                }
+                
             }
             catch
             {

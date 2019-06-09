@@ -11,6 +11,9 @@ $NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console.2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ILMerge.2.14.1208\tools\ILMerge.exe'
 
+$HandleZip = Join-Path $NuGetClientRoot 'Handle.zip'
+$Handle = Join-Path $NuGetClientRoot 'Handle'
+
 Set-Alias dotnet $DotNetExe
 Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
@@ -176,6 +179,12 @@ Function Install-NuGet {
 
     # Display nuget info
     & $NuGetExe locals all -list -verbosity detailed
+
+    Trace-Log 'Downloading handle.zip'
+    New-Item -ItemType Directory -Force -Path $Handle | Out-Null
+    wget https://download.sysinternals.com/files/Handle.zip -OutFile $HandleZip
+    Add-Type -AssemblyName System.IO.Compression.FileSystem 
+    [System.IO.Compression.ZipFile]::ExtractToDirectory($HandleZip, $Handle)
 }
 
 Function Install-DotnetCLI {
