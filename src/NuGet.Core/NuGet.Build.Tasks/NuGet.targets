@@ -851,6 +851,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup Condition="  '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(RuntimeIdentifierGraphPath)' != '' ">
       <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
         <Type>TargetFrameworkProperties</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
         <TargetFramework>$(TargetFramework)</TargetFramework>
         <RuntimeIdentifierGraphPath>$(RuntimeIdentifierGraphPath)</RuntimeIdentifierGraphPath>
       </_RestoreGraphEntry>
