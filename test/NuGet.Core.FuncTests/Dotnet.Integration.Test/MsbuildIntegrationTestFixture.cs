@@ -317,7 +317,7 @@ namespace Dotnet.Integration.Test
                                 || fileName.StartsWith("build")
                                 || fileName.StartsWith("buildCrossTargeting"));
 
-                DeleteDirectory(pathToPackSdk);
+                DeleteDirectory2(pathToPackSdk);
                 CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
             }
 
@@ -478,11 +478,13 @@ namespace Dotnet.Integration.Test
             var resultbefore = "";
             try
             {
-                var result64 = RunHandle64(handleArgs);
-                resultbefore = "@@@@before delete : \n" + "The path is : " + path + "\n" +
-                                "  @@@@The reuslts of running handle64.exe is : \n" +
-                                result64.AllOutput + "\n\n";
-
+                if (path.Contains("\\host\\fxr"))
+                {
+                    var result64 = RunHandle64(handleArgs);
+                    resultbefore = "@@@@before delete : \n" + "The path is : " + path + "\n" +
+                                    "  @@@@The reuslts of running handle64.exe is : \n" +
+                                    result64.AllOutput + "\n\n";
+                }
                 Directory.Delete(path, true);
             }
             catch (IOException)
@@ -504,6 +506,30 @@ namespace Dotnet.Integration.Test
                         result64.AllOutput + "\n");
                 }
                 
+            }
+            catch
+            {
+
+            }
+        }
+        private void DeleteDirectory2(string path)
+        {
+            var handleArgs = " /accepteula " + path;
+            foreach (string directory in Directory.GetDirectories(path))
+            {
+                DeleteDirectory2(directory);
+            }
+            try
+            {
+                Directory.Delete(path, true);
+            }
+            catch (IOException)
+            {
+                Directory.Delete(path, true);
+            }
+            catch (UnauthorizedAccessException)
+            {
+                Directory.Delete(path, true);
             }
             catch
             {

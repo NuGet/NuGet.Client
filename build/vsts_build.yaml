@@ -428,7 +428,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   queue:
     name: VSEng-MicroBuildSxS
-    timeoutInMinutes: 300
+    timeoutInMinutes: 600
     demands: 
         - DotNetFramework
         - msbuild
