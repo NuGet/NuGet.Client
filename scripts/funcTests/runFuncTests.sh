@@ -49,17 +49,8 @@ $DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
 DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 for DOTNET_BRANCH in $(echo $DOTNET_BRANCHES | tr ";" "\n")
 do
-	CHANNEL_VERSION = $(echo $DOTNET_BRANCH | tr "\s")
-	CHANNEL = ${CHANNEL_VERSION[0]}
-	VERSION = "latest"
-	if [ "${#CHANNEL_VERSION[@]}" > "1"]
-	then
-	   $VERSION = ${CHANNEL_VERSION[1]}
-	fi
 	echo $DOTNET_BRANCH
-	echo $CHANNEL
-	echo $VERSION
-	cli/dotnet-install.sh -i cli -c $CHANNEL -v $VERSION -NoPath
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -NoPath
 
 
 	# Display current version
