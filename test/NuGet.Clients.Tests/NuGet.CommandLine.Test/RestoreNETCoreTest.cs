@@ -8553,5 +8553,4 @@ namespace NuGet.CommandLine.Test
                 typeof(ResourceTestUtility));
         }
     }
-    }
 }
