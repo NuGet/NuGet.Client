@@ -75,6 +75,11 @@ namespace NuGet.Common
         NU1006 = 1006,
 
         /// <summary>
+        /// Project provided runtime graph is invalid. Either does not exist or cannot be parsed.
+        /// </summary>
+        NU1007 = 1007,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,

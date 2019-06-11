@@ -8433,6 +8433,8 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 result.Success.Should().BeFalse();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Contains("NU1007", result.AllOutput);
+                Assert.Equal(NuGetLogCode.NU1007, projectA.AssetsFile.LogMessages.Single().Code);
             }
         }
 

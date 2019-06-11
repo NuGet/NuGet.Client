@@ -118,14 +118,25 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
+                var projectProvidedRuntimeIdentifierGraphs = new SortedList<string, RuntimeGraph>();
                 foreach (var graph in graphs)
                 {
                     // PCL Projects with Supports have a runtime graph but no matching framework.
-                    var projectSuppliedRuntimeGraph = new Lazy<RuntimeGraph>(() => GetProjectRuntimeGraph(_request.Project.TargetFrameworks.
+                    var runtimeGraphPath = _request.Project.TargetFrameworks.
                             FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))?
-                            .RuntimeIdentifierGraphPath));
+                            .RuntimeIdentifierGraphPath;
 
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectSuppliedRuntimeGraph);
+                    RuntimeGraph projectProviderRuntimeGraph = null;
+                    if (runtimeGraphPath != null &&
+                        !projectProvidedRuntimeIdentifierGraphs.TryGetValue(runtimeGraphPath, out projectProviderRuntimeGraph)){
+
+                        projectProviderRuntimeGraph = GetRuntimeGraph(runtimeGraphPath);
+                        success &= projectProviderRuntimeGraph != null;
+                        projectProvidedRuntimeIdentifierGraphs.Add(runtimeGraphPath, projectProviderRuntimeGraph);
+                    }
+
+
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
                     // Merge all runtimes for the output
@@ -172,30 +183,42 @@ namespace NuGet.Commands
             return Tuple.Create(success, graphs, allRuntimes);
         }
 
-        private RuntimeGraph GetProjectRuntimeGraph(string projectRuntimeGraphPath)
+        /// Gets the runtime graph specified in the path.
+        /// Null is a valid value. That means there's no project specific runtime graph.
+        /// returns null if an error is hit. A valid runtime graph otherwise.
+        private RuntimeGraph GetRuntimeGraph(string runtimeGraphPath)
         {
-            if (!string.IsNullOrEmpty(projectRuntimeGraphPath)) // Which doesn't clean it if it is whitespace.
-            {
-                if (File.Exists(projectRuntimeGraphPath))
+            if (File.Exists(runtimeGraphPath))
                 {
-                    using (var stream = File.OpenRead(projectRuntimeGraphPath))
+                    try
                     {
-                        return JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                        using (var stream = File.OpenRead(runtimeGraphPath))
+                        {
+                            var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                            return runtimeGraph;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.Log(
+                         RestoreLogMessage.CreateError(
+                             NuGetLogCode.NU1007,
+                             string.Format(CultureInfo.CurrentCulture,
+                                 Strings.Error_ProjectRuntimeJsonIsUnreadable,
+                                 runtimeGraphPath,
+                                 e.Message)));
                     }
                 }
                 else
                 {
-                    // TODO NK - Make this an error.
                     _logger.Log(
-                        RestoreLogMessage.CreateWarning(
-                            NuGetLogCode.NU1702, // TODO NK - add an actual error code.
-                            string.Format(CultureInfo.CurrentCulture,
-                                Strings.Warning_ProjectRuntimeJsonNotFound,
-                                projectRuntimeGraphPath)));
-
+                     RestoreLogMessage.CreateError(
+                         NuGetLogCode.NU1007,
+                         string.Format(CultureInfo.CurrentCulture,
+                             Strings.Error_ProjectRuntimeJsonNotFound,
+                             runtimeGraphPath)));
                 }
-            }
-            return RuntimeGraph.Empty;
+            return null;
         }
 
         private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
@@ -432,10 +455,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Merge all runtime.json found in the flattened graph.
         /// </summary>
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, Lazy<RuntimeGraph> projectRuntimeGraph)
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, RuntimeGraph projectRuntimeGraph)
         {
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            var runtimeGraph = projectRuntimeGraph.Value;
+            var runtimeGraph = projectRuntimeGraph ?? RuntimeGraph.Empty;
 
             // Find runtime.json files using the flattened graph which is unique per id.
             // Using the flattened graph ensures that only accepted packages will be used.

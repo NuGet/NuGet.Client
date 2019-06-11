@@ -457,6 +457,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The runtime.json specified in the project &apos;{0}&apos; could not be parsed. {1}.
+        /// </summary>
+        internal static string Error_ProjectRuntimeJsonIsUnreadable {
+            get {
+                return ResourceManager.GetString("Error_ProjectRuntimeJsonIsUnreadable", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The runtime.json specified in the project &apos;{0}&apos; could not be found..
+        /// </summary>
+        internal static string Error_ProjectRuntimeJsonNotFound {
+            get {
+                return ResourceManager.GetString("Error_ProjectRuntimeJsonNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Project {0} must have a single package reference(s)..
         /// </summary>
         internal static string Error_ProjectWithIncorrectDependenciesCount {
@@ -2074,15 +2092,6 @@ namespace NuGet.Commands {
         internal static string Warning_ProjectDependencyMissingLowerBound {
             get {
                 return ResourceManager.GetString("Warning_ProjectDependencyMissingLowerBound", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The runtime.json specified in the project &apos;{0}&apos; could not be found. Only the package supplied runtime.json will be used..
-        /// </summary>
-        internal static string Warning_ProjectRuntimeJsonNotFound {
-            get {
-                return ResourceManager.GetString("Warning_ProjectRuntimeJsonNotFound", resourceCulture);
             }
         }
         
