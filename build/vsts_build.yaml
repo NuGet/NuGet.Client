@@ -75,6 +75,14 @@ phases:
       - msbuild
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 3.0.x
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
   - task: PowerShell@1
     displayName: "Update Build Number"
     inputs:
@@ -440,7 +448,7 @@ phases:
       packageType: sdk
       version: 3.0.x
       includePreviewVersions: true
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      installationPath: $(Agent.TempDirectory)/dotnet
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -522,7 +530,7 @@ phases:
       packageType: sdk
       version: 3.0.x
       includePreviewVersions: true
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      installationPath: $(Agent.TempDirectory)/dotnet
       
   - task: PowerShell@2
     displayName: "Update Build Number"
@@ -581,7 +589,7 @@ phases:
       packageType: sdk
       version: 3.0.x
       includePreviewVersions: true
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      installationPath: $(Agent.TempDirectory)/dotnet
       
   - task: PowerShell@2
     displayName: "Update Build Number"
@@ -640,6 +648,14 @@ phases:
     demands: DotNetFramework
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 3.0.x
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -739,6 +755,14 @@ phases:
   - checkout: self
     clean: true
     submodules: true
+    
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: 3.0.x
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
     
   - task: PowerShell@1
     displayName: "Print Environment Variables"
