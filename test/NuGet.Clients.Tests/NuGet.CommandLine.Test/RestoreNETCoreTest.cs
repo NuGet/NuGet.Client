@@ -8360,7 +8360,7 @@ namespace NuGet.CommandLine.Test
                 // set up rid graph
                 var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
                 projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties.Add("RuntimeIdentifierGraphPath", ridGraphPath);
-                File.WriteAllText(ridGraphPath, GetResource("NuGet.CommandLine.Test.compiler.resources.runtime.json"));
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -8476,7 +8476,7 @@ namespace NuGet.CommandLine.Test
                 // setup rid graph.
                 var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
                 projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties.Add("RuntimeIdentifierGraphPath", ridGraphPath);
-                File.WriteAllText(ridGraphPath, GetResource("NuGet.CommandLine.Test.compiler.resources.runtime.json"));
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
@@ -8502,7 +8502,7 @@ namespace NuGet.CommandLine.Test
                 File.Delete(ridGraphPath);
                 ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime-2.json");
                 projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties["RuntimeIdentifierGraphPath"] = ridGraphPath;
-                File.WriteAllText(ridGraphPath, GetResource("NuGet.CommandLine.Test.compiler.resources.runtime.json"));
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
                 projectA.Save();
 
                 // Act & Assert
@@ -8545,12 +8545,13 @@ namespace NuGet.CommandLine.Test
 
             }
         }
-        private string GetResource(string name)
+
+        private static byte[] GetTestUtilityResource(string name)
         {
-            using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name)))
-            {
-                return reader.ReadToEnd();
-            }
+            return ResourceTestUtility.GetResourceBytes(
+                $"Test.Utility.compiler.resources.{name}",
+                typeof(ResourceTestUtility));
         }
+    }
     }
 }

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -12,17 +11,14 @@ using System.Threading.Tasks;
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
 using NuGet.Commands.Test;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.RuntimeModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -32,9 +28,9 @@ namespace NuGet.Commands.FuncTest
     public class RestoreCommandTests
     {
         [Theory]
-        [InlineData("https://www.nuget.org/api/v2/", new Type[0])]
-        [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
-        [InlineData("https://api.nuget.org/v3/index.json", new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
+        [InlineData(NuGetConstants.V2FeedUrl, new Type[0])]
+        [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(RemoteV3FindPackageByIdResourceProvider) })]
+        [InlineData(NuGetConstants.V3FeedUrl, new[] { typeof(HttpFileSystemBasedFindPackageByIdResourceProvider) })]
         public async Task RestoreCommand_LockFileHasOriginalPackageIdCaseAsync(string source, Type[] excludedProviders)
         {
             // Arrange
@@ -102,7 +98,7 @@ namespace NuGet.Commands.FuncTest
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { "https://api.nuget.org/v3/index.json" },
+                    Sources = new List<string>() { NuGetConstants.V3FeedUrl },
                     GlobalPackagesFolder = packagesDir,
                     Log = logger,
                     CacheContext = new SourceCacheContext()
@@ -138,7 +134,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -241,7 +237,7 @@ namespace NuGet.Commands.FuncTest
 
                 var restoreContext = new RestoreArgs()
                 {
-                    Sources = new List<string>() { "https://www.nuget.org/api/v2/" },
+                    Sources = new List<string>() { NuGetConstants.V3FeedUrl },
                     GlobalPackagesFolder = packagesDir,
                     Log = logger,
                     CacheContext = new SourceCacheContext()
@@ -271,7 +267,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -315,7 +311,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -487,7 +483,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -543,7 +539,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -601,7 +597,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -659,7 +655,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -720,7 +716,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -772,7 +768,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -826,7 +822,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -873,7 +869,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -928,7 +924,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -976,7 +972,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1031,7 +1027,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1098,7 +1094,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1142,7 +1138,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1264,7 +1260,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1307,7 +1303,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1342,8 +1338,8 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Theory]
-        [InlineData("https://www.nuget.org/api/v2/")]
-        [InlineData("https://api.nuget.org/v3/index.json")]
+        [InlineData(NuGetConstants.V2FeedUrl)]
+        [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackageIsAddedToPackageCacheAsync(string source)
         {
             // Arrange
@@ -1378,8 +1374,8 @@ namespace NuGet.Commands.FuncTest
         }
 
         [Theory]
-        [InlineData("https://www.nuget.org/api/v2/")]
-        [InlineData("https://api.nuget.org/v3/index.json")]
+        [InlineData(NuGetConstants.V2FeedUrl)]
+        [InlineData(NuGetConstants.V3FeedUrl)]
         public async Task RestoreCommand_PackagesAreExtractedToTheNormalizedPathAsync(string source)
         {
             // Arrange
@@ -1419,7 +1415,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1457,7 +1453,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1499,7 +1495,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1543,7 +1539,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
             using (var packagesDir = TestDirectory.Create())
             using (var projectDir = TestDirectory.Create())
@@ -1592,7 +1588,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1644,7 +1640,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1862,7 +1858,7 @@ namespace NuGet.Commands.FuncTest
             // Arrange
             var sources = new List<PackageSource>
             {
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -1903,7 +1899,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1946,7 +1942,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -1987,7 +1983,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2027,7 +2023,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2076,7 +2072,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using (var packagesDir = TestDirectory.Create())
@@ -2125,7 +2121,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2174,7 +2170,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2223,7 +2219,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource.json"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2272,7 +2268,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("\\failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2321,7 +2317,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2370,7 +2366,7 @@ namespace NuGet.Commands.FuncTest
             var sources = new List<PackageSource>
             {
                 new PackageSource("https://failingSource.json"),
-                new PackageSource("https://api.nuget.org/v3/index.json")
+                new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
             using(var packagesDir = TestDirectory.Create())
@@ -2441,7 +2437,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Set up the rid graph
                 var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
-                File.WriteAllText(ridGraphPath, GetResource("NuGet.Commands.FuncTest.compiler.resources.runtime.json"));
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
 
                 // set up the project
 
@@ -2523,7 +2519,7 @@ namespace NuGet.Commands.FuncTest
 
                 // Set up the rid graph
                 var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
-                File.WriteAllText(ridGraphPath, GetResource("NuGet.Commands.FuncTest.compiler.resources.runtime.json"));
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
 
                 // set up the project
 
@@ -2587,12 +2583,11 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        private string GetResource(string name)
+        private static byte[] GetTestUtilityResource(string name)
         {
-            using (var reader = new StreamReader(GetType().GetTypeInfo().Assembly.GetManifestResourceStream(name)))
-            {
-                return reader.ReadToEnd();
-            }
+            return ResourceTestUtility.GetResourceBytes(
+                $"Test.Utility.compiler.resources.{name}",
+                typeof(ResourceTestUtility));
         }
 
         private static List<LockFileItem> GetRuntimeAssemblies(IList<LockFileTarget> targets, string framework, string runtime)

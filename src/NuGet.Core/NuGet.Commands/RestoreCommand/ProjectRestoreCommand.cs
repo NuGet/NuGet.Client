@@ -183,8 +183,8 @@ namespace NuGet.Commands
             return Tuple.Create(success, graphs, allRuntimes);
         }
 
-        /// Gets the runtime graph specified in the path.
-        /// returns null if an error is hit. A valid runtime graph otherwise.
+        // Gets the runtime graph specified in the path.
+        // returns null if an error is hit. A valid runtime graph otherwise.
         private RuntimeGraph GetRuntimeGraph(string runtimeGraphPath)
         {
             if (File.Exists(runtimeGraphPath))
