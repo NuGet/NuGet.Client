@@ -33,7 +33,6 @@
     <None Remove="compiler\resources\SignatureFileWithFakeContent.zip" />
     <None Remove="compiler\resources\SignatureFileWithUppercaseFileName.zip" />
     <None Remove="compiler\resources\SignedPackage.1.0.0.nupkg" />
-    <None Remove="compiler\resources\runtime.json" />
   </ItemGroup>
 
   <ItemGroup>
