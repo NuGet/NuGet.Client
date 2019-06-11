@@ -189,15 +189,23 @@ Function Install-DotnetCLI {
     Write-Host "vsmajor version is $vsMajorVersion"
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
-    $CliBranchesForTesting = $CliBranchListForTesting.Split(';');
+    $CliBranchesForTesting = $CliBranchListForTesting.Split(';')
     ForEach ($CliBranchForTesting in $CliBranchesForTesting){
+
+        $CliChannelAndVersion = $CliBranchForTesting.Split(' ', [System.StringSplitOptions]::RemoveEmptyEntries)
+        $channel = $CliChannelAndVersion[0]
+        $version = 'latest'
+        if ($CliChannelAndVersion.Length -gt 1) {
+            $version = $CliChannelAndVersion[1]
+        }
+           
         $cli = @{
             Root = $CLIRoot
-            Version = 'latest'
-            Channel = $CliBranchForTesting.Trim()
+            Version = $version
+            Channel = $channel.Trim()
         }
     
-        $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
+        $DotNetExe = Join-Path $cli.Root 'dotnet.exe'
 
         if ([Environment]::Is64BitOperatingSystem) {
             $arch = "x64";
