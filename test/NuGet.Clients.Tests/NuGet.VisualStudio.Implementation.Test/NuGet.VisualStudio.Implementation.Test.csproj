@@ -51,6 +51,10 @@
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+  </ItemGroup>
+
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

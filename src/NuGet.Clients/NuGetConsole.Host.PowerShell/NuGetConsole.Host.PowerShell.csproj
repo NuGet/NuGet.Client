@@ -135,6 +135,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Scripts\about_NuGet.PackageManagement.PowerShellCmdlets.help.txt" />
     <!-- We copy this xml file to output directory so CI can pick it for localization from artifacts directory
     However, we condition it to only be copied when building the project itself and not the vsix to prevent VSIX

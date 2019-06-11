@@ -81,6 +81,9 @@
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Commands\NuGet.Commands.csproj">
       <Project>{567e8582-0e73-4a34-a7d3-ed9486415523}</Project>
       <Name>NuGet.Commands</Name>
