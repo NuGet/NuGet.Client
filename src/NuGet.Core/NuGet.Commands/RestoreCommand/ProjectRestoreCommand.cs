@@ -184,40 +184,39 @@ namespace NuGet.Commands
         }
 
         /// Gets the runtime graph specified in the path.
-        /// Null is a valid value. That means there's no project specific runtime graph.
         /// returns null if an error is hit. A valid runtime graph otherwise.
         private RuntimeGraph GetRuntimeGraph(string runtimeGraphPath)
         {
             if (File.Exists(runtimeGraphPath))
+            {
+                try
                 {
-                    try
+                    using (var stream = File.OpenRead(runtimeGraphPath))
                     {
-                        using (var stream = File.OpenRead(runtimeGraphPath))
-                        {
-                            var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
-                            return runtimeGraph;
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Log(
-                         RestoreLogMessage.CreateError(
-                             NuGetLogCode.NU1007,
-                             string.Format(CultureInfo.CurrentCulture,
-                                 Strings.Error_ProjectRuntimeJsonIsUnreadable,
-                                 runtimeGraphPath,
-                                 e.Message)));
+                        var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                        return runtimeGraph;
                     }
                 }
-                else
+                catch (Exception e)
                 {
                     _logger.Log(
                      RestoreLogMessage.CreateError(
                          NuGetLogCode.NU1007,
                          string.Format(CultureInfo.CurrentCulture,
-                             Strings.Error_ProjectRuntimeJsonNotFound,
-                             runtimeGraphPath)));
+                             Strings.Error_ProjectRuntimeJsonIsUnreadable,
+                             runtimeGraphPath,
+                             e.Message)));
                 }
+            }
+            else
+            {
+                _logger.Log(
+                 RestoreLogMessage.CreateError(
+                     NuGetLogCode.NU1007,
+                     string.Format(CultureInfo.CurrentCulture,
+                         Strings.Error_ProjectRuntimeJsonNotFound,
+                         runtimeGraphPath)));
+            }
             return null;
         }
 
