@@ -16,16 +16,80 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <summary>
         /// A function that prints all the package references of a project
         /// </summary>
-        /// <param name="packages">A list of framework packages. Check <see cref="FrameworkPackages"/></param>
+        /// <param name="packages">A list of framework packages. Check <see cref="TargetFrameworkInfo"/></param>
         /// <param name="projectName">The project name</param>
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated">Whether outdated flag exists or not</param>
         /// <param name="autoReferenceFound">An out to return whether autoreference was found</param>
-        internal static void PrintPackages(IEnumerable<FrameworkPackages> packages,
+        internal static void PrintPackages(IEnumerable<TargetFrameworkInfo> packages,
            string projectName, bool transitive, bool outdated, out bool autoReferenceFound)
         {
             autoReferenceFound = false;
 
+            PrintPackageHeader(projectName, outdated);
+
+            foreach (var frameworkPackages in packages)
+            {
+                autoReferenceFound = PrintOneFramework(transitive, outdated, autoReferenceFound, frameworkPackages);
+            }
+        }
+
+        private static bool PrintOneFramework(bool transitive, bool outdated, bool autoReferenceFound, TargetFrameworkInfo frameworkPackages)
+        {
+            var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
+            var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
+
+            //If no packages exist for this framework, print the
+            //appropriate message
+            if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
+            {
+                Console.ForegroundColor = ConsoleColor.Blue;
+
+                if (outdated)
+                {
+                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.TargetFramework.GetShortFolderName()));
+                }
+                else
+                {
+                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.TargetFramework.GetShortFolderName()));
+                }
+
+                Console.ResetColor();
+            }
+            else
+            {
+                //Print name of the framework
+                Console.ForegroundColor = ConsoleColor.Blue;
+                Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.TargetFramework.GetShortFolderName()));
+                Console.ResetColor();
+
+                //Print top-level packages
+                if (frameworkTopLevelPackages.Any())
+                {
+                    var likelyTransitiveFound = false;
+                    var autoRefWithinPackagesList = false;
+
+                    PackagesTable(frameworkTopLevelPackages, false, outdated, out likelyTransitiveFound, out autoRefWithinPackagesList);
+                    autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
+
+                }
+
+                //Print transitive pacakges
+                if (transitive && frameworkTransitivePackages.Any())
+                {
+                    var autoRefWithinPackagesList = false;
+                    var likelyTransitiveFound = false;
+
+                    PackagesTable(frameworkTransitivePackages, true, outdated, out likelyTransitiveFound, out autoRefWithinPackagesList);
+                    autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
+                }
+            }
+
+            return autoReferenceFound;
+        }
+
+        private static void PrintPackageHeader(string projectName, bool outdated)
+        {
             if (outdated)
             {
                 Console.WriteLine(string.Format(Strings.ListPkg_ProjectUpdatesHeaderLog, projectName));
@@ -34,75 +98,34 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 Console.WriteLine(string.Format(Strings.ListPkg_ProjectHeaderLog, projectName));
             }
-
-            foreach (var frameworkPackages in packages)
-            {
-                var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-                var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
-
-                //If no packages exist for this framework, print the
-                //appropriate message
-                if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
-                {
-                    Console.ForegroundColor = ConsoleColor.Blue;
-
-                    if (outdated)
-                    {
-                        Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.Framework));
-                    }
-                    else
-                    {
-                        Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.Framework));
-                    }
-
-                    Console.ResetColor();
-                }
-                else
-                {
-                    //Print name of the framework
-                    Console.ForegroundColor = ConsoleColor.Blue;
-                    Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.Framework));
-                    Console.ResetColor();
-
-                    //Print top-level packages
-                    if (frameworkTopLevelPackages.Any())
-                    {
-                        var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTopLevelPackages, false, outdated, out autoRefWithinPackagesList);
-                        autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
-                    }
-
-                    //Print transitive pacakges
-                    if (transitive && frameworkTransitivePackages.Any())
-                    {
-                        var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTransitivePackages, true, outdated, out autoRefWithinPackagesList);
-                        autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
-                    }
-                }
-            }
         }
 
         /// <summary>
         /// Given a list of packages, this function will print them in a table
         /// </summary>
-        /// <param name="packages">The list of packages</param>
+        /// <param name="packageReferenceInfo">The list of packages</param>
         /// <param name="printingTransitive">Whether the function is printing transitive
         /// packages table or not</param>
         /// <param name="outdated"></param>
+        /// <param name="likeTransitiveWithinPackagesList"></param>
         /// <param name="autoRefWithinPackagesList"></param>
         /// <returns>The table as a string</returns>
-        internal static void PackagesTable(IEnumerable<InstalledPackageReference> packages, bool printingTransitive, bool outdated, out bool autoRefWithinPackagesList)
+        internal static void PackagesTable(IEnumerable<PackageReferenceInfo> packageReferenceInfo, bool printingTransitive, bool outdated,
+            out bool autoRefWithinPackagesList,
+            out bool likeTransitiveWithinPackagesList)
         {
             var autoReferenceFound = false;
+            var likelyTransitiveFound = false;
 
-            if (!packages.Any())
+            if (!packageReferenceInfo.Any())
             {
+                Console.WriteLine();
                 autoRefWithinPackagesList = false;
+                likeTransitiveWithinPackagesList = false;
                 return;
             }
 
-            packages = packages.OrderBy(p => p.Name);
+            packageReferenceInfo = packageReferenceInfo.OrderBy(p => p.Id);
 
             //To enable coloring only the latest version as appropriate
             //we need to map every string in the table to a color, which
@@ -113,21 +136,21 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             if (outdated && printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = packageReferenceInfo.ToStringTable(
                        headers,
                        p => p.UpdateLevel,
                        p => "",
-                       p => p.Name,
+                       p => p.Id,
                        p => "", p => p.ResolvedVersion.ToString(),
                        p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
             }
             else if (outdated && !printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = packageReferenceInfo.ToStringTable(
                        headers,
                        p => p.UpdateLevel,
                        p => "",
-                       p => p.Name,
+                       p => p.Id,
                        p =>
                        {
                            if (p.AutoReference)
@@ -135,6 +158,12 @@ namespace NuGet.CommandLine.XPlat.Utility
                                autoReferenceFound = true;
                                return "(A)";
                            }
+                           else if (p.LikelyTransitive)
+                           {
+                               likelyTransitiveFound = true;
+                               return "(LT)";
+                           }
+
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
@@ -143,27 +172,33 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else if (!outdated && printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = packageReferenceInfo.ToStringTable(
                         headers,
                         p => p.UpdateLevel,
                         p => "",
-                        p => p.Name,
+                        p => p.Id,
                         p => "",
                         p => p.ResolvedVersion.ToString());
             }
             else
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = packageReferenceInfo.ToStringTable(
                        headers,
                        p => p.UpdateLevel,
                        p => "",
-                       p => p.Name,
+                       p => p.Id,
                        p => {
                            if (p.AutoReference)
                            {
                                autoReferenceFound = true;
                                return "(A)";
                            }
+                           else if (p.LikelyTransitive)
+                           {
+                               likelyTransitiveFound = true;
+                               return "(LT)";
+                           }
+
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
@@ -179,6 +214,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
             autoRefWithinPackagesList = autoReferenceFound;
+            likeTransitiveWithinPackagesList = likelyTransitiveFound;
         }
 
         /// <summary>
