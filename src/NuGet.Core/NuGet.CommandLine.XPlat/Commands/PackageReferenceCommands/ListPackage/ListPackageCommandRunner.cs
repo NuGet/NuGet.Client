@@ -60,6 +60,11 @@ namespace NuGet.CommandLine.XPlat
 
             foreach (var projectPath in projectsPaths)
             {
+                if (!((projectPath.EndsWith("\\") || (File.Exists(projectPath)))))
+                {
+                    continue;
+                }
+
                 var projectInfo = await ProcessProject(projectPath, listPackageArgs, msBuildUtility);
                 projectInfos.Add(projectInfo);
 
@@ -124,7 +129,6 @@ namespace NuGet.CommandLine.XPlat
             {
                 try
                 {
-                    Console.WriteLine("loading: " + projectPath);
                     //Open project to evaluate properties for the assets
                     //file and the name of the project
                     project = MSBuildAPIUtility.GetProject(projectPath);
@@ -164,7 +168,7 @@ namespace NuGet.CommandLine.XPlat
                         }
                         else  // Project-less PC projects (like website projects)
                         {
-                            projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker:null, packagesConfigPath, listPackageArgs);
+                            projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker: null, packagesConfigPath, listPackageArgs);
                         }
                     }
                 }
@@ -199,11 +203,11 @@ namespace NuGet.CommandLine.XPlat
                     var noPackagesLeft = true;
 
                     //Filter the packages for outdated
-                    foreach (var frameworkPackages in projectInfo.TargetFrameworkInfos)
+                    foreach (var targetFrameworkInfo in projectInfo.TargetFrameworkInfos)
                     {
-                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
-                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
+                        targetFrameworkInfo.TopLevelPackages = targetFrameworkInfo.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
+                        targetFrameworkInfo.TopLevelPackages = targetFrameworkInfo.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
+                        if (targetFrameworkInfo.TopLevelPackages.Any() || targetFrameworkInfo.TopLevelPackages.Any())
                         {
                             noPackagesLeft = false;
                         }

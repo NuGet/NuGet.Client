@@ -28,9 +28,9 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             PrintPackageHeader(projectName, outdated);
 
-            foreach (var frameworkPackages in targetFrameworkInfos)
+            foreach (var targetFrameworkInfo in targetFrameworkInfos)
             {
-                autoReferenceFound = PrintOneFramework(transitive, outdated, autoReferenceFound, frameworkPackages);
+                autoReferenceFound = PrintOneFramework(transitive, outdated, autoReferenceFound, targetFrameworkInfo);
             }
         }
 
@@ -48,11 +48,11 @@ namespace NuGet.CommandLine.XPlat.Utility
 
                 if (outdated)
                 {
-                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, frameworkPackages.TargetFramework.GetShortFolderName()));
+                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoUpdatesForFramework, targetFrameworkInfo.TargetFramework.GetShortFolderName()));
                 }
                 else
                 {
-                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, frameworkPackages.TargetFramework.GetShortFolderName()));
+                    Console.WriteLine(string.Format("   [{0}]: " + Strings.ListPkg_NoPackagesForFramework, targetFrameworkInfo.TargetFramework.GetShortFolderName()));
                 }
 
                 Console.ResetColor();
