@@ -461,12 +461,12 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
 
-                var frameworkPackages = new TargetFrameworkInfo(
+                var targetFrameworkInfo = new TargetFrameworkInfo(
                     target.TargetFramework,
                     topLevelPackages,
                     transitivePackages);
 
-                resultPackages.Add(frameworkPackages);
+                resultPackages.Add(targetFrameworkInfo);
             }
 
             return resultPackages;
