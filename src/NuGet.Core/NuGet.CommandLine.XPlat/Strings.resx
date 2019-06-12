@@ -123,6 +123,9 @@
   <data name="App_FullName" xml:space="preserve">
     <value>NuGet Command Line</value>
   </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>  
   <data name="ConsoleConfirmMessage" xml:space="preserve">
     <value>{0} (y/N) </value>
   </data>
