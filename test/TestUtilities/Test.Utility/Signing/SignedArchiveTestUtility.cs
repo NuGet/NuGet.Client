@@ -42,7 +42,6 @@ namespace Test.Utility.Signing
             HashAlgorithmName signatureHashAlgorithm = HashAlgorithmName.SHA256,
             HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
         {
-            var testLogger = new TestLogger();
             var signedPackagePath = Path.Combine(dir, $"{nupkg.Id}.{nupkg.Version}.nupkg");
             var tempPath = Path.GetTempFileName();
 
@@ -52,8 +51,55 @@ namespace Test.Utility.Signing
                 packageStream.CopyTo(fileStream);
             }
 
-            using (var originalPackage = File.OpenRead(tempPath))
-            using (var signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            return await AuthorSignPackageAsync(certificate, timestampService, signatureHashAlgorithm, timestampHashAlgorithm, signedPackagePath, tempPath);
+        }
+
+        /// <summary>
+        /// Generates an author signed copy of a package and returns the path to that package
+        /// This method can timestamp a package and should only be used with tests marked with [CIOnlyFact]
+        /// </summary>
+        /// <param name="certificate">Certificate to be used while signing the package</param>
+        /// <param name="packageStream">Stream of package to be signed</param>
+        /// <param name="packageId">The package ID.</param>
+        /// <param name="packageVersion">The package version.</param>
+        /// <param name="destinationDirectoryPath">Directory for placing the signed package</param>
+        /// <param name="timestampService">RFC 3161 timestamp service URL.</param>
+        /// <param name="signatureHashAlgorithm">Hash algorithm to be used in the signature. Defaults to SHA256</param>
+        /// <param name="timestampHashAlgorithm">Hash algorithm to be used in the timestamp. Defaults to SHA256</param>
+        /// <returns>Path to the signed copy of the package</returns>
+        public static async Task<string> AuthorSignPackageAsync(
+            X509Certificate2 certificate,
+            MemoryStream packageStream,
+            string packageId,
+            string packageVersion,
+            string destinationDirectoryPath,
+            Uri timestampService = null,
+            HashAlgorithmName signatureHashAlgorithm = HashAlgorithmName.SHA256,
+            HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
+        {
+            string signedPackagePath = Path.Combine(destinationDirectoryPath, $"{packageId}.{packageVersion}.nupkg");
+            string tempPath = Path.GetTempFileName();
+
+            packageStream.Seek(offset: 0, loc: SeekOrigin.Begin);
+
+            using (FileStream fileStream = File.OpenWrite(tempPath))
+            {
+                packageStream.CopyTo(fileStream);
+            }
+
+            return await AuthorSignPackageAsync(certificate, timestampService, signatureHashAlgorithm, timestampHashAlgorithm, signedPackagePath, tempPath);
+        }
+
+        private static async Task<string> AuthorSignPackageAsync(
+            X509Certificate2 certificate,
+            Uri timestampService,
+            HashAlgorithmName signatureHashAlgorithm,
+            HashAlgorithmName timestampHashAlgorithm,
+            string signedPackagePath,
+            string originalPackagePath)
+        {
+            using (FileStream originalPackage = File.OpenRead(originalPackagePath))
+            using (FileStream signedPackage = File.Open(signedPackagePath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
             using (var request = new AuthorSignPackageRequest(
                 new X509Certificate2(certificate),
                 signatureHashAlgorithm,
@@ -62,7 +108,7 @@ namespace Test.Utility.Signing
                 await CreateSignedPackageAsync(request, originalPackage, signedPackage, timestampService);
             }
 
-            FileUtility.Delete(tempPath);
+            FileUtility.Delete(originalPackagePath);
 
             return signedPackagePath;
         }
@@ -90,7 +136,6 @@ namespace Test.Utility.Signing
             HashAlgorithmName signatureHashAlgorithm = HashAlgorithmName.SHA256,
             HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
         {
-            var testLogger = new TestLogger();
             var signedPackagePath = Path.Combine(dir, $"{nupkg.Id}.{nupkg.Version}.nupkg");
             var tempPath = Path.GetTempFileName();
 
@@ -141,7 +186,6 @@ namespace Test.Utility.Signing
             HashAlgorithmName signatureHashAlgorithm = HashAlgorithmName.SHA256,
             HashAlgorithmName timestampHashAlgorithm = HashAlgorithmName.SHA256)
         {
-            var testLogger = new TestLogger();
             var outputPackagePath = Path.Combine(outputDir, Guid.NewGuid().ToString());
 
             using (var originalPackage = File.OpenRead(packagePath))

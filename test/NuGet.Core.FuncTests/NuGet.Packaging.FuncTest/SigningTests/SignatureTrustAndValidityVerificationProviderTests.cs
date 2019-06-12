@@ -29,7 +29,6 @@ namespace NuGet.Packaging.FuncTest
     {
         private const string _untrustedChainCertError = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-        private readonly SignedPackageVerifierSettings _vsClientAcceptModeSettings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
         private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
         private readonly SigningTestFixture _testFixture;
         private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
