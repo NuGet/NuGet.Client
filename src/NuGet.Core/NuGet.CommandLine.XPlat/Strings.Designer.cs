@@ -187,15 +187,6 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Argument cannot be null or empty.
-        /// </summary>
-        internal static string Argument_Cannot_Be_Null_Or_Empty {
-            get {
-                return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The base path of the files defined in the nuspec file..
         /// </summary>
         internal static string BasePath_Description {

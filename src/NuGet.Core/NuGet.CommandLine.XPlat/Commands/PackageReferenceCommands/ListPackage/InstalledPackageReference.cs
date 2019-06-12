@@ -12,23 +12,22 @@ namespace NuGet.CommandLine.XPlat
     /// A class to simplify holding all of the information
     /// about a package reference when using list
     /// </summary>
-    internal class PackageReferenceInfo
+    internal class InstalledPackageReference
     {
-        internal string Id { get; }
+        internal string Name { get; }
         internal string OriginalRequestedVersion { get; set; }
         internal NuGetVersion ResolvedVersion { get; set; }
         internal NuGetVersion LatestVersion { get; set; }
         internal bool AutoReference { get; set; }
-        internal bool LikelyTransitive { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
 
         /// <summary>
         /// A constructor that takes a name of a package
         /// </summary>
         /// <param name="name">The name of the package</param>
-        public PackageReferenceInfo(string name)
+        public InstalledPackageReference(string name)
         {
-            Id = name ?? throw new ArgumentNullException(nameof(name));
+            Name = name ?? throw new ArgumentNullException(nameof(name));
         }
     }
 }

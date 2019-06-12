@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -11,21 +10,21 @@ namespace NuGet.CommandLine.XPlat
     /// A class to simplify holding all of the information
     /// of a framework packages when using list
     /// </summary>
-    internal class TargetFrameworkInfo
+    internal class FrameworkPackages
     {
-        public NuGetFramework TargetFramework { get; }
-        public IEnumerable<PackageReferenceInfo> TopLevelPackages { get; set; }
-        public IEnumerable<PackageReferenceInfo> TransitivePackages { get; set; }
+        public string Framework { get; }
+        public IEnumerable<InstalledPackageReference> TopLevelPackages { get; set; }
+        public IEnumerable<InstalledPackageReference> TransitivePackages { get; set; }
 
         /// <summary>
         /// A constructor that takes a framework name, and
         /// initializes the top-level and transitive package
         /// lists
         /// </summary>
-        /// <param name="targetFramework">target framework</param>
-        public TargetFrameworkInfo(NuGetFramework targetFramework) : this(targetFramework, new List<PackageReferenceInfo>(), new List<PackageReferenceInfo>())
+        /// <param name="framework">Framework name</param>
+        public FrameworkPackages(string framework) : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
         {
-
+            
         }
 
         /// <summary>
@@ -33,14 +32,14 @@ namespace NuGet.CommandLine.XPlat
         /// of top-level pacakges, and a list of transitive
         /// packages
         /// </summary>
-        /// <param name="targetFramework">Framework name that we have pacakges for</param>
+        /// <param name="framework">Framework name that we have pacakges for</param>
         /// <param name="topLevelPackages">Top-level packages. Shouldn't be null</param>
         /// <param name="transitivePackages">Transitive packages. Shouldn't be null</param>
-        public TargetFrameworkInfo(NuGetFramework targetFramework,
-            IEnumerable<PackageReferenceInfo> topLevelPackages,
-            IEnumerable<PackageReferenceInfo> transitivePackages)
+        public FrameworkPackages(string framework,
+            IEnumerable<InstalledPackageReference> topLevelPackages,
+            IEnumerable<InstalledPackageReference> transitivePackages)
         {
-            TargetFramework = targetFramework ?? throw new ArgumentNullException(nameof(targetFramework));
+            Framework = framework ?? throw new ArgumentNullException(nameof(framework));
             TopLevelPackages = topLevelPackages ?? throw new ArgumentNullException(nameof(topLevelPackages));
             TransitivePackages = transitivePackages ?? throw new ArgumentNullException(nameof(transitivePackages));
         }

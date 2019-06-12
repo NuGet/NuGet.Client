@@ -12,7 +12,6 @@ namespace NuGet.CommandLine.XPlat
     public class ListPackageArgs
     {
         public ILogger Logger { get; }
-        public ISettings Settings { get; }
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
         public IEnumerable<string> Frameworks { get; }
@@ -39,7 +38,6 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
         /// <param name="highestMinor"> Bool for --highest-minor present </param>
         /// <param name="logger"></param>
-        /// <param name="settings">TODO Add Description</param>
         /// <param name="cancellationToken"></param>
         public ListPackageArgs(
             string path,
@@ -52,7 +50,6 @@ namespace NuGet.CommandLine.XPlat
             bool highestPatch,
             bool highestMinor,
             ILogger logger,
-            ISettings settings,
             CancellationToken cancellationToken)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
@@ -65,7 +62,6 @@ namespace NuGet.CommandLine.XPlat
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Settings = settings;
             CancellationToken = cancellationToken;
         }
     }
