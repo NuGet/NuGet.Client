@@ -50,7 +50,12 @@ DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBran
 for DOTNET_BRANCH in $(echo $DOTNET_BRANCHES | tr ";" "\n")
 do
 	echo $DOTNET_BRANCH
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -NoPath
+	$version = "lastest"
+	if [ "$DOTNET_BRANCH" == "release/3.0.1xx"]
+	then
+	    version = "3.0.100-preview5-011568"
+	fi
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version version -NoPath
 
 
 	# Display current version
