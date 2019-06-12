@@ -38,7 +38,7 @@ curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/maste
 chmod +x cli/dotnet-install.sh
 
 # v1 needed for some test and bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 1.0 -version 3.0.100-preview5-011568 -NoPath
+cli/dotnet-install.sh -i cli -c 1.0 -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
