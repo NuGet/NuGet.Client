@@ -191,9 +191,13 @@ Function Install-DotnetCLI {
     $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
     $CliBranchesForTesting = $CliBranchListForTesting.Split(';');
     ForEach ($CliBranchForTesting in $CliBranchesForTesting){
+        $version = 'latest'
+        if ($CliBranchForTesting.Contains("3.0")){
+            $version = '3.0.100-preview5-011568'
+        }
         $cli = @{
             Root = $CLIRoot
-            Version = 'latest'
+            Version = $version
             Channel = $CliBranchForTesting.Trim()
         }
     
