@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,9 +10,13 @@ using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine.XPlat
 {
+    /// <summary>
+    /// A class to simplify holding all of the information
+    /// about a project when using list
+    /// </summary>
     internal class ProjectInfo
     {
-        public ProjectInfo(string projectName, string projectPath, ProjectStyle projectStyle)
+        internal ProjectInfo(string projectName, string projectPath, ProjectStyle projectStyle)
         {
             ProjectName = projectName;
             ProjectPath = projectPath;
@@ -17,10 +24,10 @@ namespace NuGet.CommandLine.XPlat
             _targetFrameworkInfos = new List<TargetFrameworkInfo>();
         }
 
-        public string ProjectName { get; }
-        public string ProjectPath { get; }
-        public ProjectStyle ProjectStyle { get; }
-        public IEnumerable<TargetFrameworkInfo> TargetFrameworkInfos
+        internal string ProjectName { get; }
+        internal string ProjectPath { get; }
+        internal ProjectStyle ProjectStyle { get; }
+        internal IEnumerable<TargetFrameworkInfo> TargetFrameworkInfos
         {
             get
             {
@@ -30,7 +37,7 @@ namespace NuGet.CommandLine.XPlat
 
         private List<TargetFrameworkInfo> _targetFrameworkInfos;
 
-        public void AddTargetFrameworkInfo(TargetFrameworkInfo targetFrameworkInfo)
+        internal void AddTargetFrameworkInfo(TargetFrameworkInfo targetFrameworkInfo)
         {
             _targetFrameworkInfos.Add(targetFrameworkInfo);
         }

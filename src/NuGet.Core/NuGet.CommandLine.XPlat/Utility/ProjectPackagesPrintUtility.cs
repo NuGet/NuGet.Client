@@ -16,32 +16,33 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <summary>
         /// A function that prints all the package references of a project
         /// </summary>
-        /// <param name="packages">A list of framework packages. Check <see cref="TargetFrameworkInfo"/></param>
+        /// <param name="targetFrameworkInfos">A list of framework packages. Check <see cref="TargetFrameworkInfo"/></param>
         /// <param name="projectName">The project name</param>
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated">Whether outdated flag exists or not</param>
         /// <param name="autoReferenceFound">An out to return whether autoreference was found</param>
-        internal static void PrintPackages(IEnumerable<TargetFrameworkInfo> packages,
+        internal static void PrintPackages(IEnumerable<TargetFrameworkInfo> targetFrameworkInfos,
            string projectName, bool transitive, bool outdated, out bool autoReferenceFound)
         {
             autoReferenceFound = false;
 
             PrintPackageHeader(projectName, outdated);
 
-            foreach (var frameworkPackages in packages)
+            foreach (var frameworkPackages in targetFrameworkInfos)
             {
                 autoReferenceFound = PrintOneFramework(transitive, outdated, autoReferenceFound, frameworkPackages);
             }
         }
 
-        private static bool PrintOneFramework(bool transitive, bool outdated, bool autoReferenceFound, TargetFrameworkInfo frameworkPackages)
+        private static bool PrintOneFramework(bool transitive, bool outdated,
+            bool autoReferenceFound, TargetFrameworkInfo targetFrameworkInfo)
         {
-            var frameworkTopLevelPackages = frameworkPackages.TopLevelPackages;
-            var frameworkTransitivePackages = frameworkPackages.TransitivePackages;
+            var topLevelPackages = targetFrameworkInfo.TopLevelPackages;
+            var transitivePackages = targetFrameworkInfo.TransitivePackages;
 
             //If no packages exist for this framework, print the
             //appropriate message
-            if (!frameworkTopLevelPackages.Any() && !frameworkTransitivePackages.Any())
+            if (!topLevelPackages.Any() && !transitivePackages.Any())
             {
                 Console.ForegroundColor = ConsoleColor.Blue;
 
@@ -60,27 +61,28 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 //Print name of the framework
                 Console.ForegroundColor = ConsoleColor.Blue;
-                Console.WriteLine(string.Format("   [{0}]: ", frameworkPackages.TargetFramework.GetShortFolderName()));
+                Console.WriteLine(string.Format("   [{0}]: ", targetFrameworkInfo.TargetFramework.GetShortFolderName()));
                 Console.ResetColor();
 
                 //Print top-level packages
-                if (frameworkTopLevelPackages.Any())
+                if (topLevelPackages.Any())
                 {
                     var likelyTransitiveFound = false;
                     var autoRefWithinPackagesList = false;
 
-                    PackagesTable(frameworkTopLevelPackages, false, outdated, out likelyTransitiveFound, out autoRefWithinPackagesList);
+                    PackagesTable(topLevelPackages, false, outdated,
+                        out likelyTransitiveFound, out autoRefWithinPackagesList);
                     autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
 
                 }
 
                 //Print transitive pacakges
-                if (transitive && frameworkTransitivePackages.Any())
+                if (transitive && transitivePackages.Any())
                 {
                     var autoRefWithinPackagesList = false;
                     var likelyTransitiveFound = false;
 
-                    PackagesTable(frameworkTransitivePackages, true, outdated, out likelyTransitiveFound, out autoRefWithinPackagesList);
+                    PackagesTable(transitivePackages, true, outdated, out likelyTransitiveFound, out autoRefWithinPackagesList);
                     autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
                 }
             }
