@@ -193,7 +193,7 @@ Function Install-DotnetCLI {
     ForEach ($CliBranchForTesting in $CliBranchesForTesting){
         $cli = @{
             Root = $CLIRoot
-            Version = 'latest'
+            Version = '3.0.100-preview5-011568'
             Channel = $CliBranchForTesting.Trim()
         }
     
