@@ -480,15 +480,15 @@ namespace NuGet.CommandLine.XPlat
             var latestVersionsRequests = new List<Task>();
 
             //Prepare requests for each of the packages
-            foreach (var package in packageVersions)
+            foreach (var packageVersion in packageVersions)
             {
-                latestVersionsRequests.AddRange(PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, packageVersions));
+                latestVersionsRequests.AddRange(PrepareLatestVersionsRequests(packageVersion.Key, listPackageArgs, providers, packageVersions));
             }
 
             //Make the calls to the sources
-            foreach (var latestVersionTask in latestVersionsRequests)
+            foreach (var latestVersionRequest in latestVersionsRequests)
             {
-                contactSourcesRunningTasks.Add(Task.Run(() => latestVersionTask));
+                contactSourcesRunningTasks.Add(Task.Run(() => latestVersionRequest));
                 //Throttle if needed
                 if (maxTasks <= contactSourcesRunningTasks.Count)
                 {
@@ -506,7 +506,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packagesVersionsDict"> Unique packages that are mapped to latest versions
         /// from different sources </param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
-        private void StorePackageUpdateInformationInTargetFrameworkInfo(IEnumerable<TargetFrameworkInfo> targetFrameworkInfos,
+        private void StorePackageUpdateInformationInTargetFrameworkInfo(
+            IEnumerable<TargetFrameworkInfo> targetFrameworkInfos,
             Dictionary<string, HashSet<NuGetVersion>> packagesVersionsDict,
             ListPackageArgs listPackageArgs)
         {
@@ -558,14 +559,14 @@ namespace NuGet.CommandLine.XPlat
         /// Prepares the calls to sources for latest versions and updates
         /// the list of tasks with the requests
         /// </summary>
-        /// <param name="package">The package to get the latest version for</param>
+        /// <param name="packageId">The package id to get the latest version for</param>
         /// <param name="listPackageArgs">List args for the token and source provider></param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packageVersions">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
         /// <returns>A list of tasks for all latest versions for packages from all sources</returns>
         private IList<Task> PrepareLatestVersionsRequests(
-            string package,
+            string packageId,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, HashSet<NuGetVersion>> packageVersions)
@@ -574,7 +575,7 @@ namespace NuGet.CommandLine.XPlat
             var sources = listPackageArgs.PackageSources;
             foreach (var packageSource in sources)
             {
-                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, package, providers, packageVersions));
+                latestVersionsRequests.Add(GetLatestVersionPerSourceAsync(packageSource, listPackageArgs, packageId, providers, packageVersions));
             }
             return latestVersionsRequests;
         }
@@ -584,7 +585,7 @@ namespace NuGet.CommandLine.XPlat
         /// </summary>
         /// <param name="packageSource">The source to look for pacakges at</param>
         /// <param name="listPackageArgs">The list args for the cancellation token</param>
-        /// <param name="package">Package to look for updates for</param>
+        /// <param name="packageId">Package id to look for updates for</param>
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packageVersions">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
@@ -592,16 +593,16 @@ namespace NuGet.CommandLine.XPlat
         private async Task GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
-            string package,
+            string packageId,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
             Dictionary<string, HashSet<NuGetVersion>> packageVersions)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetVersions(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = (await dependencyInfoResource.GetVersions(packageId, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
 
-            var latestVersionsForPackage = packageVersions.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
+            var latestVersionsForPackage = packageVersions.Where(p => p.Key.Equals(packageId, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);
 
         }

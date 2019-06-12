@@ -107,8 +107,8 @@ namespace NuGet.CommandLine.XPlat
                         highestPatch.HasValue(),
                         highestMinor.HasValue(),
                         logger,
-                        settings,
-                        CancellationToken.None);
+                        CancellationToken.None,
+                        settings:settings);
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
                     

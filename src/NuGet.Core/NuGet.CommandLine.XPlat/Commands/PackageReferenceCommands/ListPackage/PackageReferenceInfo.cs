@@ -23,12 +23,12 @@ namespace NuGet.CommandLine.XPlat
         internal UpdateLevel UpdateLevel { get; set; }
 
         /// <summary>
-        /// A constructor that takes a name of a package
+        /// A constructor that takes a id of a package
         /// </summary>
-        /// <param name="name">The name of the package</param>
-        public PackageReferenceInfo(string name)
+        /// <param name="id">The id of the package</param>
+        public PackageReferenceInfo(string id)
         {
-            Id = name ?? throw new ArgumentNullException(nameof(name));
+            Id = id ?? throw new ArgumentNullException(nameof(id));
         }
     }
 }

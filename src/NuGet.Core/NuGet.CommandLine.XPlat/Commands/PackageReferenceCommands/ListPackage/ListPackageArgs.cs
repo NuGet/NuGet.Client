@@ -12,7 +12,6 @@ namespace NuGet.CommandLine.XPlat
     public class ListPackageArgs
     {
         public ILogger Logger { get; }
-        public ISettings Settings { get; }
         public string Path { get; }
         public IEnumerable<PackageSource> PackageSources { get; }
         public IEnumerable<string> Frameworks { get; }
@@ -23,6 +22,7 @@ namespace NuGet.CommandLine.XPlat
         public bool HighestPatch { get; }
         public bool HighestMinor { get; }
         public CancellationToken CancellationToken { get; }
+        public ISettings Settings { get; }
 
         /// <summary>
         /// A constructor for the arguments of list package
@@ -39,8 +39,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="highestPatch"> Bool for --highest-patch present </param>
         /// <param name="highestMinor"> Bool for --highest-minor present </param>
         /// <param name="logger"></param>
-        /// <param name="settings">TODO Add Description</param>
         /// <param name="cancellationToken"></param>
+        /// <param name="settings"></param>
         public ListPackageArgs(
             string path,
             IEnumerable<PackageSource> packageSources,
@@ -52,8 +52,8 @@ namespace NuGet.CommandLine.XPlat
             bool highestPatch,
             bool highestMinor,
             ILogger logger,
-            ISettings settings,
-            CancellationToken cancellationToken)
+            CancellationToken cancellationToken,
+            ISettings settings = null)
         {
             Path = path ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
@@ -65,8 +65,8 @@ namespace NuGet.CommandLine.XPlat
             HighestPatch = highestPatch;
             HighestMinor = highestMinor;
             Logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            Settings = settings;
             CancellationToken = cancellationToken;
+            Settings = settings;
         }
     }
 }
