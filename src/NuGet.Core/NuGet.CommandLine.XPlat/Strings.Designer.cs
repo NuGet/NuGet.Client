@@ -682,7 +682,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project &apos;{0}&apos; has the following package references.
+        ///   Looks up a localized string similar to &apos;{0}&apos; targets {1}, packages:.
         /// </summary>
         internal static string ListPkg_ProjectHeaderLog {
             get {
@@ -691,7 +691,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Project `{0}` has the following updates to its packages.
+        ///   Looks up a localized string similar to &apos;{0}&apos; targets {1}, available version updates:.
         /// </summary>
         internal static string ListPkg_ProjectUpdatesHeaderLog {
             get {

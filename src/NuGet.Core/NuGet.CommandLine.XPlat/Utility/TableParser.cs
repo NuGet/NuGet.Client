@@ -30,6 +30,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 headerSpace = 0;
             }
+
             var arrValues = new string[values.Length + headerSpace, valueSelectors.Length];
 
             // Fill headers
@@ -47,17 +48,15 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
-                    if (colIndex == 1)
+                    var funcResult = valueSelectors[colIndex].Invoke(values[rowIndex - headerSpace]);
+                    if (funcResult != null)
                     {
-                        arrValues[rowIndex, colIndex] = "> " + valueSelectors[colIndex]
-                      .Invoke(values[rowIndex - headerSpace]).ToString();
+                        arrValues[rowIndex, colIndex] = funcResult.ToString();
                     }
                     else
                     {
-                        arrValues[rowIndex, colIndex] = valueSelectors[colIndex]
-                      .Invoke(values[rowIndex - headerSpace]).ToString();
+                        arrValues[rowIndex, colIndex] = "";
                     }
-                    
                 }
             }
 
@@ -91,7 +90,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         private static int[] GetMaxColumnsWidth(string[,] arrValues)
         {
             var maxColumnsWidth = new int[arrValues.GetLength(1)];
-            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+            for (var colIndex = 1; colIndex < arrValues.GetLength(1); colIndex++)
             {
                 for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
                 {

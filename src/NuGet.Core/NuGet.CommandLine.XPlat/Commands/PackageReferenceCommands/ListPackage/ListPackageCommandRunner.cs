@@ -81,6 +81,11 @@ namespace NuGet.CommandLine.XPlat
                     }
                 }
 
+                if (!listPackageArgs.IncludeOutdated)
+                {
+                    OutputProject(projectInfo, listPackageArgs);
+                }
+
                 // TODO: do we need to unload the project anymore???
                 //ProjectCollection.GlobalProjectCollection.UnloadProject(project);
             }
@@ -97,8 +102,20 @@ namespace NuGet.CommandLine.XPlat
                     StorePackageUpdateInformationInTargetFrameworkInfo(projectInfo.TargetFrameworkInfos, packageVersions, listPackageArgs);
                 }
 
-                OutputProject(projectInfo, listPackageArgs);
+                if (listPackageArgs.IncludeOutdated)
+                {
+                    OutputProject(projectInfo, listPackageArgs);
+                }
             }
+
+            //LEGEND
+            Console.WriteLine();
+            //TODO: resx
+            Console.WriteLine("LEGEND:");
+            Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            //TODO: resx
+            Console.WriteLine("(D) : Direct reference");
+            Console.WriteLine("(T) : Transitive reference");
         }
 
         private static void CollectAllVersionsOfAllPackages(Dictionary<string, HashSet<NuGetVersion>> packageVersions, PackageReferenceInfo packageReferenceInfo)
@@ -159,17 +176,22 @@ namespace NuGet.CommandLine.XPlat
                 else
                 {
                     var packagesConfigPath = GetPackagesConfigFile(projectPath);
-                    if (packagesConfigPath != null)
+                    if (packagesConfigPath != null && File.Exists(packagesConfigPath))
                     {
                         if (project != null)
                         {
-                            var targetFrameworkMoniker = project.GetProperty("TargetFrameworkMoniker").EvaluatedValue;
+                            var targetFrameworkMoniker = project.GetProperty("TargetFrameworkMoniker")?.EvaluatedValue;
                             projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker, packagesConfigPath, listPackageArgs);
                         }
                         else  // Project-less PC projects (like website projects)
                         {
                             projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker: null, packagesConfigPath, listPackageArgs);
                         }
+                    }
+                    else
+                    {
+                        projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath),
+                            projectPath, ProjectStyle.Unknown);
                     }
                 }
             }
@@ -179,9 +201,10 @@ namespace NuGet.CommandLine.XPlat
 
         private void OutputProject(ProjectInfo projectInfo, ListPackageArgs listPackageArgs)
         {
-            var autoReferenceFound = false;
             var projectPath = projectInfo.ProjectPath;
             var projectName = projectInfo.ProjectName;
+
+            Console.WriteLine();
 
             //No packages means that no package references at all were found 
             if (!projectInfo.TargetFrameworkInfos.Any())
@@ -228,31 +251,11 @@ namespace NuGet.CommandLine.XPlat
                 {
                     //Printing packages of a single project and keeping track if
                     //an auto-referenced package was printed
-                    ProjectPackagesPrintUtility.PrintPackages(projectInfo.TargetFrameworkInfos,
+                    ProjectPackagesPrintUtility.PrintPackages(projectInfo,
                                                               projectName,
                                                               listPackageArgs.IncludeTransitive,
-                                                              listPackageArgs.IncludeOutdated,
-                                                              out var autoRefFoundWithinProject);
-                    autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
+                                                              listPackageArgs.IncludeOutdated);
                 }
-            }
-
-            //If any auto-references were found, a line is printed
-            //explaining what (A) means
-            if (autoReferenceFound)
-            {
-                Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
-            }
-
-            //TODO: don't hard code
-            bool likelyTransitiveFound = true;
-            if (likelyTransitiveFound)
-            {
-                //TODO: string table.
-                //TDDO: description.
-                //Console.WriteLine("(LT) : Likely Transitive - in a packages config project **** ");
-
-                //Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             }
         }
 
@@ -400,7 +403,8 @@ namespace NuGet.CommandLine.XPlat
                     topLevelPackages.Add(packageReferenceInfo);
                     if (mapOfDependencies.ContainsKey(depInfo.Id))
                     {
-                        packageReferenceInfo.LikelyTransitive = true;
+                        //TODO: should we version check for LT?
+                        packageReferenceInfo.Transitive = true;
                     }
                 }
             }

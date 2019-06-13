@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.XPlat
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
         {
             var sln = SolutionFile.Parse(solutionPath);
-            return sln.ProjectsInOrder.Select(p => p.AbsolutePath);
+            return sln.ProjectsInOrder.OrderBy(p => p.ProjectName).Select(p => p.AbsolutePath);
         }
 
         /// <summary>
@@ -376,6 +376,8 @@ namespace NuGet.CommandLine.XPlat
                 requestedTargets = filteredTargets;
             }
 
+            bool projFileRead = false;
+
             // Filtering the Targets to ignore TargetFramework + RID combination, only keep TargetFramework in requestedTargets.
             // So that only one section will be shown for each TFM.
             requestedTargets = requestedTargets.Where(target => target.RuntimeIdentifier == null).ToList();
@@ -415,8 +417,6 @@ namespace NuGet.CommandLine.XPlat
                         var topLevelPackage = matchingPackages.Single();
                         PackageReferenceInfo packageReferenceInfo = null;
 
-                        bool projFileRead = false;
-
                         //If the package is not auto-referenced, get the version from the project file. Otherwise fall back on the assets file
                         if (!topLevelPackage.AutoReferenced)
                         {
@@ -428,8 +428,7 @@ namespace NuGet.CommandLine.XPlat
                             }
                             catch (Exception)
                             {
-                                //TODO: should we tell user couldn't load project file???
-                                Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
+                                // targetFrameworkInfo.AssetsFileOnly will be true
                             }      
                         }
 
@@ -455,7 +454,8 @@ namespace NuGet.CommandLine.XPlat
                     else if (transitive)
                     {
                         var installedPackage = new PackageReferenceInfo(library.Name) {
-                            ResolvedVersion = library.Version
+                            ResolvedVersion = library.Version,
+                            Transitive = true
                         };
                         transitivePackages.Add(installedPackage);
                     }
@@ -465,6 +465,7 @@ namespace NuGet.CommandLine.XPlat
                     target.TargetFramework,
                     topLevelPackages,
                     transitivePackages);
+                targetFrameworkInfo.AssetsFileOnly = !projFileRead;
 
                 resultPackages.Add(targetFrameworkInfo);
             }

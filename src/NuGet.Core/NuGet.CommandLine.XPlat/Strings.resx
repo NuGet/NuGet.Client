@@ -125,7 +125,7 @@
   </data>
   <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
     <value>Argument cannot be null or empty</value>
-  </data>  
+  </data>
   <data name="ConsoleConfirmMessage" xml:space="preserve">
     <value>{0} (y/N) </value>
   </data>
@@ -499,7 +499,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>No assets file was found for `{0}`. Please run restore before running this command.</value>
   </data>
   <data name="ListPkg_ProjectHeaderLog" xml:space="preserve">
-    <value>Project '{0}' has the following package references</value>
+    <value>'{0}' targets {1}, packages:</value>
   </data>
   <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
     <value>(A) : Auto-referenced package.</value>
@@ -571,7 +571,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The given project `{0}` has no updates given the current sources.</value>
   </data>
   <data name="ListPkg_ProjectUpdatesHeaderLog" xml:space="preserve">
-    <value>Project `{0}` has the following updates to its packages</value>
+    <value>'{0}' targets {1}, available version updates:</value>
   </data>
   <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
     <value>The following sources were used:</value>
