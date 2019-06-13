@@ -5,15 +5,12 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
 using NuGet.Common;
-using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Test.Utility.Signing;
@@ -22,20 +19,26 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
-    public class AllowListVerificationProviderTests
+    public class AllowListVerificationProviderTests : IDisposable
     {
         private const string _noMatchInAllowList = "The package signature certificate fingerprint does not match any certificate fingerprint in the allow list.";
         private const string _noAllowList = "A list of trusted signers is required but none was found.";
 
-        private SigningTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
-        private TrustedTestCert<TestCertificate> _trustedRepoTestCert;
+        private readonly SigningTestFixture _testFixture;
+        private readonly TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
+        private readonly TrustedTestCert<TestCertificate> _trustedRepoTestCert;
 
         public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedAuthorTestCert = _testFixture.TrustedTestCertificate;
             _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+        }
+
+        public void Dispose()
+        {
+            // Do not dispose _trustedAuthorTestCert as it is shared across other test classes.
+            _trustedRepoTestCert.Dispose();
         }
 
         [CIOnlyFact]
@@ -218,7 +221,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-        
+
         [CIOnlyFact]
         public async Task GetTrustResultAsync_RepositorySignedPackage_AllowListWithAuthorTarget_AndPrimaryPlacement_ErrorAsync()
         {
@@ -532,7 +535,7 @@ namespace NuGet.Packaging.FuncTest
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api/index.json"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api/index.json"));
 
                 using (var packageReader = new PackageArchiveReader(repoSignedPackagePath))
                 {
@@ -561,7 +564,8 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             using (var dir = TestDirectory.Create())
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
-            using (var packageSignatureCertificate = SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert)
+            using (var trustedCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (var packageSignatureCertificate = trustedCertificate.Source.Cert)
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
                 var fingerprint = "abcdefg";
@@ -578,7 +582,7 @@ namespace NuGet.Packaging.FuncTest
                 };
                 var verifier = new PackageSignatureVerifier(trustProviders);
 
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(new X509Certificate2(repoCertificate), nupkg, dir, new Uri(@"https://v3serviceIndex.test/api/index.json"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api/index.json"));
 
                 using (var packageReader = new PackageArchiveReader(repoSignedPackagePath))
                 {
@@ -616,7 +620,7 @@ namespace NuGet.Packaging.FuncTest
                 var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
 
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate),
+                    repoCertificate,
                     nupkg,
                     dir,
                     v3ServiceIndex: new Uri("https://v3serviceIndex.test/api/index.json"),
@@ -666,7 +670,7 @@ namespace NuGet.Packaging.FuncTest
                 var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
 
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate),
+                    repoCertificate,
                     nupkg,
                     dir,
                     v3ServiceIndex: new Uri("https://v3serviceIndex.test/api/index.json"),
@@ -717,7 +721,7 @@ namespace NuGet.Packaging.FuncTest
                 var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
 
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate),
+                    repoCertificate,
                     nupkg,
                     dir,
                     v3ServiceIndex: new Uri("https://v3serviceIndex.test/api/index.json"));
@@ -801,7 +805,7 @@ namespace NuGet.Packaging.FuncTest
                     resultsWithWarnings.Count().Should().Be(0);
                     totalErrorIssues.Count().Should().Be(0);
                     totalWarningIssues.Count().Should().Be(0);
-                }     
+                }
             }
         }
 
@@ -857,7 +861,6 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
         }
-
 
         [CIOnlyFact]
         public async Task GetTrustResultAsync_RepositoryCountersignedPackage_PackageSignedWithCertFromAllowList_WithOwnerNotInOwnersList_AuthorInList_RequireMode_SuccessAsync()
@@ -978,7 +981,7 @@ namespace NuGet.Packaging.FuncTest
                 var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
 
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate),
+                    repoCertificate,
                     nupkg,
                     dir,
                     v3ServiceIndex: new Uri("https://v3serviceIndex.test/api/index.json"),
@@ -1028,7 +1031,7 @@ namespace NuGet.Packaging.FuncTest
                 var fingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, hashAlgorithmName);
 
                 var signedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(
-                    new X509Certificate2(repoCertificate),
+                    repoCertificate,
                     nupkg,
                     dir,
                     v3ServiceIndex: new Uri("https://v3serviceIndex.test/api/index.json"),
@@ -1097,31 +1100,6 @@ namespace NuGet.Packaging.FuncTest
             // NoAllowUntrusted_AllowListNotRequired_EmptyAllowList_Succeess
             yield return new object[]
             { GetSettings(false), new List<CertificateHashAllowListEntry>(), true, true, 0, 0, null };
-        }
-
-        private static RepositorySignatureInfo CreateTestRepositorySignatureInfo(List<X509Certificate2> certificates, bool allSigned)
-        {
-            var repoCertificateInfo = new List<IRepositoryCertificateInfo>();
-
-            foreach (var cert in certificates)
-            {
-                var fingerprintString = CertificateUtility.GetHashString(cert, HashAlgorithmName.SHA256);
-
-                repoCertificateInfo.Add(new TestRepositoryCertificateInfo()
-                {
-                    ContentUrl = @"https://v3serviceIndex.test/api/index.json",
-                    Fingerprints = new Fingerprints(new Dictionary<string, string>()
-                    {
-                        { HashAlgorithmName.SHA256.ConvertToOidString(), fingerprintString }
-                    }),
-                    Issuer = cert.Issuer,
-                    Subject = cert.Subject,
-                    NotBefore = cert.NotBefore,
-                    NotAfter = cert.NotAfter
-                });
-            }
-
-            return new RepositorySignatureInfo(allSigned, repoCertificateInfo);
         }
     }
 }

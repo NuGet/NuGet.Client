@@ -21,17 +21,23 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
-    public class ClientPolicyTests
+    public class ClientPolicyTests : IDisposable
     {
         private readonly SigningTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
-        private TrustedTestCert<TestCertificate> _trustedRepoTestCert;
+        private readonly TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
+        private readonly TrustedTestCert<TestCertificate> _trustedRepoTestCert;
 
         public ClientPolicyTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
             _trustedAuthorTestCert = _testFixture.TrustedTestCertificate;
             _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+        }
+
+        public void Dispose()
+        {
+            // Do not dispose _trustedAuthorTestCert as it is shared across other test classes.
+            _trustedRepoTestCert.Dispose();
         }
 
         [CIOnlyTheory]
