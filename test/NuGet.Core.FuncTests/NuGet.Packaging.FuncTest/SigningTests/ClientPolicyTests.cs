@@ -21,17 +21,20 @@ using Xunit;
 namespace NuGet.Packaging.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
-    public class ClientPolicyTests
+    public class ClientPolicyTests : IDisposable
     {
         private readonly SigningTestFixture _testFixture;
-        private TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
-        private TrustedTestCert<TestCertificate> _trustedRepoTestCert;
+        private readonly TrustedTestCert<TestCertificate> _trustedRepoTestCert;
 
         public ClientPolicyTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedAuthorTestCert = _testFixture.TrustedTestCertificate;
             _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
+        }
+
+        public void Dispose()
+        {
+            _trustedRepoTestCert.Dispose();
         }
 
         [CIOnlyTheory]
@@ -45,7 +48,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
@@ -100,7 +103,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
@@ -163,7 +166,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
@@ -230,7 +233,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
@@ -290,7 +293,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
@@ -350,7 +353,7 @@ namespace NuGet.Packaging.FuncTest
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var authorCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var authorCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var repoCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var authorCertificateFingerprintString = SignatureTestUtility.GetFingerprint(authorCertificate, HashAlgorithmName.SHA256);
