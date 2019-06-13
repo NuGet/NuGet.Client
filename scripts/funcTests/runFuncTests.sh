@@ -52,10 +52,10 @@ do
 	echo $DOTNET_BRANCH
 
 	version="latest"
-	if [[ $DOTNET_BRANCH == *"3.0"* ]]
-	then
-	    version="3.0.100-preview5-011568"
-	fi
+#	if [[ $DOTNET_BRANCH == *"3.0"* ]]
+#	then
+#	    version="3.0.100-preview5-011568"
+#	fi
 
 	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version $version
 
