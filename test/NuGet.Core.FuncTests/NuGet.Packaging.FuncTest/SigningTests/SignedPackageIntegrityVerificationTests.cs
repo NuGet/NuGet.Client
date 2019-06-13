@@ -233,11 +233,11 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
-                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
                     using (var signatureEntryStream = signatureEntry.Open())
                     {
                         signatureStream.CopyTo(signatureEntryStream);
@@ -271,11 +271,11 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
-                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
                     using (var signatureEntryStream = signatureEntry.Open())
                     {
                         signatureStream.CopyTo(signatureEntryStream);
@@ -297,11 +297,11 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
-                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
                     using (var signatureEntryStream = signatureEntry.Open())
                     {
                         signatureStream.CopyTo(signatureEntryStream);
@@ -335,11 +335,11 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signarture = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
-                    using (var signatureStream = new MemoryStream(signarture.GetBytes()))
+                    using (var signatureStream = new MemoryStream(signature.GetBytes()))
                     using (var signatureEntryStream = signatureEntry.Open())
                     {
                         signatureStream.CopyTo(signatureEntryStream);
@@ -952,33 +952,30 @@ namespace NuGet.Packaging.FuncTest
             // Arrange
             var nupkg = new SimpleTestPackageContext();
 
-            string expectedHash = null;
-
-            using (var zipStream = await nupkg.CreateAsStreamAsync())
+            using (MemoryStream packageStream = await nupkg.CreateAsStreamAsync())
             {
-                expectedHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(zipStream));
-            }
+                string expectedHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(packageStream));
 
-            using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            {
-                var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
-
-                var verifier = new PackageSignatureVerifier(_trustProviders);
-                using (var stream = File.OpenRead(signedPackagePath))
-                using (var packageReader = new PackageArchiveReader(stream, leaveStreamOpen: true))
+                using (var dir = TestDirectory.Create())
+                using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
                 {
-                    // Act
-                    var contentHash = packageReader.GetContentHash(CancellationToken.None);
+                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, packageStream, nupkg.Id, nupkg.Version, dir);
 
-                    stream.Seek(offset: 0, origin: SeekOrigin.Begin);
-                    var wholePackageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(stream));
+                    var verifier = new PackageSignatureVerifier(_trustProviders);
+                    using (var stream = File.OpenRead(signedPackagePath))
+                    using (var packageReader = new PackageArchiveReader(stream, leaveStreamOpen: true))
+                    {
+                        // Act
+                        var contentHash = packageReader.GetContentHash(CancellationToken.None);
 
-                    // Assert
-                    contentHash.Should().NotBeNullOrEmpty();
-                    Assert.Equal(expectedHash, contentHash);
-                    Assert.NotEqual(wholePackageHash, contentHash);
+                        stream.Seek(offset: 0, origin: SeekOrigin.Begin);
+                        var wholePackageHash = Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(stream));
 
+                        // Assert
+                        contentHash.Should().NotBeNullOrEmpty();
+                        Assert.Equal(expectedHash, contentHash);
+                        Assert.NotEqual(wholePackageHash, contentHash);
+                    }
                 }
             }
         }
@@ -1005,7 +1002,7 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var reader = new BinaryReader(packageStream, _readerEncoding, leaveOpen: true))
                 {
-                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader, validateSignatureEntry:false);
+                    var metadata = SignedPackageArchiveIOUtility.ReadSignedArchiveMetadata(reader, validateSignatureEntry: false);
 
                     Assert.NotNull(metadata);
                 }
