@@ -38,7 +38,7 @@ curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/maste
 chmod +x cli/dotnet-install.sh
 
 # v1 needed for some test and bootstrapping testing version
-cli/dotnet-install.sh -i cli -c 1.0 -NoPath
+cli/dotnet-install.sh -i cli -c 1.0 
 
 DOTNET="$(pwd)/cli/dotnet"
 
@@ -57,7 +57,7 @@ do
 	    version="3.0.100-preview5-011568"
 	fi
 
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version $version -NoPath
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version $version
 
 
 	# Display current version
