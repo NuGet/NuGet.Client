@@ -25,19 +25,16 @@ namespace NuGet.Packaging.FuncTest
         private const string _noAllowList = "A list of trusted signers is required but none was found.";
 
         private readonly SigningTestFixture _testFixture;
-        private readonly TrustedTestCert<TestCertificate> _trustedAuthorTestCert;
         private readonly TrustedTestCert<TestCertificate> _trustedRepoTestCert;
 
         public AllowListVerificationProviderTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedAuthorTestCert = _testFixture.TrustedTestCertificate;
             _trustedRepoTestCert = SigningTestUtility.GenerateTrustedTestCertificate();
         }
 
         public void Dispose()
         {
-            // Do not dispose _trustedAuthorTestCert as it is shared across other test classes.
             _trustedRepoTestCert.Dispose();
         }
 
@@ -48,7 +45,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 var certificateFingerprintString = SignatureTestUtility.GetFingerprint(testCertificate, HashAlgorithmName.SHA256);
 
@@ -97,7 +94,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
@@ -137,7 +134,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
@@ -183,7 +180,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var testCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(testCertificate, nupkg, dir);
 
@@ -371,7 +368,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var certificateFingerprintString = SignatureTestUtility.GetFingerprint(counterCertificate, HashAlgorithmName.SHA256);
@@ -421,7 +418,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var certificateFingerprintString = SignatureTestUtility.GetFingerprint(counterCertificate, HashAlgorithmName.SHA256);
@@ -471,7 +468,7 @@ namespace NuGet.Packaging.FuncTest
             var nupkg = new SimpleTestPackageContext();
 
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var certificateFingerprintString = SignatureTestUtility.GetFingerprint(counterCertificate, HashAlgorithmName.SHA256);
@@ -764,7 +761,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -816,7 +813,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -869,7 +866,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
@@ -923,7 +920,7 @@ namespace NuGet.Packaging.FuncTest
 
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var primaryCertificate = new X509Certificate2(_trustedAuthorTestCert.Source.Cert))
+            using (var primaryCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
             using (var counterCertificate = new X509Certificate2(_trustedRepoTestCert.Source.Cert))
             {
                 var hashAlgorithmName = HashAlgorithmName.SHA256;
