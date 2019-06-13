@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Frameworks;
 
 namespace NuGet.CommandLine.XPlat
@@ -16,6 +17,9 @@ namespace NuGet.CommandLine.XPlat
         internal NuGetFramework TargetFramework { get; }
         internal IEnumerable<PackageReferenceInfo> TopLevelPackages { get; set; }
         internal IEnumerable<PackageReferenceInfo> TransitivePackages { get; set; }
+        internal bool AssetsFileOnly { get; set; }
+        internal bool ContainsAutoReference { get { return TopLevelPackages.Where(p => p.AutoReference == true).Any(); } }
+        internal bool ContainsLikelyTransitive { get { return TopLevelPackages.Where(p => p.Transitive == true).Any(); } }
 
         /// <summary>
         /// A constructor that takes a framework name, and

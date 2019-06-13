@@ -19,8 +19,11 @@ namespace NuGet.CommandLine.XPlat
         internal NuGetVersion ResolvedVersion { get; set; }
         internal NuGetVersion LatestVersion { get; set; }
         internal bool AutoReference { get; set; }
-        internal bool LikelyTransitive { get; set; }
+        internal bool Transitive { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
+        internal string PrefixString { get { return AutoReference ? "  A" : (Transitive ? "  T" : "  D"); } }
+        internal bool IsFirstItem { get; set; }
+
 
         /// <summary>
         /// A constructor that takes a id of a package
