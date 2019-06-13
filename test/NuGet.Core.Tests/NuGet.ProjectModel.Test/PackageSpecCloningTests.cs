@@ -690,7 +690,6 @@ namespace NuGet.ProjectModel.Test
             Assert.NotEqual(originalTargetFrameworkInformation, cloneToTestFrameworkReferences);
             Assert.Equal(2, cloneToTestFrameworkReferences.FrameworkReferences.Count);
 
-
             var cloneToTestRuntimeIdentifierGraphPath = originalTargetFrameworkInformation.Clone();
 
             // Act

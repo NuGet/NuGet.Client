@@ -123,12 +123,12 @@ namespace NuGet.Commands
                 {
                     // PCL Projects with Supports have a runtime graph but no matching framework.
                     var runtimeGraphPath = _request.Project.TargetFrameworks.
-                            FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))?
-                            .RuntimeIdentifierGraphPath;
+                            FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))?.RuntimeIdentifierGraphPath;
 
                     RuntimeGraph projectProviderRuntimeGraph = null;
                     if (runtimeGraphPath != null &&
-                        !projectProvidedRuntimeIdentifierGraphs.TryGetValue(runtimeGraphPath, out projectProviderRuntimeGraph)){
+                        !projectProvidedRuntimeIdentifierGraphs.TryGetValue(runtimeGraphPath, out projectProviderRuntimeGraph))
+                    {
 
                         projectProviderRuntimeGraph = GetRuntimeGraph(runtimeGraphPath);
                         success &= projectProviderRuntimeGraph != null;
