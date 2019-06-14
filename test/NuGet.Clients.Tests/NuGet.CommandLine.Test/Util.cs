@@ -58,7 +58,8 @@ namespace NuGet.CommandLine.Test
                 {
                     { "NUGET_PERSIST_DG", "true" },
                     { "NUGET_PERSIST_DG_PATH", dgPath },
-                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder },
+                    { "COREHOST_TRACE","1" }
                 };
 
             var args = new string[] {
