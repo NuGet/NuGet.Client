@@ -448,7 +448,7 @@ phases:
       packageType: sdk
       version: 3.0.x
       includePreviewVersions: true
-      installationPath: $(Agent.ToolsDirectory)/dotnet
+      installationPath: $(Agent.TempDirectory)/dotnet
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
