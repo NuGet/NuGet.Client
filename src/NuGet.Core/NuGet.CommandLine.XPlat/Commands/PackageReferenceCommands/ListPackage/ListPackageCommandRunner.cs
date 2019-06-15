@@ -38,9 +38,14 @@ namespace NuGet.CommandLine.XPlat
                         listPackageArgs.Path));
                 return;
             }
+
+            var solutionDirectoryPath = Path.GetExtension(listPackageArgs.Path).Equals(".sln")
+                ? Path.GetDirectoryName(listPackageArgs.Path)
+                : null;
+
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
+            var projectsPaths = solutionDirectoryPath != null ?
                            MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
@@ -65,7 +70,7 @@ namespace NuGet.CommandLine.XPlat
                     continue;
                 }
 
-                var projectInfo = await ProcessProject(projectPath, listPackageArgs, msBuildUtility);
+                var projectInfo = await ProcessProject(projectPath, listPackageArgs, msBuildUtility, solutionDirectoryPath);
                 projectInfos.Add(projectInfo);
 
                 foreach (var targetFrameworkInfo in projectInfo.TargetFrameworkInfos)
@@ -114,10 +119,16 @@ namespace NuGet.CommandLine.XPlat
             Console.WriteLine();
             //TODO: resx
             Console.WriteLine("LEGEND:");
-            Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            //Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
             //TODO: resx
-            Console.WriteLine("(D) : Direct reference");
-            Console.WriteLine("(T) : Transitive reference");
+            Console.WriteLine("(a) : Auto reference by SDK");
+            Console.WriteLine("(d) : Direct reference");
+            Console.WriteLine("(D) : Direct reference - in common for all TargetFrameworks");
+            if (listPackageArgs.IncludeTransitive)
+            {
+                Console.WriteLine("(t) : Transitive reference");
+                Console.WriteLine("(T) : Transitive reference - in common for all TargetFrameworks");
+            }
         }
 
         private static void CollectAllVersionsOfAllPackages(Dictionary<string, HashSet<NuGetVersion>> packageVersions, PackageReferenceInfo packageReferenceInfo)
@@ -139,7 +150,8 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private async Task<ProjectInfo> ProcessProject(string projectPath, ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuildUtility)
+        private async Task<ProjectInfo> ProcessProject(string projectPath, ListPackageArgs listPackageArgs,
+            MSBuildAPIUtility msBuildUtility, string solutionDirectoryPath)
         {
             ProjectInfo projectInfo = null;
             Project project = null;
@@ -158,11 +170,11 @@ namespace NuGet.CommandLine.XPlat
 
                     if (File.Exists(assetsPath))
                     {
-                        projectInfo = ProcessPRBasedProject(projectPath, assetsPath, listPackageArgs, msBuildUtility);
+                        projectInfo = ProcessPRBasedProject(projectPath, solutionDirectoryPath, assetsPath, listPackageArgs, msBuildUtility);
                     }
                     else
                     {
-                        projectInfo = new ProjectInfo(projectPath, null, ProjectStyle.Unknown);
+                        projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath), projectPath, solutionDirectoryPath, ProjectStyle.Unknown);
                     }
                 }
             }
@@ -173,7 +185,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
-                    projectInfo = ProcessPRBasedProject(projectPath, assetsPath, listPackageArgs, msBuildUtility);
+                    projectInfo = ProcessPRBasedProject(projectPath, solutionDirectoryPath, assetsPath, listPackageArgs, msBuildUtility);
                 }
                 else
                 {
@@ -183,17 +195,17 @@ namespace NuGet.CommandLine.XPlat
                         if (project != null)
                         {
                             var targetFrameworkMoniker = project.GetProperty("TargetFrameworkMoniker")?.EvaluatedValue;
-                            projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker, packagesConfigPath, listPackageArgs);
+                            projectInfo = await ProcessPCBasedProject(projectPath, solutionDirectoryPath, targetFrameworkMoniker, packagesConfigPath, listPackageArgs);
                         }
                         else  // Project-less PC projects (like website projects)
                         {
-                            projectInfo = await ProcessPCBasedProject(projectPath, targetFrameworkMoniker: null, packagesConfigPath, listPackageArgs);
+                            projectInfo = await ProcessPCBasedProject(projectPath, solutionDirectoryPath, targetFrameworkMoniker: null, packagesConfigPath, listPackageArgs);
                         }
                     }
                     else
                     {
                         projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath),
-                            projectPath, ProjectStyle.Unknown);
+                            projectPath, solutionDirectoryPath, ProjectStyle.Unknown);
                     }
                 }
             }
@@ -203,16 +215,13 @@ namespace NuGet.CommandLine.XPlat
 
         private void OutputProject(ProjectInfo projectInfo, ListPackageArgs listPackageArgs, bool showHeaders)
         {
-            var projectPath = projectInfo.ProjectPath;
-            var projectName = projectInfo.ProjectName;
-
             Console.WriteLine();
 
             //No packages means that no package references at all were found 
             if (!projectInfo.TargetFrameworkInfos.Any())
             {
-                // TODO: work on string...and make it a string table
-                Console.WriteLine("Project '" + projectName + "' was not able to be loaded with .NET Core MsBuild - ******");
+                // TODO: resx
+                Console.WriteLine("Project '" + projectInfo.ProjectPath + "' was not able to be loaded with .NET Core MsBuild - ******");
                 Console.WriteLine();
             }
             else
@@ -309,7 +318,7 @@ namespace NuGet.CommandLine.XPlat
         }
 
 
-        private async Task<ProjectInfo> ProcessPCBasedProject(string projectPath, string targetFrameworkMoniker, string packagesConfigPath, ListPackageArgs listPackageArgs)
+        private async Task<ProjectInfo> ProcessPCBasedProject(string projectPath, string solutionDirectoryPath, string targetFrameworkMoniker, string packagesConfigPath, ListPackageArgs listPackageArgs)
         {
             var pcXml = XDocument.Load(packagesConfigPath);
 
@@ -392,12 +401,12 @@ namespace NuGet.CommandLine.XPlat
                                                               topLevelPackages,
                                                               transitivePackages);
 
-            var projectInfo = new ProjectInfo(projectName, projectPath, ProjectStyle.PackagesConfig);
+            var projectInfo = new ProjectInfo(projectName, projectPath, solutionDirectoryPath, ProjectStyle.PackagesConfig);
             projectInfo.AddTargetFrameworkInfo(targetFrameworkInfo);
             return projectInfo;
         }
 
-        private ProjectInfo ProcessPRBasedProject(string projectFilePath, string assetsPath, ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuildUtility)
+        private ProjectInfo ProcessPRBasedProject(string projectFilePath, string solutionDirectoryPath, string assetsPath, ListPackageArgs listPackageArgs, MSBuildAPIUtility msBuildUtility)
         {
             var projectName = Path.GetFileNameWithoutExtension(projectFilePath);
             ProjectInfo projectInfo = null;
@@ -423,7 +432,7 @@ namespace NuGet.CommandLine.XPlat
                     //Get all the packages that are referenced in a project
                     var targetFrameworkInfos = msBuildUtility.GetResolvedVersions(projectFilePath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
-                    projectInfo = new ProjectInfo(projectName, projectFilePath, ProjectStyle.PackageReference);
+                    projectInfo = new ProjectInfo(projectName, projectFilePath, solutionDirectoryPath, ProjectStyle.PackageReference);
                     projectInfo.AddTargetFrameworkInfos(targetFrameworkInfos);
                 }
                 else

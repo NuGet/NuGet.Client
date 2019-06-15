@@ -4,7 +4,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Microsoft.Build.Evaluation;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Versioning;
@@ -124,7 +126,14 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             var tfiIterator = projectInfo.TargetFrameworkInfos.GetEnumerator();
             tfiIterator.MoveNext();
-            PrintPackageHeader(projectInfo.ProjectName, tfiIterator.Current, outdated);
+
+            string projectLabel;
+#if IS_CORECLR
+            projectLabel = projectInfo.ProjectDirectoryRelativePath;
+#else
+            projectLabel = projectInfo.ProjectName;
+#endif
+            PrintPackageHeader(projectLabel, tfiIterator.Current, outdated);
             foreach (var text in tableToPrint)
             {
                 Console.Write(text);
@@ -133,7 +142,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                 {
                     if (tfiIterator.MoveNext())
                     {
-                        PrintPackageHeader(projectInfo.ProjectName, tfiIterator.Current, outdated);
+                        PrintPackageHeader(projectLabel, tfiIterator.Current, outdated);
                         count = targetFrameworkInfoLengths[++tfiCount] * (outdated ? 6 : 5);
                     }
                 }

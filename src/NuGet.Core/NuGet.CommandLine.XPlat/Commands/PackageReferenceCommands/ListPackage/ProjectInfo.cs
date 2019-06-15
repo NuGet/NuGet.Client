@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -16,11 +17,15 @@ namespace NuGet.CommandLine.XPlat
     /// </summary>
     internal class ProjectInfo
     {
-        internal ProjectInfo(string projectName, string projectPath, ProjectStyle projectStyle)
+        internal ProjectInfo(string projectName,
+            string projectPath,
+            string solutionDirectoryPath,
+            ProjectStyle projectStyle)
         {
             ProjectName = projectName;
             ProjectPath = projectPath;
             ProjectStyle = projectStyle;
+            SolutionDirectoryPath = solutionDirectoryPath;
             _targetFrameworkInfos = new List<TargetFrameworkInfo>();
         }
 
@@ -34,6 +39,22 @@ namespace NuGet.CommandLine.XPlat
                 return (IEnumerable<TargetFrameworkInfo>)_targetFrameworkInfos;
             }
         }
+        internal string SolutionDirectoryPath { get; }
+
+#if IS_CORECLR
+        internal string ProjectDirectoryRelativePath
+        {
+            get
+            {
+                if (SolutionDirectoryPath == null)
+                {
+                    return null;
+                }
+
+                return Path.GetDirectoryName(ProjectPath).Substring(SolutionDirectoryPath.Length + 1);
+            }
+        }
+#endif
 
         private List<TargetFrameworkInfo> _targetFrameworkInfos;
 

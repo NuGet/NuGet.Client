@@ -74,7 +74,7 @@ namespace NuGet.CommandLine.XPlat
         internal static IEnumerable<string> GetProjectsFromSolution(string solutionPath)
         {
             var sln = SolutionFile.Parse(solutionPath);
-            return sln.ProjectsInOrder.OrderBy(p => p.ProjectName).Select(p => p.AbsolutePath);
+            return sln.ProjectsInOrder.OrderBy(p => p.AbsolutePath).Select(p => p.AbsolutePath);
         }
 
         /// <summary>
