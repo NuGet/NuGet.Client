@@ -21,9 +21,49 @@ namespace NuGet.CommandLine.XPlat
         internal bool AutoReference { get; set; }
         internal bool Transitive { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
-        internal string PrefixString { get { return AutoReference ? "  A" : (Transitive ? "  T" : "  D"); } }
-        internal bool IsFirstItem { get; set; }
+        internal string PrefixString
+        {
+            get
+            {
+                if (InAllTargetFrameworks)
+                {
+                    return AutoReference ? "  A" : (Transitive ? "  T" : "  D");
+                }
+                else
+                {
+                    return AutoReference ? "  a" : (Transitive ? "  t" : "  d");
+                }
+            }
+        }
 
+        internal bool InAllTargetFrameworks { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            PackageReferenceInfo pr2 = obj as PackageReferenceInfo;
+            if (pr2 != null)
+            {
+                return (Id.Equals(pr2.Id)
+                    && ResolvedVersion == pr2.ResolvedVersion
+                    && OriginalRequestedVersion == pr2.OriginalRequestedVersion
+                    && PrefixString.ToLower() == pr2.PrefixString.ToLower()
+                    );
+            }
+
+            return false;
+        }
+        public override int GetHashCode()
+        {
+            unchecked // Overflow is fine, just wrap
+            {
+                int hash = 17;
+                hash = hash * 23 + Id.GetHashCode();
+                hash = ResolvedVersion == null ? hash : hash * 23 + ResolvedVersion.GetHashCode();
+                hash = OriginalRequestedVersion == null ? hash : hash * 23 + OriginalRequestedVersion.GetHashCode();
+                hash = PrefixString == null ? hash : hash * 23 + PrefixString.GetHashCode();
+                return hash;
+            }
+        }
 
         /// <summary>
         /// A constructor that takes a id of a package
