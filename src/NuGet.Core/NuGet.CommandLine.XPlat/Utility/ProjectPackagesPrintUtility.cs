@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
@@ -15,53 +16,6 @@ namespace NuGet.CommandLine.XPlat.Utility
     /// </summary>
     internal static class ProjectPackagesPrintUtility
     {
-        /// <summary>
-        /// A function that prints all the package references of a project
-        /// </summary>
-        /// <param name="projectInfo">A list of framework packages. Check <see cref="TargetFrameworkInfo"/></param>
-        /// <param name="projectName">The project name</param>
-        /// <param name="transitive">Whether include-transitive flag exists or not</param>
-        /// <param name="outdated">Whether outdated flag exists or not</param>
-        internal static void PrintPackages(ProjectInfo projectInfo,
-           string projectName, bool transitive, bool outdated)
-        {
-            PackagesTable(projectInfo, transitive, outdated);
-        }
-
-        private static void PrintOneFramework(bool transitive, bool outdated,
-            TargetFrameworkInfo targetFrameworkInfo)
-        {
-            var topLevelPackages = targetFrameworkInfo.TopLevelPackages;
-            var transitivePackages = targetFrameworkInfo.TransitivePackages;
-
-            //If no packages exist for this framework, print the
-            //appropriate message
-            if (!topLevelPackages.Any() && !transitivePackages.Any())
-            {
-                if (outdated)
-                {
-                    // TODO: resx
-                    Console.WriteLine("      <NO UPDATES FOUND WITH THESE SOURCES>");
-                }
-                else
-                {
-                    // TODO: resx
-                    Console.WriteLine("      <NO PACKAGES>");
-                }
-
-                Console.ResetColor();
-            }
-            else
-            {
-
-                if (targetFrameworkInfo.AssetsFileOnly)
-                {
-                    //TODO: resx
-                    Console.WriteLine("  NUXXXX: project file was unable to be read. Data is from assets file only");
-                }
-            }
-        }
-
         private static void PrintPackageHeader(string projectName,
                                 TargetFrameworkInfo targetFrameworkInfo,
                                 bool outdated)
@@ -83,81 +37,90 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="printingTransitive">Whether the function is printing transitive
         /// packages table or not</param>
         /// <param name="outdated"></param>
-        /// <returns>The table as a string</returns>
-        internal static void PackagesTable(ProjectInfo projectInfo, bool printingTransitive, bool outdated)
+        /// <param name="showHeaders"></param>
+        internal static void PackagesTable(ProjectInfo projectInfo, bool printingTransitive, bool outdated,
+            bool showHeaders)
         {
             List<PackageReferenceInfo> masterList = new List<PackageReferenceInfo>();
             List<int> targetFrameworkInfoLengths = new List<int>();
+            List<IEnumerable<PackageReferenceInfo>> listOfPackageReferenceInfos = new List<IEnumerable<PackageReferenceInfo>>();
 
+            var tfmCount = 0;
             foreach (var targetFrameworkInfo in projectInfo.TargetFrameworkInfos)
             {
+                tfmCount++;
                 var packageReferenceInfos = new List<PackageReferenceInfo>(targetFrameworkInfo.TopLevelPackages);
                 if (printingTransitive)
                 {
                     packageReferenceInfos.AddRange(targetFrameworkInfo.TransitivePackages);
                 }
 
-                if (packageReferenceInfos.Count == 0)
+                IEnumerable<PackageReferenceInfo> filteredList = packageReferenceInfos;
+                if (outdated)
                 {
-                    PrintPackageHeader(projectInfo.ProjectName, targetFrameworkInfo, outdated);
-                    Console.WriteLine("  NO PACKAGES");
-                    return;
+                    filteredList = filteredList.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
                 }
-                else
-                {
-                    var sortedPackageReferenceInfos = packageReferenceInfos.OrderBy(p => p.PrefixString).ThenBy(p => p.Id);
-                    if (sortedPackageReferenceInfos.Any<PackageReferenceInfo>())
-                    {
-                        sortedPackageReferenceInfos.First<PackageReferenceInfo>().IsFirstItem = true;
-                    }
 
-                    masterList.AddRange(sortedPackageReferenceInfos);
-                    targetFrameworkInfoLengths.Add(sortedPackageReferenceInfos.Count());
+                listOfPackageReferenceInfos.Add(filteredList);
+
+                var sortedList = filteredList.OrderBy(p => p.PrefixString).ThenBy(p => p.Id).ToList();
+                masterList.AddRange(sortedList);
+                targetFrameworkInfoLengths.Add(sortedList.Count());
+            }
+
+            if (tfmCount > 1)
+            {
+                // determine the list of the commonPackages across all TFMs in this project.
+                IEnumerable<PackageReferenceInfo> commonPackages = null;
+                foreach (var packageRefInfos in listOfPackageReferenceInfos)
+                {
+                    commonPackages = commonPackages == null ? packageRefInfos : commonPackages.Intersect(packageRefInfos);
+                }
+
+                foreach (var pr2 in commonPackages)
+                {
+                    foreach (var pr in masterList)
+                    {
+                        if (pr.Equals(pr2))
+                        {
+                            pr.InAllTargetFrameworks = true;
+                        }
+                    }
                 }
             }
 
-            //To enable coloring only the latest version as appropriate
-            //we need to map every string in the table to a color, which
-            //this is used for
             IEnumerable<string> tableToPrint;
-            string[] headers = BuildTableHeaders(printingTransitive, outdated);
+            string[] headers = showHeaders ? BuildTableHeaders(printingTransitive, outdated) : null;
+
+            // As column counts are changed in the call to ToStringTable, updated these numbers
+            const int columns = 4;
+            const int outdatedColumns = 5;
 
             if (outdated)
             {
                 tableToPrint = masterList.ToStringTable(
                        headers,
-                       p => p.UpdateLevel,
-                       p => p.PrefixString,
-                       p => p.Id,
-                       p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString(),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
+                       pr => pr.UpdateLevel,
+                       pr => pr.PrefixString,
+                       pr => pr.Id,
+                       pr => pr.OriginalRequestedVersion,
+                       pr => "=> " + pr.ResolvedVersion.ToString(),
+                       pr => pr.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : pr.LatestVersion.ToString());
             }
             else
             {
                 tableToPrint = masterList.ToStringTable(
                        headers,
-                       p => p.UpdateLevel,
-                       p => p.PrefixString,
-                       p => p.Id,
-                       p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString());
+                       pr => pr.UpdateLevel,
+                       pr => pr.PrefixString,
+                       pr => pr.Id,
+                       pr => pr.OriginalRequestedVersion,
+                       pr => "=> " + pr.ResolvedVersion.ToString());
             }
 
             int tfiCount = 0;
-            int count;
-
-            // +1 for the header row
-            if (!outdated)
-            {
-                // 5 text chunks per row for normal table rows
-                count = (targetFrameworkInfoLengths[tfiCount] + 1) * 5;
-            }
-            else
-            {
-                // 6 text chunks per row for outdated table rows
-                count = (targetFrameworkInfoLengths[tfiCount] + 1) * 6;
-            }
+            int count = (targetFrameworkInfoLengths[tfiCount] + (showHeaders ? 1 : 0))
+                  * ((outdated ? outdatedColumns : columns) + 1);  //columnCount + newLine
 
             var tfiIterator = projectInfo.TargetFrameworkInfos.GetEnumerator();
             tfiIterator.MoveNext();
@@ -168,16 +131,10 @@ namespace NuGet.CommandLine.XPlat.Utility
                 count--;
                 if (count == 0)
                 {
-                    tfiCount++;
-                    if (tfiCount < targetFrameworkInfoLengths.Count)
+                    if (tfiIterator.MoveNext())
                     {
-                        tfiIterator.MoveNext();
                         PrintPackageHeader(projectInfo.ProjectName, tfiIterator.Current, outdated);
-                        count = targetFrameworkInfoLengths[tfiCount] * 5;
-                    }
-                    else
-                    {
-                        break;
+                        count = targetFrameworkInfoLengths[++tfiCount] * (outdated ? 6 : 5);
                     }
                 }
             }

@@ -57,7 +57,7 @@ namespace NuGet.CommandLine.XPlat
 
             List<ProjectInfo> projectInfos = new List<ProjectInfo>();
             var packageVersions = new Dictionary<string, HashSet<NuGetVersion>>();
-
+            bool isFirstProject = true;
             foreach (var projectPath in projectsPaths)
             {
                 if (!((projectPath.EndsWith("\\") || (File.Exists(projectPath)))))
@@ -83,7 +83,8 @@ namespace NuGet.CommandLine.XPlat
 
                 if (!listPackageArgs.IncludeOutdated)
                 {
-                    OutputProject(projectInfo, listPackageArgs);
+                    OutputProject(projectInfo, listPackageArgs, showHeaders: isFirstProject);
+                    isFirstProject = false;
                 }
 
                 // TODO: do we need to unload the project anymore???
@@ -104,7 +105,8 @@ namespace NuGet.CommandLine.XPlat
 
                 if (listPackageArgs.IncludeOutdated)
                 {
-                    OutputProject(projectInfo, listPackageArgs);
+                    OutputProject(projectInfo, listPackageArgs, showHeaders: isFirstProject);
+                    isFirstProject = false;
                 }
             }
 
@@ -199,7 +201,7 @@ namespace NuGet.CommandLine.XPlat
             return projectInfo;
         }
 
-        private void OutputProject(ProjectInfo projectInfo, ListPackageArgs listPackageArgs)
+        private void OutputProject(ProjectInfo projectInfo, ListPackageArgs listPackageArgs, bool showHeaders)
         {
             var projectPath = projectInfo.ProjectPath;
             var projectName = projectInfo.ProjectName;
@@ -211,51 +213,15 @@ namespace NuGet.CommandLine.XPlat
             {
                 // TODO: work on string...and make it a string table
                 Console.WriteLine("Project '" + projectName + "' was not able to be loaded with .NET Core MsBuild - ******");
-
-                //Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks,
-                //                                projectInfo.ProjectPath));
                 Console.WriteLine();
             }
             else
             {
-                var printPackages = true;
-
-                //Handle outdated
-                if (listPackageArgs.IncludeOutdated)
-                {
-                    var noPackagesLeft = true;
-
-                    //Filter the packages for outdated
-                    foreach (var targetFrameworkInfo in projectInfo.TargetFrameworkInfos)
-                    {
-                        targetFrameworkInfo.TopLevelPackages = targetFrameworkInfo.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                        targetFrameworkInfo.TopLevelPackages = targetFrameworkInfo.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
-                        if (targetFrameworkInfo.TopLevelPackages.Any() || targetFrameworkInfo.TopLevelPackages.Any())
-                        {
-                            noPackagesLeft = false;
-                        }
-                    }
-
-                    // If after filtering, all packages were found up to date, inform the user
-                    // and do not print anything
-                    if (noPackagesLeft)
-                    {
-                        Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
-                        printPackages = false;
-                    }
-                }
-
-                // Make sure print is still needed, which may be changed in case
-                // outdated filtered all packages out
-                if (printPackages)
-                {
-                    //Printing packages of a single project and keeping track if
-                    //an auto-referenced package was printed
-                    ProjectPackagesPrintUtility.PrintPackages(projectInfo,
-                                                              projectName,
-                                                              listPackageArgs.IncludeTransitive,
-                                                              listPackageArgs.IncludeOutdated);
-                }
+                //Printing packages of a single project
+                ProjectPackagesPrintUtility.PackagesTable(projectInfo,
+                                                          listPackageArgs.IncludeTransitive,
+                                                          listPackageArgs.IncludeOutdated,
+                                                          showHeaders);
             }
         }
 
