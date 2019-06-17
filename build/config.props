@@ -29,9 +29,9 @@
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">release/3.0.1xx</ToolsetTargetBranches>
     <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
     changes we might have made.-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">2</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">3</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview2</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
