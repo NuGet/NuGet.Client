@@ -231,6 +231,12 @@ namespace NuGet.CommandLine.XPlat
                                                           listPackageArgs.IncludeTransitive,
                                                           listPackageArgs.IncludeOutdated,
                                                           showHeaders);
+                if (projectInfo.ProjectStyle == ProjectStyle.PackagesConfig
+                    && projectInfo.SolutionDirectoryPath == null)
+                {
+                    //TODO: resx + warning raising, etc...
+                    Console.WriteLine("NUXXXX: some direct dependencies will be classified as transitive, if you run this command on the solution file");
+                }
             }
         }
 
@@ -345,13 +351,11 @@ namespace NuGet.CommandLine.XPlat
             var targetFramework = targetFrameworkMoniker != null ? NuGetFramework.Parse(targetFrameworkMoniker)
                 : (pcPackages.Count<PackageReference>() > 0 ? pcPackages.First<PackageReference>().TargetFramework : NuGetFramework.UnsupportedFramework);
 
-            string solutionFolderPath = null;
-            if (Path.GetExtension(listPackageArgs.Path).Equals(".sln"))
+            if (solutionDirectoryPath != null)
             {
                 // If we understand the solution location, we can walk all the dependencyInfo in the packages
-                solutionFolderPath = Path.GetDirectoryName(listPackageArgs.Path);
                 var dependencyInfos = await GetDependencyInfoFromPackagesFolderAsync(packageIdentities, targetFramework,
-                                                                     listPackageArgs.Settings, solutionFolderPath, includeUnresolved: true);
+                                                                     listPackageArgs.Settings, solutionDirectoryPath, includeUnresolved: true);
                 foreach (var depInfo in dependencyInfos)
                 {
                     foreach (var dep in depInfo.Dependencies)
@@ -378,7 +382,9 @@ namespace NuGet.CommandLine.XPlat
                     topLevelPackages.Add(packageReferenceInfo);
                     if (mapOfDependencies.ContainsKey(depInfo.Id))
                     {
-                        //TODO: should we version check for LT?
+                        // We aren't version checking to determine transitive or not.
+                        // If a package has other packages in the "graph" that depend on it, it
+                        // is a transitive project.
                         packageReferenceInfo.Transitive = true;
                     }
                 }
