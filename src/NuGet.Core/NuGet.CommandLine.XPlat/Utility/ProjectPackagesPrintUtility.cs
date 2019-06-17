@@ -160,11 +160,10 @@ namespace NuGet.CommandLine.XPlat.Utility
             var result = new List<string> { };
 
             // TODO: Resx
-            result.Add("Type");
+            result.Add("Typ");
             result.Add("");
             result.Add(Strings.ListPkg_Requested);
             result.Add(Strings.ListPkg_Resolved);
-
             if (outdated)
             {
                 result.Add(Strings.ListPkg_Latest);
