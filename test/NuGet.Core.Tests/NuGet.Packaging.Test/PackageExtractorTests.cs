@@ -1834,15 +1834,15 @@ namespace NuGet.Packaging.Test
         public async Task ExtractPackageAsync_RequireMode_EmptyRepoAllowList_ErrorAsync()
         {
             using (var dir = TestDirectory.Create())
-            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
+            using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var nupkg = new SimpleTestPackageContext();
                 var resolver = new PackagePathResolver(dir);
-                var certificateFingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, HashAlgorithmName.SHA256);
+                var certificateFingerprint = SignatureTestUtility.GetFingerprint(repoCertificate.Source.Cert, HashAlgorithmName.SHA256);
 
                 var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>(), allSigned: true);
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate.Source.Cert, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
@@ -1892,14 +1892,14 @@ namespace NuGet.Packaging.Test
         public async Task ExtractPackageAsync_RequireMode_NoMatchInClientAllowList_ErrorAsync()
         {
             using (var dir = TestDirectory.Create())
-            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
+            using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var nupkg = new SimpleTestPackageContext();
                 var resolver = new PackagePathResolver(dir);
 
-                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>() { repoCertificate }, allSigned: true);
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2>() { repoCertificate.Source.Cert }, allSigned: true);
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate.Source.Cert, nupkg, dir, new Uri(@"https://v3serviceIndex.test/api"));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
@@ -1951,19 +1951,20 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
+            using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var nupkg = new SimpleTestPackageContext();
-                var certificateFingerprint = SignatureTestUtility.GetFingerprint(repoCertificate, HashAlgorithmName.SHA256);
-                var clientPolicy = new ClientPolicyContext(clientPolicyMode, new List<TrustedSignerAllowListEntry>() {
+                var certificateFingerprint = SignatureTestUtility.GetFingerprint(repoCertificate.Source.Cert, HashAlgorithmName.SHA256);
+                var clientPolicy = new ClientPolicyContext(clientPolicyMode, new List<TrustedSignerAllowListEntry>()
+                {
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, certificateFingerprint, HashAlgorithmName.SHA256)
                 });
 
                 var resolver = new PackagePathResolver(dir);
-                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate }, allSigned: true);
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate.Source.Cert }, allSigned: true);
                 var repositorySignatureInfoContentUrl = repositorySignatureInfo.RepositoryCertificateInfos.Select(c => c.ContentUrl).First();
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(repoCertificate.Source.Cert, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
@@ -1993,16 +1994,16 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             using (var dir = TestDirectory.Create())
-            using (var repoCertificate = new X509Certificate2(SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert))
-            using (var packageSignatureCertificate = SigningTestUtility.GenerateTrustedTestCertificate().Source.Cert)
+            using (TrustedTestCert<TestCertificate> repoCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
+            using (TrustedTestCert<TestCertificate> packageSignatureCertificate = SigningTestUtility.GenerateTrustedTestCertificate())
             {
                 var nupkg = new SimpleTestPackageContext();
 
                 var resolver = new PackagePathResolver(dir);
-                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate }, allSigned: true);
+                var repositorySignatureInfo = CreateTestRepositorySignatureInfo(new List<X509Certificate2> { repoCertificate.Source.Cert }, allSigned: true);
                 var repositorySignatureInfoContentUrl = repositorySignatureInfo.RepositoryCertificateInfos.Select(c => c.ContentUrl).First();
                 var repositorySignatureInfoProvider = RepositorySignatureInfoProvider.Instance;
-                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(packageSignatureCertificate, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
+                var repoSignedPackagePath = await SignedArchiveTestUtility.RepositorySignPackageAsync(packageSignatureCertificate.Source.Cert, nupkg, dir, new Uri(repositorySignatureInfoContentUrl));
 
                 repositorySignatureInfoProvider.AddOrUpdateRepositorySignatureInfo(dir, repositorySignatureInfo);
 
