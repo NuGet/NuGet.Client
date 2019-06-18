@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
 using NuGet.Frameworks;
@@ -16,6 +17,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
 {
     public class RestoreCommandTests
     {
+        private const int _successExitCode = 0;
+        private const int _failureExitCode = 1;
+
         [Fact]
         public async Task Restore_LegacyPackageReference_WithNuGetLockFile()
         {
@@ -143,6 +147,285 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 Assert.Equal(PackageDependencyType.Transitive, targets[0].Dependencies[1].Type);
                 Assert.Equal("b", targets[0].Dependencies[2].Id);
                 Assert.Equal(PackageDependencyType.Project, targets[0].Dependencies[2].Type);
+            }
+        }
+
+        [Fact]
+        public async Task Restore_LegacyPackageReference_WithNuGetLockFileArgument()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+
+                // Assert
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                Assert.Equal(4, lockFile.Targets.Count);
+
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(1, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
+            }
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task Restore_LegacyPackageReference_ForceEvaluateNuGetLockFile(bool forceEvaluate)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Act
+                result = forceEvaluate
+                    ? RunRestore(pathContext, _successExitCode, "-UseLockFile", "true", "-ForceEvaluate")
+                    : RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+
+                // Assert
+                Assert.Contains("Assets file has not changed.", result.AllOutput);
+                if (forceEvaluate)
+                {
+                    Assert.Contains("Writing packages lock file at disk.", result.AllOutput);
+                }
+                else
+                {
+                    Assert.Contains("No-Op restore.", result.AllOutput);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task Restore_LegacyPackagesConfig_WithNuGetLockFileArgument()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+
+                // Assert
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                Assert.Equal(1, lockFile.Targets.Count);
+
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(1, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
+            }
+        }
+
+        [Fact]
+        public async Task Restore_LegacyPackagesConfig_WithCustomNamedNuGetLockFile()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true", "-LockFilePath", "custom.lock.json");
+
+                // Assert
+                var expectedLockFileName = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "custom.lock.json");
+                Assert.True(File.Exists(expectedLockFileName));
+
+                var lockFile = PackagesLockFileFormat.Read(expectedLockFileName);
+                Assert.Equal(1, lockFile.Targets.Count);
+
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(1, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
+            }
+        }
+
+        [Fact]
+        public async Task Restore_LegacyPackagesConfig_WithNuGetLockFileLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/x.dll");
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""x"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                // Restore to set up lock file
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Change packages to cause lock file difference
+                Util.CreateFile(Path.GetDirectoryName(projectA.ProjectPath), "packages.config",
+@"<packages>
+  <package id=""y"" version=""1.0.0"" targetFramework=""net461"" />
+</packages>");
+
+                // Act
+                result = RunRestore(pathContext, _failureExitCode, "-UseLockFile", "true", "-LockedMode", "true");
+
+                // Assert
+                Assert.Contains("NU1004:", result.Errors);
             }
         }
 
@@ -451,7 +734,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
-        public static CommandRunnerResult RunRestore(SimpleTestPathContext pathContext, int expectedExitCode = 0)
+        public static CommandRunnerResult RunRestore(SimpleTestPathContext pathContext, int expectedExitCode = 0, params string[] additionalArguments)
         {
             var nugetExe = Util.GetNuGetExePath();
 
@@ -461,13 +744,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
             };
 
-            var args = new string[]
+            var args = new string[4 + additionalArguments.Length];
+            args[0] = "restore";
+            args[1] = pathContext.SolutionRoot;
+            args[2] = "-Verbosity";
+            args[3] = "detailed";
+            for (int i = 0; i < additionalArguments.Length; i++)
             {
-                "restore",
-                pathContext.SolutionRoot,
-                "-Verbosity",
-                "detailed"
-            };
+                args[4 + i] = additionalArguments[i];
+            }
 
             // Act
             var r = CommandRunner.Run(

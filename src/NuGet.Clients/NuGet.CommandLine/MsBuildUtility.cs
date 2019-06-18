@@ -77,7 +77,8 @@ namespace NuGet.CommandLine
             string solutionName,
             string restoreConfigFile,
             string[] sources,
-            string packagesDirectory)
+            string packagesDirectory,
+            RestoreLockProperties restoreLockProperties)
         {
             var msbuildPath = GetMsbuild(msbuildToolset.Path);
 
@@ -121,7 +122,7 @@ namespace NuGet.CommandLine
                 inputTargetXML.Save(inputTargetPath);
 
                 // Create msbuild parameters and include global properties that cannot be set in the input targets path
-                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset);
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset, restoreLockProperties);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -226,7 +227,8 @@ namespace NuGet.CommandLine
             string restoreConfigFile,
             string[] sources,
             string packagesDirectory,
-            MsBuildToolset toolset)
+            MsBuildToolset toolset,
+            RestoreLockProperties restoreLockProperties)
         {
             // args for MSBuild.exe
             var args = new List<string>()
@@ -279,6 +281,13 @@ namespace NuGet.CommandLine
             if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
             {
                 args.Add(msbuildAdditionalArgs);
+            }
+
+            AddPropertyIfHasValue(args, "RestorePackagesWithLockFile", restoreLockProperties.RestorePackagesWithLockFile);
+            AddPropertyIfHasValue(args, "NuGetLockFilePath", restoreLockProperties.NuGetLockFilePath);
+            if (restoreLockProperties.RestoreLockedMode)
+            {
+                AddProperty(args, "RestoreLockedMode", bool.TrueString);
             }
 
             return string.Join(" ", args);

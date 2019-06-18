@@ -59,6 +59,18 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "ForceRestoreCommand")]
         public bool Force { get; set; }
 
+        [Option(typeof(NuGetCommand), "RestoreCommandUseLockFile")]
+        public bool? UseLockFile { get; set; }
+
+        [Option(typeof(NuGetCommand), "RestoreCommandLockedMode")]
+        public bool? LockedMode { get; set; }
+
+        [Option(typeof(NuGetCommand), "RestoreCommandLockFilePath")]
+        public string LockFilePath { get; set; }
+
+        [Option(typeof(NuGetCommand), "RestoreCommandForceEvaluate")]
+        public bool ForceEvaluate { get; set; }
+
         [ImportingConstructor]
         public RestoreCommand()
         {
@@ -148,6 +160,7 @@ namespace NuGet.CommandLine
                     restoreContext.MachineWideSettings = MachineWideSettings;
                     restoreContext.Log = Console;
                     restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
+                    restoreContext.RestoreForceEvaluate = ForceEvaluate;
 
                     var packageSaveMode = EffectivePackageSaveMode;
                     if (packageSaveMode != Packaging.PackageSaveMode.None)
@@ -663,6 +676,8 @@ namespace NuGet.CommandLine
 
             Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
 
+            var restoreLockProperties = new RestoreLockProperties(UseLockFile?.ToString(), LockFilePath?.ToString(), LockedMode ?? false);
+
             // Call MSBuild to resolve P2P references.
             return await MsBuildUtility.GetProjectReferencesAsync(
                 MsBuildDirectory.Value,
@@ -674,7 +689,8 @@ namespace NuGet.CommandLine
                 solutionName,
                 configFile,
                 Source.ToArray(),
-                PackagesDirectory
+                PackagesDirectory,
+                restoreLockProperties
                 );
         }
 
@@ -912,14 +928,16 @@ namespace NuGet.CommandLine
 
                 var projectFile = dgSpec?.FilePath ?? pcFile;
                 var projectTfm = dgSpec?.TargetFrameworks.SingleOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;
-                var restoreLockedMode = dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
+                var restoreLockedMode = LockedMode ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
+                var lockFilePath = LockFilePath ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.NuGetLockFilePath;
+                var useLockFile = UseLockFile?.ToString() ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile;
 
                 IReadOnlyList<IRestoreLogMessage> result = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
                     projectFile,
                     pcFile,
                     dgSpec?.Name,
-                    dgSpec?.RestoreMetadata?.RestoreLockProperties?.NuGetLockFilePath,
-                    dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile,
+                    lockFilePath,
+                    useLockFile,
                     projectTfm,
                     packagesFolderPath,
                     restoreLockedMode,
