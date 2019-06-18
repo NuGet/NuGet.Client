@@ -27,11 +27,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 if (InAllTargetFrameworks)
                 {
-                    return AutoReference ? "  A" : (Transitive ? "  T" : "  D");
+                    return AutoReference ? "A" : (Transitive ? "T" : "D");
                 }
                 else
                 {
-                    return AutoReference ? "  a" : (Transitive ? "  t" : "  d");
+                    return AutoReference ? "a" : (Transitive ? "t" : "d");
                 }
             }
         }
