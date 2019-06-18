@@ -40,6 +40,7 @@ namespace NuGet.Packaging
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
+        private const string Icon = "icon";
 
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
