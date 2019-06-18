@@ -143,6 +143,15 @@ phases:
       msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
 
   - task: MSBuild@1
+    displayName: "Ensure msbuild.exe can parse nuget.sln"
+    continueOnError: "false"
+    inputs:
+      solution: "nuget.sln"
+      msbuildVersion: "16.0"
+      msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
+    condition: "succeeded()"
+
+  - task: MSBuild@1
     displayName: "Run unit tests"
     continueOnError: "true"
     inputs:
