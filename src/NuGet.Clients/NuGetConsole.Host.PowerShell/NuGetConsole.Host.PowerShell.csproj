@@ -133,12 +133,6 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
-      <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
-      <Name>NuGet.PackageManagement.PowerShellCmdlets</Name>
-      <!-- This project should wait until PowerShellCmdlets is built before building, so NuGet.psd1 can refer to strong name -->
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
