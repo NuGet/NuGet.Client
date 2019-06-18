@@ -153,6 +153,13 @@
                               </xs:sequence>
                             </xs:complexType>
                           </xs:element>
+                          <xs:element name="icon" maxOccurs="1" minOccurs="0">
+                            <xs:complexType>
+                            <xs:simpleContent>
+                              <xs:attribute name="type" use="required" type="xs:string" />
+                            </xs:simpleContent>
+                            </xs:complexType>
+                          </xs:element>
                         </xs:all>
                         <xs:attribute name="minClientVersion" use="optional" type="xs:string" />
                     </xs:complexType>
