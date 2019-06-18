@@ -125,6 +125,8 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata { get; } = null; // The LicenseExpression is not added to the V2 feed.
 
+        public PackageDeprecationMetadata DeprecationMetadata { get; } = null; // Deprecation metadata is not added to the v2 feed.
+
         public NuGetVersion Version { get; private set; }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());

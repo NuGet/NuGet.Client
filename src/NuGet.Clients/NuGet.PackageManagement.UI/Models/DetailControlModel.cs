@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -11,6 +12,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 
@@ -284,6 +286,119 @@ namespace NuGet.PackageManagement.UI
             get { return _searchResultPackage?.PrefixReserved ?? false; }
         }
 
+        public bool IsPackageDeprecated
+        {
+            get { return _packageMetadata?.DeprecationMetadata != null; }
+        }
+
+        public bool PackageDeprecationAlternatePackageRangeHasUpperBound
+        {
+            get { return _packageMetadata?.DeprecationMetadata?.AlternatePackage?.Range?.HasUpperBound ?? false; }
+        }
+
+        private Uri _packageDeprecationAlternatePackageLinkUrl;
+        public Uri PackageDeprecationAlternatePackageLinkUrl
+        {
+            get { return _packageDeprecationAlternatePackageLinkUrl; }
+            set
+            {
+                if (_packageDeprecationAlternatePackageLinkUrl != value)
+                {
+                    _packageDeprecationAlternatePackageLinkUrl = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkUrl));
+                }
+            }
+        }
+
+        private string _packageDeprecationReasons;
+        public string PackageDeprecationReasons
+        {
+            get { return _packageDeprecationReasons; }
+            set
+            {
+                if (_packageDeprecationReasons != value)
+                {
+                    _packageDeprecationReasons = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationReasons));
+                }
+            }
+        }
+
+        private string _packageDeprecationReasonsExplained;
+        public string PackageDeprecationReasonsExplained
+        {
+            get { return _packageDeprecationReasonsExplained; }
+            set
+            {
+                if (_packageDeprecationReasonsExplained != value)
+                {
+                    _packageDeprecationReasonsExplained = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationReasonsExplained));
+                }
+            }
+        }
+
+        private string _packageDeprecationCustomMessage;
+        public string PackageDeprecationCustomMessage
+        {
+            get { return _packageDeprecationCustomMessage; }
+            set
+            {
+                if (_packageDeprecationCustomMessage != value)
+                {
+                    _packageDeprecationCustomMessage = value;
+                    OnPropertyChanged(nameof(PackageDeprecationCustomMessage));
+                }
+            }
+        }
+
+        private string _packageDeprecationAlternatePackageLinkText;
+        public string PackageDeprecationAlternatePackageLinkText
+        {
+            get { return _packageDeprecationAlternatePackageLinkText; }
+            set
+            {
+                if (_packageDeprecationAlternatePackageLinkText != value)
+                {
+                    _packageDeprecationAlternatePackageLinkText = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkText));
+                }
+            }
+        }
+
+        public string ExplainPackageDeprecationReasons(IEnumerable<string> reasons)
+        {
+            if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
+            {
+                if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+                {
+                    return "This package has been deprecated because it's legacy and has critical bugs.";
+                }
+                else
+                {
+                    return "This package has been deprecated because it has critical bugs.";
+                }
+            }
+            else if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+            {
+                return "This package has been deprecated because it's legacy and no longer maintained.";
+            }
+            else
+            {
+                return "This package has been deprecated.";
+            }
+        }
+
+        private static class PackageDeprecationReason
+        {
+            public const string CriticalBugs = "CriticalBugs";
+            public const string Legacy = "Legacy";
+        }
+
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
@@ -294,9 +409,53 @@ namespace NuGet.PackageManagement.UI
                 if (_packageMetadata != value)
                 {
                     _packageMetadata = value;
+
+                    if (_packageMetadata?.DeprecationMetadata != null)
+                    {
+                        PackageDeprecationReasonsExplained = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons);
+                        PackageDeprecationReasons = "(" + string.Join(", ", _packageMetadata.DeprecationMetadata.Reasons) + ")";
+                        PackageDeprecationCustomMessage = _packageMetadata.DeprecationMetadata.Message;
+
+                        var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
+                        if (alternatePackage != null)
+                        {
+                            PackageDeprecationAlternatePackageLinkText = GetPackageDeprecationAlternatePackageLinkText(alternatePackage);
+
+                            PackageDeprecationAlternatePackageLinkUrl = new Uri(
+                                    _packageMetadata?.PackageDetailsUrl
+                                    .ToString()
+                                    .ToLowerInvariant()
+                                    .Replace(
+                                        _packageMetadata.Id.ToLowerInvariant(),
+                                        alternatePackage.PackageId)
+                                    .Replace(
+                                        _packageMetadata.Version.ToNormalizedString(),
+                                        alternatePackage.Range?.MinVersion?.ToNormalizedString() ?? _packageMetadata.Version.ToNormalizedString()));
+                        }
+                    }
+
                     OnPropertyChanged(nameof(PackageMetadata));
+                    OnPropertyChanged(nameof(IsPackageDeprecated));
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageRangeHasUpperBound));
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkUrl));
                 }
             }
+        }
+
+        private string GetPackageDeprecationAlternatePackageLinkText(AlternatePackageMetadata alternatePackageMetadata)
+        {
+            if (alternatePackageMetadata == null)
+            {
+                return null;
+            }
+
+            if (!alternatePackageMetadata.Range.IsFloating
+                && alternatePackageMetadata.Range.HasLowerBound)
+            {
+                return $"{alternatePackageMetadata.PackageId} version {alternatePackageMetadata.Range.MinVersion.ToNormalizedString()}";
+            }
+
+            return alternatePackageMetadata.PackageId;
         }
 
         protected abstract void CreateVersions();

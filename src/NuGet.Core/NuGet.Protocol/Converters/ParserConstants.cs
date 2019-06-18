@@ -1,4 +1,4 @@
- // Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -63,5 +63,11 @@ namespace NuGet.Protocol
         public const string SigningCertificates = "signingCertificates";
         public const string AllRepositorySigned = "allRepositorySigned";
         public const string Fingerprints = "fingerprints";
+
+        // deprecation properties
+        public const string Deprecation = "deprecation";
+        public const string DeprecationMessage = "message";
+        public const string DeprecationReasons = "reasons";
+        public const string AlternatePackage = "alternatePackage";
     }
 }

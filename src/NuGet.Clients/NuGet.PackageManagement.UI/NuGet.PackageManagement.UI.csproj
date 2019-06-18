@@ -125,6 +125,9 @@
     <Compile Include="Xamls\DeprecatedFrameworkWindow.xaml.cs">
       <DependentUpon>DeprecatedFrameworkWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Xamls\DeprecationControl.xaml.cs">
+      <DependentUpon>DeprecationControl.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Xamls\InfiniteScrollListBox.cs" />
     <Compile Include="Xamls\InfiniteScrollListBoxAutomationPeer.cs" />
     <Compile Include="Models\LicenseFileData.cs" />
@@ -292,6 +295,10 @@
     <Page Include="Xamls\DeprecatedFrameworkWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Xamls\DeprecationControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="Xamls\DownloadIndicator.xaml">
       <Generator>MSBuild:Compile</Generator>

@@ -39,9 +39,10 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
+            DeprecationMetadata = serverData.DeprecationMetadata;
             _localMetadata = serverData as LocalPackageSearchMetadata;
 
-            // Determine the package detauls URL and text.
+            // Determine the package details URL and text.
             PackageDetailsUrl = null;
             PackageDetailsText = null;
             if (serverData.PackageDetailsUrl != null
@@ -101,6 +102,8 @@ namespace NuGet.PackageManagement.UI
         public bool HasDependencies { get; set; }
 
         public LicenseMetadata LicenseMetadata { get; set; }
+
+        public PackageDeprecationMetadata DeprecationMetadata { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
 

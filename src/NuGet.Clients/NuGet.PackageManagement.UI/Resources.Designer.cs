@@ -763,6 +763,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deprecated.
+        /// </summary>
+        public static string Label_Deprecated {
+            get {
+                return ResourceManager.GetString("Label_Deprecated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description.
         /// </summary>
         public static string Label_Description {
@@ -867,6 +876,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Options {
             get {
                 return ResourceManager.GetString("Label_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  (or above).
+        /// </summary>
+        public static string Label_OrAbove {
+            get {
+                return ResourceManager.GetString("Label_OrAbove", resourceCulture);
             }
         }
         

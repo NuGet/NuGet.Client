@@ -198,5 +198,11 @@ namespace NuGet.Protocol
 
         [JsonProperty(PropertyName = JsonProperties.Listed)]
         public bool IsListed { get; private set; } = true;
+
+        /// <summary>
+        /// If deprecated, contains deprecation information for this package; otherwise <c>null</c>.
+        /// </summary>
+        [JsonProperty(PropertyName = JsonProperties.Deprecation)]
+        public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
     }
 }
