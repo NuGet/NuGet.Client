@@ -156,7 +156,13 @@
                           <xs:element name="icon" maxOccurs="1" minOccurs="0">
                             <xs:complexType>
                             <xs:simpleContent>
-                              <xs:attribute name="type" use="required" type="xs:string" />
+                              <xs:attribute name="type" use="required" type="xs:string">
+                                <xs:simpleType>
+                                  <xs:restriction base="xsd:string">
+                                    <xs:enumeration value="file" />
+                                  </xs:restriction>
+                                </xs:simpleType>
+                              </xs:attribute>
                             </xs:simpleContent>
                             </xs:complexType>
                           </xs:element>
