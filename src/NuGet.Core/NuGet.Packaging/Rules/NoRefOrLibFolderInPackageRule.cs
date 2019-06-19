@@ -31,12 +31,6 @@ namespace NuGet.Packaging.Rules
                     .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
                     .Any(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
                 {
-                    var idk = files
-                        .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
-                        .Where(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar) && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Native + Path.DirectorySeparatorChar,
-                        StringComparison.OrdinalIgnoreCase)
-                        && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Any + Path.DirectorySeparatorChar,
-                        StringComparison.OrdinalIgnoreCase));
                     //if you can't find any folders other than native or any, raise an NU5127
                     if (files
                         .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
