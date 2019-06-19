@@ -100,6 +100,9 @@ namespace NuGet.Common
             }
         }
 
+        /// <summary>
+        /// Convert the provided string to a boolean, or return null if the value can't be parsed as a boolean.
+        /// </summary>
         public static bool? GetBooleanOrNull(string value)
         {
             if (bool.TryParse(value, out var result))

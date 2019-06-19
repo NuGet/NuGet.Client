@@ -403,7 +403,7 @@ namespace NuGet.PackageManagement {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Please run restore without using restore locked mode to update the lock file..
+        ///   Looks up a localized string similar to The packages lock file is inconsistent with the project dependencies so restore can&apos;t be run in locked mode. Run restore without using restore locked mode to update the lock file..
         /// </summary>
         internal static string Error_RestoreInLockedModePackagesConfig {
             get {

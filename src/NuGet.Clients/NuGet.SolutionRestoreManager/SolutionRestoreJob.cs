@@ -525,15 +525,15 @@ namespace NuGet.SolutionRestoreManager
 
             foreach (MSBuildNuGetProject project in pcProjects)
             {
-                var projectFile = project.MSBuildProjectPath;
-                var pcFile = project.PackagesConfigNuGetProject.FullPath;
+                string projectFile = project.MSBuildProjectPath;
+                string pcFile = project.PackagesConfigNuGetProject.FullPath;
                 var projectName = (string)project.GetMetadataOrNull("Name");
                 var lockFileName = (string)project.GetMetadataOrNull("NuGetLockFilePath");
                 var restorePackagesWithLockFile = (string)project.GetMetadataOrNull("RestorePackagesWithLockFile");
                 var projectTfm = (NuGetFramework)project.GetMetadataOrNull("TargetFramework");
-                var restoreLockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
+                bool restoreLockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
 
-                var validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
+                IReadOnlyList<IRestoreLogMessage> validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
                     projectFile,
                     pcFile,
                     projectName,

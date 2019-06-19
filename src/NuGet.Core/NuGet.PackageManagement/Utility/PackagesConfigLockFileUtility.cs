@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.Utility
 
             if (useLockFile)
             {
-                var projectLockFileEquivalent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
+                PackagesLockFile projectLockFileEquivalent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
                     projectTfm,
                     packagesFolderPath,
                     token);
@@ -123,13 +123,13 @@ namespace NuGet.PackageManagement.Utility
                 }
                 else
                 {
-                    var lockFile = PackagesLockFileFormat.Read(lockFilePath);
-                    var comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivalent, lockFile);
+                    PackagesLockFile lockFile = PackagesLockFileFormat.Read(lockFilePath);
+                    PackagesLockFileUtilities.LockFileValidityWithMatchedResults comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivalent, lockFile);
                     if (comparisonResult.IsValid)
                     {
                         // check sha hashes
-                        var allShasMatch = comparisonResult.MatchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
-                        if (allShasMatch)
+                        bool allContentHashesMatch = comparisonResult.MatchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
+                        if (allContentHashesMatch)
                         {
                             return null;
                         }
@@ -294,7 +294,7 @@ namespace NuGet.PackageManagement.Utility
             }
             if (!File.Exists(pcFile))
             {
-                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile));
+                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile), pcFile);
             }
             if (projectTfm == null)
             {

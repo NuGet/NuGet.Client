@@ -500,7 +500,7 @@
     <comment>{0} - package id and version</comment>
   </data>
   <data name="Error_RestoreInLockedModePackagesConfig" xml:space="preserve">
-    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Please run restore without using restore locked mode to update the lock file.</value>
+    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Run restore without using restore locked mode to update the lock file.</value>
   </data>
   <data name="Error_DirectoryDoesNotExist" xml:space="preserve">
     <value>Directory {0} does not exist.</value>

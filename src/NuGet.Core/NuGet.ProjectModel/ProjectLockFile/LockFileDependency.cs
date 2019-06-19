@@ -47,22 +47,22 @@ namespace NuGet.ProjectModel
                         EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion);
 
                 case ComparisonType.ExcludeContentHash:
-                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
+                    return x.Type == y.Type &&
+                        StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
                         EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
                         EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
-                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies) &&
-                        x.Type == y.Type;
+                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies);
 
                 case ComparisonType.Full:
-                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
+                    return x.ContentHash == y.ContentHash &&
+                        x.Type == y.Type &&
+                        StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
                         EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
                         EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
-                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies) &&
-                        x.ContentHash == y.ContentHash &&
-                        x.Type == y.Type;
+                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies);
 
                 default:
-                    throw new ArgumentException("Unknown ComparisonType value", nameof(comparisonType));
+                    throw new ArgumentException("Unknown " + nameof(ComparisonType) + " value", nameof(comparisonType));
             }
         }
 

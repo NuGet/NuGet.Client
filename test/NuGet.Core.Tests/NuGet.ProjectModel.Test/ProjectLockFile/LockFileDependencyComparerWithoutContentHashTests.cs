@@ -6,7 +6,7 @@ using NuGet.ProjectModel.Test.Builders;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.ProjectModel.Test
+namespace NuGet.ProjectModel.Test.ProjectLockFile
 {
     public class LockFileDependencyComparerWithoutContentHashTests
     {

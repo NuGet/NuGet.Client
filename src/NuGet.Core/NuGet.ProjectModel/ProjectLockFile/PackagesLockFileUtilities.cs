@@ -342,7 +342,7 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// A class to resturn information about lock file validity
+        /// A class to return information about lock file validity
         /// </summary>
         public class LockFileValidityWithMatchedResults
         {

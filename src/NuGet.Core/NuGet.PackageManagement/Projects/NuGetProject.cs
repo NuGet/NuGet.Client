@@ -100,6 +100,11 @@ namespace NuGet.ProjectManagement
             return false;
         }
 
+        /// <summary>
+        /// Get metadata value, or return null if it doesn't exist.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
         public object GetMetadataOrNull(string key)
         {
             if (Metadata.TryGetValue(key, out var value))

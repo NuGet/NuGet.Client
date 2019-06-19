@@ -7,6 +7,8 @@ namespace NuGet.ProjectModel
 {
     public class LockFileDependencyIdVersionComparer : IEqualityComparer<LockFileDependency>
     {
+        public static LockFileDependencyIdVersionComparer Default { get; } = new LockFileDependencyIdVersionComparer();
+
         public bool Equals(LockFileDependency x, LockFileDependency y)
         {
             return LockFileDependency.Equals(x, y, LockFileDependency.ComparisonType.IdVersion);
