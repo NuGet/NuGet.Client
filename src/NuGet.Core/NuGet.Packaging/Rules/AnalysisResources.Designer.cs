@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;.
+        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;: {1}.
         /// </summary>
         public static string IconCannotOpenFile {
             get {
@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The icon filesize must not exceed 1 mega byte. File: &apos;{0}&apos;.
+        ///   Looks up a localized string similar to The icon filesize must not exceed 1 megabyte..
         /// </summary>
         public static string IconMaxFilsesizeExceeded {
             get {

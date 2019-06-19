@@ -10,12 +10,15 @@ using System.IO;
 using NuGet.Common;
 using System.CodeDom;
 using System.Globalization;
+using System.Runtime.CompilerServices;
 
 namespace NuGet.Packaging.Rules
 {
     public class IconMaxFilesizeRule : IPackageRule
     {
         private const int MaxIconFilzeSize = 1024 * 1024;
+
+        private const int BufferSize = 1024 * 1024;
 
         public string MessageFormat { get; }
 
@@ -26,21 +29,63 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            // Assuming previous validation ran.
-            // It is guaranteed that at this point, you can open the icon file
-
             var reader = builder?.NuspecReader;
 
             var path = reader?.GetIcon();
 
-            Stream str = builder.GetStream(path);
+            var issues = new List<PackagingLogMessage>();
 
-            if (str.Length > MaxIconFilzeSize)
+            if (!string.IsNullOrEmpty(path))
             {
-                yield return PackagingLogMessage.CreateWarning(
-                    string.Format(CultureInfo.CurrentCulture, MessageFormat, path),
-                    NuGetLogCode.NU5037);
+                try
+                {
+                    using (var str = builder.GetStream(path))
+                    {
+                        long fileSize = EstimateFileSize(str);
+
+                        if (fileSize > MaxIconFilzeSize || (fileSize == MaxIconFilzeSize && str.CanRead))
+                        {
+                            issues.Add(PackagingLogMessage.CreateWarning(
+                                string.Format(CultureInfo.CurrentCulture, MessageFormat, path, AnalysisResources.IconMaxFilsesizeExceeded),
+                                NuGetLogCode.NU5037));
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    issues.Add(PackagingLogMessage.CreateWarning(
+                                string.Format(CultureInfo.CurrentCulture, MessageFormat, path, e.Message),
+                                NuGetLogCode.NU5036));
+                }
             }
+
+            return issues;
+        }
+
+        /// <summary>
+        /// Reads up to MaxIconFilzeSize of the file
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        private static long EstimateFileSize(Stream str)
+        {
+            long fileSize = -1;
+            try
+            {
+                fileSize = str.Length;
+            }
+            catch(NotSupportedException)
+            {
+                byte[] byteBuffer = new byte[BufferSize];
+
+                fileSize = 0;
+                while(str.CanRead && fileSize < MaxIconFilzeSize)
+                {
+                    fileSize += str.Read(byteBuffer, 0, BufferSize);
+                }
+            }
+
+            return fileSize;
         }
     }
 }
