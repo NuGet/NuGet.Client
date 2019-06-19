@@ -164,6 +164,9 @@
   <data name="MisplacedTransformFileWarning" xml:space="preserve">
     <value>The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package. Move it into the 'content' folder.</value>
   </data>
+  <data name="NoRefOrLibFolderInPackage" xml:space="preserve">
+    <value>The package {0} does not contain a lib or ref folder, and is therefore being treated as compatible for ALL frameworks. If the libraries are contained in a build/&lt;tfm&gt; folder, please create the directory "lib/&lt;tfm&gt;/_._" within the package.</value>
+  </data>
   <data name="PlaceholderFileInPackageWarning" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>
   </data>

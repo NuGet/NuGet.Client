@@ -24,6 +24,7 @@ namespace NuGet.Packaging
             public static readonly string ContentFiles = "contentFiles";
             public static readonly string Lib = "lib";
             public static readonly string Native = "native";
+            public static readonly string Any = "any";
             public static readonly string Runtimes = "runtimes";
             public static readonly string Ref = "ref";
             public static readonly string Analyzers = "analyzers";
