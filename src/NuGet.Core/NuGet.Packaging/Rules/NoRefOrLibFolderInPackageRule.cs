@@ -18,35 +18,42 @@ namespace NuGet.Packaging.Rules
             MessageFormat = messageFormat;
         }
 
-        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
+        public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader package)
         {
-            if (!builder.GetFiles()
-                .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
-                .Any(t => t.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                || t.StartsWith(PackagingConstants.Folders.Ref + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+            var files = package.GetFiles();
+            if (!files
+                    .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
+                    .Any(t => t.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
+                    || t.StartsWith(PackagingConstants.Folders.Ref + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
             {
                 //if you can't find the ref and lib folder, then find the build folder
-                if (builder.GetFiles()
-                .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
-                .Any(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
-                {
-                    //if you can't find any folders other than native or any, raise an NU5127
-                    if (!builder.GetFiles()
+                if (files
                     .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
-                    .Where(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar))
-                    .Any(t => !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Native + Path.DirectorySeparatorChar
-                    , StringComparison.OrdinalIgnoreCase)
-                    && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Any + Path.DirectorySeparatorChar
-                    , StringComparison.OrdinalIgnoreCase)))
+                    .Any(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+                {
+                    var idk = files
+                        .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
+                        .Where(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar) && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Native + Path.DirectorySeparatorChar,
+                        StringComparison.OrdinalIgnoreCase)
+                        && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Any + Path.DirectorySeparatorChar,
+                        StringComparison.OrdinalIgnoreCase));
+                    //if you can't find any folders other than native or any, raise an NU5127
+                    if (files
+                        .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
+                        .Where(t => t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar))
+                        .Any(t => !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Native + Path.DirectorySeparatorChar,
+                        StringComparison.OrdinalIgnoreCase)
+                        && !t.StartsWith(PackagingConstants.Folders.Build + Path.DirectorySeparatorChar + PackagingConstants.Folders.Any + Path.DirectorySeparatorChar,
+                        StringComparison.OrdinalIgnoreCase)))
                     {
                         var issue = new List<PackagingLogMessage>();
-                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,builder.NuspecReader.GetId()), NuGetLogCode.NU5127));
+                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,package.NuspecReader.GetId()), NuGetLogCode.NU5127));
                         return issue;
                     }
                 }
             }
-            
-            return new List<PackagingLogMessage>();
+
+            return Array.Empty<PackagingLogMessage>();
         }
     }
 }

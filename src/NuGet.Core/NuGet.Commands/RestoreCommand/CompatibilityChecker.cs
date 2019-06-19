@@ -17,7 +17,6 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.RuntimeModel;
 
 namespace NuGet.Commands
 {
@@ -240,6 +239,7 @@ namespace NuGet.Commands
 
             return new CompatibilityCheckResult(graph, issues);
         }
+
 
         /// <summary>
         /// Create an error message for the given issue.
