@@ -36,12 +36,12 @@
       <StackPanel
         Orientation="Vertical">
         <TextBlock
-          Margin="0,8,0,0"
+          Margin="8,8,8,0"
           TextWrapping="WrapWithOverflow"
           TextTrimming="WordEllipsis"
           Text="{Binding Path=PackageDeprecationReasonsExplained}" />
         <StackPanel
-          Margin="0,8,0,0"
+          Margin="8,8,8,0"
           Orientation="Vertical"
           Visibility="{Binding Path=PackageDeprecationAlternatePackageLinkText, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
@@ -67,7 +67,7 @@
           </StackPanel>
         </StackPanel>
         <StackPanel
-          Margin="0,8,0,0"
+          Margin="8,8,8,0"
           Visibility="{Binding Path=PackageDeprecationCustomMessage, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
             Text="Additional details"
