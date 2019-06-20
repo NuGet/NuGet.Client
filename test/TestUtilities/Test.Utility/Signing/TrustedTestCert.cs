@@ -104,6 +104,8 @@ namespace Test.Utility.Signing
 
                 DisposeCrl();
 
+                TrustedCert.Dispose();
+
                 _isDisposed = true;
             }
         }
