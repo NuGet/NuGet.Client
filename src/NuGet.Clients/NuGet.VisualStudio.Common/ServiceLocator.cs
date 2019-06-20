@@ -108,6 +108,22 @@ namespace NuGet.VisualStudio
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
+        public static TInterface GetGlobalServiceFreeThreaded<TService, TInterface>() where TInterface : class
+        {
+            if (PackageServiceProvider != null)
+            {
+                var result = PackageServiceProvider.GetService(typeof(TService));
+                var service = result as TInterface;
+
+                if (service != null)
+                {
+                    return service;
+                }
+            }
+
+            return Package.GetGlobalService(typeof(TService)) as TInterface;
+        }
+
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
         {
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
