@@ -414,7 +414,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         PackageDeprecationReasonsExplained = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons);
                         PackageDeprecationReasons = "(" + string.Join(", ", _packageMetadata.DeprecationMetadata.Reasons) + ")";
-                        PackageDeprecationCustomMessage = _packageMetadata.DeprecationMetadata.Message;
+                        PackageDeprecationCustomMessage = string.IsNullOrWhiteSpace(_packageMetadata.DeprecationMetadata.Message) ? null : _packageMetadata.DeprecationMetadata.Message;
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
                         if (alternatePackage != null)
