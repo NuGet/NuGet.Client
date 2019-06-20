@@ -70,7 +70,7 @@
           Margin="0,8,0,0"
           Visibility="{Binding Path=PackageDeprecationCustomMessage, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
-            Text="Package authors message"
+            Text="Additional details"
             FontWeight="Bold"/>
           <TextBlock
               TextWrapping="WrapWithOverflow"
