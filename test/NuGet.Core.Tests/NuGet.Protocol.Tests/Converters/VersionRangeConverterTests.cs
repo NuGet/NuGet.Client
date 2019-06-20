@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.Protocol.Plugins.Tests
+namespace NuGet.Protocol.Tests
 {
     public class VersionRangeConverterTests
     {

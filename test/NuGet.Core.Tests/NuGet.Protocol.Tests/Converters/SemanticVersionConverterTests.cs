@@ -1,13 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.Protocol.Plugins.Tests
+namespace NuGet.Protocol.Tests
 {
     public class SemanticVersionConverterTests
     {
