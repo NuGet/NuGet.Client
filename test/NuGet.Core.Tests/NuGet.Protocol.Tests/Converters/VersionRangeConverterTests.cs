@@ -64,8 +64,8 @@ namespace NuGet.Protocol.Plugins.Tests
             using (var stringWriter = new StringWriter())
             using (var jsonWriter = new JsonTextWriter(stringWriter))
             {
-                Assert.Throws<InvalidCastException>(
-                    () => _converter.WriteJson(jsonWriter, "-1.0", JsonSerializationUtilities.Serializer));
+                Assert.Throws<ArgumentException>(
+                    () => _converter.WriteJson(jsonWriter, "**", JsonSerializationUtilities.Serializer));
             }
         }
 
