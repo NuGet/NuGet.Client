@@ -14,11 +14,6 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
-  <UserControl.CommandBindings>
-    <CommandBinding
-      Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-      Executed="ExecuteOpenExternalLink" />
-  </UserControl.CommandBindings>
   <Grid>
     <Expander
       Margin="0,12,0,16"
@@ -52,18 +47,9 @@
             VerticalAlignment="Center">
             <TextBlock
               TextWrapping="WrapWithOverflow"
-              VerticalAlignment="Center">
-              <Hyperlink
-                NavigateUri="{Binding Path=PackageDeprecationAlternatePackageLinkUrl}"
-                Style="{StaticResource HyperlinkStyle}"
-                Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
-                <Run Text="{Binding Path=PackageDeprecationAlternatePackageLinkText}" />
-              </Hyperlink>
-            </TextBlock>
-            <TextBlock
-              Text="{x:Static nuget:Resources.Label_OrAbove}"
               VerticalAlignment="Center"
-              Visibility="{Binding Path=PackageDeprecationAlternatePackageRangeHasUpperBound, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+              Text="{Binding Path=PackageDeprecationAlternatePackageText}">
+            </TextBlock>
           </StackPanel>
         </StackPanel>
         <StackPanel

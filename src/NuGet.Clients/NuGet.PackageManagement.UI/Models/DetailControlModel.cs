@@ -291,26 +291,6 @@ namespace NuGet.PackageManagement.UI
             get { return _packageMetadata?.DeprecationMetadata != null; }
         }
 
-        public bool PackageDeprecationAlternatePackageRangeHasUpperBound
-        {
-            get { return _packageMetadata?.DeprecationMetadata?.AlternatePackage?.Range?.HasUpperBound ?? false; }
-        }
-
-        private Uri _packageDeprecationAlternatePackageLinkUrl;
-        public Uri PackageDeprecationAlternatePackageLinkUrl
-        {
-            get { return _packageDeprecationAlternatePackageLinkUrl; }
-            set
-            {
-                if (_packageDeprecationAlternatePackageLinkUrl != value)
-                {
-                    _packageDeprecationAlternatePackageLinkUrl = value;
-
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkUrl));
-                }
-            }
-        }
-
         private string _packageDeprecationReasons;
         public string PackageDeprecationReasons
         {
@@ -355,17 +335,17 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _packageDeprecationAlternatePackageLinkText;
-        public string PackageDeprecationAlternatePackageLinkText
+        private string _packageDeprecationAlternatePackageText;
+        public string PackageDeprecationAlternatePackageText
         {
-            get { return _packageDeprecationAlternatePackageLinkText; }
+            get { return _packageDeprecationAlternatePackageText; }
             set
             {
-                if (_packageDeprecationAlternatePackageLinkText != value)
+                if (_packageDeprecationAlternatePackageText != value)
                 {
-                    _packageDeprecationAlternatePackageLinkText = value;
+                    _packageDeprecationAlternatePackageText = value;
 
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkText));
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageText));
                 }
             }
         }
@@ -419,43 +399,37 @@ namespace NuGet.PackageManagement.UI
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
                         if (alternatePackage != null)
                         {
-                            PackageDeprecationAlternatePackageLinkText = GetPackageDeprecationAlternatePackageLinkText(alternatePackage);
-
-                            PackageDeprecationAlternatePackageLinkUrl = new Uri(
-                                    _packageMetadata?.PackageDetailsUrl
-                                    .ToString()
-                                    .ToLowerInvariant()
-                                    .Replace(
-                                        _packageMetadata.Id.ToLowerInvariant(),
-                                        alternatePackage.PackageId)
-                                    .Replace(
-                                        _packageMetadata.Version.ToNormalizedString(),
-                                        alternatePackage.Range?.MinVersion?.ToNormalizedString() ?? _packageMetadata.Version.ToNormalizedString()));
+                            PackageDeprecationAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
                         }
                     }
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageRangeHasUpperBound));
-                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageLinkUrl));
                 }
             }
         }
 
-        private string GetPackageDeprecationAlternatePackageLinkText(AlternatePackageMetadata alternatePackageMetadata)
+        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
         {
             if (alternatePackageMetadata == null)
             {
                 return null;
             }
 
+            string text = alternatePackageMetadata.PackageId;
+
             if (!alternatePackageMetadata.Range.IsFloating
                 && alternatePackageMetadata.Range.HasLowerBound)
             {
-                return $"{alternatePackageMetadata.PackageId} version {alternatePackageMetadata.Range.MinVersion.ToNormalizedString()}";
+                text = $"{alternatePackageMetadata.PackageId} version {alternatePackageMetadata.Range.MinVersion.ToNormalizedString()}";
             }
 
-            return alternatePackageMetadata.PackageId;
+            if (alternatePackageMetadata.Range.HasUpperBound)
+            {
+                text += Resources.Label_OrAbove;
+            }
+
+            return text;
         }
 
         protected abstract void CreateVersions();
