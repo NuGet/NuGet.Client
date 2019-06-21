@@ -15,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.VisualStudio;
@@ -1591,6 +1592,53 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.NotNull(actualProjectSpec);
             Assert.True(actualProjectSpec.RestoreMetadata.ProjectWideWarningProperties.AllWarningsAsErrors);
             Assert.True(actualProjectSpec.TargetFrameworks.First().Dependencies.First().NoWarn.First().Equals(NuGetLogCode.NU1605));
+            Assert.Null(actualProjectSpec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
+
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task NominateProjectAsync_RuntimeIdentifierGraphPath(bool isV2Nominate)
+        {
+            var runtimeGraphPath = @"C:\Program Files\dotnet\sdk\3.0.100\runtime.json";
+
+            var packageReference = new VsReferenceItem("NuGet.Protocol", new VsReferenceProperties() { });
+
+            var vstfms = isV2Nominate ?
+                (IVsTargetFrameworkInfo)
+                new VsTargetFrameworkInfo2(
+                        "netcoreapp1.0",
+                        new IVsReferenceItem[] { packageReference },
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {
+                            new VsProjectProperty(ProjectBuildProperties.RuntimeIdentifierGraphPath, runtimeGraphPath)
+                        }) :
+                new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        new IVsReferenceItem[] { packageReference },
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        new[] {
+                            new VsProjectProperty(ProjectBuildProperties.RuntimeIdentifierGraphPath, runtimeGraphPath)
+                        });
+
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var builder = cps.Builder
+                .WithTargetFrameworkInfo(vstfms);
+
+            // Act
+            var actualRestoreSpec = isV2Nominate ?
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal(runtimeGraphPath, actualProjectSpec.TargetFrameworks.First().RuntimeIdentifierGraphPath);
         }
 
         [Fact]

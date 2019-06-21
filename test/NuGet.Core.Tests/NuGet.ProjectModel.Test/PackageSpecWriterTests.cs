@@ -528,6 +528,37 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
+        [Fact]
+        public void RoundTripRuntimeIdentifierGraphPath()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""netcoreapp3.0"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.0.100\\runtime.json"" 
+                    },
+                    ""netcoreapp3.1"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[2.0.0, )"",
+                                ""autoReferenced"": true
+                            }
+                        },
+                        ""runtimeIdentifierGraphPath"": ""path\\to\\sdk\\3.1.100\\runtime.json"" 
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             var writer = new JsonObjectWriter();
