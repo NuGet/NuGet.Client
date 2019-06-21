@@ -325,7 +325,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
                                 DefaultProject = null;
 
-                                CommandUiUtilities.InvalidateDefaultProject();
+                                NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
                             };
                         }
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -745,7 +745,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                     {
                         DefaultProject = newValue;
 
-                        CommandUiUtilities.InvalidateDefaultProject();
+                        await CommandUiUtilities.InvalidateDefaultProjectAsync();
                     }
                 })
                 .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate)));
