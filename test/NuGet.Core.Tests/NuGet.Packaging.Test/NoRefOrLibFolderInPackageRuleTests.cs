@@ -11,6 +11,8 @@ using Xunit;
 using NuGet.Packaging.Rules;
 using Moq;
 using System.Xml.Linq;
+using System.Collections;
+using System.Runtime.CompilerServices;
 
 namespace NuGet.Packaging.Test
 {
@@ -20,59 +22,19 @@ namespace NuGet.Packaging.Test
         public void Validate_PacakageWithBuildFilesWithoutLibOrRefFiles_ShouldWarn()
         {
             //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-            using (var testDirectory = TestDirectory.Create())
+            var files = new[]
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
+                "build/random_tfm/test.dll",
+            };
 
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "random_tfm"));
-
-                var tfmStream = File.Create(Path.Combine(testDirectory, "build", "random_tfm", "test.dll"));
-                tfmStream.Dispose();
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
-                    {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
-
-                runner.BuildPackage();
-
+            using (var testContext = TestContext.Create(files))
+            {
+                // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-
-                    //Assert
-                    Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                // Assert
+                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
         
@@ -80,120 +42,38 @@ namespace NuGet.Packaging.Test
         public void Validate_PacakageWithBuildFilesWithoutLibOrRefFilesWithNativeFileOnly_ShouldNotWarn()
         {
             //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-            using (var testDirectory = TestDirectory.Create())
+            var files = new[]
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
+                "build/native/test.dll"
+            };
 
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "any"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "native"));
-
-                var nativeStream = File.Create(Path.Combine(testDirectory, "build", "native", "test.dll"));
-                nativeStream.Dispose();
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
-                    {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
-
-                runner.BuildPackage();
-
+            using (var testContext = TestContext.Create(files))
+            {
+                // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-
-                    //Assert
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
         [Fact]
         public void Validate_PacakageWithBuildFilesWithoutLibOrRefFilesWithAnyFileOnly_ShouldNotWarn()
         {
             //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-            using (var testDirectory = TestDirectory.Create())
+            var files = new[]
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
+                "build/any/test.dll"
+            };
 
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "any"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "native"));
-
-                var anyStream = File.Create(Path.Combine(testDirectory, "build", "any", "test.dll"));
-                anyStream.Dispose();
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
-                    {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
-
-                runner.BuildPackage();
-
+            using (var testContext = TestContext.Create(files))
+            {
+                // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-
-                    //Assert
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
 
@@ -201,129 +81,37 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithBuildFileWithNativeAndAnyAndTFMFiles_ShouldWarn()
         {
             //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-            using (var testDirectory = TestDirectory.Create())
+            var files = new[]
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
+                "build/random_tfm/test.dll",
+                "build/any/test.dll",
+                "build/native/test.dll"
+            };
 
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "random_tfm"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "any"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build", "native"));
-
-                var tfmStream = File.Create(Path.Combine(testDirectory, "build", "random_tfm", "test.dll"));
-                tfmStream.Dispose();
-
-                var anyStream = File.Create(Path.Combine(testDirectory, "build", "any", "test.dll"));
-                anyStream.Dispose();
-
-                var nativeStream = File.Create(Path.Combine(testDirectory, "build", "native", "test.dll"));
-                nativeStream.Dispose();
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
-                    {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
-
-                runner.BuildPackage();
-
+            using (var testContext = TestContext.Create(files))
+            {
+                // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-
-                    //Assert
-                    Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                // Assert
+                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
 
         [Fact]
         public void Validate_PackageWithLibFiles_ShouldNotWarn()
         {
-            //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-            using (var testDirectory = TestDirectory.Create())
+            // Assemble 
+            var files = new[] { "lib/random_tfm/test.dll" };
+            using (var testContext = TestContext.Create(files))
             {
-                var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
-                File.AppendAllText(nuspecPath, nuspecContent);
-
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "lib"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "lib", "random_tfm"));
-
-                var tfmStream = File.Create(Path.Combine(testDirectory, "lib", "random_tfm", "test.dll"));
-                tfmStream.Dispose();
-
-                var builder = new PackageBuilder();
-                var runner = new PackCommandRunner(
-                    new PackArgs
-                    {
-                        CurrentDirectory = testDirectory,
-                        OutputDirectory = testDirectory,
-                        Path = nuspecPath,
-                        Exclude = Array.Empty<string>(),
-                        Symbols = true,
-                        Logger = NullLogger.Instance
-                    },
-                    MSBuildProjectFactory.ProjectCreator,
-                    builder);
-
-                runner.BuildPackage();
-
+                // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-
-                    //Assert
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
 
@@ -331,6 +119,33 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithRefFiles_ShouldNotWarn()
         {
             //Arrange
+            var files = new[]
+            {
+                "ref/random_tfm/test.dll"
+            };
+
+            using (var testContext = TestContext.Create(files))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+    }
+
+    internal class TestContext : IDisposable
+    {
+        public TestContext(PackageArchiveReader reader)
+        {
+            PackageArchiveReader = reader;
+        }
+
+        public static TestContext Create(IEnumerable<string> files)
+        {
+            //Arrange
             var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
 "<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
 "   <metadata>" +
@@ -350,12 +165,13 @@ namespace NuGet.Packaging.Test
                 var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
                 File.AppendAllText(nuspecPath, nuspecContent);
 
-                Directory.CreateDirectory(Path.Combine(testDirectory, "build"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "ref"));
-                Directory.CreateDirectory(Path.Combine(testDirectory, "ref", "random_tfm"));
+                foreach(var file in files)
+                {
+                    Directory.CreateDirectory(Path.Combine(testDirectory, Path.GetDirectoryName(file)));
 
-                var tfmStream = File.Create(Path.Combine(testDirectory, "ref", "random_tfm", "test.dll"));
-                tfmStream.Dispose();
+                    var tfmStream = File.Create(Path.Combine(testDirectory, file));
+                    tfmStream.Dispose();
+                }
 
                 var builder = new PackageBuilder();
                 var runner = new PackCommandRunner(
@@ -372,20 +188,18 @@ namespace NuGet.Packaging.Test
                     builder);
 
                 runner.BuildPackage();
-
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
 
-                using (var reader = new PackageArchiveReader(nupkgPath))
-                {
-                    var issues = new List<PackagingLogMessage>();
-                    //Act
-                    issues.AddRange(rule.Validate(reader).OrderBy(p => p.Code.ToString(), StringComparer.CurrentCulture));
-                   
-                    //Assert
-                    Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-                }
+                return new TestContext(new PackageArchiveReader(nupkgPath));
             }
         }
+
+        public void Dispose()
+        {
+            PackageArchiveReader.Dispose();
+        }
+
+        public PackageArchiveReader PackageArchiveReader { get; private set; }
+
     }
 }
