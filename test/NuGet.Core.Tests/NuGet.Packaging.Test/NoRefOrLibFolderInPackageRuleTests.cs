@@ -18,7 +18,6 @@ namespace NuGet.Packaging.Test
 {
     public class NoRefOrLibFolderInPackageRuleTests
     {
-        //Arrange
         string _nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
 "<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
 "   <metadata>" +
