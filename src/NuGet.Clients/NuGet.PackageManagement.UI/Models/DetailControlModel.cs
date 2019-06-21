@@ -350,7 +350,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public string ExplainPackageDeprecationReasons(IEnumerable<string> reasons)
+        public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
             if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
             {
@@ -392,8 +392,9 @@ namespace NuGet.PackageManagement.UI
 
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
-                        PackageDeprecationReasonsExplained = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons);
-                        PackageDeprecationReasons = "(" + string.Join(", ", _packageMetadata.DeprecationMetadata.Reasons) + ")";
+                        var reasons = _packageMetadata.DeprecationMetadata.Reasons.ToList();
+                        PackageDeprecationReasonsExplained = ExplainPackageDeprecationReasons(reasons);
+                        PackageDeprecationReasons = GetPackageDeprecationReasonsText(reasons);
                         PackageDeprecationCustomMessage = string.IsNullOrWhiteSpace(_packageMetadata.DeprecationMetadata.Message) ? null : _packageMetadata.DeprecationMetadata.Message;
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
@@ -407,6 +408,16 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                 }
             }
+        }
+
+        private string GetPackageDeprecationReasonsText(IReadOnlyCollection<string> reasons)
+        {
+            var displayText = "(" + string.Join(", ", reasons) + ")";
+
+            // Translate enum values to display text
+            displayText = displayText.Replace(PackageDeprecationReason.CriticalBugs, "Critical Bugs");
+
+            return displayText;
         }
 
         private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
