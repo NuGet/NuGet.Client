@@ -612,7 +612,7 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Linux)]
         [InlineData("dir6/*.EMPTY", new[]
             {
-                "dir6/FILE3.EMPTY",
+                "/dir6/FILE3.EMPTY",
             })]
         public void PathResolver_PerformWildcardSearch_UppercaseFilename_OnLinux(string searchPath, string[] expectedResults)
         {
