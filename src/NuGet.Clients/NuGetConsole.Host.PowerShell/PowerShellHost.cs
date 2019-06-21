@@ -367,24 +367,24 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
             // Also, it uses semaphores, do not call it from the UI thread
             Task.Run(async () =>
-            {
-                UpdateWorkingDirectory();
-
-                var retries = 0;
-
-                while (retries < ExecuteInitScriptsRetriesLimit)
                 {
-                    if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                    UpdateWorkingDirectory();
+
+                    var retries = 0;
+
+                    while (retries < ExecuteInitScriptsRetriesLimit)
                     {
+                        if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                        {
+                            await ExecuteInitScriptsAsync();
+                            break;
+                        }
 
-                        await ExecuteInitScriptsAsync();
-                        break;
+                        await Task.Delay(ExecuteInitScriptsRetryDelay);
+                        retries++;
                     }
-
-                    await Task.Delay(ExecuteInitScriptsRetryDelay);
-                    retries++;
-                }
-            }).ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
+                })
+                .ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
@@ -718,34 +718,35 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             Assumes.Present(_solutionManager.Value);
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                NuGetProject project = await _solutionManager.Value.GetDefaultNuGetProjectAsync();
-
-                var oldValue = DefaultProject;
-                string newValue;
-
-                if (oldValue == null && project == null)
                 {
-                    return;
-                }
-                else if (project == null)
-                {
-                    newValue = null;
-                }
-                else
-                {
-                    newValue = await GetDisplayNameAsync(project);
-                }
+                    NuGetProject project = await _solutionManager.Value.GetDefaultNuGetProjectAsync();
 
-                bool isInvalidationRequired = oldValue != newValue;
+                    var oldValue = DefaultProject;
+                    string newValue;
 
-                if (isInvalidationRequired)
-                {
-                    DefaultProject = newValue;
+                    if (oldValue == null && project == null)
+                    {
+                        return;
+                    }
+                    else if (project == null)
+                    {
+                        newValue = null;
+                    }
+                    else
+                    {
+                        newValue = await GetDisplayNameAsync(project);
+                    }
 
-                    CommandUiUtilities.InvalidateDefaultProject();
-                }
-            }).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate)));
+                    bool isInvalidationRequired = oldValue != newValue;
+
+                    if (isInvalidationRequired)
+                    {
+                        DefaultProject = newValue;
+
+                        CommandUiUtilities.InvalidateDefaultProject();
+                    }
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate)));
         }
 
         public string[] GetAvailableProjects()
