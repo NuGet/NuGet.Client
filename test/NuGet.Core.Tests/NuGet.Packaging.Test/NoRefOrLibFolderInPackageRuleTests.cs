@@ -18,6 +18,21 @@ namespace NuGet.Packaging.Test
 {
     public class NoRefOrLibFolderInPackageRuleTests
     {
+        //Arrange
+        string _nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
+"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
+"   <metadata>" +
+"        <id>test</id>" +
+"        <version>1.0.0</version>" +
+"        <authors>Unit Test</authors>" +
+"        <description>Sample Description</description>" +
+"        <language>en-US</language>" +
+"    <dependencies>" +
+"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
+"    </dependencies>" +
+"    </metadata>" +
+"</package>";
+
         [Fact]
         public void Validate_PacakageWithBuildFilesWithoutLibOrRefFiles_ShouldWarn()
         {
@@ -27,7 +42,7 @@ namespace NuGet.Packaging.Test
                 "build/random_tfm/test.dll",
             };
 
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -47,7 +62,7 @@ namespace NuGet.Packaging.Test
                 "build/native/test.dll"
             };
 
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -66,7 +81,7 @@ namespace NuGet.Packaging.Test
                 "build/any/test.dll"
             };
 
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -88,7 +103,7 @@ namespace NuGet.Packaging.Test
                 "build/native/test.dll"
             };
 
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -104,7 +119,7 @@ namespace NuGet.Packaging.Test
         {
             // Assemble 
             var files = new[] { "lib/random_tfm/test.dll" };
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -124,7 +139,7 @@ namespace NuGet.Packaging.Test
                 "ref/random_tfm/test.dll"
             };
 
-            using (var testContext = TestPackageFile.Create(files))
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -138,28 +153,13 @@ namespace NuGet.Packaging.Test
 
     internal class TestPackageFile : IDisposable
     {
-        public TestPackageFile(PackageArchiveReader reader)
+        private TestPackageFile(PackageArchiveReader reader)
         {
             PackageArchiveReader = reader;
         }
 
-        public static TestPackageFile Create(IEnumerable<string> files)
+        public static TestPackageFile Create(IEnumerable<string> files, string nuspecContent)
         {
-            //Arrange
-            var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
             using (var testDirectory = TestDirectory.Create())
             {
                 var nuspecPath = Path.Combine(testDirectory, "test.nuspec");
