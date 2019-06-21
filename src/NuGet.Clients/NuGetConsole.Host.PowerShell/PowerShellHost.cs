@@ -719,6 +719,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
                 {
+                    await TaskScheduler.Default;
+
                     NuGetProject project = await _solutionManager.Value.GetDefaultNuGetProjectAsync();
 
                     var oldValue = DefaultProject;
