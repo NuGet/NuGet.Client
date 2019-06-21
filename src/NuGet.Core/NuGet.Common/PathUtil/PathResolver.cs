@@ -96,7 +96,7 @@ namespace NuGet.Common
                     .Replace(@"\?", "."); // ? translates to a single any character
             }
 
-            return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+            return new Regex('^' + pattern + '$', RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
         }
 
         public static IEnumerable<string> PerformWildcardSearch(string basePath, string searchPath)

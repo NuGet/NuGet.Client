@@ -609,6 +609,18 @@ namespace NuGet.Common.Test
             Verify(expectedResults, actualFullPaths);
         }
 
+        [PlatformTheory(Platform.Linux)]
+        [InlineData("dir6/*.EMPTY", new[]
+            {
+                "dir6/FILE3.EMPTY",
+            })]
+        public void PathResolver_PerformWildcardSearch_UppercaseFilename_OnLinux(string searchPath, string[] expectedResults)
+        {
+            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+
+            Verify(expectedResults, actualFullPaths);
+        }
+
         private void Verify(IEnumerable<string> expectedRelativePaths, IEnumerable<string> actualFullPaths)
         {
             IEnumerable<string> actualRelativePaths = actualFullPaths.Select(fullPath => fullPath.Substring(_fixture.Path.Length));
@@ -640,6 +652,8 @@ namespace NuGet.Common.Test
             file1.txt
             file2.txt
         dir5
+        dir6
+            FILE3.EMPTY
         file1.txt
         file2.txt
     */
@@ -664,17 +678,20 @@ namespace NuGet.Common.Test
         private void PopulateTestDirectory()
         {
             var rootDirectory = new DirectoryInfo(_rootDirectory.Path);
-            DirectoryInfo directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
-            DirectoryInfo directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
-            DirectoryInfo directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
-            DirectoryInfo directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
-            Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
+            var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+            var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+            var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
+            var directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
+            var directory5 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
+            var directory6 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir6"));
 
             CreateTestFiles(rootDirectory);
             CreateTestFiles(directory1);
             CreateTestFiles(directory2);
             CreateTestFiles(directory3);
             CreateTestFiles(directory4);
+
+            File.WriteAllText(System.IO.Path.Combine(directory6.FullName, "FILE3.EMPTY"), string.Empty);
         }
 
         private static void CreateTestFiles(DirectoryInfo directory)
