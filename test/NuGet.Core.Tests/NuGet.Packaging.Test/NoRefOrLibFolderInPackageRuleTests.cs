@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Test
                 "build/random_tfm/test.dll",
             };
 
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Test
                 "build/native/test.dll"
             };
 
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -66,7 +66,7 @@ namespace NuGet.Packaging.Test
                 "build/any/test.dll"
             };
 
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Test
                 "build/native/test.dll"
             };
 
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -104,7 +104,7 @@ namespace NuGet.Packaging.Test
         {
             // Assemble 
             var files = new[] { "lib/random_tfm/test.dll" };
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -124,7 +124,7 @@ namespace NuGet.Packaging.Test
                 "ref/random_tfm/test.dll"
             };
 
-            using (var testContext = TestContext.Create(files))
+            using (var testContext = TestPackageFile.Create(files))
             {
                 // Act
                 var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
@@ -136,14 +136,14 @@ namespace NuGet.Packaging.Test
         }
     }
 
-    internal class TestContext : IDisposable
+    internal class TestPackageFile : IDisposable
     {
-        public TestContext(PackageArchiveReader reader)
+        public TestPackageFile(PackageArchiveReader reader)
         {
             PackageArchiveReader = reader;
         }
 
-        public static TestContext Create(IEnumerable<string> files)
+        public static TestPackageFile Create(IEnumerable<string> files)
         {
             //Arrange
             var nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
@@ -190,7 +190,7 @@ namespace NuGet.Packaging.Test
                 runner.BuildPackage();
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
 
-                return new TestContext(new PackageArchiveReader(nupkgPath));
+                return new TestPackageFile(new PackageArchiveReader(nupkgPath));
             }
         }
 
