@@ -11,6 +11,7 @@ using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Task = System.Threading.Tasks.Task;
 using VsServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace NuGet.VisualStudio
@@ -95,17 +96,23 @@ namespace NuGet.VisualStudio
             // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            return await GetGlobalServiceFreeThreadedAsync<TService, TInterface>();
+        }
+
+        public static Task<TInterface> GetGlobalServiceFreeThreadedAsync<TService, TInterface>() where TInterface : class
+        {
             if (PackageServiceProvider != null)
             {
                 var result = PackageServiceProvider.GetService(typeof(TService));
-                TInterface service = result as TInterface;
+                var service = result as TInterface;
+
                 if (service != null)
                 {
-                    return service;
+                    return Task.FromResult(service);
                 }
             }
 
-            return Package.GetGlobalService(typeof(TService)) as TInterface;
+            return Task.FromResult(Package.GetGlobalService(typeof(TService)) as TInterface);
         }
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
