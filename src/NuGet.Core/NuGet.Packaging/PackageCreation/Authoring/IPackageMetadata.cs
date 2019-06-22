@@ -18,6 +18,7 @@ namespace NuGet.Packaging
         IEnumerable<string> Owners { get; }
         Uri IconUrl { get; }
         Uri LicenseUrl { get; }
+        string Icon { get; }
         Uri ProjectUrl { get; }
         bool RequireLicenseAcceptance { get; }
         bool DevelopmentDependency { get; }
