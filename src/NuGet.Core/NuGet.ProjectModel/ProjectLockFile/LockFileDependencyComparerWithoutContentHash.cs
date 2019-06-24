@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using NuGet.Shared;
 
 namespace NuGet.ProjectModel.ProjectLockFile
 {
@@ -11,12 +12,20 @@ namespace NuGet.ProjectModel.ProjectLockFile
 
         public bool Equals(LockFileDependency x, LockFileDependency y)
         {
-            return LockFileDependency.Equals(x, y, LockFileDependency.ComparisonType.ExcludeContentHash);
+            return LockFileDependencyIdVersionComparer.Default.Equals(x, y) &&
+                x.Type == y.Type &&
+                EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
+                EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies);
         }
 
         public int GetHashCode(LockFileDependency obj)
         {
-            return LockFileDependency.GetHashCode(obj, LockFileDependency.ComparisonType.ExcludeContentHash);
+            var combiner = new HashCodeCombiner();
+            combiner.AddObject(LockFileDependencyIdVersionComparer.Default.GetHashCode(obj));
+            combiner.AddObject(obj.RequestedVersion);
+            combiner.AddSequence(obj.Dependencies);
+            combiner.AddObject(obj.Type);
+            return combiner.CombinedHash;
         }
     }
 }

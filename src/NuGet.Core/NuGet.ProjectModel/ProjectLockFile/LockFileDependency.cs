@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel.ProjectLockFile;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -25,45 +26,8 @@ namespace NuGet.ProjectModel
 
         public bool Equals(LockFileDependency other)
         {
-            return Equals(this, other, ComparisonType.Full);
-        }
-
-        internal static bool Equals(LockFileDependency x, LockFileDependency y, ComparisonType comparisonType)
-        {
-            if (ReferenceEquals(x, y))
-            {
-                return true;
-            }
-
-            if (x == null || y == null)
-            {
-                return false;
-            }
-
-            switch (comparisonType)
-            {
-                case ComparisonType.IdVersion:
-                    return StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
-                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion);
-
-                case ComparisonType.ExcludeContentHash:
-                    return x.Type == y.Type &&
-                        StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
-                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
-                        EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
-                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies);
-
-                case ComparisonType.Full:
-                    return x.ContentHash == y.ContentHash &&
-                        x.Type == y.Type &&
-                        StringComparer.OrdinalIgnoreCase.Equals(x.Id, y.Id) &&
-                        EqualityUtility.EqualsWithNullCheck(x.ResolvedVersion, y.ResolvedVersion) &&
-                        EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
-                        EqualityUtility.SequenceEqualWithNullCheck(x.Dependencies, y.Dependencies);
-
-                default:
-                    throw new ArgumentException("Unknown " + nameof(ComparisonType) + " value", nameof(comparisonType));
-            }
+            return LockFileDependencyComparerWithoutContentHash.Default.Equals(this, other) &&
+                ContentHash == other.ContentHash;
         }
 
         public override bool Equals(object obj)
@@ -73,49 +37,10 @@ namespace NuGet.ProjectModel
 
         public override int GetHashCode()
         {
-            return GetHashCode(this, ComparisonType.Full);
-        }
-
-        internal static int GetHashCode(LockFileDependency obj, ComparisonType comparisonType)
-        {
             var combiner = new HashCodeCombiner();
-
-            switch (comparisonType)
-            {
-                case ComparisonType.IdVersion:
-                    combiner.AddObject(obj.Id);
-                    combiner.AddObject(obj.ResolvedVersion);
-                    break;
-
-                case ComparisonType.ExcludeContentHash:
-                    combiner.AddObject(obj.Id);
-                    combiner.AddObject(obj.ResolvedVersion);
-                    combiner.AddObject(obj.RequestedVersion);
-                    combiner.AddSequence(obj.Dependencies);
-                    combiner.AddObject(obj.Type);
-                    break;
-
-                case ComparisonType.Full:
-                    combiner.AddObject(obj.Id);
-                    combiner.AddObject(obj.ResolvedVersion);
-                    combiner.AddObject(obj.RequestedVersion);
-                    combiner.AddSequence(obj.Dependencies);
-                    combiner.AddObject(obj.ContentHash);
-                    combiner.AddObject(obj.Type);
-                    break;
-
-                default:
-                    throw new ArgumentException("Unknown ComparisonType value", nameof(comparisonType));
-            }
-
+            combiner.AddObject(LockFileDependencyComparerWithoutContentHash.Default.GetHashCode(this));
+            combiner.AddObject(ContentHash);
             return combiner.CombinedHash;
-        }
-
-        internal enum ComparisonType
-        {
-            IdVersion,
-            ExcludeContentHash,
-            Full
         }
     }
 }
