@@ -105,6 +105,22 @@ namespace NuGet.VisualStudio
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
+        public static async Task<TInterface> GetGlobalServiceFreeThreadedAsync<TService, TInterface>() where TInterface : class
+        {
+            if (PackageServiceProvider != null)
+            {
+                var result = await PackageServiceProvider.GetServiceAsync(typeof(TService));
+                var service = result as TInterface;
+
+                if (service != null)
+                {
+                    return service;
+                }
+            }
+
+            return Package.GetGlobalService(typeof(TService)) as TInterface;
+        }
+
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
         {
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
@@ -113,7 +129,7 @@ namespace NuGet.VisualStudio
 
         private static async Task<TService> GetComponentModelServiceAsync<TService>() where TService : class
         {
-            IComponentModel componentModel = await GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+            IComponentModel componentModel = await GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
             return componentModel?.GetService<TService>();
         }
 
