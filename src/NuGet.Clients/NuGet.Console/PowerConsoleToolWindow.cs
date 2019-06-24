@@ -6,18 +6,15 @@ using System.ComponentModel.Design;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.PackageManagement;
@@ -37,6 +34,7 @@ namespace NuGetConsole.Implementation
     {
         private JoinableTask _loadTask;
         private const string F1KeywordValuePmc = "VS.NuGet.PackageManager.Console";
+
         /// <summary>
         /// Get VS IComponentModel service.
         /// </summary>
@@ -161,7 +159,7 @@ namespace NuGetConsole.Implementation
                 windowFrame.SetGuidProperty((int)__VSFPROPID.VSFPROPID_InheritKeyBindings, ref cmdUi);
             });
 
-            // start a task when VS is idle and dont await it immediately
+            // start a task when VS is idle and don't await it immediately
             _loadTask = NuGetUIThreadHelper.JoinableTaskFactory.StartOnIdle(
                 async () =>
                 {

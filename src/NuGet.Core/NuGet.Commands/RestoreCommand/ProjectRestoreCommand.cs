@@ -5,6 +5,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
 
@@ -116,11 +118,25 @@ namespace NuGet.Commands
 
                 var runtimeGraphs = new List<RestoreTargetGraph>();
                 var runtimeTasks = new List<Task<RestoreTargetGraph[]>>();
-
+                var projectProvidedRuntimeIdentifierGraphs = new SortedList<string, RuntimeGraph>();
                 foreach (var graph in graphs)
                 {
-                    // Get the runtime graph for this specific tfm graph
-                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories);
+                    // PCL Projects with Supports have a runtime graph but no matching framework.
+                    var runtimeGraphPath = _request.Project.TargetFrameworks.
+                            FirstOrDefault(e => NuGetFramework.Comparer.Equals(e.FrameworkName, graph.Framework))?.RuntimeIdentifierGraphPath;
+
+                    RuntimeGraph projectProviderRuntimeGraph = null;
+                    if (runtimeGraphPath != null &&
+                        !projectProvidedRuntimeIdentifierGraphs.TryGetValue(runtimeGraphPath, out projectProviderRuntimeGraph))
+                    {
+
+                        projectProviderRuntimeGraph = GetRuntimeGraph(runtimeGraphPath);
+                        success &= projectProviderRuntimeGraph != null;
+                        projectProvidedRuntimeIdentifierGraphs.Add(runtimeGraphPath, projectProviderRuntimeGraph);
+                    }
+
+
+                    var runtimeGraph = GetRuntimeGraph(graph, localRepositories, projectRuntimeGraph: projectProviderRuntimeGraph);
                     var runtimeIds = runtimesByFramework[graph.Framework];
 
                     // Merge all runtimes for the output
@@ -167,7 +183,44 @@ namespace NuGet.Commands
             return Tuple.Create(success, graphs, allRuntimes);
         }
 
-        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, ProjectModel.TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
+        // Gets the runtime graph specified in the path.
+        // returns null if an error is hit. A valid runtime graph otherwise.
+        private RuntimeGraph GetRuntimeGraph(string runtimeGraphPath)
+        {
+            if (File.Exists(runtimeGraphPath))
+            {
+                try
+                {
+                    using (var stream = File.OpenRead(runtimeGraphPath))
+                    {
+                        var runtimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(stream);
+                        return runtimeGraph;
+                    }
+                }
+                catch (Exception e)
+                {
+                    _logger.Log(
+                     RestoreLogMessage.CreateError(
+                         NuGetLogCode.NU1007,
+                         string.Format(CultureInfo.CurrentCulture,
+                             Strings.Error_ProjectRuntimeJsonIsUnreadable,
+                             runtimeGraphPath,
+                             e.Message)));
+                }
+            }
+            else
+            {
+                _logger.Log(
+                 RestoreLogMessage.CreateError(
+                     NuGetLogCode.NU1007,
+                     string.Format(CultureInfo.CurrentCulture,
+                         Strings.Error_ProjectRuntimeJsonNotFound,
+                         runtimeGraphPath)));
+            }
+            return null;
+        }
+
+        private async Task<DownloadDependencyResolutionResult> ResolveDownloadDependencies(RemoteWalkContext context, ConcurrentDictionary<LibraryRange, Task<Tuple<LibraryRange, RemoteMatch>>> downloadDependenciesCache, TargetFrameworkInformation targetFrameworkInformation, CancellationToken token)
         {
             var packageDownloadTasks = targetFrameworkInformation.DownloadDependencies.Select(downloadDependency => ResolverUtility.FindPackageLibraryMatchCachedAsync(
                     downloadDependenciesCache, downloadDependency, context.RemoteLibraryProviders, context.LocalLibraryProviders, context.CacheContext, _logger, token));
@@ -401,10 +454,10 @@ namespace NuGet.Commands
         /// <summary>
         /// Merge all runtime.json found in the flattened graph.
         /// </summary>
-        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories)
+        private RuntimeGraph GetRuntimeGraph(RestoreTargetGraph graph, IReadOnlyList<NuGetv3LocalRepository> localRepositories, RuntimeGraph projectRuntimeGraph)
         {
             _logger.LogVerbose(Strings.Log_ScanningForRuntimeJson);
-            var runtimeGraph = RuntimeGraph.Empty;
+            var runtimeGraph = projectRuntimeGraph ?? RuntimeGraph.Empty;
 
             // Find runtime.json files using the flattened graph which is unique per id.
             // Using the flattened graph ensures that only accepted packages will be used.

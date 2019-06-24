@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -30,6 +30,8 @@ namespace NuGet.Test.Utility
         public ConcurrentQueue<string> VerboseMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> MinimalMessages { get; } = new ConcurrentQueue<string>();
         public ConcurrentQueue<string> ErrorMessages { get; } = new ConcurrentQueue<string>();
+        public ConcurrentQueue<string> WarningMessages { get; } = new ConcurrentQueue<string>();
+
         public ConcurrentQueue<ILogMessage> LogMessages { get; } = new ConcurrentQueue<ILogMessage>();
 
         public int Errors { get; set; }
@@ -75,6 +77,7 @@ namespace NuGet.Test.Utility
         {
             Warnings++;
             Messages.Enqueue(data);
+            WarningMessages.Enqueue(data);
             DumpMessage("WARN ", data);
         }
 
@@ -103,6 +106,11 @@ namespace NuGet.Test.Utility
         public string ShowErrors()
         {
             return string.Join(Environment.NewLine, ErrorMessages);
+        }
+
+        public string ShowWarnings()
+        {
+            return string.Join(Environment.NewLine, WarningMessages);
         }
 
         public string ShowMessages()

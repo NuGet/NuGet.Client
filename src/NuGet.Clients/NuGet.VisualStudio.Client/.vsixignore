@@ -1,4 +1,4 @@
-﻿# assemblies not to be included in VSIX
+# assemblies not to be included in VSIX
 
 ICSharpCode.SharpZipLib.dll
 Microsoft.ApplicationInsights.dll
@@ -78,6 +78,7 @@ Microsoft.VisualStudio.Services.TestManagement.TestPlanning.WebApi.dll
 Microsoft.VisualStudio.Services.TestResults.WebApi.dll
 Microsoft.VisualStudio.Services.WebApi.dll
 Microsoft.VisualStudio.Services.WebApi.resources.dll
+Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime.dll
 Microsoft.VisualStudio.Workspace.dll
 Microsoft.VisualStudio.Workspace.Extensions.dll
 Microsoft.VisualStudio.Workspace.Extensions.VS.dll

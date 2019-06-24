@@ -27,6 +27,7 @@
     <None Remove="compiler\resources\leaf.crt" />
     <None Remove="compiler\resources\LocalFileHeaderWithZip64ExtraField.zip" />
     <None Remove="compiler\resources\root.crt" />
+    <None Remove="compiler\resources\runtime.json" />
     <None Remove="compiler\resources\SignatureFileEntry.zip" />
     <None Remove="compiler\resources\SignatureFileWithDeflateCompressionMethodAndDefaultCompressionLevel.zip" />
     <None Remove="compiler\resources\SignatureFileWithFakeContent.zip" />

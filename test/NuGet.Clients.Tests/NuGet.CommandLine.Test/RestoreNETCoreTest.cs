@@ -5,11 +5,15 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+
 using FluentAssertions;
+
 using Newtonsoft.Json.Linq;
+
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -18,6 +22,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+
 using Xunit;
 
 namespace NuGet.CommandLine.Test
@@ -8315,6 +8320,237 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 result.Success.Should().BeTrue();
             }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_ProjectProvidedRuntimeIdentifierGraph_SelectsCorrectRuntimeAssets()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "netcoreapp2.0";
+                var netcoreapp21 = "netcoreapp2.1";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(netcoreapp20), NuGetFramework.Parse(netcoreapp21));
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+                projectA.Properties.Add("RuntimeIdentifier", " ");
+
+                // Set up the package and source
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("runtimes/win7/lib/netcoreapp2.0/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // set up rid graph
+                var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
+                projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties.Add("RuntimeIdentifierGraphPath", ridGraphPath);
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                
+                // Act
+                var result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(4, projectA.AssetsFile.Targets.Count);
+                Assert.Equal(1, projectA.AssetsFile.Libraries.Count);
+                Assert.Equal("runtimes/win7/lib/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("lib/netcoreapp2.0/x.dll",
+                                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_BadProjectProvidedRuntimeIdentifierGraph_FailsRestore()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "netcoreapp2.0";
+                var netcoreapp21 = "netcoreapp2.1";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(netcoreapp20), NuGetFramework.Parse(netcoreapp21));
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+                projectA.Properties.Add("RuntimeIdentifier", " ");
+
+                // Set up the package and source
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("runtimes/win7/lib/netcoreapp2.0/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // set up rid graph
+                var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
+                projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties.Add("RuntimeIdentifierGraphPath", ridGraphPath);
+                File.WriteAllText(ridGraphPath, "{ dsadas , dasda, dsadas { } : dsada } ");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                result.Success.Should().BeFalse();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Contains("NU1007", result.AllOutput);
+                Assert.Equal(NuGetLogCode.NU1007, projectA.AssetsFile.LogMessages.Single().Code);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_ProjectProvidedRuntimeIdentifierGraphChange_DoesNotAffectNoOp()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "netcoreapp2.0";
+                var netcoreapp21 = "netcoreapp2.1";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(netcoreapp20), NuGetFramework.Parse(netcoreapp21));
+                projectA.Properties.Add("RuntimeIdentifiers", "win7-x86");
+                projectA.Properties.Add("RuntimeIdentifier", " ");
+
+                // Set up the package and source
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("runtimes/win7/lib/netcoreapp2.0/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                // setup rid graph.
+                var ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime.json");
+                projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties.Add("RuntimeIdentifierGraphPath", ridGraphPath);
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var commandRunnerResult = Util.RestoreSolution(pathContext);
+
+                // Assert
+                commandRunnerResult.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(4, projectA.AssetsFile.Targets.Count);
+                Assert.Equal(1, projectA.AssetsFile.Libraries.Count);
+                Assert.Equal("runtimes/win7/lib/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("lib/netcoreapp2.0/x.dll",
+                                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+
+                // second set-up. Change the graph. Affect no-op.
+                File.Delete(ridGraphPath);
+                ridGraphPath = Path.Combine(pathContext.WorkingDirectory, "runtime-2.json");
+                projectA.Frameworks.First(e => e.Framework.GetShortFolderName().Equals(netcoreapp20)).Properties["RuntimeIdentifierGraphPath"] = ridGraphPath;
+                File.WriteAllBytes(ridGraphPath, GetTestUtilityResource("runtime.json"));
+                projectA.Save();
+
+                // Act & Assert
+                commandRunnerResult = Util.RestoreSolution(pathContext);
+                commandRunnerResult.Success.Should().BeTrue();
+                commandRunnerResult.AllOutput.Contains("Writing cache file");
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(4, projectA.AssetsFile.Targets.Count);
+                Assert.Equal(1, projectA.AssetsFile.Libraries.Count);
+                Assert.Equal("runtimes/win7/lib/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("lib/netcoreapp2.0/x.dll",
+                                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+
+                // second set-up. Change the graph. Affect no-op.
+                File.Delete(ridGraphPath);
+                File.WriteAllText(ridGraphPath, "{ }"); // empty rid graph.
+                projectA.Save();
+
+                // Act & Assert. The result should not be affected by the runtime json change.
+                commandRunnerResult = Util.RestoreSolution(pathContext);
+                commandRunnerResult.Success.Should().BeTrue();
+                Assert.Contains("No-Op restore", commandRunnerResult.AllOutput);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(4, projectA.AssetsFile.Targets.Count);
+                Assert.Equal(1, projectA.AssetsFile.Libraries.Count);
+                Assert.Equal("runtimes/win7/lib/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp20)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("lib/netcoreapp2.0/x.dll",
+                                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().RuntimeAssemblies.Select(e => e.Path)));
+                Assert.Equal("ref/netcoreapp2.0/x.dll",
+                    string.Join(";", projectA.AssetsFile.Targets.First(e => string.Equals("win7-x86", e.RuntimeIdentifier) && string.Equals(e.TargetFramework.GetShortFolderName(), netcoreapp21)).Libraries.Single().CompileTimeAssemblies.Select(e => e.Path)));
+
+
+            }
+        }
+
+        private static byte[] GetTestUtilityResource(string name)
+        {
+            return ResourceTestUtility.GetResourceBytes(
+                $"Test.Utility.compiler.resources.{name}",
+                typeof(ResourceTestUtility));
         }
     }
 }

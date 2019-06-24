@@ -28,6 +28,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Host.PowerShell.Implementation
@@ -241,36 +242,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             set { UpdateActiveSource(value); }
         }
 
-        public string DefaultProject
-        {
-            get
-            {
-                Assumes.Present(_solutionManager.Value);
-
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    var hr = VsMonitorSelection.IsCmdUIContextActive(
-                        _solutionExistsCookie, out var pfActive);
-
-                    if (!(ErrorHandler.Succeeded(hr) && pfActive > 0))
-                    {
-                        return null;
-                    }
-
-                    await TaskScheduler.Default;
-
-                    var defaultProject = await _solutionManager.Value.GetDefaultNuGetProjectAsync();
-                    if (defaultProject == null)
-                    {
-                        return null;
-                    }
-
-                    return await GetDisplayNameAsync(defaultProject);
-                });
-            }
-        }
+        public string DefaultProject { get; private set; }
 
         #endregion
 
@@ -347,7 +319,14 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         {
                             // Hook up solution events
                             _solutionManager.Value.SolutionOpened += (_, __) => HandleSolutionOpened();
-                            _solutionManager.Value.SolutionClosed += (o, e) => UpdateWorkingDirectory();
+                            _solutionManager.Value.SolutionClosed += (o, e) =>
+                            {
+                                UpdateWorkingDirectory();
+
+                                DefaultProject = null;
+
+                                NuGetUIThreadHelper.JoinableTaskFactory.Run(CommandUiUtilities.InvalidateDefaultProjectAsync);
+                            };
                         }
                         _solutionManager.Value.NuGetProjectAdded += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
                         _solutionManager.Value.NuGetProjectRenamed += (o, e) => UpdateWorkingDirectoryAndAvailableProjects();
@@ -364,6 +343,8 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                         };
                         // Set available private data on Host
                         SetPrivateDataOnHost(false);
+
+                        StartAsyncDefaultProjectUpdate();
                     }
                     catch (Exception ex)
                     {
@@ -386,29 +367,31 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             // Go off the UI thread before calling likely expensive call of ExecuteInitScriptsAsync
             // Also, it uses semaphores, do not call it from the UI thread
             Task.Run(async () =>
-            {
-                UpdateWorkingDirectory();
-
-                var retries = 0;
-
-                while (retries < ExecuteInitScriptsRetriesLimit)
                 {
-                    if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
-                    {
-                        await ExecuteInitScriptsAsync();
-                        break;
-                    }
+                    UpdateWorkingDirectory();
 
-                    await Task.Delay(ExecuteInitScriptsRetryDelay);
-                    retries++;
-                }
-            });
+                    var retries = 0;
+
+                    while (retries < ExecuteInitScriptsRetriesLimit)
+                    {
+                        if (await _solutionManager.Value.IsAllProjectsNominatedAsync())
+                        {
+                            await ExecuteInitScriptsAsync();
+                            break;
+                        }
+
+                        await Task.Delay(ExecuteInitScriptsRetryDelay);
+                        retries++;
+                    }
+                })
+                .ContinueWith(_ => StartAsyncDefaultProjectUpdate(), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
         private void UpdateWorkingDirectoryAndAvailableProjects()
         {
             UpdateWorkingDirectory();
             GetAvailableProjects();
+            StartAsyncDefaultProjectUpdate();
         }
 
         private void UpdateWorkingDirectory()
@@ -726,6 +709,46 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 _solutionManager.Value.DefaultNuGetProjectName = null;
             }
+
+            StartAsyncDefaultProjectUpdate();
+        }
+
+        private void StartAsyncDefaultProjectUpdate()
+        {
+            Assumes.Present(_solutionManager.Value);
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await TaskScheduler.Default;
+
+                    NuGetProject project = await _solutionManager.Value.GetDefaultNuGetProjectAsync();
+
+                    var oldValue = DefaultProject;
+                    string newValue;
+
+                    if (oldValue == null && project == null)
+                    {
+                        return;
+                    }
+                    else if (project == null)
+                    {
+                        newValue = null;
+                    }
+                    else
+                    {
+                        newValue = await GetDisplayNameAsync(project);
+                    }
+
+                    bool isInvalidationRequired = oldValue != newValue;
+
+                    if (isInvalidationRequired)
+                    {
+                        DefaultProject = newValue;
+
+                        await CommandUiUtilities.InvalidateDefaultProjectAsync();
+                    }
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PowerShellHost), nameof(StartAsyncDefaultProjectUpdate)));
         }
 
         public string[] GetAvailableProjects()
@@ -791,7 +814,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             return (await project.GetProjectTypeGuidsAsync()).Contains(VsProjectTypes.WebSiteProjectTypeGuid);
         }
 
-        private async Task<Tuple<string,string>> CompleteTaskAsync(List<Task<Tuple<string, string>>> nameTasks)
+        private async Task<Tuple<string, string>> CompleteTaskAsync(List<Task<Tuple<string, string>>> nameTasks)
         {
             var doneTask = await Task.WhenAny(nameTasks);
             nameTasks.Remove(doneTask);

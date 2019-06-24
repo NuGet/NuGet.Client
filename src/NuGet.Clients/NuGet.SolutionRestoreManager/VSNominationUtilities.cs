@@ -109,6 +109,9 @@ namespace NuGet.SolutionRestoreManager
             // Update TFI with fallback properties
             AssetTargetFallbackUtility.ApplyFramework(tfi, ptf, atf);
 
+
+            tfi.RuntimeIdentifierGraphPath = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.RuntimeIdentifierGraphPath);
+            
             if (targetFrameworkInfo.PackageReferences != null)
             {
                 tfi.Dependencies.AddRange(
