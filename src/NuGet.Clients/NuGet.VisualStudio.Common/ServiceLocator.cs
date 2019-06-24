@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Task = System.Threading.Tasks.Task;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using VsServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
 
 namespace NuGet.VisualStudio
@@ -22,17 +23,12 @@ namespace NuGet.VisualStudio
     // REVIEW: Make this internal 
     public static class ServiceLocator
     {
-        public static void InitializePackageServiceProvider(IServiceProvider provider)
+        public static void InitializePackageServiceProvider(IAsyncServiceProvider provider)
         {
-            if (provider == null)
-            {
-                throw new ArgumentNullException(nameof(provider));
-            }
-
-            PackageServiceProvider = provider;
+            PackageServiceProvider = provider ?? throw new ArgumentNullException(nameof(provider));
         }
 
-        public static IServiceProvider PackageServiceProvider { get; private set; }
+        public static IAsyncServiceProvider PackageServiceProvider { get; private set; }
 
         public static TService GetInstanceSafe<TService>() where TService : class
         {
@@ -103,16 +99,15 @@ namespace NuGet.VisualStudio
         {
             if (PackageServiceProvider != null)
             {
-                var result = PackageServiceProvider.GetService(typeof(TService));
+                var result = await PackageServiceProvider.GetServiceAsync(typeof(TService));
                 var service = result as TInterface;
-
                 if (service != null)
                 {
-                    return Task.FromResult(service);
+                    return service;
                 }
             }
 
-            return Task.FromResult(Package.GetGlobalService(typeof(TService)) as TInterface);
+            return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
