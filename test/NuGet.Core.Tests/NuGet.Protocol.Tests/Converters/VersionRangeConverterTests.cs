@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using Newtonsoft.Json;
+using NuGet.Protocol.Plugins;
 using NuGet.Versioning;
 using Xunit;
 
