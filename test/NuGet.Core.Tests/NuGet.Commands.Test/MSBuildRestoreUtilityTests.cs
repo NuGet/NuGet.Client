@@ -1827,13 +1827,15 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(projectPath, spec.FilePath);
                 Assert.Equal("a", spec.Name);
-                Assert.Equal(ProjectStyle.PackagesConfig, spec.RestoreMetadata.ProjectStyle);
-                Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", spec.RestoreMetadata.ProjectUniqueName);
-                Assert.Equal(projectPath, spec.RestoreMetadata.ProjectPath);
-                Assert.Equal(packagesConfigPath, spec.RestoreMetadata.PackagesConfigPath);
-                Assert.Equal("true", spec.RestoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
-                Assert.Equal("custom.lock.json", spec.RestoreMetadata.RestoreLockProperties.NuGetLockFilePath);
-                Assert.True(spec.RestoreMetadata.RestoreLockProperties.RestoreLockedMode);
+                Assert.IsType(typeof(PackagesConfigProjectRestoreMetadata), spec.RestoreMetadata);
+                var restoreMetadata = (PackagesConfigProjectRestoreMetadata)spec.RestoreMetadata;
+                Assert.Equal(ProjectStyle.PackagesConfig, restoreMetadata.ProjectStyle);
+                Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", restoreMetadata.ProjectUniqueName);
+                Assert.Equal(projectPath, restoreMetadata.ProjectPath);
+                Assert.Equal(packagesConfigPath, restoreMetadata.PackagesConfigPath);
+                Assert.Equal("true", restoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
+                Assert.Equal("custom.lock.json", restoreMetadata.RestoreLockProperties.NuGetLockFilePath);
+                Assert.True(restoreMetadata.RestoreLockProperties.RestoreLockedMode);
             }
         }
 

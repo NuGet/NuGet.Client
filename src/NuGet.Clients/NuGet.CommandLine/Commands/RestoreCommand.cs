@@ -899,7 +899,14 @@ namespace NuGet.CommandLine
         {
             foreach (var pcFile in packagesConfigFiles)
             {
-                var dgSpec = projects?.FirstOrDefault(p => StringComparer.OrdinalIgnoreCase.Equals(p.RestoreMetadata.PackagesConfigPath, pcFile));
+                var dgSpec = projects?.FirstOrDefault(p =>
+                    {
+                        if (p.RestoreMetadata is PackagesConfigProjectRestoreMetadata pcRestoreMetadata)
+                        {
+                            return StringComparer.OrdinalIgnoreCase.Equals(pcRestoreMetadata.PackagesConfigPath, pcFile);
+                        }
+                        return false;
+                    });
 
                 var projectFile = dgSpec?.FilePath ?? pcFile;
                 var projectTfm = dgSpec?.TargetFrameworks.SingleOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;

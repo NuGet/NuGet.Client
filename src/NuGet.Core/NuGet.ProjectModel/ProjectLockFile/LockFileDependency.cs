@@ -26,6 +26,16 @@ namespace NuGet.ProjectModel
 
         public bool Equals(LockFileDependency other)
         {
+            if (other == null)
+            {
+                return false;
+            }
+
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+
             return LockFileDependencyComparerWithoutContentHash.Default.Equals(this, other) &&
                 ContentHash == other.ContentHash;
         }

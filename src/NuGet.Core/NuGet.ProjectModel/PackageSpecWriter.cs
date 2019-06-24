@@ -159,7 +159,10 @@ namespace NuGet.ProjectModel
             // write NuGet lock file msbuild properties
             WriteNuGetLockFileProperties(writer, msbuildMetadata);
 
-            SetValue(writer, "packagesConfigPath", msbuildMetadata.PackagesConfigPath);
+            if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
+            {
+                SetValue(writer, "packagesConfigPath", pcMsbuildMetadata.PackagesConfigPath);
+            }
 
             writer.WriteObjectEnd();
         }

@@ -113,11 +113,6 @@ namespace NuGet.ProjectModel
 
         public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
 
-        /// <summary>
-        /// Full path to the packages.config file, if it exists. Only valid when ProjectStyle is PackagesConfig.
-        /// </summary>
-        public string PackagesConfigPath { get; set; }
-
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -141,7 +136,6 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
-            hashCode.AddObject(PackagesConfigPath);
 
             return hashCode.CombinedHash;
         }
@@ -181,36 +175,38 @@ namespace NuGet.ProjectModel
                    SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
-                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
-                   PathUtility.GetStringComparerBasedOnOS().Equals(PackagesConfigPath, other.PackagesConfigPath);
+                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties);
         }
 
-        public ProjectRestoreMetadata Clone()
+        public virtual ProjectRestoreMetadata Clone()
         {
-            return new ProjectRestoreMetadata
-            {
-                ProjectStyle = ProjectStyle,
-                ProjectPath = ProjectPath,
-                ProjectJsonPath = ProjectJsonPath,
-                OutputPath = OutputPath,
-                ProjectName = ProjectName,
-                ProjectUniqueName = ProjectUniqueName,
-                PackagesPath = PackagesPath,
-                CacheFilePath = CacheFilePath,
-                CrossTargeting = CrossTargeting,
-                LegacyPackagesDirectory = LegacyPackagesDirectory,
-                SkipContentFileWrite = SkipContentFileWrite,
-                ValidateRuntimeAssets = ValidateRuntimeAssets,
-                FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null,
-                ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null,
-                OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null,
-                Sources = Sources?.Select(c => c.Clone()).ToList(),
-                TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList(),
-                Files = Files?.Select(c => c.Clone()).ToList(),
-                ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone(),
-                RestoreLockProperties = RestoreLockProperties?.Clone(),
-                PackagesConfigPath = PackagesConfigPath
-            };
+            var clone = new ProjectRestoreMetadata();
+            FillClone(clone);
+            return clone;
+        }
+
+        protected void FillClone(ProjectRestoreMetadata clone)
+        {
+            clone.ProjectStyle = ProjectStyle;
+            clone.ProjectPath = ProjectPath;
+            clone.ProjectJsonPath = ProjectJsonPath;
+            clone.OutputPath = OutputPath;
+            clone.ProjectName = ProjectName;
+            clone.ProjectUniqueName = ProjectUniqueName;
+            clone.PackagesPath = PackagesPath;
+            clone.CacheFilePath = CacheFilePath;
+            clone.CrossTargeting = CrossTargeting;
+            clone.LegacyPackagesDirectory = LegacyPackagesDirectory;
+            clone.SkipContentFileWrite = SkipContentFileWrite;
+            clone.ValidateRuntimeAssets = ValidateRuntimeAssets;
+            clone.FallbackFolders = FallbackFolders != null ? new List<string>(FallbackFolders) : null;
+            clone.ConfigFilePaths = ConfigFilePaths != null ? new List<string>(ConfigFilePaths) : null;
+            clone.OriginalTargetFrameworks = OriginalTargetFrameworks != null ? new List<string>(OriginalTargetFrameworks) : null;
+            clone.Sources = Sources?.Select(c => c.Clone()).ToList();
+            clone.TargetFrameworks = TargetFrameworks?.Select(c => c.Clone()).ToList();
+            clone.Files = Files?.Select(c => c.Clone()).ToList();
+            clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
+            clone.RestoreLockProperties = RestoreLockProperties?.Clone();
         }
     }
 }

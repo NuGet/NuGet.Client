@@ -12,6 +12,16 @@ namespace NuGet.ProjectModel.ProjectLockFile
 
         public bool Equals(LockFileDependency x, LockFileDependency y)
         {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+
+            if (x == null || y == null)
+            {
+                return false;
+            }
+
             return LockFileDependencyIdVersionComparer.Default.Equals(x, y) &&
                 x.Type == y.Type &&
                 EqualityUtility.EqualsWithNullCheck(x.RequestedVersion, y.RequestedVersion) &&
