@@ -5,8 +5,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              mc:Ignorable="d"
-             d:DesignHeight="150" d:DesignWidth="350"
-             Background="{DynamicResource {x:Static nuget:Brushes.InfoBackgroundKey}}">
+             d:DesignHeight="150" d:DesignWidth="350">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
@@ -31,12 +30,12 @@
       <StackPanel
         Orientation="Vertical">
         <TextBlock
-          Margin="8,8,8,0"
+          Margin="0,8,0,0"
           TextWrapping="WrapWithOverflow"
           TextTrimming="WordEllipsis"
           Text="{Binding Path=PackageDeprecationReasonsExplained}" />
         <StackPanel
-          Margin="8,8,8,0"
+          Margin="0,8,0,0"
           Orientation="Vertical"
           Visibility="{Binding Path=PackageDeprecationAlternatePackageLinkText, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
@@ -53,7 +52,7 @@
           </StackPanel>
         </StackPanel>
         <StackPanel
-          Margin="8,8,8,0"
+          Margin="0,8,0,0"
           Visibility="{Binding Path=PackageDeprecationCustomMessage, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
             Text="Additional details"
