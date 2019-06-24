@@ -337,24 +337,28 @@ namespace NuGet.PackageManagement.UI
 
         public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
         {
-            if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
+            if (reasons == null || !reasons.Any())
+            {
+                return Resources.Label_DeprecationReasons_Unknown;
+            }
+            else if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
             {
                 if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
                 {
-                    return "This package has been deprecated because it's legacy and has critical bugs.";
+                    return Resources.Label_DeprecationReasons_LegacyAndCriticalBugs;
                 }
                 else
                 {
-                    return "This package has been deprecated because it has critical bugs.";
+                    return Resources.Label_DeprecationReasons_CriticalBugs;
                 }
             }
             else if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
             {
-                return "This package has been deprecated because it's legacy and no longer maintained.";
+                return Resources.Label_DeprecationReasons_Legacy;
             }
             else
             {
-                return "This package has been deprecated.";
+                return Resources.Label_DeprecationReasons_Unknown;
             }
         }
 
@@ -377,7 +381,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
-                        PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons.ToList());
+                        PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
                         PackageDeprecationCustomMessage = string.IsNullOrWhiteSpace(_packageMetadata.DeprecationMetadata.Message) ? null : _packageMetadata.DeprecationMetadata.Message;
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;

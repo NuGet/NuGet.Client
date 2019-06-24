@@ -772,6 +772,42 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated because it has critical bugs..
+        /// </summary>
+        public static string Label_DeprecationReasons_CriticalBugs {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_CriticalBugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated because it&apos;s legacy and no longer maintained..
+        /// </summary>
+        public static string Label_DeprecationReasons_Legacy {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_Legacy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated because it&apos;s legacy and has critical bugs..
+        /// </summary>
+        public static string Label_DeprecationReasons_LegacyAndCriticalBugs {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_LegacyAndCriticalBugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package has been deprecated..
+        /// </summary>
+        public static string Label_DeprecationReasons_Unknown {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description.
         /// </summary>
         public static string Label_Description {
