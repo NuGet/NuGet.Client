@@ -22,33 +22,28 @@
       IsExpanded="True"
       Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
       <Expander.Header>
-        <TextBlock
-          FontWeight="Bold"
-          Text="{x:Static nuget:Resources.Label_Deprecated}"/>
-      </Expander.Header>
-      <StackPanel
-        Orientation="Vertical">
-        <Grid
-          Margin="0,8">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto" />
-            <ColumnDefinition Width="*" />
-          </Grid.ColumnDefinitions>
+        <StackPanel
+          Orientation="Horizontal"
+          VerticalAlignment="Center">
+          <TextBlock
+            FontWeight="Bold"
+            Text="{x:Static nuget:Resources.Label_Deprecated}"/>
           <Image
-            Grid.Row="0"
-            Grid.Column="0"
+            Margin="8,0,0,0"
             Height="16"
             Width="16"
             Source="{StaticResource BitmapImage_StatusWarning}"/>
-          <TextBlock
-            Grid.Row="0"
-            Grid.Column="1"
-            Margin="3,0"
-            TextWrapping="Wrap"
-            TextTrimming="WordEllipsis"
-            Text="{Binding Path=PackageDeprecationReasons}" />
-        </Grid>
+        </StackPanel>
+      </Expander.Header>
+      <StackPanel
+        Orientation="Vertical">
+        <TextBlock
+          Margin="0,8,0,0"
+          TextWrapping="WrapWithOverflow"
+          TextTrimming="WordEllipsis"
+          Text="{Binding Path=PackageDeprecationReasons}" />
         <StackPanel
+          Margin="0,8,0,0"
           Orientation="Vertical"
           Visibility="{Binding Path=PackageDeprecationAlternatePackageLinkText, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
