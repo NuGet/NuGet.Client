@@ -306,21 +306,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _packageDeprecationReasonsExplained;
-        public string PackageDeprecationReasonsExplained
-        {
-            get { return _packageDeprecationReasonsExplained; }
-            set
-            {
-                if (_packageDeprecationReasonsExplained != value)
-                {
-                    _packageDeprecationReasonsExplained = value;
-
-                    OnPropertyChanged(nameof(PackageDeprecationReasonsExplained));
-                }
-            }
-        }
-
         private string _packageDeprecationCustomMessage;
         public string PackageDeprecationCustomMessage
         {
@@ -392,9 +377,7 @@ namespace NuGet.PackageManagement.UI
 
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
-                        var reasons = _packageMetadata.DeprecationMetadata.Reasons.ToList();
-                        PackageDeprecationReasonsExplained = ExplainPackageDeprecationReasons(reasons);
-                        PackageDeprecationReasons = GetPackageDeprecationReasonsText(reasons);
+                        PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons.ToList());
                         PackageDeprecationCustomMessage = string.IsNullOrWhiteSpace(_packageMetadata.DeprecationMetadata.Message) ? null : _packageMetadata.DeprecationMetadata.Message;
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
@@ -408,16 +391,6 @@ namespace NuGet.PackageManagement.UI
                     OnPropertyChanged(nameof(IsPackageDeprecated));
                 }
             }
-        }
-
-        private string GetPackageDeprecationReasonsText(IReadOnlyCollection<string> reasons)
-        {
-            var displayText = "(" + string.Join(", ", reasons) + ")";
-
-            // Translate enum values to display text
-            displayText = displayText.Replace(PackageDeprecationReason.CriticalBugs, "Critical Bugs");
-
-            return displayText;
         }
 
         private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
