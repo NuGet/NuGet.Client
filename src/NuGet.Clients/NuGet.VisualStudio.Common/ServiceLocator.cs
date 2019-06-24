@@ -107,6 +107,11 @@ namespace NuGet.VisualStudio
                 }
             }
 
+            // VS Threading Rule #1
+            // Access to ServiceProvider and a lot of casts are performed in this method,
+            // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
 
