@@ -92,11 +92,6 @@ namespace NuGet.VisualStudio
             // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            return await GetGlobalServiceFreeThreadedAsync<TService, TInterface>();
-        }
-
-        public static Task<TInterface> GetGlobalServiceFreeThreadedAsync<TService, TInterface>() where TInterface : class
-        {
             if (PackageServiceProvider != null)
             {
                 var result = await PackageServiceProvider.GetServiceAsync(typeof(TService));
@@ -106,11 +101,6 @@ namespace NuGet.VisualStudio
                     return service;
                 }
             }
-
-            // VS Threading Rule #1
-            // Access to ServiceProvider and a lot of casts are performed in this method,
-            // and so this method can RPC into main thread. Switch to main thread explictly, since method has STA requirement
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             return Package.GetGlobalService(typeof(TService)) as TInterface;
         }
