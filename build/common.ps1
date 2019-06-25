@@ -221,7 +221,7 @@ Function Install-DotnetCLI {
             $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
             Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
-            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
+            & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {

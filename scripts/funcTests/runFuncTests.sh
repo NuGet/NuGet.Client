@@ -57,7 +57,7 @@ do
 	    version="3.0.100-preview5-011568"
 	fi
 
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version $version
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -version $version -NoPath
 
 
 	# Display current version
