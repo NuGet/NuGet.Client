@@ -26,17 +26,17 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Given Visual Studio 2017 MSBuild.exe path, return the NuGet plugins directory which is in CommonExtensions\NuGet\Plugins
+        /// Given Visual Studio 2017 or later MSBuild.exe directory path, return the NuGet plugins directory which is in CommonExtensions\NuGet\Plugins
         /// </summary>
-        /// <param name="msbuildExePath">The MsBuildExe path. Needs to be a valid path. file:// not supported.</param>
+        /// <param name="msbuildExePath">The MsBuildExe directory path. Needs to be a valid path. file:// not supported.</param>
         /// <returns>The NuGet plugins directory, null if <paramref name="msbuildExePath"/> is null</returns>
-        /// <remarks>The MSBuild.exe is in MSBuild\15.0\Bin\MsBuild.exe, the Plugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins</remarks>
+        /// <remarks>The MSBuild.exe is in MSBuild\Current\Bin, the Plugins directory is in Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins</remarks>
         public static string GetInternalPluginRelativeToMSBuildExe(string msbuildExePath)
         {
             var parentDirectory = "..";
             return !string.IsNullOrEmpty(msbuildExePath) ?
                 Path.GetFullPath(Path.Combine(
-                    Path.GetDirectoryName(msbuildExePath),
+                    msbuildExePath,
                     Path.Combine(parentDirectory, parentDirectory, parentDirectory, "Common7", "IDE", "CommonExtensions", "Microsoft", "NuGet", NuGetPluginsDirectory)
                     )) :
                 null;
