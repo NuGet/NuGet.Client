@@ -6224,8 +6224,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                lockFile.Targets.Should().HaveCount(1);
-                var projectReference = lockFile.Targets[0].Dependencies.SingleOrDefault(d => d.Type == PackageDependencyType.Project);
+                var target = lockFile.Targets.Single(t => t.RuntimeIdentifier == null);
+                var projectReference = target.Dependencies.SingleOrDefault(d => d.Type == PackageDependencyType.Project);
                 StringComparer.Ordinal.Equals(projectReference.Id, projectB.ProjectName.ToLowerInvariant()).Should().BeTrue();
             }
         }
@@ -7835,7 +7835,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert that the project name is the project custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
-                Assert.Equal(lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "CustomName");
+                Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
                  // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
@@ -7891,7 +7891,7 @@ namespace NuGet.CommandLine.Test
                  // B
                 projectB.AddPackageToFramework(tfm, packageX);
 
-                 solution.Projects.Add(projectA);
+                solution.Projects.Add(projectA);
                 solution.Projects.Add(projectB);
                 solution.Create(pathContext.SolutionRoot);
 
@@ -7908,7 +7908,7 @@ namespace NuGet.CommandLine.Test
 
                  // Assert that the project name is the custom name.
                 Assert.Equal(lockFile.Targets.First().Dependencies.Count, 2);
-                Assert.Equal(lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id, "CustomName");
+                Assert.Equal("CustomName", lockFile.Targets.First().Dependencies.First(e => e.Type == PackageDependencyType.Project).Id);
 
                  // Setup - Enable locked mode
                 projectA.Properties.Add("RestoreLockedMode", "true");
