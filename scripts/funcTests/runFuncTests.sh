@@ -52,7 +52,7 @@ do
 	echo $DOTNET_BRANCH
 
 	version="latest"
-	if [ "$DOTNET_BRANCH" == *"3.0"*]
+	if [ "$DOTNET_BRANCH" == "release/3.0.1xx"]
 	then
 	    $version="3.0.100-preview5-011568"
 	fi
