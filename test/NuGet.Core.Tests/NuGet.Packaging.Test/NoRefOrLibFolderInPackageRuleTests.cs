@@ -148,6 +148,126 @@ namespace NuGet.Packaging.Test
                 Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
             }
         }
+
+        [Fact]
+        public void Validate_PackageWithBuildFolderAndLibFolder_ShouldNotWarn()
+        {
+            var files = new[]
+            {
+                "build/random_tfm/test.dll",
+                "lib/random_tfm/test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+
+        [Fact]
+        public void Validate_PackageWithBuildAndRefFolder_ShouldNotWarn()
+        {
+            var files = new[]
+            {
+                "build/random_tfm/test.dll",
+                "ref/random_tfm/test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+
+        [Fact]
+        public void Validate_PackageWithBuildAndContentFolder_ShouldWarn()
+        {
+            var files = new[]
+            {
+                "build/random_tfm/test.dll",
+                "content/random_tfm/test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+
+        [Fact]
+        public void Validate_PackageWithBuildFolderAndFile_ShouldWarn()
+        {
+            var files = new[]
+            {
+                "build/random_tfm/test.dll",
+                "test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+
+        [Fact]
+        public void Validate_PackageWithLibFolderAndFile_ShouldNotWarn()
+        {
+            var files = new[]
+            {
+                "lib/random_tfm/test.dll",
+                "test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
+
+        [Fact]
+        public void Validate_PackageWithRefFolderAndFile_ShouldNotWarn()
+        {
+            var files = new[]
+            {
+                "ref/random_tfm/test.dll",
+                "test.dll"
+            };
+
+            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
+            {
+                // Act
+                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
+
+                // Assert
+                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+            }
+        }
     }
 
     internal class TestPackageFile : IDisposable
