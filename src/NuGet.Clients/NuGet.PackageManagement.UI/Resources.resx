@@ -854,7 +854,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>This package has been deprecated because it has critical bugs.</value>
   </data>
   <data name="Label_DeprecationReasons_Legacy" xml:space="preserve">
-    <value>This package has been deprecated because it's legacy and no longer maintained.</value>
+    <value>This package has been deprecated as it is legacy and no longer maintained.</value>
   </data>
   <data name="Label_DeprecationReasons_LegacyAndCriticalBugs" xml:space="preserve">
     <value>This package has been deprecated because it's legacy and has critical bugs.</value>
