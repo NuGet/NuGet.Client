@@ -4,6 +4,8 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
              mc:Ignorable="d"
              d:DesignHeight="150" d:DesignWidth="350">
   <UserControl.Resources>
@@ -11,9 +13,6 @@
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <BitmapImage
-        x:Key="BitmapImage_StatusWarning"
-        UriSource="/NuGet.PackageManagement.UI;component/Resources/statuswarning.16.16.png" />
     </ResourceDictionary>
   </UserControl.Resources>
   <Grid>
@@ -28,11 +27,13 @@
           <TextBlock
             FontWeight="Bold"
             Text="{x:Static nuget:Resources.Label_Deprecated}"/>
-          <Image
-            Margin="8,0,0,0"
-            Height="16"
-            Width="16"
-            Source="{StaticResource BitmapImage_StatusWarning}"/>
+          <imaging:CrispImage
+            x:Name="_deprecationWarning"
+            Margin="5,0,0,0"
+            Width="13"
+            Height="13"
+            ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+            Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
         </StackPanel>
       </Expander.Header>
       <StackPanel

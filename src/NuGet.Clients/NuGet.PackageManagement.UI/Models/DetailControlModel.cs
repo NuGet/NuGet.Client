@@ -364,8 +364,8 @@ namespace NuGet.PackageManagement.UI
 
         private static class PackageDeprecationReason
         {
-            public const string CriticalBugs = "CriticalBugs";
-            public const string Legacy = "Legacy";
+            public const string CriticalBugs = nameof(CriticalBugs);
+            public const string Legacy = nameof(Legacy);
         }
 
         private DetailedPackageMetadata _packageMetadata;
