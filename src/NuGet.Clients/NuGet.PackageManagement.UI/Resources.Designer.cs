@@ -916,11 +916,11 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to  (or above).
+        ///   Looks up a localized string similar to  (or higher).
         /// </summary>
-        public static string Label_OrAbove {
+        public static string Label_OrHigher {
             get {
-                return ResourceManager.GetString("Label_OrAbove", resourceCulture);
+                return ResourceManager.GetString("Label_OrHigher", resourceCulture);
             }
         }
         
