@@ -13,261 +13,62 @@ using Moq;
 using System.Xml.Linq;
 using System.Collections;
 using System.Runtime.CompilerServices;
+using System.Reflection;
 
 namespace NuGet.Packaging.Test
 {
     public class NoRefOrLibFolderInPackageRuleTests
     {
-        string _nuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    <dependencies>" +
-"      <dependency id=\"System.Collections.Immutable\" version=\"4.3.0\" />" +
-"    </dependencies>" +
-"    </metadata>" +
-"</package>";
-
-        [Fact]
-        public void Validate_PacakageWithBuildFilesWithoutLibOrRefFiles_ShouldWarn()
+        [Theory]
+        [MemberData("WarningRaisedData", MemberType = typeof(FileSource))]
+        public void WarningRaisedWhenLibOrRefFolderWithTFMDataIsNotFoundAndBuildFolderIsFound(string[] files)
         {
-            //Arrange
-            var files = new[]
+            files = files.ToArray();
+            //Act
+            var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+            var issues = rule.Validate(files).ToList();
+
+            // Assert
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+        }
+
+        [Theory]
+        [MemberData("WarningNotRaisedData", MemberType = typeof(FileSource))]
+        public void WarningNotRaisedWhenLibOrRefFolderWithTFMDataIsFound(string[] files)
+        {
+            files = files.ToArray();
+            //Act
+            var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
+            var issues = rule.Validate(files).ToList();
+
+            // Assert
+            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
+        }
+    }
+
+    public static class FileSource
+    {
+        public static readonly List<object[]> WarningNotRaisedData
+                = new List<object[]>
+                {
+                    new object[] { new string[] {"ref/net45/test.dll", "test.dll"} },
+                    new object[] { new string[] {"lib/net45/test.dll", "test.dll"} },
+                    new object[] { new string[] {"build/net45/test.props", "ref/net45/test.dll"} },
+                    new object[] { new string[] {"build/net45/test.props", "lib/net45/test.dll"} },
+                    new object[] { new string[] {"ref/net45/test.dll"} },
+                    new object[] { new string[] {"lib/net45/test.dll"} },
+                    new object[] { new string[] {"build/any/test.props"} },
+                    new object[] { new string[] {"build/native/test.props"} }
+                };
+
+        public static readonly List<object[]> WarningRaisedData
+            = new List<object[]>
             {
-                "build/random_tfm/test.dll",
+                new object[] { new string[] {"build/net45/test.props"} },
+                new object[] { new string[] {"build/net45/test.props", "build/any/test.props", "build/native/test.props"} },
+                new object[] { new string[] {"build/net45/test.props", "content/net45/test.props"} },
+                new object[] { new string[] {"build/net45/test.props", "test.props"} }
             };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-        
-        [Fact]
-        public void Validate_PacakageWithBuildFilesWithoutLibOrRefFilesWithNativeFileOnly_ShouldNotWarn()
-        {
-            //Arrange
-            var files = new[]
-            {
-                "build/native/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-        [Fact]
-        public void Validate_PacakageWithBuildFilesWithoutLibOrRefFilesWithAnyFileOnly_ShouldNotWarn()
-        {
-            //Arrange
-            var files = new[]
-            {
-                "build/any/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithBuildFileWithNativeAndAnyAndTFMFiles_ShouldWarn()
-        {
-            //Arrange
-            var files = new[]
-            {
-                "build/random_tfm/test.dll",
-                "build/any/test.dll",
-                "build/native/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithLibFiles_ShouldNotWarn()
-        {
-            // Assemble 
-            var files = new[] { "lib/random_tfm/test.dll" };
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithRefFiles_ShouldNotWarn()
-        {
-            //Arrange
-            var files = new[]
-            {
-                "ref/random_tfm/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithBuildFolderAndLibFolder_ShouldNotWarn()
-        {
-            var files = new[]
-            {
-                "build/random_tfm/test.dll",
-                "lib/random_tfm/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithBuildAndRefFolder_ShouldNotWarn()
-        {
-            var files = new[]
-            {
-                "build/random_tfm/test.dll",
-                "ref/random_tfm/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithBuildAndContentFolder_ShouldWarn()
-        {
-            var files = new[]
-            {
-                "build/random_tfm/test.dll",
-                "content/random_tfm/test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithBuildFolderAndFile_ShouldWarn()
-        {
-            var files = new[]
-            {
-                "build/random_tfm/test.dll",
-                "test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithLibFolderAndFile_ShouldNotWarn()
-        {
-            var files = new[]
-            {
-                "lib/random_tfm/test.dll",
-                "test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
-
-        [Fact]
-        public void Validate_PackageWithRefFolderAndFile_ShouldNotWarn()
-        {
-            var files = new[]
-            {
-                "ref/random_tfm/test.dll",
-                "test.dll"
-            };
-
-            using (var testContext = TestPackageFile.Create(files, _nuspecContent))
-            {
-                // Act
-                var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-                var issues = rule.Validate(testContext.PackageArchiveReader).ToList();
-
-                // Assert
-                Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));
-            }
-        }
     }
 
     internal class TestPackageFile : IDisposable

@@ -88,6 +88,15 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The nuspec of the package does not include all the target frameworks found in the lib folder or ref folder. Consider adding the missing target frameworks to your nuspec..
+        /// </summary>
+        public static string DependenciesGroupsForEachTFM {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The file &apos;{0}&apos; path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name..
         /// </summary>
         public static string FilePathTooLongWarning {
@@ -196,7 +205,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} does not contain a lib or ref folder, and is therefore being treated as compatible for ALL frameworks. If the libraries are contained in a build/&lt;tfm&gt; folder, please create the directory &quot;lib/&lt;tfm&gt;/_._&quot; within the package..
+        ///   Looks up a localized string similar to This package does not contain a lib or ref folder, and is therefore being treated as compatible for ALL frameworks. If the libraries are contained in a build/&lt;tfm&gt; folder, consider creating the directory &quot;lib/&lt;tfm&gt;/_._&quot; within the package..
         /// </summary>
         public static string NoRefOrLibFolderInPackage {
             get {

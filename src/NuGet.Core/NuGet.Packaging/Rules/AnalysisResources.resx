@@ -126,6 +126,9 @@
   <data name="DefaultSpecValueWarning" xml:space="preserve">
     <value>The value "{0}" for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>
+  <data name="DependenciesGroupsForEachTFM" xml:space="preserve">
+    <value>The nuspec of the package does not include all the target frameworks found in the lib folder or ref folder. Consider adding the missing target frameworks to your nuspec.</value>
+  </data>
   <data name="FilePathTooLongWarning" xml:space="preserve">
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>
   </data>
@@ -165,7 +168,7 @@
     <value>The transform file '{0}' is outside the 'content' folder and hence will not be transformed during installation of this package. Move it into the 'content' folder.</value>
   </data>
   <data name="NoRefOrLibFolderInPackage" xml:space="preserve">
-    <value>The package {0} does not contain a lib or ref folder, and is therefore being treated as compatible for ALL frameworks. If the libraries are contained in a build/&lt;tfm&gt; folder, please create the directory "lib/&lt;tfm&gt;/_._" within the package.</value>
+    <value>This package does not contain a lib or ref folder, and is therefore being treated as compatible for ALL frameworks. If the libraries are contained in a build/&lt;tfm&gt; folder, consider creating the directory "lib/&lt;tfm&gt;/_._" within the package.</value>
   </data>
   <data name="PlaceholderFileInPackageWarning" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>

@@ -1,11 +1,16 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Client;
 using NuGet.Common;
+using NuGet.ContentModel;
+using NuGet.Frameworks;
+using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
 {
@@ -21,26 +26,37 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader package)
         {
-            var files = package.GetFiles().ToList().Select(t => PathUtility.GetPathWithDirectorySeparator(t));
-            if (!files.
-                Any(t => t.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
-                    || t.StartsWith(PackagingConstants.Folders.Ref + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)))
+            var files = package.GetFiles().ToList();
+
+
+            return Validate(files);
+        }
+
+        internal IEnumerable<PackagingLogMessage> Validate(IEnumerable<string> files)
+        {
+            var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
+            var collection = new ContentItemCollection();
+            collection.Load(files);
+
+            var libItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
+            var refItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
+            var buildItems = GetContentForPattern(collection, managedCodeConventions.Patterns.MSBuildFiles);
+
+            var libFrameworks = GetGroupFrameworks(libItems).ToArray();
+            var refFrameworks = GetGroupFrameworks(refItems).ToArray();
+            var buildFrameworks = GetGroupFrameworks(buildItems).ToArray();
+
+            if (libFrameworks.Count() == 0 && refFrameworks.Count() == 0)
             {
                 //if you can't find the ref and lib folder, then find the build folder
-                if (files.
-                    Select(t => PathUtility.GetPathWithDirectorySeparator(t)).
-                    Any(t => t.StartsWith(BuildDir, StringComparison.OrdinalIgnoreCase)))
+                if (buildFrameworks.Count() != 0)
                 {
                     //if you can find any folders other than native or any, raise an NU5127
-                    if (files.
-                        Where(t => t.StartsWith(BuildDir)).
-                        Any(t => !t.StartsWith(BuildDir + PackagingConstants.Folders.Native + Path.DirectorySeparatorChar,
-                                StringComparison.OrdinalIgnoreCase)
-                            && !t.StartsWith(BuildDir + PackagingConstants.Folders.Any + Path.DirectorySeparatorChar,
-                                StringComparison.OrdinalIgnoreCase)))
+                    if (buildFrameworks.
+                        Any(t => (t != "dotnet" && t != "native")))
                     {
                         var issue = new List<PackagingLogMessage>();
-                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,package.NuspecReader.GetId()),
+                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat),
                             NuGetLogCode.NU5127));
                         return issue;
                     }
@@ -49,5 +65,18 @@ namespace NuGet.Packaging.Rules
 
             return Array.Empty<PackagingLogMessage>();
         }
+
+        private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
+        {
+            return collection.FindItemGroups(pattern)
+                .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName());
+        }
+
+        private static IEnumerable<string> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
+        {
+            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName()).OrderBy(e => e);
+        }
     }
+
+    
 }

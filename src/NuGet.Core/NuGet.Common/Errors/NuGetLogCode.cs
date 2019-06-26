@@ -769,6 +769,12 @@ namespace NuGet.Common
         /// No ref or lib folder in the package
         /// </summary>
         NU5127 = 5127,
+
+        /// <summary>
+        /// No dependencies for each tfm in the package 
+        /// </summary>
+        NU5128 = 5128,
+
         /// <summary>
         /// Undefined package warning
         /// </summary>
