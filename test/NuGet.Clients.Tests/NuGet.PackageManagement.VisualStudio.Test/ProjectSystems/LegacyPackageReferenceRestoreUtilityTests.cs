@@ -150,7 +150,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // set up projects
                     var projectTargetFrameworkStr = "net45";
-                    var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
+                    var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "Project2.csproj");
                     var projectNamesB = new ProjectNames(
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
@@ -179,7 +179,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         _threadingService);
 
                     var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
-                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
+                    var fullProjectPathA = Path.Combine(projectPathA, "Project1.csproj");
                     var projectNamesA = new ProjectNames(
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
