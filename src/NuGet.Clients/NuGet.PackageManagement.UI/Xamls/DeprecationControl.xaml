@@ -60,17 +60,6 @@
             </TextBlock>
           </StackPanel>
         </StackPanel>
-        <StackPanel
-          Margin="0,8,0,0"
-          Visibility="{Binding Path=PackageDeprecationCustomMessage, Converter={StaticResource NullToVisibilityConverter}}">
-          <TextBlock
-            Text="Additional details"
-            FontWeight="Bold"/>
-          <TextBlock
-              TextWrapping="WrapWithOverflow"
-              Text="{Binding Path=PackageDeprecationCustomMessage}"
-              VerticalAlignment="Center" />
-        </StackPanel>
       </StackPanel>
     </Expander>
   </Grid>

@@ -306,20 +306,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private string _packageDeprecationCustomMessage;
-        public string PackageDeprecationCustomMessage
-        {
-            get { return _packageDeprecationCustomMessage; }
-            set
-            {
-                if (_packageDeprecationCustomMessage != value)
-                {
-                    _packageDeprecationCustomMessage = value;
-                    OnPropertyChanged(nameof(PackageDeprecationCustomMessage));
-                }
-            }
-        }
-
         private string _packageDeprecationAlternatePackageText;
         public string PackageDeprecationAlternatePackageText
         {
@@ -382,7 +368,6 @@ namespace NuGet.PackageManagement.UI
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
                         PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
-                        PackageDeprecationCustomMessage = string.IsNullOrWhiteSpace(_packageMetadata.DeprecationMetadata.Message) ? null : _packageMetadata.DeprecationMetadata.Message;
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
                         if (alternatePackage != null)
