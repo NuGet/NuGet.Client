@@ -772,7 +772,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package has been deprecated because it has critical bugs..
+        ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs..
         /// </summary>
         public static string Label_DeprecationReasons_CriticalBugs {
             get {
@@ -781,7 +781,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package has been deprecated because it&apos;s legacy and no longer maintained..
+        ///   Looks up a localized string similar to This package has been deprecated as it is legacy and no longer maintained..
         /// </summary>
         public static string Label_DeprecationReasons_Legacy {
             get {
@@ -790,7 +790,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package has been deprecated because it&apos;s legacy and has critical bugs..
+        ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs and is no longer maintained..
         /// </summary>
         public static string Label_DeprecationReasons_LegacyAndCriticalBugs {
             get {
