@@ -527,7 +527,6 @@
   <ItemGroup>
     <Resource Include="Resources\statuserror.16.16.png" />
     <Resource Include="Resources\statusinformation.16.16.png" />
-    <Resource Include="Resources\statuswarning.16.16.png" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources\UpgradeReport.xslt">
