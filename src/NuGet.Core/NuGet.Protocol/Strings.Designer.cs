@@ -646,7 +646,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed within {1} seconds with exit code {2}..
+        ///   Looks up a localized string similar to Plugin &apos;{0}&apos; failed within {1:N3} seconds with exit code {2}..
         /// </summary>
         internal static string Plugin_FailedOnCreation {
             get {
