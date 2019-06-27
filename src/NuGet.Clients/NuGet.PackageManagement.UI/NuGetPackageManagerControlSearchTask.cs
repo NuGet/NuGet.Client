@@ -22,6 +22,7 @@ namespace NuGet.PackageManagement.UI
             SetStatus(VsSearchTaskStatus.Created);
 
         }
+
         public void Start()
         {
             SetStatus(VsSearchTaskStatus.Started);

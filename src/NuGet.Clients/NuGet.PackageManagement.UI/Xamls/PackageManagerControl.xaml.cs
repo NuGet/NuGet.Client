@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
@@ -12,7 +11,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -84,8 +82,6 @@ namespace NuGet.PackageManagement.UI
         internal event EventHandler _actionCompleted;
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
-
-
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -718,17 +714,20 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshConsolidatablePackagesCount()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (Model.IsSolution)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _topPanel._labelConsolidate.Count = 0;
-                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
-                var loader = new PackageItemLoader(
-                    loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    _topPanel._labelConsolidate.Count = 0;
+                    var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                    var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
+                    var loader = new PackageItemLoader(
+                        loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
-                _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
-            });
+                    _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
+                });
+            }
         }
 
         private void SettingsButtonClicked(object sender, EventArgs e)
