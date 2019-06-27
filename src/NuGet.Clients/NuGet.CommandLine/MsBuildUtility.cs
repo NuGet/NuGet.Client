@@ -447,15 +447,15 @@ namespace NuGet.CommandLine
 
         public static IEnumerable<string> GetAllProjectFileNames(
             string solutionFile,
-            string msbuildPath)
+            string pathToMsbuildDir)
         {
             if (RuntimeEnvironmentHelper.IsMono &&
-                (msbuildPath.Contains("xbuild") || GetMsbuild(msbuildPath).Contains("xbuild")))
+                (pathToMsbuildDir.Contains("xbuild") || GetMsbuild(pathToMsbuildDir).Contains("xbuild")))
             {
                 return GetAllProjectFileNamesWithXBuild(solutionFile);
             }
 
-            return GetAllProjectFileNamesWithMsBuild(solutionFile, msbuildPath);
+            return GetAllProjectFileNamesWithMsBuild(solutionFile, pathToMsbuildDir);
         }
 
         /// <summary>
