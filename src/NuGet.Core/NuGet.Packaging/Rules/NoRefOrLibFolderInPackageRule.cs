@@ -27,8 +27,6 @@ namespace NuGet.Packaging.Rules
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader package)
         {
             var files = package.GetFiles().ToList();
-
-
             return Validate(files);
         }
 
@@ -46,7 +44,7 @@ namespace NuGet.Packaging.Rules
             var refFrameworks = GetGroupFrameworks(refItems).ToArray();
             var buildFrameworks = GetGroupFrameworks(buildItems).ToArray();
 
-            if (libFrameworks.Count() == 0 && refFrameworks.Count() == 0)
+            if (libFrameworks.Length == 0 && refFrameworks.Length == 0)
             {
                 //if you can't find the ref and lib folder, then find the build folder
                 if (buildFrameworks.Count() != 0)
@@ -68,15 +66,12 @@ namespace NuGet.Packaging.Rules
 
         private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
         {
-            return collection.FindItemGroups(pattern)
-                .OrderBy(group => ((NuGetFramework)group.Properties["tfm"]).GetShortFolderName());
+            return collection.FindItemGroups(pattern);
         }
 
         private static IEnumerable<string> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
         {
-            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName()).OrderBy(e => e);
+            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName());
         }
     }
-
-    
 }
