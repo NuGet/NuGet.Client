@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
@@ -383,6 +384,7 @@ namespace NuGet.CommandLine
                     GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
                 }
 
+                IReadOnlyList<IRestoreLogMessage> errors = collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)).ToList();
                 var restoreSummaries = new List<RestoreSummary>()
                 {
                     new RestoreSummary(
@@ -391,7 +393,7 @@ namespace NuGet.CommandLine
                         Settings.GetConfigFilePaths().ToList().AsReadOnly(),
                         packageSources.Select(x => x.Source).ToList().AsReadOnly(),
                         installCount,
-                        collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)))
+                        errors)
                 };
 
                 if (result.Restored)

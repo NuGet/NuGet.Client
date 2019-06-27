@@ -64,14 +64,14 @@ namespace NuGet.Commands
             IReadOnlyList<string> configFiles,
             IReadOnlyList<string> feedsUsed,
             int installCount,
-            IEnumerable<IRestoreLogMessage> errors)
+            IReadOnlyList<IRestoreLogMessage> errors)
         {
             Success = success;
             InputPath = inputPath;
             ConfigFiles = configFiles;
             FeedsUsed = feedsUsed;
             InstallCount = installCount;
-            Errors = errors.ToArray();
+            Errors = errors;
         }
 
         public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)

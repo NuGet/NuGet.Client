@@ -267,13 +267,11 @@ namespace NuGet.PackageManagement.Utility
             {
                 Debug.Assert(toInstall.NuGetProjectActionType == NuGetProjectActionType.Install);
 
-                const bool includeMinVersion = true;
-                const bool includeMaxVersion = true;
                 var newDependency = new LockFileDependency
                 {
                     Id = toInstall.PackageIdentity.Id,
                     ContentHash = contentHashUtil.GetContentHash(toInstall.PackageIdentity, token),
-                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, includeMinVersion, toInstall.PackageIdentity.Version, includeMaxVersion),
+                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, includeMinVersion: true, toInstall.PackageIdentity.Version, includeMaxVersion: true),
                     ResolvedVersion = toInstall.PackageIdentity.Version,
                     Type = PackageDependencyType.Direct
                 };
@@ -321,13 +319,11 @@ namespace NuGet.PackageManagement.Utility
                 var reader = new PackagesConfigReader(stream);
                 foreach (var package in reader.GetPackages(allowDuplicatePackageIds: true))
                 {
-                    const bool includeMinVersion = true;
-                    const bool includeMaxVersion = true;
                     var dependency = new LockFileDependency
                     {
                         Id = package.PackageIdentity.Id,
                         ContentHash = contentHashUtil.GetContentHash(package.PackageIdentity, token),
-                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, includeMinVersion, package.PackageIdentity.Version, includeMaxVersion),
+                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, includeMinVersion: true, package.PackageIdentity.Version, includeMaxVersion: true),
                         ResolvedVersion = package.PackageIdentity.Version,
                         Type = PackageDependencyType.Direct
                     };
