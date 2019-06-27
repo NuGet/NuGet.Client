@@ -22,21 +22,22 @@ namespace NuGet.Protocol.FuncTest
 {
     public class PluginTests
     {
-        private static readonly FileInfo _pluginFile;
-        private static readonly ushort _portNumber = 11000;
-        private static readonly IEnumerable<string> _pluginArguments = PluginConstants.PluginArguments
-            .Concat(new[] { $"-PortNumber {_portNumber} -TestRunnerProcessId {GetCurrentProcessId()}" });
+        private static readonly FileInfo PluginFile;
+        private static readonly ushort PortNumber = 11000;
+        private static readonly IEnumerable<string> PluginArguments = PluginConstants.PluginArguments
+            .Concat(new[] { $"-PortNumber {PortNumber} -TestRunnerProcessId {GetCurrentProcessId()}" });
+        private static readonly TimeSpan TestTimeout = TimeSpan.FromMinutes(2);
 
         static PluginTests()
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestablePlugin", "Plugin.Testable.exe");
 
-            _pluginFile = new FileInfo(filePath);
+            PluginFile = new FileInfo(filePath);
         }
 
         public PluginTests(ITestOutputHelper logger)
         {
-            logger.WriteLine($"Plugin file path:  {_pluginFile.FullName}");
+            logger.WriteLine($"Plugin file path:  {PluginFile.FullName}");
         }
 #if !IS_CORECLR
         [PlatformFact(Platform.Windows)]
@@ -45,6 +46,42 @@ namespace NuGet.Protocol.FuncTest
             using (var test = await PluginTest.CreateAsync())
             {
                 Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WithUnhandledExceptionInPlugin_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-SimulateException Unhandled" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
+                Assert.EndsWith(" seconds with exit code -532462766.", exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WithHandledExceptionAndExitInPlugin_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-SimulateException Handled" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
+                Assert.EndsWith(" seconds with exit code 1.", exception.Message);
             }
         }
 
@@ -233,12 +270,12 @@ namespace NuGet.Protocol.FuncTest
                 var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
                 var options = ConnectionOptions.CreateDefault();
                 var plugin = await pluginFactory.GetOrCreateAsync(
-                    _pluginFile.FullName,
-                    _pluginArguments,
+                    PluginFile.FullName,
+                    PluginArguments,
                     new RequestHandlers(),
                     options,
                     cancellationTokenSource.Token);
-                var responseSender = new ResponseSender(_portNumber);
+                var responseSender = new ResponseSender(PortNumber);
 
                 return new PluginTest(pluginFactory, plugin, responseSender, cancellationTokenSource);
             }

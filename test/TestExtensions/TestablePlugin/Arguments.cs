@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Test.TestExtensions.TestablePlugin
@@ -8,6 +9,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
     internal sealed class Arguments
     {
         internal ushort PortNumber { get; private set; }
+        internal SimulateException SimulateException { get; private set; }
         internal int TestRunnerProcessId { get; private set; }
 
         private Arguments() { }
@@ -19,6 +21,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             ushort portNumber = 0;
             var testRunnerProcessId = 0;
             var isPlugin = false;
+            var simulateException = SimulateException.None;
 
             for (var i = 0; i < args.Count; ++i)
             {
@@ -42,6 +45,20 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
                     case "-plugin":
                         isPlugin = true;
+                        break;
+
+                    case "-simulateexception":
+                        if (i + 1 == args.Count)
+                        {
+                            return false;
+                        }
+
+                        ++i;
+
+                        if (!Enum.TryParse(args[i], ignoreCase: true, out simulateException))
+                        {
+                            return false;
+                        }
                         break;
 
                     case "-testrunnerprocessid":
@@ -71,6 +88,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             arguments = new Arguments()
             {
                 PortNumber = portNumber,
+                SimulateException = simulateException,
                 TestRunnerProcessId = testRunnerProcessId
             };
 

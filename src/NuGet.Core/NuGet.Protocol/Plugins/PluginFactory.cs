@@ -95,6 +95,8 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="OperationCanceledException">Thrown if <paramref name="sessionCancellationToken" />
         /// is cancelled.</exception>
         /// <exception cref="ObjectDisposedException">Thrown if this object is disposed.</exception>
+        /// <exception cref="ProtocolException">Thrown if a plugin protocol error occurs.</exception>
+        /// <exception cref="PluginException">Thrown for a plugin failure during creation.</exception>
         /// <remarks>This is intended to be called by NuGet client tools.</remarks>
         public async Task<IPlugin> GetOrCreateAsync(
             string filePath,
@@ -194,6 +196,8 @@ namespace NuGet.Protocol.Plugins
 
             process.StartInfo = startInfo;
 
+            var stopwatch = Stopwatch.StartNew();
+
             process.Start();
 
             if (_logger.IsEnabled)
@@ -234,6 +238,17 @@ namespace NuGet.Protocol.Plugins
             {
                 throw new ProtocolException(
                     string.Format(CultureInfo.CurrentCulture, Strings.Plugin_Exception, plugin.Name, ex.Message));
+            }
+            catch (TaskCanceledException ex)
+            {
+                stopwatch.Stop();
+
+                int? exitCode = GetExitCodeOrNull(process);
+
+                plugin.Dispose();
+
+                throw new PluginException(
+                    string.Format(CultureInfo.CurrentCulture, Strings.Plugin_FailedOnCreation, plugin.Name, stopwatch.Elapsed.TotalSeconds, exitCode), ex);
             }
             catch (Exception)
             {
@@ -424,6 +439,20 @@ namespace NuGet.Protocol.Plugins
                 plugin.Faulted -= OnPluginFaulted;
                 plugin.Idle -= OnPluginIdle;
             }
+        }
+
+        private static int? GetExitCodeOrNull(Process process)
+        {
+            try
+            {
+                return process.ExitCode;
+            }
+            catch (InvalidOperationException)
+            {
+                // Process has not exited or handle is invalid.
+            }
+
+            return null;
         }
 
         private static int? GetProcessIdOrNull(Process process)

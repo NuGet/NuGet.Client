@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,22 +13,34 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 {
     internal static class Program
     {
-        private const int _success = 0;
-        private const int _error = 1;
+        private const int Success = 0;
+        private const int Error = 1;
+
+        private static readonly FileNotFoundException Exception = new FileNotFoundException("A required file dependency is missing.", "DependencyFileName");
 
         private static int Main(string[] args)
         {
+            Console.OutputEncoding = Encoding.UTF8;
+
+            DebugBreakIfPluginDebuggingIsEnabled();
+
+            Arguments parsedArgs;
+
+            if (!Arguments.TryParse(args, out parsedArgs))
+            {
+                return Error;
+            }
+
+            if (parsedArgs.SimulateException == SimulateException.Unhandled)
+            {
+                throw Exception;
+            }
+
             try
             {
-                Console.OutputEncoding = Encoding.UTF8;
-
-                DebugBreakIfPluginDebuggingIsEnabled();
-
-                Arguments parsedArgs;
-
-                if (!Arguments.TryParse(args, out parsedArgs))
+                if (parsedArgs.SimulateException == SimulateException.Handled)
                 {
-                    return _error;
+                    throw Exception;
                 }
 
                 Start(parsedArgs);
@@ -36,10 +49,10 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             {
                 Console.Error.WriteLine(ex.ToString());
 
-                return _error;
+                return Error;
             }
 
-            return _success;
+            return Success;
         }
 
         private static void Start(Arguments arguments)
