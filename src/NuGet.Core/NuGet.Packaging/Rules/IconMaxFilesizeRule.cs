@@ -18,8 +18,6 @@ namespace NuGet.Packaging.Rules
     {
         private const int MaxIconFilzeSize = 1024 * 1024;
 
-        private const int BufferSize = 1024 * 1024;
-
         public string MessageFormat { get; }
 
         public IconMaxFilesizeRule(string messageFormat)
