@@ -27,11 +27,11 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var reader = builder?.NuspecReader;
+            NuspecReader reader = builder?.NuspecReader;
 
-            var path = reader?.GetIcon();
+            string path = reader?.GetIcon();
 
-            var issues = new List<PackagingLogMessage>();
+            List<PackagingLogMessage> issues = new List<PackagingLogMessage>();
 
             if (!string.IsNullOrEmpty(path))
             {

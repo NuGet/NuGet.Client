@@ -106,7 +106,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The icon filesize must not exceed 1 megabyte..
+        ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
         /// </summary>
         public static string IconMaxFilsesizeExceeded {
             get {
