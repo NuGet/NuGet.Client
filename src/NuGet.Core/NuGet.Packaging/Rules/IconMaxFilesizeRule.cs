@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Rules
                     {
                         long fileSize = EstimateFileSize(str);
 
-                        if (fileSize > MaxIconFilzeSize || (fileSize == MaxIconFilzeSize && str.CanRead))
+                        if (fileSize > MaxIconFilzeSize)
                         {
                             issues.Add(PackagingLogMessage.CreateWarning(
                                 string.Format(CultureInfo.CurrentCulture, MessageFormat, path, AnalysisResources.IconMaxFilsesizeExceeded),
