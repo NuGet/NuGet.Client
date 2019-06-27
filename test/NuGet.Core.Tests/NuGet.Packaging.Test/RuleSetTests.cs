@@ -58,7 +58,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void IconMaxFilesizeExceeded_Warn()
+        public void Icon_IconMaxFilesizeExceeded_Warn()
         {
             using (var packageFile = TestPackagesCore.GetTestPackageIcon(1024 * 1024 + 1024))
             {
@@ -70,9 +70,8 @@ namespace NuGet.Packaging.Test
             }
         }
 
-
         [Fact]
-        public void IconNotFound_Warn()
+        public void Icon_IconNotFound_Warn()
         {
             using (var packageFile = TestPackagesCore.GetTestPackageIcon(-1))
             {
@@ -81,6 +80,18 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(issues.Count(), 1);
                 Assert.True(issues.First().Code == NuGetLogCode.NU5036);
+            }
+        }
+
+        [Fact]
+        public void Icon_HappyPath()
+        {
+            using (var packageFile = TestPackagesCore.GetTestPackageIcon(6))
+            {
+                var zip = TestPackagesCore.GetZip(packageFile);
+                var issues = ExecuteRules(zip);
+
+                Assert.Equal(issues.Count(), 0);
             }
         }
 

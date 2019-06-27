@@ -65,23 +65,23 @@ namespace NuGet.Packaging.Rules
         /// <summary>
         /// Reads up to MaxIconFilzeSize of the file
         /// </summary>
-        /// <param name="str"></param>
+        /// <param name="stream"></param>
         /// <returns></returns>
-        private static long EstimateFileSize(Stream str)
+        private static long EstimateFileSize(Stream stream)
         {
             long fileSize = -1;
             try
             {
-                fileSize = str.Length;
+                fileSize = stream.Length;
             }
             catch(NotSupportedException)
             {
-                byte[] byteBuffer = new byte[BufferSize];
+                int buffSizeee = MaxIconFilzeSize + 1;
+                byte[] byteBuffer = new byte[buffSizeee];
 
-                fileSize = 0;
-                while(str.CanRead && fileSize < MaxIconFilzeSize)
+                if (stream.CanRead)
                 {
-                    fileSize += str.Read(byteBuffer, 0, BufferSize);
+                    fileSize = stream.Read(byteBuffer, 0, buffSizeee);
                 }
             }
 
