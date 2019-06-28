@@ -54,6 +54,7 @@ namespace NuGet.PackageManagement.UI
 
         private bool _missingPackageStatus;
         private readonly INuGetUILogger _uiLogger;
+        private bool _loadedAndInitialized = false;
 
         public PackageManagerModel Model { get; }
 
@@ -138,11 +139,8 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            Loaded += (_, __) =>
-            {
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-                RefreshConsolidatablePackagesCount();
-            };
+            Loaded += PackageManagerLoaded;
+            
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -276,6 +274,19 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.SelectFilter(settings.SelectedFilter);
             }
         }
+
+        private void PackageManagerLoaded(object sender, RoutedEventArgs e)
+        {
+            // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
+            // The loaded event is triggered once all the data binding has occured, which effectively means we'll just display what was loaded earlier and not trigger another 
+            if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
+            {
+                _loadedAndInitialized = true;
+                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            }
+            RefreshConsolidatablePackagesCount();
+        }
+
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
