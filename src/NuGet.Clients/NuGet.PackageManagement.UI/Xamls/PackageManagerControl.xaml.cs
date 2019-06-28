@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -22,8 +21,12 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
+using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -139,8 +142,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            Loaded += PackageManagerLoaded;
-            
+            Loaded += PackageManagerLoaded;            
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -278,7 +280,7 @@ namespace NuGet.PackageManagement.UI
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
             // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
-            // The loaded event is triggered once all the data binding has occured, which effectively means we'll just display what was loaded earlier and not trigger another 
+            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
             {
                 _loadedAndInitialized = true;
@@ -286,7 +288,6 @@ namespace NuGet.PackageManagement.UI
             }
             RefreshConsolidatablePackagesCount();
         }
-
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
         {
@@ -737,7 +738,8 @@ namespace NuGet.PackageManagement.UI
                         loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
                     _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
-                });
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount)));
             }
         }
 
