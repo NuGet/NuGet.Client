@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -46,7 +47,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await TaskScheduler.Default;
                 await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnSolutionOpened)));
         }
 
         private void OnSolutionClosed(object sender, EventArgs e)
@@ -63,12 +65,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var solutionDirectory = SolutionManager.SolutionDirectory;
 
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
-                {
-                    // go off the UI thread to raise missing packages event
-                    await TaskScheduler.Default;
+            {
+                // go off the UI thread to raise missing packages event
+                await TaskScheduler.Default;
 
-                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                });
+                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded)));
+
         }
     }
 }
