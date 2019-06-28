@@ -23,7 +23,6 @@ namespace NuGet.Packaging.Test
         [MemberData("WarningRaisedData", MemberType = typeof(FileSource))]
         public void WarningRaisedWhenLibOrRefFolderWithTFMDataIsNotFoundAndBuildFolderIsFound(string[] files)
         {
-            files = files.ToArray();
             //Act
             var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
             var issues = rule.Validate(files).ToList();
@@ -36,7 +35,6 @@ namespace NuGet.Packaging.Test
         [MemberData("WarningNotRaisedData", MemberType = typeof(FileSource))]
         public void WarningNotRaisedWhenLibOrRefFolderWithTFMDataIsFound(string[] files)
         {
-            files = files.ToArray();
             //Act
             var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
             var issues = rule.Validate(files).ToList();
@@ -71,7 +69,4 @@ namespace NuGet.Packaging.Test
                 };
         }
     }
-    
-
-
 }

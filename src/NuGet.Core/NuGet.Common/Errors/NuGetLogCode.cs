@@ -771,11 +771,6 @@ namespace NuGet.Common
         NU5127 = 5127,
 
         /// <summary>
-        /// No dependencies for each tfm in the package 
-        /// </summary>
-        NU5128 = 5128,
-
-        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,

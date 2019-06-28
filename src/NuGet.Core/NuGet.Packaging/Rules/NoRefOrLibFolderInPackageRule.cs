@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader package)
         {
-            var files = package.GetFiles().ToList();
+            var files = package.GetFiles();
             return Validate(files);
         }
 
@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Rules
             if (libFrameworks.Length == 0 && refFrameworks.Length == 0)
             {
                 //if you can't find the ref and lib folder, then find the build folder
-                if (buildFrameworks.Count() != 0)
+                if (buildFrameworks.Length != 0)
                 {
                     //if you can find any folders other than native or any, raise an NU5127
                     if (buildFrameworks.
