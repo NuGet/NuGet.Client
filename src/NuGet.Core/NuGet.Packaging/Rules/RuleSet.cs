@@ -27,11 +27,7 @@ namespace NuGet.Packaging.Rules
                 new PathTooLongRule(AnalysisResources.FilePathTooLongWarning),
                 new UnrecognizedLicenseIdentifierRule(AnalysisResources.UnrecognizedLicenseIdentifier),
                 new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
-<<<<<<< HEAD
                 new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage)
-=======
-                new IconMaxFilesizeRule(AnalysisResources.IconMaxFilsesizeExceeded),
->>>>>>> af42619c3... Icon Filesize validation
             }
         );
 

@@ -16,6 +16,8 @@ using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Packaging.Rules;
+using System.Reflection.Emit;
 
 namespace NuGet.Packaging
 {
@@ -122,6 +124,12 @@ namespace NuGet.Packaging
         }
 
         public Uri IconUrl
+        {
+            get;
+            set;
+        }
+
+        public string Icon
         {
             get;
             set;
@@ -346,6 +354,7 @@ namespace NuGet.Packaging
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateLicenseFile(Files, LicenseMetadata);
+            ValidateIconFile(Files, Icon);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -504,6 +513,48 @@ namespace NuGet.Packaging
                 if (count == 0)
                 {
                     throw new PackagingException(NuGetLogCode.NU5030, string.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_LicenseFileIsNotInNupkg, licenseMetadata.License));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Given
+        /// </summary>
+        /// <param name="files">files in the metadata element</param>
+        /// <param name="iconPath">iconpath found in the .nuspec</param>
+        private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
+        {
+            if (!string.IsNullOrEmpty(iconPath))
+            {
+                // Validate entry
+                var iconFileList = files.Where(f => iconPath.Equals(f.EffectivePath));
+
+                if (iconFileList.Count() > 0)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5038, "Multiple files for icon");
+                }
+
+                if (iconFileList.Count() == 0)
+                {
+                    throw new PackagingException(NuGetLogCode.NU5039, "No icon file found");
+                }
+
+                IPackageFile iconFile = iconFileList.First();
+
+                try
+                {
+                    // Validate Icon open file
+                    using (var iconStream = iconFile.GetStream())
+                    {
+                        // Validate file size
+                        IconValidation.ValidateIconFileSize(iconStream);
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5036,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconCannotOpenFile, iconPath, e.Message));
                 }
             }
         }

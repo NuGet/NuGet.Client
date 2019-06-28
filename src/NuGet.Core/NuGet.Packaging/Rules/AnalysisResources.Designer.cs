@@ -97,24 +97,6 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;: {1}.
-        /// </summary>
-        public static string IconCannotOpenFile {
-            get {
-                return ResourceManager.GetString("IconCannotOpenFile", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
-        /// </summary>
-        public static string IconMaxFilsesizeExceeded {
-            get {
-                return ResourceManager.GetString("IconMaxFilsesizeExceeded", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The folder &apos;{0}&apos; under &apos;lib&apos; is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier..
         /// </summary>
         public static string InvalidFrameworkWarning {

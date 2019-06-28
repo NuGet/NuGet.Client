@@ -195,4 +195,17 @@
     <value>The licenseUrl and license elements cannot be used together.</value>
     <comment>Please don't localize licenseUrl and license</comment>
   </data>
+  <data name="IconCannotOpenFile" xml:space="preserve">
+    <value>Cannot open icon file '{0}': {1}</value>
+    <comment>0 - Path to the icon file, 1 - Error message for not opening the icon</comment>
+  </data>
+  <data name="IconMaxFilseSizeExceeded" xml:space="preserve">
+    <value>The icon file size must not exceed 1 megabyte.</value>
+  </data>
+  <data name="IconErrorEmpty" xml:space="preserve">
+    <value>The icon file is empty</value>
+  </data>
+  <data name="IconErrorReading" xml:space="preserve">
+    <value>Unable to read icon file</value>
+  </data>
 </root>

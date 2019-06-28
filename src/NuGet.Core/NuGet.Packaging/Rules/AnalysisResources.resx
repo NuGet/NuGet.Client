@@ -129,13 +129,6 @@
   <data name="FilePathTooLongWarning" xml:space="preserve">
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>
   </data>
-  <data name="IconCannotOpenFile" xml:space="preserve">
-    <value>Cannot open icon file '{0}': {1}</value>
-    <comment>0 - Path to the icon file, 1 - Error message for not opening the icon</comment>
-  </data>
-  <data name="IconMaxFilsesizeExceeded" xml:space="preserve">
-    <value>The icon file size must not exceed 1 megabyte.</value>
-  </data>
   <data name="InvalidFrameworkWarning" xml:space="preserve">
     <value>The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier.</value>
   </data>

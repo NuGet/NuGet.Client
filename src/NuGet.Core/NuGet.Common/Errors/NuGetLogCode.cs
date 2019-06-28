@@ -651,6 +651,26 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Error_Validation_MultipleIconFiles
+        /// </summary>
+        NU5038 = 5038,
+
+        /// <summary>
+        /// Error_Validation_NoIconFile
+        /// </summary>
+        NU5039 = 5039,
+
+        /// <summary>
+        /// Error_ValidationErrorReadingIcon
+        /// </summary>
+        NU5040 = 5040,
+
+        /// <summary>
+        /// Error_Validation_IconFileEmpty
+        /// </summary>
+        NU5041 = 5041,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
