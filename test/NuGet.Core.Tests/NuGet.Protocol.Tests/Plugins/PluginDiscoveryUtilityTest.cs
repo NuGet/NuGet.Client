@@ -67,14 +67,14 @@ namespace NuGet.Protocol.Plugins.Tests
 
 #if IS_DESKTOP
         [Theory]
-        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\bin",
             @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
-        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\Bin\MSBuild.exe",
-            @"C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
+        [InlineData(@"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\MSBuild\Current\bin",
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2019\IntPreview\Common7\IDE\CommonExtensions\Microsoft\NuGet\Plugins")]
         [InlineData(null, null)]
-        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildExeLocation(string given, string expected)
+        public void PluginDiscoveryUtility_GetsNuGetPluginPathGivenMSBuildDirectory(string given, string expected)
         {
-            var result = PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildExe(given);
+            var result = PluginDiscoveryUtility.GetInternalPluginRelativeToMSBuildDirectory(given);
             Assert.Equal(expected, result);
         }
 #endif
