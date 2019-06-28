@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -398,7 +399,11 @@ namespace NuGet.PackageManagement.UI
 
             if (alternatePackageMetadata.Range.HasLowerBound)
             {
-                text = $"{alternatePackageMetadata.PackageId} version {alternatePackageMetadata.Range.MinVersion.ToNormalizedString()}";
+                text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Label_DeprecatedPackageIdAndMinVersion,
+                    alternatePackageMetadata.PackageId,
+                    alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
             }
 
             if (!alternatePackageMetadata.Range.HasUpperBound)

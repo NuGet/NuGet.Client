@@ -772,6 +772,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} version {1}.
+        /// </summary>
+        public static string Label_DeprecatedPackageIdAndMinVersion {
+            get {
+                return ResourceManager.GetString("Label_DeprecatedPackageIdAndMinVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs..
         /// </summary>
         public static string Label_DeprecationReasons_CriticalBugs {

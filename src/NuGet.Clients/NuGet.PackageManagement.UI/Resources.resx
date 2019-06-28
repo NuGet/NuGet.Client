@@ -862,4 +862,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_DeprecationReasons_Unknown" xml:space="preserve">
     <value>The package has been deprecated.</value>
   </data>
+  <data name="Label_DeprecatedPackageIdAndMinVersion" xml:space="preserve">
+    <value>{0} version {1}</value>
+    <comment>{0} is the deprecated package ID
+{1} is the deprecated package minimum version</comment>
+  </data>
 </root>
