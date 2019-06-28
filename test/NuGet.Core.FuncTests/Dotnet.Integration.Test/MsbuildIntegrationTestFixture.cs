@@ -33,11 +33,11 @@ namespace Dotnet.Integration.Test
             var sdkPaths = Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"));
 #if IS_NETCORE30
             MsBuildSdksPath = Path.Combine(
-             sdkPaths.Where(path => path.Split('\\').Last().StartsWith("3")).First()
+             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
              , "Sdks");
 #else
             MsBuildSdksPath = Path.Combine(
-             sdkPaths.Where(path => path.Split('\\').Last().StartsWith("2")).First()
+             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("2")).First()
              , "Sdks");
 #endif        
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
@@ -88,13 +88,13 @@ namespace Dotnet.Integration.Test
         internal void CreateTempGlobalJson(string solutionRoot)
         {
             //put the global.json at one level up to solutionRoot path
-            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split("\\").Last().Length);
-            if (File.Exists(pathToPlaceGlobalJsonFile + "\\global.json"))
+            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split(Path.DirectorySeparatorChar).Last().Length);
+            if (File.Exists(pathToPlaceGlobalJsonFile + Path.DirectorySeparatorChar + "global.json"))
             {
                 return;
             }
 
-            var sdkVersion = MsBuildSdksPath.Split('\\').ElementAt(MsBuildSdksPath.Split('\\').Count() - 2);
+            var sdkVersion = MsBuildSdksPath.Split(Path.DirectorySeparatorChar).ElementAt(MsBuildSdksPath.Split(Path.DirectorySeparatorChar).Count() - 2);
 
             var globalJsonFile =
 @"{
@@ -116,6 +116,9 @@ namespace Dotnet.Integration.Test
             {
                 Directory.CreateDirectory(workingDirectory);
             }
+
+            CreateTempGlobalJson(solutionRoot);
+
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
@@ -161,6 +164,8 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
+            CreateTempGlobalJson(workingDirectory);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
@@ -177,6 +182,8 @@ namespace Dotnet.Integration.Test
 
         private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args)
         {
+            CreateTempGlobalJson(workingDirectory);
+
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
 
@@ -194,6 +201,7 @@ namespace Dotnet.Integration.Test
         /// </summary>
         internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
         {
+            CreateTempGlobalJson(workingDirectory);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -217,6 +225,8 @@ namespace Dotnet.Integration.Test
 
         private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
         {
+            CreateTempGlobalJson(workingDirectory);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {file} {args} /p:NuspecOutputPath={nuspecOutputPath}",
@@ -232,6 +242,8 @@ namespace Dotnet.Integration.Test
 
         internal void BuildProject(string workingDirectory, string projectName, string args)
         {
+            CreateTempGlobalJson(workingDirectory);
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
@@ -284,9 +296,9 @@ namespace Dotnet.Integration.Test
             var sdkPaths = Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"));
 
 #if IS_NETCORE30
-            var pathToSdkInCli = sdkPaths.Where(path => path.Split('\\').Last().StartsWith("3")).First();
+            var pathToSdkInCli = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First();
 #else
-            var pathToSdkInCli = sdkPaths.Where(path => path.Split('\\').Last().StartsWith("2")).First();
+            var pathToSdkInCli = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("2")).First();
 #endif
           //  var pathToSdkInCli = Path.Combine(
           //          Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
