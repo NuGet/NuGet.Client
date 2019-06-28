@@ -46,7 +46,7 @@
         <StackPanel
           Margin="0,8,0,0"
           Orientation="Vertical"
-          Visibility="{Binding Path=PackageDeprecationAlternatePackageLinkText, Converter={StaticResource NullToVisibilityConverter}}">
+          Visibility="{Binding Path=PackageDeprecationAlternatePackageText, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
             Text="Alternate package"
             FontWeight="Bold"/>
