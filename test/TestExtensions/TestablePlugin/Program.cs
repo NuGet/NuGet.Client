@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -16,7 +17,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
         private const int Success = 0;
         private const int Error = 1;
 
-        private static readonly FileNotFoundException Exception = new FileNotFoundException("A required file dependency is missing.", "DependencyFileName");
+        private static readonly FileNotFoundException Exception = new FileNotFoundException("This exception is being thrown to simulate an exception in a plugin.", "DependencyFileName");
 
         private static int Main(string[] args)
         {
@@ -31,14 +32,22 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                 return Error;
             }
 
-            if (parsedArgs.SimulateException == SimulateException.Unhandled)
+            if (parsedArgs.Hang)
+            {
+                while (true)
+                {
+                    Thread.Sleep(millisecondsTimeout: 50);
+                }
+            }
+
+            if (parsedArgs.ThrowException == ThrowException.Unhandled)
             {
                 throw Exception;
             }
 
             try
             {
-                if (parsedArgs.SimulateException == SimulateException.Handled)
+                if (parsedArgs.ThrowException == ThrowException.Handled)
                 {
                     throw Exception;
                 }
@@ -80,7 +89,14 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                         }
                     };
 
-                    process.EnableRaisingEvents = true;
+                    try
+                    {
+                        process.EnableRaisingEvents = true;
+                    }
+                    catch (Win32Exception)
+                    {
+                        // Running non-elevated.
+                    }
 
                     var responseReceiver = new ResponseReceiver(arguments.PortNumber, responses);
 
@@ -91,7 +107,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                             Task.Factory.StartNew(
                                 () => responseReceiver.StartListeningAsync(cancellationTokenSource.Token),
                                 TaskCreationOptions.LongRunning | TaskCreationOptions.DenyChildAttach),
-                            testablePlugin.StartAsync(cancellationTokenSource.Token)
+                            testablePlugin.StartAsync(arguments.CauseProtocolException, cancellationTokenSource.Token)
                         };
 
                         Task.WaitAny(tasks);

@@ -3,7 +3,7 @@
 
 namespace NuGet.Test.TestExtensions.TestablePlugin
 {
-    internal enum SimulateException
+    internal enum ThrowException
     {
         None,
         Handled,

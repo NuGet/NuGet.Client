@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.IO.Ports;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -14,6 +15,7 @@ using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 using PluginProtocolConstants = NuGet.Protocol.Plugins.ProtocolConstants;
@@ -39,7 +41,7 @@ namespace NuGet.Protocol.FuncTest
         {
             logger.WriteLine($"Plugin file path:  {PluginFile.FullName}");
         }
-#if !IS_CORECLR
+#if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public async Task GetOrCreateAsync_SuccessfullyHandshakes()
         {
@@ -57,7 +59,7 @@ namespace NuGet.Protocol.FuncTest
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
                     PluginFile.FullName,
-                    PluginConstants.PluginArguments.Concat(new[] { "-SimulateException Unhandled" }),
+                    PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Unhandled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));
@@ -75,13 +77,48 @@ namespace NuGet.Protocol.FuncTest
             {
                 var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
                     PluginFile.FullName,
-                    PluginConstants.PluginArguments.Concat(new[] { "-SimulateException Handled" }),
+                    PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Handled" }),
                     new RequestHandlers(),
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));
 
                 Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
                 Assert.EndsWith(" seconds with exit code 1.", exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WhenPluginHangs_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-Hang" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
+                Assert.EndsWith(" seconds with exit code -1.", exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WhenPluginCausesProtocolException_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<ProtocolException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-CauseProtocolException" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.Equal("Plugin 'Plugin.Testable' failed with the exception:  The plugin handshake failed.", exception.Message);
             }
         }
 

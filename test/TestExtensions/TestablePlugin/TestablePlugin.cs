@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Plugins;
+using NuGet.Versioning;
 
 namespace NuGet.Test.TestExtensions.TestablePlugin
 {
@@ -46,13 +47,22 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
             }
         }
 
-        internal async Task StartAsync(CancellationToken cancellationToken)
+        internal async Task StartAsync(bool causeProtocolException, CancellationToken cancellationToken)
         {
             _cancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             CancellationToken = _cancellationTokenSource.Token;
 
-            var requestHandlers = CreateRequestHandlers();
-            var options = ConnectionOptions.CreateDefault();
+            IRequestHandlers requestHandlers = CreateRequestHandlers();
+            ConnectionOptions options = ConnectionOptions.CreateDefault();
+
+            if (causeProtocolException)
+            {
+                options = new ConnectionOptions(
+                    new SemanticVersion(100, 0, 0),
+                    new SemanticVersion(100, 0, 0),
+                    options.HandshakeTimeout,
+                    options.RequestTimeout);
+            }
 
             _plugin = await PluginFactory.CreateFromCurrentProcessAsync(requestHandlers, options, CancellationToken);
 

@@ -246,9 +246,6 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var process = new Mock<IPluginProcess>();
 
-            process.Setup(x => x.HasExited)
-                .Returns(true);
-
             using (var exitedEvent = new ManualResetEventSlim(initialState: false))
             using (var plugin = new Plugin(
                 filePath: @"C:\a\b\c.d",
@@ -266,7 +263,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     exitedEvent.Set();
                 };
 
-                process.Raise(x => x.Exited += null, EventArgs.Empty);
+                process.Raise(x => x.Exited += null, process.Object, process.Object);
 
                 exitedEvent.Wait();
 
