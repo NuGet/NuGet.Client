@@ -94,20 +94,28 @@ namespace Test.Utility.Signing
 
         /// <summary>
         /// Modification generator that can be passed to TestCertificate.Generate().
-        /// The generator will create a certificate that is valid but will expire in 10 seconds.
+        /// The generator will create a certificate that is valid but will expire soon.
         /// </summary>
-        public static Action<TestCertificateGenerator> CertificateModificationGeneratorExpireIn10Seconds = delegate (TestCertificateGenerator gen)
+        public static Action<TestCertificateGenerator> CertificateModificationGeneratorForCertificateThatWillExpireSoon(TimeSpan expiresIn)
         {
-            var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
+            if (expiresIn < TimeSpan.Zero)
+            {
+                throw new ArgumentException("The value must not be negative.", nameof(expiresIn));
+            }
 
-            gen.Extensions.Add(
-                new X509EnhancedKeyUsageExtension(
-                    usages,
-                    critical: true));
+            return (TestCertificateGenerator gen) =>
+            {
+                var usages = new OidCollection { new Oid(Oids.CodeSigningEku) };
 
-            gen.NotBefore = DateTime.UtcNow.AddHours(-1);
-            gen.NotAfter = DateTime.UtcNow.AddSeconds(10);
-        };
+                gen.Extensions.Add(
+                    new X509EnhancedKeyUsageExtension(
+                        usages,
+                        critical: true));
+
+                gen.NotBefore = DateTime.UtcNow.AddHours(-1);
+                gen.NotAfter = DateTime.UtcNow.AddSeconds(expiresIn.TotalSeconds);
+            };
+        }
 
         /// <summary>
         /// Generates a list of certificates representing a chain of certificates.
@@ -551,9 +559,9 @@ namespace Test.Utility.Signing
             return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
         }
 
-        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatExpiresIn10Seconds()
+        public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon(TimeSpan expiresIn)
         {
-            var actionGenerator = CertificateModificationGeneratorExpireIn10Seconds;
+            var actionGenerator = CertificateModificationGeneratorForCertificateThatWillExpireSoon(expiresIn);
 
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog

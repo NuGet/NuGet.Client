@@ -16,6 +16,8 @@ namespace NuGet.Packaging.FuncTest
     /// </summary>
     public class SigningTestFixture : IDisposable
     {
+        private static readonly TimeSpan SoonDuration = TimeSpan.FromSeconds(20);
+
         private TrustedTestCert<TestCertificate> _trustedTestCert;
         private TrustedTestCert<TestCertificate> _trustedRepositoryCertificate;
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
@@ -92,12 +94,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        // We should not memoize this call because it is a time-sensitive operation.
-        public TrustedTestCert<TestCertificate> TrustedTestCertificateWillExpireIn10Seconds => SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds();
-
-        // We should not memoize this call because it is a time-sensitive operation.
-        public TestCertificate UntrustedTestCertificateWillExpireIn10Seconds => TestCertificate.Generate(SigningTestUtility.CertificateModificationGeneratorExpireIn10Seconds);
-
         public IReadOnlyList<TrustedTestCert<TestCertificate>> TrustedTestCertificateWithReissuedCertificate
         {
             get
@@ -166,6 +162,18 @@ namespace NuGet.Packaging.FuncTest
 
                 return _signingSpecifications;
             }
+        }
+
+        public TrustedTestCert<TestCertificate> CreateTrustedTestCertificateThatWillExpireSoon()
+        {
+            return SigningTestUtility.GenerateTrustedTestCertificateThatWillExpireSoon(SoonDuration);
+        }
+
+        public TestCertificate CreateUntrustedTestCertificateThatWillExpireSoon()
+        {
+            Action<TestCertificateGenerator> actionGenerator = SigningTestUtility.CertificateModificationGeneratorForCertificateThatWillExpireSoon(SoonDuration);
+
+            return TestCertificate.Generate(actionGenerator);
         }
 
         public async Task<ISigningTestServer> GetSigningTestServerAsync()
