@@ -95,7 +95,7 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                     }
                     catch (Win32Exception)
                     {
-                        // Running non-elevated.
+                        // Can occur while debugging.
                     }
 
                     var responseReceiver = new ResponseReceiver(arguments.PortNumber, responses);
