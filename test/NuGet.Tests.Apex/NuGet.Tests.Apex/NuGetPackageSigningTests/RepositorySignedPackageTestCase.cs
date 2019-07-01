@@ -100,7 +100,7 @@ namespace NuGet.Tests.Apex
             EnsureVisualStudioHost();
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
-            using (var trustedExpiringTestCert = SigningTestUtility.GenerateTrustedTestCertificateThatExpiresIn10Seconds())
+            using (var trustedExpiringTestCert = SigningTestUtility.CreateTrustedTestCertificateThatWillExpireSoon())
             {
                 XunitLogger.LogInformation("Creating package");
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
