@@ -18,8 +18,6 @@ namespace NuGet.Packaging.Rules
 {
     class NoRefOrLibFolderInPackageRule : IPackageRule
     {
-        private static readonly List<string> FrameworkIdentifiers = typeof(FrameworkConstants.FrameworkIdentifiers).GetFields()
-                .Select(s => s.GetRawConstantValue().ToString()).ToList();
         public string MessageFormat { get; }
 
         public NoRefOrLibFolderInPackageRule(string messageFormat)
