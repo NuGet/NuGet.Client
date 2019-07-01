@@ -196,7 +196,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package does not contain a lib/ or ref/ folder, and is therefore being treated as compatible for ALL
+        ///   Looks up a localized string similar to This package does not contain a lib/ or ref/ folder, and will therefore be treated as compatible for all
         ///frameworks. Since framework specific files were found under the build/ directory for {0}, consider creating the following empty files to correctly narrow the compatibility of the package:
         ///{1}.
         /// </summary>

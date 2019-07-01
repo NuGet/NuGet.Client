@@ -70,7 +70,8 @@ namespace NuGet.Packaging.Test
                 new object[] { new string[] {"build/net45/test.targets"} },
                 new object[] { new string[] {"build/net45/test.targets", "build/any/test.targets", "build/native/test.targets"} },
                 new object[] { new string[] {"build/net45/test.targets", "content/net45/test.targets"} },
-                new object[] { new string[] {"build/net45/test.targets", "test.targets"} }
+                new object[] { new string[] {"build/net45/test.targets", "test.targets"} },
+                new object[] { new string[] {"build/net45/test.targets", "build/netstandard1.3/test.targets" } }
                 };
         }
     }

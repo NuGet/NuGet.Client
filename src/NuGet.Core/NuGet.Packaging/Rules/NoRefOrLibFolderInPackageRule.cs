@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Versioning;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Client;
@@ -75,31 +76,16 @@ namespace NuGet.Packaging.Rules
 
         private (string, string) GenerateWarningString(string[] possibleFrameworks)
         {
-            var tfmNames = new StringBuilder();
-            var suggestedDirectories = new StringBuilder();
-            if (possibleFrameworks.Length > 1)
-            {
-                for (int i = 0; i < possibleFrameworks.Length; i++)
-                {
-                    if (i != possibleFrameworks.Length - 1)
-                    {
-                        tfmNames.Append(possibleFrameworks[i] + ", ");
-                    }
-                    else
-                    {
-                        tfmNames.Append("and " + possibleFrameworks[i]);
-                    }
+            var copy = new string[possibleFrameworks.Length - 1];
+            Array.Copy(possibleFrameworks, copy, possibleFrameworks.Length - 1);
 
-                    tfmNames.AppendFormat("-lib/{0}/_._", possibleFrameworks[i]).AppendLine();
-                }
-            }
-            else
-            {
-                tfmNames.Append(possibleFrameworks[0]);
-                suggestedDirectories.AppendFormat("-lib/{0}/_._", possibleFrameworks[0]);
-            }
-
-            return (tfmNames.ToString(), suggestedDirectories.ToString());
+            string tfmNames = possibleFrameworks.Length > 1 ? string.Join(", ", copy)
+                + ", and " + possibleFrameworks[possibleFrameworks.Length - 1] : possibleFrameworks[0];
+            string suggestedDirectories = possibleFrameworks.Length > 1 ?
+                CreateDirectories(possibleFrameworks) :
+                string.Format("-lib/{0}/_._", possibleFrameworks[0]);
+            
+            return (tfmNames, suggestedDirectories);
 
         }
 
@@ -115,7 +101,29 @@ namespace NuGet.Packaging.Rules
 
         private static bool IsValidFramework(NuGetFramework framework)
         {
-            return FrameworkIdentifiers.Contains(framework.Framework);
+            FrameworkName fx;
+            try
+            {
+                string effectivePath;
+                fx = FrameworkNameUtility.ParseFrameworkFolderName(framework.GetShortFolderName() + "/", false, out effectivePath);
+            }
+            catch (ArgumentException)
+            {
+                fx = null;
+            }
+
+            // return false if the framework is Null or Unsupported
+            return fx != null && fx.Identifier != NuGetFramework.UnsupportedFramework.Framework;
+        }
+
+        private static string CreateDirectories(string[] possibleFrameworks)
+        {
+            var suggestedDirectories = new StringBuilder();
+            foreach (var framework in possibleFrameworks)
+            {
+                suggestedDirectories.AppendFormat("-lib/{0}/_._", framework).AppendLine();
+            }
+            return suggestedDirectories.ToString();
         }
 
     }
