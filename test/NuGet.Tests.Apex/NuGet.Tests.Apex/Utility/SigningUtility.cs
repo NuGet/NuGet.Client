@@ -4,12 +4,20 @@
 using System;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Tests.Apex
 {
-    public class SigningUtility
+    public static class SigningUtility
     {
+        private static readonly TimeSpan SoonDuration = TimeSpan.FromSeconds(20);
+
+        internal static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon()
+        {
+            return SigningTestUtility.GenerateTrustedTestCertificateThatWillExpireSoon(SoonDuration);
+        }
+
         internal static bool IsCertificateExpired(X509Certificate2 certificate)
         {
             return DateTime.Now > certificate.NotAfter;

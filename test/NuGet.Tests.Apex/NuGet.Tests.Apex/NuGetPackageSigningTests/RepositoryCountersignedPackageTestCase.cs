@@ -104,7 +104,7 @@ namespace NuGet.Tests.Apex
 
             using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
             using (var trustedCert = _fixture.TrustedRepositoryTestCertificate)
-            using (var trustedExpiringTestCert = SigningTestUtility.CreateTrustedTestCertificateThatWillExpireSoon())
+            using (var trustedExpiringTestCert = SigningUtility.GenerateTrustedTestCertificateThatWillExpireSoon())
             {
                 XunitLogger.LogInformation("Creating package");
                 var package = CommonUtility.CreatePackage("ExpiredTestPackage", "1.0.0");
