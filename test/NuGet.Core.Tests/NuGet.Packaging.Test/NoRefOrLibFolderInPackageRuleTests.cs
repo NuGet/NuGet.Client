@@ -14,6 +14,7 @@ using System.Xml.Linq;
 using System.Collections;
 using System.Runtime.CompilerServices;
 using System.Reflection;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace NuGet.Packaging.Test
 {
@@ -48,24 +49,28 @@ namespace NuGet.Packaging.Test
             public static readonly List<object[]> WarningNotRaisedData
                     = new List<object[]>
                     {
-                    new object[] { new string[] {"build/random_tfm/test.props", "ref/random_tfm/test.dll"} },
-                    new object[] { new string[] {"build/random_tfm/test.props", "lib/random_tfm/test.dll"} },
-                    new object[] { new string[] {"ref/random_tfm/test.dll"} },
-                    new object[] { new string[] {"lib/random_tfm/test.dll"} },
+                    new object[] { new string[] {"build/net45/test.props", "ref/net45/test.dll"} },
+                    new object[] { new string[] {"build/net45/test.props", "lib/net45/test.dll"} },
+                    new object[] { new string[] {"ref/net45/test.dll"} },
+                    new object[] { new string[] {"lib/net45/test.dll"} },
                     new object[] { new string[] {"build/any/test.props"} },
-                    new object[] { new string[] {"build/native/test.props"} }
+                    new object[] { new string[] {"build/native/test.props"} },
+                    new object[] { new string[] {"build/test.props"} },
+                    new object[] { new string[] {"build/bin/test.targets"} },
+                    new object[] { new string[] {"build/lib/test.targets"} }
+
                     };
 
             public static readonly List<object[]> WarningRaisedData
                 = new List<object[]>
                 {
-                new object[] { new string[] {"build/random_tfm/test.props"} },
-                new object[] { new string[] {"build/random_tfm/test.props", "build/any/test.props", "build/native/test.props"} },
-                new object[] { new string[] {"build/random_tfm/test.props", "content/random_tfm/test.props"} },
-                new object[] { new string[] {"build/random_tfm/test.targets"} },
-                new object[] { new string[] {"build/random_tfm/test.targets", "build/any/test.targets", "build/native/test.targets"} },
-                new object[] { new string[] {"build/random_tfm/test.targets", "content/random_tfm/test.targets"} },
-                new object[] { new string[] {"build/random_tfm/test.targets", "test.targets"} }
+                new object[] { new string[] {"build/netstandard1.3/test.props"} },
+                new object[] { new string[] {"build/net45/test.props", "build/any/test.props", "build/native/test.props"} },
+                new object[] { new string[] {"build/net45/test.props", "content/net45/test.props"} },
+                new object[] { new string[] {"build/net45/test.targets"} },
+                new object[] { new string[] {"build/net45/test.targets", "build/any/test.targets", "build/native/test.targets"} },
+                new object[] { new string[] {"build/net45/test.targets", "content/net45/test.targets"} },
+                new object[] { new string[] {"build/net45/test.targets", "test.targets"} }
                 };
         }
     }

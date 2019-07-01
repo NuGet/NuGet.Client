@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NuGet.Client;
@@ -17,6 +18,8 @@ namespace NuGet.Packaging.Rules
     class NoRefOrLibFolderInPackageRule : IPackageRule
     {
         private static readonly string BuildDir = PackagingConstants.Folders.Build + Path.DirectorySeparatorChar;
+        private static readonly List<string> FrameworkIdentifiers = typeof(FrameworkConstants.FrameworkIdentifiers).GetFields()
+                .Select(s => s.GetRawConstantValue().ToString()).ToList();
         public string MessageFormat { get; }
 
         public NoRefOrLibFolderInPackageRule(string messageFormat)
@@ -50,11 +53,39 @@ namespace NuGet.Packaging.Rules
                 if (buildFrameworks.Length != 0)
                 {
                     //if you can find any folders other than native or any, raise an NU5127
-                    if (buildFrameworks.
-                        Any(t => (t != "dotnet" && t != "native")))
+                    if (buildFrameworks.Any(t => (FrameworkConstants.DotNetAll.Satisfies(t) || IsValidFramework(t))
+                        && t.GetShortFolderName() != "dotnet"
+                        && t.GetShortFolderName() != "native"))
                     {
+                        var possibleFrameworks = buildFrameworks.
+                            Where(t => t.IsSpecificFramework && t.GetShortFolderName() != "dotnet" && t.GetShortFolderName() != "native").
+                            Select(t => t.GetShortFolderName()).ToArray();
+
+                        string tfmNames = "";
+                        string suggestedDirectories = "";
+                        if (possibleFrameworks.Length > 1)
+                        {
+                            for (int i = 0; i < possibleFrameworks.Length; i++)
+                            {
+                                if (i != possibleFrameworks.Length - 1)
+                                {
+                                    tfmNames = tfmNames + possibleFrameworks[i] + ", ";
+                                }
+                                else
+                                {
+                                    tfmNames = tfmNames + "and " + possibleFrameworks[i];
+                                }
+
+                                suggestedDirectories = suggestedDirectories + string.Format("-lib/{0}/_._", possibleFrameworks[i]) + "\n";
+                            }
+                        }
+                        else
+                        {
+                            tfmNames = possibleFrameworks[0];
+                            suggestedDirectories = string.Format("-lib/{0}/_._", possibleFrameworks[0]);
+                        }
                         var issue = new List<PackagingLogMessage>();
-                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat),
+                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat, tfmNames, suggestedDirectories),
                             NuGetLogCode.NU5127));
                         return issue;
                     }
@@ -69,9 +100,14 @@ namespace NuGet.Packaging.Rules
             return collection.FindItemGroups(pattern);
         }
 
-        private static IEnumerable<string> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
+        private static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
         {
-            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]).GetShortFolderName());
+            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]));
+        }
+
+        private static bool IsValidFramework(NuGetFramework framework)
+        {
+            return FrameworkIdentifiers.Contains(framework.Framework);
         }
     }
 }
