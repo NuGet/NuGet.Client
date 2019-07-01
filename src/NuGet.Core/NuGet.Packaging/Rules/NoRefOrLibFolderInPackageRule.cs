@@ -60,29 +60,8 @@ namespace NuGet.Packaging.Rules
                             Where(t => t.IsSpecificFramework && t.GetShortFolderName() != "dotnet" && t.GetShortFolderName() != "native").
                             Select(t => t.GetShortFolderName()).ToArray();
 
-                        string tfmNames = "";
-                        string suggestedDirectories = "";
-                        if (possibleFrameworks.Length > 1)
-                        {
-                            for (int i = 0; i < possibleFrameworks.Length; i++)
-                            {
-                                if (i != possibleFrameworks.Length - 1)
-                                {
-                                    tfmNames = tfmNames + possibleFrameworks[i] + ", ";
-                                }
-                                else
-                                {
-                                    tfmNames = tfmNames + "and " + possibleFrameworks[i];
-                                }
-
-                                suggestedDirectories = suggestedDirectories + string.Format("-lib/{0}/_._", possibleFrameworks[i]) + "\n";
-                            }
-                        }
-                        else
-                        {
-                            tfmNames = possibleFrameworks[0];
-                            suggestedDirectories = string.Format("-lib/{0}/_._", possibleFrameworks[0]);
-                        }
+                        (var tfmNames, var suggestedDirectories) = GenerateWarningString(possibleFrameworks);
+                        
                         var issue = new List<PackagingLogMessage>();
                         issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat, tfmNames, suggestedDirectories),
                             NuGetLogCode.NU5127));
@@ -92,6 +71,36 @@ namespace NuGet.Packaging.Rules
             }
 
             return Array.Empty<PackagingLogMessage>();
+        }
+
+        private (string, string) GenerateWarningString(string[] possibleFrameworks)
+        {
+            var tfmNames = new StringBuilder();
+            var suggestedDirectories = new StringBuilder();
+            if (possibleFrameworks.Length > 1)
+            {
+                for (int i = 0; i < possibleFrameworks.Length; i++)
+                {
+                    if (i != possibleFrameworks.Length - 1)
+                    {
+                        tfmNames.Append(possibleFrameworks[i] + ", ");
+                    }
+                    else
+                    {
+                        tfmNames.Append("and " + possibleFrameworks[i]);
+                    }
+
+                    tfmNames.AppendFormat("-lib/{0}/_._", possibleFrameworks[i]).AppendLine();
+                }
+            }
+            else
+            {
+                tfmNames.Append(possibleFrameworks[0]);
+                suggestedDirectories.AppendFormat("-lib/{0}/_._", possibleFrameworks[0]);
+            }
+
+            return (tfmNames.ToString(), suggestedDirectories.ToString());
+
         }
 
         private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
@@ -108,5 +117,6 @@ namespace NuGet.Packaging.Rules
         {
             return FrameworkIdentifiers.Contains(framework.Framework);
         }
+
     }
 }
