@@ -1,13 +1,16 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Text;
-using NuGet.Common;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
     public class LockFileDependencyIdVersionComparer : IEqualityComparer<LockFileDependency>
     {
+        public static LockFileDependencyIdVersionComparer Default { get; } = new LockFileDependencyIdVersionComparer();
+
         public bool Equals(LockFileDependency x, LockFileDependency y)
         {
             if (ReferenceEquals(x, y))
@@ -15,8 +18,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            if (ReferenceEquals(x, null)
-                || ReferenceEquals(y, null))
+            if (x == null || y == null)
             {
                 return false;
             }
@@ -28,10 +30,8 @@ namespace NuGet.ProjectModel
         public int GetHashCode(LockFileDependency obj)
         {
             var combiner = new HashCodeCombiner();
-
             combiner.AddObject(obj.Id);
             combiner.AddObject(obj.ResolvedVersion);
-
             return combiner.CombinedHash;
         }
     }

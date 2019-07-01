@@ -402,7 +402,7 @@ namespace NuGet.Commands
         {
             var librariesLookUp = lockFile.Targets
                 .SelectMany(t => t.Dependencies.Where(dep => dep.Type != PackageDependencyType.Project))
-                .Distinct(new LockFileDependencyIdVersionComparer())
+                .Distinct(LockFileDependencyIdVersionComparer.Default)
                 .ToDictionary(dep => new PackageIdentity(dep.Id, dep.ResolvedVersion), val => val.ContentHash);
 
             foreach (var library in assetsFile.Libraries.Where(lib => lib.Type == LibraryType.Package))

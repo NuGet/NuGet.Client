@@ -495,4 +495,19 @@
     <value>Invalid restore input where RestorePackagesWithLockFile property is set to false but a packages lock file exists at {0}.</value>
     <comment>{0} - packages lock file path</comment>
   </data>
+  <data name="Error_PackageValidationFailed" xml:space="preserve">
+    <value>The package {0} content hash validation failed. The package is different than the last restore.</value>
+    <comment>{0} - package id and version</comment>
+  </data>
+  <data name="Error_RestoreInLockedModePackagesConfig" xml:space="preserve">
+    <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Run restore without using restore locked mode to update the lock file.</value>
+  </data>
+  <data name="Error_DirectoryDoesNotExist" xml:space="preserve">
+    <value>Directory {0} does not exist.</value>
+    <comment>{0} is the directory name.</comment>
+  </data>
+  <data name="Error_FileDoesNotExist" xml:space="preserve">
+    <value>File {0} does not exist.</value>
+    <comment>{0} is the filename.</comment>
+  </data>
 </root>
