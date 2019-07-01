@@ -6,16 +6,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using System.IO.Ports;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using NuGet.Packaging;
 using NuGet.Protocol.Plugins;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 using Xunit.Abstractions;
 using PluginProtocolConstants = NuGet.Protocol.Plugins.ProtocolConstants;
@@ -64,8 +63,11 @@ namespace NuGet.Protocol.FuncTest
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));
 
-                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
-                Assert.EndsWith(" seconds with exit code -532462766.", exception.Message);
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code -?\\d+.$"),
+                    exception.Message);
             }
         }
 
@@ -82,8 +84,11 @@ namespace NuGet.Protocol.FuncTest
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));
 
-                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
-                Assert.EndsWith(" seconds with exit code 1.", exception.Message);
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code 1.$"),
+                    exception.Message);
             }
         }
 
@@ -100,8 +105,11 @@ namespace NuGet.Protocol.FuncTest
                     ConnectionOptions.CreateDefault(),
                     cancellationTokenSource.Token));
 
-                Assert.StartsWith("Plugin 'Plugin.Testable' failed within ", exception.Message);
-                Assert.EndsWith(" seconds with exit code -1.", exception.Message);
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code -1.$"),
+                    exception.Message);
             }
         }
 
