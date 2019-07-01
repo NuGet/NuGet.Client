@@ -1,8 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
+using System.Threading;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -19,12 +19,17 @@ namespace NuGet.Protocol.Plugins
         /// <summary>
         /// Occurs when a process exits.
         /// </summary>
-        event EventHandler Exited;
+        event EventHandler<IPluginProcess> Exited;
 
         /// <summary>
-        /// Gets a value indicating whether the associated process has been terminated.
+        /// Gets the exit code if the process has exited; otherwise, <c>null</c>.
         /// </summary>
-        bool HasExited { get; }
+        int? ExitCode { get; }
+
+        /// <summary>
+        /// Gets the process ID if the process was started; otherwise, <c>null</c>.
+        /// </summary>
+        int? Id { get; }
 
         /// <summary>
         /// Asynchronously starts reading the standard output stream.
@@ -37,7 +42,7 @@ namespace NuGet.Protocol.Plugins
         void CancelRead();
 
         /// <summary>
-        /// Immediately stops the associated process.
+        /// Stops the associated process.
         /// </summary>
         void Kill();
     }

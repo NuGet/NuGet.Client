@@ -1,14 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 
 namespace NuGet.Test.TestExtensions.TestablePlugin
 {
     internal sealed class Arguments
     {
+        internal bool CauseProtocolException { get; private set; }
+        internal bool Hang { get; private set; }
         internal ushort PortNumber { get; private set; }
         internal int TestRunnerProcessId { get; private set; }
+        internal ThrowException ThrowException { get; private set; }
 
         private Arguments() { }
 
@@ -16,9 +20,12 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
         {
             arguments = null;
 
+            var causeProtocolException = false;
+            var hang = false;
             ushort portNumber = 0;
             var testRunnerProcessId = 0;
             var isPlugin = false;
+            var throwException = ThrowException.None;
 
             for (var i = 0; i < args.Count; ++i)
             {
@@ -26,6 +33,14 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
                 switch (flag.ToLower())
                 {
+                    case "-causeprotocolexception":
+                        causeProtocolException = true;
+                        break;
+
+                    case "-hang":
+                        hang = true;
+                        break;
+
                     case "-portnumber":
                         if (i + 1 == args.Count)
                         {
@@ -58,6 +73,20 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
                         }
                         break;
 
+                    case "-throwexception":
+                        if (i + 1 == args.Count)
+                        {
+                            return false;
+                        }
+
+                        ++i;
+
+                        if (!Enum.TryParse(args[i], ignoreCase: true, out throwException))
+                        {
+                            return false;
+                        }
+                        break;
+
                     default:
                         return false;
                 }
@@ -70,8 +99,11 @@ namespace NuGet.Test.TestExtensions.TestablePlugin
 
             arguments = new Arguments()
             {
+                CauseProtocolException = causeProtocolException,
+                Hang = hang,
                 PortNumber = portNumber,
-                TestRunnerProcessId = testRunnerProcessId
+                TestRunnerProcessId = testRunnerProcessId,
+                ThrowException = throwException
             };
 
             return true;

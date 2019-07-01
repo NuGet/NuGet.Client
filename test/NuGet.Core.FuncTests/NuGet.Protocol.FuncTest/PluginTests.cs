@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
@@ -22,29 +23,110 @@ namespace NuGet.Protocol.FuncTest
 {
     public class PluginTests
     {
-        private static readonly FileInfo _pluginFile;
-        private static readonly ushort _portNumber = 11000;
-        private static readonly IEnumerable<string> _pluginArguments = PluginConstants.PluginArguments
-            .Concat(new[] { $"-PortNumber {_portNumber} -TestRunnerProcessId {GetCurrentProcessId()}" });
+        private static readonly FileInfo PluginFile;
+        private static readonly ushort PortNumber = 11000;
+        private static readonly IEnumerable<string> PluginArguments = PluginConstants.PluginArguments
+            .Concat(new[] { $"-PortNumber {PortNumber} -TestRunnerProcessId {GetCurrentProcessId()}" });
+        private static readonly TimeSpan TestTimeout = TimeSpan.FromMinutes(2);
 
         static PluginTests()
         {
             var filePath = Path.Combine(Directory.GetCurrentDirectory(), "TestablePlugin", "Plugin.Testable.exe");
 
-            _pluginFile = new FileInfo(filePath);
+            PluginFile = new FileInfo(filePath);
         }
 
         public PluginTests(ITestOutputHelper logger)
         {
-            logger.WriteLine($"Plugin file path:  {_pluginFile.FullName}");
+            logger.WriteLine($"Plugin file path:  {PluginFile.FullName}");
         }
-#if !IS_CORECLR
+#if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public async Task GetOrCreateAsync_SuccessfullyHandshakes()
         {
             using (var test = await PluginTest.CreateAsync())
             {
                 Assert.Equal(PluginProtocolConstants.CurrentVersion, test.Plugin.Connection.ProtocolVersion);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WithUnhandledExceptionInPlugin_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Unhandled" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code -?\\d+.$"),
+                    exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WithHandledExceptionAndExitInPlugin_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-ThrowException Handled" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code 1.$"),
+                    exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WhenPluginHangs_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<PluginException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-Hang" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.True(
+                    Regex.IsMatch(
+                        exception.Message,
+                        "^Plugin 'Plugin.Testable' failed within \\d.\\d{3} seconds with exit code -1.$"),
+                    exception.Message);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task GetOrCreateAsync_WhenPluginCausesProtocolException_Throws()
+        {
+            using (var cancellationTokenSource = new CancellationTokenSource(TestTimeout))
+            using (var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout))
+            {
+                var exception = await Assert.ThrowsAsync<ProtocolException>(() => pluginFactory.GetOrCreateAsync(
+                    PluginFile.FullName,
+                    PluginConstants.PluginArguments.Concat(new[] { "-CauseProtocolException" }),
+                    new RequestHandlers(),
+                    ConnectionOptions.CreateDefault(),
+                    cancellationTokenSource.Token));
+
+                Assert.Equal("Plugin 'Plugin.Testable' failed with the exception:  The plugin handshake failed.", exception.Message);
             }
         }
 
@@ -233,12 +315,12 @@ namespace NuGet.Protocol.FuncTest
                 var pluginFactory = new PluginFactory(PluginConstants.IdleTimeout);
                 var options = ConnectionOptions.CreateDefault();
                 var plugin = await pluginFactory.GetOrCreateAsync(
-                    _pluginFile.FullName,
-                    _pluginArguments,
+                    PluginFile.FullName,
+                    PluginArguments,
                     new RequestHandlers(),
                     options,
                     cancellationTokenSource.Token);
-                var responseSender = new ResponseSender(_portNumber);
+                var responseSender = new ResponseSender(PortNumber);
 
                 return new PluginTest(pluginFactory, plugin, responseSender, cancellationTokenSource);
             }
