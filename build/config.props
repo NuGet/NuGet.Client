@@ -13,7 +13,7 @@
     <IsEscrowMode>false</IsEscrowMode>
     <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
-    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">2</MinorNuGetVersion>
+    <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">3</MinorNuGetVersion>
     <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     <VsTargetBranch>lab/d16.$(MinorNuGetVersion)stg</VsTargetBranch>
@@ -22,16 +22,16 @@
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d16.$(MinorNuGetVersion)</VsTargetBranch>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
-    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx;release/3.0.1xx</CliTargetBranches>
+    <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.5xx;release/2.1.9xx;master</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
-    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.4xx;release/2.1.8xx;release/3.0.1xx</SdkTargetBranches>
+    <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">release/2.2.5xx;release/2.1.9xx;master</SdkTargetBranches>
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' != ''">$(OverrideToolsetTargetBranches)</ToolsetTargetBranches>
-    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">release/3.0.1xx</ToolsetTargetBranches>
+    <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">release/master</ToolsetTargetBranches>
     <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
     changes we might have made.-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">3</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview1</ReleaseLabel>
   </PropertyGroup>
 
   <!-- Dependency versions -->
