@@ -173,7 +173,7 @@ namespace NuGet.Commands
                 else
                 {
                     // Read msbuild data for both non-nuget and .NET Core
-                    result = GetBaseSpec(specItem);
+                    result = GetBaseSpec(specItem, restoreType);
                 }
 
                 // Applies to all types
@@ -269,6 +269,14 @@ namespace NuGet.Commands
 
                     // Packages lock file properties
                     result.RestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+                }
+
+                if (restoreType == ProjectStyle.PackagesConfig)
+                {
+                    var pcRestoreMetadata = (PackagesConfigProjectRestoreMetadata)result.RestoreMetadata;
+                    // Packages lock file properties
+                    pcRestoreMetadata.PackagesConfigPath = specItem.GetProperty("PackagesConfigPath");
+                    pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -727,7 +735,7 @@ namespace NuGet.Commands
             return result;
         }
 
-        private static PackageSpec GetBaseSpec(IMSBuildItem specItem)
+        private static PackageSpec GetBaseSpec(IMSBuildItem specItem, ProjectStyle projectStyle)
         {
             var frameworkInfo = GetFrameworks(specItem)
                 .Select(framework => new TargetFrameworkInformation()
@@ -737,7 +745,9 @@ namespace NuGet.Commands
                 .ToList();
 
             var spec = new PackageSpec(frameworkInfo);
-            spec.RestoreMetadata = new ProjectRestoreMetadata();
+            spec.RestoreMetadata = projectStyle == ProjectStyle.PackagesConfig
+                ? new PackagesConfigProjectRestoreMetadata()
+                : new ProjectRestoreMetadata();
             spec.FilePath = specItem.GetProperty("ProjectPath");
             spec.RestoreMetadata.ProjectName = specItem.GetProperty("ProjectName");
 

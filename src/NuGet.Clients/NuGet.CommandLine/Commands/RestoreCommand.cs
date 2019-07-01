@@ -9,12 +9,15 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.Remoting;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
+using NuGet.PackageManagement.Utility;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
@@ -108,12 +111,12 @@ namespace NuGet.CommandLine
             // packages.config
             if (hasPackagesConfigFiles)
             {
-                var v2RestoreResult = await PerformNuGetV2RestoreAsync(restoreInputs);
-                restoreSummaries.Add(v2RestoreResult);
+                var v2RestoreResults = await PerformNuGetV2RestoreAsync(restoreInputs);
+                restoreSummaries.AddRange(v2RestoreResults);
 
-                if (!v2RestoreResult.Success)
+                foreach (var restoreResult in v2RestoreResults.Where(r => !r.Success))
                 {
-                    v2RestoreResult
+                    restoreResult
                         .Errors
                         .Where(l => l.Level == LogLevel.Warning)
                         .ForEach(l => Console.LogWarning(l.FormatWithCode()));
@@ -240,7 +243,7 @@ namespace NuGet.CommandLine
             SetDefaultCredentialProvider(MsBuildDirectory);
         }
 
-        private async Task<RestoreSummary> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
+        private async Task<IReadOnlyList<RestoreSummary>> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
             var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
@@ -297,7 +300,21 @@ namespace NuGet.CommandLine
                     "packages.config");
 
                 Console.LogMinimal(message);
-                return new RestoreSummary(true);
+
+                var restoreSummaries = new List<RestoreSummary>();
+
+                ValidatePackagesConfigLockFiles(
+                    packageRestoreInputs.PackagesConfigFiles,
+                    packageRestoreInputs.ProjectReferenceLookup.Projects,
+                    packagesFolderPath,
+                    restoreSummaries);
+
+                if (restoreSummaries.Count == 0)
+                {
+                    restoreSummaries.Add(new RestoreSummary(success: true));
+                }
+
+                return restoreSummaries;
             }
 
             var packageRestoreData = missingPackageReferences.Select(reference =>
@@ -367,13 +384,28 @@ namespace NuGet.CommandLine
                     GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
                 }
 
-                return new RestoreSummary(
-                    result.Restored,
-                    "packages.config projects",
-                    Settings.GetConfigFilePaths(),
-                    packageSources.Select(x => x.Source),
-                    installCount,
-                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
+                IReadOnlyList<IRestoreLogMessage> errors = collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)).ToList();
+                var restoreSummaries = new List<RestoreSummary>()
+                {
+                    new RestoreSummary(
+                        result.Restored,
+                        "packages.config projects",
+                        Settings.GetConfigFilePaths().ToList().AsReadOnly(),
+                        packageSources.Select(x => x.Source).ToList().AsReadOnly(),
+                        installCount,
+                        errors)
+                };
+
+                if (result.Restored)
+                {
+                    ValidatePackagesConfigLockFiles(
+                        packageRestoreInputs.PackagesConfigFiles,
+                        packageRestoreInputs.ProjectReferenceLookup.Projects,
+                        packagesFolderPath,
+                        restoreSummaries);
+                }
+
+                return restoreSummaries;
             }
         }
 
@@ -862,6 +894,47 @@ namespace NuGet.CommandLine
 
                 // Add everything
                 restoreInputs.ProjectFiles.Add(normalizedProjectFile);
+            }
+        }
+
+        private void ValidatePackagesConfigLockFiles(IReadOnlyList<string> packagesConfigFiles, IReadOnlyList<PackageSpec> projects, string packagesFolderPath, List<RestoreSummary> restoreSummaries)
+        {
+            foreach (var pcFile in packagesConfigFiles)
+            {
+                var dgSpec = projects?.FirstOrDefault(p =>
+                    {
+                        if (p.RestoreMetadata is PackagesConfigProjectRestoreMetadata pcRestoreMetadata)
+                        {
+                            return StringComparer.OrdinalIgnoreCase.Equals(pcRestoreMetadata.PackagesConfigPath, pcFile);
+                        }
+                        return false;
+                    });
+
+                var projectFile = dgSpec?.FilePath ?? pcFile;
+                var projectTfm = dgSpec?.TargetFrameworks.SingleOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;
+                var restoreLockedMode = dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
+
+                IReadOnlyList<IRestoreLogMessage> result = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
+                    projectFile,
+                    pcFile,
+                    dgSpec?.Name,
+                    dgSpec?.RestoreMetadata?.RestoreLockProperties?.NuGetLockFilePath,
+                    dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile,
+                    projectTfm,
+                    packagesFolderPath,
+                    restoreLockedMode,
+                    CancellationToken.None);
+
+                if (result != null)
+                {
+                    restoreSummaries.Add(new RestoreSummary(
+                        success: false,
+                        inputPath: projectFile,
+                        configFiles: Array.Empty<string>(),
+                        feedsUsed: Array.Empty<string>(),
+                        installCount: 0,
+                        errors: result));
+                }
             }
         }
 

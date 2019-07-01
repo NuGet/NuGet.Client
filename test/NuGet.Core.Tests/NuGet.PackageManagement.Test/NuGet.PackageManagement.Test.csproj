@@ -24,12 +24,6 @@
     </None>
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="$(SharedDirectory)\HashCodeCombiner.cs">
-      <Link>HashCodeCombiner.cs</Link>
-    </Compile>
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http" />

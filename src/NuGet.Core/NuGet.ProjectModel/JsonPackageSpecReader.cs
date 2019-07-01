@@ -204,19 +204,26 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
-            var msbuildMetadata = new ProjectRestoreMetadata();
+            var projectStyleString = rawMSBuildMetadata.GetValue<string>("projectStyle");
+
+            ProjectStyle? projectStyle = null;
+            if (!string.IsNullOrEmpty(projectStyleString)
+                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out var projectStyleValue))
+            {
+                projectStyle = projectStyleValue;
+            }
+
+            var msbuildMetadata = projectStyle == ProjectStyle.PackagesConfig
+                ? new PackagesConfigProjectRestoreMetadata()
+                : new ProjectRestoreMetadata();
+
+            if (projectStyle.HasValue)
+            {
+                msbuildMetadata.ProjectStyle = projectStyle.Value;
+            }
 
             msbuildMetadata.ProjectUniqueName = rawMSBuildMetadata.GetValue<string>("projectUniqueName");
             msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
-
-            var projectStyleString = rawMSBuildMetadata.GetValue<string>("projectStyle");
-
-            ProjectStyle projectStyle;
-            if (!string.IsNullOrEmpty(projectStyleString)
-                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out projectStyle))
-            {
-                msbuildMetadata.ProjectStyle = projectStyle;
-            }
 
             msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");
             msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
@@ -337,6 +344,11 @@ namespace NuGet.ProjectModel
                     restoreLockProperties.GetValue<string>("restorePackagesWithLockFile"),
                     restoreLockProperties.GetValue<string>("nuGetLockFilePath"),
                     GetBoolOrFalse(restoreLockProperties, "restoreLockedMode", packageSpec.FilePath));
+            }
+
+            if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
+            {
+                pcMsbuildMetadata.PackagesConfigPath = rawMSBuildMetadata.GetValue<string>("packagesConfigPath");
             }
 
             return msbuildMetadata;

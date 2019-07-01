@@ -3,9 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Text;
-using NuGet.Common;
 using NuGet.Packaging.Core;
+using NuGet.ProjectModel.ProjectLockFile;
 using NuGet.Shared;
 using NuGet.Versioning;
 
@@ -37,12 +36,8 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return StringComparer.OrdinalIgnoreCase.Equals(Id, other.Id) &&
-                EqualityUtility.EqualsWithNullCheck(ResolvedVersion, other.ResolvedVersion) &&
-                EqualityUtility.EqualsWithNullCheck(RequestedVersion, other.RequestedVersion) &&
-                EqualityUtility.SequenceEqualWithNullCheck(Dependencies, other.Dependencies) &&
-                ContentHash == other.ContentHash &&
-                Type == other.Type;
+            return LockFileDependencyComparerWithoutContentHash.Default.Equals(this, other) &&
+                ContentHash == other.ContentHash;
         }
 
         public override bool Equals(object obj)
@@ -53,14 +48,8 @@ namespace NuGet.ProjectModel
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
-
-            combiner.AddObject(Id);
-            combiner.AddObject(ResolvedVersion);
-            combiner.AddObject(RequestedVersion);
-            combiner.AddSequence(Dependencies);
+            combiner.AddObject(LockFileDependencyComparerWithoutContentHash.Default.GetHashCode(this));
             combiner.AddObject(ContentHash);
-            combiner.AddObject(Type);
-
             return combiner.CombinedHash;
         }
     }

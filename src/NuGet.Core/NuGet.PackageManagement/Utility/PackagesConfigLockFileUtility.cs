@@ -9,13 +9,16 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using NuGet.Common;
+using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.Utility
 {
-    public class PackagesConfigLockFileUtility
+    public static class PackagesConfigLockFileUtility
     {
         private static readonly IComparer _dependencyComparer = new DependencyComparer();
 
@@ -79,6 +82,94 @@ namespace NuGet.PackageManagement.Utility
 
             return PackagesLockFileUtilities.GetNuGetLockFilePath(projectPath, projectName);
         }
+
+        public static IReadOnlyList<IRestoreLogMessage> ValidatePackagesConfigLockFiles(
+            string projectFile,
+            string packagesConfigFile,
+            string projectName,
+            string nuGetLockFilePath,
+            string restorePackagesWithLockFile,
+            NuGetFramework projectTfm,
+            string packagesFolderPath,
+            bool restoreLockedMode,
+            CancellationToken token)
+        {
+            var lockFilePath = GetPackagesLockFilePath(Path.GetDirectoryName(packagesConfigFile), nuGetLockFilePath, projectName);
+            var lockFileExists = File.Exists(lockFilePath);
+            var lockFileOptIn = MSBuildStringUtility.GetBooleanOrNull(restorePackagesWithLockFile);
+            var useLockFile = lockFileOptIn == true || lockFileExists;
+
+            if (lockFileOptIn == false && lockFileExists)
+            {
+                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidLockFileInput, lockFilePath);
+                var errors = new List<IRestoreLogMessage>();
+                var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message, packagesConfigFile);
+                log.ProjectPath = projectFile ?? packagesConfigFile;
+                errors.Add(log);
+                return errors;
+            }
+
+            if (useLockFile)
+            {
+                PackagesLockFile projectLockFileEquivalent = PackagesConfigLockFileUtility.FromPackagesConfigFile(packagesConfigFile,
+                    projectTfm,
+                    packagesFolderPath,
+                    token);
+
+                if (!lockFileExists)
+                {
+                    PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivalent);
+                    return null;
+                }
+                else
+                {
+                    PackagesLockFile lockFile = PackagesLockFileFormat.Read(lockFilePath);
+                    PackagesLockFileUtilities.LockFileValidityWithMatchedResults comparisonResult = PackagesLockFileUtilities.IsLockFileStillValid(projectLockFileEquivalent, lockFile);
+                    if (comparisonResult.IsValid)
+                    {
+                        // check sha hashes
+                        bool allContentHashesMatch = comparisonResult.MatchedDependencies.All(pair => pair.Key.ContentHash == pair.Value.ContentHash);
+                        if (allContentHashesMatch)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            var errors = new List<IRestoreLogMessage>();
+                            foreach (var difference in comparisonResult.MatchedDependencies.Where(kvp => kvp.Key.ContentHash != kvp.Value.ContentHash))
+                            {
+                                var message = string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageValidationFailed, difference.Key.Id + "." + difference.Key.ResolvedVersion);
+                                var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1403, message, packagesConfigFile);
+                                log.ProjectPath = projectFile ?? packagesConfigFile;
+                                errors.Add(log);
+                            }
+                            return errors;
+                        }
+                    }
+                    else
+                    {
+                        if (restoreLockedMode)
+                        {
+                            var errors = new List<IRestoreLogMessage>();
+                            var log = RestoreLogMessage.CreateError(NuGetLogCode.NU1004, Strings.Error_RestoreInLockedModePackagesConfig, packagesConfigFile);
+                            log.ProjectPath = projectFile ?? packagesConfigFile;
+                            errors.Add(log);
+                            return errors;
+                        }
+                        else
+                        {
+                            PackagesLockFileFormat.Write(lockFilePath, projectLockFileEquivalent);
+                            return null;
+                        }
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
 
         private static bool? IsRestorePackagesWithLockFileEnabled(MSBuildNuGetProject msbuildProject)
         {
@@ -180,13 +271,68 @@ namespace NuGet.PackageManagement.Utility
                 {
                     Id = toInstall.PackageIdentity.Id,
                     ContentHash = contentHashUtil.GetContentHash(toInstall.PackageIdentity, token),
-                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, true, toInstall.PackageIdentity.Version, true),
+                    RequestedVersion = new VersionRange(toInstall.PackageIdentity.Version, includeMinVersion: true, toInstall.PackageIdentity.Version, includeMaxVersion: true),
                     ResolvedVersion = toInstall.PackageIdentity.Version,
                     Type = PackageDependencyType.Direct
                 };
 
                 lockFile.Targets[0].Dependencies.Add(newDependency);
             }
+        }
+
+        public static PackagesLockFile FromPackagesConfigFile(
+            string pcFile,
+            NuGetFramework projectTfm,
+            string packagesFolderPath,
+            CancellationToken token)
+        {
+            if (pcFile == null)
+            {
+                throw new ArgumentNullException(nameof(pcFile));
+            }
+            if (!File.Exists(pcFile))
+            {
+                throw new FileNotFoundException(string.Format(Strings.Error_FileDoesNotExist, pcFile), pcFile);
+            }
+            if (projectTfm == null)
+            {
+                throw new ArgumentNullException(nameof(projectTfm));
+            }
+            if (packagesFolderPath == null)
+            {
+                throw new ArgumentNullException(nameof(packagesFolderPath));
+            }
+            if (!Directory.Exists(packagesFolderPath))
+            {
+                throw new DirectoryNotFoundException(string.Format(Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
+            }
+
+            var lockFile = new PackagesLockFile();
+            var target = new PackagesLockFileTarget();
+            lockFile.Targets.Add(target);
+            target.TargetFramework = projectTfm;
+
+            using (var stream = File.OpenRead(pcFile))
+            {
+                var contentHashUtil = new PackagesConfigContentHashProvider(new FolderNuGetProject(packagesFolderPath));
+
+                var reader = new PackagesConfigReader(stream);
+                foreach (var package in reader.GetPackages(allowDuplicatePackageIds: true))
+                {
+                    var dependency = new LockFileDependency
+                    {
+                        Id = package.PackageIdentity.Id,
+                        ContentHash = contentHashUtil.GetContentHash(package.PackageIdentity, token),
+                        RequestedVersion = new VersionRange(package.PackageIdentity.Version, includeMinVersion: true, package.PackageIdentity.Version, includeMaxVersion: true),
+                        ResolvedVersion = package.PackageIdentity.Version,
+                        Type = PackageDependencyType.Direct
+                    };
+
+                    target.Dependencies.Add(dependency);
+                }
+            }
+
+            return lockFile;
         }
 
         private class DependencyComparer : IComparer<LockFileDependency>, IComparer
