@@ -491,7 +491,7 @@ namespace NuGet.Packaging.FuncTest
                 revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
-            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
+            using (var trustedCertificate = _testFixture.CreateTrustedTestCertificateThatWillExpireSoon())
             using (var willExpireCert = new X509Certificate2(trustedCertificate.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
@@ -539,7 +539,7 @@ namespace NuGet.Packaging.FuncTest
             var verifier = new PackageSignatureVerifier(_trustProviders);
 
             using (var testDirectory = TestDirectory.Create())
-            using (var untrustedCertificate = _testFixture.UntrustedTestCertificateWillExpireIn10Seconds.Cert)
+            using (var untrustedCertificate = _testFixture.CreateUntrustedTestCertificateThatWillExpireSoon().Cert)
             using (var repositoryCertificate = new X509Certificate2(_testFixture.TrustedRepositoryCertificate.Source.Cert))
             {
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
@@ -588,7 +588,7 @@ namespace NuGet.Packaging.FuncTest
                 revocationMode: RevocationMode.Online);
 
             using (var dir = TestDirectory.Create())
-            using (var trustedCertificate = _testFixture.TrustedTestCertificateWillExpireIn10Seconds)
+            using (var trustedCertificate = _testFixture.CreateTrustedTestCertificateThatWillExpireSoon())
             using (var willExpireCert = new X509Certificate2(trustedCertificate.Source.Cert))
             using (var repoTestCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
