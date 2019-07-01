@@ -17,7 +17,6 @@ namespace NuGet.Packaging.Rules
 {
     class NoRefOrLibFolderInPackageRule : IPackageRule
     {
-        private static readonly string BuildDir = PackagingConstants.Folders.Build + Path.DirectorySeparatorChar;
         private static readonly List<string> FrameworkIdentifiers = typeof(FrameworkConstants.FrameworkIdentifiers).GetFields()
                 .Select(s => s.GetRawConstantValue().ToString()).ToList();
         public string MessageFormat { get; }
