@@ -20,7 +20,7 @@ function GetVSFolderPath {
     if (Test-Path (Join-Path $ProgramFilesPath $VS16PreviewRelativePath)) {
         $VSFolderPath = Join-Path $ProgramFilesPath $VS16PreviewRelativePath
     }
-    
+
     return $VSFolderPath
 }
 
@@ -87,10 +87,10 @@ function KillRunningInstancesOfVS {
                 Stop-Process $_ -ErrorAction SilentlyContinue -Force
                 if ($_.HasExited) {
                     Write-Host "Killed process:" $_.Name
-                }        
-            }        
+                }
+            }
         }
-    }    
+    }
 }
 
 function LaunchVS {
@@ -146,7 +146,7 @@ function ExecuteCommand {
     $success = $false
     $numberOfTries = 0
     do {
-        try {            
+        try {
             $numberOfTries++
             Write-Host "Attempt # $numberOfTries "
             if ($args) {
@@ -195,6 +195,17 @@ function GetMEFCachePath {
     return $cachePath
 }
 
+function Update-Configuration(
+        [ValidateSet('16.0')]
+        [string] $vsVersion = '16.0') {
+
+    $vsIdeFolderPath = GetVSIDEFolderPath $vsVersion
+    $vsFilePath = Join-Path $vsIdeFolderPath 'devenv.exe'
+
+    Write-Host "Updating configuration for $vsFilePath"
+
+    Start-Process -FilePath $vsFilePath -ArgumentList '/updateConfiguration' -Wait
+}
 
 function UninstallVSIX {
     param(

@@ -16,7 +16,7 @@ param (
 $success = IsAdminPrompt
 
 if ($success -eq $false) {
-    $errorMessage = 'ERROR: Please re-run this script as an Administrator! ' +
+    $errorMessage = 'ERROR: Please re-run this script as an administrator! ' +
     'Actions such as installing VSIX and uninstalling VSIX require admin privileges.'
 
     Write-Error $errorMessage
@@ -28,7 +28,7 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
-# Because we are upgrading an installed system component vsix, we need to downgrade first.
+# Because we are upgrading an installed system component VSIX, we need to downgrade first.
 $numberOfTries = 0
 $success = $false
 do {
@@ -37,9 +37,9 @@ do {
     Write-Host "Attempt # $numberOfTries to downgrade VSIX..."
     $success = DowngradeVSIX $NuGetVSIXID $VSVersion $ProcessExitTimeoutInSeconds
 }
-until (($success -eq $true) -or ($numberOfTries -gt 3))    
+until (($success -eq $true) -or ($numberOfTries -gt 3))
 
-# Clearing MEF cache helps load the right dlls for vsix
+# Clearing MEF cache helps load the right dlls for VSIX
 ClearMEFCache
 
 
@@ -56,3 +56,6 @@ until (($success -eq $true) -or ($numberOfTries -gt 3))
 if ($success -eq $false) {
     exit 1
 }
+
+ClearMEFCache
+Update-Configuration
