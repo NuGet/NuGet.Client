@@ -225,7 +225,12 @@ EndGlobal";
                     var xml = XDocument.Load(stream);
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-
+#if IS_NETCORE30
+                    ProjectFileUtils.ChangeProperty(
+                        xml,
+                        "TargetFramework",
+                        "netstandard2.1");
+#endif
                     ProjectFileUtils.AddItem(
                         xml,
                         "PackageReference",
