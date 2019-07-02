@@ -74,11 +74,8 @@ namespace NuGet.Packaging.Rules
 
         private (string, string) GenerateWarningString(string[] possibleFrameworks)
         {
-            var copy = new string[possibleFrameworks.Length - 1];
-            Array.Copy(possibleFrameworks, copy, possibleFrameworks.Length - 1);
-
             string tfmNames = possibleFrameworks.Length > 1
-                ? string.Join(", ", copy) + ", and " + possibleFrameworks[possibleFrameworks.Length - 1]
+                ? string.Join(", ", possibleFrameworks, 0, possibleFrameworks.Count() - 1)
                 : possibleFrameworks[0];
 
             string suggestedDirectories = possibleFrameworks.Length > 1
