@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Rules
                 if (buildFrameworks.Length != 0)
                 {
                     //if you can find any folders other than native or any, raise an NU5127
-                    if (buildFrameworks.Any(t => (FrameworkConstants.DotNetAll.Satisfies(t) || IsValidFramework(t))
+                    if (buildFrameworks.Any(t => (FrameworkConstants.DotNetAll.Satisfies(t) || FrameworkNameValidatorUtility.IsValidFrameworkName(t))
                         && t.GetShortFolderName() != "dotnet"
                         && t.GetShortFolderName() != "native"))
                     {
@@ -93,23 +93,6 @@ namespace NuGet.Packaging.Rules
         private static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
         {
             return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]));
-        }
-
-        private static bool IsValidFramework(NuGetFramework framework)
-        {
-            FrameworkName fx;
-            try
-            {
-                string effectivePath;
-                fx = FrameworkNameUtility.ParseFrameworkFolderName(framework.GetShortFolderName() + "/", false, out effectivePath);
-            }
-            catch (ArgumentException)
-            {
-                fx = null;
-            }
-
-            // return false if the framework is Null or Unsupported
-            return fx != null && fx.Identifier != NuGetFramework.UnsupportedFramework.Framework;
         }
 
         private static string CreateDirectories(string[] possibleFrameworks)
