@@ -77,14 +77,15 @@ namespace NuGet.Packaging.Rules
             var copy = new string[possibleFrameworks.Length - 1];
             Array.Copy(possibleFrameworks, copy, possibleFrameworks.Length - 1);
 
-            string tfmNames = possibleFrameworks.Length > 1 ? string.Join(", ", copy)
-                + ", and " + possibleFrameworks[possibleFrameworks.Length - 1] : possibleFrameworks[0];
-            string suggestedDirectories = possibleFrameworks.Length > 1 ?
-                CreateDirectories(possibleFrameworks) :
-                string.Format("-lib/{0}/_._", possibleFrameworks[0]);
+            string tfmNames = possibleFrameworks.Length > 1
+                ? string.Join(", ", copy) + ", and " + possibleFrameworks[possibleFrameworks.Length - 1]
+                : possibleFrameworks[0];
+
+            string suggestedDirectories = possibleFrameworks.Length > 1
+                ? CreateDirectories(possibleFrameworks)
+                : string.Format("-lib/{0}/_._", possibleFrameworks[0]);
             
             return (tfmNames, suggestedDirectories);
-
         }
 
         private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
