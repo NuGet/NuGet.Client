@@ -7,7 +7,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
-using Newtonsoft.Json;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -123,6 +122,7 @@ namespace NuGet.Build.Tasks
                 log.LogWarning(Strings.NoProjectsProvidedToTask);
                 return true;
             }
+            var restoreSummaries = new List<RestoreSummary>();
 
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(MSBuildUtility.WrapMSBuildItem);
@@ -152,5 +152,7 @@ namespace NuGet.Build.Tasks
         {
             _cts.Dispose();
         }
+
     }
+
 }

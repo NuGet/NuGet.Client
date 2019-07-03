@@ -6,9 +6,8 @@ using System.Globalization;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
-using NuGet.ProjectManagement;
 
-namespace NuGet.CommandLine
+namespace NuGet.ProjectManagement
 {
     public class ConsoleProjectContext : INuGetProjectContext
     {
