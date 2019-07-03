@@ -5586,7 +5586,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             using (var workingDirectory = TestDirectory.Create())
             {
-                var nupkgPath = Path.Combine(workingDirectory, $"test.0.0.1.nupkg");
+                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
 
                 // Arrange
                 Util.CreateFile(workingDirectory, "icon.jpg", "abcabc");
@@ -5623,6 +5623,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var nuspecReader = nupkgReader.NuspecReader;
 
                     Assert.NotNull(nuspecReader.GetIcon());
+                    Assert.True(nupkgReader.GetEntry("icon.jpg") != null);
                 }
             }
         }

@@ -29,7 +29,6 @@ namespace NuGet.Packaging
         string Tags { get; }
         bool Serviceable { get; }
         string Copyright { get; }
-        string Icon { get; }
 
         /// <summary>
         /// Specifies assemblies from GAC that the package depends on.
