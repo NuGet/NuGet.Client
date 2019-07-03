@@ -176,89 +176,98 @@ namespace NuGet.Protocol.Plugins
             var pluginProcess = new PluginProcess(startInfo);
             string pluginId = Plugin.CreateNewId();
 
-            // Process ID is unavailable until we start the process; however, we want to wire up this event before
-            // attempting to start the process in case the process immediately exits.
-            EventHandler<IPluginProcess> onExited = null;
-
-            onExited = (object eventSender, IPluginProcess exitedProcess) =>
+            using (var combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(sessionCancellationToken))
             {
-                exitedProcess.Exited -= onExited;
+                // Process ID is unavailable until we start the process; however, we want to wire up this event before
+                // attempting to start the process in case the process immediately exits.
+                EventHandler<IPluginProcess> onExited = null;
+                Connection connection = null;
 
-                OnPluginProcessExited(eventSender, exitedProcess, pluginId);
-            };
+                onExited = (object eventSender, IPluginProcess exitedProcess) =>
+                {
+                    exitedProcess.Exited -= onExited;
 
-            pluginProcess.Exited += onExited;
+                    OnPluginProcessExited(eventSender, exitedProcess, pluginId);
 
-            var stopwatch = Stopwatch.StartNew();
+                    if (connection?.State == ConnectionState.Handshaking)
+                    {
+                        combinedCancellationTokenSource.Cancel();
+                    }
+                };
 
-            pluginProcess.Start();
+                pluginProcess.Exited += onExited;
 
-            if (_logger.IsEnabled)
-            {
-                WriteCommonLogMessages(_logger);
+                var stopwatch = Stopwatch.StartNew();
+
+                pluginProcess.Start();
+
+                if (_logger.IsEnabled)
+                {
+                    WriteCommonLogMessages(_logger);
+                }
+
+                var sender = new Sender(pluginProcess.StandardInput);
+                var receiver = new StandardOutputReceiver(pluginProcess);
+                var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
+                connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
+
+                var plugin = new Plugin(
+                    filePath,
+                    connection,
+                    pluginProcess,
+                    isOwnProcess: false,
+                    idleTimeout: _pluginIdleTimeout,
+                    id: pluginId);
+
+                if (_logger.IsEnabled)
+                {
+                    _logger.Write(new PluginInstanceLogMessage(_logger.Now, plugin.Id, PluginState.Started, pluginProcess.Id));
+                }
+
+                try
+                {
+                    // Wire up handlers before calling ConnectAsync(...).
+                    plugin.Faulted += OnPluginFaulted;
+                    plugin.Idle += OnPluginIdle;
+
+                    await connection.ConnectAsync(combinedCancellationTokenSource.Token);
+
+                    // It's critical that this be registered after ConnectAsync(...).
+                    // If it's registered before, stuff could be disposed, which would lead to unexpected exceptions.
+                    // If the plugin process exited before this event is registered, an exception should be caught below.
+                    plugin.Exited += OnPluginExited;
+                }
+                catch (ProtocolException ex)
+                {
+                    plugin.Dispose();
+
+                    throw new ProtocolException(
+                        string.Format(CultureInfo.CurrentCulture, Strings.Plugin_Exception, plugin.Name, ex.Message));
+                }
+                catch (TaskCanceledException ex)
+                {
+                    stopwatch.Stop();
+
+                    plugin.Dispose();
+
+                    throw new PluginException(
+                        string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.Plugin_FailedOnCreation,
+                            plugin.Name,
+                            stopwatch.Elapsed.TotalSeconds,
+                            pluginProcess.ExitCode),
+                        ex);
+                }
+                catch (Exception)
+                {
+                    plugin.Dispose();
+
+                    throw;
+                }
+
+                return plugin;
             }
-
-            var sender = new Sender(pluginProcess.StandardInput);
-            var receiver = new StandardOutputReceiver(pluginProcess);
-            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
-            var connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
-
-            var plugin = new Plugin(
-                filePath,
-                connection,
-                pluginProcess,
-                isOwnProcess: false,
-                idleTimeout: _pluginIdleTimeout,
-                id: pluginId);
-
-            if (_logger.IsEnabled)
-            {
-                _logger.Write(new PluginInstanceLogMessage(_logger.Now, plugin.Id, PluginState.Started, pluginProcess.Id));
-            }
-
-            try
-            {
-                // Wire up handlers before calling ConnectAsync(...).
-                plugin.Faulted += OnPluginFaulted;
-                plugin.Idle += OnPluginIdle;
-
-                await connection.ConnectAsync(sessionCancellationToken);
-
-                // It's critical that this be registered after ConnectAsync(...).
-                // If it's registered before, stuff could be disposed, which would lead to unexpected exceptions.
-                // If the plugin process exited before this event is registered, an exception should be caught below.
-                plugin.Exited += OnPluginExited;
-            }
-            catch (ProtocolException ex)
-            {
-                plugin.Dispose();
-
-                throw new ProtocolException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.Plugin_Exception, plugin.Name, ex.Message));
-            }
-            catch (TaskCanceledException ex)
-            {
-                stopwatch.Stop();
-
-                plugin.Dispose();
-
-                throw new PluginException(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.Plugin_FailedOnCreation,
-                        plugin.Name,
-                        stopwatch.Elapsed.TotalSeconds,
-                        pluginProcess.ExitCode),
-                    ex);
-            }
-            catch (Exception)
-            {
-                plugin.Dispose();
-
-                throw;
-            }
-
-            return plugin;
         }
 
         /// <summary>
