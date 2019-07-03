@@ -529,14 +529,9 @@ namespace NuGet.Packaging
                 // Validate entry
                 var iconFileList = files.Where(f => iconPath.Equals(f.EffectivePath));
 
-                if (iconFileList.Count() > 0)
-                {
-                    throw new PackagingException(NuGetLogCode.NU5038, "Multiple files for icon");
-                }
-
                 if (iconFileList.Count() == 0)
                 {
-                    throw new PackagingException(NuGetLogCode.NU5039, "No icon file found");
+                    throw new PackagingException(NuGetLogCode.NU5039, NuGetResources.IconNoFileElement);
                 }
 
                 IPackageFile iconFile = iconFileList.First();
@@ -603,6 +598,7 @@ namespace NuGet.Packaging
             Repository = metadata.Repository;
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
             LicenseMetadata = metadata.LicenseMetadata;
+            Icon = metadata.Icon;
 
             if (metadata.Tags != null)
             {

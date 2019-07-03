@@ -56,59 +56,5 @@ namespace NuGet.Packaging.Test
                 }
             }
         }
-
-        [Fact]
-        public void Icon_IconMaxFilesizeExceeded_Warn()
-        {
-            using (var packageFile = TestPackagesCore.GetTestPackageIcon(1024 * 1024 + 1024))
-            {
-                var zip = TestPackagesCore.GetZip(packageFile);
-                var issues = ExecuteRules(zip);
-
-                Assert.Equal(issues.Count(), 1);
-                Assert.True(issues.First().Code == NuGetLogCode.NU5037);
-            }
-        }
-
-        [Fact]
-        public void Icon_IconNotFound_Warn()
-        {
-            using (var packageFile = TestPackagesCore.GetTestPackageIcon(-1))
-            {
-                var zip = TestPackagesCore.GetZip(packageFile);
-                var issues = ExecuteRules(zip);
-
-                Assert.Equal(issues.Count(), 1);
-                Assert.True(issues.First().Code == NuGetLogCode.NU5036);
-            }
-        }
-
-        [Fact]
-        public void Icon_HappyPath()
-        {
-            using (var packageFile = TestPackagesCore.GetTestPackageIcon(6))
-            {
-                var zip = TestPackagesCore.GetZip(packageFile);
-                var issues = ExecuteRules(zip);
-
-                Assert.Equal(issues.Count(), 0);
-            }
-        }
-
-        private IEnumerable<PackagingLogMessage> ExecuteRules(ZipArchive nupkg)
-        {
-            var ruleSet = RuleSet.PackageCreationRuleSet;
-            var issues = new List<PackagingLogMessage>();
-
-            using (var reader = new PackageArchiveReader(nupkg))
-            {
-                foreach (var rule in ruleSet)
-                {
-                    issues.AddRange(rule.Validate(reader));
-                }
-            }
-
-            return issues;
-        }
     }
 }

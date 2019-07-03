@@ -770,7 +770,7 @@ namespace NuGet.Test.Utility
         /// <summary>
         /// Generates a test .nupkg with icon information
         /// </summary>
-        /// <param name="iconByteSize">if it is les than zero, it will not include the zip file</param>
+        /// <param name="iconByteSize">if it is less than zero, it will not include the zip file</param>
         /// <returns></returns>
         public static TempFile GetTestPackageIcon(int iconByteSize)
         {

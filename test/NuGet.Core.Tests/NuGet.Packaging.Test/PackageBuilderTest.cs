@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 using NuGet.Test.Utility;
+using System.Text;
 
 namespace NuGet.Packaging.Test
 {
@@ -2486,6 +2487,50 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
         }
 
+        [Fact]
+        public void Icon_IconMaxFileSizeExceeded_ThrowsException()
+        {
+            TestIconPackaging("icon.jpg", "icon.jpg", IconValidation.MaxIconFilzeSize + 1,
+                "The icon file size must not exceed 1 megabyte.");
+        }
+
+        [Fact]
+        public void Icon_IconFileEntryNotFound_ThrowsException()
+        {
+            TestIconPackaging("icon.jpg", "icono.jpg", 100,
+                "No icon <file> element found for <icon> in the nuspec");
+        }
+
+
+        [Fact]
+        public void Icon_HappyPath_Suceed()
+        {
+            TestIconPackaging("icon.jpg", "icon.jpg", 400,
+               string.Empty);
+        }
+
+
+        private void TestIconPackaging(string iconName, string iconfile, int iconFileSize, string exceptionMessage)
+        {
+            using (var sourceDir = new IconTestSourceDirectory(iconName, iconfile, iconFileSize))
+            using (var nuspecStream = File.OpenRead(sourceDir.NuspecPath))
+            using (var outputNuPkgStream = new MemoryStream())
+            {
+                PackageBuilder pkgBuilder = new PackageBuilder(nuspecStream, sourceDir.BaseDir);
+
+                if (!string.IsNullOrEmpty(exceptionMessage))
+                {
+                    ExceptionAssert.Throws<PackagingException>(
+                        () => pkgBuilder.Save(outputNuPkgStream),
+                        exceptionMessage);
+                }
+                else
+                {
+                    pkgBuilder.Save(outputNuPkgStream);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(@".\test1.txt", "test1.txt")]
         [InlineData(@".\test\..\test1.txt", "test1.txt")]
@@ -2602,6 +2647,84 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
 
             return resultStream;
+        }
+
+        /// <summary>
+        /// Package directory for testing
+        /// </summary>
+        public sealed class IconTestSourceDirectory : IDisposable
+        {
+            private const string NuspecFilename = "iconPackage.nuspec";
+
+            public string IconEntry { get; set; }
+
+            public string IconFilename { get; set; }
+
+            public int IconFileSize { get; set; }
+
+
+            /// <summary>
+            /// Base directory for test
+            /// </summary>
+            private TestDirectory TestDirectory { get; set; }
+
+            public string BaseDir => TestDirectory.Path;
+
+            public string NuspecPath => Path.Combine(BaseDir, NuspecFilename);
+
+            public string IconPath => Path.Combine(BaseDir, IconFilename);
+
+            /// <summary>
+            /// If iconFileSize is less than zero, it will not write the file
+            /// </summary>
+            /// <param name="iconFileSize"></param>
+            public IconTestSourceDirectory(string iconName, string fileName, int iconFileSize)
+            {
+                IconEntry = iconName;
+                IconFilename = fileName;
+                IconFileSize = iconFileSize;
+
+                TestDirectory = TestDirectory.Create();
+                PopulatePackage();
+            }
+
+            private void PopulatePackage()
+            {
+                if (IconFileSize > 0)
+                {
+                    byte[] fakeIconContent = new byte[IconFileSize];
+                    File.WriteAllBytes(IconPath, fakeIconContent);
+                }
+
+                StringBuilder sb = new StringBuilder();
+
+                if (!string.IsNullOrEmpty(IconFilename))
+                {
+                    sb.Append($"<file src=\"{IconFilename}\" />\n");
+                }
+
+                string nuspecContent = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package>
+                              <metadata>
+                                <id>iconPackage</id>
+                                <version>5.2.0</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample icon description</description>
+                                <icon>{0}</icon>
+                              </metadata>
+                              <files>
+                                {1}
+                              </files>
+                            </package>",
+                            IconEntry,
+                            sb.ToString());
+                File.WriteAllText(NuspecPath, nuspecContent);
+            }
+
+            public void Dispose()
+            {
+                TestDirectory.Dispose();
+            }
         }
 
         /*

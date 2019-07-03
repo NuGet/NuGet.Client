@@ -16,7 +16,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Maximun Icon file size: 1 megabyte
         /// </summary>
-        private const int MaxIconFilzeSize = 1024 * 1024;
+        public const int MaxIconFilzeSize = 1024 * 1024;
 
         /// <summary>
         /// Validate the icon filesize
