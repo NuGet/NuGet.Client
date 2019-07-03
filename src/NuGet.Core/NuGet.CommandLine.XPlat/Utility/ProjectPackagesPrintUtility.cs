@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     {
                         if (pr.Equals(pr2))
                         {
-                            pr.InAllTargetFrameworks = true;
+                            pr.Common = true;
                         }
                     }
                 }

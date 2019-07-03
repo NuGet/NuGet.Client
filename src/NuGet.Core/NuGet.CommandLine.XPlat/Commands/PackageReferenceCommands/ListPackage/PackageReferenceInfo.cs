@@ -25,18 +25,12 @@ namespace NuGet.CommandLine.XPlat
         {
             get
             {
-                if (InAllTargetFrameworks)
-                {
-                    return AutoReference ? "A" : (Transitive ? "T" : "D");
-                }
-                else
-                {
-                    return AutoReference ? "a" : (Transitive ? "t" : "d");
-                }
+                return AutoReference ? "a" : (Transitive ? "t" : "d")
+                    + (Common ? "#" : " ");
             }
         }
 
-        internal bool InAllTargetFrameworks { get; set; }
+        internal bool Common { get; set; }
 
         public override bool Equals(object obj)
         {

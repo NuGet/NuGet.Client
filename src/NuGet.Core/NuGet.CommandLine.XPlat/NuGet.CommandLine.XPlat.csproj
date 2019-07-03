@@ -37,6 +37,34 @@
       <LastGenOutput>Strings.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
+
+  <Target Name="BinPlace" DependsOnTargets="Build">
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.CommandLine.xplat.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Common.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Protocol.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Packaging.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Versioning.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Configuration.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Credentials.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Commands.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.Frameworks.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.ProjectModel.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.DependencyResolver.Core.dll"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Copy SourceFiles="..\..\..\artifacts\NuGet.CommandLine.XPlat\16.0\bin\Debug\netcoreapp2.1\NuGet.CommandLine.xplat.pdb"
+          SkipUnchangedFiles="true" DestinationFolder="c:\Program Files\dotnet\sdk\3.0.100-preview5-999999\" />
+    <Message Importance="high" Text="Copied dll &amp; pdb" />
+  </Target>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

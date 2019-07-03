@@ -31,23 +31,26 @@ namespace NuGet.CommandLine.XPlat
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
-            if (!File.Exists(listPackageArgs.Path))
+            // make the path an absolute path, in case we are run as a dotnet tool.
+            var absPath = Path.GetFullPath(listPackageArgs.Path);
+
+            if (!File.Exists(absPath))
             {
                 Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.ListPkg_ErrorFileNotFound,
-                        listPackageArgs.Path));
+                        absPath));
                 return;
             }
 
-            var solutionDirectoryPath = Path.GetExtension(listPackageArgs.Path).Equals(".sln")
-                ? Path.GetDirectoryName(listPackageArgs.Path)
+            var solutionDirectoryPath = Path.GetExtension(absPath).Equals(".sln")
+                ? Path.GetDirectoryName(absPath)
                 : null;
 
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
             var projectsPaths = solutionDirectoryPath != null ?
-                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path) :
-                           new List<string>(new string[] { listPackageArgs.Path });
+                           MSBuildAPIUtility.GetProjectsFromSolution(absPath) :
+                           new List<string>(new string[] { absPath });
 
             var msBuildUtility = new MSBuildAPIUtility(listPackageArgs.Logger);
 
@@ -123,12 +126,11 @@ namespace NuGet.CommandLine.XPlat
             //TODO: resx
             Console.WriteLine("(a) : Auto reference by SDK");
             Console.WriteLine("(d) : Direct reference");
-            Console.WriteLine("(D) : Direct reference - in common for all TargetFrameworks");
             if (listPackageArgs.IncludeTransitive)
             {
                 Console.WriteLine("(t) : Transitive reference");
-                Console.WriteLine("(T) : Transitive reference - in common for all TargetFrameworks");
             }
+            Console.WriteLine("(#) : Reference in common for all TargetFrameworks");
         }
 
         private static void CollectAllVersionsOfAllPackages(Dictionary<string, HashSet<NuGetVersion>> packageVersions, PackageReferenceInfo packageReferenceInfo)

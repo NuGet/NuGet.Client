@@ -1,0 +1,579 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="ApiKey_Description" xml:space="preserve">
+    <value>The API key for the server.</value>
+  </data>
+  <data name="App_FullName" xml:space="preserve">
+    <value>NuGet Command Line</value>
+  </data>
+  <data name="Argument_Cannot_Be_Null_Or_Empty" xml:space="preserve">
+    <value>Argument cannot be null or empty</value>
+  </data>
+  <data name="ConsoleConfirmMessage" xml:space="preserve">
+    <value>{0} (y/N) </value>
+  </data>
+  <data name="ConsoleConfirmMessageAccept" xml:space="preserve">
+    <value>y</value>
+  </data>
+  <data name="Delete_Description" xml:space="preserve">
+    <value>Deletes a package from the server.</value>
+  </data>
+  <data name="Delete_MissingArguments" xml:space="preserve">
+    <value>Please provide arguments for package id and package version.</value>
+  </data>
+  <data name="Delete_PackageIdAndVersion_Description" xml:space="preserve">
+    <value>The Package Id and version.</value>
+  </data>
+  <data name="DisableBuffering_Description" xml:space="preserve">
+    <value>Disable buffering when pushing to an HTTP(S) server to decrease memory usage.</value>
+  </data>
+  <data name="NoSymbols_Description" xml:space="preserve">
+    <value>If a symbols package exists, it will not be pushed to a symbols server.</value>
+  </data>
+  <data name="Log_Committing" xml:space="preserve">
+    <value>Committing restore...</value>
+  </data>
+  <data name="Log_FoundProjectRoot" xml:space="preserve">
+    <value>Found project root directory: {0}.</value>
+  </data>
+  <data name="Log_LoadedProject" xml:space="preserve">
+    <value>Loaded project {0} from {1}.</value>
+  </data>
+  <data name="Log_RunningNonParallelRestore" xml:space="preserve">
+    <value>Running non-parallel restore.</value>
+  </data>
+  <data name="Log_RunningParallelRestore" xml:space="preserve">
+    <value>Running restore with {0} concurrent jobs.</value>
+  </data>
+  <data name="Log_UsingPackagesDirectory" xml:space="preserve">
+    <value>Using packages directory: {0}.</value>
+  </data>
+  <data name="NoApiKeyFound" xml:space="preserve">
+    <value>No API Key was provided and no API Key could be found for {0}. To save an API Key for a source use the 'setApiKey' command.</value>
+  </data>
+  <data name="NonInteractive_Description" xml:space="preserve">
+    <value>Do not prompt for user input or confirmations.</value>
+  </data>
+  <data name="Push_Description" xml:space="preserve">
+    <value>Pushes a package to the server and publishes it.</value>
+  </data>
+  <data name="Push_MissingArguments" xml:space="preserve">
+    <value>Please specify the path to the package.</value>
+  </data>
+  <data name="Push_Package_ApiKey_Description" xml:space="preserve">
+    <value>Specify the path to the package and your API key to push the package to the server.</value>
+  </data>
+  <data name="Push_Timeout_Description" xml:space="preserve">
+    <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
+  </data>
+  <data name="Restore_Arg_ProjectName_Description" xml:space="preserve">
+    <value>List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files.</value>
+  </data>
+  <data name="Restore_Description" xml:space="preserve">
+    <value>Restores packages for a project and writes a lock file.</value>
+  </data>
+  <data name="Restore_Switch_ConfigFile_Description" xml:space="preserve">
+    <value>The NuGet configuration file to use.</value>
+  </data>
+  <data name="Restore_Switch_DisableParallel_Description" xml:space="preserve">
+    <value>Disables restoring multiple projects in parallel.</value>
+  </data>
+  <data name="Restore_Switch_Fallback_Description" xml:space="preserve">
+    <value>A list of packages sources to use as a fallback.</value>
+  </data>
+  <data name="Restore_Switch_Packages_Description" xml:space="preserve">
+    <value>Directory to install packages in.</value>
+  </data>
+  <data name="Restore_Switch_Source_Description" xml:space="preserve">
+    <value>Specifies a NuGet package source to use during the restore.</value>
+  </data>
+  <data name="Source_Description" xml:space="preserve">
+    <value>Specifies the server URL</value>
+  </data>
+  <data name="Switch_Verbosity" xml:space="preserve">
+    <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
+    <comment>The allowed values should not be localized as they are Enum variants</comment>
+  </data>
+  <data name="Error_MissingSourceParameter" xml:space="preserve">
+    <value>Source parameter was not specified.</value>
+  </data>
+  <data name="Push_InvalidTimeout" xml:space="preserve">
+    <value>Invalid timeout parameter value.</value>
+  </data>
+  <data name="Restore_Switch_NoCache_Description" xml:space="preserve">
+    <value>Do not cache packages and http requests.</value>
+  </data>
+  <data name="BasePath_Description" xml:space="preserve">
+    <value>The base path of the files defined in the nuspec file.</value>
+  </data>
+  <data name="CommandLine_Warning" xml:space="preserve">
+    <value>WARNING: {0}</value>
+  </data>
+  <data name="ExcludeEmptyDirectories_Description" xml:space="preserve">
+    <value>Prevent inclusion of empty directories when building the package.</value>
+  </data>
+  <data name="InputFile_Description" xml:space="preserve">
+    <value>Specify the location of the nuspec or project file to create a package.</value>
+  </data>
+  <data name="MinClientVersion_Description" xml:space="preserve">
+    <value>Set the minClientVersion attribute for the created package.</value>
+    <comment>Please don't localize "minClientVersion"</comment>
+  </data>
+  <data name="NoDefaultExcludes_Description" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot e.g. .svn.</value>
+  </data>
+  <data name="NoPackageAnalysis_Description" xml:space="preserve">
+    <value>Specify if the command should not run package analysis after building the package.</value>
+  </data>
+  <data name="NuGetDocs" xml:space="preserve">
+    <value>https://docs.nuget.org/</value>
+  </data>
+  <data name="OutputDirectory_Description" xml:space="preserve">
+    <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory</value>
+  </data>
+  <data name="PackageCommandInvalidMinClientVersion" xml:space="preserve">
+    <value>The value of MinClientVersion argument is not a valid version.</value>
+  </data>
+  <data name="PackCommand_Description" xml:space="preserve">
+    <value>Creates a NuGet package based on the specified nuspec or project file</value>
+  </data>
+  <data name="Suffix_Description" xml:space="preserve">
+    <value>Appends a pre-release suffix to the internally generated version number.</value>
+  </data>
+  <data name="Symbols_Description" xml:space="preserve">
+    <value>Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package.</value>
+  </data>
+  <data name="Version_Description" xml:space="preserve">
+    <value>Overrides the version number from the nuspec file.</value>
+  </data>
+  <data name="Build_Description" xml:space="preserve">
+    <value>Determines if the project should be built before building the package.</value>
+  </data>
+  <data name="IncludeReferencedProjects_Description" xml:space="preserve">
+    <value>Include referenced projects either as dependencies or as part of the package.</value>
+  </data>
+  <data name="MsBuildVersion_Description" xml:space="preserve">
+    <value>Specifies the version of MSBuild to be used with this command. Supported values are 4, 12, 14. By default the MSBuild in your path is picked, otherwise it defaults to the highest installed version of MSBuild.</value>
+  </data>
+  <data name="PackageCommandAttemptingToBuildPackage" xml:space="preserve">
+    <value>Attempting to build package from '{0}'.</value>
+  </data>
+  <data name="PackageVersionInvalid" xml:space="preserve">
+    <value>Version string specified '{0}' is invalid.</value>
+  </data>
+  <data name="Tool_Description" xml:space="preserve">
+    <value>Determines if the output files of the project should be in the tool folder.</value>
+  </data>
+  <data name="Restore_Switch_IgnoreFailedSource_Description" xml:space="preserve">
+    <value>Only warn about failed sources if there are packages meeting version requirement.</value>
+  </data>
+  <data name="Exclude_Description" xml:space="preserve">
+    <value>Specifies one or more wildcard patterns to exclude when creating a package.</value>
+  </data>
+  <data name="Push_Timeout_Error" xml:space="preserve">
+    <value>Pushing took too long. You can change the default timeout of 300 seconds by using the --timeout &lt;seconds&gt; option with the push command.</value>
+  </data>
+  <data name="ForceEnglishOutput_Description" xml:space="preserve">
+    <value>Forces the application to run using an invariant, English-based culture.</value>
+  </data>
+  <data name="OutputNuGetVersion" xml:space="preserve">
+    <value>{0} Version: {1}</value>
+    <comment>{0}: App full name
+{1}: App version</comment>
+  </data>
+  <data name="Serviceable_Description" xml:space="preserve">
+    <value>Sets the nuspec serviceable element to true.</value>
+  </data>
+  <data name="SymbolSource_Description" xml:space="preserve">
+    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+  </data>
+  <data name="SymbolApiKey_Description" xml:space="preserve">
+    <value>The API key for the symbol server.</value>
+  </data>
+  <data name="Restore_Switch_LegacyPackagesDirectory_Description" xml:space="preserve">
+    <value>Use legacy behavior when the restore operation is interacting with the global packages directory. This means the ID and version folder names are written with the original package case rather than being normalized to lowercase.</value>
+  </data>
+  <data name="LocalsCommand_ArgumentDescription" xml:space="preserve">
+    <value>Specifies the cache location(s) to list or clear.
+&lt;all | http-cache | global-packages | temp&gt;</value>
+  </data>
+  <data name="LocalsCommand_ClearDescription" xml:space="preserve">
+    <value>Clear the selected local resources or cache location(s).</value>
+  </data>
+  <data name="LocalsCommand_ListDescription" xml:space="preserve">
+    <value>List the selected local resources or cache location(s).</value>
+  </data>
+  <data name="LocalsCommand_Description" xml:space="preserve">
+    <value>Clears or lists local NuGet resources such as http requests cache, packages folder, plugin operations cache  or machine-wide global packages folder.</value>
+  </data>
+  <data name="LocalsCommand_Help" xml:space="preserve">
+    <value>usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="LocalsCommand_MultipleOperations" xml:space="preserve">
+    <value>Both operations, --list and --clear, are not supported in the same command. Please specify only one operation.
+usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="LocalsCommand_NoArguments" xml:space="preserve">
+    <value>No Cache Type was specified.
+usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="LocalsCommand_NoOperation" xml:space="preserve">
+    <value>Please specify an operation i.e. --list or --clear.
+usage: NuGet locals &lt;all | http-cache | global-packages | temp | plugins-cache&gt; [--clear | -c | --list | -l]
+For more information, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+  </data>
+  <data name="Error_MsBuildUnableToOpenProject" xml:space="preserve">
+    <value>MsBuild was unable to open Project '{0}'.</value>
+    <comment>{0} - Project/csproj path</comment>
+  </data>
+  <data name="Error_AddPkgIncompatibleWithAllFrameworks" xml:space="preserve">
+    <value>Package '{0}' is incompatible with '{1}' frameworks in project '{2}'.</value>
+    <comment>{0} - Package Id
+{1} - all / user specified
+{2} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgAddingReference" xml:space="preserve">
+    <value>Adding PackageReference for package '{0}' into project '{1}'.</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgCompatibleWithAllFrameworks" xml:space="preserve">
+    <value>Package '{0}' is compatible with all the specified frameworks in project '{1}'.</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Info_AddPkgCompatibleWithSubsetFrameworks" xml:space="preserve">
+    <value>Package '{0}' is compatible with a subset of the specified frameworks in project '{1}'.</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="Warn_AddPkgWithoutRestore" xml:space="preserve">
+    <value>--no-restore|-n flag was used. No compatibility check will be done and the added package reference will be unconditional.</value>
+  </data>
+  <data name="AddPkg_Description" xml:space="preserve">
+    <value>Adds a package reference to a project.</value>
+  </data>
+  <data name="AddPkg_FrameworksDescription" xml:space="preserve">
+    <value>Frameworks for which the package reference should be added.</value>
+  </data>
+  <data name="Error_PkgMissingArgument" xml:space="preserve">
+    <value>Unable to {0} package. Argument '{1}' not provided.</value>
+    <comment>{0} - Operation Name
+{1} - Argument which was not provided</comment>
+  </data>
+  <data name="AddPkg_NoRestoreDescription" xml:space="preserve">
+    <value>Do not perform restore preview and compatibility check. The added package reference will be unconditional.</value>
+  </data>
+  <data name="AddPkg_PackageDirectoryDescription" xml:space="preserve">
+    <value>Directory to restore packages in.</value>
+  </data>
+  <data name="AddPkg_PackageIdDescription" xml:space="preserve">
+    <value>Id of the package to be added.</value>
+  </data>
+  <data name="AddPkg_PackageVersionDescription" xml:space="preserve">
+    <value>Version of the package to be added.</value>
+  </data>
+  <data name="AddPkg_ProjectPathDescription" xml:space="preserve">
+    <value>Path to the project file.</value>
+  </data>
+  <data name="AddPkg_SourcesDescription" xml:space="preserve">
+    <value>Specifies NuGet package sources to use during the restore.</value>
+  </data>
+  <data name="AddPkg_DgFileDescription" xml:space="preserve">
+    <value>Path to the dependency graph file to be used to restore preview and compatibility check.</value>
+  </data>
+  <data name="Error_NoDgSpec" xml:space="preserve">
+    <value>None or invalid DgSpec was passed to NuGet add package command.</value>
+  </data>
+  <data name="Error_AddPkgErrorStringForImportedEdit" xml:space="preserve">
+    <value>Item '{0}' for '{1}' in Imported file '{2}'.</value>
+    <comment>{0} - ItemType
+{1} - Package Id
+{2} - Imported File Path</comment>
+  </data>
+  <data name="Error_AddPkgFailOnImportEdit" xml:space="preserve">
+    <value>Error while performing {0} for package '{1}'. Cannot edit items in imported files - {2}{3}</value>
+    <comment>{0} - Operation Name
+{1} - packageId
+{2} - New line (this is just to hold a new line between sentences. does not need any translation)
+{3} - Error string</comment>
+  </data>
+  <data name="Info_AddPkgAdded" xml:space="preserve">
+    <value>PackageReference for package '{0}' version '{1}' added to file '{2}'.</value>
+    <comment>{0} - Package Id
+{1} - package version
+{2} - project file path</comment>
+  </data>
+  <data name="Info_AddPkgUpdated" xml:space="preserve">
+    <value>PackageReference for package '{0}' version '{1}' updated in file '{2}'.</value>
+    <comment>{0} - Package Id
+{1} - package version
+{2} - project file path</comment>
+  </data>
+  <data name="AddPkg_All" xml:space="preserve">
+    <value>all</value>
+  </data>
+  <data name="AddPkg_UserSpecified" xml:space="preserve">
+    <value>user specified</value>
+  </data>
+  <data name="Info_RemovePkgRemovingReference" xml:space="preserve">
+    <value>Removing PackageReference for package '{0}' from project '{1}'.</value>
+    <comment>{0} - Package Id
+{1} - Project Path</comment>
+  </data>
+  <data name="RemovePkg_Description" xml:space="preserve">
+    <value>Removes a package reference from a project.</value>
+  </data>
+  <data name="RemovePkg_PackageIdDescription" xml:space="preserve">
+    <value>Id of the package to be removed.</value>
+  </data>
+  <data name="RemovePkg_ProjectPathDescription" xml:space="preserve">
+    <value>Path to the project file.</value>
+  </data>
+  <data name="Error_UpdatePkgNoSuchPackage" xml:space="preserve">
+    <value>Project '{0}' does not contain any PackageReference '{1}' to {2}.</value>
+    <comment>{0} - project path
+{1} - package id
+{2} - operation name</comment>
+  </data>
+  <data name="Error_PkgMissingOrInvalidProjectFile" xml:space="preserve">
+    <value>Unable to {0} package. Missing or Invalid project file '{1}'.</value>
+    <comment>{0} - Operation Name
+{1} - project file path</comment>
+  </data>
+  <data name="Error_NoMatchingSpecs" xml:space="preserve">
+    <value>No matching package specs found when attempting to add package '{0}' to project '{1}'.</value>
+    <comment>{0} - Package ID
+{1} - Project path</comment>
+  </data>
+  <data name="Error_UnsupportedProject" xml:space="preserve">
+    <value>Error while adding package '{0}' to project '{1}'. The project does not support adding package references through the add package command.</value>
+    <comment>{0} - Package Id
+{1} - Project path</comment>
+  </data>
+  <data name="NoServiceEndpoint_Description" xml:space="preserve">
+    <value>Does not append "api/v2/package" to the source URL.</value>
+  </data>
+  <data name="AddPkg_InteractiveDescription" xml:space="preserve">
+    <value>Allow the command to block and require manual action for operations like authentication.</value>
+  </data>
+  <data name="ListPkg_DeprecatedDescription" xml:space="preserve">
+    <value>Displays only the packages marked deprecated by the authors.</value>
+  </data>
+  <data name="ListPkg_Description" xml:space="preserve">
+    <value>Lists all the packages used by the current project(s).</value>
+  </data>
+  <data name="ListPkg_FrameworkDescription" xml:space="preserve">
+    <value>Specifies the target framework for which the packages will be listed.</value>
+  </data>
+  <data name="ListPkg_OutdatedDescription" xml:space="preserve">
+    <value>Displays only the packages that need updates with the latest version from the sources.</value>
+  </data>
+  <data name="ListPkg_TransitiveDescription" xml:space="preserve">
+    <value>Includes transitive packages too in the result.</value>
+  </data>
+  <data name="ListPkg_PathDescription" xml:space="preserve">
+    <value>A path to a project, solution file or directory.</value>
+  </data>
+  <data name="Error_AssetsFileNotFound" xml:space="preserve">
+    <value>No assets file was found for `{0}`. Please run restore before running this command.</value>
+  </data>
+  <data name="ListPkg_ProjectHeaderLog" xml:space="preserve">
+    <value>'{0}' targets {1}, packages:</value>
+  </data>
+  <data name="ListPkg_AutoReferenceDescription" xml:space="preserve">
+    <value>(A) : Auto-referenced package.</value>
+  </data>
+  <data name="ListPkg_NoPackagesForFramework" xml:space="preserve">
+    <value>No packages were found for this framework.</value>
+  </data>
+  <data name="ListPkg_NoPackagesFoundForFrameworks" xml:space="preserve">
+    <value>No packages were found for the project `{0}` given the specified frameworks.</value>
+  </data>
+  <data name="ListPkg_ConfigDescription" xml:space="preserve">
+    <value>A path to a config file to specify sources. Works only with `--outdated`.</value>
+  </data>
+  <data name="ListPkg_HighestMinorDescription" xml:space="preserve">
+    <value>Considers only the versions with matching major. Works only with `--outdated`.</value>
+  </data>
+  <data name="ListPkg_HighestPatchDescription" xml:space="preserve">
+    <value>Considers only the versions with matching minor and major. Works only with `--outdated`.</value>
+  </data>
+  <data name="ListPkg_PrereleaseDescription" xml:space="preserve">
+    <value>Considers prerelease versions when looking for latest. Works only with `--outdated`.</value>
+  </data>
+  <data name="ListPkg_SourceDescription" xml:space="preserve">
+    <value>Sources to lookup for latest versions. Works only with `--outdated`.</value>
+  </data>
+  <data name="Error_NotPRProject" xml:space="preserve">
+    <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
+  </data>
+  <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
+    <value>(D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn't be used anymore.</value>
+  </data>
+  <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
+    <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
+  </data>
+  <data name="ListPkg_ErrorReadingReferenceFromProject" xml:space="preserve">
+    <value>Unable to read a package reference from the project `{0}`. Please make sure that your project file and project.assets.json file are in sync by running restore.</value>
+  </data>
+  <data name="ListPkg_InvalidFramework" xml:space="preserve">
+    <value>Failed to parse one of the given frameworks. Please make sure the given frameworks are valid.</value>
+  </data>
+  <data name="ListPkg_Latest" xml:space="preserve">
+    <value>Latest</value>
+  </data>
+  <data name="ListPkg_NotFoundAtSources" xml:space="preserve">
+    <value>Not found at the sources</value>
+  </data>
+  <data name="ListPkg_Requested" xml:space="preserve">
+    <value>Requested</value>
+  </data>
+  <data name="ListPkg_Resolved" xml:space="preserve">
+    <value>Resolved</value>
+  </data>
+  <data name="ListPkg_TopLevelHeader" xml:space="preserve">
+    <value>Top-level Package</value>
+  </data>
+  <data name="ListPkg_TransitiveHeader" xml:space="preserve">
+    <value>Transitive Package</value>
+  </data>
+  <data name="NuGetXplatCommand_Interactive" xml:space="preserve">
+    <value>Allow the command to block and require manual action for operations like authentication.</value>
+  </data>
+  <data name="ListPkg_ErrorFileNotFound" xml:space="preserve">
+    <value>The given file `{0}` was not found</value>
+  </data>
+  <data name="ListPkg_NoUpdatesForFramework" xml:space="preserve">
+    <value>No updates available for this framework packages.</value>
+  </data>
+  <data name="ListPkg_NoUpdatesForProject" xml:space="preserve">
+    <value>The given project `{0}` has no updates given the current sources.</value>
+  </data>
+  <data name="ListPkg_ProjectUpdatesHeaderLog" xml:space="preserve">
+    <value>'{0}' targets {1}, available version updates:</value>
+  </data>
+  <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
+    <value>The following sources were used:</value>
+  </data>
+</root>
