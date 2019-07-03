@@ -26,6 +26,8 @@ namespace NuGet.Build.Tasks
 
         public string RestorePackagesPath { get; set; }
 
+        public string RestoreRepositoryPath { get; set; }
+
         public string[] RestoreFallbackFolders { get; set; }
 
         public string RestoreConfigFile { get; set; }
@@ -46,6 +48,8 @@ namespace NuGet.Build.Tasks
         /// Command line value of RestorePackagesPath
         /// </summary>
         public string RestorePackagesPathOverride { get; set; }
+
+        public string RestoreRepositoryPathOverride { get; set; }
 
         /// <summary>
         /// Command line value of RestoreSources
@@ -73,6 +77,9 @@ namespace NuGet.Build.Tasks
         public string OutputPackagesPath { get; set; }
 
         [Output]
+        public string OutputRepositoryPath { get; set; }
+
+        [Output]
         public string[] OutputFallbackFolders { get; set; }
 
         [Output]
@@ -88,6 +95,7 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogInputParam(log, nameof(ProjectUniqueName), ProjectUniqueName);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSources), RestoreSources);
             BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPath), RestorePackagesPath);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreRepositoryPath), RestoreRepositoryPath);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFolders), RestoreFallbackFolders);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreConfigFile), RestoreConfigFile);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSolutionDirectory), RestoreSolutionDirectory);
@@ -127,6 +135,11 @@ namespace NuGet.Build.Tasks
                     () => GetGlobalAbsolutePath(RestorePackagesPathOverride),
                     () => string.IsNullOrEmpty(RestorePackagesPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestorePackagesPath),
                     () => SettingsUtility.GetGlobalPackagesFolder(settings));
+
+                OutputRepositoryPath = RestoreSettingsUtils.GetValue(
+                    () => GetGlobalAbsolutePath(RestoreRepositoryPathOverride),
+                    () => string.IsNullOrEmpty(RestoreRepositoryPath) ? null : UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, RestoreRepositoryPath),
+                    () => SettingsUtility.GetRepositoryPath(settings));
 
                 // Sources
                 var currentSources = RestoreSettingsUtils.GetValue(
@@ -169,6 +182,7 @@ namespace NuGet.Build.Tasks
 
             // Log Outputs
             BuildTasksUtility.LogOutputParam(log, nameof(OutputPackagesPath), OutputPackagesPath);
+            BuildTasksUtility.LogOutputParam(log, nameof(OutputRepositoryPath), OutputRepositoryPath);
             BuildTasksUtility.LogOutputParam(log, nameof(OutputSources), OutputSources);
             BuildTasksUtility.LogOutputParam(log, nameof(OutputFallbackFolders), OutputFallbackFolders);
             BuildTasksUtility.LogOutputParam(log, nameof(OutputConfigFilePaths), OutputConfigFilePaths);
