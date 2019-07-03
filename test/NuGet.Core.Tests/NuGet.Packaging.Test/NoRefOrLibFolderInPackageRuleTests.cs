@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Test
         {
             //Act
             var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-            var issues = rule.Validate(files).ToList();
+            var issues = rule.Validate(files);
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5127));
@@ -38,7 +38,7 @@ namespace NuGet.Packaging.Test
         {
             //Act
             var rule = new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage);
-            var issues = rule.Validate(files).ToList();
+            var issues = rule.Validate(files);
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5127));

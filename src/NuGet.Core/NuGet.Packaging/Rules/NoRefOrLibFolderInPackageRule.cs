@@ -52,8 +52,8 @@ namespace NuGet.Packaging.Rules
                 {
                     //if you can find any folders other than native or any, raise an NU5127
                     if (buildFrameworks.Any(t => (FrameworkConstants.DotNetAll.Satisfies(t) || FrameworkNameValidatorUtility.IsValidFrameworkName(t))
-                        && t.GetShortFolderName() != "dotnet"
-                        && t.GetShortFolderName() != "native"))
+                        && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.DotNet
+                        && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.Native))
                     {
                         var possibleFrameworks = buildFrameworks.
                             Where(t => t.IsSpecificFramework && t.GetShortFolderName() != "dotnet" && t.GetShortFolderName() != "native").
@@ -75,11 +75,11 @@ namespace NuGet.Packaging.Rules
         private (string, string) GenerateWarningString(string[] possibleFrameworks)
         {
             string tfmNames = possibleFrameworks.Length > 1
-                ? string.Join(", ", possibleFrameworks, 0, possibleFrameworks.Count() - 1)
+                ? string.Join(", ", possibleFrameworks, 0, possibleFrameworks.Length)
                 : possibleFrameworks[0];
 
             string suggestedDirectories = possibleFrameworks.Length > 1
-                ? CreateDirectories(possibleFrameworks)
+                ? CreateDirectoriesMessage(possibleFrameworks)
                 : string.Format("-lib/{0}/_._", possibleFrameworks[0]);
             
             return (tfmNames, suggestedDirectories);
@@ -95,7 +95,7 @@ namespace NuGet.Packaging.Rules
             return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]));
         }
 
-        private static string CreateDirectories(string[] possibleFrameworks)
+        private static string CreateDirectoriesMessage(string[] possibleFrameworks)
         {
             var suggestedDirectories = new StringBuilder();
             foreach (var framework in possibleFrameworks)
