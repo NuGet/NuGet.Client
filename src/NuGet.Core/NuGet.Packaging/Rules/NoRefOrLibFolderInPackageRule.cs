@@ -52,11 +52,13 @@ namespace NuGet.Packaging.Rules
                 {
                     //if you can find any folders other than native or any, raise an NU5127
                     if (buildFrameworks.Any(t => (FrameworkConstants.DotNetAll.Satisfies(t) || FrameworkNameValidatorUtility.IsValidFrameworkName(t))
-                        && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.DotNet
-                        && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.Native))
+                                            && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.DotNet
+                                            && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.Native))
                     {
                         var possibleFrameworks = buildFrameworks.
-                            Where(t => t.IsSpecificFramework && t.GetShortFolderName() != "dotnet" && t.GetShortFolderName() != "native").
+                            Where(t => t.IsSpecificFramework
+                                    && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.DotNet
+                                    && t.GetShortFolderName() != FrameworkConstants.FrameworkIdentifiers.Native).
                             Select(t => t.GetShortFolderName()).ToArray();
 
                         (var tfmNames, var suggestedDirectories) = GenerateWarningString(possibleFrameworks);
