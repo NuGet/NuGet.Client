@@ -53,6 +53,11 @@ namespace NuGet.ProjectModel
         public string PackagesPath { get; set; }
 
         /// <summary>
+        /// User packages repository path.
+        /// </summary>
+        public string RepositoryPath { get; set; }
+
+        /// <summary>
         /// Cache file path
         /// </summary>
         public string CacheFilePath { get; set; }

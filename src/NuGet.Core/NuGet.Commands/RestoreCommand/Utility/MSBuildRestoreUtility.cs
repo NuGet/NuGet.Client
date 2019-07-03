@@ -195,7 +195,8 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.Standalone
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.ProjectJson
-                    || restoreType == ProjectStyle.DotnetToolReference)
+                    || restoreType == ProjectStyle.DotnetToolReference
+                    || restoreType == ProjectStyle.PackagesConfig)
                 {
 
                     foreach (var source in MSBuildStringUtility.Split(specItem.GetProperty("Sources")))
@@ -216,7 +217,7 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
-
+                    result.RestoreMetadata.RepositoryPath = specItem.GetProperty("RepositoryPath");
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
                 }
 

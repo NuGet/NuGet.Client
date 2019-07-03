@@ -30,6 +30,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+    <ProjectReference Include="..\NuGet.PackageManagement\NuGet.PackageManagement.csproj" />
     <Reference Include="Microsoft.Build.Utilities.v4.0" />
     <Reference Include="Microsoft.Build.Framework" />
   </ItemGroup>
