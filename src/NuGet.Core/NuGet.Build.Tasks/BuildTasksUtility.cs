@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -19,6 +19,19 @@ using NuGet.Credentials;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+
+#if IS_DESKTOP
+using System.Collections.Concurrent;
+using System.IO;
+using System.Xml;
+using System.Xml.Linq;
+using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
+using NuGet.PackageManagement;
+using NuGet.ProjectManagement;
+using NuGet.Shared;
+#endif
 
 namespace NuGet.Build.Tasks
 {
@@ -107,7 +120,7 @@ namespace NuGet.Build.Tasks
 
         public static void AddPropertyIfExists(IDictionary<string, string> properties, string key, string[] value)
         {
-            if (value!=null && !properties.ContainsKey(key))
+            if (value != null && !properties.ContainsKey(key))
             {
                 properties.Add(key, string.Concat(value.Select(e => e + ";")));
             }
@@ -214,6 +227,48 @@ namespace NuGet.Build.Tasks
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, cancellationToken);
 
+#if IS_DESKTOP
+                    if (dependencyGraphSpec.Projects.Any(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
+                    {
+                        var v2RestoreResult = await PerformNuGetV2RestoreAsync(log, dependencyGraphSpec, noCache, disableParallel, interactive);
+                        restoreSummaries.Add(v2RestoreResult);
+
+                        // TODO: Message if no packages needed to be restored?
+                        //var message = string.Format(
+                        //    CultureInfo.CurrentCulture,
+                        //    LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
+                        //    "packages.config");
+
+                        //Console.LogMinimal(message);
+
+                        if (!v2RestoreResult.Success)
+                        {
+                            v2RestoreResult
+                                .Errors
+                                .Where(l => l.Level == LogLevel.Warning)
+                                .ForEach(message =>
+                                {
+                                    if (message.Code > NuGetLogCode.Undefined && message.Code.TryGetName(out var codeString))
+                                    {
+                                        log.LogWarning(
+                                            null,
+                                            codeString,
+                                            null,
+                                            message.FilePath,
+                                            message.StartLineNumber,
+                                            message.StartColumnNumber,
+                                            message.EndLineNumber,
+                                            message.EndColumnNumber,
+                                            message.Message);
+                                    }
+                                    else
+                                    {
+                                        log.LogWarning(message.Message);
+                                    }
+                                });
+                        }
+                    }
+#endif
                     // Summary
                     RestoreSummary.Log(log, restoreSummaries);
 
@@ -313,5 +368,239 @@ namespace NuGet.Build.Tasks
 
             return false;
         }
+#if IS_DESKTOP
+        private static async Task<RestoreSummary> PerformNuGetV2RestoreAsync(Common.ILogger log, DependencyGraphSpec dgFile, bool noCache, bool disableParallel, bool interactive)
+        {
+            string globalPackageFolder = null;
+            string repositoryPath = null;
+            string firstPackagesConfigPath = null;
+            IList<PackageSource> packageSources = null;
+
+            var installedPackageReferences = new HashSet<Packaging.PackageReference>(new PackageReferenceComparer());
+
+            ISettings settings = null;
+
+            foreach (PackageSpec packageSpec in dgFile.Projects.Where(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
+            {
+                globalPackageFolder = globalPackageFolder ?? packageSpec.RestoreMetadata.PackagesPath;
+                repositoryPath = repositoryPath ?? packageSpec.RestoreMetadata.RepositoryPath;
+
+                if (packageSources == null)
+                {
+                    packageSources = new List<PackageSource>();
+                    if (!noCache)
+                    {
+                        if (!string.IsNullOrEmpty(globalPackageFolder) && Directory.Exists(globalPackageFolder))
+                        {
+                            packageSources.Add(new FeedTypePackageSource(globalPackageFolder, FeedType.FileSystemV3));
+                        }
+                    }
+
+                    packageSources.AddRange(packageSpec.RestoreMetadata.Sources);
+                }
+
+                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(packageSpec.RestoreMetadata.ConfigFilePaths);
+
+                var packagesConfigPath = Path.Combine(Path.GetDirectoryName(packageSpec.RestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile);
+
+                firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
+
+                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
+            }
+
+            PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
+            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(packageSourceProvider);
+            var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, repositoryPath);
+
+            // TODO: different default?  Allow user to specify?
+            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+
+            var missingPackageReferences = installedPackageReferences.Where(reference =>
+                !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
+
+            if (missingPackageReferences.Length == 0)
+            {
+                return new RestoreSummary(true);
+            }
+            var packageRestoreData = missingPackageReferences.Select(reference =>
+                new PackageRestoreData(
+                    reference,
+                    new[] { firstPackagesConfigPath },
+                    isMissing: true));
+
+            var repositories = packageSources
+                .Select(sourceRepositoryProvider.CreateRepository)
+                .ToArray();
+
+            var installCount = 0;
+            var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
+            var collectorLogger = new RestoreCollectorLogger(new MSBuildLogger(log));
+
+            var packageRestoreContext = new PackageRestoreContext(
+                nuGetPackageManager,
+                packageRestoreData,
+                CancellationToken.None,
+                packageRestoredEvent: (sender, args) => { Interlocked.Add(ref installCount, args.Restored ? 1 : 0); },
+                packageRestoreFailedEvent: (sender, args) => { failedEvents.Enqueue(args); },
+                sourceRepositories: repositories,
+                maxNumberOfParallelTasks: disableParallel
+                    ? 1
+                    : PackageManagementConstants.DefaultMaxDegreeOfParallelism,
+                logger: collectorLogger);
+
+            // TODO: Check require consent?
+            // CheckRequireConsent();
+
+            var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, collectorLogger);
+            var projectContext = new ConsoleProjectContext(collectorLogger)
+            {
+                PackageExtractionContext = new PackageExtractionContext(
+                    Packaging.PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    clientPolicyContext,
+                    collectorLogger)
+            };
+
+            // if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            {
+                projectContext.PackageExtractionContext.PackageSaveMode = packageSaveMode;
+            }
+
+            using (var cacheContext = new SourceCacheContext())
+            {
+                cacheContext.NoCache = noCache;
+
+                // TODO: Direct download?
+                // //cacheContext.DirectDownload = DirectDownload;
+
+                var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
+                {
+                    ClientPolicyContext = clientPolicyContext
+                };
+
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !interactive);
+
+                var result = await PackageRestoreManager.RestoreMissingPackagesAsync(
+                    packageRestoreContext,
+                    projectContext,
+                    downloadContext);
+
+                if (downloadContext.DirectDownload)
+                {
+                    GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
+                }
+
+                return new RestoreSummary(
+                    result.Restored,
+                    "packages.config projects",
+                    settings.GetConfigFilePaths(),
+                    packageSources.Select(x => x.Source),
+                    installCount,
+                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
+            }
+        }
+
+        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
+        {
+            if (File.Exists(projectConfigFilePath))
+            {
+                try
+                {
+                    var xDocument = XDocument.Load(projectConfigFilePath);
+                    var reader = new PackagesConfigReader(xDocument);
+                    return reader.GetPackages(allowDuplicatePackageIds);
+                }
+                catch (XmlException)
+                {
+                    // TODO: Log an error?
+                    //var message = string.Format(
+                    //    CultureInfo.CurrentCulture,
+                    //    ResourceManager.GetString("Error_PackagesConfigParseError"),
+                    //    projectConfigFilePath,
+                    //    ex.Message);
+
+                    //Log.LogError(message);
+                }
+            }
+
+            return Enumerable.Empty<Packaging.PackageReference>();
+        }
+
+        private static IEnumerable<RestoreLogMessage> ProcessFailedEventsIntoRestoreLogs(ConcurrentQueue<PackageRestoreFailedEventArgs> failedEvents)
+        {
+            var result = new List<RestoreLogMessage>();
+
+            foreach (var failedEvent in failedEvents)
+            {
+                if (failedEvent.Exception is SignatureException)
+                {
+                    var signatureException = failedEvent.Exception as SignatureException;
+
+                    var errorsAndWarnings = signatureException
+                        .Results.SelectMany(r => r.Issues)
+                        .Where(i => i.Level == LogLevel.Error || i.Level == LogLevel.Warning)
+                        .Select(i => i.AsRestoreLogMessage());
+
+                    result.AddRange(errorsAndWarnings);
+                }
+                else
+                {
+                    result.Add(new RestoreLogMessage(LogLevel.Error, NuGetLogCode.Undefined, failedEvent.Exception.Message));
+                }
+            }
+
+            return result;
+        }
+        public class CommandLineSourceRepositoryProvider : ISourceRepositoryProvider
+        {
+            private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
+            private readonly List<Lazy<INuGetResourceProvider>> _resourceProviders;
+            private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
+
+            // There should only be one instance of the source repository for each package source.
+            private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _cachedSources
+                = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
+
+            public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
+            {
+                _packageSourceProvider = packageSourceProvider;
+
+                _resourceProviders = new List<Lazy<INuGetResourceProvider>>();
+                _resourceProviders.AddRange(FactoryExtensionsV3.GetCoreV3(Repository.Provider));
+
+                // Create repositories
+                _repositories = _packageSourceProvider.LoadPackageSources()
+                    .Where(s => s.IsEnabled)
+                    .Select(CreateRepository)
+                    .ToList();
+            }
+
+            /// <summary>
+            /// Retrieve repositories that have been cached.
+            /// </summary>
+            public IEnumerable<SourceRepository> GetRepositories()
+            {
+                return _repositories;
+            }
+
+            /// <summary>
+            /// Create a repository and add it to the cache.
+            /// </summary>
+            public SourceRepository CreateRepository(Configuration.PackageSource source)
+            {
+                return CreateRepository(source, FeedType.Undefined);
+            }
+
+            public SourceRepository CreateRepository(Configuration.PackageSource source, FeedType type)
+            {
+                return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders, type));
+            }
+
+            public Configuration.IPackageSourceProvider PackageSourceProvider
+            {
+                get { return _packageSourceProvider; }
+            }
+        }
+#endif
     }
 }

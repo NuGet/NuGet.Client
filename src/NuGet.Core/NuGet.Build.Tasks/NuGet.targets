@@ -524,21 +524,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettings"
-          Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' "
+          Condition=" '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'ProjectJson' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' OR '$(RestoreProjectStyle)' == 'PackagesConfig'"
           DependsOnTargets="_GetRestoreSettingsOverrides;_GetRestoreSettingsCurrentProject;_GetRestoreSettingsAllFrameworks"
-          Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
+          Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputRepositoryPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
 
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask
      ProjectUniqueName="$(MSBuildProjectFullPath)"
      RestoreSources="$(RestoreSources)"
      RestorePackagesPath="$(RestorePackagesPath)"
+     RestoreRepositoryPath="$(RestoreRepositoryPath)"
      RestoreFallbackFolders="$(RestoreFallbackFolders)"
      RestoreConfigFile="$(RestoreConfigFile)"
      RestoreRootConfigDirectory="$(RestoreRootConfigDirectory)"
      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
      RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
      RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
+     RestoreRepositoryPathOverride="$(RestoreRepositoryPathOverride)"
      RestoreSourcesOverride="$(_RestoreSourcesOverride)"
      RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
      MSBuildStartupDirectory="$(MSBuildStartupDirectory)">
@@ -548,6 +550,9 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="OutputPackagesPath"
         PropertyName="_OutputPackagesPath" />
+      <Output
+        TaskParameter="OutputRepositoryPath"
+        PropertyName="_OutputRepositoryPath" />
       <Output
         TaskParameter="OutputFallbackFolders"
         PropertyName="_OutputFallbackFolders" />
@@ -728,6 +733,22 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
+      </_RestoreGraphEntry>
+    </ItemGroup>
+
+    <!-- Non-NuGet type -->
+    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackagesConfig' ">
+      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
+        <Type>ProjectSpec</Type>
+        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
+        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
+        <ProjectName>$(_RestoreProjectName)</ProjectName>
+        <Sources>$(_OutputSources)</Sources>
+        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
+        <RepositoryPath>$(_OutputRepositoryPath)</RepositoryPath>
+        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
+        <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
+        <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -1131,7 +1152,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetRestoreSettingsOverrides"
-          Returns="$(_RestorePackagesPathOverride);$(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
+          Returns="$(_RestorePackagesPathOverride);$(_RestoreRepositoryPathOverride);$(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
 
     <!-- RestorePackagesPathOverride -->
     <MsBuild
@@ -1143,6 +1164,18 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_RestorePackagesPathOverride" />
+    </MsBuild>
+
+    <!-- RestoreRepositoryPathOverride -->
+    <MsBuild
+      BuildInParallel="$(RestoreBuildInParallel)"
+      Condition=" '$(RestoreRepositoryPathOverride)' != '' "
+      Projects="$(MSBuildThisFileFullPath)"
+      Targets="_GetRestoreRepositoryPathOverride">
+
+      <Output
+        TaskParameter="TargetOutputs"
+        PropertyName="_RestoreRepositoryPathOverride" />
     </MsBuild>
 
     <!-- RestoreSourcesOverride -->
@@ -1179,6 +1212,18 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="$(_RestorePackagesPathOverride)">
     <PropertyGroup>
       <_RestorePackagesPathOverride>$(RestorePackagesPath)</_RestorePackagesPathOverride>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
+    _GetRestoreRepositoryPathOverride
+    ============================================================
+  -->
+  <Target Name="_GetRestoreRepositoryPathOverride"
+          Returns="$(_RestoreRepositoryPathOverride)">
+    <PropertyGroup>
+      <_RestorePackagesPathOverride>$(RestoreRepositoryPath)</_RestorePackagesPathOverride>
     </PropertyGroup>
   </Target>
 
