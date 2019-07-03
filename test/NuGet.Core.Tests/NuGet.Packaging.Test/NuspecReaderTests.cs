@@ -471,7 +471,7 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
-        private const string IconSimple = @"<?xml version=""1.0""?>
+        private const string EmbeddedIconTestTemplate = @"<?xml version=""1.0""?>
                 <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
                   <metadata>
                     <id>trumpet</id>
@@ -480,20 +480,7 @@ namespace NuGet.Packaging.Test
                     <authors>alice, bob</authors>
                     <owners>alice, bob</owners>
                     <description>This is a package icon test</description>
-                    <icon>icon.jpg</icon>
-                  </metadata>
-                </package>";
-
-        private const string IconEmpty = @"<?xml version=""1.0""?>
-                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
-                  <metadata>
-                    <id>trumpet</id>
-                    <version>0.0.1</version>
-                    <title>trumpet package</title>
-                    <authors>alice, bob</authors>
-                    <owners>alice, bob</owners>
-                    <description>This is a package icon test</description>
-                    <icon></icon>
+                    {0}
                   </metadata>
                 </package>";
 
@@ -1134,30 +1121,25 @@ namespace NuGet.Packaging.Test
             Assert.Null(licenseMetadata);
         }
 
-        [Fact]
-        public void NuspecReaderTests_IconSimple()
+        [Theory]
+        [InlineData("<icon>icon.jpg</icon>", "icon.jpg")]
+        [InlineData("<icon></icon>", "")]
+        [InlineData("<icon/>", "")]
+        [InlineData("", "")]
+        [InlineData("<icon>path/icon.jpg</icon>", "path/icon.jpg")]
+        [InlineData("<icon>content\\icon.jpg</icon>", "content\\icon.jpg")]
+        public void NuspecReaderTests_EmbeddedIcon(string icon, string expectedRead)
         {
+            string nuspec = string.Format(EmbeddedIconTestTemplate, icon);
+
             // Arrange
-            var reader = GetReader(IconSimple);
+            var reader = GetReader(nuspec);
 
             // Act
             var iconPath = reader.GetIcon();
 
             // Assert
-            Assert.NotNull(iconPath);
-        }
-
-        [Fact]
-        public void NuspecReaderTests_IconEmpty()
-        {
-            // Arrange
-            var reader = GetReader(IconEmpty);
-
-            // Act
-            var iconPath = reader.GetIcon();
-
-            // Assert
-            Assert.Equal(iconPath, string.Empty);
+            Assert.Equal(iconPath, expectedRead);
         }
 
         private static NuspecReader GetReader(string nuspec)
