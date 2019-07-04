@@ -190,7 +190,20 @@ Function Install-DotnetCLI {
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchListForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
     $CliBranchesForTesting = $CliBranchListForTesting.Split(';');
+
+    $DotNetInstall = Join-Path $CLIRoot 'dotnet-install.ps1'
+
+    #If "-force" is specified, or dotnet.exe under cli folder doesn't exist, create cli folder and download dotnet-install.ps1 into cli folder.
+    if ($Force -or -not (Test-Path $DotNetExe)) {
+        Trace-Log "Downloading .NET CLI $CliBranchForTesting"
+
+        New-Item -ItemType Directory -Force -Path $CLIRoot | Out-Null
+
+        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+    }
+
     ForEach ($CliBranchForTesting in $CliBranchesForTesting){
+        $CliBranchForTesting = $CliBranchForTesting.trim()
         $cli = @{
             Root = $CLIRoot
             Version = 'latest'
@@ -209,19 +222,38 @@ Function Install-DotnetCLI {
         $env:DOTNET_HOME=$cli.Root
         $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-        if ($Force -or -not (Test-Path $DotNetExe)) {
-            Trace-Log "Downloading .NET CLI $CliBranchForTesting"
+        #DryRun dotnet-install.ps1, parse the information to get the specific version number for a certain channel.
+        Trace-Log "DryRun dotnet-install.ps1 to get the specific version to be downloaded, when channel is:  $CliBranchForTesting"
+    
+        $DryRunResults = & $DotNetInstall -Channel $CliBranchForTesting -Version 'latest' -DryRun 6>&1
+       
+        $specificVersionLine = ($DryRunResults -split [System.Environment]::NewLine)[3]
+        
+        $configs = $specificVersionLine -split(" -")
 
-            New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
+        ForEach ($config in $configs){
+            if ($config.StartsWith("Version")){
+                $specificVersion = $config.split(" ")[1].replace('"', "")
+                $specificVersion = $specificVersion.trim()
+                Trace-Log "The version of SDK should be installed is : $specificVersion"
+                break
+            }
+        }
 
-            $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
+        $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk)  $specificVersion
 
-            Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        Trace-Log "Probing folder : $probeDotnetPath"
+
+        #If "-force" is specified, or folder with specific version doesn't exist, the download command will run" 
+        if ($Force -or -not (Test-Path $probeDotnetPath)) {
             & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch -NoPath
         }
 
         if (-not (Test-Path $DotNetExe)) {
             Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
+        }
+        if (-not(Test-Path $probeDotnetPath)) {
+            Error-Log "Unable to find specific version of sdk. The CLI install may have failed." -Fatal
         }
 
         # Display build info
