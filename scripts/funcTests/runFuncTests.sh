@@ -50,7 +50,7 @@ DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBran
 for DOTNET_BRANCH in $(echo $DOTNET_BRANCHES | tr ";" "\n")
 do
 	echo $DOTNET_BRANCH
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -nopath
 
 
 	# Display current version
@@ -81,16 +81,16 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
 
 # Unit tests
-echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!!"
@@ -109,8 +109,8 @@ else
 fi
 
 # Func tests
-echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	RESULTCODE='1'
