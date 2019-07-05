@@ -496,6 +496,14 @@ phases:
       testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
 
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish Test Results as artifact"
+    inputs:
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/CoreFuncTests-xunit.xml"
+      ArtifactName: "CoreFuncTests-xunit.xml"
+      ArtifactType: "Container"
+    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'false'))"
+
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
