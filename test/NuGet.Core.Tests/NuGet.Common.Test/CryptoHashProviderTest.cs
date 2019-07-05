@@ -55,14 +55,6 @@ namespace NuGet.Common.Test
             var tex = Assert.IsAssignableFrom<ArgumentException>(ex);
             Assert.Equal("hashAlgorithm", tex.ParamName);
             var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-            try
-            {
-                Assert.Equal(2, lines.Length);
-            }
-            catch
-            {
-                throw new ArgumentException("lines [0] = " + lines[0] + " lines.Length = " + lines.Length);
-            }
             Assert.Equal(2, lines.Length);
             Assert.Equal(String.Format("Hash algorithm '{0}' is unsupported. Supported algorithms include: SHA512 and SHA256.", hashAlgorithm), lines[0]);
             Assert.True(lines[1].EndsWith("hashAlgorithm"));
