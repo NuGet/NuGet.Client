@@ -571,6 +571,15 @@ namespace NuGet.Packaging
             return NuspecUtility.GetFrameworkReferenceGroups(MetadataNode, _frameworkProvider, useMetadataNamespace : true);
         }
 
+        /// <summary>
+        /// Gets the icon metadata from the .nuspec
+        /// </summary>
+        /// <returns>A string containing the icon path or string.Empty if no icon entry is found</returns>
+        public string GetIcon()
+        {
+            return GetMetadataValue("icon");
+        }
+
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)
         {
             bool? result = null;
