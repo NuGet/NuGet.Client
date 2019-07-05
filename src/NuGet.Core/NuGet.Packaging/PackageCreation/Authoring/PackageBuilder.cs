@@ -518,16 +518,30 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// Given
+        /// Given a list of resolved files,
+        /// determine which file will be used as the icon file and validate its size.
         /// </summary>
-        /// <param name="files">files in the metadata element</param>
+        /// <param name="files">Files resolved from the file entries in the nuspec</param>
         /// <param name="iconPath">iconpath found in the .nuspec</param>
+        /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
         {
             if (!string.IsNullOrEmpty(iconPath))
             {
                 // Validate entry
-                var iconFileList = files.Where(f => iconPath.Equals(f.EffectivePath));
+                var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
+
+                var iconFileList = files.Where(f =>
+                        iconPath.Equals(
+                            PathUtility.StripLeadingDirectorySeparators(f.Path),
+                            PathUtility.GetStringComparisonBasedOnOS()));
+
+                if (iconFileList.Count() > 1)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5038,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconMultipleIconFiles, string.Join(",", iconFileList)));
+                }
 
                 if (iconFileList.Count() == 0)
                 {

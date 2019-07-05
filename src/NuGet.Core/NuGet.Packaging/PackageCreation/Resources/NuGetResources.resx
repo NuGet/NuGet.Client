@@ -211,4 +211,8 @@
   <data name="IconNoFileElement" xml:space="preserve">
     <value>No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec</value>
   </data>
+  <data name="IconMultipleIconFiles" xml:space="preserve">
+    <value>Multiple files resolved as the embedded icon: {0}</value>
+    <comment>0 - the files resolved as the icon</comment>
+  </data>
 </root>

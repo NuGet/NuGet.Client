@@ -2501,14 +2501,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 "No icon <file> element found for <icon> in the nuspec");
         }
 
-
         [Fact]
         public void Icon_HappyPath_Suceed()
         {
             TestIconPackaging("icon.jpg", "icon.jpg", 400,
                string.Empty);
         }
-
 
         private void TestIconPackaging(string iconName, string iconfile, int iconFileSize, string exceptionMessage)
         {

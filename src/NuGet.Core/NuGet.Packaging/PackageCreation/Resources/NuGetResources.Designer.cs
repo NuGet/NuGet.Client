@@ -124,6 +124,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Multiple files resolved as the embedded icon: {0}.
+        /// </summary>
+        internal static string IconMultipleIconFiles {
+            get {
+                return ResourceManager.GetString("IconMultipleIconFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec.
         /// </summary>
         internal static string IconNoFileElement {
