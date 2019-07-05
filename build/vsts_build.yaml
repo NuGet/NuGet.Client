@@ -175,7 +175,7 @@ phases:
   - task: PublishBuildArtifacts@1
     displayName: "Publish Test Results as artifact"
     inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/CoreFuncTests-xunit.xml"
+      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/*.xml"
       ArtifactName: "CoreFuncTests-xunit.xml"
       ArtifactType: "Container"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'false'))"
