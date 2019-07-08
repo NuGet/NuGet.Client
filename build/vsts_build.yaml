@@ -593,7 +593,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
     name: VSEng-MicroBuildMacSierra
-    timeoutInMinutes: 150
+    timeoutInMinutes: 75
     demands: sh
 
   steps:
