@@ -196,23 +196,23 @@
     <comment>Please don't localize licenseUrl and license</comment>
   </data>
   <data name="IconCannotOpenFile" xml:space="preserve">
-    <value>Cannot open icon file '{0}': {1}</value>
+    <value>Cannot open icon file '{0}': {1}.</value>
     <comment>0 - Path to the icon file, 1 - Error message for not opening the icon</comment>
   </data>
   <data name="IconMaxFilseSizeExceeded" xml:space="preserve">
     <value>The icon file size must not exceed 1 megabyte.</value>
   </data>
   <data name="IconErrorEmpty" xml:space="preserve">
-    <value>The icon file is empty</value>
+    <value>The icon file is empty.</value>
   </data>
   <data name="IconErrorReading" xml:space="preserve">
-    <value>Unable to read icon file</value>
+    <value>Unable to read icon file.</value>
   </data>
   <data name="IconNoFileElement" xml:space="preserve">
-    <value>No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec</value>
+    <value>No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec.</value>
   </data>
   <data name="IconMultipleIconFiles" xml:space="preserve">
-    <value>Multiple files resolved as the embedded icon: {0}</value>
+    <value>Multiple files resolved as the embedded icon.</value>
     <comment>0 - the files resolved as the icon</comment>
   </data>
 </root>

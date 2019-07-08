@@ -17,6 +17,7 @@ using NuGet.Versioning;
 using Xunit;
 using NuGet.Test.Utility;
 using System.Text;
+using NuGet.Common;
 
 namespace NuGet.Packaging.Test
 {
@@ -2490,27 +2491,51 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         [Fact]
         public void Icon_IconMaxFileSizeExceeded_ThrowsException()
         {
-            TestIconPackaging("icon.jpg", "icon.jpg", IconValidation.MaxIconFilzeSize + 1,
+            TestIconPackaging(
+                new IconTestSourceDirectory("icon.jpg", "icon.jpg", IconValidation.MaxIconFilzeSize + 1),
                 "The icon file size must not exceed 1 megabyte.");
         }
 
         [Fact]
         public void Icon_IconFileEntryNotFound_ThrowsException()
         {
-            TestIconPackaging("icon.jpg", "icono.jpg", 100,
-                "No icon <file> element found for <icon> in the nuspec");
+            TestIconPackaging(
+                new IconTestSourceDirectory("icon.jpg", "icono.jpg", 100),
+                "No icon <file> element found for <icon> in the nuspec.");
         }
 
         [Fact]
         public void Icon_HappyPath_Suceed()
         {
-            TestIconPackaging("icon.jpg", "icon.jpg", 400,
-               string.Empty);
+            TestIconPackaging(
+                new IconTestSourceDirectory("icon.jpg", "icon.jpg", 400),
+                string.Empty);
         }
 
-        private void TestIconPackaging(string iconName, string iconfile, int iconFileSize, string exceptionMessage)
+        [Fact]
+        public void Icon_MultipleIconFilesResolved_ThrowsException()
         {
-            using (var sourceDir = new IconTestSourceDirectory(iconName, iconfile, iconFileSize))
+            var fileList = new List<Tuple<string, int>>();
+            var fileEntriesList = new List<string>();
+
+            fileList.Add(Tuple.Create("folder1\\icon.jpg", 2));
+            fileList.Add(Tuple.Create("folder1\\dummy.txt", 2));
+            fileList.Add(Tuple.Create("folder2\\icon.jpg", 2));
+            fileList.Add(Tuple.Create("folder2\\file.txt", 2));
+
+            fileEntriesList.Add("folder1\\*");
+            fileEntriesList.Add("folder2\\*");
+
+            TestIconPackaging(
+                new IconTestSourceDirectory("icon.jpg", fileList, fileEntriesList),
+                "Multiple files resolved as the embedded icon.");
+        }
+
+
+
+        private void TestIconPackaging(IconTestSourceDirectory sourceDir, string exceptionMessage)
+        {
+            using (sourceDir)
             using (var nuspecStream = File.OpenRead(sourceDir.NuspecPath))
             using (var outputNuPkgStream = new MemoryStream())
             {
@@ -2648,18 +2673,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         }
 
         /// <summary>
-        /// Package directory for testing
+        /// Package directory for testing embedded icon functionality
         /// </summary>
         public sealed class IconTestSourceDirectory : IDisposable
         {
             private const string NuspecFilename = "iconPackage.nuspec";
-
             public string IconEntry { get; set; }
-
-            public string IconFilename { get; set; }
-
-            public int IconFileSize { get; set; }
-
 
             /// <summary>
             /// Base directory for test
@@ -2670,8 +2689,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
             public string NuspecPath => Path.Combine(BaseDir, NuspecFilename);
 
-            public string IconPath => Path.Combine(BaseDir, IconFilename);
-
             /// <summary>
             /// If iconFileSize is less than zero, it will not write the file
             /// </summary>
@@ -2679,44 +2696,78 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             public IconTestSourceDirectory(string iconName, string fileName, int iconFileSize)
             {
                 IconEntry = iconName;
-                IconFilename = fileName;
-                IconFileSize = iconFileSize;
+
+                var entriesList = new List<string>();
+
+                var fileList = new List<Tuple<string, int>>();
+
+                if (!string.IsNullOrEmpty(fileName))
+                {
+                    entriesList.Add(fileName);
+                }
+
+                if (iconFileSize > 0)
+                {
+                    fileList.Add(Tuple.Create(fileName, iconFileSize));
+                }
 
                 TestDirectory = TestDirectory.Create();
-                PopulatePackage();
+
+                CreateFiles(fileList);
+                CreateNuspec(entriesList);
             }
 
-            private void PopulatePackage()
+            public IconTestSourceDirectory(string iconName, IEnumerable<Tuple<string, int>> files, IEnumerable<string> fileEntries)
             {
-                if (IconFileSize > 0)
-                {
-                    byte[] fakeIconContent = new byte[IconFileSize];
-                    File.WriteAllBytes(IconPath, fakeIconContent);
-                }
+                IconEntry = iconName;
 
+                TestDirectory = TestDirectory.Create();
+
+                CreateFiles(files);
+                CreateNuspec(fileEntries);
+            }
+
+            private void CreateFiles(IEnumerable<Tuple<string, int>> files)
+            {
+                foreach (var f in files)
+                {
+                    var filepath = Path.Combine(BaseDir, f.Item1);
+                    var dir = Path.GetDirectoryName(filepath);
+
+                    Directory.CreateDirectory(dir);
+                    File.WriteAllBytes(Path.Combine(BaseDir, f.Item1), new byte[f.Item2]);
+                }
+            }
+
+            private void CreateNuspec(IEnumerable<string> fileEntries)
+            {
                 StringBuilder sb = new StringBuilder();
 
-                if (!string.IsNullOrEmpty(IconFilename))
-                {
-                    sb.Append($"<file src=\"{IconFilename}\" />\n");
-                }
-
-                string nuspecContent = string.Format(@"<?xml version=""1.0"" encoding=""utf-8""?>
+                sb.Append(@"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package>
                               <metadata>
                                 <id>iconPackage</id>
                                 <version>5.2.0</version>
                                 <authors>Author1, author2</authors>
-                                <description>Sample icon description</description>
-                                <icon>{0}</icon>
-                              </metadata>
-                              <files>
-                                {1}
-                              </files>
-                            </package>",
-                            IconEntry,
-                            sb.ToString());
-                File.WriteAllText(NuspecPath, nuspecContent);
+                                <description>Sample icon description</description>");
+
+                if (!string.IsNullOrEmpty(IconEntry))
+                {
+                    sb.Append("<icon>");
+                    sb.Append(IconEntry);
+                    sb.Append("</icon>\n");
+                }
+                                
+                sb.Append(@"</metadata>
+                          <files>");
+                foreach (var fe in fileEntries)
+                {
+                    sb.Append($"<file src=\"{fe}\" />\n");
+                }                        
+                sb.Append(@"</files>
+                            </package>");
+
+                File.WriteAllText(NuspecPath, sb.ToString());
             }
 
             public void Dispose()

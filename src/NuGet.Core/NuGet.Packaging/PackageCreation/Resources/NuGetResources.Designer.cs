@@ -88,7 +88,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;: {1}.
+        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;: {1}..
         /// </summary>
         internal static string IconCannotOpenFile {
             get {
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The icon file is empty.
+        ///   Looks up a localized string similar to The icon file is empty..
         /// </summary>
         internal static string IconErrorEmpty {
             get {
@@ -106,7 +106,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to read icon file.
+        ///   Looks up a localized string similar to Unable to read icon file..
         /// </summary>
         internal static string IconErrorReading {
             get {
@@ -124,7 +124,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Multiple files resolved as the embedded icon: {0}.
+        ///   Looks up a localized string similar to Multiple files resolved as the embedded icon..
         /// </summary>
         internal static string IconMultipleIconFiles {
             get {
@@ -133,7 +133,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec.
+        ///   Looks up a localized string similar to No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec..
         /// </summary>
         internal static string IconNoFileElement {
             get {
