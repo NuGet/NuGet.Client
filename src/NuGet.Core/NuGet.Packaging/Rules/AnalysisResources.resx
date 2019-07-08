@@ -123,6 +123,9 @@
   <data name="AssemblyOutsideLibWarning" xml:space="preserve">
     <value>The assembly '{0}' is not inside the 'lib' folder and hence it won't be added as a reference when the package is installed into a project. Move it into the 'lib' folder if it needs to be referenced.</value>
   </data>
+  <data name="BuildConventionIsViolatedWarning" xml:space="preserve">
+    <value>A {0} file was found in '{1}'. However, this file is not '{2}'. Change the file to fit this format.</value>
+  </data>
   <data name="DefaultSpecValueWarning" xml:space="preserve">
     <value>The value "{0}" for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>

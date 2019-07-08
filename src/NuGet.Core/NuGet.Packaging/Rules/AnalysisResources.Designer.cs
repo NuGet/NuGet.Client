@@ -79,6 +79,15 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A {0} file was found in &apos;{1}&apos;. However, this file is not &apos;{2}&apos;. Change the file to fit this format..
+        /// </summary>
+        public static string BuildConventionIsViolatedWarning {
+            get {
+                return ResourceManager.GetString("BuildConventionIsViolatedWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The value &quot;{0}&quot; for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package..
         /// </summary>
         public static string DefaultSpecValueWarning {

@@ -29,6 +29,7 @@ namespace NuGet.Packaging.Rules
                 new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
                 new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage),
                 new DependenciesGroupsForEachTFMRule(),
+                new UpholdBuildConventionRule(),
             }
         );
 
