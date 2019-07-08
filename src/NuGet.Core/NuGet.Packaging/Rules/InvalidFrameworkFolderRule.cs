@@ -35,39 +35,8 @@ namespace NuGet.Packaging.Rules
                 }
             }
 
-            return set.Where(s => !IsValidFrameworkName(s) && !IsValidCultureName(builder, s))
+            return set.Where(s => !FrameworkNameValidatorUtility.IsValidFrameworkName(s) && !FrameworkNameValidatorUtility.IsValidCultureName(builder, s))
                       .Select(CreatePackageIssue);
-        }
-
-        private static bool IsValidFrameworkName(string path)
-        {
-            FrameworkName fx;
-            try
-            {
-                string effectivePath;
-                fx = FrameworkNameUtility.ParseFrameworkNameFromFilePath(path, out effectivePath);
-            }
-            catch (ArgumentException)
-            {
-                fx = null;
-            }
-
-            // return false if the framework is Null or Unsupported
-            return fx != null && fx.Identifier != NuGetFramework.UnsupportedFramework.Framework;
-        }
-
-        private static bool IsValidCultureName(PackageArchiveReader builder, string name)
-        {
-            // starting from NuGet 1.8, we support localized packages, which
-            // can have a culture folder under lib, e.g. lib\fr-FR\strings.resources.dll
-            var nuspecReader = builder.NuspecReader;
-            if (string.IsNullOrEmpty(nuspecReader.GetLanguage()))
-            {
-                return false;
-            }
-
-            // the folder name is considered valid if it matches the package's Language property.
-            return name.Equals(nuspecReader.GetLanguage(), StringComparison.OrdinalIgnoreCase);
         }
 
         private PackagingLogMessage CreatePackageIssue(string target)

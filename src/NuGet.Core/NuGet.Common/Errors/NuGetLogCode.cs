@@ -771,6 +771,11 @@ namespace NuGet.Common
         NU5126 = 5126,
 
         /// <summary>
+        /// No ref or lib folder in the package
+        /// </summary>
+        NU5127 = 5127,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
