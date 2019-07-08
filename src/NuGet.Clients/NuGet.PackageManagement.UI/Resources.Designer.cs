@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package deprecation.
+        /// </summary>
+        public static string Accessibility_PackageDeprecation {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageDeprecation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package details URL icon.
         /// </summary>
         public static string Accessibility_PackageDetailsUrlIcon {
@@ -777,6 +786,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_DeprecatedPackageIdAndMinVersion {
             get {
                 return ResourceManager.GetString("Label_DeprecatedPackageIdAndMinVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternate package.
+        /// </summary>
+        public static string Label_DeprecationAlternatePackage {
+            get {
+                return ResourceManager.GetString("Label_DeprecationAlternatePackage", resourceCulture);
             }
         }
         

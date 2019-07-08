@@ -167,7 +167,8 @@
         <Grid>
           <nuget:DeprecationControl
             x:Name="_deprecationControl"
-            DataContext="{Binding}" />
+            DataContext="{Binding}"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDeprecation}" />
         </Grid>
       </Border>
 

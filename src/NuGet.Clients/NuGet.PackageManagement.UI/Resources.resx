@@ -867,4 +867,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <comment>{0} is the deprecated package ID
 {1} is the deprecated package minimum version</comment>
   </data>
+  <data name="Accessibility_PackageDeprecation" xml:space="preserve">
+    <value>Package deprecation</value>
+  </data>
+  <data name="Label_DeprecationAlternatePackage" xml:space="preserve">
+    <value>Alternate package</value>
+  </data>
 </root>

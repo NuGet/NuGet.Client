@@ -26,6 +26,7 @@
           VerticalAlignment="Center">
           <TextBlock
             FontWeight="Bold"
+            AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
             Text="{x:Static nuget:Resources.Label_Deprecated}"/>
           <imaging:CrispImage
             x:Name="_deprecationWarning"
@@ -38,26 +39,31 @@
       </Expander.Header>
       <StackPanel
         Orientation="Vertical">
-        <TextBlock
+        <TextBox
+          Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="0,8,0,0"
           TextWrapping="WrapWithOverflow"
-          TextTrimming="WordEllipsis"
-          Text="{Binding Path=PackageDeprecationReasons}" />
+          Text="{Binding Path=PackageDeprecationReasons}"
+          AutomationProperties.Name="{Binding Path=PackageDeprecationReasons}"/>
         <StackPanel
           Margin="0,8,0,0"
           Orientation="Vertical"
           Visibility="{Binding Path=PackageDeprecationAlternatePackageText, Converter={StaticResource NullToVisibilityConverter}}">
           <TextBlock
-            Text="Alternate package"
-            FontWeight="Bold"/>
+            Text="{x:Static nuget:Resources.Label_DeprecationAlternatePackage}"
+            FontWeight="Bold"
+            x:Name="_alternatePackageLabel"
+            AutomationProperties.Name="{Binding Text}"/>
           <StackPanel
             Orientation="Horizontal"
             VerticalAlignment="Center">
-            <TextBlock
-              TextWrapping="WrapWithOverflow"
+            <TextBox
+              Style="{DynamicResource SelectableTextBlockStyle}" 
+              TextWrapping="Wrap"
               VerticalAlignment="Center"
-              Text="{Binding Path=PackageDeprecationAlternatePackageText}">
-            </TextBlock>
+              AutomationProperties.Name="{Binding Path=PackageDeprecationAlternatePackageText}"
+              AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}"
+              Text="{Binding Path=PackageDeprecationAlternatePackageText}"/>
           </StackPanel>
         </StackPanel>
       </StackPanel>
