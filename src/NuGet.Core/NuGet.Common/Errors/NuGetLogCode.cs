@@ -779,7 +779,7 @@ namespace NuGet.Common
         /// TFM dependencies in the lib or ref folder don't have exact matches in the nuspec
         /// </summary>
         NU5128 = 5128,
-
+        
         /// <summary>
         /// No build files that follow the build convention ("package_id".props)
         /// </summary>
@@ -789,6 +789,11 @@ namespace NuGet.Common
         /// TFM dependencies in the lib or ref folder has a compatible match, but not an exact match
         /// </summary>
         NU5130 = 5130,
+
+        /// <summary>
+        /// References in the nuspec don't match up with the ref folder in the package
+        /// </summary>
+        NU5131 = 5131,
 
         /// <summary>
         /// Undefined package warning

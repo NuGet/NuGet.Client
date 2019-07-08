@@ -198,6 +198,15 @@
   <data name="PlaceholderFileInPackageWarning" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>
   </data>
+  <data name="ReferencesInNuspecAndRefFilesDontMatchWarning" xml:space="preserve">
+    <value>References were found in the nuspec, but some were not found within the ref folder. Add the following reference assemblies:</value>
+  </data>
+  <data name="ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat" xml:space="preserve">
+    <value>- Add {0} to the {1} reference group in the nuspec</value>
+  </data>
+  <data name="ReferencesInNuspecAndRefFilesDontMatchWarningAddToRefListItemFormat" xml:space="preserve">
+    <value>- Add {0} to the ref/{1}/ directory</value>
+  </data>
   <data name="ScriptOutsideToolsWarning" xml:space="preserve">
     <value>The script file '{0}' is outside the 'tools' folder and hence will not be executed during installation of this package. Move it into the 'tools' folder.</value>
   </data>
