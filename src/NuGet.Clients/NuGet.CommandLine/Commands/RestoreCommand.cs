@@ -60,10 +60,10 @@ namespace NuGet.CommandLine
         public bool Force { get; set; }
 
         [Option(typeof(NuGetCommand), "RestoreCommandUseLockFile")]
-        public bool? UseLockFile { get; set; }
+        public bool UseLockFile { get; set; }
 
         [Option(typeof(NuGetCommand), "RestoreCommandLockedMode")]
-        public bool? LockedMode { get; set; }
+        public bool LockedMode { get; set; }
 
         [Option(typeof(NuGetCommand), "RestoreCommandLockFilePath")]
         public string LockFilePath { get; set; }
@@ -676,7 +676,7 @@ namespace NuGet.CommandLine
 
             Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
 
-            var restoreLockProperties = new RestoreLockProperties(UseLockFile?.ToString(), LockFilePath?.ToString(), LockedMode ?? false);
+            var restoreLockProperties = new RestoreLockProperties(UseLockFile.ToString(), LockFilePath, LockedMode);
 
             // Call MSBuild to resolve P2P references.
             return await MsBuildUtility.GetProjectReferencesAsync(
@@ -928,9 +928,9 @@ namespace NuGet.CommandLine
 
                 var projectFile = dgSpec?.FilePath ?? pcFile;
                 var projectTfm = dgSpec?.TargetFrameworks.SingleOrDefault()?.FrameworkName ?? NuGetFramework.AnyFramework;
-                var restoreLockedMode = LockedMode ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false;
+                var restoreLockedMode = LockedMode || (dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestoreLockedMode ?? false);
                 var lockFilePath = LockFilePath ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.NuGetLockFilePath;
-                var useLockFile = UseLockFile?.ToString() ?? dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile;
+                var useLockFile = UseLockFile ? bool.TrueString : dgSpec?.RestoreMetadata?.RestoreLockProperties?.RestorePackagesWithLockFile;
 
                 IReadOnlyList<IRestoreLogMessage> result = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
                     projectFile,

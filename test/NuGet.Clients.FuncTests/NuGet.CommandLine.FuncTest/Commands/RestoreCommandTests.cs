@@ -184,7 +184,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     packageX);
 
                 // Act
-                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
 
                 // Assert
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
