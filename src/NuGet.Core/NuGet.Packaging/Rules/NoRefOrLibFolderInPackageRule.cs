@@ -77,7 +77,7 @@ namespace NuGet.Packaging.Rules
         private (string, string) GenerateWarningString(string[] possibleFrameworks)
         {
             string tfmNames = possibleFrameworks.Length > 1
-                ? string.Join(", ", possibleFrameworks, 0, possibleFrameworks.Length)
+                ? string.Join(", ", possibleFrameworks)
                 : possibleFrameworks[0];
 
             string suggestedDirectories = possibleFrameworks.Length > 1
