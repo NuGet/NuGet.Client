@@ -510,7 +510,7 @@ phases:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/"
       ArtifactName: "CoreFuncTests-xunit.xml"
       ArtifactType: "Container"
-    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'false'))"
+      condition: "succeededOrFailed()"
 
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
