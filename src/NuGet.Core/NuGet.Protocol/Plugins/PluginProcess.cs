@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace NuGet.Protocol.Plugins
 {
@@ -11,54 +12,73 @@ namespace NuGet.Protocol.Plugins
     /// </summary>
     public sealed class PluginProcess : IPluginProcess
     {
+        private int? _exitCode;
+        private bool _hasStarted;
+        private int? _id;
         private bool _isDisposed;
         private readonly Process _process;
+        private readonly ProcessStartInfo _startInfo;
 
         /// <summary>
         /// Occurs when a process exits.
         /// </summary>
-        public event EventHandler Exited
-        {
-            add
-            {
-                _process.Exited += value;
-            }
-            remove
-            {
-                _process.Exited -= value;
-            }
-        }
+        public event EventHandler<IPluginProcess> Exited;
 
         /// <summary>
         /// Occurs when a line of output has been received.
         /// </summary>
         public event EventHandler<LineReadEventArgs> LineRead;
 
-        /// <summary>
-        /// Gets a value indicating whether the associated process has been terminated.
-        /// </summary>
-        public bool HasExited
+        public int? ExitCode
         {
             get
             {
-                return _process.HasExited;
+                UpdateExitCodeIfNecessary();
+
+                return _exitCode;
             }
+        }
+
+        internal string FilePath => _process.MainModule.FileName;
+
+        /// <summary>
+        /// Gets the process ID if the process was started; otherwise, <c>null</c>.
+        /// </summary>
+        public int? Id
+        {
+            get
+            {
+                UpdateIdIfNecessary();
+
+                return _id;
+            }
+        }
+
+        internal StreamWriter StandardInput => _process.StandardInput;
+
+        /// <summary>
+        /// Instantiates a new <see cref="PluginProcess" /> class from the current process.
+        /// </summary>
+        public PluginProcess()
+        {
+            _process = Process.GetCurrentProcess();
+            _hasStarted = true;
         }
 
         /// <summary>
         /// Instantiates a new <see cref="PluginProcess" /> class.
         /// </summary>
-        /// <param name="process">A plugin process.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="process" /> is <c>null</c>.</exception>
-        public PluginProcess(Process process)
+        /// <param name="startInfo">A plugin process.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="startInfo" /> is <c>null</c>.</exception>
+        public PluginProcess(ProcessStartInfo startInfo)
         {
-            if (process == null)
+            if (startInfo == null)
             {
-                throw new ArgumentNullException(nameof(process));
+                throw new ArgumentNullException(nameof(startInfo));
             }
 
-            _process = process;
-            _process.OutputDataReceived += OnOutputDataReceived;
+            _startInfo = startInfo;
+            _process = new Process();
         }
 
         /// <summary>
@@ -96,27 +116,88 @@ namespace NuGet.Protocol.Plugins
         }
 
         /// <summary>
-        /// Immediately stops the associated process.
+        /// Stops the associated process.
         /// </summary>
         public void Kill()
         {
             try
             {
-                if (_process.HasExited)
+                // Give some time for the plugin process to shutdown cleanly, flush write buffers, etc.
+                if (!_process.HasExited && !_process.WaitForExit(milliseconds: 1000))
                 {
-                    return;
+                    _process.Kill();
                 }
-
-                _process.Kill();
             }
             catch (Exception)
             {
             }
+
+            UpdateExitCodeIfNecessary();
+            UpdateIdIfNecessary();
+        }
+
+        internal void Start()
+        {
+            if (_hasStarted)
+            {
+                throw new InvalidOperationException();
+            }
+
+            _process.OutputDataReceived += OnOutputDataReceived;
+            _process.Exited += OnProcessExited;
+
+            _process.EnableRaisingEvents = true;
+            _process.StartInfo = _startInfo;
+
+            _hasStarted = true;
+
+            _process.Start();
         }
 
         private void OnOutputDataReceived(object sender, DataReceivedEventArgs e)
         {
             LineRead?.Invoke(sender, new LineReadEventArgs(e.Data));
+        }
+
+        private void OnProcessExited(object sender, EventArgs e)
+        {
+            if (sender is Process process)
+            {
+                process.Exited -= OnProcessExited;
+
+                UpdateExitCodeIfNecessary();
+                UpdateIdIfNecessary();
+            }
+
+            Exited?.Invoke(this, this);
+        }
+
+        private void UpdateExitCodeIfNecessary()
+        {
+            if (!_exitCode.HasValue)
+            {
+                try
+                {
+                    _exitCode = _process.ExitCode;
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+        }
+
+        private void UpdateIdIfNecessary()
+        {
+            if (!_id.HasValue)
+            {
+                try
+                {
+                    _id = _process.Id;
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
         }
     }
 }

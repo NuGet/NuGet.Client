@@ -157,8 +157,9 @@ namespace NuGet.Protocol.Plugins
                 _process.Exited -= OnExited;
 
                 _process.Kill();
-                _process.Dispose();
             }
+
+            _process.Dispose();
 
             GC.SuppressFinalize(this);
 
@@ -213,7 +214,7 @@ namespace NuGet.Protocol.Plugins
             }
         }
 
-        private void OnExited(object sender, EventArgs e)
+        private void OnExited(object sender, IPluginProcess pluginProcess)
         {
             Exited?.Invoke(this, new PluginEventArgs(this));
         }
