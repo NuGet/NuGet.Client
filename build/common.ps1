@@ -222,23 +222,20 @@ Function Install-DotnetCLI {
         $env:DOTNET_HOME=$cli.Root
         $env:DOTNET_INSTALL_DIR=$NuGetClientRoot
 
-        #DryRun dotnet-install.ps1, parse the information to get the specific version number for a certain channel.
-        Trace-Log "DryRun dotnet-install.ps1 to get the specific version to be downloaded, when channel is:  $CliBranchForTesting"
-    
-        $DryRunResults = & $DotNetInstall -Channel $CliBranchForTesting -Version 'latest' -DryRun 6>&1
-       
-        $specificVersionLine = ($DryRunResults -split [System.Environment]::NewLine)[3]
-        
-        $configs = $specificVersionLine -split(" -")
+        #Get the specific version number for a certain channel from url like : https://dotnetcli.blob.core.windows.net/dotnet/Sdk/release/3.0.1xx/latest.version"
+        $httpGetUrl = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/" + $CliBranchForTesting + "/latest.version"
+        $versionFile = Invoke-RestMethod -Method Get -Uri $httpGetUrl
 
-        ForEach ($config in $configs){
-            if ($config.StartsWith("Version")){
-                $specificVersion = $config.split(" ")[1].replace('"', "")
-                $specificVersion = $specificVersion.trim()
-                Trace-Log "The version of SDK should be installed is : $specificVersion"
-                break
+        $stringReader = New-Object -TypeName System.IO.StringReader -ArgumentList $versionFile
+        [int]$count = 0
+        while ( $line = $stringReader.ReadLine() ) {
+            if ($count -eq 1) 
+            {
+                $specificVersion = $line.trim()
             }
+            $count += 1
         }
+        Trace-Log "The version of SDK should be installed is : $specificVersion"
 
         $probeDotnetPath = Join-Path (Join-Path $cli.Root sdk)  $specificVersion
 
