@@ -16,7 +16,7 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
 {
-    class NoRefOrLibFolderInPackageRule : IPackageRule
+    internal class NoRefOrLibFolderInPackageRule : IPackageRule
     {
         public string MessageFormat { get; }
 
