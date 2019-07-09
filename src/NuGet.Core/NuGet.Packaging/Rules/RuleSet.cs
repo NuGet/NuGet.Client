@@ -27,6 +27,7 @@ namespace NuGet.Packaging.Rules
                 new PathTooLongRule(AnalysisResources.FilePathTooLongWarning),
                 new UnrecognizedLicenseIdentifierRule(AnalysisResources.UnrecognizedLicenseIdentifier),
                 new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
+                new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage)
             }
         );
 
