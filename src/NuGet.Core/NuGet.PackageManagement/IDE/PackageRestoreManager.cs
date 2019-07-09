@@ -72,9 +72,10 @@ namespace NuGet.PackageManagement
 
         public virtual async Task RaisePackagesMissingEventForSolutionAsync(string solutionDirectory, CancellationToken token)
         {
-            // This method is called by both Solution Opened and Solution Closed event handlers.
-            // In the case of Solution Closed event, the solutionDirectory is null or empty,
-            // so we won't do the unnecessary work of checking for package references.
+            // This method is called by different event handlers.
+            // If the solutionDirectory is null, there's no need to do needless work.
+            // Even though the solution closed even calls the synchronous ClearMissingEventForSolution
+            // there's no guarantee that some weird ordering of events won't make the solutionDirectory null.
             var missing = false;
             if (!string.IsNullOrEmpty(solutionDirectory))
             {
@@ -83,6 +84,12 @@ namespace NuGet.PackageManagement
             }
 
             PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(missing));
+        }
+
+        // A synchronous method called during the solution closed event. This is done to avoid needless thread switching
+        protected void ClearMissingEventForSolution()
+        {
+            PackagesMissingStatusChanged?.Invoke(this, new PackagesMissingStatusEventArgs(packagesMissing: false));
         }
 
         /// <summary>

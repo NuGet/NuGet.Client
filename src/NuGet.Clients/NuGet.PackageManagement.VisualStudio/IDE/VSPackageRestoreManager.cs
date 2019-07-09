@@ -1,12 +1,15 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.ComponentModel.Composition;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -29,34 +32,47 @@ namespace NuGet.PackageManagement.VisualStudio
 
             SolutionManager = solutionManager;
             SolutionManager.NuGetProjectAdded += OnNuGetProjectAdded;
-            SolutionManager.SolutionOpened += OnSolutionOpenedOrClosed;
-            SolutionManager.SolutionClosed += OnSolutionOpenedOrClosed;
+            SolutionManager.SolutionOpened += OnSolutionOpened;
+            SolutionManager.SolutionClosed += OnSolutionClosed;
         }
 
-        private void OnSolutionOpenedOrClosed(object sender, EventArgs e)
+        private void OnSolutionOpened(object sender, EventArgs e)
         {
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    // We need to do the check even on Solution Closed because, let's say if the yellow Update bar
-                    // is showing and the user closes the solution; in that case, we want to hide the Update bar.
-                    var solutionDirectory = SolutionManager.SolutionDirectory;
-                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                });
+            var solutionDirectory = SolutionManager.SolutionDirectory;
+
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                await TaskScheduler.Default;
+                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnSolutionOpened)));
+        }
+
+        private void OnSolutionClosed(object sender, EventArgs e)
+        {
+            // This is a solution event. Should be on the UI thread
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ClearMissingEventForSolution();
         }
 
         private void OnNuGetProjectAdded(object sender, NuGetProjectEventArgs e)
         {
             // This is a solution event. Should be on the UI thread
             ThreadHelper.ThrowIfNotOnUIThread();
+            var solutionDirectory = SolutionManager.SolutionDirectory;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    var solutionDirectory = SolutionManager.SolutionDirectory;
-                    await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
-                });
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
+            {
+                // go off the UI thread to raise missing packages event
+                await TaskScheduler.Default;
+
+                await RaisePackagesMissingEventForSolutionAsync(solutionDirectory, CancellationToken.None);
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(VSPackageRestoreManager), nameof(OnNuGetProjectAdded)));
+
         }
     }
 }
