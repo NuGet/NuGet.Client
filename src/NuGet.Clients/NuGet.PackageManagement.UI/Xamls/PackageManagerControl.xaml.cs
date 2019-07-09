@@ -4,15 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
-using System.Windows.Threading;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -24,8 +21,12 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Resx = NuGet.PackageManagement.UI;
 using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
+using Task = System.Threading.Tasks.Task;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -56,6 +57,7 @@ namespace NuGet.PackageManagement.UI
 
         private bool _missingPackageStatus;
         private readonly INuGetUILogger _uiLogger;
+        private bool _loadedAndInitialized = false;
 
         public PackageManagerModel Model { get; }
 
@@ -84,8 +86,6 @@ namespace NuGet.PackageManagement.UI
         internal event EventHandler _actionCompleted;
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
-
-
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -142,11 +142,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            Loaded += (_, __) =>
-            {
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-                RefreshConsolidatablePackagesCount();
-            };
+            Loaded += PackageManagerLoaded;            
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -279,6 +275,18 @@ namespace NuGet.PackageManagement.UI
             {
                 _topPanel.SelectFilter(settings.SelectedFilter);
             }
+        }
+
+        private void PackageManagerLoaded(object sender, RoutedEventArgs e)
+        {
+            // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
+            // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
+            if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
+            {
+                _loadedAndInitialized = true;
+                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+            }
+            RefreshConsolidatablePackagesCount();
         }
 
         private void PackageManagerUnloaded(object sender, RoutedEventArgs e)
@@ -718,17 +726,21 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshConsolidatablePackagesCount()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            if (Model.IsSolution)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                _topPanel._labelConsolidate.Count = 0;
-                var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
-                var loader = new PackageItemLoader(
-                    loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    _topPanel._labelConsolidate.Count = 0;
+                    var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                    var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
+                    var loader = new PackageItemLoader(
+                        loadContext, packageFeed, includePrerelease: IncludePrerelease);
 
-                _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
-            });
+                    _topPanel._labelConsolidate.Count = await loader.GetTotalCountAsync(100, CancellationToken.None);
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshConsolidatablePackagesCount)));
+            }
         }
 
         private void SettingsButtonClicked(object sender, EventArgs e)
