@@ -676,7 +676,8 @@ namespace NuGet.CommandLine
 
             Console.LogVerbose($"MSBuild P2P timeout [ms]: {scaleTimeout}");
 
-            var restoreLockProperties = new RestoreLockProperties(UseLockFile.ToString(), LockFilePath, LockedMode);
+            string restorePackagesWithLockFile = UseLockFile ? bool.TrueString : null;
+            var restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, LockFilePath, LockedMode);
 
             // Call MSBuild to resolve P2P references.
             return await MsBuildUtility.GetProjectReferencesAsync(

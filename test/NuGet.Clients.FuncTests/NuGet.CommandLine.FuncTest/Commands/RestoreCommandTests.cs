@@ -200,6 +200,114 @@ namespace NuGet.CommandLine.FuncTest.Commands
             }
         }
 
+        [Fact]
+        public async Task Restore_LegacyPackageReference_WithCustomNameNuGetLockFileArgument()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Act
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "-LockFilePath", "custom.lock.json");
+
+                // Assert
+                var expectedLockFileName = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "custom.lock.json");
+                Assert.True(File.Exists(expectedLockFileName));
+
+                var lockFile = PackagesLockFileFormat.Read(expectedLockFileName);
+                Assert.Equal(4, lockFile.Targets.Count);
+
+                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
+                Assert.Equal(1, targets.Count);
+                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
+                Assert.Equal(1, targets[0].Dependencies.Count);
+                Assert.Equal("x", targets[0].Dependencies[0].Id);
+            }
+        }
+
+        [Fact]
+        public async Task Restore_LegacyPackageReference_WithNuGetLockFileLockedMode()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = SimpleTestProjectContext.CreateLegacyPackageReference(
+                    "a",
+                    pathContext.SolutionRoot,
+                    net461);
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY.Files.Clear();
+                packageY.AddFile("lib/net461/y.dll");
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX,
+                    packageY);
+
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
+                Assert.True(result.Success);
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.Save();
+
+                // Act
+                result = RunRestore(pathContext, _failureExitCode, "-LockedMode");
+
+                // Assert
+                Assert.Contains("NU1004:", result.Errors);
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -412,7 +520,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     packageY);
 
                 // Restore to set up lock file
-                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Change packages to cause lock file difference
@@ -422,7 +530,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 </packages>");
 
                 // Act
-                result = RunRestore(pathContext, _failureExitCode, "-UseLockFile", "true", "-LockedMode", "true");
+                result = RunRestore(pathContext, _failureExitCode, "-UseLockFile", "-LockedMode");
 
                 // Assert
                 Assert.Contains("NU1004:", result.Errors);
