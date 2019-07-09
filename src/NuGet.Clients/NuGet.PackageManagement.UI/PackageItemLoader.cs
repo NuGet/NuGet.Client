@@ -270,7 +270,8 @@ namespace NuGet.PackageManagement.UI
                         Summary = metadata.Summary,
                         Versions = AsyncLazy.New(() => metadata.GetVersionsAsync()),
                         AllowedVersions = allowedVersions,
-                        PrefixReserved = metadata.PrefixReserved && !IsMultiSource
+                        PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
+                        IsPackageDeprecated = metadata.DeprecationMetadata != null,
                     };
                     listItem.UpdatePackageStatus(_installedPackages);
 

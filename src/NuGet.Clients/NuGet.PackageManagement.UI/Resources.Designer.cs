@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package deprecation.
+        /// </summary>
+        public static string Accessibility_PackageDeprecation {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageDeprecation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package details URL icon.
         /// </summary>
         public static string Accessibility_PackageDetailsUrlIcon {
@@ -763,6 +772,69 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deprecated.
+        /// </summary>
+        public static string Label_Deprecated {
+            get {
+                return ResourceManager.GetString("Label_Deprecated", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1}.
+        /// </summary>
+        public static string Label_DeprecatedPackageIdAndMinVersion {
+            get {
+                return ResourceManager.GetString("Label_DeprecatedPackageIdAndMinVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Alternate package.
+        /// </summary>
+        public static string Label_DeprecationAlternatePackage {
+            get {
+                return ResourceManager.GetString("Label_DeprecationAlternatePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs..
+        /// </summary>
+        public static string Label_DeprecationReasons_CriticalBugs {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_CriticalBugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated as it is legacy and no longer maintained..
+        /// </summary>
+        public static string Label_DeprecationReasons_Legacy {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_Legacy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs and is no longer maintained..
+        /// </summary>
+        public static string Label_DeprecationReasons_LegacyAndCriticalBugs {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_LegacyAndCriticalBugs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The package has been deprecated..
+        /// </summary>
+        public static string Label_DeprecationReasons_Unknown {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons_Unknown", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Description.
         /// </summary>
         public static string Label_Description {
@@ -867,6 +939,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Options {
             get {
                 return ResourceManager.GetString("Label_Options", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to  (or higher).
+        /// </summary>
+        public static string Label_OrHigher {
+            get {
+                return ResourceManager.GetString("Label_OrHigher", resourceCulture);
             }
         }
         

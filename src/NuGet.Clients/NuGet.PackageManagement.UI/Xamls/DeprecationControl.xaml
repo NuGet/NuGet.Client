@@ -1,0 +1,72 @@
+<UserControl x:Class="NuGet.PackageManagement.UI.DeprecationControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
+             mc:Ignorable="d"
+             d:DesignHeight="150" d:DesignWidth="350">
+  <UserControl.Resources>
+    <ResourceDictionary>
+      <ResourceDictionary.MergedDictionaries>
+        <nuget:SharedResources />
+      </ResourceDictionary.MergedDictionaries>
+    </ResourceDictionary>
+  </UserControl.Resources>
+  <Grid>
+    <Expander
+      Margin="0,12,0,16"
+      IsExpanded="True"
+      Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
+      <Expander.Header>
+        <StackPanel
+          Orientation="Horizontal"
+          VerticalAlignment="Center">
+          <TextBlock
+            FontWeight="Bold"
+            AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
+            Text="{x:Static nuget:Resources.Label_Deprecated}"/>
+          <imaging:CrispImage
+            x:Name="_deprecationWarning"
+            Margin="5,0,0,0"
+            Width="13"
+            Height="13"
+            ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+            Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
+        </StackPanel>
+      </Expander.Header>
+      <StackPanel
+        Orientation="Vertical">
+        <TextBox
+          Style="{DynamicResource SelectableTextBlockStyle}" 
+          Margin="0,8,0,0"
+          TextWrapping="WrapWithOverflow"
+          Text="{Binding Path=PackageDeprecationReasons}"
+          AutomationProperties.Name="{Binding Path=PackageDeprecationReasons}"/>
+        <StackPanel
+          Margin="0,8,0,0"
+          Orientation="Vertical"
+          Visibility="{Binding Path=PackageDeprecationAlternatePackageText, Converter={StaticResource NullToVisibilityConverter}}">
+          <TextBlock
+            Text="{x:Static nuget:Resources.Label_DeprecationAlternatePackage}"
+            FontWeight="Bold"
+            x:Name="_alternatePackageLabel"
+            AutomationProperties.Name="{Binding Text}"/>
+          <StackPanel
+            Orientation="Horizontal"
+            VerticalAlignment="Center">
+            <TextBox
+              Style="{DynamicResource SelectableTextBlockStyle}" 
+              TextWrapping="Wrap"
+              VerticalAlignment="Center"
+              AutomationProperties.Name="{Binding Path=PackageDeprecationAlternatePackageText}"
+              AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}"
+              Text="{Binding Path=PackageDeprecationAlternatePackageText}"/>
+          </StackPanel>
+        </StackPanel>
+      </StackPanel>
+    </Expander>
+  </Grid>
+</UserControl>

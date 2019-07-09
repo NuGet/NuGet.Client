@@ -90,6 +90,9 @@ namespace NuGet.Protocol
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
+        // Deprecation metadata is not stored within the package and requires an online package source.
+        public PackageDeprecationMetadata DeprecationMetadata => null;
+
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 
         public string LoadFileAsText(string path)

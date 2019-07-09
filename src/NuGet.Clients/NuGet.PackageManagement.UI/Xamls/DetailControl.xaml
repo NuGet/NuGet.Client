@@ -44,6 +44,10 @@
           Height="Auto" />
         <RowDefinition
           Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
+        <RowDefinition
+          Height="Auto" />
       </Grid.RowDefinitions>
 
       <!-- Icon and Id -->
@@ -153,10 +157,24 @@
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1" />
 
-      <!-- options -->
+      <!-- deprecation info -->
       <Border
         Grid.Row="3"
         Margin="0,11,0,0"
+        BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
+        Visibility="{Binding Path=IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
+        BorderThickness="0,1,0,0">
+        <Grid>
+          <nuget:DeprecationControl
+            x:Name="_deprecationControl"
+            DataContext="{Binding}"
+            AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDeprecation}" />
+        </Grid>
+      </Border>
+
+      <!-- options -->
+      <Border
+        Grid.Row="5"
         BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
         BorderThickness="0,1,0,1">
         <Grid>
@@ -183,7 +201,7 @@
       </Border>
       
       <nuget:PackageMetadataControl
-        Grid.Row="5"
+        Grid.Row="7"
         AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageMetadata}"
         Margin="0,12,0,0"
         DataContext="{Binding PackageMetadata}" />

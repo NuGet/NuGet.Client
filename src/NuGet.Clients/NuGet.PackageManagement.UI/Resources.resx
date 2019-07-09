@@ -844,4 +844,33 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PackageDetailsUrlLink" xml:space="preserve">
     <value>Package details link</value>
   </data>
+  <data name="Label_Deprecated" xml:space="preserve">
+    <value>Deprecated</value>
+  </data>
+  <data name="Label_OrHigher" xml:space="preserve">
+    <value> (or higher)</value>
+  </data>
+  <data name="Label_DeprecationReasons_CriticalBugs" xml:space="preserve">
+    <value>This package has been deprecated as it has critical bugs.</value>
+  </data>
+  <data name="Label_DeprecationReasons_Legacy" xml:space="preserve">
+    <value>This package has been deprecated as it is legacy and no longer maintained.</value>
+  </data>
+  <data name="Label_DeprecationReasons_LegacyAndCriticalBugs" xml:space="preserve">
+    <value>This package has been deprecated as it has critical bugs and is no longer maintained.</value>
+  </data>
+  <data name="Label_DeprecationReasons_Unknown" xml:space="preserve">
+    <value>The package has been deprecated.</value>
+  </data>
+  <data name="Label_DeprecatedPackageIdAndMinVersion" xml:space="preserve">
+    <value>{0} version {1}</value>
+    <comment>{0} is the deprecated package ID
+{1} is the deprecated package minimum version</comment>
+  </data>
+  <data name="Accessibility_PackageDeprecation" xml:space="preserve">
+    <value>Package deprecation</value>
+  </data>
+  <data name="Label_DeprecationAlternatePackage" xml:space="preserve">
+    <value>Alternate package</value>
+  </data>
 </root>

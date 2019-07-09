@@ -255,6 +255,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _isPackageDeprecated;
+        public bool IsPackageDeprecated
+        {
+            get { return _isPackageDeprecated; }
+            set
+            {
+                if (_isPackageDeprecated != value)
+                {
+                    _isPackageDeprecated = value;
+                    OnPropertyChanged(nameof(IsPackageDeprecated));
+                }
+            }
+        }
+
         public Uri IconUrl { get; set; }
 
         public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }

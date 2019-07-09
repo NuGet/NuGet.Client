@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,6 +13,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.Protocol;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 
@@ -284,6 +287,74 @@ namespace NuGet.PackageManagement.UI
             get { return _searchResultPackage?.PrefixReserved ?? false; }
         }
 
+        public bool IsPackageDeprecated
+        {
+            get { return _packageMetadata?.DeprecationMetadata != null; }
+        }
+
+        private string _packageDeprecationReasons;
+        public string PackageDeprecationReasons
+        {
+            get { return _packageDeprecationReasons; }
+            set
+            {
+                if (_packageDeprecationReasons != value)
+                {
+                    _packageDeprecationReasons = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationReasons));
+                }
+            }
+        }
+
+        private string _packageDeprecationAlternatePackageText;
+        public string PackageDeprecationAlternatePackageText
+        {
+            get { return _packageDeprecationAlternatePackageText; }
+            set
+            {
+                if (_packageDeprecationAlternatePackageText != value)
+                {
+                    _packageDeprecationAlternatePackageText = value;
+
+                    OnPropertyChanged(nameof(PackageDeprecationAlternatePackageText));
+                }
+            }
+        }
+
+        public string ExplainPackageDeprecationReasons(IReadOnlyCollection<string> reasons)
+        {
+            if (reasons == null || !reasons.Any())
+            {
+                return Resources.Label_DeprecationReasons_Unknown;
+            }
+            else if (reasons.Contains(PackageDeprecationReason.CriticalBugs, StringComparer.OrdinalIgnoreCase))
+            {
+                if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+                {
+                    return Resources.Label_DeprecationReasons_LegacyAndCriticalBugs;
+                }
+                else
+                {
+                    return Resources.Label_DeprecationReasons_CriticalBugs;
+                }
+            }
+            else if (reasons.Contains(PackageDeprecationReason.Legacy, StringComparer.OrdinalIgnoreCase))
+            {
+                return Resources.Label_DeprecationReasons_Legacy;
+            }
+            else
+            {
+                return Resources.Label_DeprecationReasons_Unknown;
+            }
+        }
+
+        private static class PackageDeprecationReason
+        {
+            public const string CriticalBugs = nameof(CriticalBugs);
+            public const string Legacy = nameof(Legacy);
+        }
+
         private DetailedPackageMetadata _packageMetadata;
 
         public DetailedPackageMetadata PackageMetadata
@@ -294,9 +365,53 @@ namespace NuGet.PackageManagement.UI
                 if (_packageMetadata != value)
                 {
                     _packageMetadata = value;
+
+                    if (_packageMetadata?.DeprecationMetadata != null)
+                    {
+                        PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
+
+                        var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
+                        if (alternatePackage != null)
+                        {
+                            PackageDeprecationAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
+                        }
+                    }
+
                     OnPropertyChanged(nameof(PackageMetadata));
+                    OnPropertyChanged(nameof(IsPackageDeprecated));
                 }
             }
+        }
+
+        private string GetPackageDeprecationAlternatePackageText(AlternatePackageMetadata alternatePackageMetadata)
+        {
+            if (alternatePackageMetadata == null)
+            {
+                return null;
+            }
+
+            var text = alternatePackageMetadata.PackageId;
+
+            if (alternatePackageMetadata.Range.IsFloating)
+            {
+                return text;
+            }
+
+            if (alternatePackageMetadata.Range.HasLowerBound)
+            {
+                text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Label_DeprecatedPackageIdAndMinVersion,
+                    alternatePackageMetadata.PackageId,
+                    alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
+            }
+
+            if (!alternatePackageMetadata.Range.HasUpperBound)
+            {
+                text += Resources.Label_OrHigher;
+            }
+
+            return text;
         }
 
         protected abstract void CreateVersions();
