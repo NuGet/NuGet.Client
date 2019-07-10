@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ResetSolutionSettingsIfNeeded();
                 }
 
-                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await _solutionSettings.Item2.GetValueAsync());
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(_solutionSettings.Item2.GetValueAsync);
             }
         }
 
