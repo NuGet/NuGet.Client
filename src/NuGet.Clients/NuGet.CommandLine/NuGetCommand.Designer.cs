@@ -9982,6 +9982,33 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Forces restore to reevaluate all dependencies even if a lock file already exists..
+        /// </summary>
+        internal static string RestoreCommandForceEvaluate {
+            get {
+                return ResourceManager.GetString("RestoreCommandForceEvaluate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Don&apos;t allow updating project lock file..
+        /// </summary>
+        internal static string RestoreCommandLockedMode {
+            get {
+                return ResourceManager.GetString("RestoreCommandLockedMode", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Output location where project lock file is written. By default, this is &apos;PROJECT_ROOT\packages.lock.json&apos;..
+        /// </summary>
+        internal static string RestoreCommandLockFilePath {
+            get {
+                return ResourceManager.GetString("RestoreCommandLockFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to 禁止使用计算机缓存作为第一个程序包源。.
         /// </summary>
         internal static string RestoreCommandNoCache_chs {
@@ -10869,6 +10896,15 @@ namespace NuGet.CommandLine {
         internal static string RestoreCommandUsageSummary_trk {
             get {
                 return ResourceManager.GetString("RestoreCommandUsageSummary_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables project lock file to be generated and used with restore..
+        /// </summary>
+        internal static string RestoreCommandUseLockFile {
+            get {
+                return ResourceManager.GetString("RestoreCommandUseLockFile", resourceCulture);
             }
         }
         
