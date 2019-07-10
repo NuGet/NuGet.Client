@@ -999,7 +999,11 @@ namespace NuGet.Commands.FuncTest
                 modifiedLockFile.Version = 1000;
 
                 var lockFormat = new LockFileFormat();
-                lockFormat.Write(File.OpenWrite(lockFilePath), modifiedLockFile);
+
+                using (var stream = File.OpenWrite(lockFilePath))
+                {
+                    lockFormat.Write(stream, modifiedLockFile);
+                }
 
                 request = new TestRestoreRequest(spec, sources, packagesDir, logger)
                 {

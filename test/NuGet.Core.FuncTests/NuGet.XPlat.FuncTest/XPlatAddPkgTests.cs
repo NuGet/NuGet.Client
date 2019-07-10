@@ -1,32 +1,26 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
-using Test.Utility;
 using Xunit;
 
 namespace NuGet.XPlat.FuncTest
 {
-
     [Collection("NuGet XPlat Test Collection")]
     public class XPlatAddPkgTests
     {
         private static readonly string ProjectName = "test_project_addpkg";
 
         private static MSBuildAPIUtility MsBuild => new MSBuildAPIUtility(new TestCommandOutputLogger());
-
 
         // Argument parsing related tests
 
@@ -44,17 +38,18 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "")]
         [InlineData("--package", "package_foo", "--version", "1.0.0-foo", "-d", "dgfile_foo", "-p", "project_foo.csproj", "", "", "", "", "", "", "-n", "--interactive")]
         public void AddPkg_ArgParsing(string packageOption, string package, string versionOption, string version, string dgFileOption,
-        string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
-        string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch)
+            string dgFilePath, string projectOption, string project, string frameworkOption, string frameworkString, string sourceOption,
+            string sourceString, string packageDirectoryOption, string packageDirectory, string noRestoreSwitch, string interactiveSwitch)
         {
             // Arrange
-            var projectPath = Path.Combine(Path.GetTempPath(), project);
-            var frameworks = MSBuildStringUtility.Split(frameworkString);
-            var sources = MSBuildStringUtility.Split(sourceString);
-            File.Create(projectPath).Dispose();
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectPath = Path.Combine(testDirectory, project);
+                var frameworks = MSBuildStringUtility.Split(frameworkString);
+                var sources = MSBuildStringUtility.Split(sourceString);
+                File.Create(projectPath).Dispose();
 
-
-            var argList = new List<string>() {
+                var argList = new List<string>() {
                 "add",
                 packageOption,
                 package,
@@ -65,66 +60,66 @@ namespace NuGet.XPlat.FuncTest
                 projectOption,
                 projectPath};
 
-            if (!string.IsNullOrEmpty(frameworkOption))
-            {
-                foreach(var framework in frameworks)
+                if (!string.IsNullOrEmpty(frameworkOption))
                 {
-                    argList.Add(frameworkOption);
-                    argList.Add(framework);
+                    foreach (var framework in frameworks)
+                    {
+                        argList.Add(frameworkOption);
+                        argList.Add(framework);
+                    }
                 }
-            }
-            if (!string.IsNullOrEmpty(sourceOption))
-            {
-                foreach (var source in sources)
+                if (!string.IsNullOrEmpty(sourceOption))
                 {
-                    argList.Add(sourceOption);
-                    argList.Add(source);
+                    foreach (var source in sources)
+                    {
+                        argList.Add(sourceOption);
+                        argList.Add(source);
+                    }
                 }
+                if (!string.IsNullOrEmpty(packageDirectoryOption))
+                {
+                    argList.Add(packageDirectoryOption);
+                    argList.Add(packageDirectory);
+                }
+                if (!string.IsNullOrEmpty(noRestoreSwitch))
+                {
+                    argList.Add(noRestoreSwitch);
+                }
+                if (!string.IsNullOrEmpty(interactiveSwitch))
+                {
+                    argList.Add(interactiveSwitch);
+                }
+
+                var logger = new TestCommandOutputLogger();
+                var testApp = new CommandLineApplication();
+                var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
+                mockCommandRunner
+                    .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
+                    .ReturnsAsync(0);
+
+                testApp.Name = "dotnet nuget_test";
+                AddPackageReferenceCommand.Register(testApp,
+                    () => logger,
+                    () => mockCommandRunner.Object);
+
+                // Act
+                var result = testApp.Execute(argList.ToArray());
+
+                XPlatTestUtils.DisposeTemporaryFile(projectPath);
+
+                // Assert
+                mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
+                p.PackageDependency.VersionRange.OriginalString == version &&
+                p.ProjectPath == projectPath &&
+                p.DgFilePath == dgFilePath &&
+                p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
+                (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
+                (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
+                (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory) && p.Interactive == !string.IsNullOrEmpty(interactiveSwitch)),
+                It.IsAny<MSBuildAPIUtility>()));
+
+                Assert.Equal(0, result);
             }
-            if (!string.IsNullOrEmpty(packageDirectoryOption))
-            {
-                argList.Add(packageDirectoryOption);
-                argList.Add(packageDirectory);
-            }
-            if (!string.IsNullOrEmpty(noRestoreSwitch))
-            {
-                argList.Add(noRestoreSwitch);
-            }
-            if (!string.IsNullOrEmpty(interactiveSwitch))
-            {
-                argList.Add(interactiveSwitch);
-            }
-
-            var logger = new TestCommandOutputLogger();
-            var testApp = new CommandLineApplication();
-            var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
-            mockCommandRunner
-                .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
-                .ReturnsAsync(0);
-
-            testApp.Name = "dotnet nuget_test";
-            AddPackageReferenceCommand.Register(testApp,
-                () => logger,
-                () => mockCommandRunner.Object);
-
-            // Act
-            var result = testApp.Execute(argList.ToArray());
-
-            XPlatTestUtils.DisposeTemporaryFile(projectPath);
-
-            // Assert
-            mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p => p.PackageDependency.Id == package &&
-            p.PackageDependency.VersionRange.OriginalString == version &&
-            p.ProjectPath == projectPath &&
-            p.DgFilePath == dgFilePath &&
-            p.NoRestore == !string.IsNullOrEmpty(noRestoreSwitch) &&
-            (string.IsNullOrEmpty(frameworkOption) || !string.IsNullOrEmpty(frameworkOption) && p.Frameworks.SequenceEqual(frameworks)) &&
-            (string.IsNullOrEmpty(sourceOption) || !string.IsNullOrEmpty(sourceOption) && p.Sources.SequenceEqual(MSBuildStringUtility.Split(sourceString))) &&
-            (string.IsNullOrEmpty(packageDirectoryOption) || !string.IsNullOrEmpty(packageDirectoryOption) && p.PackageDirectory == packageDirectory) && p.Interactive == !string.IsNullOrEmpty(interactiveSwitch)) ,
-            It.IsAny<MSBuildAPIUtility>()));
-
-
-            Assert.Equal(0, result);
         }
 
         // Add Related Tests
@@ -215,7 +210,7 @@ namespace NuGet.XPlat.FuncTest
             using (var pathContext = new SimpleTestPathContext())
             {
                 // Generate DotNetCliToolReference Package
-                var packageDotnetCliToolX = XPlatTestUtils.CreatePackage(packageId: "PackageDotnetCliToolX", 
+                var packageDotnetCliToolX = XPlatTestUtils.CreatePackage(packageId: "PackageDotnetCliToolX",
                     packageType: PackageType.DotnetCliTool);
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
@@ -224,7 +219,7 @@ namespace NuGet.XPlat.FuncTest
                     packageDotnetCliToolX);
 
                 // Generate test package
-                var packageY = XPlatTestUtils.CreatePackage(packageId:"PackageY");
+                var packageY = XPlatTestUtils.CreatePackage(packageId: "PackageY");
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
@@ -470,8 +465,8 @@ namespace NuGet.XPlat.FuncTest
                 var commonFramework = XPlatTestUtils.GetCommonFramework(packageFrameworks, projectFrameworks, userInputFrameworks);
 
                 // Act
-                 var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
-                    .Result;
+                var result = commandRunner.ExecuteCommand(packageArgs, MsBuild)
+                   .Result;
                 var projectXmlRoot = XPlatTestUtils.LoadCSProj(projectA.ProjectPath).Root;
                 var itemGroup = XPlatTestUtils.GetItemGroupForFramework(projectXmlRoot, commonFramework);
 

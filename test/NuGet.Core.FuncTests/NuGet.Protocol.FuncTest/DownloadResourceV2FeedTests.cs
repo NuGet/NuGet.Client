@@ -83,14 +83,13 @@ namespace NuGet.Protocol.FuncTest
             // Act
             using (var packagesFolder = TestDirectory.Create())
             using (var cacheContext = new SourceCacheContext())
-            {
-                var actual = await downloadResource.GetDownloadResourceResultAsync(
-                    package,
-                    new PackageDownloadContext(cacheContext),
-                    packagesFolder,
-                    NullLogger.Instance,
-                    CancellationToken.None);
-
+            using (var actual = await downloadResource.GetDownloadResourceResultAsync(
+                package,
+                new PackageDownloadContext(cacheContext),
+                packagesFolder,
+                NullLogger.Instance,
+                CancellationToken.None))
+            { 
                 // Assert
                 Assert.NotNull(actual);
                 Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);

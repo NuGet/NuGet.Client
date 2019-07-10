@@ -1501,7 +1501,7 @@ Description is required.");
 #if !IS_CORECLR
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => new PackageBuilder(spec.AsStream(), null),
-                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " + 
+                "The element 'metadata' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd' has incomplete content. " +
                 "List of possible elements expected: 'authors' in namespace 'http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd'. " +
                 "This validation error occurred in a 'metadata' element.");
 #else
@@ -2475,12 +2475,13 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
 
                     Assert.Equal(@"test.nuspec", files[4]);
 
-                    var contentTypesReader
-                        = new StreamReader(archive.Entries.Single(file => file.FullName == @"[Content_Types].xml").Open());
-                    var contentTypesXml = XDocument.Parse(contentTypesReader.ReadToEnd());
-                    var node = contentTypesXml.Descendants().Single(e => e.Name.LocalName == "Override");
+                    using (var contentTypesReader = new StreamReader(archive.Entries.Single(file => file.FullName == @"[Content_Types].xml").Open()))
+                    {
+                        var contentTypesXml = XDocument.Parse(contentTypesReader.ReadToEnd());
+                        var node = contentTypesXml.Descendants().Single(e => e.Name.LocalName == "Override");
 
-                    Assert.StartsWith(@"<Override PartName=""/myfile"" ContentType=""application/octet""", node.ToString());
+                        Assert.StartsWith(@"<Override PartName=""/myfile"" ContentType=""application/octet""", node.ToString());
+                    }
                 }
             }
         }
@@ -2528,18 +2529,18 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 builder.Authors.Add("test");
                 builder.AddFiles(directory.Path, "**", "Content");
 
-                using (MemoryStream stream = new MemoryStream())
+                using (var stream = new MemoryStream())
                 {
                     builder.Save(stream);
 
                     // Assert
                     using (var archive = new ZipArchive(stream, ZipArchiveMode.Read, leaveOpen: true))
                     {
-                        foreach(var entry in archive.Entries)
+                        foreach (var entry in archive.Entries)
                         {
                             var path = directory.Path + Path.DirectorySeparatorChar + entry.Name;
                             // Only checks the entries that originated from files in test directory
-                            if(File.Exists(path))
+                            if (File.Exists(path))
                             {
                                 Assert.Equal(entry.LastWriteTime.DateTime, File.GetLastWriteTimeUtc(path));
                             }

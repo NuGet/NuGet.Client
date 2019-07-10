@@ -1881,23 +1881,30 @@ namespace NuGet.Configuration.Test
                 File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
                 File.SetAttributes(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), FileAttributes.ReadOnly);
 
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
-                                  configFileName: null,
-                                  machineWideSettings: null,
-                                  loadUserWideSettings: true,
-                                  useTestingGlobalPath: true);
-                var packageSourceProvider = new PackageSourceProvider(settings);
+                try
+                {
+                    var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                        configFileName: null,
+                        machineWideSettings: null,
+                        loadUserWideSettings: true,
+                        useTestingGlobalPath: true);
+                    var packageSourceProvider = new PackageSourceProvider(settings);
 
-                // Act
-                var sources = packageSourceProvider.LoadPackageSources().ToList();
+                    // Act
+                    var sources = packageSourceProvider.LoadPackageSources().ToList();
 
-                sources.Add(new PackageSource("https://test3.net", "test3"));
+                    sources.Add(new PackageSource("https://test3.net", "test3"));
 
-                var ex = Assert.Throws<NuGetConfigurationException>(() => packageSourceProvider.SavePackageSources(sources));
+                    var ex = Assert.Throws<NuGetConfigurationException>(() => packageSourceProvider.SavePackageSources(sources));
 
-                // Assert
-                var path = Path.Combine(mockBaseDirectory, "NuGet.Config");
-                Assert.Equal($"Failed to read NuGet.Config due to unauthorized access. Path: '{path}'.", ex.Message);
+                    // Assert
+                    var path = Path.Combine(mockBaseDirectory, "NuGet.Config");
+                    Assert.Equal($"Failed to read NuGet.Config due to unauthorized access. Path: '{path}'.", ex.Message);
+                }
+                finally
+                {
+                    File.SetAttributes(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), FileAttributes.Normal);
+                }
             }
         }
 

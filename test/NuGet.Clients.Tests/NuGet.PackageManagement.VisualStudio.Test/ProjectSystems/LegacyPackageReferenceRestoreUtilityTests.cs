@@ -49,7 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -137,7 +137,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -278,7 +278,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -404,7 +404,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -556,7 +556,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -646,7 +646,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -780,7 +780,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -904,7 +904,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1002,7 +1002,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1096,7 +1096,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1202,7 +1202,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1347,7 +1347,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1511,7 +1511,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();
@@ -1678,7 +1678,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
                     var testNuGetProjectContext = new TestNuGetProjectContext();

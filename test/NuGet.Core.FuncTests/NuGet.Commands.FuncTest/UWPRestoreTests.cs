@@ -161,7 +161,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
-                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                var lockFileJson = JObject.Parse(File.ReadAllText(request.LockFilePath));
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -251,7 +251,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
-                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                var lockFileJson = JObject.Parse(File.ReadAllText(request.LockFilePath));
 
                 // Assert
                 Assert.Equal(0, result.CompatibilityCheckResults.Sum(checkResult => checkResult.Issues.Count));
@@ -312,7 +312,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
-                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                var lockFileJson = JObject.Parse(File.ReadAllText(request.LockFilePath));
                 RemovePackageFolders(lockFileJson);
 
                 // Assert
@@ -379,7 +379,7 @@ namespace NuGet.Commands.FuncTest
                 var result = await command.ExecuteAsync();
                 await result.CommitAsync(logger, CancellationToken.None);
 
-                var lockFileJson = JObject.Parse(File.OpenText(request.LockFilePath).ReadToEnd());
+                var lockFileJson = JObject.Parse(File.ReadAllText(request.LockFilePath));
                 RemovePackageFolders(lockFileJson);
 
                 // Assert

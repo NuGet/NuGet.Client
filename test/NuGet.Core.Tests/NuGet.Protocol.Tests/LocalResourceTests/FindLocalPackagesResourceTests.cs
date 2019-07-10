@@ -68,7 +68,13 @@ namespace NuGet.Protocol.Tests
 
                     // Assert
                     Assert.True(expected.SetEquals(result.Select(p => p.Identity)));
-                    Assert.True(expected.SetEquals(result.Select(p => p.GetReader().GetIdentity())));
+                    Assert.True(expected.SetEquals(result.Select(p =>
+                    {
+                        using (var reader = p.GetReader())
+                        {
+                            return reader.GetIdentity();
+                        }
+                    })));
                     Assert.True(expected.SetEquals(result.Select(p => p.Nuspec.GetIdentity())));
                     Assert.True(result.All(p => p.IsNupkg));
                 }
@@ -154,7 +160,13 @@ namespace NuGet.Protocol.Tests
 
                     // Assert
                     Assert.True(expected.SetEquals(result.Select(p => p.Identity)));
-                    Assert.True(expected.SetEquals(result.Select(p => p.GetReader().GetIdentity())));
+                    Assert.True(expected.SetEquals(result.Select(p =>
+                    {
+                        using (var reader = p.GetReader())
+                        {
+                            return reader.GetIdentity();
+                        }
+                    })));
                     Assert.True(expected.SetEquals(result.Select(p => p.Nuspec.GetIdentity())));
                     Assert.True(result.All(p => p.IsNupkg));
                 }

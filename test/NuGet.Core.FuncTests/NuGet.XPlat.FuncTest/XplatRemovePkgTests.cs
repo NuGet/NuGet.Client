@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
@@ -29,39 +28,42 @@ namespace NuGet.XPlat.FuncTest
             string projectOption, string project)
         {
             // Arrange
-            var projectPath = Path.Combine(Path.GetTempPath(), project);
-            File.Create(projectPath).Dispose();
-            var argList = new List<string>() {
-                "remove",
-                packageOption,
-                package,
-                projectOption,
-                projectPath};
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectPath = Path.Combine(testDirectory, project);
+                File.Create(projectPath).Dispose();
+                var argList = new List<string>() {
+                    "remove",
+                    packageOption,
+                    package,
+                    projectOption,
+                    projectPath};
 
-            var logger = new TestCommandOutputLogger();
-            var testApp = new CommandLineApplication();
-            var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
-            mockCommandRunner
-                .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
-                .ReturnsAsync(0);
+                var logger = new TestCommandOutputLogger();
+                var testApp = new CommandLineApplication();
+                var mockCommandRunner = new Mock<IPackageReferenceCommandRunner>();
+                mockCommandRunner
+                    .Setup(m => m.ExecuteCommand(It.IsAny<PackageReferenceArgs>(), It.IsAny<MSBuildAPIUtility>()))
+                    .ReturnsAsync(0);
 
-            testApp.Name = "dotnet nuget_test";
-            RemovePackageReferenceCommand.Register(testApp,
-                () => logger,
-                () => mockCommandRunner.Object);
+                testApp.Name = "dotnet nuget_test";
+                RemovePackageReferenceCommand.Register(testApp,
+                    () => logger,
+                    () => mockCommandRunner.Object);
 
-            // Act
-            var result = testApp.Execute(argList.ToArray());
+                // Act
+                var result = testApp.Execute(argList.ToArray());
 
-            XPlatTestUtils.DisposeTemporaryFile(projectPath);
+                XPlatTestUtils.DisposeTemporaryFile(projectPath);
 
-            // Assert
-            mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p =>
-            p.PackageDependency.Id == package &&
-            p.ProjectPath == projectPath),
-            It.IsAny<MSBuildAPIUtility>()));
+                // Assert
+                mockCommandRunner.Verify(m => m.ExecuteCommand(It.Is<PackageReferenceArgs>(p =>
+                    p.PackageDependency.Id == package &&
+                    p.ProjectPath == projectPath),
+                    It.IsAny<MSBuildAPIUtility>()));
 
-            Assert.Equal(0, result);
+                Assert.Equal(0, result);
+            }
         }
 
         // Remove Related Tests

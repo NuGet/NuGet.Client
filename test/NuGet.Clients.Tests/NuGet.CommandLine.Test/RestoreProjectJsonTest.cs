@@ -1888,7 +1888,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
             }
         }
@@ -1962,7 +1962,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
@@ -2070,7 +2070,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 Assert.True(targetsFile.IndexOf(packageAPath) > -1);
                 Assert.True(targetsFile.IndexOf(packageBPath) > -1);
             }
@@ -2145,7 +2145,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
@@ -2220,7 +2220,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageA.targets")) > -1);
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "uap", "packageB.targets")) > -1);
             }
@@ -2287,7 +2287,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
                 Assert.True(File.Exists(targetFilePath));
 
-                var targetsFile = File.OpenText(targetFilePath).ReadToEnd();
+                var targetsFile = File.ReadAllText(targetFilePath);
                 // Verify the target was added
                 Assert.True(targetsFile.IndexOf(Path.Combine("build", "packageA.targets")) > -1);
 

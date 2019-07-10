@@ -15,7 +15,7 @@ using Xunit;
 
 namespace NuGet.Credentials.Test
 {
-    public class SecurePluginCredentialProviderBuilderTests
+    public class SecurePluginCredentialProviderBuilderTests : IDisposable
     {
         private readonly TestDirectory _testDirectory;
 

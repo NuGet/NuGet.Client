@@ -13,6 +13,7 @@ using Newtonsoft.Json.Serialization;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
@@ -59,11 +60,10 @@ namespace NuGet.Build.Tasks.Pack.Test
         [Fact]
         public void PackTask_Dispose()
         {
-            var dir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            Directory.CreateDirectory(dir);
-
-            var nuspecPath = Path.Combine(dir, "test.nuspec");
-            File.WriteAllText(nuspecPath, @"
+            using (var directory = TestDirectory.Create())
+            {
+                var nuspecPath = Path.Combine(directory, "test.nuspec");
+                File.WriteAllText(nuspecPath, @"
 <package xmlns=""http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd"">
   <metadata>
     <id>Test</id>
@@ -78,26 +78,23 @@ namespace NuGet.Build.Tasks.Pack.Test
 </package>
 ");
 
-            var builder = new PackageBuilder();
+                var builder = new PackageBuilder();
 
-            var runner = new PackCommandRunner(
-                new PackArgs
-                {
-                    CurrentDirectory = dir,
-                    OutputDirectory = dir,
-                    Path = nuspecPath,
-                    Exclude = Array.Empty<string>(),
-                    Symbols = true,
-                    Logger = NullLogger.Instance
-                },
-                MSBuildProjectFactory.ProjectCreator,
-                builder);
+                var runner = new PackCommandRunner(
+                    new PackArgs
+                    {
+                        CurrentDirectory = directory,
+                        OutputDirectory = directory,
+                        Path = nuspecPath,
+                        Exclude = Array.Empty<string>(),
+                        Symbols = true,
+                        Logger = NullLogger.Instance
+                    },
+                    MSBuildProjectFactory.ProjectCreator,
+                    builder);
 
-            runner.BuildPackage();
-
-            // It should be possible to delete the entire directory.
-            // If this fails the runner left some files open.
-            Directory.Delete(dir, recursive: true);
+                runner.BuildPackage();
+            }
         }
 
         [Fact]

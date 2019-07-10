@@ -190,8 +190,8 @@ namespace NuGet.Packaging.Test
         {
             using (var directory = TestDirectory.Create())
             {
-                var inputPackageFilePath = Path.Combine(Path.GetTempPath(), "a");
-                var outputPackageFilePath = Path.Combine(Path.GetTempPath(), "b");
+                var inputPackageFilePath = Path.Combine(directory, "a");
+                var outputPackageFilePath = Path.Combine(directory, "b");
                 var overwrite = false;
                 var signatureProvider = Mock.Of<ISignatureProvider>();
                 var logger = Mock.Of<ILogger>();

@@ -375,31 +375,32 @@ namespace NuGet.Packaging.Test
                     }
                 }
 
-                var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite);
-
-                using (var writer = new PackagesConfigWriter(stream, false))
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.ReadWrite))
                 {
-                    // Act
-                    var packageIdentityA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
-                    var packageReferenceA1 = new PackageReference(packageIdentityA1, NuGetFramework.Parse("win81"),
-                        userInstalled: true, developmentDependency: false, requireReinstallation: false);
+                    using (var writer = new PackagesConfigWriter(stream, false))
+                    {
+                        // Act
+                        var packageIdentityA1 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+                        var packageReferenceA1 = new PackageReference(packageIdentityA1, NuGetFramework.Parse("win81"),
+                            userInstalled: true, developmentDependency: false, requireReinstallation: false);
 
-                    var packageIdentityA2 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
-                    var packageReferenceA2 = new PackageReference(packageIdentityA2, NuGetFramework.Parse("net45"));
+                        var packageIdentityA2 = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.1"));
+                        var packageReferenceA2 = new PackageReference(packageIdentityA2, NuGetFramework.Parse("net45"));
 
-                    writer.UpdatePackageEntry(packageReferenceA1, packageReferenceA2);
+                        writer.UpdatePackageEntry(packageReferenceA1, packageReferenceA2);
+                    }
+
+                    // Assert
+                    stream.Seek(0, SeekOrigin.Begin);
+
+                    var xml = XDocument.Load(stream);
+
+                    // Assert
+                    Assert.Equal("utf-8", xml.Declaration.Encoding);
+
+                    var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
+                    Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
                 }
-
-                // Assert
-                stream.Seek(0, SeekOrigin.Begin);
-
-                var xml = XDocument.Load(stream);
-
-                // Assert
-                Assert.Equal("utf-8", xml.Declaration.Encoding);
-
-                var packageNode = xml.Descendants(PackagesConfig.PackageNodeName).FirstOrDefault();
-                Assert.Equal(packageNode.ToString(), "<package id=\"packageA\" version=\"1.0.1\" targetFramework=\"net45\" userInstalled=\"true\" protocolVersion=\"V2\" />");
             }
         }
 

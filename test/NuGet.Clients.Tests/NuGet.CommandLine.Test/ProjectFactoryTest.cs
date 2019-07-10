@@ -479,15 +479,20 @@ namespace NuGet.CommandLine
                     waitForExit: true);
 
                 // Assert
-                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg"));
-                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
+                using (var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Assembly.1.0.0.nupkg")))
+                {
+                    var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                Assert.Equal(0, r.Item1);
-                Array.Sort(files);
-                Assert.Equal(files, new[] {
-                    @"lib/net45/Assembly.dll",
-                    @"lib/net45/Assembly.xml"
-                });
+                    Assert.Equal(0, r.Item1);
+                    Array.Sort(files);
+                    Assert.Equal(
+                        files,
+                        new[]
+                        {
+                            @"lib/net45/Assembly.dll",
+                            @"lib/net45/Assembly.xml"
+                        });
+                }
             }
         }
 
@@ -518,15 +523,20 @@ namespace NuGet.CommandLine
                 // Assert
                 Util.VerifyResultSuccess(r);
 
-                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
+                using (var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg")))
+                {
+                    var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                Assert.Equal(0, r.Item1);
-                Array.Sort(files);
-                Assert.Equal(files, new[] {
-                    @"lib/net45/A.dll",
-                    @"lib/net45/Link.dll"
-                });
+                    Assert.Equal(0, r.Item1);
+                    Array.Sort(files);
+                    Assert.Equal(
+                        files,
+                        new[]
+                        {
+                            @"lib/net45/A.dll",
+                            @"lib/net45/Link.dll"
+                        });
+                }
             }
         }
 
@@ -566,16 +576,22 @@ namespace NuGet.CommandLine
 
                 // Assert
                 Util.VerifyResultSuccess(r);
-                var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg"));
-                var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
 
-                Assert.Equal(0, r.Item1);
-                Array.Sort(files);
-                Assert.Equal(files, new[] {
-                    @"lib/net45/A.dll",
-                    @"lib/net45/C.dll",
-                    @"lib/net45/Link.dll"
-                });
+                using (var package = new PackageArchiveReader(Path.Combine(workingDirectory, "Link.1.0.0.nupkg")))
+                {
+                    var files = (await package.GetPackageFilesAsync(PackageSaveMode.Files, CancellationToken.None)).ToArray();
+
+                    Assert.Equal(0, r.Item1);
+                    Array.Sort(files);
+                    Assert.Equal(
+                        files,
+                        new[]
+                        {
+                            @"lib/net45/A.dll",
+                            @"lib/net45/C.dll",
+                            @"lib/net45/Link.dll"
+                        });
+                }
             }
         }
 

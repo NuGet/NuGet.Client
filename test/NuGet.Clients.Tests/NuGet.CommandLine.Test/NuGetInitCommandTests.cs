@@ -1,15 +1,14 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Versioning;
-using NuGet.Test.Utility;
 using NuGet.Common;
+using NuGet.Packaging.Core;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
 
@@ -36,10 +35,13 @@ namespace NuGet.CommandLine.Test
         /// 16. Source Feed is v3-based folder (packages are at the package version directory under the root). SUCCESS
         /// 17. For -Expand switch, Packages are expanded at the destination feed. SUCCESS
 
-        private class TestInfo : IDisposable
+        private sealed class TestInfo : IDisposable
         {
-            public string NuGetExePath { get; }
-            public string WorkingPath { get; }
+            private readonly TestDirectory _destinationDirectory;
+            private readonly TestDirectory _sourceDirectory;
+
+            public string NuGetExePath { get; private set; }
+            public TestDirectory WorkingPath { get; private set; }
 
             /// <summary>
             /// An input feed to grab packages from.
@@ -51,28 +53,42 @@ namespace NuGet.CommandLine.Test
             /// </summary>
             public string DestinationFeed { get; }
 
-            public TestInfo(string sourceFeed = null, string destinationFeed = null)
+            public TestInfo()
+            {
+                CommonInitialize();
+
+                SourceFeed = _sourceDirectory = TestDirectory.Create();
+                DestinationFeed = _destinationDirectory = TestDirectory.Create();
+            }
+
+            public TestInfo(string sourceFeed)
+            {
+                CommonInitialize();
+
+                SourceFeed = sourceFeed;
+                DestinationFeed = _destinationDirectory = TestDirectory.Create();
+            }
+
+            public TestInfo(TestDirectory sourceFeed, string destinationFeed)
+            {
+                CommonInitialize();
+
+                SourceFeed = _sourceDirectory = sourceFeed ?? throw new ArgumentNullException(nameof(sourceFeed));
+                DestinationFeed = destinationFeed ?? throw new ArgumentNullException(nameof(destinationFeed));
+            }
+
+            public TestInfo(string sourceFeed, TestDirectory destinationFeed)
+            {
+                CommonInitialize();
+
+                SourceFeed = sourceFeed ?? throw new ArgumentNullException(nameof(sourceFeed));
+                DestinationFeed = _destinationDirectory = destinationFeed ?? throw new ArgumentNullException(nameof(destinationFeed));
+            }
+
+            private void CommonInitialize()
             {
                 NuGetExePath = Util.GetNuGetExePath();
                 WorkingPath = TestDirectory.Create();
-
-                if (sourceFeed == null)
-                {
-                    SourceFeed = TestDirectory.Create();
-                }
-                else
-                {
-                    SourceFeed = sourceFeed;
-                }
-
-                if (destinationFeed == null)
-                {
-                    DestinationFeed = TestDirectory.Create();
-                }
-                else
-                {
-                    DestinationFeed = destinationFeed;
-                }
             }
 
             public static readonly List<PackageIdentity> PackagesSet0 = new List<PackageIdentity>()
@@ -136,12 +152,11 @@ namespace NuGet.CommandLine.Test
 
             public void Dispose()
             {
-                TestFileSystemUtility.DeleteRandomTestFolder(WorkingPath);
-                TestFileSystemUtility.DeleteRandomTestFolder(SourceFeed);
-                TestFileSystemUtility.DeleteRandomTestFolder(DestinationFeed);
+                WorkingPath.Dispose();
+                _destinationDirectory?.Dispose();
+                _sourceDirectory?.Dispose();
             }
         }
-
 
         [Theory]
         [InlineData("init")]

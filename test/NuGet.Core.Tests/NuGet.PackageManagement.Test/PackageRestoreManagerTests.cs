@@ -32,7 +32,7 @@ namespace NuGet.Test
         public async Task TestGetMissingPackagesForSolution()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
@@ -84,7 +84,7 @@ namespace NuGet.Test
         public async Task TestGetMissingPackagesForSolution_NoPackagesInstalled()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var projectB = testSolutionManager.AddNewMSBuildProject();
@@ -111,7 +111,7 @@ namespace NuGet.Test
         public async Task TestPackageRestoredEvent()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var projectB = testSolutionManager.AddNewMSBuildProject();
@@ -170,7 +170,7 @@ namespace NuGet.Test
         public async Task TestCheckForMissingPackages()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
@@ -228,7 +228,7 @@ namespace NuGet.Test
         public async Task TestRestoreMissingPackages()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject();
                 var projectB = testSolutionManager.AddNewMSBuildProject();
@@ -282,7 +282,7 @@ namespace NuGet.Test
         public async Task Test_PackageRestoreFailure_WithRaisedEvents()
         {
             // Arrange
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomTestPackageSourcePath = TestDirectory.Create())
             {
                 var projectA = testSolutionManager.AddNewMSBuildProject("projectA");

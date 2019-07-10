@@ -38,98 +38,100 @@ namespace NuGetConsole.Host.PowerShell.Test
 
                 var solutionDirectory = Path.Combine(testDirectory.Path, "solutionA");
                 Directory.CreateDirectory(solutionDirectory);
-                var testSolutionManager = new TestSolutionManager(solutionDirectory);
-                testSolutionManager.NuGetProjects.Add(Mock.Of<BuildIntegratedNuGetProject>());
+                using (var testSolutionManager = new TestSolutionManager(solutionDirectory))
+                {
+                    testSolutionManager.NuGetProjects.Add(Mock.Of<BuildIntegratedNuGetProject>());
 
-                var userPackageFolder = Path.Combine(testDirectory.Path, "userPackages");
-                Directory.CreateDirectory(userPackageFolder);
+                    var userPackageFolder = Path.Combine(testDirectory.Path, "userPackages");
+                    Directory.CreateDirectory(userPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    userPackageFolder,
-                    new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        userPackageFolder,
+                        new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")));
 
-                var fallbackPackageFolder = Path.Combine(testDirectory.Path, "fallbackPackages");
-                Directory.CreateDirectory(fallbackPackageFolder);
+                    var fallbackPackageFolder = Path.Combine(testDirectory.Path, "fallbackPackages");
+                    Directory.CreateDirectory(fallbackPackageFolder);
 
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    fallbackPackageFolder,
-                    new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")));
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        fallbackPackageFolder,
+                        new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")));
 
-                var target = new InstalledPackageEnumerator(
-                    testSolutionManager,
-                    testSettings,
-                    getLockFileOrNullAsync: _ => Task.FromResult(
-                        new LockFile
-                        {
-                            PackageFolders = new[]
+                    var target = new InstalledPackageEnumerator(
+                        testSolutionManager,
+                        testSettings,
+                        getLockFileOrNullAsync: _ => Task.FromResult(
+                            new LockFile
                             {
-                                new LockFileItem(userPackageFolder),
-                                new LockFileItem(fallbackPackageFolder)
-                            },
-                            Targets = new[]
-                            {
-                                new LockFileTarget
+                                PackageFolders = new[]
                                 {
-                                    TargetFramework = NuGetFramework.Parse("netcoreapp2.0"),
-                                    Libraries = new[]
+                                    new LockFileItem(userPackageFolder),
+                                    new LockFileItem(fallbackPackageFolder)
+                                },
+                                Targets = new[]
+                                {
+                                    new LockFileTarget
                                     {
-                                        new LockFileTargetLibrary
+                                        TargetFramework = NuGetFramework.Parse("netcoreapp2.0"),
+                                        Libraries = new[]
                                         {
-                                            Type = LibraryType.Package,
-                                            Name = "Foo",
-                                            Version = NuGetVersion.Parse("1.0.1"),
-                                            Dependencies = new[]
+                                            new LockFileTargetLibrary
                                             {
-                                                new PackageDependency("Bar")
+                                                Type = LibraryType.Package,
+                                                Name = "Foo",
+                                                Version = NuGetVersion.Parse("1.0.1"),
+                                                Dependencies = new[]
+                                                {
+                                                    new PackageDependency("Bar")
+                                                }
+                                            },
+                                            new LockFileTargetLibrary
+                                            {
+                                                Type = LibraryType.Package,
+                                                Name = "Bar",
+                                                Version = NuGetVersion.Parse("1.0.2")
                                             }
-                                        },
-                                        new LockFileTargetLibrary
-                                        {
-                                            Type = LibraryType.Package,
-                                            Name = "Bar",
-                                            Version = NuGetVersion.Parse("1.0.2")
                                         }
                                     }
-                                }
-                            },
-                            Libraries = new[]
-                            {
-                                new LockFileLibrary
-                                {
-                                    Type = LibraryType.Package,
-                                    Name = "Foo",
-                                    Version = NuGetVersion.Parse("1.0.1")
                                 },
-                                new LockFileLibrary
+                                Libraries = new[]
                                 {
-                                    Type = LibraryType.Package,
-                                    Name = "Bar",
-                                    Version = NuGetVersion.Parse("1.0.2")
+                                    new LockFileLibrary
+                                    {
+                                        Type = LibraryType.Package,
+                                        Name = "Foo",
+                                        Version = NuGetVersion.Parse("1.0.1")
+                                    },
+                                    new LockFileLibrary
+                                    {
+                                        Type = LibraryType.Package,
+                                        Name = "Bar",
+                                        Version = NuGetVersion.Parse("1.0.2")
+                                    }
                                 }
-                            }
-                        }));
+                            }));
 
-                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
-                    solutionDirectory, testSettings);
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
+                        solutionDirectory, testSettings);
 
-                var testPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    packagesFolderPath);
+                    var testPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        packagesFolderPath);
 
-                // Act
-                var installedPackages = await target.EnumeratePackagesAsync(
-                    testPackageManager,
-                    CancellationToken.None);
+                    // Act
+                    var installedPackages = await target.EnumeratePackagesAsync(
+                        testPackageManager,
+                        CancellationToken.None);
 
-                // Assert: Order is important!
-                installedPackages.Should().Equal(
-                    new PackageItem(
-                        new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")),
-                        Path.Combine(fallbackPackageFolder, "bar", "1.0.2")),
-                    new PackageItem(
-                        new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
-                        Path.Combine(userPackageFolder, "foo", "1.0.1")));
+                    // Assert: Order is important!
+                    installedPackages.Should().Equal(
+                        new PackageItem(
+                            new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")),
+                            Path.Combine(fallbackPackageFolder, "bar", "1.0.2")),
+                        new PackageItem(
+                            new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
+                            Path.Combine(userPackageFolder, "foo", "1.0.1")));
+                }
             }
         }
 
@@ -143,83 +145,85 @@ namespace NuGetConsole.Host.PowerShell.Test
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testDirectory);
 
                 var solutionDirectory = Path.Combine(testDirectory.Path, "solutionA");
+
                 Directory.CreateDirectory(solutionDirectory);
-                var testSolutionManager = new TestSolutionManager(solutionDirectory);
-
-                var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
-                Directory.CreateDirectory(userPackageFolder);
-
-                testSettings.AddOrUpdate("config", new AddItem("repositoryPath", userPackageFolder));
-
-                var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
-                    solutionDirectory, testSettings);
-
-                var packageBar = new SimpleTestPackageContext
+                using (var testSolutionManager = new TestSolutionManager(solutionDirectory))
                 {
-                    Id = "Bar",
-                    Version = "1.0.2"
-                };
+                    var userPackageFolder = Path.Combine(testDirectory.Path, "packagesA");
+                    Directory.CreateDirectory(userPackageFolder);
 
-                var packageFoo = new SimpleTestPackageContext
-                {
-                    Id = "Foo",
-                    Version = "1.0.1",
-                    Dependencies = new List<SimpleTestPackageContext> { packageBar }
-                };
+                    testSettings.AddOrUpdate("config", new AddItem("repositoryPath", userPackageFolder));
 
-                await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(
-                    packagesFolderPath,
-                    packageFoo,
-                    packageBar);
+                    var packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(
+                        solutionDirectory, testSettings);
 
-                var target = new InstalledPackageEnumerator(
-                    testSolutionManager,
-                    testSettings,
-                    getLockFileOrNullAsync: _ => Task.FromResult<LockFile>(null));
-
-                var projectSystem = Mock.Of<IMSBuildProjectSystem>();
-                Mock.Get(projectSystem)
-                    .SetupGet(x => x.TargetFramework)
-                    .Returns(NuGetFramework.Parse("net45"));
-
-                var project = new Mock<MSBuildNuGetProject>(
-                    projectSystem, packagesFolderPath, testDirectory.Path);
-
-                project
-                    .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new[]
+                    var packageBar = new SimpleTestPackageContext
                     {
-                        new PackageReference(
-                            new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
-                            NuGetFramework.Parse("net45")),
-                        new PackageReference(
+                        Id = "Bar",
+                        Version = "1.0.2"
+                    };
+
+                    var packageFoo = new SimpleTestPackageContext
+                    {
+                        Id = "Foo",
+                        Version = "1.0.1",
+                        Dependencies = new List<SimpleTestPackageContext> { packageBar }
+                    };
+
+                    await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(
+                        packagesFolderPath,
+                        packageFoo,
+                        packageBar);
+
+                    var target = new InstalledPackageEnumerator(
+                        testSolutionManager,
+                        testSettings,
+                        getLockFileOrNullAsync: _ => Task.FromResult<LockFile>(null));
+
+                    var projectSystem = Mock.Of<IMSBuildProjectSystem>();
+                    Mock.Get(projectSystem)
+                        .SetupGet(x => x.TargetFramework)
+                        .Returns(NuGetFramework.Parse("net45"));
+
+                    var project = new Mock<MSBuildNuGetProject>(
+                        projectSystem, packagesFolderPath, testDirectory.Path);
+
+                    project
+                        .Setup(x => x.GetInstalledPackagesAsync(It.IsAny<CancellationToken>()))
+                        .ReturnsAsync(new[]
+                        {
+                            new PackageReference(
+                                new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
+                                NuGetFramework.Parse("net45")),
+                            new PackageReference(
+                                new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")),
+                                NuGetFramework.Parse("net45"))
+                        })
+                        .Verifiable();
+
+                    testSolutionManager.NuGetProjects.Add(project.Object);
+
+                    var testPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        packagesFolderPath);
+
+                    // Act
+                    var installedPackages = await target.EnumeratePackagesAsync(
+                        testPackageManager,
+                        CancellationToken.None);
+
+                    // Assert: Order is important!
+                    installedPackages.Should().Equal(
+                        new PackageItem(
                             new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")),
-                            NuGetFramework.Parse("net45"))
-                    })
-                    .Verifiable();
+                            Path.Combine(packagesFolderPath, "Bar.1.0.2")),
+                        new PackageItem(
+                            new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
+                            Path.Combine(packagesFolderPath, "Foo.1.0.1")));
 
-                testSolutionManager.NuGetProjects.Add(project.Object);
-
-                var testPackageManager = new NuGetPackageManager(
-                    sourceRepositoryProvider,
-                    testSettings,
-                    packagesFolderPath);
-
-                // Act
-                var installedPackages = await target.EnumeratePackagesAsync(
-                    testPackageManager,
-                    CancellationToken.None);
-
-                // Assert: Order is important!
-                installedPackages.Should().Equal(
-                    new PackageItem(
-                        new PackageIdentity("Bar", NuGetVersion.Parse("1.0.2")),
-                        Path.Combine(packagesFolderPath, "Bar.1.0.2")),
-                    new PackageItem(
-                        new PackageIdentity("Foo", NuGetVersion.Parse("1.0.1")),
-                        Path.Combine(packagesFolderPath, "Foo.1.0.1")));
-
-                project.Verify();
+                    project.Verify();
+                }
             }
         }
 

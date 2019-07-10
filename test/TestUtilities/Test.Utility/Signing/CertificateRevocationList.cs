@@ -76,10 +76,13 @@ namespace Test.Utility.Signing
 
         public void ExportCrl()
         {
-            var pemWriter = new PemWriter(new StreamWriter(File.Open(CrlLocalPath, FileMode.Create)));
-            pemWriter.WriteObject(Crl);
-            pemWriter.Writer.Flush();
-            pemWriter.Writer.Close();
+            using (var streamWriter = new StreamWriter(File.Open(CrlLocalPath, FileMode.Create)))
+            {
+                var pemWriter = new PemWriter(streamWriter);
+                pemWriter.WriteObject(Crl);
+                pemWriter.Writer.Flush();
+                pemWriter.Writer.Close();
+            }
         }
 
         private void UpdateVersion()

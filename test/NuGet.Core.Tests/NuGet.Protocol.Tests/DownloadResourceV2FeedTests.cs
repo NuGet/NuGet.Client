@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -36,14 +36,13 @@ namespace NuGet.Protocol.Tests
             // Act
             using (var packagesFolder = TestDirectory.Create())
             using (var sourceCacheContext = new SourceCacheContext())
+            using (var actual = await downloadResource.GetDownloadResourceResultAsync(
+                new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
+                new PackageDownloadContext(sourceCacheContext),
+                packagesFolder,
+                NullLogger.Instance,
+                CancellationToken.None))
             {
-                var actual = await downloadResource.GetDownloadResourceResultAsync(
-                    new PackageIdentity("xunit", new NuGetVersion("1.0.0-notfound")),
-                    new PackageDownloadContext(sourceCacheContext),
-                    packagesFolder,
-                    NullLogger.Instance,
-                    CancellationToken.None);
-
                 // Assert
                 Assert.NotNull(actual);
                 Assert.Equal(DownloadResourceResultStatus.NotFound, actual.Status);
