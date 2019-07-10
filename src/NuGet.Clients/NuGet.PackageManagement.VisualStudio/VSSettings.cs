@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 _solutionSettings = new Tuple<string, AsyncLazy<ISettings>>(
                     item1: root,
-                    item2: new AsyncLazy<ISettings>(() =>
+                    item2: new AsyncLazy<ISettings>(async () =>
                         {
                             ISettings settings = null;
                             try
@@ -88,12 +88,12 @@ namespace NuGet.PackageManagement.VisualStudio
                             }
                             catch (NuGetConfigurationException ex)
                             {
-                                //ExceptionHelper.WriteErrorToActivityLog(ex);
-                                MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
                                 settings = NullSettings.Instance;
+                                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
                             }
 
-                            return Task.FromResult(settings);
+                            return settings;
 
                         }, NuGetUIThreadHelper.JoinableTaskFactory));
                 return true;
