@@ -6,6 +6,7 @@
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
+    <TestGroup>Group2</TestGroup>
   </PropertyGroup>
 
   <ItemGroup>

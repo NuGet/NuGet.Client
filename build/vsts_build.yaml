@@ -176,7 +176,7 @@ phases:
     displayName: "Publish Test Results as artifact"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/"
-      ArtifactName: "CoreFuncTests-xunit.xml"
+      ArtifactName: "CoreUnitTests-xunit.xml"
       ArtifactType: "Container"
     condition: "succeededOrFailed()"
 
@@ -449,7 +449,14 @@ phases:
     demands: 
         - DotNetFramework
         - msbuild
-
+    matrix:
+      TestGroup1:
+        RunTestGroup: "Group1"
+      TestGroup2:
+        RunTestGroup: "Group2"
+      TestGroup3:
+        RunTestGroup: "Group3"
+            
   steps:
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -491,7 +498,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:TestGroupToRun=$(RunTestGroup)"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"

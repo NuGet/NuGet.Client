@@ -3,6 +3,7 @@
   <PropertyGroup>
     <IsNetCoreProject>true</IsNetCoreProject>
     <TestProject>true</TestProject>
+    <TestGroup>Group1</TestGroup>
   </PropertyGroup>
   
   <!-- Load config -->
