@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
         // to initialize SolutionSettings first time outside MEF constructor
-        private Tuple<string, Lazy<ISettings>> _solutionSettings;
+        private Tuple<string, ISettings> _solutionSettings;
 
         private ISettings SolutionSettings
         {
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ResetSolutionSettingsIfNeeded();
                 }
 
-                return _solutionSettings.Item2.Value;
+                return _solutionSettings.Item2;
             }
         }
 
@@ -79,9 +79,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
                 if (!string.Equals(root, _solutionSettings?.Item1))
                 {
-                    _solutionSettings = new Tuple<string, Lazy<ISettings>>(
+                    _solutionSettings = new Tuple<string, ISettings>(
                         item1: root,
-                        item2: new Lazy<ISettings>(() => Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings)));
+                        item2: Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings));
                     return true;
                 }
             }
@@ -92,7 +92,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (_solutionSettings == null)
             {
-                _solutionSettings = new Tuple<string, Lazy<ISettings>>(null, new Lazy<ISettings>(() => NullSettings.Instance));
+                _solutionSettings = new Tuple<string, ISettings>(null, NullSettings.Instance);
                 return true;
             }
 
