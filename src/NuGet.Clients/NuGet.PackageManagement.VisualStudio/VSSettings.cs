@@ -69,28 +69,30 @@ namespace NuGet.PackageManagement.VisualStudio
                 root = Path.Combine(SolutionManager.SolutionDirectory, NuGetSolutionSettingsFolder);
             }
 
-            // This is a performance optimization.
-            // The solution load/unload events are called in the UI thread and are used to reset the settings.
-            // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
-            // In the open PM UI scenario (no restore run), there is an asynchronous invocation of this code path. This changes ensures that
-            // the synchronous calls that come after the asynchrnous calls don't do duplicate work.
-            // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
-            if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1))
+            try
             {
-                _solutionSettings = new Tuple<string, Lazy<ISettings>>(
-                    item1: root,
-                    item2: new Lazy<ISettings>(() =>
-                        {
-                            try
-                            {
-                                return Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
-                            }
-                            catch (NuGetConfigurationException ex)
-                            {
-                                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
-                                return NullSettings.Instance;
-                            }
-                        }));
+                // This is a performance optimization.
+                // The solution load/unload events are called in the UI thread and are used to reset the settings.
+                // In some cases there's a synchronous dependency between the invocation of the Solution event and the settings being reset.
+                // In the open PM UI scenario (no restore run), there is an asynchronous invocation of this code path. This changes ensures that
+                // the synchronous calls that come after the asynchrnous calls don't do duplicate work.
+                // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
+                if (!string.Equals(root, _solutionSettings?.Item1))
+                {
+                    _solutionSettings = new Tuple<string, Lazy<ISettings>>(
+                        item1: root,
+                        item2: new Lazy<ISettings>(() => Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings)));
+                    return true;
+                }
+            }
+            catch (NuGetConfigurationException ex)
+            {
+                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+            }
+
+            if (_solutionSettings == null)
+            {
+                _solutionSettings = new Tuple<string, Lazy<ISettings>>(null, new Lazy<ISettings>(() => NullSettings.Instance));
                 return true;
             }
 
