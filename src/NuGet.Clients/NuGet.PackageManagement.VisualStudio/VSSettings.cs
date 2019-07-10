@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.IO;
-using NuGet.Common;
+using System.Threading.Tasks;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Configuration;
-using NuGet.Shared;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
         // to initialize SolutionSettings first time outside MEF constructor
-        private Tuple<string, Lazy<ISettings>> _solutionSettings;
+        private Tuple<string, AsyncLazy<ISettings>> _solutionSettings;
 
         private ISettings SolutionSettings
         {
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     ResetSolutionSettingsIfNeeded();
                 }
 
-                return _solutionSettings.Item2.Value;
+                return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await _solutionSettings.Item2.GetValueAsync());
             }
         }
 
@@ -77,20 +77,25 @@ namespace NuGet.PackageManagement.VisualStudio
             // That however is not the case for solution close and  same session close -> open events. Those will be on the UI thread.
             if (_solutionSettings == null || !string.Equals(root, _solutionSettings.Item1))
             {
-                _solutionSettings = new Tuple<string, Lazy<ISettings>>(
+                _solutionSettings = new Tuple<string, AsyncLazy<ISettings>>(
                     item1: root,
-                    item2: new Lazy<ISettings>(() =>
+                    item2: new AsyncLazy<ISettings>(() =>
                         {
+                            ISettings settings = null;
                             try
                             {
-                                return Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
+                                settings = Settings.LoadDefaultSettings(root, configFileName: null, machineWideSettings: MachineWideSettings);
                             }
                             catch (NuGetConfigurationException ex)
                             {
-                                MessageHelper.ShowErrorMessage(ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
-                                return NullSettings.Instance;
+                                //ExceptionHelper.WriteErrorToActivityLog(ex);
+                                MessageHelper.ShowErrorMessage(Common.ExceptionUtilities.DisplayMessage(ex), Strings.ConfigErrorDialogBoxTitle);
+                                settings = NullSettings.Instance;
                             }
-                        }));
+
+                            return Task.FromResult(settings);
+
+                        }, NuGetUIThreadHelper.JoinableTaskFactory));
                 return true;
             }
 
