@@ -188,15 +188,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
-
-                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(4, lockFile.Targets.Count);
-
-                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
-                Assert.Equal(1, targets.Count);
-                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
-                Assert.Equal(1, targets[0].Dependencies.Count);
-                Assert.Equal("x", targets[0].Dependencies[0].Id);
             }
         }
 
@@ -239,15 +230,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 var expectedLockFileName = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "custom.lock.json");
                 Assert.True(File.Exists(expectedLockFileName));
-
-                var lockFile = PackagesLockFileFormat.Read(expectedLockFileName);
-                Assert.Equal(4, lockFile.Targets.Count);
-
-                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
-                Assert.Equal(1, targets.Count);
-                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
-                Assert.Equal(1, targets[0].Dependencies.Count);
-                Assert.Equal("x", targets[0].Dependencies[0].Id);
             }
         }
 
@@ -406,15 +388,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
-
-                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                Assert.Equal(1, lockFile.Targets.Count);
-
-                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
-                Assert.Equal(1, targets.Count);
-                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
-                Assert.Equal(1, targets[0].Dependencies.Count);
-                Assert.Equal("x", targets[0].Dependencies[0].Id);
             }
         }
 
@@ -461,15 +434,6 @@ namespace NuGet.CommandLine.FuncTest.Commands
                 // Assert
                 var expectedLockFileName = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "custom.lock.json");
                 Assert.True(File.Exists(expectedLockFileName));
-
-                var lockFile = PackagesLockFileFormat.Read(expectedLockFileName);
-                Assert.Equal(1, lockFile.Targets.Count);
-
-                var targets = lockFile.Targets.Where(t => t.Dependencies.Count > 0).ToList();
-                Assert.Equal(1, targets.Count);
-                Assert.Equal(".NETFramework,Version=v4.6.1", targets[0].Name);
-                Assert.Equal(1, targets[0].Dependencies.Count);
-                Assert.Equal("x", targets[0].Dependencies[0].Id);
             }
         }
 
