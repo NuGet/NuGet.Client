@@ -325,13 +325,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     PackageSaveMode.Defaultv3,
                     packageX);
 
-                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Act
                 result = forceEvaluate
-                    ? RunRestore(pathContext, _successExitCode, "-UseLockFile", "true", "-ForceEvaluate")
-                    : RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                    ? RunRestore(pathContext, _successExitCode, "-UseLockFile", "-ForceEvaluate")
+                    : RunRestore(pathContext, _successExitCode, "-UseLockFile");
 
                 // Assert
                 Assert.Contains("Assets file has not changed.", result.AllOutput);
@@ -384,7 +384,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     packageX);
 
                 // Act
-                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true");
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile");
 
                 // Assert
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
@@ -429,7 +429,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
                     packageX);
 
                 // Act
-                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "true", "-LockFilePath", "custom.lock.json");
+                var result = RunRestore(pathContext, _successExitCode, "-UseLockFile", "-LockFilePath", "custom.lock.json");
 
                 // Assert
                 var expectedLockFileName = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "custom.lock.json");
