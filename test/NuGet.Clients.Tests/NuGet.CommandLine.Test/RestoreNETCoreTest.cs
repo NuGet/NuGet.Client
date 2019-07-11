@@ -6,12 +6,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using FluentAssertions;
-
+using FluentAssertions.Collections;
 using Newtonsoft.Json.Linq;
 
 using NuGet.Common;
@@ -8546,6 +8547,424 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Theory]
+        [InlineData(new string[] { "win7-x86" }, new string[] { "win-x64" })]
+        [InlineData(new string[] { "win7-x86", "net46" }, new string[] { "win-x64" })]
+        [InlineData(new string[] { "win7-x86" }, new string[] { "win7-x86", "win-x64" })]
+        public void RestoreNetCoreSDK_PackagesLockFile_WithProjectChangeRuntimeAndLockedMode_FailsRestore(string[] intitialRuntimes, string[] updatedRuntimes)
+        {
+            // A project with RestoreLockedMode should fail restore if the project's runtime is changed between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var tfm = "net45";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   new NuGetFramework[]{ NuGetFramework.Parse(tfm) });
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", intitialRuntimes));
+
+                solution.Projects.Add(projectA);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                var lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select( t => t.RuntimeIdentifier).ToList();
+                intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
+
+                // Setup - change runtimes
+                projectA.Properties.Remove("RuntimeIdentifiers");
+                projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", updatedRuntimes));
+                projectA.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                lockRuntimes = lockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
+                // No change expected in the lock file.
+                intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
+                Assert.Contains("NU1004", r.Errors);
+            }
+        }
+
+        [Theory]
+        [InlineData(new string[] { "net45" }, new string[] { "net46" })]
+        [InlineData(new string[] { "net45", "net46" }, new string[] { "net46" })]
+        [InlineData(new string[] { "net45" }, new string[] { "net45", "net46" })]
+        public void RestoreNetCoreSDK_PackagesLockFile_WithProjectChangeFramweorksAndLockedMode_FailsRestore(string[] intitialFrameworks, string[] updatedFrameworks)
+        {
+            // A project with RestoreLockedMode should fail restore if the project's frameworks list is changed between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   intitialFrameworks.Select(tfm => NuGetFramework.Parse(tfm)).ToArray());
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // The framework as they are in the lock file
+                var lockFrameworkTransformed = intitialFrameworks.Select(f => $".NETFramework,Version=v{f.Replace("net", "")[0]}.{f.Replace("net", "")[1]}");
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName);
+                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+
+                // Setup - change frameworks
+                projectA.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
+                projectA.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                // The frameworks should not chnage in the lock file.
+                lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
+                Assert.Contains("NU1004", r.Errors);
+            }
+        }
+
+
+        [Theory]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "x/2.0.0" })]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "y/1.0.0" })]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "x/1.0.0", "y/1.0.0" })]
+        [InlineData(new string[] { "x/1.0.0", "y/1.0.0" }, new string[] { "y/1.0.0" })]
+        public async Task RestoreNetCoreSDK_PackagesLockFile_WithProjectChangePackageDependencyAndLockedMode_FailsRestore(
+            string[] initialPackageIdAndVersion,
+            string[] updatedPackageIdAndVersion)
+        {
+            // A project with RestoreLockedMode should fail restore if the project's package dependencies were changed between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "netcoreapp2.0";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+
+                // Set up the package and source
+                var packages = initialPackageIdAndVersion.Select(p =>
+                {
+                    var id = p.Split('/')[0];
+                    var version = p.Split('/')[1];
+                    var package = new SimpleTestPackageContext()
+                    {
+                       Id = id,
+                       Version = version
+                    };
+                    package.Files.Clear();
+                    package.AddFile($"lib/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"ref/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"runtimes/win7/lib/netcoreapp2.0/{id}.dll");
+                    return package;
+                }).ToArray();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packages);
+                projectA.AddPackageToAllFrameworks(packages);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Setup - change project's packages
+                projectA.CleanPackagesFromAllFrameworks();
+                packages = updatedPackageIdAndVersion.Select(p =>
+                {
+                    var id = p.Split('/')[0];
+                    var version = p.Split('/')[1];
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = id,
+                        Version = version
+                    };
+                    package.Files.Clear();
+                    package.AddFile($"lib/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"ref/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"runtimes/win7/lib/netcoreapp2.0/{id}.dll");
+                    return package;
+                }).ToArray();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packages);
+                projectA.AddPackageToAllFrameworks(packages);
+                projectA.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                Assert.Contains("NU1004", r.Errors);
+            }
+        }
+
+        [Theory]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "x/2.0.0" })]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "y/1.0.0" })]
+        [InlineData(new string[] { "x/1.0.0" }, new string[] { "x/1.0.0", "y/1.0.0" })]
+        [InlineData(new string[] { "x/1.0.0", "y/1.0.0" }, new string[] { "y/1.0.0" })]
+        public async Task RestoreNetCoreSDK_PackagesLockFile_WithDependentProjectChangeIfPackageDependencyAndLockedMode_FailsRestore(
+           string[] initialPackageIdAndVersion,
+           string[] updatedPackageIdAndVersion)
+        {
+            // A project with RestoreLockedMode should fail restore if the package dependencies of a dependent project were changed between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "netcoreapp2.0";
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "b",
+                   pathContext.SolutionRoot,
+                   true,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                // Set up the package and source
+                var packages = initialPackageIdAndVersion.Select(p =>
+                {
+                    var id = p.Split('/')[0];
+                    var version = p.Split('/')[1];
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = id,
+                        Version = version
+                    };
+                    package.Files.Clear();
+                    package.AddFile($"lib/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"ref/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"runtimes/win7/lib/netcoreapp2.0/{id}.dll");
+                    return package;
+                }).ToArray();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packages);
+                projectB.AddPackageToAllFrameworks(packages);
+
+                projectA.AddProjectToAllFrameworks(projectB);
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Setup - change project's packages
+                projectB.CleanPackagesFromAllFrameworks();
+                packages = updatedPackageIdAndVersion.Select(p =>
+                {
+                    var id = p.Split('/')[0];
+                    var version = p.Split('/')[1];
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = id,
+                        Version = version
+                    };
+                    package.Files.Clear();
+                    package.AddFile($"lib/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"ref/netcoreapp2.0/{id}.dll");
+                    package.AddFile($"runtimes/win7/lib/netcoreapp2.0/{id}.dll");
+                    return package;
+                }).ToArray();
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packages);
+                projectB.AddPackageToAllFrameworks(packages);
+                projectB.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                Assert.Contains("NU1004", r.Errors);
+            }
+        }
+
+
+        [Theory]
+        [InlineData("netcoreapp2.0", new string[] { "netcoreapp2.0" }, new string[] { "netcoreapp2.2" })]
+        [InlineData("netcoreapp2.0", new string[] { "netcoreapp2.0", "netcoreapp2.2" }, new string[] { "netcoreapp2.2" })]
+        public void RestoreNetCoreSDK_PackagesLockFile_WithDependentProjectChangeOfNotCompatibleFrameworksAndLockedMode_FailsRestore(
+           string mainProjectFramework,
+           string[] initialFrameworks,
+           string[] updatedFrameworks)
+        {
+            // A project with RestoreLockedMode should fail restore if the frameworks of a dependent project were changed
+            // with incompatible frameworks between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = mainProjectFramework;
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "b",
+                   pathContext.SolutionRoot,
+                   true,
+                   initialFrameworks.Select(tfm => NuGetFramework.Parse(tfm)).ToArray());
+
+                projectA.AddProjectToAllFrameworks(projectB);
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Setup - change package version
+                projectB.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
+                projectB.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                Assert.Contains("NU1004", r.Errors);
+            }
+        }
+
+        [Theory]
+        [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.2" }, new string[] { "netcoreapp2.0", "netcoreapp2.2" })]
+        [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.0", "netcoreapp2.2" }, new string[] { "netcoreapp2.2" })]
+        [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.0"}, new string[] { "netcoreapp2.2" })]
+        public void RestoreNetCoreSDK_PackagesLockFile_WithDependentProjectChangeOfCompatibleFrameworksAndLockedMode_PassRestore(
+           string mainProjectFramework,
+           string[] initialFrameworks,
+           string[] updatedFrameworks)
+        {
+            // A project with RestoreLockedMode should pass restore if the frameworks of a dependent project were changed
+            // with still compatible with main project frameworks between restores.
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = mainProjectFramework;
+
+                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "a",
+                   pathContext.SolutionRoot,
+                   true,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNETCoreWithSDK(
+                   "b",
+                   pathContext.SolutionRoot,
+                   true,
+                   initialFrameworks.Select(tfm => NuGetFramework.Parse(tfm)).ToArray());
+
+                projectA.AddProjectToAllFrameworks(projectB);
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Setup - change package version
+                projectB.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
+                projectB.Save();
+
+                // Act
+                r = Util.RestoreSolution(pathContext, 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+            }
+        }
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
