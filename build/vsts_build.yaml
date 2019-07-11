@@ -451,11 +451,9 @@ phases:
         - msbuild
     matrix:
       IsDesktop:
-        RunIsDesktop: "true"
-        RunIsCore: "false"
+        RunTestType: "IsDesktop"
       IsCore:
-        RunIsDesktop: "false"
-        RunIsCore: "true"
+        RunTestType: "IsCore"
         
   steps:
   - task: PowerShell@1
@@ -498,7 +496,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:TestGroupToRun=$(RunTestGroup)"
+      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:RunTestType=$(RunTestType)"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -515,7 +513,7 @@ phases:
     displayName: "Publish Test Results as artifact"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/"
-      ArtifactName: "CoreFuncTests-xunit.xml"
+      ArtifactName: "$(RunTestType) Results"
       ArtifactType: "Container"
       condition: "succeededOrFailed()"
 
@@ -526,7 +524,7 @@ phases:
       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
       inlineScript: |
         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "$env:AGENT_JOBNAME"
     condition: "always()"
 
 - phase: Tests_On_Linux
