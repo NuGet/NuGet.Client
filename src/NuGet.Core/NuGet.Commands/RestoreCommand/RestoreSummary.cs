@@ -20,23 +20,23 @@ namespace NuGet.Commands
 
         public string InputPath { get; }
 
-        public IList<string> ConfigFiles { get; }
+        public IReadOnlyList<string> ConfigFiles { get; }
 
-        public IList<string> FeedsUsed { get; }
+        public IReadOnlyList<string> FeedsUsed { get; }
 
         public int InstallCount { get; }
 
-        public IList<IRestoreLogMessage> Errors { get; }
+        public IReadOnlyList<IRestoreLogMessage> Errors { get; }
 
         public RestoreSummary(bool success)
         {
             Success = success;
             NoOpRestore = false;
             InputPath = null;
-            ConfigFiles = new List<string>().AsReadOnly();
-            FeedsUsed = new List<string>().AsReadOnly();
+            ConfigFiles = Array.Empty<string>();
+            FeedsUsed = Array.Empty<string>();
             InstallCount = 0;
-            Errors = new List<IRestoreLogMessage>().AsReadOnly();
+            Errors = Array.Empty<IRestoreLogMessage>();
         }
 
         public RestoreSummary(
@@ -61,17 +61,17 @@ namespace NuGet.Commands
         public RestoreSummary(
             bool success,
             string inputPath,
-            IEnumerable<string> configFiles,
-            IEnumerable<string> feedsUsed,
+            IReadOnlyList<string> configFiles,
+            IReadOnlyList<string> feedsUsed,
             int installCount,
-            IEnumerable<IRestoreLogMessage> errors)
+            IReadOnlyList<IRestoreLogMessage> errors)
         {
             Success = success;
             InputPath = inputPath;
-            ConfigFiles = configFiles.ToList().AsReadOnly();
-            FeedsUsed = feedsUsed.ToList().AsReadOnly();
+            ConfigFiles = configFiles;
+            FeedsUsed = feedsUsed;
             InstallCount = installCount;
-            Errors = errors.ToArray();
+            Errors = errors;
         }
 
         public static void Log(ILogger logger, IEnumerable<RestoreSummary> restoreSummaries, bool logErrors = false)

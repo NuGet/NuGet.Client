@@ -18,7 +18,9 @@ using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.PackageManagement.Utility;
 using NuGet.ProjectManagement;
+using NuGet.ProjectModel;
 using NuGet.VisualStudio;
 using PathUtility = NuGet.Common.PathUtility;
 using Task = System.Threading.Tasks.Task;
@@ -203,12 +205,15 @@ namespace NuGet.PackageManagement.VisualStudio
             // it into the project.
             // Other exceptions are 'web.config' and 'app.config'
             var fileName = Path.GetFileName(path);
+            var lockFileFullPath = PackagesConfigLockFileUtility.GetPackagesLockFilePath(ProjectFullPath, GetPropertyValue("NuGetLockFilePath")?.ToString(), ProjectName);
             if (File.Exists(Path.Combine(ProjectFullPath, path))
                 && !fileExistsInProject
                 && !fileName.Equals(ProjectManagement.Constants.PackageReferenceFile)
                 && !fileName.Equals("packages." + ProjectName + ".config")
                 && !fileName.Equals(EnvDTEProjectInfoUtility.WebConfig)
-                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig))
+                && !fileName.Equals(EnvDTEProjectInfoUtility.AppConfig)
+                && !fileName.Equals(Path.GetFileName(lockFileFullPath))
+                )
             {
                 NuGetProjectContext.Log(ProjectManagement.MessageLevel.Warning, Strings.Warning_FileAlreadyExists, path);
             }

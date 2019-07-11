@@ -1798,6 +1798,48 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void MSBuildRestoreUtility_GetPackageSpec_PackagesConfigProject()
+        {
+            using (var workingDir = TestDirectory.Create())
+            {
+                // Arrange
+                var projectPath = Path.Combine(workingDir, "a.csproj");
+                var packagesConfigPath = Path.Combine(workingDir, "packages.config");
+
+                var items = new List<IDictionary<string, string>>();
+                items.Add(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectUniqueName", "482C20DE-DFF9-4BD0-B90A-BD3201AA351A" },
+                    { "ProjectPath", projectPath },
+                    { "ProjectStyle", "PackagesConfig" },
+                    { "TargetFramework", "net462" },
+                    { "ProjectName", "a" },
+                    { "PackagesConfigPath", packagesConfigPath },
+                    { "RestorePackagesWithLockFile", "true" },
+                    { "NuGetLockFilePath", "custom.lock.json" },
+                    { "RestoreLockedMode", "true" }
+                });
+
+                // Act
+                var spec = MSBuildRestoreUtility.GetPackageSpec(items.Select(CreateItems));
+
+                // Assert
+                Assert.Equal(projectPath, spec.FilePath);
+                Assert.Equal("a", spec.Name);
+                Assert.IsType(typeof(PackagesConfigProjectRestoreMetadata), spec.RestoreMetadata);
+                var restoreMetadata = (PackagesConfigProjectRestoreMetadata)spec.RestoreMetadata;
+                Assert.Equal(ProjectStyle.PackagesConfig, restoreMetadata.ProjectStyle);
+                Assert.Equal("482C20DE-DFF9-4BD0-B90A-BD3201AA351A", restoreMetadata.ProjectUniqueName);
+                Assert.Equal(projectPath, restoreMetadata.ProjectPath);
+                Assert.Equal(packagesConfigPath, restoreMetadata.PackagesConfigPath);
+                Assert.Equal("true", restoreMetadata.RestoreLockProperties.RestorePackagesWithLockFile);
+                Assert.Equal("custom.lock.json", restoreMetadata.RestoreLockProperties.NuGetLockFilePath);
+                Assert.True(restoreMetadata.RestoreLockProperties.RestoreLockedMode);
+            }
+        }
+
+        [Fact]
         public void MSBuildRestoreUtility_GetPackageSpec_NonNuGetProject()
         {
             using (var workingDir = TestDirectory.Create())

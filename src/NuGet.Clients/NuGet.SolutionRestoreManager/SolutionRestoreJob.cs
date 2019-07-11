@@ -16,8 +16,10 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.Telemetry;
+using NuGet.PackageManagement.Utility;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
@@ -165,7 +167,7 @@ namespace NuGet.SolutionRestoreManager
 
                 // Get the projects from the SolutionManager
                 // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = await _solutionManager.GetNuGetProjectsAsync();
+                projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
 
                 if (projects.Any() && solutionDirectory == null)
                 {
@@ -185,6 +187,7 @@ namespace NuGet.SolutionRestoreManager
                 if (projects.Any(project => !(project is INuGetIntegratedProject)))
                 {
                     await RestorePackagesOrCheckForMissingPackagesAsync(
+                        projects,
                         solutionDirectory,
                         isSolutionAvailable,
                         restoreSource,
@@ -445,6 +448,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private async Task RestorePackagesOrCheckForMissingPackagesAsync(
+            IEnumerable<NuGetProject> allProjects,
             string solutionDirectory,
             bool isSolutionAvailable,
             RestoreOperationSource restoreSource,
@@ -498,6 +502,8 @@ namespace NuGet.SolutionRestoreManager
                     // Mark that work is being done during this restore
                     _status = NuGetOperationStatus.Succeeded;
                 }
+
+                ValidatePackagesConfigLockFiles(allProjects, token);
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
@@ -511,6 +517,41 @@ namespace NuGet.SolutionRestoreManager
             await _packageRestoreManager.RaisePackagesMissingEventForSolutionAsync(
                 solutionDirectory,
                 token);
+        }
+
+        private void ValidatePackagesConfigLockFiles(IEnumerable<NuGetProject> allProjects, CancellationToken token)
+        {
+            var pcProjects = allProjects.Where(p => p.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig);
+
+            foreach (MSBuildNuGetProject project in pcProjects)
+            {
+                string projectFile = project.MSBuildProjectPath;
+                string pcFile = project.PackagesConfigNuGetProject.FullPath;
+                var projectName = (string)project.GetMetadataOrNull("Name");
+                var lockFileName = (string)project.GetMetadataOrNull("NuGetLockFilePath");
+                var restorePackagesWithLockFile = (string)project.GetMetadataOrNull("RestorePackagesWithLockFile");
+                var projectTfm = (NuGetFramework)project.GetMetadataOrNull("TargetFramework");
+                bool restoreLockedMode = MSBuildStringUtility.GetBooleanOrNull((string)project.GetMetadataOrNull("LockedMode")) ?? false;
+
+                IReadOnlyList<IRestoreLogMessage> validationLogs = PackagesConfigLockFileUtility.ValidatePackagesConfigLockFiles(
+                    projectFile,
+                    pcFile,
+                    projectName,
+                    lockFileName,
+                    restorePackagesWithLockFile,
+                    projectTfm,
+                    project.FolderNuGetProject.Root,
+                    restoreLockedMode,
+                    token);
+
+                if (validationLogs != null)
+                {
+                    foreach (var logItem in validationLogs)
+                    {
+                        _logger.Log(logItem);
+                    }
+                }
+            }
         }
 
         /// <summary>
