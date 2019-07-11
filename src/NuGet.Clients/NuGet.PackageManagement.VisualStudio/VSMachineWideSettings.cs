@@ -41,7 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
                         version,
                         sku);
                 },
-                NuGetUIThreadHelper.JoinableTaskFactory);
+                ThreadHelper.JoinableTaskFactory);
         }
 
         public Configuration.ISettings Settings => NuGetUIThreadHelper.JoinableTaskFactory.Run(_settings.GetValueAsync);
