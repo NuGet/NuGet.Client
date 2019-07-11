@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
+    <TestGroup>Group2</TestGroup>
   </PropertyGroup>
 
   <ItemGroup>

@@ -454,8 +454,6 @@ phases:
         RunTestGroup: "Group1"
       TestGroup2:
         RunTestGroup: "Group2"
-      TestGroup3:
-        RunTestGroup: "Group3"
             
   steps:
   - task: PowerShell@1
