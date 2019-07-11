@@ -257,7 +257,7 @@
   -->
   <Target Name="GetTestAssemblies"
           DependsOnTargets="Build;GetTargetFrameworkSet"
-          Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' AND '$(TestGroupToRun)' == '$(TestGroup)' "
+          Condition=" '$(TestProject)' == 'true' AND '$(SkipTests)' != 'true' "
           Returns="@(TestAssemblyPath)">
     <Message Text="Discovering test assemblies for $(AssemblyName)" Importance="high" />
 
@@ -283,7 +283,6 @@
 
     <PropertyGroup>
       <TestAssemblyRelativePath>$(OutputPath)$(AssemblyName).dll</TestAssemblyRelativePath>
-      <TestGroupToRun>Group1</TestGroupToRun>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(TestAssemblyRelativePath)">

@@ -450,11 +450,13 @@ phases:
         - DotNetFramework
         - msbuild
     matrix:
-      TestGroup1:
-        RunTestGroup: "Group1"
-      TestGroup2:
-        RunTestGroup: "Group2"
-            
+      IsDesktop:
+        RunIsDesktop: "true"
+        RunIsCore: "false"
+      IsCore:
+        RunIsDesktop: "false"
+        RunIsCore: "true"
+        
   steps:
   - task: PowerShell@1
     displayName: "Print Environment Variables"

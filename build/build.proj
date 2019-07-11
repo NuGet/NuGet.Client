@@ -356,19 +356,19 @@
 
     <PropertyGroup>
       <!-- Sort assemblies -->
-      <DesktopInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
-      <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
-      <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
-      <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
+      <DesktopInputTestAssemblies Condition=" '$(RunIsDesktop)' == 'true' ">@(TestAssemblyPath->WithMetadataValue("IsDesktop", "true"))</DesktopInputTestAssemblies>
+      <DesktopInputTestAssembliesSpaced Condition=" '$(RunIsDesktop)' == 'true' ">$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
+      <CoreInputTestAssemblies Condition=" '$(RunIsCore)' == 'true' ">@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
+      <CoreInputTestAssembliesSpaced Condition=" '$(RunIsCore)' == 'true' ">$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
       
       <TestResultOutputFormat Condition="'$(TestResultOutputFormat)' == ''">xml</TestResultOutputFormat>
       <!-- Build exe commands -->
       <TestResultsXunit Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-xunit.$(TestResultOutputFormat)</TestResultsXunit>
       <TestResultsVsts Condition=" '$(TestResultsFileName)' != '' ">$(TestResultsDirectory)\$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</TestResultsVsts>
       <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</VsTestLogger>
-      <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
-      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
+      <VSTestCommand Condition=" '$(RunIsCore)' == 'true' ">$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
+      <DesktopTestCommand Condition=" '$(RunIsDesktop)' == 'true' ">$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(RunIsDesktop)' == 'true' AND '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
     </PropertyGroup>
 
     <!-- Desktop -->
