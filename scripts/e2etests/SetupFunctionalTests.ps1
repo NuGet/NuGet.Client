@@ -42,6 +42,16 @@ function DisableTextTemplateSecurityWarning([string]$VSVersion)
     Write-Host -ForegroundColor Cyan $Message
 }
 
+Function SuppressNuGetUI([Parameter(Mandatory = $True)] [string] $registryValueName)
+{
+    $success = SetRegistryKey -RegKey 'HKCU:\Software\NuGet' -RegName $registryValueName -ExpectedValue '1' -FriendlyKeyName $registryValueName
+
+    If (!$success)
+    {
+        Exit 1
+    }
+}
+
 trap
 {
     Write-Host $_.Exception -ForegroundColor Red
@@ -69,6 +79,8 @@ Write-Host
 Write-Host 'Trying to set some registry keys to avoid dialog boxes popping during the functional test run...'
 
 DisableTextTemplateSecurityWarning $VSVersion
+SuppressNuGetUI -registryValueName 'DoNotShowPreviewWindow'
+SuppressNuGetUI -registryValueName 'SuppressUILegalDisclaimer'
 
 $net35x86 = "C:\windows\Microsoft.NET\Framework\v3.5\msbuild.exe"
 $net35x64 = "C:\windows\Microsoft.NET\Framework64\v3.5\msbuild.exe"
