@@ -234,6 +234,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                    '%(RestoreGraphProjectInputItems.Extension)' == '.vbproj' Or
                    '%(RestoreGraphProjectInputItems.Extension)' == '.fsproj' Or
                    '%(RestoreGraphProjectInputItems.Extension)' == '.nuproj' Or
+                   '%(RestoreGraphProjectInputItems.Extension)' == '.proj' Or
                    '%(RestoreGraphProjectInputItems.Extension)' == '.msbuildproj' Or
                    '%(RestoreGraphProjectInputItems.Extension)' == '.vcxproj' " />
     </ItemGroup>
