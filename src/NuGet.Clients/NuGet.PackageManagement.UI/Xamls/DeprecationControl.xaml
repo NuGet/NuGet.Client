@@ -15,30 +15,25 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </UserControl.Resources>
-  <Grid>
-    <Expander
-      Margin="0,12,0,16"
-      IsExpanded="True"
-      Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}">
-      <Expander.Header>
+  <Grid
+    Margin="0,12,0,16">
+      <StackPanel
+        Orientation="Vertical">
         <StackPanel
           Orientation="Horizontal"
           VerticalAlignment="Center">
-          <TextBlock
-            FontWeight="Bold"
-            AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
-            Text="{x:Static nuget:Resources.Label_Deprecated}"/>
           <imaging:CrispImage
             x:Name="_deprecationWarning"
-            Margin="5,0,0,0"
+            Margin="0,0,5,0"
             Width="13"
             Height="13"
             ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
             Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
-        </StackPanel>
-      </Expander.Header>
-      <StackPanel
-        Orientation="Vertical">
+        <TextBlock
+            FontWeight="Bold"
+            AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
+            Text="{x:Static nuget:Resources.Label_Deprecated}"/>
+      </StackPanel>
         <TextBox
           Style="{DynamicResource SelectableTextBlockStyle}" 
           Margin="0,8,0,0"
@@ -67,6 +62,5 @@
           </StackPanel>
         </StackPanel>
       </StackPanel>
-    </Expander>
   </Grid>
 </UserControl>
