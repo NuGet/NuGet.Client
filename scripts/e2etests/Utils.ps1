@@ -75,7 +75,11 @@ function SetRegistryKey
             return $false
         }
 
-        New-Item -Path $RegKey -Force | Out-Null
+        If (!(Test-Path $RegKey))
+        {
+            New-Item -Path $RegKey -Force | Out-Null
+        }
+
         New-ItemProperty -Path $RegKey -Name $RegName -Value $ExpectedValue -Force | Out-Null
     }
 
