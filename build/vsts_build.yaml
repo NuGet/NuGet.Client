@@ -172,14 +172,6 @@ phases:
       publishRunAttachments: "false"
     condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
 
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish Test Results as artifact"
-    inputs:
-      PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/"
-      ArtifactName: "CoreUnitTests-xunit.xml"
-      ArtifactType: "Container"
-    condition: "succeededOrFailed()"
-
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
     inputs:
@@ -513,7 +505,7 @@ phases:
     displayName: "Publish Test Results as artifact"
     inputs:
       PathtoPublish: "$(Build.Repository.LocalPath)/build/TestResults/"
-      ArtifactName: "$(RunTestType) Results"
+      ArtifactName: "FuncTestOnWindows Results ($(RunTestType))"
       ArtifactType: "Container"
       condition: "succeededOrFailed()"
 
