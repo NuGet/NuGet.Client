@@ -23,12 +23,12 @@ namespace NuGet.Packaging.Test
 
         private bool _isDisposed;
 
-        internal RSA DefaultKeyPair { get; }
+        internal RSA Key { get; }
 
         public CertificatesFixture()
         {
-            DefaultKeyPair = RSA.Create(keySizeInBits: 2048);
-            _defaultCertificate = SigningTestUtility.GenerateCertificate("test", DefaultKeyPair);
+            Key = RSA.Create(keySizeInBits: 2048);
+            _defaultCertificate = SigningTestUtility.GenerateCertificate("test", Key);
             _rsaSsaPssCertificate = SigningTestUtility.GenerateCertificate("test",
                 generator => { },
                 hashAlgorithm: Common.HashAlgorithmName.SHA256,
@@ -82,7 +82,7 @@ namespace NuGet.Packaging.Test
                 _selfIssuedCertificate.Dispose();
                 _rootCertificate.Dispose();
                 _cyclicChain.Dispose();
-                DefaultKeyPair.Dispose();
+                Key.Dispose();
 
                 GC.SuppressFinalize(this);
 

@@ -335,9 +335,7 @@ namespace Test.Utility.Signing
         /// <summary>
         /// Create a self signed certificate.
         /// </summary>
-        public static X509Certificate2 GenerateCertificate(
-            string subjectName,
-            RSA algorithm)
+        public static X509Certificate2 GenerateCertificate(string subjectName, RSA key)
         {
             if (string.IsNullOrEmpty(subjectName))
             {
@@ -346,7 +344,7 @@ namespace Test.Utility.Signing
 
             var subjectDN = new X500DistinguishedName($"CN={subjectName}");
             var hashAlgorithm = System.Security.Cryptography.HashAlgorithmName.SHA256;
-            var request = new CertificateRequest(subjectDN, algorithm, hashAlgorithm, RSASignaturePadding.Pkcs1);
+            var request = new CertificateRequest(subjectDN, key, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
             request.CertificateExtensions.Add(
                 new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));

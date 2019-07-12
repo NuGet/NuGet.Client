@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET46
+#if IS_DESKTOP
 using System;
 using System.Linq;
 using System.Security.Cryptography;
@@ -170,7 +170,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         vector.Add(
@@ -200,7 +200,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         vector.Add(
@@ -340,7 +340,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         vector.Add(
@@ -398,7 +398,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         vector.Add(
@@ -498,7 +498,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         var attribute = new BcAttribute(
@@ -521,7 +521,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         var value = new DerIA5String("https://test.test");
@@ -622,7 +622,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         var attribute = new BcAttribute(
@@ -649,7 +649,7 @@ namespace NuGet.Packaging.Test
         {
             using (var certificate = _fixture.GetDefaultCertificate())
             {
-                var attributes = CreateAttributeCollection(certificate, _fixture.DefaultKeyPair.Private,
+                var attributes = CreateAttributeCollection(certificate, _fixture.Key,
                     vector =>
                     {
                         var value = new DerSequence(
@@ -702,7 +702,7 @@ namespace NuGet.Packaging.Test
 
         private static CryptographicAttributeObjectCollection CreateAttributeCollection(
             X509Certificate2 certificate,
-            AsymmetricKeyParameter privateKey,
+            RSA privateKey,
             Action<Asn1EncodableVector> addAttributes)
         {
             var content = new CmsProcessableByteArray(new byte[0]);
@@ -714,9 +714,10 @@ namespace NuGet.Packaging.Test
             var unsignedAttributes = new AttributeTable(DerSet.Empty);
 
             var generator = new CmsSignedDataGenerator();
+            var keyPair = DotNetUtilities.GetRsaKeyPair(privateKey);
 
             generator.AddSigner(
-                privateKey,
+                keyPair.Private,
                 DotNetUtilities.FromX509Certificate(certificate),
                 Oids.Sha256,
                 signedAttributes,
