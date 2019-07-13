@@ -13,7 +13,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using NuGet.Versioning;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
 {
@@ -427,7 +427,7 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingReferenceFromProject, projectPath));
                                 return null;
-                            }      
+                            }
                         }
                         else
                         {
@@ -438,7 +438,7 @@ namespace NuGet.CommandLine.XPlat
                             };
                         }
 
-                        installedPackage.ResolvedVersion = library.Version;
+                        installedPackage.ResolvedVersion = new NuGetVersionWithDeprecationInfo(library.Version, false);
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
                         topLevelPackages.Add(installedPackage);
@@ -447,8 +447,9 @@ namespace NuGet.CommandLine.XPlat
                     // and include-transitive must be used to add the package
                     else if (transitive)
                     {
-                        var installedPackage = new InstalledPackageReference(library.Name) {
-                            ResolvedVersion = library.Version
+                        var installedPackage = new InstalledPackageReference(library.Name)
+                        {
+                            ResolvedVersion = new NuGetVersionWithDeprecationInfo(library.Version, false)
                         };
                         transitivePackages.Add(installedPackage);
                     }
@@ -474,7 +475,8 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packageId">Name of the package. If empty, returns all package references</param>
         /// <returns>List of Items containing the package reference for the package.
         /// If the libraryDependency is null then it returns all package references</returns>
-        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId) {
+        private static IEnumerable<ProjectItem> GetPackageReferences(Project project, string packageId)
+        {
 
             var packageReferences = project.AllEvaluatedItems
                 .Where(item => item.ItemType.Equals(PACKAGE_REFERENCE_TYPE_TAG, StringComparison.OrdinalIgnoreCase));
@@ -498,7 +500,7 @@ namespace NuGet.CommandLine.XPlat
         /// If the libraryDependency is null then it returns all package references</returns>
         private static IEnumerable<ProjectItem> GetPackageReferences(Project project, LibraryDependency libraryDependency)
         {
-            return GetPackageReferences(project, libraryDependency.Name);                     
+            return GetPackageReferences(project, libraryDependency.Name);
         }
 
         /// <summary>

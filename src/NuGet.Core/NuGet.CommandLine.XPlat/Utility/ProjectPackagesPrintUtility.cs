@@ -21,10 +21,17 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated">Whether outdated flag exists or not</param>
         /// <param name="autoReferenceFound">An out to return whether autoreference was found</param>
-        internal static void PrintPackages(IEnumerable<FrameworkPackages> packages,
-           string projectName, bool transitive, bool outdated, out bool autoReferenceFound)
+        /// <param name="deprecatedFound">An out to return whether deprecated package version was found</param>
+        internal static void PrintPackages(
+            IEnumerable<FrameworkPackages> packages,
+            string projectName,
+            bool transitive,
+            bool outdated,
+            out bool autoReferenceFound,
+            out bool deprecatedFound)
         {
             autoReferenceFound = false;
+            deprecatedFound = false;
 
             if (outdated)
             {
@@ -68,16 +75,24 @@ namespace NuGet.CommandLine.XPlat.Utility
                     if (frameworkTopLevelPackages.Any())
                     {
                         var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTopLevelPackages, false, outdated, out autoRefWithinPackagesList);
+                        var deprecatedWithinPackagesList = false;
+
+                        PackagesTable(frameworkTopLevelPackages, false, outdated, out autoRefWithinPackagesList, out deprecatedWithinPackagesList);
+
                         autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
+                        deprecatedFound = deprecatedFound || deprecatedWithinPackagesList;
                     }
 
-                    //Print transitive pacakges
+                    //Print transitive packages
                     if (transitive && frameworkTransitivePackages.Any())
                     {
                         var autoRefWithinPackagesList = false;
-                        PackagesTable(frameworkTransitivePackages, true, outdated, out autoRefWithinPackagesList);
+                        var deprecatedWithinPackagesList = false;
+
+                        PackagesTable(frameworkTransitivePackages, true, outdated, out autoRefWithinPackagesList, out deprecatedWithinPackagesList);
+
                         autoReferenceFound = autoReferenceFound || autoRefWithinPackagesList;
+                        deprecatedWithinPackagesList = deprecatedFound || deprecatedWithinPackagesList;
                     }
                 }
             }
@@ -91,14 +106,21 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// packages table or not</param>
         /// <param name="outdated"></param>
         /// <param name="autoRefWithinPackagesList"></param>
+        /// <param name="deprecatedWithinPackagesList"></param>
         /// <returns>The table as a string</returns>
-        internal static void PackagesTable(IEnumerable<InstalledPackageReference> packages, bool printingTransitive, bool outdated, out bool autoRefWithinPackagesList)
+        internal static void PackagesTable(
+            IEnumerable<InstalledPackageReference> packages,
+            bool printingTransitive,
+            bool outdated,
+            out bool autoRefWithinPackagesList,
+            out bool deprecatedWithinPackagesList)
         {
             var autoReferenceFound = false;
 
             if (!packages.Any())
             {
                 autoRefWithinPackagesList = false;
+                deprecatedWithinPackagesList = false;
                 return;
             }
 
@@ -118,7 +140,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                        p => p.UpdateLevel,
                        p => "",
                        p => p.Name,
-                       p => "", p => p.ResolvedVersion.ToString(),
+                       p => "",
+                       p => p.ResolvedVersion.ToString(),
                        p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
             }
             else if (outdated && !printingTransitive)
@@ -179,6 +202,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
             autoRefWithinPackagesList = autoReferenceFound;
+            deprecatedWithinPackagesList = packages.Any(p => p.LatestVersion.IsDeprecated || p.ResolvedVersion.IsDeprecated);
         }
 
         /// <summary>

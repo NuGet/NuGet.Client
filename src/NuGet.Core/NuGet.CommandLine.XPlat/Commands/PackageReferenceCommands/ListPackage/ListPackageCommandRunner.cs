@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -35,16 +36,17 @@ namespace NuGet.CommandLine.XPlat
             }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")?
-                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)):
+            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
+                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
             var autoReferenceFound = false;
+            var deprecatedFound = false;
 
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
             //Print sources
-            if(listPackageArgs.IncludeOutdated)
+            if (listPackageArgs.IncludeOutdated)
             {
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -116,8 +118,8 @@ namespace NuGet.CommandLine.XPlat
                                     //Filter the packages for outdated
                                     foreach (var frameworkPackages in packages)
                                     {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion.Version < p.LatestVersion.Version));
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion.Version < p.LatestVersion.Version);
                                         if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
                                         {
                                             noPackagesLeft = false;
@@ -137,10 +139,18 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    //Printing packages of a single project and keeping track if
-                                    //an auto-referenced package was printed
-                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
+                                    // Printing packages of a single project and keeping track if
+                                    // an auto-referenced package was printed
+                                    ProjectPackagesPrintUtility.PrintPackages(
+                                        packages,
+                                        projectName,
+                                        listPackageArgs.IncludeTransitive,
+                                        listPackageArgs.IncludeOutdated,
+                                        out var autoRefFoundWithinProject,
+                                        out var deprecatedFoundWithinProject);
+
                                     autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
+                                    deprecatedFound = deprecatedFound || deprecatedFoundWithinProject;
                                 }
                             }
                         }
@@ -150,16 +160,23 @@ namespace NuGet.CommandLine.XPlat
                         Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
                     }
 
-                    //Unload project
+                    // Unload project
                     ProjectCollection.GlobalProjectCollection.UnloadProject(project);
                 }
             }
 
-            //If any auto-references were found, a line is printed
-            //explaining what (A) means
+            // If any auto-references were found, a line is printed
+            // explaining what (A) means
             if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            }
+
+            // If any deprecated packages were found, a line is printed
+            // explaining what (D) means.
+            if (deprecatedFound)
+            {
+                Console.WriteLine(Strings.ListPkg_DeprecatedPkgDescription);
             }
         }
 
@@ -181,7 +198,7 @@ namespace NuGet.CommandLine.XPlat
             var latestVersionsRequests = new List<Task>();
 
             //Unique Dictionary for packages and list of latest versions to handle different sources
-            var packagesVersionsDict = new Dictionary<string, IList<NuGetVersion>>();
+            var packagesVersionsDict = new Dictionary<string, IList<NuGetVersionWithDeprecationInfo>>();
             AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
@@ -215,7 +232,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages"> Packages found in the project </param>
         /// <param name="packagesVersionsDict"> An empty dictionary to be filled with packages </param>
         private void AddPackagesToDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<NuGetVersionWithDeprecationInfo>> packagesVersionsDict)
         {
             foreach (var frameworkPackages in packages)
             {
@@ -223,7 +240,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!packagesVersionsDict.ContainsKey(topLevelPackage.Name))
                     {
-                        packagesVersionsDict.Add(topLevelPackage.Name, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(topLevelPackage.Name, new List<NuGetVersionWithDeprecationInfo>());
                     }
                 }
 
@@ -231,7 +248,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!packagesVersionsDict.ContainsKey(transitivePackage.Name))
                     {
-                        packagesVersionsDict.Add(transitivePackage.Name, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(transitivePackage.Name, new List<NuGetVersionWithDeprecationInfo>());
                     }
                 }
             }
@@ -245,7 +262,7 @@ namespace NuGet.CommandLine.XPlat
         /// from different sources </param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
         private void GetVersionsFromDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict,
+            Dictionary<string, IList<NuGetVersionWithDeprecationInfo>> packagesVersionsDict,
             ListPackageArgs listPackageArgs)
         {
             foreach (var frameworkPackages in packages)
@@ -253,15 +270,34 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    topLevelPackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion, topLevelPackage, listPackageArgs)).Max();
-                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
+                    topLevelPackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Version, topLevelPackage, listPackageArgs)).Max();
+                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion.Version, topLevelPackage.LatestVersion.Version);
+
+                    // Update resolved version with deprecated information returned by the server.
+                    var resolvedVersionFromServer = matchingPackage.Value
+                        .Where(v => v.Version == topLevelPackage.ResolvedVersion.Version && v.IsDeprecated)
+                        .FirstOrDefault();
+
+                    if (resolvedVersionFromServer != null)
+                    {
+                        topLevelPackage.ResolvedVersion = resolvedVersionFromServer;
+                    }
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    transitivePackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion, transitivePackage, listPackageArgs)).Max();
-                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion, transitivePackage.LatestVersion);
+                    transitivePackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Version, transitivePackage, listPackageArgs)).Max();
+                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion.Version, transitivePackage.LatestVersion.Version);
+
+                    // Update resolved version with deprecated information returned by the server.
+                    var resolvedVersionFromServer = matchingPackage.Value
+                        .Where(v => v.Version == transitivePackage.ResolvedVersion.Version && v.IsDeprecated)
+                        .FirstOrDefault();
+                    if (resolvedVersionFromServer != null)
+                    {
+                        transitivePackage.ResolvedVersion = resolvedVersionFromServer;
+                    }
                 }
             }
         }
@@ -306,7 +342,7 @@ namespace NuGet.CommandLine.XPlat
             string package,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<NuGetVersionWithDeprecationInfo>> packagesVersionsDict)
         {
             var latestVersionsRequests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
@@ -326,18 +362,18 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
-        /// <returns>An updated pacakge with the highest version at a single source</returns>
+        /// <returns>An updated package with the highest version at a single source</returns>
         private async Task GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<NuGetVersionWithDeprecationInfo>> packagesVersionsDict)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
             var dependencyInfoResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetVersions(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = (await dependencyInfoResource.GetVersionsAndDeprecationInfo(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
 
             var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);
@@ -354,17 +390,17 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">Used to get the constraints</param>
         /// <returns>Whether the new version meets the constraints or not</returns>
         private bool MeetsConstraints(NuGetVersion newVersion, InstalledPackageReference package, ListPackageArgs listPackageArgs)
-        {                
-            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedVersion.IsPrerelease;
+        {
+            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedVersion.Version.IsPrerelease;
 
             if (listPackageArgs.HighestPatch)
             {
-                result = newVersion.Minor.Equals(package.ResolvedVersion.Minor) && newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
+                result = newVersion.Minor.Equals(package.ResolvedVersion.Version.Minor) && newVersion.Major.Equals(package.ResolvedVersion.Version.Major) && result;
             }
 
             if (listPackageArgs.HighestMinor)
             {
-                result = newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
+                result = newVersion.Major.Equals(package.ResolvedVersion.Version.Major) && result;
             }
 
             return result;

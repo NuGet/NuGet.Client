@@ -52,6 +52,19 @@ namespace Test.Utility
             );
         }
 
+        public override async Task<IDictionary<NuGetVersion, bool>> GetVersionsAndDeprecationInfo(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            NuGet.Common.ILogger log,
+            CancellationToken token)
+        {
+            var versions = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+
+            return versions.ToDictionary(i => i, i => false);
+        }
+
         public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, CancellationToken token)
         {
             return Task.FromResult(Packages

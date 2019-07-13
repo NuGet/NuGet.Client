@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
@@ -25,18 +24,8 @@ namespace NuGet.Protocol
         public MetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource)
             : base()
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
-
-            if (regResource == null)
-            {
-                throw new ArgumentNullException("regResource");
-            }
-
-            _regResource = regResource;
-            _client = client;
+            _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
+            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>
@@ -125,6 +114,35 @@ namespace NuGet.Protocol
                     if (includePrerelease || !version.IsPrerelease)
                     {
                         results.Add(version);
+                    }
+                }
+            }
+
+            return results;
+        }
+
+        public override async Task<IEnumerable<NuGetVersionWithDeprecationInfo>> GetVersionsAndDeprecationInfo(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var results = new List<NuGetVersionWithDeprecationInfo>();
+
+            var entries = await _regResource.GetPackageEntries(packageId, includeUnlisted, sourceCacheContext, log, token);
+
+            foreach (var catalogEntry in entries)
+            {
+                NuGetVersion version = null;
+
+                if (catalogEntry["version"] != null
+                    && NuGetVersion.TryParse(catalogEntry["version"].ToString(), out version))
+                {
+                    if (includePrerelease || !version.IsPrerelease)
+                    {
+                        results.Add(new NuGetVersionWithDeprecationInfo(version, catalogEntry["deprecation"] != null));
                     }
                 }
             }

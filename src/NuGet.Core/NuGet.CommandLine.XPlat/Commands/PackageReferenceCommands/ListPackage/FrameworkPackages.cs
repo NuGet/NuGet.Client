@@ -22,9 +22,9 @@ namespace NuGet.CommandLine.XPlat
         /// lists
         /// </summary>
         /// <param name="framework">Framework name</param>
-        public FrameworkPackages(string framework) : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
+        public FrameworkPackages(string framework)
+            : this(framework, new List<InstalledPackageReference>(), new List<InstalledPackageReference>())
         {
-            
         }
 
         /// <summary>

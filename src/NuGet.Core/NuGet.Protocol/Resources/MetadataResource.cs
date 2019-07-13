@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -27,6 +28,11 @@ namespace NuGet.Protocol.Core.Types
         /// Get all versions of a package
         /// </summary>
         public abstract Task<IEnumerable<NuGetVersion>> GetVersions(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token);
+
+        /// <summary>
+        /// Gets all versions of a package, including whether the version is deprecated or not.
+        /// </summary>
+        public abstract Task<IEnumerable<NuGetVersionWithDeprecationInfo>> GetVersionsAndDeprecationInfo(string packageId, bool includePrerelease, bool includeUnlisted, SourceCacheContext sourceCacheContext, Common.ILogger log, CancellationToken token);
 
         /// <summary>
         /// True if the package exists in the source

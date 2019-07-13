@@ -81,6 +81,20 @@ namespace NuGet.Protocol
             }
         }
 
+        public override async Task<IEnumerable<NuGetVersionWithDeprecationInfo>> GetVersionsAndDeprecationInfo(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            SourceCacheContext sourceCacheContext,
+            ILogger log,
+            CancellationToken token)
+        {
+            var versions = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
+
+            // Deprecation info is not exposed on v2.
+            return versions.Select(v => new NuGetVersionWithDeprecationInfo(v, false));
+        }
+
         public override async Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, SourceCacheContext sourceCacheContext, ILogger log, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
