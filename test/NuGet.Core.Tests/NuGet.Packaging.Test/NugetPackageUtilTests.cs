@@ -29,43 +29,45 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                   packageSaveMode: PackageSaveMode.Defaultv3,
-                   xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                   clientPolicyContext: null,
-                   logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                // Act
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    // Act
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
                         identity,
-                        packageDownloader,
-                        versionFolderPathResolver,
-                        packageExtractionContext,
-                        token);
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                            identity,
+                            packageDownloader,
+                            versionFolderPathResolver,
+                            packageExtractionContext,
+                            token);
+                    }
+
+                    // Assert
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.True(File.Exists(dllPath), dllPath + " does not exist");
                 }
-
-                // Assert
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
             }
         }
 
@@ -78,43 +80,45 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    clientPolicyContext: null,
-                    logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                // Act
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(
-                         identity,
-                         packageDownloader,
-                         versionFolderPathResolver,
-                         packageExtractionContext,
-                         token);
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    // Act
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                             identity,
+                             packageDownloader,
+                             versionFolderPathResolver,
+                             packageExtractionContext,
+                             token);
+                    }
+
+                    // Assert
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.True(File.Exists(dllPath), dllPath + " does not exist");
                 }
-
-                // Assert
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                Assert.True(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
             }
         }
 
@@ -127,54 +131,56 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    clientPolicyContext: null,
-                    logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-
-                Directory.CreateDirectory(packageDir);
-
-                var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                var shaPath = pathResolver.GetNupkgMetadataPath(package.Id, identity.Version);
-
-                File.WriteAllBytes(shaPath, new byte[] { });
-
-                Assert.True(File.Exists(shaPath));
-
-                // Act
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(
-                          identity,
-                          packageDownloader,
-                          versionFolderPathResolver,
-                          packageExtractionContext,
-                          token);
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+
+                    Directory.CreateDirectory(packageDir);
+
+                    var nupkgPath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    var shaPath = pathResolver.GetNupkgMetadataPath(package.Id, identity.Version);
+
+                    File.WriteAllBytes(shaPath, new byte[] { });
+
+                    Assert.True(File.Exists(shaPath));
+
+                    // Act
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                              identity,
+                              packageDownloader,
+                              versionFolderPathResolver,
+                              packageExtractionContext,
+                              token);
+                    }
+
+                    // Assert
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    Assert.False(File.Exists(nupkgPath), nupkgPath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.False(File.Exists(dllPath), dllPath + " does not exist");
+
+                    Assert.Equal(1, Directory.EnumerateFiles(packageDir).Count());
                 }
-
-                // Assert
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                Assert.False(File.Exists(nupkgPath), nupkgPath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.False(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.Equal(1, Directory.EnumerateFiles(packageDir).Count());
             }
         }
 
@@ -187,58 +193,60 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    clientPolicyContext: null,
-                    logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-
-                var randomFile = Path.Combine(packageDir, package.Id + "." + package.Version + ".random");
-
-                Directory.CreateDirectory(packageDir);
-                File.WriteAllBytes(randomFile, new byte[] { });
-
-                var randomFolder = Path.Combine(packageDir, "random");
-                Directory.CreateDirectory(randomFolder);
-
-                Assert.True(File.Exists(randomFile), randomFile + " does not exist");
-                AssertDirectoryExists(randomFolder);
-
-                // Act
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    await PackageExtractor.InstallFromSourceAsync(
-                         identity,
-                         packageDownloader,
-                         versionFolderPathResolver,
-                         packageExtractionContext,
-                         token);
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+
+                    var randomFile = Path.Combine(packageDir, package.Id + "." + package.Version + ".random");
+
+                    Directory.CreateDirectory(packageDir);
+                    File.WriteAllBytes(randomFile, new byte[] { });
+
+                    var randomFolder = Path.Combine(packageDir, "random");
+                    Directory.CreateDirectory(randomFolder);
+
+                    Assert.True(File.Exists(randomFile), randomFile + " does not exist");
+                    AssertDirectoryExists(randomFolder);
+
+                    // Act
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                             identity,
+                             packageDownloader,
+                             versionFolderPathResolver,
+                             packageExtractionContext,
+                             token);
+                    }
+
+                    // Assert
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+
+                    Assert.False(File.Exists(randomFile), randomFile + " does exist");
+                    Assert.False(Directory.Exists(randomFolder), randomFolder + " does exist");
                 }
-
-                // Assert
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.False(File.Exists(randomFile), randomFile + " does exist");
-                Assert.False(Directory.Exists(randomFolder), randomFolder + " does exist");
             }
         }
 
@@ -251,62 +259,64 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    clientPolicyContext: null,
-                    logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-                Assert.False(Directory.Exists(packageDir), packageDir + " exist");
-
-                // Act
-                using (var packageDownloader = new ThrowingPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
-                       await PackageExtractor.InstallFromSourceAsync(
-                         identity,
-                         packageDownloader,
-                         versionFolderPathResolver,
-                         packageExtractionContext,
-                         token));
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+                    Assert.False(Directory.Exists(packageDir), packageDir + " exist");
+
+                    // Act
+                    using (var packageDownloader = new ThrowingPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await Assert.ThrowsAnyAsync<CorruptionException>(async () =>
+                           await PackageExtractor.InstallFromSourceAsync(
+                             identity,
+                             packageDownloader,
+                             versionFolderPathResolver,
+                             packageExtractionContext,
+                             token));
+                    }
+
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
+
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        packagesDir,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                              identity,
+                              packageDownloader,
+                              versionFolderPathResolver,
+                              packageExtractionContext,
+                              token);
+                    }
+
+                    // Assert
+                    var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.True(File.Exists(dllPath), dllPath + " does not exist");
                 }
-
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
-
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    packagesDir,
-                    package.File.FullName,
-                    identity,
-                    logger))
-                {
-                    await PackageExtractor.InstallFromSourceAsync(
-                          identity,
-                          packageDownloader,
-                          versionFolderPathResolver,
-                          packageExtractionContext,
-                          token);
-                }
-
-                // Assert
-                var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
             }
         }
 
@@ -319,78 +329,80 @@ namespace Commands.Test
                 var version = new NuGetVersion(package.Version);
                 var identity = new PackageIdentity(package.Id, version);
 
-                var packagesDir = TestDirectory.Create();
-                var pathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var token = CancellationToken.None;
-                var logger = NullLogger.Instance;
-                var packageExtractionContext = new PackageExtractionContext(
-                    packageSaveMode: PackageSaveMode.Defaultv3,
-                    xmlDocFileSaveMode: XmlDocFileSaveMode.None,
-                    clientPolicyContext: null,
-                    logger: logger);
-
-                var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
-
-                var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
-                Assert.False(Directory.Exists(packageDir), packageDir + " exist");
-
-                var filePathToLock = Path.Combine(packageDir, "lib", "net40", "two.dll");
-
-                // Act
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
+                using (var packagesDir = TestDirectory.Create())
                 {
-                    var cts = new CancellationTokenSource(DefaultTimeOut);
+                    var pathResolver = new VersionFolderPathResolver(packagesDir);
 
-                    Func<CancellationToken, Task<bool>> action = (ct) =>
+                    var token = CancellationToken.None;
+                    var logger = NullLogger.Instance;
+                    var packageExtractionContext = new PackageExtractionContext(
+                        packageSaveMode: PackageSaveMode.Defaultv3,
+                        xmlDocFileSaveMode: XmlDocFileSaveMode.None,
+                        clientPolicyContext: null,
+                        logger: logger);
+
+                    var versionFolderPathResolver = new VersionFolderPathResolver(packagesDir);
+
+                    var packageDir = pathResolver.GetInstallPath(package.Id, identity.Version);
+                    Assert.False(Directory.Exists(packageDir), packageDir + " exist");
+
+                    var filePathToLock = Path.Combine(packageDir, "lib", "net40", "two.dll");
+
+                    // Act
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
                     {
-                        Assert.ThrowsAnyAsync<IOException>(async () =>
-                            await PackageExtractor.InstallFromSourceAsync(
-                                identity,
-                                packageDownloader,
-                                versionFolderPathResolver,
-                                packageExtractionContext,
-                                token));
+                        var cts = new CancellationTokenSource(DefaultTimeOut);
 
-                        return Task.FromResult(true);
-                    };
+                        Func<CancellationToken, Task<bool>> action = (ct) =>
+                        {
+                            Assert.ThrowsAnyAsync<IOException>(async () =>
+                                await PackageExtractor.InstallFromSourceAsync(
+                                    identity,
+                                    packageDownloader,
+                                    versionFolderPathResolver,
+                                    packageExtractionContext,
+                                    token));
 
-                    await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePathToLock, action, cts.Token);
+                            return Task.FromResult(true);
+                        };
+
+                        await ConcurrencyUtilities.ExecuteWithFileLockedAsync(filePathToLock, action, cts.Token);
+                    }
+
+                    AssertDirectoryExists(packageDir, packageDir + " does not exist");
+
+                    Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
+
+                    using (var packageDownloader = new LocalPackageArchiveDownloader(
+                        null,
+                        package.File.FullName,
+                        identity,
+                        logger))
+                    {
+                        await PackageExtractor.InstallFromSourceAsync(
+                             identity,
+                             packageDownloader,
+                             versionFolderPathResolver,
+                             packageExtractionContext,
+                             token);
+                    }
+
+                    // Assert
+                    var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
+                    Assert.True(File.Exists(filePath), filePath + " does not exist");
+
+                    var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
+                    Assert.True(File.Exists(dllPath), dllPath + " does not exist");
+
+                    Assert.True(File.Exists(filePathToLock));
+
+                    // Make sure the actual file from the zip was extracted
+                    Assert.Equal(new byte[] { 0 }, File.ReadAllBytes(filePathToLock));
                 }
-
-                AssertDirectoryExists(packageDir, packageDir + " does not exist");
-
-                Assert.NotEmpty(Directory.EnumerateFiles(packageDir));
-
-                using (var packageDownloader = new LocalPackageArchiveDownloader(
-                    null,
-                    package.File.FullName,
-                    identity,
-                    logger))
-                {
-                    await PackageExtractor.InstallFromSourceAsync(
-                         identity,
-                         packageDownloader,
-                         versionFolderPathResolver,
-                         packageExtractionContext,
-                         token);
-                }
-
-                // Assert
-                var filePath = pathResolver.GetPackageFilePath(package.Id, identity.Version);
-                Assert.True(File.Exists(filePath), filePath + " does not exist");
-
-                var dllPath = Path.Combine(packageDir, "lib", "net40", "one.dll");
-                Assert.True(File.Exists(dllPath), dllPath + " does not exist");
-
-                Assert.True(File.Exists(filePathToLock));
-
-                // Make sure the actual file from the zip was extracted
-                Assert.Equal(new byte[] { 0 }, File.ReadAllBytes(filePathToLock));
             }
         }
 

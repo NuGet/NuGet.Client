@@ -3,7 +3,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Linq;
 using NuGet.Common;
@@ -17,30 +16,30 @@ namespace NuGet.CommandLine.Test
     {
         private class TestInfo : IDisposable
         {
+            private readonly TestDirectory _projectDirectory;
+            private readonly string _msBuildDirectory;
+            private readonly TestNuGetProjectContext _nuGetProjectContext;
+
             public MSBuildProjectSystem MSBuildProjectSystem { get; }
-            private string ProjectDirectory { get; }
-            private string MSBuildDirectory { get; }
-            private TestNuGetProjectContext NuGetProjectContext { get; }
 
             public TestInfo(string projectFileContent, string projectName = "proj1")
             {
-                ProjectDirectory = TestDirectory.Create();
-                MSBuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
-                NuGetProjectContext = new TestNuGetProjectContext();
+                _projectDirectory = TestDirectory.Create();
+                _msBuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
+                _nuGetProjectContext = new TestNuGetProjectContext();
 
-                var projectFilePath = Path.Combine(ProjectDirectory, projectName + ".csproj");
+                var projectFilePath = Path.Combine(_projectDirectory, projectName + ".csproj");
                 File.WriteAllText(projectFilePath, projectFileContent);
 
                 MSBuildProjectSystem
-                    = new MSBuildProjectSystem(MSBuildDirectory, projectFilePath, NuGetProjectContext);
+                    = new MSBuildProjectSystem(_msBuildDirectory, projectFilePath, _nuGetProjectContext);
             }
 
             public void Dispose()
             {
-                TestFileSystemUtility.DeleteRandomTestFolder(ProjectDirectory);
+                _projectDirectory.Dispose();
             }
         }
-
 
         [Fact]
         public void MSBuildProjectSystem_AddFile()

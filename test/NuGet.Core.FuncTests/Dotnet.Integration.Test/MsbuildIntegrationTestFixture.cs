@@ -19,6 +19,7 @@ namespace Dotnet.Integration.Test
 {
     public class MsbuildIntegrationTestFixture : IDisposable
     {
+        private readonly TestDirectory _cliDirectory;
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
@@ -26,11 +27,11 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
-            var cliDirectory = CopyLatestCliForPack();
-            TestDotnetCli = Path.Combine(cliDirectory, "dotnet.exe");
+            _cliDirectory = CopyLatestCliForPack();
+            TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
-                (Path.Combine(cliDirectory, "sdk"))
-                .First(), "Sdks");            
+                (Path.Combine(_cliDirectory, "sdk"))
+                .First(), "Sdks");
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -53,6 +54,7 @@ namespace Dotnet.Integration.Test
                 CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
             }
         }
+
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
@@ -110,7 +112,8 @@ namespace Dotnet.Integration.Test
                 </ItemGroup>
             </Project>";
 
-            try {
+            try
+            {
                 File.WriteAllText(projectFileName, projectFile);
             }
             catch
@@ -202,12 +205,12 @@ namespace Dotnet.Integration.Test
             Assert.True(result.Item3 == "", $"Build failed with following message in error stream :\n {result.AllOutput}");
         }
 
-        private string CopyLatestCliForPack()
+        private TestDirectory CopyLatestCliForPack()
         {
             var cliDirectory = TestDirectory.Create();
             CopyLatestCliToTestDirectory(cliDirectory);
             UpdateCliWithLatestNuGetAssemblies(cliDirectory);
-            return cliDirectory.Path;
+            return cliDirectory;
         }
 
         private void CopyLatestCliToTestDirectory(string destinationDir)
@@ -270,7 +273,6 @@ namespace Dotnet.Integration.Test
 
         private void CopyFlatlistOfFilesToTarget(PackageArchiveReader nupkg, string destination, IEnumerable<string> packageFiles)
         {
-
             var packageFileExtractor = new PackageFileExtractor(packageFiles,
                              PackageExtractionBehavior.XmlDocFileSaveMode);
             var logger = new TestCommandOutputLogger();
@@ -348,12 +350,11 @@ namespace Dotnet.Integration.Test
         {
             RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
             KillDotnetExe(TestDotnetCli);
-            DeleteDirectory(Path.GetDirectoryName(TestDotnetCli));
+            _cliDirectory.Dispose();
         }
 
         private static void KillDotnetExe(string pathToDotnetExe)
         {
-
             var processes = Process.GetProcessesByName("dotnet")
                 .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
             var testDirProcesses = Process.GetProcesses()

@@ -212,7 +212,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(a, foundA.Identity);
                 Assert.Equal(a, foundA.Nuspec.GetIdentity());
                 Assert.True(foundA.IsNupkg);
-                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                using (var reader = foundA.GetReader())
+                {
+                    Assert.Equal(a, reader.GetIdentity());
+                }
                 Assert.Contains("a.1.0.0.nupkg", foundA.Path);
                 Assert.Equal(0, testLogger.Messages.Count);
             }
@@ -287,7 +290,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(a, foundA.Identity);
                 Assert.Equal(a, foundA.Nuspec.GetIdentity());
                 Assert.True(foundA.IsNupkg);
-                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                using (var reader = foundA.GetReader())
+                {
+                    Assert.Equal(a, reader.GetIdentity());
+                }
                 Assert.Contains("a.1.0.01.0.nupkg", foundA.Path);
             }
         }
@@ -315,7 +321,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(a, foundA.Identity);
                 Assert.Equal(a, foundA.Nuspec.GetIdentity());
                 Assert.True(foundA.IsNupkg);
-                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                using (var reader = foundA.GetReader())
+                {
+                    Assert.Equal(a, reader.GetIdentity());
+                }
                 Assert.Contains("a.1.0.1.nupkg", foundA.Path);
             }
         }
@@ -704,7 +713,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(a, foundA.Identity);
                 Assert.Equal(a, foundA.Nuspec.GetIdentity());
                 Assert.True(foundA.IsNupkg);
-                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                using (var reader = foundA.GetReader())
+                {
+                    Assert.Equal(a, reader.GetIdentity());
+                }
                 Assert.Contains("a.1.0.0.nupkg", foundA.Path);
             }
         }
@@ -886,7 +898,10 @@ namespace NuGet.Protocol.Tests
                 Assert.Equal(a, foundA.Identity);
                 Assert.Equal(a, foundA.Nuspec.GetIdentity());
                 Assert.True(foundA.IsNupkg);
-                Assert.Equal(a, foundA.GetReader().GetIdentity());
+                using (var reader = foundA.GetReader())
+                {
+                    Assert.Equal(a, reader.GetIdentity());
+                }
                 Assert.Contains("a.1.0.0.nupkg", foundA.Path);
             }
         }

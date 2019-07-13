@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests.PackagesConfigPr
         {
             // Arrange
             using (var packageSource = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
                     new List<PackageSource>()
@@ -71,7 +71,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests.PackagesConfigPr
         {
             // Arrange
             using (var packageSource = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
                     new List<PackageSource>()
@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.Test.NuGetPackageManagerTests.PackagesConfigPr
         {
             // Arrange
             using (var packageSource = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
                     new List<PackageSource>()

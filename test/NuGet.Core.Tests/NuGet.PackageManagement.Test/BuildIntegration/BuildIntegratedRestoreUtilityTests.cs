@@ -48,31 +48,33 @@ namespace NuGet.Test
                     new TestNuGetProjectContext());
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
-                var solutionManager = new TestSolutionManager(false);
-                solutionManager.NuGetProjects.Add(project);
+                using (var solutionManager = new TestSolutionManager())
+                {
+                    solutionManager.NuGetProjects.Add(project);
 
-                var testLogger = new TestLogger();
+                    var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
-                // Act
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    testLogger,
-                    CancellationToken.None);
+                    // Act
+                    await DependencyGraphRestoreUtility.RestoreAsync(
+                        solutionManager,
+                        await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sources,
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
 
-                // Assert
-                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "testproj.project.lock.json")));
-                Assert.True(testLogger.Errors == 0);
-                Assert.False(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "testproj.project.lock.json")));
+                    Assert.True(testLogger.Errors == 0);
+                    Assert.False(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+                }
             }
         }
 
@@ -101,30 +103,32 @@ namespace NuGet.Test
                     new TestNuGetProjectContext());
                 var project = new ProjectJsonNuGetProject(projectConfig.FullName, msbuildProjectPath.FullName);
 
-                var solutionManager = new TestSolutionManager(false);
-                solutionManager.NuGetProjects.Add(project);
+                using (var solutionManager = new TestSolutionManager())
+                {
+                    solutionManager.NuGetProjects.Add(project);
 
-                var testLogger = new TestLogger();
+                    var testLogger = new TestLogger();
 
-                var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, NullSettings.Instance);
 
-                // Act
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    testLogger,
-                    CancellationToken.None);
+                    // Act
+                    await DependencyGraphRestoreUtility.RestoreAsync(
+                        solutionManager,
+                        await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sources,
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
 
-                // Assert
-                Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
-                Assert.True(testLogger.Errors == 0);
+                    // Assert
+                    Assert.True(File.Exists(Path.Combine(projectFolder.FullName, "project.lock.json")));
+                    Assert.True(testLogger.Errors == 0);
+                }
             }
         }
 
@@ -134,7 +138,7 @@ namespace NuGet.Test
             // Arrange
             var projectName = "testproj";
 
-            using (var solutionManager = new TestSolutionManager(false))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var projectFolder = new DirectoryInfo(Path.Combine(solutionManager.SolutionDirectory, projectName));
                 projectFolder.Create();

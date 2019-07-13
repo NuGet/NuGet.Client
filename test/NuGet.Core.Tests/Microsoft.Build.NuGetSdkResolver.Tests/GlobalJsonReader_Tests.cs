@@ -42,13 +42,20 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         {
             using (var testEnvironment = TestEnvironment.Create())
             {
-                var folder = testEnvironment.CreateFolder().FolderPath;
+                TransientTestFolder folder = testEnvironment.CreateFolder();
 
-                File.WriteAllText(Path.Combine(folder, GlobalJsonReader.GlobalJsonFileName), @" { } ");
+                try
+                {
+                    File.WriteAllText(Path.Combine(folder.FolderPath, GlobalJsonReader.GlobalJsonFileName), @" { } ");
 
-                var context = new MockSdkResolverContext(Path.Combine(folder, "foo.proj"));
+                    var context = new MockSdkResolverContext(Path.Combine(folder.FolderPath, "foo.proj"));
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+                }
+                finally
+                {
+                    folder.Revert();
+                }
             }
         }
 

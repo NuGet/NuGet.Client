@@ -51,23 +51,18 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
+                using (var result = await resource.GetDownloadResourceResultAsync(
+                    packageA.Identity,
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    testLogger,
+                    CancellationToken.None))
                 {
-                    var result = await resource.GetDownloadResourceResultAsync(
-                        packageA.Identity,
-                        new PackageDownloadContext(cacheContext),
-                        packagesFolder,
-                        testLogger,
-                        CancellationToken.None);
-
-                    using (var reader = result.PackageReader)
-                    using (var stream = result.PackageStream)
-                    {
-                        // Assert
-                        Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-                        Assert.Equal("a", reader.GetIdentity().Id);
-                        Assert.Equal("1.0.0", reader.GetIdentity().Version.ToFullString());
-                        Assert.True(stream.CanSeek);
-                    }
+                    // Assert
+                    Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
+                    Assert.Equal("a", result.PackageReader.GetIdentity().Id);
+                    Assert.Equal("1.0.0", result.PackageReader.GetIdentity().Version.ToFullString());
+                    Assert.True(result.PackageStream.CanSeek);
                 }
             }
         }
@@ -116,35 +111,29 @@ namespace NuGet.Protocol.Tests
                 {
                     var downloadContext = new PackageDownloadContext(cacheContext);
 
-                    var result1 = await resource.GetDownloadResourceResultAsync(
+                    using (var result1 = await resource.GetDownloadResourceResultAsync(
                         packageA1.Identity,
                         downloadContext,
                         packagesFolder,
                         testLogger,
-                        CancellationToken.None);
-
-                    var result2 = await resource.GetDownloadResourceResultAsync(
+                        CancellationToken.None))
+                    using (var result2 = await resource.GetDownloadResourceResultAsync(
                         packageA2.Identity,
                         downloadContext,
                         packagesFolder,
                         testLogger,
-                        CancellationToken.None);
-
-                    var result3 = await resource.GetDownloadResourceResultAsync(
+                        CancellationToken.None))
+                    using (var result3 = await resource.GetDownloadResourceResultAsync(
                         packageA3.Identity,
                         downloadContext,
                         packagesFolder,
                         testLogger,
-                        CancellationToken.None);
-
-                    using (var reader1 = result1.PackageReader)
-                    using (var reader2 = result2.PackageReader)
-                    using (var reader3 = result3.PackageReader)
+                        CancellationToken.None))
                     {
                         // Assert
-                        Assert.Equal("1.0", reader1.GetIdentity().Version.ToString());
-                        Assert.Equal("1.0.0", reader2.GetIdentity().Version.ToString());
-                        Assert.Equal("1.0.0.0", reader3.GetIdentity().Version.ToString());
+                        Assert.Equal("1.0", result1.PackageReader.GetIdentity().Version.ToString());
+                        Assert.Equal("1.0.0", result2.PackageReader.GetIdentity().Version.ToString());
+                        Assert.Equal("1.0.0.0", result3.PackageReader.GetIdentity().Version.ToString());
                     }
                 }
             }
@@ -185,23 +174,18 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
+                using (var result = await resource.GetDownloadResourceResultAsync(
+                    packageA.Identity,
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    testLogger,
+                    CancellationToken.None))
                 {
-                    var result = await resource.GetDownloadResourceResultAsync(
-                        packageA.Identity,
-                        new PackageDownloadContext(cacheContext),
-                        packagesFolder,
-                        testLogger,
-                        CancellationToken.None);
-
-                    using (var reader = result.PackageReader)
-                    using (var stream = result.PackageStream)
-                    {
-                        // Assert
-                        Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-                        Assert.Equal("a", reader.GetIdentity().Id);
-                        Assert.Equal("1.0.0-alpha.1.2+b", reader.GetIdentity().Version.ToFullString());
-                        Assert.True(stream.CanSeek);
-                    }
+                    // Assert
+                    Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
+                    Assert.Equal("a", result.PackageReader.GetIdentity().Id);
+                    Assert.Equal("1.0.0-alpha.1.2+b", result.PackageReader.GetIdentity().Version.ToFullString());
+                    Assert.True(result.PackageStream.CanSeek);
                 }
             }
         }
@@ -241,14 +225,13 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
+                using (var result = await resource.GetDownloadResourceResultAsync(
+                    new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    testLogger,
+                    CancellationToken.None))
                 {
-                    var result = await resource.GetDownloadResourceResultAsync(
-                        new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
-                        new PackageDownloadContext(cacheContext),
-                        packagesFolder,
-                        testLogger,
-                        CancellationToken.None);
-
                     // Assert
                     Assert.Equal(DownloadResourceResultStatus.NotFound, result.Status);
                 }
@@ -269,14 +252,13 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
+                using (var result = await resource.GetDownloadResourceResultAsync(
+                    new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    testLogger,
+                    CancellationToken.None))
                 {
-                    var result = await resource.GetDownloadResourceResultAsync(
-                        new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
-                        new PackageDownloadContext(cacheContext),
-                        packagesFolder,
-                        testLogger,
-                        CancellationToken.None);
-
                     // Assert
                     Assert.Equal(DownloadResourceResultStatus.NotFound, result.Status);
                 }
@@ -299,14 +281,13 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
-                {
-                    var result = await resource.GetDownloadResourceResultAsync(
+                using (var result = await resource.GetDownloadResourceResultAsync(
                     new PackageIdentity("a", NuGetVersion.Parse("1.0.0-beta.1.2.3+a.b")),
                     new PackageDownloadContext(cacheContext),
                     packagesFolder,
                     testLogger,
-                    CancellationToken.None);
-
+                    CancellationToken.None))
+                {
                     // Assert
                     Assert.Equal(DownloadResourceResultStatus.NotFound, result.Status);
                 }
@@ -330,24 +311,19 @@ namespace NuGet.Protocol.Tests
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
+                using (var result = await resource.GetDownloadResourceResultAsync(
+                    id,
+                    new PackageDownloadContext(cacheContext),
+                    packagesFolder,
+                    testLogger,
+                    CancellationToken.None))
                 {
-                    var result = await resource.GetDownloadResourceResultAsync(
-                        id,
-                        new PackageDownloadContext(cacheContext),
-                        packagesFolder,
-                        testLogger,
-                        CancellationToken.None);
-
-                    using (var reader = result.PackageReader)
-                    using (var stream = result.PackageStream)
-                    {
-                        // Assert
-                        Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
-                        Assert.Equal("a", reader.GetIdentity().Id);
-                        Assert.Equal("1.0.0", reader.GetIdentity().Version.ToFullString());
-                        Assert.True(stream.CanSeek);
-                        Assert.True(reader is PackageFolderReader);
-                    }
+                    // Assert
+                    Assert.Equal(DownloadResourceResultStatus.Available, result.Status);
+                    Assert.Equal("a", result.PackageReader.GetIdentity().Id);
+                    Assert.Equal("1.0.0", result.PackageReader.GetIdentity().Version.ToFullString());
+                    Assert.True(result.PackageStream.CanSeek);
+                    Assert.True(result.PackageReader is PackageFolderReader);
                 }
             }
         }

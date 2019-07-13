@@ -165,7 +165,7 @@ namespace NuGet.Commands.Test
             internal TestLogger Logger { get; }
             internal SignCommandRunner Runner { get; }
 
-            internal Test(SignArgs args, TestDirectory directory, X509Certificate2 certificate, TestLogger logger)
+            private Test(SignArgs args, TestDirectory directory, X509Certificate2 certificate, TestLogger logger)
             {
                 Args = args;
                 Directory = directory;
@@ -179,6 +179,7 @@ namespace NuGet.Commands.Test
                 if (!_isDisposed)
                 {
                     Certificate.Dispose();
+                    Directory.Dispose();
 
                     GC.SuppressFinalize(this);
 

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -75,12 +74,12 @@ namespace NuGet.Test
             // Arrange
             var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var projectFolderPaths = new List<string>();
+            var projectDirectories = new List<TestDirectory>();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -102,10 +101,10 @@ namespace NuGet.Test
                     // Create projects
                     for (var i = 0; i < 4; i++)
                     {
-                        var folder = TestDirectory.Create();
-                        projectFolderPaths.Add(folder);
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
 
-                        var config = Path.Combine(folder, "project.json");
+                        var config = Path.Combine(directory, "project.json");
 
                         configs.Add(config);
 
@@ -114,7 +113,7 @@ namespace NuGet.Test
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
                             testNuGetProjectContext,
-                            folder,
+                            directory,
                             $"testProjectName{i}");
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
@@ -132,10 +131,10 @@ namespace NuGet.Test
                     var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
                     var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
 
-                    var myProjFolder = TestDirectory.Create();
-                    projectFolderPaths.Add(myProjFolder);
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
 
-                    var myProjPath = Path.Combine(myProjFolder, "myproj.csproj");
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
 
                     var normalProject = new TestNonBuildIntegratedNuGetProject()
                     {
@@ -201,9 +200,9 @@ namespace NuGet.Test
             }
             finally
             {
-                foreach (var folder in projectFolderPaths)
+                foreach (TestDirectory projectDirectory in projectDirectories)
                 {
-                    TestFileSystemUtility.DeleteRandomTestFolder(folder);
+                    projectDirectory.Dispose();
                 }
             }
         }
@@ -216,13 +215,13 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("3.3.0"));
             var packageIdentity2 = new PackageIdentity("NuGet.Configuration", NuGetVersion.Parse("3.3.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            var projectFolderPaths = new List<string>();
+            var projectDirectories = new List<TestDirectory>();
             var logger = new TestLogger();
 
             try
             {
                 using (var settingsDirectory = TestDirectory.Create())
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
                     var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -244,10 +243,10 @@ namespace NuGet.Test
                     // Create projects
                     for (var i = 0; i < 4; i++)
                     {
-                        var folder = TestDirectory.Create();
-                        projectFolderPaths.Add(folder);
+                        var directory = TestDirectory.Create();
+                        projectDirectories.Add(directory);
 
-                        var config = Path.Combine(folder, "project.json");
+                        var config = Path.Combine(directory, "project.json");
 
                         configs.Add(config);
 
@@ -256,7 +255,7 @@ namespace NuGet.Test
                         var msBuildNuGetProjectSystem = new TestMSBuildNuGetProjectSystem(
                             projectTargetFramework,
                             testNuGetProjectContext,
-                            folder,
+                            directory,
                             $"testProjectName{i}");
 
                         var buildIntegratedProject = new TestProjectJsonBuildIntegratedNuGetProject(config, msBuildNuGetProjectSystem);
@@ -275,10 +274,10 @@ namespace NuGet.Test
                     var reference2 = new TestExternalProjectReference(buildIntegratedProjects[2], buildIntegratedProjects[3]);
                     var reference3 = new TestExternalProjectReference(buildIntegratedProjects[3]);
 
-                    var myProjFolder = TestDirectory.Create();
-                    projectFolderPaths.Add(myProjFolder);
+                    var myProjDirectory = TestDirectory.Create();
+                    projectDirectories.Add(myProjDirectory);
 
-                    var myProjPath = Path.Combine(myProjFolder, "myproj.csproj");
+                    var myProjPath = Path.Combine(myProjDirectory, "myproj.csproj");
 
                     var normalProject = new TestNonBuildIntegratedNuGetProject()
                     {
@@ -350,9 +349,9 @@ namespace NuGet.Test
             }
             finally
             {
-                foreach (var folder in projectFolderPaths)
+                foreach (TestDirectory projectDirectory in projectDirectories)
                 {
-                    TestFileSystemUtility.DeleteRandomTestFolder(folder);
+                    projectDirectory.Dispose();
                 }
             }
         }
@@ -364,7 +363,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("elmah", new NuGetVersion("1.2.2"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -411,7 +410,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -469,7 +468,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -534,7 +533,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("91.0.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -600,7 +599,7 @@ namespace NuGet.Test
 
             var lockFiles = new List<string>();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -675,7 +674,7 @@ namespace NuGet.Test
             var packageIdentity2 = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.4"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -728,7 +727,7 @@ namespace NuGet.Test
             var versioning105 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.5"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -776,7 +775,7 @@ namespace NuGet.Test
             var nugetVersioningId = "Nuget.Versioning";
             var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -845,7 +844,7 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -928,7 +927,7 @@ namespace NuGet.Test
             var oldJson = new PackageIdentity(nugetVersioningId, NuGetVersion.Parse("3.5.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1023,7 +1022,7 @@ namespace NuGet.Test
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
             using (var settingsDirectory = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, settingsDirectory);
@@ -1122,7 +1121,7 @@ namespace NuGet.Test
             var versioning107 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.7"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1190,7 +1189,7 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1298,7 +1297,7 @@ namespace NuGet.Test
             var versioning101 = new PackageIdentity("nuget.versioning", NuGetVersion.Parse("1.0.1"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1360,7 +1359,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1409,7 +1408,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1465,7 +1464,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("newtonsoft.json", NuGetVersion.Parse("6.0.8"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1525,7 +1524,7 @@ namespace NuGet.Test
             var packageIdentityB = new PackageIdentity("entityframework", NuGetVersion.Parse("6.1.3"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1596,7 +1595,7 @@ namespace NuGet.Test
             var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1635,7 +1634,7 @@ namespace NuGet.Test
             var packageIdentity = new PackageIdentity("nuget.core", NuGetVersion.Parse("2.8.3"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1677,7 +1676,7 @@ namespace NuGet.Test
             var dependencyIdentity = new PackageIdentity("Microsoft.Web.Xdt", NuGetVersion.Parse("2.1.0"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1723,7 +1722,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 using (var randomProjectFolderPath = TestDirectory.Create())
                 {
                     var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);
@@ -1788,7 +1787,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = CreateSource(packages);
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             using (var randomProjectFolderPath = TestDirectory.Create())
             {
                 var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, randomProjectFolderPath);

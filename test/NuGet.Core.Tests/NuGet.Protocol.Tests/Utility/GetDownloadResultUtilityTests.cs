@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -126,11 +126,17 @@ namespace NuGet.Protocol.Tests
                     Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[0]));
                     Assert.EndsWith(".nugetdirectdownload", Path.GetFileName(files[1]));
 
-                    var actualContentA = new StreamReader(resultA.PackageStream).ReadToEnd();
-                    Assert.Equal(expectedContent, actualContentA);
+                    using (var reader = new StreamReader(resultA.PackageStream))
+                    {
+                        var actualContentA = reader.ReadToEnd();
+                        Assert.Equal(expectedContent, actualContentA);
+                    }
 
-                    var actualContentB = new StreamReader(resultB.PackageStream).ReadToEnd();
-                    Assert.Equal(expectedContent, actualContentB);
+                    using (var reader = new StreamReader(resultB.PackageStream))
+                    {
+                        var actualContentB = reader.ReadToEnd();
+                        Assert.Equal(expectedContent, actualContentB);
+                    }
                 }
 
                 Assert.Equal(0, Directory.EnumerateFileSystemEntries(downloadDirectory).Count());

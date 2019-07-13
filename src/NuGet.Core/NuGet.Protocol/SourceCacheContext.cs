@@ -148,6 +148,12 @@ namespace NuGet.Protocol.Core.Types
 
         public void Dispose()
         {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
             var currentTempFolder = Interlocked.CompareExchange(ref _generatedTempFolder, value: null, comparand: null);
 
             if (currentTempFolder != null)

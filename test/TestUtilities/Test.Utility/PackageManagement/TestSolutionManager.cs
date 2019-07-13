@@ -43,7 +43,7 @@ namespace Test.Utility
   </config>
 </configuration>";
 
-        public TestSolutionManager(bool foo)
+        public TestSolutionManager()
         {
             TestDirectory = TestDirectory.Create();
             SolutionDirectory = TestDirectory;

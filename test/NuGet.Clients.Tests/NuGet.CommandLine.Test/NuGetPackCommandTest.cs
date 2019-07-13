@@ -21,8 +21,13 @@ using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
-    public class NuGetPackCommandTest
+    public class NuGetPackCommandTest : IDisposable
     {
+        public void Dispose()
+        {
+            OptimizedZipPackage.PurgeCache();
+        }
+
         [Fact]
         public void PackCommand_IncludeExcludePackageFromNuspec()
         {
@@ -80,9 +85,8 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "dependencies");
@@ -151,9 +155,8 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkAssemblies");
@@ -706,9 +709,8 @@ namespace NuGet.CommandLine.Test
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "contentFiles");
@@ -3055,11 +3057,9 @@ namespace Proj1
         public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber(string packagesConfigFileName)
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestDirectory.Create())
             {
-                Directory.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
                 Directory.CreateDirectory(proj1Directory);
@@ -3143,7 +3143,7 @@ namespace Proj1
                     "test.sln",
                     "# test solution");
 
-                // Act                 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
@@ -3168,10 +3168,6 @@ namespace Proj1
                 var dependency5 = dependencySet.Dependencies.Single(d => d.Id == "testPackage5");
                 Assert.Equal("1.5.0", dependency5.VersionSpec.ToString());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
 
         // Test that NuGet packages of the project are added as dependencies 
@@ -3182,11 +3178,9 @@ namespace Proj1
         public void PackCommand_PackagesAddedAsDependenciesIfProjectRequiresHigerVersionNumber_AndIndirectDependencyIsAlreadyListed(string packagesConfigFileName)
         {
             var nugetexe = Util.GetNuGetExePath();
-            var workingDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            try
+            using (var workingDirectory = TestDirectory.Create())
             {
-                Directory.CreateDirectory(workingDirectory);
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var packagesFolder = Path.Combine(proj1Directory, "packages");
                 Directory.CreateDirectory(proj1Directory);
@@ -3261,7 +3255,7 @@ namespace Proj1
                     "test.sln",
                     "# test solution");
 
-                // Act                 
+                // Act
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
@@ -3274,7 +3268,7 @@ namespace Proj1
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
-                // Verify that testPackage1 is added as dependency in addition to testPackage3. 
+                // Verify that testPackage1 is added as dependency in addition to testPackage3.
                 // testPackage2 is not added because it is already referenced by testPackage3 with the correct version range.
                 Assert.Equal(2, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
@@ -3282,12 +3276,7 @@ namespace Proj1
                 var dependency2 = dependencySet.Dependencies.Single(d => d.Id == "testPackage3");
                 Assert.Equal("1.3.0", dependency2.VersionSpec.ToString());
             }
-            finally
-            {
-                Directory.Delete(workingDirectory, true);
-            }
         }
-
 
         // Test that nuget displays warnings when dependency version is not specified
         // in nuspec.
@@ -3399,9 +3388,7 @@ namespace Proj1
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
-
             {
-
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
                 var proj2Directory = Path.Combine(workingDirectory, "proj2");
 
@@ -4271,9 +4258,8 @@ stuff \n &lt;&lt;
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     // First test the nuspec to make sure the XML is encoded correctly
@@ -4296,13 +4282,14 @@ stuff \n <<".Replace("\r\n", "\n");
                     Assert.Equal("Copyright © <T> 2013", copyright.Value);
 
                     // Now test the description in the psmdcp file
-                    var packageReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName.EndsWith(".psmdcp")).Open());
-                    var packageXml = XDocument.Parse(packageReader.ReadToEnd());
+                    using (var packageReader = new StreamReader(zip.Entries.Single(file => file.FullName.EndsWith(".psmdcp")).Open()))
+                    {
+                        var packageXml = XDocument.Parse(packageReader.ReadToEnd());
 
-                    description = packageXml.Descendants().Single(e => e.Name.LocalName == "description");
-                    actualDescription = description.Value.Replace("\r\n", "\n");
-                    Assert.Equal(expectedDescription, actualDescription);
+                        description = packageXml.Descendants().Single(e => e.Name.LocalName == "description");
+                        actualDescription = description.Value.Replace("\r\n", "\n");
+                        Assert.Equal(expectedDescription, actualDescription);
+                    }
                 }
             }
         }
@@ -4544,7 +4531,6 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file2.txt",
                     "file2");
-                
 
                 // Act
                 var r = CommandRunner.Run(
@@ -4694,7 +4680,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             var requireLicenseAcceptance = true;
             var customLicenseName = "LicenseRef-NikolchesLicense";
             var licenseExpr = $"MIT OR {customLicenseName}";
-            
+
             using (var workingDirectory = TestDirectory.Create())
             {
                 // Arrange
@@ -5413,9 +5399,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 {
                     if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
                     {
-                        Assert.False(symbolsReader.NuspecReader.GetRequireLicenseAcceptance());
-                        Assert.Null(symbolsReader.NuspecReader.GetLicenseMetadata());
-                        Assert.Null(symbolsReader.NuspecReader.GetLicenseUrl());
+                        var nuspecReader = symbolsReader.NuspecReader;
+
+                        Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                        Assert.Null(nuspecReader.GetLicenseMetadata());
+                        Assert.Null(nuspecReader.GetLicenseUrl());
                     }
 
                     var files = symbolsReader.GetFiles()
@@ -5492,9 +5480,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
@@ -5562,9 +5549,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
                 var package = new OptimizedZipPackage(path);
                 using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
                 {
-                    var manifestReader
-                        = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open());
                     var nuspecXml = XDocument.Parse(manifestReader.ReadToEnd());
 
                     var node = nuspecXml.Descendants().Single(e => e.Name.LocalName == "frameworkReferences");
@@ -5621,7 +5607,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
     internal static class PackageArchiveReaderTestExtensions
     {
-
         public static string[] GetNonPackageDefiningFiles(this PackageArchiveReader package)
         {
             return package.GetFiles()

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,24 +34,27 @@ namespace NuGet.CommandLine.Test
             {
                 // Arrange
                 targetDirectoryPath = targetDirectory.Path;
-                var workingDirectory = TestDirectory.Create();
-                var subDirectoryPath = Path.Combine(workingDirectory.Path, "SubDirectory");
-                var subDirectory = Directory.CreateDirectory(subDirectoryPath);
 
-                Util.CreatePackage(workingDirectory.Path, Guid.NewGuid().ToString("N"), "1.0.0");
-                fileInTargetDirectory = Path.Combine(targetDirectoryPath, "test.txt");
-                File.WriteAllText(fileInTargetDirectory, string.Empty);
+                using (var workingDirectory = TestDirectory.Create())
+                {
+                    var subDirectoryPath = Path.Combine(workingDirectory.Path, "SubDirectory");
+                    var subDirectory = Directory.CreateDirectory(subDirectoryPath);
 
-                Util.CreateJunctionPoint(subDirectory.FullName, targetDirectoryPath, overwrite: true);
+                    Util.CreatePackage(workingDirectory.Path, Guid.NewGuid().ToString("N"), "1.0.0");
+                    fileInTargetDirectory = Path.Combine(targetDirectoryPath, "test.txt");
+                    File.WriteAllText(fileInTargetDirectory, string.Empty);
 
-                // Act
-                LocalResourceUtils.DeleteDirectoryTree(workingDirectory.Path, failedDeletes);
+                    Util.CreateJunctionPoint(subDirectory.FullName, targetDirectoryPath, overwrite: true);
 
-                // Assert
-                Assert.Empty(failedDeletes);
-                Assert.False(Directory.Exists(workingDirectory.Path));
-                Assert.True(Directory.Exists(targetDirectoryPath));
-                Assert.True(File.Exists(fileInTargetDirectory));
+                    // Act
+                    LocalResourceUtils.DeleteDirectoryTree(workingDirectory.Path, failedDeletes);
+
+                    // Assert
+                    Assert.Empty(failedDeletes);
+                    Assert.False(Directory.Exists(workingDirectory.Path));
+                    Assert.True(Directory.Exists(targetDirectoryPath));
+                    Assert.True(File.Exists(fileInTargetDirectory));
+                }
             }
 
             // Verify clean-up

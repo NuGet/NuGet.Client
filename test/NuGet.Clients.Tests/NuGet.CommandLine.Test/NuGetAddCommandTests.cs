@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -107,9 +107,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
             using (var testInfo = new TestInfo())
             {
-                var currentlyNonExistentPath = Path.Combine(Path.GetTempPath(),
-                                                            TestFileSystemUtility.NuGetTestFolder,
-                                                            Guid.NewGuid().ToString());
+                var currentlyNonExistentPath = Path.Combine(TestFileSystemUtility.NuGetTestFolder, Guid.NewGuid().ToString());
 
                 testInfo.Init(currentlyNonExistentPath);
 
@@ -264,9 +262,7 @@ namespace NuGet.CommandLine.Test
             {
                 testInfo.Init();
 
-                var nonExistentPath = Path.Combine(Path.GetTempPath(),
-                                            TestFileSystemUtility.NuGetTestFolder,
-                                            Guid.NewGuid().ToString());
+                var nonExistentPath = Path.Combine(TestFileSystemUtility.NuGetTestFolder, Guid.NewGuid().ToString());
 
                 var args = new string[]
                 {
@@ -449,15 +445,18 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        private class TestInfo : IDisposable
+        private sealed class TestInfo : IDisposable
         {
+            private TestDirectory _sourceDirectory;
+            private TestDirectory _randomNupkgDirectory;
+
             public string NuGetExePath { get; }
             public string SourceParamFolder { get; set; }
             public string RandomNupkgFolder { get { return Path.GetDirectoryName(RandomNupkgFilePath); } }
             public PackageIdentity Package { get; }
             public FileInfo TestPackage { get; set; }
             public string RandomNupkgFilePath { get { return TestPackage.FullName; } }
-            public string WorkingPath { get; }
+            public TestDirectory WorkingPath { get; private set; }
 
             public TestInfo()
             {
@@ -470,14 +469,16 @@ namespace NuGet.CommandLine.Test
 
             public void Init()
             {
-                Init(TestDirectory.Create());
+                _sourceDirectory = TestDirectory.Create();
+
+                Init(_sourceDirectory);
             }
 
             public void Init(string sourceParamFolder)
             {
-                var randomNupkgFolder = TestDirectory.Create();
+                _randomNupkgDirectory = TestDirectory.Create();
                 var testPackage = TestPackagesGroupedByFolder.GetLegacyTestPackage(
-                    randomNupkgFolder,
+                    _randomNupkgDirectory,
                     Package.Id,
                     Package.Version.ToString());
 
@@ -486,7 +487,9 @@ namespace NuGet.CommandLine.Test
 
             public void Init(FileInfo testPackage)
             {
-                Init(TestDirectory.Create(), testPackage);
+                _sourceDirectory = TestDirectory.Create();
+
+                Init(_sourceDirectory, testPackage);
             }
 
             public void Init(string sourceParamFolder, FileInfo testPackage)
@@ -497,9 +500,10 @@ namespace NuGet.CommandLine.Test
 
             public void Dispose()
             {
+                WorkingPath.Dispose();
                 TestFileSystemUtility.DeleteRandomTestFolder(SourceParamFolder);
-                TestFileSystemUtility.DeleteRandomTestFolder(RandomNupkgFolder);
-                TestFileSystemUtility.DeleteRandomTestFolder(WorkingPath);
+                _sourceDirectory?.Dispose();
+                _randomNupkgDirectory?.Dispose();
             }
         }
     }

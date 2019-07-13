@@ -33,7 +33,8 @@ namespace NuGet.PackageManagement.Test
                 projectFolder.Create();
                 var msbuildProjectPath = new FileInfo(Path.Combine(projectFolder.FullName, $"{projectName}.csproj"));
 
-                var sources = new[] {
+                var sources = new[]
+                {
                     Repository.Factory.GetVisualStudio(new PackageSource("https://www.nuget.org/api/v2/"))
                 };
 
@@ -48,26 +49,28 @@ namespace NuGet.PackageManagement.Test
 
                 var projects = new List<IDependencyGraphProject>() { project };
 
-                var solutionManager = new TestSolutionManager(false);
-                solutionManager.NuGetProjects.Add(project);
+                using (var solutionManager = new TestSolutionManager())
+                {
+                    solutionManager.NuGetProjects.Add(project);
 
-                // Act
-                await DependencyGraphRestoreUtility.RestoreAsync(
-                    solutionManager,
-                    await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
-                    restoreContext,
-                    new RestoreCommandProvidersCache(),
-                    (c) => { },
-                    sources,
-                    Guid.Empty,
-                    false,
-                    true,
-                    logger,
-                    CancellationToken.None);
+                    // Act
+                    await DependencyGraphRestoreUtility.RestoreAsync(
+                        solutionManager,
+                        await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(solutionManager, restoreContext),
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sources,
+                        Guid.Empty,
+                        false,
+                        true,
+                        logger,
+                        CancellationToken.None);
 
-                // Assert
-                Assert.Equal(0, logger.Errors);
-                Assert.Equal(0, logger.Warnings);
+                    // Assert
+                    Assert.Equal(0, logger.Errors);
+                    Assert.Equal(0, logger.Warnings);
+                }
             }
         }
     }

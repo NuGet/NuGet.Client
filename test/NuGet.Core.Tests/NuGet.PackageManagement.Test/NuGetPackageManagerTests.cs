@@ -99,7 +99,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -165,7 +165,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -230,7 +230,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -268,7 +268,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -329,7 +329,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -380,7 +380,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -429,7 +429,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -476,7 +476,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -527,7 +527,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -572,7 +572,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -633,7 +633,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -704,7 +704,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -775,7 +775,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -825,7 +825,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -873,7 +873,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -921,7 +921,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1003,7 +1003,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1065,7 +1065,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1118,7 +1118,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1187,7 +1187,7 @@ namespace NuGet.Test
 
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1233,7 +1233,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1329,7 +1329,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -1370,7 +1370,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1425,7 +1425,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1489,7 +1489,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1542,7 +1542,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1619,7 +1619,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1683,7 +1683,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1728,7 +1728,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1776,7 +1776,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1824,7 +1824,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1875,7 +1875,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1919,7 +1919,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -1974,7 +1974,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -2044,7 +2044,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -2091,7 +2091,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -2156,7 +2156,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -2202,7 +2202,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -2247,7 +2247,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -2346,7 +2346,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2404,7 +2404,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2462,7 +2462,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2519,7 +2519,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2592,7 +2592,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2669,7 +2669,7 @@ namespace NuGet.Test
             var nuGetProjectB = new TestNuGetProject(installedPackagesB);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2742,7 +2742,7 @@ namespace NuGet.Test
             var nuGetProjectB = new TestNuGetProject("projectB", installedPackagesB);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2827,7 +2827,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2900,7 +2900,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -2969,7 +2969,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -3039,7 +3039,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -3081,7 +3081,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3154,7 +3154,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3239,7 +3239,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3405,7 +3405,7 @@ namespace NuGet.Test
 
             // Create Package Manager
 
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -3449,7 +3449,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3501,7 +3501,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3572,7 +3572,7 @@ namespace NuGet.Test
             var packageIdentityB1 = new PackageIdentity("DotNetOpenAuth.Core", new NuGetVersion("4.3.2.13293"));
             var packageIdentityB2 = new PackageIdentity("DotNetOpenAuth.Core", new NuGetVersion("4.3.4.13329"));
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -3638,7 +3638,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -3686,7 +3686,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -3739,7 +3739,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -3817,7 +3817,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -3898,7 +3898,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -3985,7 +3985,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new List<NuGet.Configuration.PackageSource>());
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4028,7 +4028,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4073,7 +4073,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4122,7 +4122,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4171,7 +4171,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4220,7 +4220,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4269,7 +4269,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4330,7 +4330,7 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4396,7 +4396,7 @@ namespace NuGet.Test
 
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, resourceProviders);
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4438,7 +4438,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4485,7 +4485,7 @@ namespace NuGet.Test
                 new NuGet.Configuration.PackageSource("https://www.myget.org/F/aspnetvnext/api/v2/"),
             });
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4530,7 +4530,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4578,7 +4578,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4626,7 +4626,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
 
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
@@ -4738,7 +4738,7 @@ namespace NuGet.Test
             // Act
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
@@ -4782,7 +4782,7 @@ namespace NuGet.Test
             // Act
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV2OnlySourceRepositoryProvider();
             var testSettings = NullSettings.Instance;
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var deleteOnRestartManager = new TestDeleteOnRestartManager();
 
@@ -4810,7 +4810,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -4890,7 +4890,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -5098,7 +5098,7 @@ namespace NuGet.Test
                         new PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5167,7 +5167,7 @@ namespace NuGet.Test
                         new PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5253,7 +5253,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5319,7 +5319,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var actions = new List<NuGetProjectAction>();
                     var testSettings = NullSettings.Instance;
@@ -5394,7 +5394,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5475,7 +5475,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5535,7 +5535,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5604,7 +5604,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5675,7 +5675,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -5738,7 +5738,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             using (var settingsdir = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
@@ -5840,7 +5840,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -5887,7 +5887,7 @@ namespace NuGet.Test
         {
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var testSettings = NullSettings.Instance;
                 var token = CancellationToken.None;
@@ -5943,7 +5943,7 @@ namespace NuGet.Test
             // Arrange
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateV3OnlySourceRepositoryProvider();
             using (var settingsdir = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var Settings = new Settings(settingsdir);
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
@@ -6033,7 +6033,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6089,7 +6089,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6137,7 +6137,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6195,7 +6195,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6266,7 +6266,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6340,7 +6340,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6423,7 +6423,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6518,7 +6518,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6563,7 +6563,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6618,7 +6618,7 @@ namespace NuGet.Test
             TelemetryActivity.NuGetTelemetryService = telemetryService;
 
             using (var settingsdir = TestDirectory.Create())
-            using (var testSolutionManager = new TestSolutionManager(true))
+            using (var testSolutionManager = new TestSolutionManager())
             {
                 var settings = Settings.LoadSpecificSettings(testSolutionManager.SolutionDirectory, "NuGet.Config");
                 foreach (var source in sourceRepositoryProvider.GetRepositories())
@@ -6689,7 +6689,7 @@ namespace NuGet.Test
                         new Configuration.PackageSource(packageSource1.Path)
                     });
 
-                using (var testSolutionManager = new TestSolutionManager(true))
+                using (var testSolutionManager = new TestSolutionManager())
                 {
                     var testSettings = NullSettings.Instance;
                     var token = CancellationToken.None;
@@ -6767,7 +6767,7 @@ namespace NuGet.Test
             var nuGetProject = new TestNuGetProject(installedPackages);
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
@@ -6819,7 +6819,7 @@ namespace NuGet.Test
             };
 
             // Create Package Manager
-            using (var solutionManager = new TestSolutionManager(true))
+            using (var solutionManager = new TestSolutionManager())
             {
                 var nuGetPackageManager = new NuGetPackageManager(
                     sourceRepositoryProvider,
