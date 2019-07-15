@@ -339,7 +339,6 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         /// <summary>
         /// Return package identity parsed from path to .nupkg file
         /// </summary>
-        /// <returns></returns>
         [SuppressMessage("Microsoft.Design", "CA1031")]
         private IEnumerable<PackageIdentity> CreatePackageIdentityFromNupkgPath()
         {
@@ -347,7 +346,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             try
             {
-                // Example: install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+                // Example: Install-Package https://globalcdn.nuget.org/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
                 if (_isHttp)
                 {
                     identity = ParsePackageIdentityFromNupkgPath(Id, @"/");
@@ -395,10 +394,8 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         /// <summary>
         /// Parse package identity from path to .nupkg file, such as
-        /// https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+        /// https://globalcdn.nuget.org/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
         /// </summary>
-        /// <param name="sourceUrl"></param>
-        /// <returns></returns>
         private PackageIdentity ParsePackageIdentityFromNupkgPath(string path, string divider)
         {
             if (!string.IsNullOrEmpty(path))
