@@ -2517,11 +2517,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         {
             var fileList = new List<Tuple<string, int>>();
             var fileEntriesList = new List<string>();
+            var dirSep = Path.DirectorySeparatorChar;
 
-            fileList.Add(Tuple.Create("folder1\\icon.jpg", 2));
-            fileList.Add(Tuple.Create("folder1\\dummy.txt", 2));
-            fileList.Add(Tuple.Create("folder2\\icon.jpg", 2));
-            fileList.Add(Tuple.Create("folder2\\file.txt", 2));
+            fileList.Add(Tuple.Create(string.Format("folder1{0}icon.jpg", dirSep), 2));
+            fileList.Add(Tuple.Create(string.Format("folder1{0}dummy.txt", dirSep), 2));
+            fileList.Add(Tuple.Create(string.Format("folder2{0}icon.jpg", dirSep), 2));
+            fileList.Add(Tuple.Create(string.Format("folder2{0}file.txt", dirSep), 2));
 
             fileEntriesList.Add("folder1\\*");
             fileEntriesList.Add("folder2\\*");
