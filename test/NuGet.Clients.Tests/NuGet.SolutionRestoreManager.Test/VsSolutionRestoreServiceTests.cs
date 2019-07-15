@@ -1342,6 +1342,60 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
+        public async Task NominateProjectAsync_PackageDownload_AllowsVersionList()
+        {
+            var consoleAppProjectJson = @"{
+    ""frameworks"": {
+        ""netcoreapp3.0"": {
+            ""dependencies"": {
+                ""NuGet.Protocol"": {
+                    ""target"": ""Package"",
+                    ""version"": ""5.1.0""
+                },
+            },
+            ""downloadDependencies"": [
+                {""name"" : ""NetCoreTargetingPack"", ""version"" : ""[1.0.0];[2.0.0]""}
+            ]
+            }
+        }
+    }";
+            var projectName = "ConsoleApp1";
+            var cps = NewCpsProject(consoleAppProjectJson, projectName);
+            var projectFullPath = cps.ProjectFullPath;
+            var expectedBaseIntermediate = cps.ProjectRestoreInfo2.BaseIntermediatePath;
+
+            // Act
+            var actualRestoreSpec = await CaptureNominateResultAsync(projectFullPath, cps.ProjectRestoreInfo2);
+
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("1.0.0", actualProjectSpec.Version.ToString());
+
+            var actualMetadata = actualProjectSpec.RestoreMetadata;
+            Assert.NotNull(actualMetadata);
+            Assert.Equal(projectFullPath, actualMetadata.ProjectPath);
+            Assert.Equal(projectName, actualMetadata.ProjectName);
+            Assert.Equal(ProjectStyle.PackageReference, actualMetadata.ProjectStyle);
+            Assert.Equal(expectedBaseIntermediate, actualMetadata.OutputPath);
+
+            Assert.Single(actualProjectSpec.TargetFrameworks);
+            var actualTfi = actualProjectSpec.TargetFrameworks.Single();
+
+            var expectedFramework = NuGetFramework.Parse("netcoreapp3.0");
+            Assert.Equal(expectedFramework, actualTfi.FrameworkName);
+
+            AssertPackages(actualTfi,
+                "NuGet.Protocol:5.1.0");
+            AssertDownloadPackages(actualTfi,
+                "NetCoreTargetingPack:[1.0.0]",
+                "NetCoreTargetingPack:[2.0.0]"
+                );
+        }
+
+        [Fact]
         public async Task NominateProjectAsync_PackageDownload_InexactVersionsNotAllowed()
         {
             var consoleAppProjectJson = @"{

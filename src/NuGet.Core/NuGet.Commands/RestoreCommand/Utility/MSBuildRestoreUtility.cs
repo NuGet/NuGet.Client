@@ -652,19 +652,26 @@ namespace NuGet.Commands
             foreach (var item in GetItemByType(items, "DownloadDependency"))
             {
                 var id = item.GetProperty("Id");
-                var versionRange = GetVersionRange(item);
+                var versionString = item.GetProperty("VersionRange");
 
-                if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+                var versions = versionString.Split(';');
+
+                foreach (var version in versions)
                 {
-                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
-                }
+                    var versionRange = GetVersionRange(version);
 
-                var downloadDependency = new DownloadDependency(id, versionRange);
-                var frameworks = GetFrameworks(item);
+                    if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
+                    {
+                        throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_PackageDownload_OnlyExactVersionsAreAllowed, versionRange.OriginalString));
+                    }
 
-                foreach (var framework in frameworks)
-                {
-                    AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
+                    var downloadDependency = new DownloadDependency(id, versionRange);
+                    var frameworks = GetFrameworks(item);
+
+                    foreach (var framework in frameworks)
+                    {
+                        AddDownloadDependencyIfNotExist(spec, framework, downloadDependency);
+                    }
                 }
             }
         }
@@ -723,7 +730,11 @@ namespace NuGet.Commands
         private static VersionRange GetVersionRange(IMSBuildItem item)
         {
             var rangeString = item.GetProperty("VersionRange");
+            return GetVersionRange(rangeString);
+        }
 
+        private static VersionRange GetVersionRange(string rangeString)
+        {
             if (!string.IsNullOrEmpty(rangeString))
             {
                 return VersionRange.Parse(rangeString);
