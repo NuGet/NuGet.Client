@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Test
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
                 "lib/net40/test.dll",
-                "lib/net45/test.dll",
+                "lib/net472/test.dll",
                 "lib/netstandard1.0/test.dll",
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll"
@@ -57,8 +57,7 @@ namespace NuGet.Packaging.Test
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFM);
             byte[] byteArray = Encoding.ASCII.GetBytes(_nuspecContent);
             MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files.
-                Select(t => PathUtility.GetPathWithDirectorySeparator(t)), stream).ToList();
+            var issues = rule.Validate(files, stream).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -73,6 +72,7 @@ namespace NuGet.Packaging.Test
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
                 "lib/net40/test.dll",
+                "lib/net472/test.dll",
                 "lib/netstandard1.0/test.dll",
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll"
@@ -82,8 +82,7 @@ namespace NuGet.Packaging.Test
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFM);
             byte[] byteArray = Encoding.ASCII.GetBytes(_nuspecContent);
             MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files.
-                Select(t => PathUtility.GetPathWithDirectorySeparator(t)), stream).ToList();
+            var issues = rule.Validate(files, stream).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
