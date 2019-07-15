@@ -160,7 +160,4 @@ esac
 
 popd
 
-# Cleanup TMP directory
-rm "/tmp/"dotnet.* -rf
-
 exit $RESULTCODE
