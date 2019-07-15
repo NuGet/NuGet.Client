@@ -149,6 +149,7 @@ namespace NuGet.Packaging.FuncTest
         private sealed class VerifyTest : IDisposable
         {
             private readonly TestDirectory _directory;
+            private readonly FileStream _signedPackageReadStream;
 
             private bool _isDisposed;
 
@@ -158,11 +159,13 @@ namespace NuGet.Packaging.FuncTest
 
             private VerifyTest(
                 TestDirectory directory,
+                FileStream signedPackageReadStream,
                 SignedPackageArchive package,
                 PrimarySignature primarySignature,
                 SignatureVerifySettings settings)
             {
                 _directory = directory;
+                _signedPackageReadStream = signedPackageReadStream;
                 Package = package;
                 PrimarySignature = primarySignature;
                 Settings = settings;
@@ -172,8 +175,9 @@ namespace NuGet.Packaging.FuncTest
             {
                 if (!_isDisposed)
                 {
-                    _directory.Dispose();
                     Package.Dispose();
+                    _signedPackageReadStream.Dispose();
+                    _directory.Dispose();
 
                     GC.SuppressFinalize(this);
 
@@ -192,10 +196,11 @@ namespace NuGet.Packaging.FuncTest
                         directory,
                         unsignedPackageFile,
                         certificateClone);
-                    var package = new SignedPackageArchive(signedPackageFile.OpenRead(), new MemoryStream());
+                    var signedPackageReadStream = signedPackageFile.OpenRead();
+                    var package = new SignedPackageArchive(signedPackageReadStream, new MemoryStream());
                     var primarySignature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
-                    return new VerifyTest(directory, package, primarySignature, settings);
+                    return new VerifyTest(directory, signedPackageReadStream, package, primarySignature, settings);
                 }
             }
         }
