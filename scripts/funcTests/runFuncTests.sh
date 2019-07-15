@@ -54,6 +54,10 @@ cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 # Display current version
 $DOTNET --version
 
+# Cleanup TMP directory
+echo "Cleaning TMP directory"
+rm "/tmp/"dotnet.* -rf
+
 echo "================="
 
 # init the repo
@@ -156,8 +160,5 @@ esac
 
 
 popd
-
-# Cleanup TMP directory
-rm "/tmp/"dotnet.* -rf
 
 exit $RESULTCODE
