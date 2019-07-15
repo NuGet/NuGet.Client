@@ -42,7 +42,7 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
         {
             //Arrange
-            var files = new[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -50,7 +50,8 @@ namespace NuGet.Packaging.Test
                 "lib/net472/test.dll",
                 "lib/netstandard1.0/test.dll",
                 "lib/netstandard1.3/test.dll",
-                "lib/netstandard2.0/test.dll"
+                "lib/netstandard2.0/test.dll",
+                "ref/net20/test.dll"
             };
 
             // Act
@@ -67,7 +68,7 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldWarn()
         {
             //Arrange
-            var files = new[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
