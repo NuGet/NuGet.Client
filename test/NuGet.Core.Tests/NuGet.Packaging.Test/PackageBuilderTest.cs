@@ -2492,7 +2492,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         public void Icon_IconMaxFileSizeExceeded_ThrowsException()
         {
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", "icon.jpg", IconValidation.MaxIconFilzeSize + 1),
+                new IconTestSourceDirectory("icon.jpg", "icon.jpg", IconValidation.MaxIconFileSize + 1),
                 "The icon file size must not exceed 1 megabyte.");
         }
 

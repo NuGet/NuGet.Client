@@ -16,7 +16,7 @@ namespace NuGet.Packaging
         /// <summary>
         /// Maximun Icon file size: 1 megabyte
         /// </summary>
-        public const int MaxIconFilzeSize = 1024 * 1024;
+        public const int MaxIconFileSize = 1024 * 1024;
 
         /// <summary>
         /// Validate the icon filesize
@@ -24,12 +24,12 @@ namespace NuGet.Packaging
         /// Launches a PackagingException in case of an error
         /// </summary>
         /// <remarks>This consumes the stream</remarks>
-        /// <param name="str">Stream that points to the icon file</param>
-        public static void ValidateIconFileSize(Stream str)
+        /// <param name="stream">Stream that points to the icon file</param>
+        public static void ValidateIconFileSize(Stream stream)
         {
-            long fileSize = EstimateFileSize(str);
+            long fileSize = EstimateFileSize(stream);
 
-            if (fileSize > MaxIconFilzeSize)
+            if (fileSize > MaxIconFileSize)
             {
                 throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconMaxFilseSizeExceeded);
             }
@@ -59,7 +59,7 @@ namespace NuGet.Packaging
             }
             catch (NotSupportedException)
             {
-                int buffSizeee = MaxIconFilzeSize + 1;
+                int buffSizeee = MaxIconFileSize + 1;
                 byte[] byteBuffer = new byte[buffSizeee];
 
                 if (stream.CanRead)
