@@ -13,11 +13,18 @@ namespace NuGet.Packaging.Rules
 {
     class DependeciesGroupsForEachTFMRule : IPackageRule
     {
+        HashSet<NuGetFramework> _compatNotExactMatches = new HashSet<NuGetFramework>();
+        HashSet<NuGetFramework> _noExactMatchesFromFile = new HashSet<NuGetFramework>();
+        HashSet<NuGetFramework> _noExactMatchesFromNuspec = new HashSet<NuGetFramework>();
+
         public string MessageFormat { get; }
 
-        public DependeciesGroupsForEachTFMRule(string messageFormat)
+        public string SecondWarning { get; }
+
+        public DependeciesGroupsForEachTFMRule(string messageFormat, string secondWarning)
         {
             MessageFormat = messageFormat;
+            SecondWarning = secondWarning;
         }
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
@@ -29,7 +36,7 @@ namespace NuGet.Packaging.Rules
         internal IEnumerable<PackagingLogMessage> Validate(IEnumerable<string> files, Stream packageNuspec)
         {
             var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
-            var compareTFMs = managedCodeConventions.Properties["tfm"].CompatibilityTest;
+            var isCompatible = managedCodeConventions.Properties["tfm"].CompatibilityTest;
             var collection = new ContentItemCollection();
             collection.Load(files);
 
@@ -60,21 +67,47 @@ namespace NuGet.Packaging.Rules
 
                 if (tfmsFromNuspec != null)
                 {
-                    
                     var issue = new List<PackagingLogMessage>();
                     foreach(var item in tfmsFromFiles)
                     {
                         foreach(var nuspecTFMs in tfmsFromNuspec)
                         {
-                            var meh = compareTFMs(item, nuspecTFMs) && !tfmsFromNuspec.Contains(item);
-                        }
-                        //var meh = managedCodeConventions.Properties["tfm"].CompatibilityTest(tfm;
-                        if (!tfmsFromNuspec.Contains(item))
-                        {
-                            issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat),
-                                NuGetLogCode.NU5128));
+                            if (!tfmsFromNuspec.Contains(item))
+                            {
+                                _noExactMatchesFromFile.Add(item);
+                            }
+
+                            if (!tfmsFromFiles.Contains(nuspecTFMs))
+                            {
+                                _noExactMatchesFromNuspec.Add(nuspecTFMs);
+
+                                if (isCompatible(item, nuspecTFMs))
+                                {
+                                    _compatNotExactMatches.Add(item);
+                                }
+                            }
                         }
                     }
+
+                    _noExactMatchesFromFile.RemoveWhere(IsCompat);
+                    _noExactMatchesFromNuspec.RemoveWhere(IsCompat);
+                    (string noExactMatchString, string compatMatchString) =
+                        GenerateWarningString(_noExactMatchesFromFile, _noExactMatchesFromNuspec, _compatNotExactMatches);
+
+                    var issues = new List<PackagingLogMessage>();
+
+                    if (_noExactMatchesFromFile.Count != 0 || _noExactMatchesFromNuspec.Count != 0)
+                    {
+                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,noExactMatchString),
+                            NuGetLogCode.NU5128));
+                    }
+
+                    if (_compatNotExactMatches.Count != 0)
+                    {
+                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(SecondWarning, compatMatchString),
+                            NuGetLogCode.NU5130));
+                    }
+
                     if(issue.Count != 0)
                     {
                         return issue;
@@ -83,6 +116,11 @@ namespace NuGet.Packaging.Rules
 
             }
             return Array.Empty<PackagingLogMessage>();
+        }
+
+        private bool IsCompat(NuGetFramework tfm)
+        {
+            return _compatNotExactMatches.Contains(tfm);
         }
 
         private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
@@ -96,6 +134,41 @@ namespace NuGet.Packaging.Rules
             return groups.Select(e => (NuGetFramework)e.Properties["tfm"]);
         }
 
-        
+        private static (string, string) GenerateWarningString(HashSet<NuGetFramework> noExactMatchesFromFile,
+                HashSet<NuGetFramework> noExactMatchesFromNuspec, HashSet<NuGetFramework> compatNotExactMatches)
+        {
+            string noExactMatchString = string.Empty;
+            string compatMatchString = string.Empty;
+            var beginning = "\n- Add ";
+            if (noExactMatchesFromFile.Count != 0)
+            {
+                var ending = " to the nuspec";
+                var firstElement = beginning + noExactMatchesFromFile.Select(t => t.GetFrameworkString()).First() + ending;
+                noExactMatchString = noExactMatchesFromFile.Count > 1 ? beginning +
+                    string.Join(ending + beginning,
+                        noExactMatchesFromFile.Select(t => t.GetFrameworkString()).ToArray()) + ending :
+                        firstElement;
+
+            }
+            if (noExactMatchesFromNuspec.Count != 0)
+            {
+                var ending = " to the lib or ref folder";
+                var firstElement = beginning + noExactMatchesFromNuspec.Select(t => t.GetShortFolderName()).First() + ending;
+                noExactMatchString = noExactMatchesFromNuspec.Count > 1 ? noExactMatchString + beginning +
+                    string.Join(ending + beginning,
+                        noExactMatchesFromNuspec.Select(t => t.GetShortFolderName()).ToArray()) + ending :
+                    firstElement;
+            }
+            if (compatNotExactMatches.Count != 0)
+            {
+                var ending = " to the nuspec";
+                var firstElement = beginning + compatNotExactMatches.Select(t => t.GetFrameworkString()).First() + ending;
+                compatMatchString = compatNotExactMatches.Count > 1 ? beginning +
+                    string.Join(ending + beginning,
+                        compatNotExactMatches.Select(t => t.GetFrameworkString()).ToArray()) + ending :
+                    firstElement;
+            }
+            return (noExactMatchString, compatMatchString);
+        }
     }
 }

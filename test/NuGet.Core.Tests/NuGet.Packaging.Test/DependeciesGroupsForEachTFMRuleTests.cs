@@ -47,7 +47,7 @@ namespace NuGet.Packaging.Test
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
                 "lib/net40/test.dll",
-                "lib/net472/test.dll",
+                "lib/net45/test.dll",
                 "lib/netstandard1.0/test.dll",
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll",
@@ -55,7 +55,8 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFM);
+            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
+                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
             byte[] byteArray = Encoding.ASCII.GetBytes(_nuspecContent);
             MemoryStream stream = new MemoryStream(byteArray);
             var issues = rule.Validate(files, stream).ToList();
@@ -72,15 +73,12 @@ namespace NuGet.Packaging.Test
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
-                "lib/net40/test.dll",
-                "lib/net472/test.dll",
-                "lib/netstandard1.0/test.dll",
-                "lib/netstandard1.3/test.dll",
-                "lib/netstandard2.0/test.dll"
+                "lib/net40/test.dll"
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFM);
+            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
+                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
             byte[] byteArray = Encoding.ASCII.GetBytes(_nuspecContent);
             MemoryStream stream = new MemoryStream(byteArray);
             var issues = rule.Validate(files, stream).ToList();

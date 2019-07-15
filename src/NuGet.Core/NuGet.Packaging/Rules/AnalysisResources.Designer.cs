@@ -88,11 +88,20 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The nuspec of the package does not include all the target frameworks found in the lib folder or ref folder. Consider adding the missing target frameworks to your nuspec..
+        ///   Looks up a localized string similar to Some TFMs declared in nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:{0}.
         /// </summary>
-        public static string DependenciesGroupsForEachTFM {
+        public static string DependenciesGroupsForEachTFMHasCompatMatch {
             get {
-                return ResourceManager.GetString("DependenciesGroupsForEachTFM", resourceCulture);
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMHasCompatMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some TFMs declared in nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:{0}.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMHasNoExactMatch {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMHasNoExactMatch", resourceCulture);
             }
         }
         

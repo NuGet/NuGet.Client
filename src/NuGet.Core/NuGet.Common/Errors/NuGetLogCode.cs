@@ -776,14 +776,18 @@ namespace NuGet.Common
         NU5127 = 5127,
 
         /// <summary>
-        /// TFM dependecies in the lib or ref folder don't match the nuspec
+        /// TFM dependencies in the lib or ref folder don't have exact matches in the nuspec
         /// </summary>
         NU5128 = 5128,
 
         /// <summary>
+        /// TFM dependencies in the lib or ref folder has a compatible match, but not an exact match
+        /// </summary>
+        NU5130 = 5130,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500,
-
+        NU5500 = 5500
     }
 }
