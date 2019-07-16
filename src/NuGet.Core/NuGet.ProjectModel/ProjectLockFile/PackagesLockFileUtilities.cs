@@ -103,7 +103,7 @@ namespace NuGet.ProjectModel
 
             // Validate the runtimes for the current project did not change.
             var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
-            var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null);
+            var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
 
             if (!projectRuntimesKeys.SequenceEqual(lockFileRuntimes))
             {

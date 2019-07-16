@@ -279,7 +279,7 @@ namespace NuGet.Test.Utility
         {
             foreach (var framework in Frameworks)
             {
-                framework.PackageReferences = new List<SimpleTestPackageContext>();
+                framework.PackageReferences.Clear();
             }
         }
 

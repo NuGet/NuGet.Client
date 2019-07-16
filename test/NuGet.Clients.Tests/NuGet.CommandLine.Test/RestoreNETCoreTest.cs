@@ -5,14 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
 using FluentAssertions;
-using FluentAssertions.Collections;
 using Newtonsoft.Json.Linq;
 
 using NuGet.Common;
@@ -25,11 +22,19 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.CommandLine.Test
 {
     public class RestoreNetCoreTest
     {
+        private readonly ITestOutputHelper _output;
+
+        public RestoreNetCoreTest(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
         [Fact]
         public async Task RestoreNetCore_AddExternalTargetVerifyTargetUsedAsync()
         {
@@ -412,7 +417,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("Writing cache file", r3.Item2);
             }
         }
-
 
         [Fact]
         public async Task RestoreNetCore_VerifyFallbackFoldersChangeTriggersARestoreAsync()
@@ -2091,7 +2095,6 @@ namespace NuGet.CommandLine.Test
 
             }
         }
-
 
         [Fact]
         public async Task RestoreNetCore_MultipleProjects_SameTool_NoOpAsync()
@@ -8549,7 +8552,7 @@ namespace NuGet.CommandLine.Test
 
         [Theory]
         [InlineData(new string[] { "win7-x86" }, new string[] { "win-x64" })]
-        [InlineData(new string[] { "win7-x86", "net46" }, new string[] { "win-x64" })]
+        [InlineData(new string[] { "win7-x86", "win-x64" }, new string[] { "win-x64" })]
         [InlineData(new string[] { "win7-x86" }, new string[] { "win7-x86", "win-x64" })]
         public void RestoreNetCore_PackagesLockFile_WithProjectChangeRuntimeAndLockedMode_FailsRestore(string[] intitialRuntimes, string[] updatedRuntimes)
         {
@@ -8625,7 +8628,8 @@ namespace NuGet.CommandLine.Test
                 solution.Create(pathContext.SolutionRoot);
 
                 // The framework as they are in the lock file
-                var lockFrameworkTransformed = intitialFrameworks.Select(f => $".NETFramework,Version=v{f.Replace("net", "")[0]}.{f.Replace("net", "")[1]}");
+                var lockFrameworkTransformed = intitialFrameworks.Select(f => $".NETFramework,Version=v{f.Replace("net", "")[0]}.{f.Replace("net", "")[1]}").ToList();
+                _output.WriteLine($"InputFrameworks: {string.Join(",", lockFrameworkTransformed)}");
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -8635,7 +8639,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 var lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
-                var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName);
+                var lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
+                _output.WriteLine($"PackageLockFrameworks First Evaluation: {string.Join(",", lockFrameworks)}");
                 lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
 
                 // Setup - change frameworks
@@ -8648,12 +8653,13 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 r.Success.Should().BeFalse();
                 lockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+                lockFrameworks = lockFile.Targets.Select(t => t.TargetFramework.DotNetFrameworkName).Distinct().ToList();
+                _output.WriteLine($"PackageLockFrameworks Second Evaluation: {string.Join(",", lockFrameworks)}");
                 // The frameworks should not chnage in the lock file.
                 lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
                 Assert.Contains("NU1004", r.Errors);
             }
         }
-
 
         [Theory]
         [InlineData(new string[] { "x_lockmodedepch/1.0.0" }, new string[] { "x_lockmodedepch/2.0.0" })]
@@ -8752,7 +8758,7 @@ namespace NuGet.CommandLine.Test
         [InlineData(new string[] { "x_lockmodetdepch/1.0.0" }, new string[] { "y_lockmodetdepch/1.0.0" })]
         [InlineData(new string[] { "x_lockmodetdepch/1.0.0" }, new string[] { "x_lockmodetdepch/1.0.0", "y_lockmodetdepch/1.0.0" })]
         [InlineData(new string[] { "x_lockmodetdepch/1.0.0", "y_lockmodetdepch/1.0.0" }, new string[] { "y_lockmodetdepch/1.0.0" })]
-        public async Task RestoreNetCore_PackagesLockFile_WithDependentProjectChangeIfPackageDependencyAndLockedMode_FailsRestore(
+        public async Task RestoreNetCore_PackagesLockFile_WithDependentProjectChangeOfPackageDependencyAndLockedMode_FailsRestore(
            string[] initialPackageIdAndVersion,
            string[] updatedPackageIdAndVersion)
         {
@@ -8845,7 +8851,6 @@ namespace NuGet.CommandLine.Test
                 Assert.Contains("NU1004", r.Errors);
             }
         }
-
 
         [Theory]
         [InlineData("netcoreapp2.0", new string[] { "netcoreapp2.0" }, new string[] { "netcoreapp2.2" })]
@@ -8956,6 +8961,7 @@ namespace NuGet.CommandLine.Test
                 r.Success.Should().BeTrue();
             }
         }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
