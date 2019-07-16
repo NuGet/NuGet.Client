@@ -205,9 +205,6 @@
   <data name="IconErrorEmpty" xml:space="preserve">
     <value>The icon file is empty.</value>
   </data>
-  <data name="IconErrorReading" xml:space="preserve">
-    <value>Unable to read icon file.</value>
-  </data>
   <data name="IconNoFileElement" xml:space="preserve">
     <value>No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec.</value>
   </data>

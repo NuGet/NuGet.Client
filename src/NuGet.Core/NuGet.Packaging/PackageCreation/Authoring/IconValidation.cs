@@ -22,53 +22,29 @@ namespace NuGet.Packaging
         /// Validate the icon filesize
         ///
         /// Launches a PackagingException in case of an error
+        ///
+        /// This validation is intended to run at pre-packing time
         /// </summary>
         /// <remarks>This consumes the stream</remarks>
         /// <param name="stream">Stream that points to the icon file</param>
+        /// <exception cref="PackagingException">When the icon file size is:
+        /// 1) Greater than the maximum icon file size <see cref="MaxIconFileSize"/>
+        /// 2) Less than zero, indicating an error reading the icon file
+        /// 3) Zero, indicating an empty file
+        /// </exception>
         public static void ValidateIconFileSize(Stream stream)
         {
-            long fileSize = EstimateFileSize(stream);
+            long fileSize = stream.Length;
 
             if (fileSize > MaxIconFileSize)
             {
                 throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconMaxFilseSizeExceeded);
             }
 
-            if (fileSize < 0)
-            {
-                throw new PackagingException(Common.NuGetLogCode.NU5040, NuGetResources.IconErrorReading);
-            }
-
             if (fileSize == 0)
             {
                 throw new PackagingException(Common.NuGetLogCode.NU5041, NuGetResources.IconErrorEmpty);
             }
-        }
-
-        /// <summary>
-        /// Reads up to MaxIconFilzeSize of the file
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <returns></returns>
-        private static long EstimateFileSize(Stream stream)
-        {
-            long fileSize = -1;
-            try
-            {
-                fileSize = stream.Length;
-            }
-            catch (NotSupportedException)
-            {
-                int buffSizeee = MaxIconFileSize + 1;
-                byte[] byteBuffer = new byte[buffSizeee];
-
-                if (stream.CanRead)
-                {
-                    fileSize = stream.Read(byteBuffer, 0, buffSizeee);
-                }
-            }
-
-            return fileSize;
         }
     }
 }

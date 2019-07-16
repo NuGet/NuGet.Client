@@ -106,15 +106,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to read icon file..
-        /// </summary>
-        internal static string IconErrorReading {
-            get {
-                return ResourceManager.GetString("IconErrorReading", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
         /// </summary>
         internal static string IconMaxFilseSizeExceeded {
