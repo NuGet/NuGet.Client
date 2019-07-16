@@ -8910,7 +8910,7 @@ namespace NuGet.CommandLine.Test
         [Theory]
         [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.2" }, new string[] { "netcoreapp2.0", "netcoreapp2.2" })]
         [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.0", "netcoreapp2.2" }, new string[] { "netcoreapp2.2" })]
-        [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.0"}, new string[] { "netcoreapp2.2" })]
+        [InlineData("netcoreapp2.2", new string[] { "netcoreapp2.0" }, new string[] { "netcoreapp2.2" })]
         public void RestoreNetCore_PackagesLockFile_WithDependentProjectChangeOfCompatibleFrameworksAndLockedMode_PassRestore(
            string mainProjectFramework,
            string[] initialFrameworks,
