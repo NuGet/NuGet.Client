@@ -265,6 +265,7 @@ namespace NuGet.Packaging.FuncTest
                     RepositoryRequest?.Dispose();
                     _authorCertificate?.Dispose();
                     _repositoryCertificate?.Dispose();
+                    Options.Dispose();
                     _directory?.Dispose();
 
                     GC.SuppressFinalize(this);
