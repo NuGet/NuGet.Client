@@ -89,7 +89,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerControl(
             PackageManagerModel model,
-            Configuration.ISettings nugetSettings,
+            ISettings nugetSettings,
             IVsWindowSearchHostFactory searchFactory,
             IVsShell4 vsShell,
             INuGetUILogger uiLogger = null)
@@ -171,11 +171,6 @@ namespace NuGet.PackageManagement.UI
             _missingPackageStatus = false;
         }
 
-        private void PackagesErrorBar_RefreshUI(object sender, EventArgs e)
-        {
-            Refresh();
-        }
-
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
         {
             Model.Context.Projects = _detailModel.NuGetProjects;
@@ -187,7 +182,6 @@ namespace NuGet.PackageManagement.UI
             if (!Model.IsSolution)
             {
                 var currentNugetProject = Model.Context.Projects.First();
-                var newNugetProject = e.NuGetProject;
                 string currentFullPath, newFullPath;
                 currentNugetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out currentFullPath);
                 e.NuGetProject.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out newFullPath);
@@ -202,67 +196,79 @@ namespace NuGet.PackageManagement.UI
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
         {
-            if (Model.IsSolution)
+            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            if (IsVisible)
             {
-                var solutionModel = _detailModel as PackageSolutionDetailControlModel;
-                if (solutionModel == null)
+                if (Model.IsSolution)
                 {
-                    return;
+                    var solutionModel = _detailModel as PackageSolutionDetailControlModel;
+                    if (solutionModel == null)
+                    {
+                        return;
+                    }
+
+                    // get the list of projects
+                    var projects = solutionModel.Projects.Select(p => p.NuGetProject);
+                    Model.Context.Projects = projects;
+
+                    // refresh UI
+                    Refresh();
                 }
-
-                // get the list of projects
-                var projects = solutionModel.Projects.Select(p => p.NuGetProject);
-                Model.Context.Projects = projects;
-
-                // refresh UI
-                Refresh();
             }
         }
 
         private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
         {
-            if (Model.IsSolution)
+            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            if (IsVisible)
             {
-                Refresh();
-            }
-            else
-            {
-                // this is a project package manager, so there is one and only one project.
-                var project = Model.Context.Projects.First();
-                var projectName = NuGetProject.GetUniqueNameOrName(project);
-
-                // we need refresh when packages are installed into or uninstalled from the project
-                if (e.Actions.Any(action =>
-                    NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+                if (Model.IsSolution)
                 {
                     Refresh();
+                }
+                else
+                {
+                    // this is a project package manager, so there is one and only one project.
+                    var project = Model.Context.Projects.First();
+                    var projectName = NuGetProject.GetUniqueNameOrName(project);
+
+                    // we need refresh when packages are installed into or uninstalled from the project
+                    if (e.Actions.Any(action =>
+                        NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
+                    {
+                        Refresh();
+                    }
                 }
             }
         }
 
         private void SolutionManager_CacheUpdated(object sender, NuGetEventArgs<string> e)
         {
-            if (Model.IsSolution)
+            // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
+            if (IsVisible)
             {
-                // This means that the UI is open for the solution.
-                Refresh();
-            }
-            else
-            {
-                // This is a project package manager, so there is one and only one project.
-                var project = Model.Context.Projects.First();
-
-                string projectFullName;
-
-                var projectContainsFullPath = project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out projectFullName);
-
-                var eventProjectFullName = e.Arg;
-
-                // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
-                // We also refresh the UI if projectFullPath is not present.
-                if (!projectContainsFullPath || projectFullName == eventProjectFullName)
+                if (Model.IsSolution)
                 {
+                    // This means that the UI is open for the solution.
                     Refresh();
+                }
+                else
+                {
+                    // This is a project package manager, so there is one and only one project.
+                    var project = Model.Context.Projects.First();
+
+                    string projectFullName;
+
+                    var projectContainsFullPath = project.TryGetMetadata(NuGetProjectMetadataKeys.FullPath, out projectFullName);
+
+                    var eventProjectFullName = e.Arg;
+
+                    // This ensures that we refresh the UI only if the event.project.FullName matches the NuGetProject.FullName.
+                    // We also refresh the UI if projectFullPath is not present.
+                    if (!projectContainsFullPath || projectFullName == eventProjectFullName)
+                    {
+                        Refresh();
+                    }
                 }
             }
         }
@@ -914,16 +920,6 @@ namespace NuGet.PackageManagement.UI
                 () => PackageCollection.FromProjectsAsync(projects, CancellationToken.None));
 
             return installedPackages.ToArray();
-        }
-
-        private void SearchControl_SearchStart(object sender, EventArgs e)
-        {
-            if (!_initialized)
-            {
-                return;
-            }
-
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
         }
 
         private void CheckboxPrerelease_CheckChanged(object sender, EventArgs e)
