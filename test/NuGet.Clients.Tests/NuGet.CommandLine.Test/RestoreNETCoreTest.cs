@@ -8568,8 +8568,7 @@ namespace NuGet.CommandLine.Test
                    pathContext.SolutionRoot,
                    new NuGetFramework[]{ NuGetFramework.Parse(tfm) });
 
-                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");             
                 projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", intitialRuntimes));
 
                 solution.Projects.Add(projectA);
@@ -8588,6 +8587,7 @@ namespace NuGet.CommandLine.Test
                 intitialRuntimes.ShouldBeEquivalentTo(lockRuntimes);
 
                 // Setup - change runtimes
+                projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Properties.Remove("RuntimeIdentifiers");
                 projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", updatedRuntimes));
                 projectA.Save();
@@ -8623,7 +8623,6 @@ namespace NuGet.CommandLine.Test
                    intitialFrameworks.Select(tfm => NuGetFramework.Parse(tfm)).ToArray());
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
@@ -8644,6 +8643,7 @@ namespace NuGet.CommandLine.Test
                 lockFrameworkTransformed.ShouldBeEquivalentTo(lockFrameworks);
 
                 // Setup - change frameworks
+                projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
                 projectA.Save();
 
@@ -8683,7 +8683,6 @@ namespace NuGet.CommandLine.Test
                    NuGetFramework.Parse(netcoreapp20));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
 
                 // Set up the package and source
                 var packages = initialPackageIdAndVersion.Select(p =>
@@ -8720,6 +8719,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Setup - change project's packages
+                projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.CleanPackagesFromAllFrameworks();
                 packages = updatedPackageIdAndVersion.Select(p =>
                 {
@@ -8775,7 +8775,6 @@ namespace NuGet.CommandLine.Test
                    NuGetFramework.Parse(netcoreapp20));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                    "b",
@@ -8819,6 +8818,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Setup - change project's packages
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
                 projectB.CleanPackagesFromAllFrameworks();
                 packages = updatedPackageIdAndVersion.Select(p =>
                 {
@@ -8874,7 +8875,6 @@ namespace NuGet.CommandLine.Test
                    NuGetFramework.Parse(netcoreapp20));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                    "b",
@@ -8895,6 +8895,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Setup - change package version
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
                 projectB.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
                 projectB.Save();
 
@@ -8930,7 +8932,6 @@ namespace NuGet.CommandLine.Test
                    NuGetFramework.Parse(netcoreapp20));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
-                projectA.Properties.Add("RestoreLockedMode", "true");
 
                 var projectB = SimpleTestProjectContext.CreateNETCore(
                    "b",
@@ -8951,6 +8952,8 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
                 // Setup - change package version
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
                 projectB.Frameworks = updatedFrameworks.Select(tfm => new SimpleTestProjectFrameworkContext(NuGetFramework.Parse(tfm))).ToList();
                 projectB.Save();
 

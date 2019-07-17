@@ -65,7 +65,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="dgSpec">The <see cref="DependencyGraphSpec"/> for the new project defintion.</param>
         /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
-        /// <returns></returns>
+        /// <returns>True if the lock file is valid false otherwise. </returns>
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
             var uniqueName = dgSpec.Restore.First();
