@@ -61,7 +61,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; }
 
-        public Configuration.ISettings Settings { get; }
+        public ISettings Settings { get; }
 
         internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
@@ -217,6 +217,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private DateTimeOffset _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
+        private int _expectedCacheUpdates = 0;
+
         private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
         {
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
@@ -224,6 +227,9 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
+                    _expectedCacheUpdates = e.Actions.Where(action => action.Project is NetCorePackageReferenceProject).Count();
+                    _lastActionsExecutedUpdate = DateTimeOffset.Now;
+
                     Refresh();
                 }
                 else
@@ -236,6 +242,11 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
+                        if (project is NetCorePackageReferenceProject)
+                        {
+                            _expectedCacheUpdates = 1;
+                            _lastActionsExecutedUpdate = DateTimeOffset.Now;
+                        }
                         Refresh();
                     }
                 }
@@ -249,8 +260,24 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    // This means that the UI is open for the solution.
-                    Refresh();
+                    if (_expectedCacheUpdates == 0)
+                    {
+                        Refresh();
+                    }
+                    else
+                    {
+                        _expectedCacheUpdates--; // decrease the cache updates;
+                        // TODO NK - figure out good numbers.
+                        if (DateTimeOffset.Now.Subtract(_lastActionsExecutedUpdate).TotalMilliseconds > 5000)
+                        {
+                            // it's been too long, refresh and reset all counters
+                            _expectedCacheUpdates = 0;
+                            _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
+                            Refresh();
+                        }
+
+                    }
+
                 }
                 else
                 {
@@ -267,7 +294,17 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        Refresh();
+                        // Only refresh if we are not expecting a nomination or it's been more than a certain amount of time.
+                        //TODO NK - profile a good timeout.
+                        if (_expectedCacheUpdates == 0 || DateTimeOffset.Now.Subtract(_lastActionsExecutedUpdate).TotalMilliseconds > 3000)
+                        {
+                            Refresh();
+                        }
+                        else
+                        {
+                            _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
+                            _expectedCacheUpdates = 0;
+                        }
                     }
                 }
             }
