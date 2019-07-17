@@ -270,7 +270,9 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    topLevelPackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max();
+                    var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
+
+                    topLevelPackage.LatestVersion = matchingPackage.Value.Single(p => p.Identity.Version == latestVersion);
                     topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion.Identity.Version, topLevelPackage.LatestVersion.Identity.Version);
 
                     // Update resolved version with deprecated information returned by the server.
@@ -287,7 +289,9 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    transitivePackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max();
+                    var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
+
+                    transitivePackage.LatestVersion = matchingPackage.Value.Single(p => p.Identity.Version == latestVersion);
                     transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion.Identity.Version, transitivePackage.LatestVersion.Identity.Version);
 
                     // Update resolved version with deprecated information returned by the server.
