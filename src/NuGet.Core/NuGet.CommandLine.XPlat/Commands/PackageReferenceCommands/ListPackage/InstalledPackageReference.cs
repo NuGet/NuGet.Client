@@ -18,8 +18,8 @@ namespace NuGet.CommandLine.XPlat
     {
         internal string Name { get; }
         internal string OriginalRequestedVersion { get; set; }
-        internal NuGetVersionWithDeprecationInfo ResolvedVersion { get; set; }
-        internal NuGetVersionWithDeprecationInfo LatestVersion { get; set; }
+        internal IPackageSearchMetadata ResolvedVersion { get; set; }
+        internal IPackageSearchMetadata LatestVersion { get; set; }
         internal bool AutoReference { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
 

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
@@ -141,8 +142,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                        p => "",
                        p => p.Name,
                        p => "",
-                       p => p.ResolvedVersion.ToString(),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
+                       p => PrintVersion(p.ResolvedVersion),
+                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestVersion));
             }
             else if (outdated && !printingTransitive)
             {
@@ -161,8 +162,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString(),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : p.LatestVersion.ToString());
+                       p => PrintVersion(p.ResolvedVersion),
+                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestVersion));
             }
             else if (!outdated && printingTransitive)
             {
@@ -172,7 +173,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         p => "",
                         p => p.Name,
                         p => "",
-                        p => p.ResolvedVersion.ToString());
+                        p => PrintVersion(p.ResolvedVersion));
             }
             else
             {
@@ -181,7 +182,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                        p => p.UpdateLevel,
                        p => "",
                        p => p.Name,
-                       p => {
+                       p =>
+                       {
                            if (p.AutoReference)
                            {
                                autoReferenceFound = true;
@@ -190,7 +192,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => p.ResolvedVersion.ToString());
+                       p => PrintVersion(p.ResolvedVersion));
             }
 
             //Handle printing with colors
@@ -202,7 +204,19 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
             autoRefWithinPackagesList = autoReferenceFound;
-            deprecatedWithinPackagesList = packages.Any(p => p.LatestVersion.IsDeprecated || p.ResolvedVersion.IsDeprecated);
+            deprecatedWithinPackagesList = packages.Any(p => p.LatestVersion.DeprecationMetadata != null || p.ResolvedVersion.DeprecationMetadata != null);
+        }
+
+        private static string PrintVersion(IPackageSearchMetadata metadata)
+        {
+            var output = metadata.Identity.Version.ToString();
+
+            if (metadata.DeprecationMetadata != null)
+            {
+                output += " (D)";
+            }
+
+            return output;
         }
 
         /// <summary>

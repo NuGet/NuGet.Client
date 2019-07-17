@@ -12,7 +12,9 @@ using Microsoft.Build.Execution;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.CommandLine.XPlat
@@ -438,7 +440,9 @@ namespace NuGet.CommandLine.XPlat
                             };
                         }
 
-                        installedPackage.ResolvedVersion = new NuGetVersionWithDeprecationInfo(library.Version, false);
+                        installedPackage.ResolvedVersion = PackageSearchMetadataBuilder.FromIdentity(
+                            new PackageIdentity(library.Name, library.Version)).Build();
+
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
 
                         topLevelPackages.Add(installedPackage);
@@ -449,7 +453,8 @@ namespace NuGet.CommandLine.XPlat
                     {
                         var installedPackage = new InstalledPackageReference(library.Name)
                         {
-                            ResolvedVersion = new NuGetVersionWithDeprecationInfo(library.Version, false)
+                            ResolvedVersion = PackageSearchMetadataBuilder.FromIdentity(
+                                new PackageIdentity(library.Name, library.Version)).Build()
                         };
                         transitivePackages.Add(installedPackage);
                     }
