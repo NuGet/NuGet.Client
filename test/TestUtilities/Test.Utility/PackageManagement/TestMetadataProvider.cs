@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -52,7 +53,7 @@ namespace Test.Utility
             );
         }
 
-        public override async Task<IDictionary<NuGetVersion, bool>> GetVersionsAndDeprecationInfo(
+        public override async Task<IEnumerable<NuGetVersionWithDeprecationInfo>> GetVersionsAndDeprecationInfo(
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
@@ -62,7 +63,7 @@ namespace Test.Utility
         {
             var versions = await GetVersions(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
 
-            return versions.ToDictionary(i => i, i => false);
+            return versions.Select(i => new NuGetVersionWithDeprecationInfo(i, isDeprecated: false)).ToList();
         }
 
         public override Task<bool> Exists(PackageIdentity identity, bool includeUnlisted, SourceCacheContext sourceCacheContext, NuGet.Common.ILogger log, CancellationToken token)
