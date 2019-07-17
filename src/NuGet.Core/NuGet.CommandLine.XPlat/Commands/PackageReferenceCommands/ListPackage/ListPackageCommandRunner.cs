@@ -371,9 +371,9 @@ namespace NuGet.CommandLine.XPlat
             Dictionary<string, IList<NuGetVersionWithDeprecationInfo>> packagesVersionsDict)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var dependencyInfoResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
+            var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetVersionsAndDeprecationInfo(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = (await metadataResource.GetVersionsAndDeprecationInfo(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
 
             var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);

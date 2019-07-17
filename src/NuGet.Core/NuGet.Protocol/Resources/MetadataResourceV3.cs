@@ -19,13 +19,11 @@ namespace NuGet.Protocol
     public class MetadataResourceV3 : MetadataResource
     {
         private RegistrationResourceV3 _regResource;
-        private HttpSource _client;
 
-        public MetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource)
+        public MetadataResourceV3(RegistrationResourceV3 regResource)
             : base()
         {
             _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
-            _client = client ?? throw new ArgumentNullException(nameof(client));
         }
 
         /// <summary>
