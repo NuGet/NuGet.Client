@@ -217,8 +217,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private DateTimeOffset _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
-        private int _expectedCacheUpdates = 0;
+        private DateTimeOffset _lastProjectUpdateRefreshExecuted = DateTimeOffset.MinValue;
 
         private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
         {
@@ -227,9 +226,6 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    _expectedCacheUpdates = e.Actions.Where(action => action.Project is NetCorePackageReferenceProject).Count();
-                    _lastActionsExecutedUpdate = DateTimeOffset.Now;
-
                     Refresh();
                 }
                 else
@@ -242,12 +238,17 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
-                        if (project is NetCorePackageReferenceProject)
+                        // With .NET Core projects, we need to make sure we only refresh once,
+                        // since the ActionsExecuted and CacheUpdated likely both report the same update
+                        if (DateTimeOffset.Now.Subtract(_lastProjectUpdateRefreshExecuted).TotalMilliseconds > 2000)
                         {
-                            _expectedCacheUpdates = 1;
-                            _lastActionsExecutedUpdate = DateTimeOffset.Now;
+                            if (_lastProjectUpdateRefreshExecuted.Equals(DateTimeOffset.MinValue))
+                            {
+                                _lastProjectUpdateRefreshExecuted = DateTimeOffset.Now;
+                            }
+
+                            Refresh();
                         }
-                        Refresh();
                     }
                 }
             }
@@ -260,24 +261,14 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    if (_expectedCacheUpdates == 0)
+                    // Do not refresh if the UI is visible, but the UI is not enabled.
+                    // This means that there's a solution update operation running. It only needs to refresh once when the actions executed event handler is called.
+                    // It's possible that we are refreshing too often in this case. If say a nomination comes after all the actions have been executed (likely),
+                    // however with this we are trying to handle the bulk update scenarios, where we'd trigger many more refreshes.
+                    if (!IsEnabled)
                     {
                         Refresh();
                     }
-                    else
-                    {
-                        _expectedCacheUpdates--; // decrease the cache updates;
-                        // TODO NK - figure out good numbers.
-                        if (DateTimeOffset.Now.Subtract(_lastActionsExecutedUpdate).TotalMilliseconds > 5000)
-                        {
-                            // it's been too long, refresh and reset all counters
-                            _expectedCacheUpdates = 0;
-                            _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
-                            Refresh();
-                        }
-
-                    }
-
                 }
                 else
                 {
@@ -294,16 +285,15 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        // Only refresh if we are not expecting a nomination or it's been more than a certain amount of time.
-                        //TODO NK - profile a good timeout.
-                        if (_expectedCacheUpdates == 0 || DateTimeOffset.Now.Subtract(_lastActionsExecutedUpdate).TotalMilliseconds > 3000)
+                        // Only refresh if the last action executed event was very recent.
+                        if (DateTimeOffset.Now.Subtract(_lastProjectUpdateRefreshExecuted).TotalMilliseconds > 2000)
                         {
+                            if (_lastProjectUpdateRefreshExecuted.Equals(DateTimeOffset.MinValue))
+                            {
+                                _lastProjectUpdateRefreshExecuted = DateTimeOffset.Now;
+                            }
+
                             Refresh();
-                        }
-                        else
-                        {
-                            _lastActionsExecutedUpdate = DateTimeOffset.MinValue;
-                            _expectedCacheUpdates = 0;
                         }
                     }
                 }
