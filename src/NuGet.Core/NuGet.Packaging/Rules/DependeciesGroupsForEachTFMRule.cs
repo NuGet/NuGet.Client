@@ -28,7 +28,8 @@ namespace NuGet.Packaging.Rules
         }
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var files = builder.GetFiles();
+            var files = builder.GetFiles().
+                Where(t => PathUtility.GetPathWithDirectorySeparator(t).Count(m => m == Path.DirectorySeparatorChar) > 1);
             var packageNuspec = builder.GetNuspec();
             return Validate(files, packageNuspec);
         }
@@ -40,7 +41,6 @@ namespace NuGet.Packaging.Rules
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-
             var libItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
             var refItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
             var libFrameworks = GetGroupFrameworks(libItems).ToArray();
@@ -51,70 +51,87 @@ namespace NuGet.Packaging.Rules
             tfmsFromFilesSet.AddRange(refFrameworks);
             var tfmsFromFiles = tfmsFromFilesSet.ToList();
 
-            if (tfmsFromFiles.Count != 0)
+            List<NuGetFramework> tfmsFromNuspec = new List<NuGetFramework>();
+            using (var stream = new StreamReader(packageNuspec))
             {
-                List<NuGetFramework> tfmsFromNuspec = null;
-                using (var stream = new StreamReader(packageNuspec))
+                var nuspec = XDocument.Load(stream);
+                if (nuspec != null)
                 {
-                    var nuspec = XDocument.Load(stream);
-                    if (nuspec != null)
-                    {
-                        string name = nuspec.Root.Name.Namespace.ToString();
-                        tfmsFromNuspec = nuspec.Descendants(XName.Get("dependencies", name)).Elements().
-                            Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value)).ToList();
-                    }
+                    string name = nuspec.Root.Name.Namespace.ToString();
+                    tfmsFromNuspec = nuspec.Descendants(XName.Get("dependencies", name)).Elements().
+                        Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value)).ToList();
                 }
+            }
 
-                if (tfmsFromNuspec != null)
+            if (tfmsFromFiles.Count != 0 && tfmsFromNuspec.Count != 0)
+            {
+                foreach(var fileTFM in tfmsFromFiles)
                 {
-                    var issue = new List<PackagingLogMessage>();
-                    foreach(var item in tfmsFromFiles)
+                    foreach(var nuspecTFM in tfmsFromNuspec)
                     {
-                        foreach(var nuspecTFMs in tfmsFromNuspec)
+                        if (!tfmsFromNuspec.Contains(fileTFM))
                         {
-                            if (!tfmsFromNuspec.Contains(item))
-                            {
-                                _noExactMatchesFromFile.Add(item);
-                            }
+                            _noExactMatchesFromFile.Add(fileTFM);
+                        }
 
-                            if (!tfmsFromFiles.Contains(nuspecTFMs))
-                            {
-                                _noExactMatchesFromNuspec.Add(nuspecTFMs);
+                        if (!tfmsFromFiles.Contains(nuspecTFM))
+                        {
+                            _noExactMatchesFromNuspec.Add(nuspecTFM);
 
-                                if (isCompatible(item, nuspecTFMs))
-                                {
-                                    _compatNotExactMatches.Add(item);
-                                }
+                            if (isCompatible(fileTFM, nuspecTFM))
+                            {
+                                _compatNotExactMatches.Add(fileTFM);
                             }
                         }
                     }
-
-                    _noExactMatchesFromFile.RemoveWhere(IsCompat);
-                    _noExactMatchesFromNuspec.RemoveWhere(IsCompat);
-                    (string noExactMatchString, string compatMatchString) =
-                        GenerateWarningString(_noExactMatchesFromFile, _noExactMatchesFromNuspec, _compatNotExactMatches);
-
-                    var issues = new List<PackagingLogMessage>();
-
-                    if (_noExactMatchesFromFile.Count != 0 || _noExactMatchesFromNuspec.Count != 0)
-                    {
-                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,noExactMatchString),
-                            NuGetLogCode.NU5128));
-                    }
-
-                    if (_compatNotExactMatches.Count != 0)
-                    {
-                        issue.Add(PackagingLogMessage.CreateWarning(string.Format(SecondWarning, compatMatchString),
-                            NuGetLogCode.NU5130));
-                    }
-
-                    if(issue.Count != 0)
-                    {
-                        return issue;
-                    }
                 }
 
+                _noExactMatchesFromFile.RemoveWhere(IsCompat);
+                _noExactMatchesFromNuspec.RemoveWhere(IsCompat);
+                (string noExactMatchString, string compatMatchString) =
+                    GenerateWarningString(_noExactMatchesFromFile, _noExactMatchesFromNuspec, _compatNotExactMatches);
+
+                var issues = new List<PackagingLogMessage>();
+
+                if (_noExactMatchesFromFile.Count != 0 || _noExactMatchesFromNuspec.Count != 0)
+                {
+                    issues.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat,noExactMatchString),
+                        NuGetLogCode.NU5128));
+                }
+
+                if (_compatNotExactMatches.Count != 0)
+                {
+                    issues.Add(PackagingLogMessage.CreateWarning(string.Format(SecondWarning, compatMatchString),
+                        NuGetLogCode.NU5130));
+                }
+
+                if(issues.Count != 0)
+                {
+                    return issues;
+                }
             }
+            else
+            if((tfmsFromFiles.Count != 0 && tfmsFromNuspec.Count == 0) || (tfmsFromFiles.Count == 0 && tfmsFromNuspec.Count != 0))
+            {
+                if(tfmsFromFiles.Count != 0)
+                {
+                    _noExactMatchesFromFile.AddRange(tfmsFromFiles);
+                }
+
+                if(tfmsFromNuspec.Count != 0)
+                {
+                    _noExactMatchesFromNuspec.AddRange(tfmsFromNuspec);
+                }
+
+                (string noExactMatchString, string compatMatchString) =
+                    GenerateWarningString(_noExactMatchesFromFile, _noExactMatchesFromNuspec, _compatNotExactMatches);
+
+                var issues = new List<PackagingLogMessage>();
+                issues.Add(PackagingLogMessage.CreateWarning(string.Format(MessageFormat, noExactMatchString),
+                        NuGetLogCode.NU5128));
+                return issues;
+            }
+
             return Array.Empty<PackagingLogMessage>();
         }
 
