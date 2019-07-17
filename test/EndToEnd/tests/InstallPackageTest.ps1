@@ -2848,7 +2848,7 @@ function Test-InstallPackagesNupkgOnline
     $p = New-ClassLibrary
 
     # Act
-    $p | Install-package https://az320820.vo.msecnd.net/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
+    $p | Install-package https://globalcdn.nuget.org/packages/microsoft.aspnet.mvc.4.0.20505.nupkg
 
     # Assert
     Assert-Package $p microsoft.aspnet.mvc 4.0.20505.0
