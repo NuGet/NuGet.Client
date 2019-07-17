@@ -654,6 +654,23 @@ namespace NuGet.Commands
                 var id = item.GetProperty("Id");
                 var versionString = item.GetProperty("VersionRange");
 
+                // If there are multiple package download elements in the project for the same package id, only the first is used.
+                // But, the project might multi-target, and the package download is for one target, so we must check each tfm.
+                var frameworks = GetFrameworks(item).ToList();
+                for (int i = 0; i < frameworks.Count; i++)
+                {
+                    if (spec.GetTargetFramework(frameworks[i]).DownloadDependencies.Any(d => d.Name == id))
+                    {
+                        frameworks.RemoveAt(i);
+                        i--;
+                    }
+                }
+
+                if (frameworks.Count == 0)
+                {
+                    continue;
+                }
+
                 var versions = versionString.Split(';');
 
                 foreach (var version in versions)
@@ -666,7 +683,6 @@ namespace NuGet.Commands
                     }
 
                     var downloadDependency = new DownloadDependency(id, versionRange);
-                    var frameworks = GetFrameworks(item);
 
                     foreach (var framework in frameworks)
                     {

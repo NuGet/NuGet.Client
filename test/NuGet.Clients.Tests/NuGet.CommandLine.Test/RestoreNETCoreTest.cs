@@ -6878,19 +6878,17 @@ namespace NuGet.CommandLine.Test
                 var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
                 Assert.Equal(0, lockFile.Libraries.Count);
                 Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
-                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
-                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
-                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
-                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().Name);
-                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().VersionRange.ToNormalizedString());
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].Name);
+                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].VersionRange.ToNormalizedString());
 
                 Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)), $"{packageX1.ToString()} is not installed");
-                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} is not installed");
+                Assert.False(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} should not be installed");
             }
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleTFM_SameIdSameVersionMultiDeclaration_MultiPackageDownload()
+        public async Task RestoreNetCore_SingleTFM_SameIdSameVersionMultiDeclaration_SinglePackageDownload()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -6954,14 +6952,12 @@ namespace NuGet.CommandLine.Test
                 var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
                 Assert.Equal(0, lockFile.Libraries.Count);
                 Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
-                Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
-                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().Name);
-                Assert.Equal($"[{packageX2.Version}, {packageX2.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.First().VersionRange.ToNormalizedString());
-                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().Name);
-                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks.Last().DownloadDependencies.Last().VersionRange.ToNormalizedString());
+                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies.Count);
+                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].Name);
+                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].VersionRange.ToNormalizedString());
 
                 Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)), $"{packageX1.ToString()} is not installed");
-                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} is not installed");
+                Assert.False(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} should not be installed");
             }
         }
 
