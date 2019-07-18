@@ -783,6 +783,15 @@ namespace NuGet.PackageManagement.UI {
         /// <summary>
         ///   Looks up a localized string similar to {0} version {1}.
         /// </summary>
+        public static string Label_DeprecatedPackageIdAndExactVersion {
+            get {
+                return ResourceManager.GetString("Label_DeprecatedPackageIdAndExactVersion", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} &gt;= {1}.
+        /// </summary>
         public static string Label_DeprecatedPackageIdAndMinVersion {
             get {
                 return ResourceManager.GetString("Label_DeprecatedPackageIdAndMinVersion", resourceCulture);
@@ -939,15 +948,6 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_Options {
             get {
                 return ResourceManager.GetString("Label_Options", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to  (or higher).
-        /// </summary>
-        public static string Label_OrHigher {
-            get {
-                return ResourceManager.GetString("Label_OrHigher", resourceCulture);
             }
         }
         

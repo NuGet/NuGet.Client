@@ -397,7 +397,7 @@ namespace NuGet.PackageManagement.UI
                 return text;
             }
 
-            if (alternatePackageMetadata.Range.HasLowerBound)
+            if (!alternatePackageMetadata.Range.HasUpperBound)
             {
                 text = string.Format(
                     CultureInfo.CurrentCulture,
@@ -405,10 +405,13 @@ namespace NuGet.PackageManagement.UI
                     alternatePackageMetadata.PackageId,
                     alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
             }
-
-            if (!alternatePackageMetadata.Range.HasUpperBound)
+            else if (alternatePackageMetadata.Range.HasLowerBound)
             {
-                text += Resources.Label_OrHigher;
+                text = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.Label_DeprecatedPackageIdAndExactVersion,
+                    alternatePackageMetadata.PackageId,
+                    alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
             }
 
             return text;
