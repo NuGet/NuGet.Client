@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Plugins
         private PluginManager()
         {
             Initialize(
-                new EnvironmentVariableWrapper(),
+                EnvironmentVariableWrapper.Instance,
                 new Lazy<IPluginDiscoverer>(InitializeDiscoverer),
                 (TimeSpan idleTimeout) => new PluginFactory(idleTimeout),
                 new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder()));

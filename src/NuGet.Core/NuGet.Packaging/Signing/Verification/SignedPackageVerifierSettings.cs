@@ -160,7 +160,9 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Default settings.
         /// </summary>
-        public static SignedPackageVerifierSettings GetDefault()
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> instance or <c>null</c> for the default environment variable reader.</param>
+        /// <returns>A <see cref="SignedPackageVerifierSettings" /> instance.</returns>
+        public static SignedPackageVerifierSettings GetDefault(IEnvironmentVariableReader environmentVariableReader = null)
         {
             return new SignedPackageVerifierSettings(
                 allowUnsigned: true,
@@ -174,13 +176,15 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
-                revocationMode: SettingsUtility.GetRevocationMode());
+                revocationMode: SettingsUtility.GetRevocationMode(environmentVariableReader));
         }
 
         /// <summary>
         /// The accept mode policy.
         /// </summary>
-        public static SignedPackageVerifierSettings GetAcceptModeDefaultPolicy()
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> instance or <c>null</c> for the default environment variable reader.</param>
+        /// <returns>A <see cref="SignedPackageVerifierSettings" /> instance.</returns>
+        public static SignedPackageVerifierSettings GetAcceptModeDefaultPolicy(IEnvironmentVariableReader environmentVariableReader = null)
         {
             return new SignedPackageVerifierSettings(
                 allowUnsigned: true,
@@ -194,13 +198,15 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
-                revocationMode: SettingsUtility.GetRevocationMode());
+                revocationMode: SettingsUtility.GetRevocationMode(environmentVariableReader));
         }
 
         /// <summary>
         /// The require mode policy.
         /// </summary>
-        public static SignedPackageVerifierSettings GetRequireModeDefaultPolicy()
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> instance or <c>null</c> for the default environment variable reader.</param>
+        /// <returns>A <see cref="SignedPackageVerifierSettings" /> instance.</returns>
+        public static SignedPackageVerifierSettings GetRequireModeDefaultPolicy(IEnvironmentVariableReader environmentVariableReader = null)
         {
             return new SignedPackageVerifierSettings(
                 allowUnsigned: false,
@@ -214,13 +220,15 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExistsAndIsNecessary,
-                revocationMode: SettingsUtility.GetRevocationMode());
+                revocationMode: SettingsUtility.GetRevocationMode(environmentVariableReader));
         }
 
         /// <summary>
         /// Default policy for nuget.exe verify --signatures command.
         /// </summary>
-        public static SignedPackageVerifierSettings GetVerifyCommandDefaultPolicy()
+        /// <param name="environmentVariableReader">An <see cref="IEnvironmentVariableReader" /> instance or <c>null</c> for the default environment variable reader.</param>
+        /// <returns>A <see cref="SignedPackageVerifierSettings" /> instance.</returns>
+        public static SignedPackageVerifierSettings GetVerifyCommandDefaultPolicy(IEnvironmentVariableReader environmentVariableReader = null)
         {
             return new SignedPackageVerifierSettings(
                 allowUnsigned: false,
@@ -234,7 +242,7 @@ namespace NuGet.Packaging.Signing
                 verificationTarget: VerificationTarget.All,
                 signaturePlacement: SignaturePlacement.Any,
                 repositoryCountersignatureVerificationBehavior: SignatureVerificationBehavior.IfExists,
-                revocationMode: SettingsUtility.GetRevocationMode());
+                revocationMode: SettingsUtility.GetRevocationMode(environmentVariableReader));
         }
     }
 }

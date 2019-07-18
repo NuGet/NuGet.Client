@@ -13,13 +13,13 @@ using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -27,7 +27,7 @@ namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
-        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
 
         [Fact]
         public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeOnlyAsync()
@@ -486,7 +486,7 @@ namespace NuGet.Commands.Test
                 };
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    packageSource.FullName, 
+                    packageSource.FullName,
                     new PackageIdentity("packageA", NuGetVersion.Parse("4.0.0")));
 
                 // Act
@@ -1034,7 +1034,7 @@ namespace NuGet.Commands.Test
                 // Act
                 var command = new RestoreCommand(request);
                 var result = await command.ExecuteAsync();
-               
+
                 // Assert
                 Assert.False(result.Success);
             }

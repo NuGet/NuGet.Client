@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,7 +36,6 @@ namespace NuGet.Common
             return string.Equals(rawShowStack.Trim(), "true", StringComparison.OrdinalIgnoreCase);
         }
 
-        public static ExceptionLogger Instance { get; }
-            = new ExceptionLogger(new EnvironmentVariableWrapper());
+        public static ExceptionLogger Instance { get; } = new ExceptionLogger(EnvironmentVariableWrapper.Instance);
     }
 }

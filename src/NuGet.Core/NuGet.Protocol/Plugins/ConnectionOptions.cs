@@ -131,7 +131,7 @@ namespace NuGet.Protocol.Plugins
         /// <returns>A <see cref="ConnectionOptions" />.</returns>
         public static ConnectionOptions CreateDefault(IEnvironmentVariableReader reader = null)
         {
-            reader = reader ?? new EnvironmentVariableWrapper();
+            reader = reader ?? EnvironmentVariableWrapper.Instance;
 
             var handshakeTimeoutInSeconds = reader.GetEnvironmentVariable(EnvironmentVariableConstants.HandshakeTimeout);
             var requestTimeoutInSeconds = reader.GetEnvironmentVariable(EnvironmentVariableConstants.RequestTimeout);

@@ -7,6 +7,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -14,8 +15,8 @@ namespace NuGet.Packaging.Test
 {
     public class RepositorySignatureInfoUtilityTests
     {
-        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
-        private static SignedPackageVerifierSettings _verifyCommandDefaultSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
+        private static SignedPackageVerifierSettings _verifyCommandDefaultSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
 
         [Fact]
         public void GetSignedPackageVerifierSettings_NullFallbackSettingsThrows()

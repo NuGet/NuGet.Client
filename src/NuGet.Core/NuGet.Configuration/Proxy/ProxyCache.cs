@@ -33,7 +33,7 @@ namespace NuGet.Configuration
         {
             return new ProxyCache(
                 Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null),
-                new EnvironmentVariableWrapper());
+                EnvironmentVariableWrapper.Instance);
         }
 
         public static ProxyCache Instance => _instance.Value;
