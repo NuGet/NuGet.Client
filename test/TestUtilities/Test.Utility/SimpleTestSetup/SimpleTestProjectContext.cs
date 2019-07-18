@@ -5,15 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
 namespace NuGet.Test.Utility
@@ -273,6 +272,14 @@ namespace NuGet.Test.Utility
             foreach (var framework in Frameworks)
             {
                 framework.PackageReferences.AddRange(packages);
+            }
+        }
+
+        public void CleanPackagesFromAllFrameworks()
+        {
+            foreach (var framework in Frameworks)
+            {
+                framework.PackageReferences.Clear();
             }
         }
 

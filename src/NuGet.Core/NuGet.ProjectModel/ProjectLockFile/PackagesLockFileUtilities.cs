@@ -55,12 +55,32 @@ namespace NuGet.ProjectModel
             return Path.Combine(baseDirectory, PackagesLockFileFormat.LockFileName);
         }
 
+        /// <summary>
+        /// The lock file will get invalidated if one or more of the below are true
+        ///     1. The target frameworks list of the current project was updated.
+        ///     2. The runtime list of the current project waw updated.
+        ///     3. The packages of the current project were updated.
+        ///     4. The packages of the dependent projects were updated.
+        ///     5. The framework list of the dependent projects were updated with frameworks incompatible with the main project framework.
+        /// </summary>
+        /// <param name="dgSpec">The <see cref="DependencyGraphSpec"/> for the new project defintion.</param>
+        /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
+        /// <returns>True if the lock file is valid false otherwise. </returns>
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
             var uniqueName = dgSpec.Restore.First();
             var project = dgSpec.GetProjectSpec(uniqueName);
 
             // Validate all the direct dependencies
+            var lockFileFrameworks = nuGetLockFile.Targets
+                .Where(t => t.TargetFramework != null)
+                .Select(t => t.TargetFramework)
+                .Distinct();
+            if (project.TargetFrameworks.Count != lockFileFrameworks.Count())
+            {
+                return false;
+            }
+
             foreach (var framework in project.TargetFrameworks)
             {
                 var target = nuGetLockFile.Targets.FirstOrDefault(
@@ -79,6 +99,15 @@ namespace NuGet.ProjectModel
                     // lock file is out of sync
                     return false;
                 }
+            }
+
+            // Validate the runtimes for the current project did not change.
+            var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
+            var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
+
+            if (!projectRuntimesKeys.SequenceEqual(lockFileRuntimes))
+            {
+                return false;
             }
 
             // Validate all P2P references
