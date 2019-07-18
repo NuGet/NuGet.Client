@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some TFMs declared in nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:{0}.
+        ///   Looks up a localized string similar to Some TFMs declared in the dependencies group of the nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:{0}.
         /// </summary>
         public static string DependenciesGroupsForEachTFMHasCompatMatch {
             get {
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Some TFMs declared in nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:{0}.
+        ///   Looks up a localized string similar to Some TFMs declared in the dependencies group of the nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:{0}.
         /// </summary>
         public static string DependenciesGroupsForEachTFMHasNoExactMatch {
             get {

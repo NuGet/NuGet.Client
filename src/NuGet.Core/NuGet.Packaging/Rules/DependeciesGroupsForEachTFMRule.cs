@@ -49,7 +49,7 @@ namespace NuGet.Packaging.Rules
             var tfmsFromFilesSet = new HashSet<NuGetFramework>();
             tfmsFromFilesSet.AddRange(libFrameworks);
             tfmsFromFilesSet.AddRange(refFrameworks);
-            var tfmsFromFiles = tfmsFromFilesSet.ToList();
+            var tfmsFromFiles = tfmsFromFilesSet.Where(t => t.Version.Major > 0).ToList();
 
             List<NuGetFramework> tfmsFromNuspec = new List<NuGetFramework>();
             using (var stream = new StreamReader(packageNuspec))
