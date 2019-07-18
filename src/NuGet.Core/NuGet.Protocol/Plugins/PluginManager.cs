@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Plugins
                 new Lazy<string>(() => SettingsUtility.GetPluginsCacheFolder()));
         }
 
-        internal PluginManager(
+        public PluginManager(
             IEnvironmentVariableReader reader,
             Lazy<IPluginDiscoverer> pluginDiscoverer,
             Func<TimeSpan, IPluginFactory> pluginFactoryCreator,
