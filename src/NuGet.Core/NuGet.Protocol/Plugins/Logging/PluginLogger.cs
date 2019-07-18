@@ -17,7 +17,7 @@ namespace NuGet.Protocol.Plugins
         private readonly Stopwatch _stopwatch;
         private readonly object _streamWriterLock;
 
-        internal static PluginLogger DefaultInstance { get; } = new PluginLogger(new EnvironmentVariableWrapper());
+        internal static PluginLogger DefaultInstance { get; } = new PluginLogger(EnvironmentVariableWrapper.Instance);
 
         public bool IsEnabled { get; }
 

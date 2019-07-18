@@ -24,7 +24,7 @@ namespace NuGet.Credentials
             IExtensionLocator extensionLocator,
             Configuration.ISettings settings,
             Common.ILogger logger)
-            : this(extensionLocator, settings, logger, new EnvironmentVariableWrapper())
+            : this(extensionLocator, settings, logger, EnvironmentVariableWrapper.Instance)
         {
         }
 
@@ -34,30 +34,10 @@ namespace NuGet.Credentials
             Common.ILogger logger,
             Common.IEnvironmentVariableReader envarReader)
         {
-            if (extensionLocator == null)
-            {
-                throw new ArgumentNullException(nameof(extensionLocator));
-            }
-
-            if (settings == null)
-            {
-                throw new ArgumentNullException(nameof(settings));
-            }
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
-            if (envarReader == null)
-            {
-                throw new ArgumentNullException(nameof(envarReader));
-            }
-
-            _extensionLocator = extensionLocator;
-            _settings = settings;
-            _logger = logger;
-            _envarReader = envarReader;
+            _extensionLocator = extensionLocator ?? throw new ArgumentNullException(nameof(extensionLocator));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _envarReader = envarReader ?? throw new ArgumentNullException(nameof(envarReader));
 
         }
 

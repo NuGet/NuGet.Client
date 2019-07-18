@@ -13,6 +13,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -525,7 +526,7 @@ namespace NuGet.Packaging.FuncTest
                     new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.PrimarySignature, fingerprint, hashAlgorithmName)
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var trustProviders = new[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -571,7 +572,7 @@ namespace NuGet.Packaging.FuncTest
                     new CertificateHashAllowListEntry(VerificationTarget.Repository, SignaturePlacement.PrimarySignature, fingerprint, hashAlgorithmName)
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
 
                 var trustProviders = new[]
                  {
@@ -629,7 +630,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -679,7 +680,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -728,7 +729,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -781,7 +782,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -833,7 +834,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -888,7 +889,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Author, SignaturePlacement.PrimarySignature, authorFingerprint, hashAlgorithmName)
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -938,7 +939,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>() { "owner1", "owner2", "owner3" })
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -990,7 +991,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: new List<string>())
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
@@ -1040,7 +1041,7 @@ namespace NuGet.Packaging.FuncTest
                     new TrustedSignerAllowListEntry(VerificationTarget.Repository, SignaturePlacement.Any, fingerprint, hashAlgorithmName, owners: null)
                 };
 
-                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+                var signedPackageVerifierSettings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
                 var signedPackageVerifier = new PackageSignatureVerifier(new ISignatureVerificationProvider[]
                 {
                     new AllowListVerificationProvider(allowList, requireNonEmptyAllowList: true)
