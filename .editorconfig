@@ -11,6 +11,7 @@ indent_style = space
 ; (Please don't specify an indent_size here; that has too many unintended consequences.)
 charset = utf-8
 trim_trailing_whitespace = true
+insert_final_newline = true
 
 ; Code files
 [*.{cs}]
