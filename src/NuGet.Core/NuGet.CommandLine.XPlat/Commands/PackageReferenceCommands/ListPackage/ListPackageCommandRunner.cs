@@ -139,16 +139,14 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    ProjectPackagesPrintUtility.PrintPackages(
+                                    var printPackagesResult = ProjectPackagesPrintUtility.PrintPackages(
                                         packages,
                                         projectName,
                                         listPackageArgs.IncludeTransitive,
-                                        listPackageArgs.IncludeOutdated,
-                                        out var autoRefFoundWithinProject,
-                                        out var deprecatedFoundWithinProject);
+                                        listPackageArgs.IncludeOutdated);
 
-                                    autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
-                                    deprecatedFound = deprecatedFound || deprecatedFoundWithinProject;
+                                    autoReferenceFound = autoReferenceFound || printPackagesResult.AutoReferenceFound;
+                                    deprecatedFound = deprecatedFound || printPackagesResult.DeprecatedFound;
                                 }
                             }
                         }
