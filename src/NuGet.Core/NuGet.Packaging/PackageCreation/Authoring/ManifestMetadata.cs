@@ -13,7 +13,7 @@ using NuGet.Versioning;
 namespace NuGet.Packaging
 {
     /// <summary>
-    /// Model class for the metadata stored in the user .nuspec file
+    /// Manifest (user created .nuspec) file metadata model
     /// </summary>
     public class ManifestMetadata : IPackageMetadata
     {

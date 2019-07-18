@@ -536,16 +536,9 @@ namespace NuGet.Packaging
                             PathUtility.StripLeadingDirectorySeparators(f.Path),
                             PathUtility.GetStringComparisonBasedOnOS()));
 
-                if (iconFileList.Count() > 1)
-                {
-                    throw new PackagingException(
-                        NuGetLogCode.NU5038,
-                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconMultipleIconFiles, string.Join(",", iconFileList)));
-                }
-
                 if (iconFileList.Count() == 0)
                 {
-                    throw new PackagingException(NuGetLogCode.NU5039, NuGetResources.IconNoFileElement);
+                    throw new PackagingException(NuGetLogCode.NU5036, NuGetResources.IconNoFileElement);
                 }
 
                 IPackageFile iconFile = iconFileList.First();
@@ -556,7 +549,7 @@ namespace NuGet.Packaging
                     using (var iconStream = iconFile.GetStream())
                     {
                         // Validate file size
-                        IconValidation.ValidateIconFileSize(iconStream);
+                        IconValidationUtilities.ValidateIconFileSize(iconStream);
                     }
                 }
                 catch (FileNotFoundException e)

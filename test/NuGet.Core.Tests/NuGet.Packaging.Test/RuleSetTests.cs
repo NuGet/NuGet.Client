@@ -1,11 +1,8 @@
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.IO.Compression;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Rules;
-using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
 using Xunit;
 

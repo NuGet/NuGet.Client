@@ -11,7 +11,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// Utility methods for package icon validation
     /// </summary>
-    public class IconValidation
+    public class IconValidationUtilities
     {
         /// <summary>
         /// Maximun Icon file size: 1 megabyte
@@ -43,7 +43,7 @@ namespace NuGet.Packaging
 
             if (fileSize == 0)
             {
-                throw new PackagingException(Common.NuGetLogCode.NU5041, NuGetResources.IconErrorEmpty);
+                throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconErrorEmpty);
             }
         }
     }

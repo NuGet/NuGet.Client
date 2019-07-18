@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -141,7 +141,7 @@ namespace NuGet.Packaging.Core
         /// Returns a nuspec metadata value or string.Empty.
         /// </summary>
         public virtual string GetMetadataValue(string name)
-        {   
+        {
             string metadataValue;
             MetadataValues.TryGetValue(name, out metadataValue);
             return metadataValue ?? string.Empty;

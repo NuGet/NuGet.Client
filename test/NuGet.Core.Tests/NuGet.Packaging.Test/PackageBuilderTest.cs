@@ -2492,7 +2492,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         public void Icon_IconMaxFileSizeExceeded_ThrowsException()
         {
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", "icon.jpg", IconValidation.MaxIconFileSize + 1),
+                new IconTestSourceDirectory("icon.jpg", "icon.jpg", IconValidationUtilities.MaxIconFileSize + 1),
                 "The icon file size must not exceed 1 megabyte.");
         }
 
@@ -2512,7 +2512,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                 string.Empty);
         }
 
-        [Fact]
+        [Fact(Skip="Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
         public void Icon_MultipleIconFilesResolved_ThrowsException()
         {
             var fileList = new List<Tuple<string, int>>();

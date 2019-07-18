@@ -641,34 +641,14 @@ namespace NuGet.Common
         NU5035 = 5035,
 
         /// <summary>
-        /// Error_Maniferst_IconCannotOpenFile
+        /// Error_Manifest_IconCannotOpenFile
         /// </summary>
         NU5036 = 5036,
 
         /// <summary>
-        /// Error_Maniferst_IconMaxFilesize
+        /// Error_Icon_InvalidSize
         /// </summary>
         NU5037 = 5037,
-
-        /// <summary>
-        /// Error_Validation_MultipleIconFiles
-        /// </summary>
-        NU5038 = 5038,
-
-        /// <summary>
-        /// Error_Validation_NoIconFile
-        /// </summary>
-        NU5039 = 5039,
-
-        /// <summary>
-        /// Error_ValidationErrorReadingIcon
-        /// </summary>
-        NU5040 = 5040,
-
-        /// <summary>
-        /// Error_Validation_IconFileEmpty
-        /// </summary>
-        NU5041 = 5041,
 
         /// <summary>
         /// AssemblyOutsideLibWarning
