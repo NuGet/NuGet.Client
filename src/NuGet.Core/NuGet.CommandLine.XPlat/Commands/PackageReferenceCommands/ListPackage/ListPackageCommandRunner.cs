@@ -139,8 +139,6 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    // Printing packages of a single project and keeping track if
-                                    // an auto-referenced package was printed
                                     ProjectPackagesPrintUtility.PrintPackages(
                                         packages,
                                         projectName,

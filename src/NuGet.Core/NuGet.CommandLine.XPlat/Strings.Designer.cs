@@ -511,7 +511,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to (D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn&apos;t be used anymore..
+        ///   Looks up a localized string similar to (D): Deprecated package(s). Use &apos;dotnet list package --deprecated&apos; for more info..
         /// </summary>
         internal static string ListPkg_DeprecatedPkgDescription {
             get {
