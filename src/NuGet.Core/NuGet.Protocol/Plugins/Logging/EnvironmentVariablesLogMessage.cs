@@ -16,7 +16,7 @@ namespace NuGet.Protocol.Plugins
         internal EnvironmentVariablesLogMessage(DateTimeOffset now, IEnvironmentVariableReader environmentVariableReader = null)
             : base(now)
         {
-            var reader = environmentVariableReader ?? new EnvironmentVariableWrapper();
+            var reader = environmentVariableReader ?? EnvironmentVariableWrapper.Instance;
 
             _handshakeTimeout = Read(reader, EnvironmentVariableConstants.HandshakeTimeout);
             _idleTimeout = Read(reader, EnvironmentVariableConstants.IdleTimeout);

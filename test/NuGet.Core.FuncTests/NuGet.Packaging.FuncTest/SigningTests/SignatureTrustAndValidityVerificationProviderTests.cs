@@ -17,6 +17,7 @@ using NuGet.Test.Utility;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Parameters;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
@@ -28,8 +29,8 @@ namespace NuGet.Packaging.FuncTest
     public class SignatureTrustAndValidityVerificationProviderTests
     {
         private const string _untrustedChainCertError = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
-        private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-        private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault();
+        private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
+        private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SigningTestFixture _testFixture;
         private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
         private readonly TestCertificate _untrustedTestCertificate;
@@ -721,7 +722,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance), CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -760,7 +761,7 @@ namespace NuGet.Packaging.FuncTest
                 using (var packageReader = new PackageArchiveReader(repositorySignedPackagePath))
                 {
                     // Act
-                    var result = await verifier.VerifySignaturesAsync(packageReader, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                    var result = await verifier.VerifySignaturesAsync(packageReader, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance), CancellationToken.None);
                     var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
 
                     // Assert
@@ -779,7 +780,7 @@ namespace NuGet.Packaging.FuncTest
                 var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 // Act 
-                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance), CancellationToken.None);
                 var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                 var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -1020,7 +1021,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInAcceptMode_DoesNotWarnAsync()
         {
             // Arrange
-            var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -1035,7 +1036,7 @@ namespace NuGet.Packaging.FuncTest
         public async Task GetTrustResultAsync_WithUnavailableRevocationInformationInRequireMode_WarnsAsync()
         {
             // Arrange
-            var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
 
             // Act & Assert
             var matchingIssues = await VerifyUnavailableRevocationInfoAsync(
@@ -1174,7 +1175,7 @@ namespace NuGet.Packaging.FuncTest
                 var verifier = new PackageSignatureVerifier(_trustProviders);
 
                 // Act
-                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var result = await verifier.VerifySignaturesAsync(package, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance), CancellationToken.None);
                 var resultsWithErrors = result.Results.Where(r => r.GetErrorIssues().Any());
                 var totalErrorIssues = resultsWithErrors.SelectMany(r => r.GetErrorIssues());
 
@@ -1198,7 +1199,7 @@ namespace NuGet.Packaging.FuncTest
                 var signature = await package.GetPrimarySignatureAsync(CancellationToken.None);
 
                 // Act
-                var result = await verificationProvider.GetTrustResultAsync(package, signature, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(), CancellationToken.None);
+                var result = await verificationProvider.GetTrustResultAsync(package, signature, SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance), CancellationToken.None);
                 var errorIssues = result.Issues.Where(r => r.Level >= LogLevel.Error);
 
                 // Assert

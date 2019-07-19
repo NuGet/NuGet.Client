@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Packaging.Signing;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -32,7 +33,7 @@ namespace NuGet.Packaging.Test
                 () => _provider.GetTrustResultAsync(
                     package: null,
                     signature: _signature.Value,
-                    settings: SignedPackageVerifierSettings.GetDefault(),
+                    settings: SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance),
                     token: CancellationToken.None));
 
             Assert.Equal("package", exception.ParamName);
@@ -46,7 +47,7 @@ namespace NuGet.Packaging.Test
                 () => _provider.GetTrustResultAsync(
                     package: Mock.Of<ISignedPackageReader>(),
                     signature: null,
-                    settings: SignedPackageVerifierSettings.GetDefault(),
+                    settings: SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance),
                     token: CancellationToken.None));
 
             Assert.Equal("signature", exception.ParamName);
@@ -73,7 +74,7 @@ namespace NuGet.Packaging.Test
                 () => _provider.GetTrustResultAsync(
                     package: Mock.Of<ISignedPackageReader>(),
                     signature: _signature.Value,
-                    settings: SignedPackageVerifierSettings.GetDefault(),
+                    settings: SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance),
                     token: new CancellationToken(canceled: true)));
         }
 #endif

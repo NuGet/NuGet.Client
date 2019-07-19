@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement
         private readonly ConfigurationDefaults _configurationDefaults;
 
         public PackageRestoreConsent(Configuration.ISettings settings)
-            : this(settings, new EnvironmentVariableWrapper())
+            : this(settings, EnvironmentVariableWrapper.Instance)
         {
         }
 

@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Diagnostics;
+using System.IO;
 using Microsoft.Test.Apex.VisualStudio.Solution;
 using Xunit;
 using Xunit.Abstractions;
@@ -9,6 +12,9 @@ namespace NuGet.Tests.Apex
 {
     public class NuGetUITestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
     {
+        private static readonly TimeSpan Timeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan Interval = TimeSpan.FromSeconds(2);
+
         public NuGetUITestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
             : base(visualStudioHostFixtureFactory, output)
         {
@@ -98,14 +104,20 @@ namespace NuGet.Tests.Apex
 
             solutionService.CreateEmptySolution();
             var project = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+            FileInfo packagesConfigFile = GetPackagesConfigFile(project);
             dte.ExecuteCommand("Project.ManageNuGetPackages");
             var nugetTestService = GetNuGetTestService();
             var uiwindow = nugetTestService.GetUIWindowfromProject(project);
             uiwindow.InstallPackageFromUI("newtonsoft.json", "9.0.1");
+
+            WaitForFileExists(packagesConfigFile);
+
             VisualStudio.ClearWindows();
 
             // Act
             uiwindow.UninstallPackageFromUI("newtonsoft.json");
+
+            WaitForFileNotExists(packagesConfigFile);
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
@@ -135,6 +147,31 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, project, "newtonsoft.json", "10.0.3", XunitLogger);
+        }
+
+        private static FileInfo GetPackagesConfigFile(ProjectTestExtension project)
+        {
+            var projectFile = new FileInfo(project.FullPath);
+
+            return new FileInfo(Path.Combine(projectFile.DirectoryName, "packages.config"));
+        }
+
+        private static void WaitForFileExists(FileInfo file)
+        {
+            Omni.Common.WaitFor.IsTrue(
+                () => File.Exists(file.FullName),
+                Timeout,
+                Interval,
+                $"{file.FullName} did not exist within {Timeout}.");
+        }
+
+        private static void WaitForFileNotExists(FileInfo file)
+        {
+            Omni.Common.WaitFor.IsTrue(
+                () => !File.Exists(file.FullName),
+                Timeout,
+                Interval,
+                $"{file.FullName} still existed after {Timeout}.");
         }
     }
 }
