@@ -46,7 +46,7 @@ namespace NuGet.PackageManagement.UI
 
         // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
         // This tells the operation execution part that it needs to trigger a refresh when done.
-        private bool _usRefreshRequired;
+        private bool _isRefreshRequired;
 
         // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
         private bool _isExecutingAction;
@@ -288,7 +288,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                _usRefreshRequired = true;
+                _isRefreshRequired = true;
             }
         }
 
@@ -1137,10 +1137,10 @@ namespace NuGet.PackageManagement.UI
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
                     _isExecutingAction = false;
-                    if (_usRefreshRequired)
+                    if (_isRefreshRequired)
                     {
                         Refresh();
-                        _usRefreshRequired = false;
+                        _isRefreshRequired = false;
                     }
                 }
             })
