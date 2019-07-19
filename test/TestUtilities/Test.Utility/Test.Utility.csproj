@@ -1,15 +1,18 @@
 <Project>
+  <PropertyGroup>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <NoWarn Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition=" '$(IsCore)' == 'true' ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
-    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,14 +70,14 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
   </ItemGroup>
 
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Diagnostics.Process" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.2" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->
-  <ItemGroup Condition=" $(TargetFramework.StartsWith('netcoreapp')) ">
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <Compile Remove="PackageManagement\*.cs" />
     <Compile Remove="ProjectManagement\*.cs" />
     <Compile Remove="Threading\*.cs" />

@@ -1,4 +1,8 @@
 ﻿<Project>
+  <PropertyGroup>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -6,9 +10,8 @@
     <Description>Complete commands common to command-line and GUI NuGet clients.</Description>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
-    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
-    <NoWarn Condition="$(TargetFramework.StartsWith('netstandard'))">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition=" '$(IsCore)' == 'true' ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
