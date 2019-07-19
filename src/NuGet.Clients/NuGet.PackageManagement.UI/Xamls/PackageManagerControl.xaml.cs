@@ -46,11 +46,10 @@ namespace NuGet.PackageManagement.UI
 
         // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
         // This tells the operation execution part that it needs to trigger a refresh when done.
-
-        private bool _uiRefreshRequired;
+        private bool _usRefreshRequired;
 
         // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
-        private bool _executingAction;
+        private bool _isExecutingAction;
 
         private PackageRestoreBar _restoreBar;
 
@@ -220,7 +219,7 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.Projects = projects;
 
                     // refresh UI
-                    RefreshIfNeeded();
+                    RefreshWhenNotExecutingAction();
                 }
             }
         }
@@ -232,7 +231,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    RefreshIfNeeded();
+                    RefreshWhenNotExecutingAction();
                 }
                 else
                 {
@@ -244,7 +243,7 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
-                        RefreshIfNeeded();
+                        RefreshWhenNotExecutingAction();
                     }
                 }
             }
@@ -257,7 +256,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    RefreshIfNeeded();
+                    RefreshWhenNotExecutingAction();
                 }
                 else
                 {
@@ -274,22 +273,22 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        RefreshIfNeeded();
+                        RefreshWhenNotExecutingAction();
                     }
                 }
             }
         }
 
-        private void RefreshIfNeeded()
+        private void RefreshWhenNotExecutingAction()
         {
-            // Only refresh there is no executing action. Tell the operation execution to refresh when done otherwise.
-            if (!_executingAction)
+            // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
+            if (!_isExecutingAction)
             {
                 Refresh();
             }
             else
             {
-                _uiRefreshRequired = true;
+                _usRefreshRequired = true;
             }
         }
 
@@ -1112,7 +1111,7 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 IsEnabled = false;
-                _executingAction = true;
+                _isExecutingAction = true;
 
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
@@ -1137,11 +1136,11 @@ namespace NuGet.PackageManagement.UI
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
-                    _executingAction = false;
-                    if (_uiRefreshRequired)
+                    _isExecutingAction = false;
+                    if (_usRefreshRequired)
                     {
                         Refresh();
-                        _uiRefreshRequired = false;
+                        _usRefreshRequired = false;
                     }
                 }
             })
