@@ -218,7 +218,6 @@ namespace NuGet.PackageManagement.UI
                     var projects = solutionModel.Projects.Select(p => p.NuGetProject);
                     Model.Context.Projects = projects;
 
-                    // refresh UI
                     RefreshWhenNotExecutingAction();
                 }
             }
