@@ -29,7 +29,7 @@ namespace NuGet.Packaging.Rules
                 new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
                 new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage),
                 new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch)
+                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch),
             }
         );
 

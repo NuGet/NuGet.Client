@@ -7,6 +7,7 @@ using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
@@ -19,12 +20,12 @@ namespace NuGet.Packaging.Rules
 
         public string MessageFormat { get; }
 
-        public string SecondWarning { get; }
+        public string CompatMatchFoundWarningMessageFormat { get; }
 
-        public DependeciesGroupsForEachTFMRule(string messageFormat, string secondWarning)
+        public DependeciesGroupsForEachTFMRule(string messageFormat, string compatMatchFoundWarningMessageFormat)
         {
             MessageFormat = messageFormat;
-            SecondWarning = secondWarning;
+            CompatMatchFoundWarningMessageFormat = compatMatchFoundWarningMessageFormat;
         }
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
@@ -41,26 +42,22 @@ namespace NuGet.Packaging.Rules
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-            var libItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
-            var refItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
-            var libFrameworks = GetGroupFrameworks(libItems).ToArray();
-            var refFrameworks = GetGroupFrameworks(refItems).ToArray();
+            var libItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
+            var refItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
 
             var tfmsFromFilesSet = new HashSet<NuGetFramework>();
-            tfmsFromFilesSet.AddRange(libFrameworks);
-            tfmsFromFilesSet.AddRange(refFrameworks);
-            var tfmsFromFiles = tfmsFromFilesSet.Where(t => t.Version.Major > 0).ToList();
+            tfmsFromFilesSet.AddRange(ContentExtractor.GetGroupFrameworks(libItems).ToArray());
+            tfmsFromFilesSet.AddRange(ContentExtractor.GetGroupFrameworks(refItems).ToArray());
+            var tfmsFromFiles = tfmsFromFilesSet.Where(t => t != NuGetFramework.Parse("net00")).ToList();
 
             List<NuGetFramework> tfmsFromNuspec = new List<NuGetFramework>();
-            using (var stream = new StreamReader(packageNuspec))
+            var stream = new NuspecReader(packageNuspec);
+            var nuspec = stream.Xml;
+            if (nuspec != null)
             {
-                var nuspec = XDocument.Load(stream);
-                if (nuspec != null)
-                {
-                    string name = nuspec.Root.Name.Namespace.ToString();
-                    tfmsFromNuspec = nuspec.Descendants(XName.Get("dependencies", name)).Elements().
-                        Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value)).ToList();
-                }
+                string name = nuspec.Root.Name.Namespace.ToString();
+                tfmsFromNuspec = nuspec.Descendants(XName.Get("dependencies", name)).Elements().
+                    Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value)).ToList();
             }
 
             if (tfmsFromFiles.Count != 0 && tfmsFromNuspec.Count != 0)
@@ -101,7 +98,7 @@ namespace NuGet.Packaging.Rules
 
                 if (_compatNotExactMatches.Count != 0)
                 {
-                    issues.Add(PackagingLogMessage.CreateWarning(string.Format(SecondWarning, compatMatchString),
+                    issues.Add(PackagingLogMessage.CreateWarning(string.Format(CompatMatchFoundWarningMessageFormat, compatMatchString),
                         NuGetLogCode.NU5130));
                 }
 
@@ -110,8 +107,7 @@ namespace NuGet.Packaging.Rules
                     return issues;
                 }
             }
-            else
-            if((tfmsFromFiles.Count != 0 && tfmsFromNuspec.Count == 0) || (tfmsFromFiles.Count == 0 && tfmsFromNuspec.Count != 0))
+            else if((tfmsFromFiles.Count != 0 && tfmsFromNuspec.Count == 0) || (tfmsFromFiles.Count == 0 && tfmsFromNuspec.Count != 0))
             {
                 if(tfmsFromFiles.Count != 0)
                 {
@@ -139,18 +135,7 @@ namespace NuGet.Packaging.Rules
         {
             return _compatNotExactMatches.Contains(tfm);
         }
-
-        private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
-        {
-            return collection.FindItemGroups(pattern);
-        }
-
-        private static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
-        {
-
-            return groups.Select(e => (NuGetFramework)e.Properties["tfm"]);
-        }
-
+        
         private static (string, string) GenerateWarningString(HashSet<NuGetFramework> noExactMatchesFromFile,
                 HashSet<NuGetFramework> noExactMatchesFromNuspec, HashSet<NuGetFramework> compatNotExactMatches)
         {

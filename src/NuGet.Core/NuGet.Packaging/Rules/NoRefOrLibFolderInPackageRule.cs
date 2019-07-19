@@ -12,6 +12,7 @@ using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
@@ -37,13 +38,13 @@ namespace NuGet.Packaging.Rules
             var collection = new ContentItemCollection();
             collection.Load(files);
 
-            var libItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
-            var refItems = GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
-            var buildItems = GetContentForPattern(collection, managedCodeConventions.Patterns.MSBuildFiles);
+            var libItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileLibAssemblies);
+            var refItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.CompileRefAssemblies);
+            var buildItems = ContentExtractor.GetContentForPattern(collection, managedCodeConventions.Patterns.MSBuildFiles);
 
-            var libFrameworks = GetGroupFrameworks(libItems).ToArray();
-            var refFrameworks = GetGroupFrameworks(refItems).ToArray();
-            var buildFrameworks = GetGroupFrameworks(buildItems).ToArray();
+            var libFrameworks = ContentExtractor.GetGroupFrameworks(libItems).ToArray();
+            var refFrameworks = ContentExtractor.GetGroupFrameworks(refItems).ToArray();
+            var buildFrameworks = ContentExtractor.GetGroupFrameworks(buildItems).ToArray();
 
             if (libFrameworks.Length == 0 && refFrameworks.Length == 0)
             {
@@ -85,16 +86,6 @@ namespace NuGet.Packaging.Rules
                 : string.Format("-lib/{0}/_._", possibleFrameworks[0]);
             
             return (tfmNames, suggestedDirectories);
-        }
-
-        private static IEnumerable<ContentItemGroup> GetContentForPattern(ContentItemCollection collection, PatternSet pattern)
-        {
-            return collection.FindItemGroups(pattern);
-        }
-
-        private static IEnumerable<NuGetFramework> GetGroupFrameworks(IEnumerable<ContentItemGroup> groups)
-        {
-            return groups.Select(e => ((NuGetFramework)e.Properties["tfm"]));
         }
 
         private static string CreateDirectoriesMessage(string[] possibleFrameworks)
