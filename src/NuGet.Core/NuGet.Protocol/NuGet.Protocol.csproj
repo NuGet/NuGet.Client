@@ -3,8 +3,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
     <NoWarn>$(NoWarn);CS1591;CS1573;CS0012</NoWarn>
     <PackageTags>nuget protocol</PackageTags>
     <PackProject>true</PackProject>

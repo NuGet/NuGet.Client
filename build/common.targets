@@ -11,6 +11,11 @@
     <IsCore>true</IsCore>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <DefineConstants>$(DefineConstants);IS_NETCORE30</DefineConstants>
+    <IsCore30>true</IsCore30>
+  </PropertyGroup>
+
   <!-- Include shared files for netcore projects -->
   <ItemGroup Condition=" ('$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' != 'true') OR '$(IncludeNuGetSharedFiles)' == 'true'">
     <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
@@ -314,10 +319,23 @@
     EnsureNewtonsoftJsonVersion ensures that the resolved version of Newtonsoft.Json is the version that ships with VS/.NET Core SDK
     ============================================================
   -->
-  <Target Name="EnsureNewtonsoftJsonVersion" AfterTargets="ResolveAssemblyReferences">
+  <Target Name="EnsureNewtonsoftJsonVersion" 
+          AfterTargets="ResolveAssemblyReferences"
+          Condition=" '$(IsCore30)' == 'true' ">
     <Error
       Text="Newtonsoft.Json must be version $(NewtonsoftJsonVersionCore) but resolved %(Reference.NuGetPackageVersion)"
       Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonVersionCore)' " />
+  </Target>
+
+  <!--
+    ==========================================================================================
+    Temporary Workaround Target related to issue https://github.com/dotnet/cli/issues/11378
+    ==========================================================================================
+  -->
+  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets" Condition="'$(IsCore30)' == 'true'">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="NETStandard.Library" />
+    </ItemGroup>
   </Target>
 
 </Project>

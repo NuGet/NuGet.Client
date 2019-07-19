@@ -4,8 +4,9 @@
 
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>

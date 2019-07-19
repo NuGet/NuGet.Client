@@ -3,10 +3,11 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksExe);netcoreapp3.0</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFrameworks)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
 
   <ItemGroup>
@@ -38,12 +39,6 @@
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 
-  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="NETStandard.Library" />
-    </ItemGroup>
-  </Target>
-  
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

@@ -3,12 +3,9 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
-    <TargetFrameworks>$(NETCoreTargetFramework);netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>$(NETCoreTargetFrameworks)</TargetFrameworks>
     <TestProject>true</TestProject>
-  </PropertyGroup>
-
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-    <DefineConstants>$(DefineConstants);IS_NETCORE30</DefineConstants>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
   
   <ItemGroup>
@@ -24,12 +21,6 @@
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
-  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="NETStandard.Library" />
-    </ItemGroup>
-  </Target>
   
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

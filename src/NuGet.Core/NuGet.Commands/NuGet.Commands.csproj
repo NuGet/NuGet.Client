@@ -4,8 +4,9 @@
 
   <PropertyGroup>
     <Description>Complete commands common to command-line and GUI NuGet clients.</Description>
-    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
     <NoWarn Condition="$(TargetFramework.StartsWith('netstandard'))">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>

@@ -3,7 +3,8 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <TargetFrameworks>$(TargetFrameworksLibrary);netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AssemblyName>NuGet.Build.Tasks.Pack</AssemblyName>
     <RootNamespace>$(AssemblyName)</RootNamespace>
@@ -155,6 +156,7 @@
     </ItemGroup>
   </Target>
 
+  <!--These targets help get files for packing the first NuGet.Build.Tasks.Pack package, for netstandard2.1.-->
   <Target Name="CreatePackNupkg">
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->
@@ -168,7 +170,7 @@
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">
+    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
@@ -181,7 +183,7 @@
     </ItemGroup>    
   </Target>
 
-   <!--These targets help get files for packing the second NuGet.Build.Tasks.Pack package, for netstandard2.1.-->
+   <!--These targets help get files for packing the second NuGet.Build.Tasks.Pack.Sdk2x package, for netstandard2.0.-->
    <Target Name="CreatePackNupkg2X">
     <PropertyGroup>
       <!-- Build from source can't use ILMerge. -->
@@ -195,7 +197,7 @@
         <PackagePath>Desktop/</PackagePath>
       </TfmSpecificPackageFile>
     </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
+    <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>

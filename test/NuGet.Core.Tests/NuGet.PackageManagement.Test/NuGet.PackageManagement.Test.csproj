@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework);netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFrameworks)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
   </PropertyGroup>
@@ -33,12 +33,6 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets">
-    <ItemGroup>
-      <TransitiveFrameworkReference Remove="NETStandard.Library" />
-    </ItemGroup>
-  </Target>
-  
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
