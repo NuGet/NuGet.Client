@@ -75,8 +75,8 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed
+echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nr:false"
+$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nr:false
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
