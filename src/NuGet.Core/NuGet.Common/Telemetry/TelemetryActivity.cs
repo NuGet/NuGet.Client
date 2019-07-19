@@ -9,7 +9,7 @@ namespace NuGet.Common
 {
     public class TelemetryActivity : IDisposable
     {
-        private DateTimeOffset _startTime;
+        private DateTime _startTime;
         private Stopwatch _stopwatch;
         private Stopwatch _intervalWatch = new Stopwatch();
         private List<Tuple<string, TimeSpan>> _intervalList;
@@ -38,7 +38,7 @@ namespace NuGet.Common
             ParentId = parentId;
             OperationId = operationId;
 
-            _startTime = DateTimeOffset.Now;
+            _startTime = DateTime.UtcNow;
             _stopwatch = Stopwatch.StartNew();
             _intervalList = new List<Tuple<string, TimeSpan>>();
         }
@@ -60,9 +60,9 @@ namespace NuGet.Common
 
             if (NuGetTelemetryService != null && TelemetryEvent != null)
             {
-                var endTime = DateTimeOffset.Now;
-                TelemetryEvent["StartTime"] = _startTime.UtcDateTime.ToString("O");
-                TelemetryEvent["EndTime"] = endTime.UtcDateTime.ToString("O");
+                var endTime = DateTime.UtcNow;
+                TelemetryEvent["StartTime"] = _startTime.ToString("O");
+                TelemetryEvent["EndTime"] = endTime.ToString("O");
                 TelemetryEvent["Duration"] = _stopwatch.Elapsed.TotalSeconds;
 
                 if (ParentId != Guid.Empty)
