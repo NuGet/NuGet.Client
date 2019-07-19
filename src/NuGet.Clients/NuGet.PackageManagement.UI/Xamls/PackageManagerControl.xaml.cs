@@ -44,6 +44,14 @@ namespace NuGet.PackageManagement.UI
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
 
+        // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
+        // This tells the operation execution part that it needs to trigger a refresh when done.
+
+        private bool _uiRefreshRequired;
+
+        // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
+        private bool _executingAction;
+
         private PackageRestoreBar _restoreBar;
 
         private RestartRequestBar _restartBar;
@@ -61,7 +69,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; }
 
-        public ISettings Settings { get; }
+        public Configuration.ISettings Settings { get; }
 
         internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
@@ -212,12 +220,10 @@ namespace NuGet.PackageManagement.UI
                     Model.Context.Projects = projects;
 
                     // refresh UI
-                    Refresh();
+                    RefreshIfNeeded();
                 }
             }
         }
-
-        private DateTimeOffset _lastProjectUpdateRefreshExecuted = DateTimeOffset.MinValue;
 
         private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
         {
@@ -226,7 +232,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    Refresh();
+                    RefreshIfNeeded();
                 }
                 else
                 {
@@ -238,17 +244,7 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
-                        // With .NET Core projects, we need to make sure we only refresh once,
-                        // since the ActionsExecuted and CacheUpdated likely both report the same update
-                        if (DateTimeOffset.Now.Subtract(_lastProjectUpdateRefreshExecuted).TotalMilliseconds > 2000)
-                        {
-                            if (_lastProjectUpdateRefreshExecuted.Equals(DateTimeOffset.MinValue))
-                            {
-                                _lastProjectUpdateRefreshExecuted = DateTimeOffset.Now;
-                            }
-
-                            Refresh();
-                        }
+                        RefreshIfNeeded();
                     }
                 }
             }
@@ -261,14 +257,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    // Do not refresh if the UI is visible, but the UI is not enabled.
-                    // This means that there's a solution update operation running. It only needs to refresh once when the actions executed event handler is called.
-                    // It's possible that we are refreshing too often in this case. If say a nomination comes after all the actions have been executed (likely),
-                    // however with this we are trying to handle the bulk update scenarios, where we'd trigger many more refreshes.
-                    if (!IsEnabled)
-                    {
-                        Refresh();
-                    }
+                    RefreshIfNeeded();
                 }
                 else
                 {
@@ -285,18 +274,22 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        // Only refresh if the last action executed event was very recent.
-                        if (DateTimeOffset.Now.Subtract(_lastProjectUpdateRefreshExecuted).TotalMilliseconds > 2000)
-                        {
-                            if (_lastProjectUpdateRefreshExecuted.Equals(DateTimeOffset.MinValue))
-                            {
-                                _lastProjectUpdateRefreshExecuted = DateTimeOffset.Now;
-                            }
-
-                            Refresh();
-                        }
+                        RefreshIfNeeded();
                     }
                 }
+            }
+        }
+
+        private void RefreshIfNeeded()
+        {
+            // Only refresh there is no executing action. Tell the operation execution to refresh when done otherwise.
+            if (!_executingAction)
+            {
+                Refresh();
+            }
+            else
+            {
+                _uiRefreshRequired = true;
             }
         }
 
@@ -1113,6 +1106,8 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 IsEnabled = false;
+                _executingAction = true;
+
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
@@ -1136,6 +1131,12 @@ namespace NuGet.PackageManagement.UI
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
+                    _executingAction = false;
+                    if (_uiRefreshRequired)
+                    {
+                        Refresh();
+                        _uiRefreshRequired = false;
+                    }
                 }
             });
         }
