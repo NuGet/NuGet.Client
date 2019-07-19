@@ -654,7 +654,8 @@ namespace NuGet.PackageManagement.UI
                     useCacheForUpdates: useCacheForUpdates,
                     pSearchCallback: null,
                     searchTask: null);
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
         /// <summary>
@@ -747,7 +748,8 @@ namespace NuGet.PackageManagement.UI
                 };
 
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshAvailableUpdatesCount)));
         }
 
         private void RefreshConsolidatablePackagesCount()
@@ -776,7 +778,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateDetailPaneAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(UpdateDetailPaneAsync)
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged)));
         }
 
         /// <summary>
@@ -924,7 +928,8 @@ namespace NuGet.PackageManagement.UI
                     var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects,
                         CancellationToken.None);
                     _packageList.UpdatePackageStatus(installedPackages.ToArray());
-                });
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Refresh)));
 
                 RefreshAvailableUpdatesCount();
             }
@@ -1035,7 +1040,8 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _windowSearchHost.Activate();
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed)));
         }
 
         public void Search(string searchText)
@@ -1138,7 +1144,8 @@ namespace NuGet.PackageManagement.UI
                         _uiRefreshRequired = false;
                     }
                 }
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(ExecuteAction)));
         }
 
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)
