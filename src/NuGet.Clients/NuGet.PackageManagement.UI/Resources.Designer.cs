@@ -781,24 +781,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} version {1}.
-        /// </summary>
-        public static string Label_DeprecatedPackageIdAndExactVersion {
-            get {
-                return ResourceManager.GetString("Label_DeprecatedPackageIdAndExactVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to {0} &gt;= {1}.
-        /// </summary>
-        public static string Label_DeprecatedPackageIdAndMinVersion {
-            get {
-                return ResourceManager.GetString("Label_DeprecatedPackageIdAndMinVersion", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Alternate package.
         /// </summary>
         public static string Label_DeprecationAlternatePackage {

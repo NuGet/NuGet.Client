@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace NuGet.LibraryModel
         {
         }
 
-        public LibraryRange(string name, LibraryDependencyTarget typeConstraint): this(name, null, typeConstraint)
+        public LibraryRange(string name, LibraryDependencyTarget typeConstraint) : this(name, null, typeConstraint)
         {
         }
 
@@ -67,44 +67,11 @@ namespace NuGet.LibraryModel
 
         public string ToLockFileDependencyGroupString()
         {
-            var sb = new StringBuilder();
-            sb.Append(Name);
-
             if (VersionRange != null)
             {
-                if (VersionRange.HasLowerBound)
-                {
-                    sb.Append(" ");
-
-                    if (VersionRange.IsMinInclusive)
-                    {
-                        sb.Append(">= ");
-                    }
-                    else
-                    {
-                        sb.Append("> ");
-                    }
-
-                    if (VersionRange.IsFloating)
-                    {
-                        sb.Append(VersionRange.Float.ToString());
-                    }
-                    else
-                    {
-                        sb.Append(VersionRange.MinVersion.ToNormalizedString());
-                    }
-                }
-
-                if (VersionRange.HasUpperBound)
-                {
-                    sb.Append(" ");
-
-                    sb.Append(VersionRange.IsMaxInclusive ? "<= " : "< ");
-                    sb.Append(VersionRange.MaxVersion.ToNormalizedString());
-                }
+                return VersionRange.ToPackageVersionRangeSpecificationString(Name);
             }
-
-            return sb.ToString();
+            else return Name;
         }
 
         /// <summary>

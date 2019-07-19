@@ -390,32 +390,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var text = alternatePackageMetadata.PackageId;
-
-            if (alternatePackageMetadata.Range.IsFloating)
-            {
-                return text;
-            }
-
-            if (alternatePackageMetadata.Range.HasLowerBound)
-            {
-                text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.Label_DeprecatedPackageIdAndExactVersion,
-                    alternatePackageMetadata.PackageId,
-                    alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
-            }
-
-            if (!alternatePackageMetadata.Range.HasUpperBound)
-            {
-                text = string.Format(
-                    CultureInfo.CurrentCulture,
-                    Resources.Label_DeprecatedPackageIdAndMinVersion,
-                    alternatePackageMetadata.PackageId,
-                    alternatePackageMetadata.Range.MinVersion.ToNormalizedString());
-            }
-
-            return text;
+            return alternatePackageMetadata.Range.ToPackageVersionRangeSpecificationString(alternatePackageMetadata.PackageId);
         }
 
         protected abstract void CreateVersions();
