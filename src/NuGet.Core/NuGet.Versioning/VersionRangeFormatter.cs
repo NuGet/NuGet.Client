@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,8 +11,6 @@ namespace NuGet.Versioning
     /// </summary>
     public class VersionRangeFormatter : IFormatProvider, ICustomFormatter
     {
-        private const string LessThanOrEqualTo = "<=";
-        private const string GreaterThanOrEqualTo = ">=";
         private const string ZeroN = "{0:N}";
         private readonly VersionFormatter _versionFormatter;
 
