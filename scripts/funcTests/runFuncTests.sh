@@ -42,11 +42,11 @@ cli/dotnet-install.sh -i cli -c 1.0
 
 DOTNET="$(pwd)/cli/dotnet"
 
-echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nr:false"
+echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nodeReuse:false"
 
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
-$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nr:false
-DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nr:false)"
+$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nodeReuse:false
+DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting /nodeReuse:false)"
 
 echo $DOTNET_BRANCH
 cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
@@ -75,16 +75,16 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nr:false"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nr:false
+echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nodeReuse:false"
+$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /flp:Verbosity=detailed /nodeReuse:false
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
 
 # Unit tests
-echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nr:false"
-$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nr:false
+echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nodeReuse:false"
+$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nodeReuse:false
 
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!!"
@@ -103,8 +103,8 @@ else
 fi
 
 # Func tests
-echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nr:false"
-$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nr:false
+echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nodeReuse:false"
+$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=15.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta /nodeReuse:false
 
 if [ $? -ne 0 ]; then
 	RESULTCODE='1'
