@@ -74,12 +74,6 @@ namespace NuGet.Protocol.Plugins.Tests
             TestWithRunningProcess((process, pluginProcess) => Assert.Equal(process.MainModule.FileName, pluginProcess.FilePath));
         }
 
-        [PlatformFact(Platform.Windows)]
-        public void FilePath_WithExitedProcess_Throws()
-        {
-            TestWithExitedProcess(pluginProcess => Assert.ThrowsAny<Exception>(() => pluginProcess.FilePath));
-        }
-
         [Fact]
         public void Id_WithUnstartedProcess_IsNull()
         {
