@@ -54,9 +54,8 @@ cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 # Display current version
 $DOTNET --version
 
-# Cleanup TMP directory
-echo "Cleaning TMP directory"
-rm "/tmp/"dotnet.* -rf
+echo "Deleting .NET Core temporary files"
+rm -rf "/tmp/"dotnet.*
 
 echo "================="
 
