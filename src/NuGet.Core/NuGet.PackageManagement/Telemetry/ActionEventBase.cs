@@ -27,8 +27,8 @@ namespace NuGet.PackageManagement
                     { nameof(OperationId), operationId },
                     { nameof(PackagesCount), packageCount },
                     { nameof(Status), status },
-                    { nameof(StartTime), startTime.ToString() },
-                    { nameof(EndTime), endTime.ToString() },
+                    { nameof(StartTime), startTime.UtcDateTime.ToString("O") },
+                    { nameof(EndTime), endTime.UtcDateTime.ToString("O") },
                     { nameof(Duration), duration },
                     { nameof(ProjectsCount), projectIds.Length }
                 })
@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement
             // log each project id separately so that it can be joined with ProjectInformation telemetry event
             for (var i = 0; i < projectIds.Length; i++)
             {
-                this[$"ProjectId{i+1}"] = projectIds[i];
+                this[$"ProjectId{i + 1}"] = projectIds[i];
             }
         }
 

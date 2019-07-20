@@ -9,12 +9,12 @@ namespace NuGet.Common
 {
     public class TelemetryActivity : IDisposable
     {
-        private DateTimeOffset _startTime;
+        private DateTime _startTime;
         private Stopwatch _stopwatch;
         private Stopwatch _intervalWatch = new Stopwatch();
         private List<Tuple<string, TimeSpan>> _intervalList;
 
-        public TelemetryEvent TelemetryEvent { get; set;}
+        public TelemetryEvent TelemetryEvent { get; set; }
 
         public Guid ParentId { get; }
 
@@ -23,22 +23,22 @@ namespace NuGet.Common
         public static INuGetTelemetryService NuGetTelemetryService { get; set; }
 
         public TelemetryActivity(Guid parentId) :
-            this(parentId, Guid.Empty, null)
+            this(parentId, Guid.Empty, telemetryEvent: null)
         {
         }
 
-        public TelemetryActivity(Guid parentId, Guid opeartionId):
-            this(parentId, opeartionId, null)
+        public TelemetryActivity(Guid parentId, Guid operationId) :
+            this(parentId, operationId, telemetryEvent: null)
         {
         }
 
-        public TelemetryActivity(Guid parentId, Guid opeartionId, TelemetryEvent telemetryEvent)
+        public TelemetryActivity(Guid parentId, Guid operationId, TelemetryEvent telemetryEvent)
         {
             TelemetryEvent = telemetryEvent;
             ParentId = parentId;
-            OperationId = opeartionId;
+            OperationId = operationId;
 
-            _startTime = DateTimeOffset.Now;
+            _startTime = DateTime.UtcNow;
             _stopwatch = Stopwatch.StartNew();
             _intervalList = new List<Tuple<string, TimeSpan>>();
         }
@@ -60,9 +60,9 @@ namespace NuGet.Common
 
             if (NuGetTelemetryService != null && TelemetryEvent != null)
             {
-                var endTime = DateTimeOffset.Now;
-                TelemetryEvent["StartTime"] = _startTime.ToString();
-                TelemetryEvent["EndTime"] = endTime.ToString();
+                var endTime = DateTime.UtcNow;
+                TelemetryEvent["StartTime"] = _startTime.ToString("O");
+                TelemetryEvent["EndTime"] = endTime.ToString("O");
                 TelemetryEvent["Duration"] = _stopwatch.Elapsed.TotalSeconds;
 
                 if (ParentId != Guid.Empty)

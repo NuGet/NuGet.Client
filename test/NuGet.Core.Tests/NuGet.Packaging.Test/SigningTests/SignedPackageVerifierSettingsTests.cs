@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Packaging.Test
@@ -177,14 +179,10 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var defaultValue = true;
-
-            if (revocationModeEnvVar != null)
-            {
-                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
-            }
+            IEnvironmentVariableReader environmentVariableReader = GetEnvironmentVariableReader(revocationModeEnvVar);
 
             // Act
-            var settings = SignedPackageVerifierSettings.GetDefault();
+            var settings = SignedPackageVerifierSettings.GetDefault(environmentVariableReader);
 
             // Assert
             settings.AllowUnsigned.Should().Be(defaultValue);
@@ -199,8 +197,6 @@ namespace NuGet.Packaging.Test
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
             settings.RevocationMode.Should().Be(expectedRevocationMode);
-
-            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
         [Theory]
@@ -213,14 +209,10 @@ namespace NuGet.Packaging.Test
         {
             // Arrange
             var defaultValue = true;
-
-            if (revocationModeEnvVar != null)
-            {
-                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
-            }
+            IEnvironmentVariableReader environmentVariableReader = GetEnvironmentVariableReader(revocationModeEnvVar);
 
             // Act
-            var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy(environmentVariableReader);
 
             // Assert
             settings.AllowUnsigned.Should().Be(defaultValue);
@@ -235,8 +227,6 @@ namespace NuGet.Packaging.Test
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
             settings.RevocationMode.Should().Be(expectedRevocationMode);
-
-            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
         [Theory]
@@ -248,13 +238,10 @@ namespace NuGet.Packaging.Test
         public void GetRequireModeDefaultPolicy_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
-            if (revocationModeEnvVar != null)
-            {
-                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
-            }
+            IEnvironmentVariableReader environmentVariableReader = GetEnvironmentVariableReader(revocationModeEnvVar);
 
             // Act
-            var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetRequireModeDefaultPolicy(environmentVariableReader);
 
             // Assert
             settings.AllowUnsigned.Should().Be(false);
@@ -269,8 +256,6 @@ namespace NuGet.Packaging.Test
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExistsAndIsNecessary);
             settings.RevocationMode.Should().Be(expectedRevocationMode);
-
-            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
         }
 
         [Theory]
@@ -282,13 +267,10 @@ namespace NuGet.Packaging.Test
         public void GetVerifyCommandDefaultPolicy_InitializesProperties(string revocationModeEnvVar, RevocationMode expectedRevocationMode)
         {
             // Arrange
-            if (revocationModeEnvVar != null)
-            {
-                Environment.SetEnvironmentVariable(RevocationModeEnvVar, revocationModeEnvVar);
-            }
+            IEnvironmentVariableReader environmentVariableReader = GetEnvironmentVariableReader(revocationModeEnvVar);
 
             // Act
-            var settings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+            var settings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(environmentVariableReader);
 
             // Assert
             settings.AllowUnsigned.Should().Be(false);
@@ -303,8 +285,16 @@ namespace NuGet.Packaging.Test
             settings.SignaturePlacement.Should().Be(SignaturePlacement.Any);
             settings.RepositoryCountersignatureVerificationBehavior.Should().Be(SignatureVerificationBehavior.IfExists);
             settings.RevocationMode.Should().Be(expectedRevocationMode);
+        }
 
-            Environment.SetEnvironmentVariable(RevocationModeEnvVar, string.Empty);
+        private static IEnvironmentVariableReader GetEnvironmentVariableReader(string revocationModeEnvVar)
+        {
+            if (revocationModeEnvVar == null)
+            {
+                return TestEnvironmentVariableReader.EmptyInstance;
+            }
+
+            return new TestEnvironmentVariableReader(new Dictionary<string, string>() { { RevocationModeEnvVar, revocationModeEnvVar } });
         }
     }
 }

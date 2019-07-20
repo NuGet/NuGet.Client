@@ -9,7 +9,6 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
-using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
@@ -18,6 +17,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -48,15 +48,15 @@ namespace NuGet.Packaging.FuncTest
         {
             if (StringComparer.Ordinal.Equals(policyString, "command"))
             {
-                return SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+                return SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
             }
 
             if (StringComparer.Ordinal.Equals(policyString, "vs"))
             {
-                return SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy();
+                return SignedPackageVerifierSettings.GetAcceptModeDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
             }
 
-            return SignedPackageVerifierSettings.GetDefault();
+            return SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         }
 
         [CIOnlyTheory]
