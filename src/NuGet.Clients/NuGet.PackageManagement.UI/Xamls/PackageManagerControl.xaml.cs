@@ -44,6 +44,13 @@ namespace NuGet.PackageManagement.UI
         // list in response to PackageSourcesChanged event.
         private bool _dontStartNewSearch;
 
+        // When executing a UI operation, we disable the PM UI and ignore any refresh requests.
+        // This tells the operation execution part that it needs to trigger a refresh when done.
+        private bool _isRefreshRequired;
+
+        // Signifies where an action is being executed. Should be updated in a coordinated fashion with IsEnabled
+        private bool _isExecutingAction;
+
         private PackageRestoreBar _restoreBar;
 
         private RestartRequestBar _restartBar;
@@ -211,8 +218,7 @@ namespace NuGet.PackageManagement.UI
                     var projects = solutionModel.Projects.Select(p => p.NuGetProject);
                     Model.Context.Projects = projects;
 
-                    // refresh UI
-                    Refresh();
+                    RefreshWhenNotExecutingAction();
                 }
             }
         }
@@ -224,7 +230,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    Refresh();
+                    RefreshWhenNotExecutingAction();
                 }
                 else
                 {
@@ -236,7 +242,7 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
-                        Refresh();
+                        RefreshWhenNotExecutingAction();
                     }
                 }
             }
@@ -249,8 +255,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    // This means that the UI is open for the solution.
-                    Refresh();
+                    RefreshWhenNotExecutingAction();
                 }
                 else
                 {
@@ -267,9 +272,22 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        Refresh();
+                        RefreshWhenNotExecutingAction();
                     }
                 }
+            }
+        }
+
+        private void RefreshWhenNotExecutingAction()
+        {
+            // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
+            if (!_isExecutingAction)
+            {
+                Refresh();
+            }
+            else
+            {
+                _isRefreshRequired = true;
             }
         }
 
@@ -634,7 +652,8 @@ namespace NuGet.PackageManagement.UI
                     useCacheForUpdates: useCacheForUpdates,
                     pSearchCallback: null,
                     searchTask: null);
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
         /// <summary>
@@ -727,7 +746,8 @@ namespace NuGet.PackageManagement.UI
                 };
 
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshAvailableUpdatesCount)));
         }
 
         private void RefreshConsolidatablePackagesCount()
@@ -756,7 +776,9 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(UpdateDetailPaneAsync);
+            NuGetUIThreadHelper.JoinableTaskFactory
+                .RunAsync(UpdateDetailPaneAsync)
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(PackageList_SelectionChanged)));
         }
 
         /// <summary>
@@ -904,7 +926,8 @@ namespace NuGet.PackageManagement.UI
                     var installedPackages = await PackageCollection.FromProjectsAsync(Model.Context.Projects,
                         CancellationToken.None);
                     _packageList.UpdatePackageStatus(installedPackages.ToArray());
-                });
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Refresh)));
 
                 RefreshAvailableUpdatesCount();
             }
@@ -1015,7 +1038,8 @@ namespace NuGet.PackageManagement.UI
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _windowSearchHost.Activate();
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(FocusOnSearchBox_Executed)));
         }
 
         public void Search(string searchText)
@@ -1086,6 +1110,8 @@ namespace NuGet.PackageManagement.UI
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async delegate
             {
                 IsEnabled = false;
+                _isExecutingAction = true;
+
                 NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationBegin);
                 try
                 {
@@ -1109,8 +1135,15 @@ namespace NuGet.PackageManagement.UI
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;
+                    _isExecutingAction = false;
+                    if (_isRefreshRequired)
+                    {
+                        Refresh();
+                        _isRefreshRequired = false;
+                    }
                 }
-            });
+            })
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(ExecuteAction)));
         }
 
         private void ExecuteUninstallPackageCommand(object sender, ExecutedRoutedEventArgs e)

@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Common;
-using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
+using Test.Utility.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -20,6 +18,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(expected.StartTime, actual["StartTime"]);
             Assert.Equal(expected.EndTime, actual["EndTime"]);
             Assert.Equal(expected.Duration, (double)actual["Duration"]);
+
+            TelemetryUtility.VerifyDateTimeFormat(actual["StartTime"] as string);
+            TelemetryUtility.VerifyDateTimeFormat(actual["EndTime"] as string);
 
             for (var i = 0; i < expected.ProjectsCount; i++)
             {
