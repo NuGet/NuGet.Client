@@ -542,9 +542,8 @@ namespace NuGet.Packaging.Test
         public void GetStream_ReturnsReadableStream()
         {
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            using (var stream = test.Reader.GetStream("Aa.nuspec"))
             {
-                var stream = test.Reader.GetStream("Aa.nuspec");
-
                 Assert.NotNull(stream);
                 Assert.True(stream.CanRead);
             }
@@ -554,9 +553,8 @@ namespace NuGet.Packaging.Test
         public async Task GetStreamAsync_ReturnsReadableStream()
         {
             using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackage()))
+            using (var stream = await test.Reader.GetStreamAsync("Aa.nuspec", CancellationToken.None))
             {
-                var stream = await test.Reader.GetStreamAsync("Aa.nuspec", CancellationToken.None);
-
                 Assert.NotNull(stream);
                 Assert.True(stream.CanRead);
             }

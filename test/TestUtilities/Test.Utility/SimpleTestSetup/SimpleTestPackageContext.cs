@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -97,22 +96,6 @@ namespace NuGet.Test.Utility
             }
 
             Files.Add(new KeyValuePair<string, byte[]>(path, bytes));
-        }
-
-        /// <summary>
-        /// Creates the package as a ZipArchive.
-        /// </summary>
-        public async Task<ZipArchive> CreateAsync()
-        {
-            return await CreateAsync(ZipArchiveMode.Update);
-        }
-
-        /// <summary>
-        /// Creates the package as a ZipArchive.
-        /// </summary>
-        public async Task<ZipArchive> CreateAsync(ZipArchiveMode mode)
-        {
-            return new ZipArchive(await CreateAsStreamAsync(), ZipArchiveMode.Update, leaveOpen: false);
         }
 
         /// <summary>
