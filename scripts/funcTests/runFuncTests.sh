@@ -32,7 +32,7 @@ fi
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://raw.githubusercontent.com/dotnet/cli/7a96d9cb1a40d80b9ec99181fdd0fbb9458a94b9/scripts/obtain/dotnet-install.sh
+curl -o cli/dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh
