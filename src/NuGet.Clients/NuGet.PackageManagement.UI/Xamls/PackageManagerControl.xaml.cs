@@ -103,6 +103,7 @@ namespace NuGet.PackageManagement.UI
             INuGetUILogger uiLogger = null)
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
+            _stopWatch = Stopwatch.StartNew();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -177,7 +178,6 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
-            _stopWatch = Stopwatch.StartNew();
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -550,8 +550,6 @@ namespace NuGet.PackageManagement.UI
             if (RestoreBar != null)
             {
                 RestoreBar.CleanUp();
-
-                // TODO: clean this up during dispose also
                 Model.Context.PackageRestoreManager.PackagesMissingStatusChanged -= packageRestoreManager_PackagesMissingStatusChanged;
             }
         }
@@ -615,8 +613,9 @@ namespace NuGet.PackageManagement.UI
         private void UpdateAfterPackagesMissingStatusChanged()
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
-
+            var timeSinceLastRefresh = GetTimeSinceLastRefresh();
             Refresh();
+            EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
             _packageDetail.Refresh();
         }
 
@@ -1201,7 +1200,9 @@ namespace NuGet.PackageManagement.UI
                     _isExecutingAction = false;
                     if (_isRefreshRequired)
                     {
+                        var timeSinceLastRefresh = GetTimeSinceLastRefresh();
                         Refresh();
+                        EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success);
                         _isRefreshRequired = false;
                     }
                 }

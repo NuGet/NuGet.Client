@@ -1,5 +1,6 @@
 // All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using NuGet.Common;
 
@@ -26,16 +27,18 @@ namespace NuGet.PackageManagement.Telemetry
 
     public enum RefreshOperationSource
     {
-        ProjectsChanged,
-        CacheUpdated,
         ActionsExecuted,
-        PackageManagerLoaded,
-        PackageSourcesChanged,
-        SourceSelectionChanged,
-        FilterSelectionChanged,
+        CacheUpdated,
         CheckboxPrereleaseChanged,
         ClearSearch,
+        ExecuteAction,
+        FilterSelectionChanged,
+        PackageManagerLoaded,
+        PackageSourcesChanged,
+        ProjectsChanged,
         RestartSearchCommand,
+        SourceSelectionChanged,
+        PackagesMissingStatusChanged,
     }
 
     public enum RefreshOperationStatus
