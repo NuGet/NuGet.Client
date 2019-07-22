@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI
         internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
         internal InfiniteScrollList PackageList { get => _packageList; }
- 
+
         internal PackageSourceMoniker SelectedSource
         {
             get
@@ -151,7 +151,7 @@ namespace NuGet.PackageManagement.UI
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
 
-            Loaded += PackageManagerLoaded;            
+            Loaded += PackageManagerLoaded;
 
             // register with the UI controller
             var controller = model.UIController as NuGetUI;
@@ -326,6 +326,7 @@ namespace NuGet.PackageManagement.UI
                                     Model.IsSolution,
                                     refreshOperationSource,
                                     status,
+                                    _topPanel.Filter.ToString(),
                                     timeSpan
                                     ));
         }
@@ -768,7 +769,7 @@ namespace NuGet.PackageManagement.UI
                     };
 
                     _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-                        
+
                 }
                 else
                 {

@@ -15,12 +15,14 @@ namespace NuGet.PackageManagement.Telemetry
         bool isSolutionLevel,
         RefreshOperationSource refreshSource,
         RefreshOperationStatus refreshStatus,
+        string tab,
         TimeSpan timeSinceLastRefresh) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
             base["RefreshSource"] = refreshSource;
             base["RefreshStatus"] = refreshStatus;
+            base["Tab"] = tab;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalSeconds;
         }
     }
