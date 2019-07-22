@@ -28,6 +28,11 @@ namespace NuGet.Packaging
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
 
+        /// <summary>
+        /// Maximun Icon file size: 1 megabyte
+        /// </summary>
+        public const int MaxIconFileSize = 1024 * 1024;
+
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, Path.GetDirectoryName(path), propertyProvider, includeEmptyDirectories)
         {
@@ -549,7 +554,17 @@ namespace NuGet.Packaging
                     using (var iconStream = iconFile.GetStream())
                     {
                         // Validate file size
-                        IconValidationUtilities.ValidateIconFileSize(iconStream);
+                        long fileSize = iconStream.Length;
+
+                        if (fileSize > MaxIconFileSize)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconMaxFilseSizeExceeded);
+                        }
+
+                        if (fileSize == 0)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconErrorEmpty);
+                        }
                     }
                 }
                 catch (FileNotFoundException e)
