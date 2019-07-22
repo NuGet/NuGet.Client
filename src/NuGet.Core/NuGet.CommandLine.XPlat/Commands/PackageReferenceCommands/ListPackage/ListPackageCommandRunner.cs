@@ -54,7 +54,6 @@ namespace NuGet.CommandLine.XPlat
                 Console.WriteLine();
             }
 
-            //Loop through all of the project paths
             foreach (var projectPath in projectsPaths)
             {
                 //Open project to evaluate properties for the assets
@@ -74,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
-                //If the file was not found, print an error message and continue to next project
+                // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
@@ -92,7 +91,7 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets != null &&
                         assetsFile.Targets.Count != 0)
                     {
-                        //Get all the packages that are referenced in a project
+                        // Get all the packages that are referenced in a project
                         var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
                         // If packages equals null, it means something wrong happened
@@ -100,7 +99,7 @@ namespace NuGet.CommandLine.XPlat
                         // in MSBuildAPIUtility function, but we need to move to the next project
                         if (packages != null)
                         {
-                            //No packages means that no package references at all were found 
+                            // No packages means that no package references at all were found 
                             if (!packages.Any())
                             {
                                 Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
@@ -109,13 +108,13 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 var printPackages = true;
 
-                                //Handle outdated
+                                // Handle outdated
                                 if (listPackageArgs.IncludeOutdated)
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                     var noPackagesLeft = true;
 
-                                    //Filter the packages for outdated
+                                    // Filter the packages for outdated
                                     foreach (var frameworkPackages in packages)
                                     {
                                         frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
