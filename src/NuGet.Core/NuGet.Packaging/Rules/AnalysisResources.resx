@@ -126,11 +126,25 @@
   <data name="DefaultSpecValueWarning" xml:space="preserve">
     <value>The value "{0}" for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>
+  <data name="DependenciesGroupsForEachTFMBeginningToFiles" xml:space="preserve">
+    <value>
+- Add lib or ref assemblies for the </value>
+  </data>
+  <data name="DependenciesGroupsForEachTFMBeginningToNuspec" xml:space="preserve">
+    <value>
+- Add a dependency group for </value>
+  </data>
+  <data name="DependenciesGroupsForEachTFMEndingToFile" xml:space="preserve">
+    <value> target framework</value>
+  </data>
+  <data name="DependenciesGroupsForEachTFMEndingToNuspec" xml:space="preserve">
+    <value> to the nuspec</value>
+  </data>
   <data name="DependenciesGroupsForEachTFMHasCompatMatch" xml:space="preserve">
-    <value>Some TFMs declared in the dependencies group of the nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:{0}</value>
+    <value>Some target frameworks declared in the dependencies group of the nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:{0}</value>
   </data>
   <data name="DependenciesGroupsForEachTFMHasNoExactMatch" xml:space="preserve">
-    <value>Some TFMs declared in the dependencies group of the nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:{0}</value>
+    <value>Some target frameworks declared in the dependencies group of the nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:{0}</value>
   </data>
   <data name="FilePathTooLongWarning" xml:space="preserve">
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>

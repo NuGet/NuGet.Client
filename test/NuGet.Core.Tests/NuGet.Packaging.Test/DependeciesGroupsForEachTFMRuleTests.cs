@@ -1,29 +1,23 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Frameworks;
 using NuGet.Packaging.Rules;
 using Xunit;
+using NuGet.RuntimeModel;
+using NuGet.Client;
+using NuGet.ContentModel;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Packaging.Test
 {
     public class DependeciesGroupsForEachTFMRuleTests
     {
-        public static string NuspecContent = "<?xml version=\"1.0\" encoding=\"utf-8\"?>" +
-"<package xmlns=\"http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd\">" +
-"   <metadata>" +
-"        <id>test</id>" +
-"        <version>1.0.0</version>" +
-"        <authors>Unit Test</authors>" +
-"        <description>Sample Description</description>" +
-"        <language>en-US</language>" +
-"    </metadata>" +
-"</package>";
-
-
+        ManagedCodeConventions _managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
+        ContentItemCollection _collection = new ContentItemCollection();
 
         [Fact]
         public void Validate_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
@@ -37,9 +31,9 @@ namespace NuGet.Packaging.Test
                 ".NETStandard1.0",
                 ".NETStandard1.3",
                 ".NETStandard2.0"
-            };
+            }.Select(f => NuGetFramework.Parse(f));
             //Arrange
-            var files = new string[]
+            var fileStrings = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -53,9 +47,7 @@ namespace NuGet.Packaging.Test
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -74,10 +66,10 @@ namespace NuGet.Packaging.Test
                 ".NETStandard1.0",
                 ".NETStandard1.3",
                 ".NETStandard2.0"
-            };
+            }.Select(f => NuGetFramework.Parse(f));
 
             //Arrange
-            var files = new string[]
+            var fileStrings = new string[]
             {
                 "ref/net20/test.dll",
                 "ref/net35/test.dll",
@@ -87,13 +79,11 @@ namespace NuGet.Packaging.Test
                 "ref/netstandard1.3/test.dll",
                 "ref/netstandard2.0/test.dll",
             };
-
+           
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -101,7 +91,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldWarnOnce()
+        public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldThrowOneWarningCode()
         {
             //Arrange
             var frameworks = new string[]
@@ -113,9 +103,9 @@ namespace NuGet.Packaging.Test
                 ".NETStandard1.0",
                 ".NETStandard1.3",
                 ".NETStandard2.0"
-            };
+            }.Select(f => NuGetFramework.Parse(f));
 
-            var files = new string[]
+            var fileStrings = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -125,9 +115,7 @@ namespace NuGet.Packaging.Test
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -135,24 +123,22 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageWithDependenciesHasCompatMatchNotExactMatch_ShouldWarnTwice()
+        public void Validate_PackageWithDependenciesHasCompatMatchNotExactMatch_ShouldThrowTwoWarningCodes()
         {
             var frameworks = new string[]
             {
                 ".NETFramework4.5"
-            };
+            }.Select(f => NuGetFramework.Parse(f));
 
-            var files = new string[]
+            var fileStrings = new string[]
             {
                 "lib/net472/test.dll"
             };
-
+            
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && !p.Message.Contains(".NETFramework4.7.2")));
@@ -160,10 +146,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageHasNoDependencyGroupWithFilesInTheLib_ShouldWarnOnce()
+        public void Validate_PackageHasNoDependencyGroupWithFilesInTheLib_ShouldThrowOneWarningCode()
         {
-            var frameworks = Array.Empty<string>();
-            var files = new string[]
+            var frameworks = Array.Empty<NuGetFramework>();
+            var fileStrings = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -173,9 +159,7 @@ namespace NuGet.Packaging.Test
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -183,22 +167,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageHasCompatMatchFromNuspecToPackage_ShouldWarnOnce()
+        public void Validate_PackageHasCompatMatchFromNuspecToPackage_ShouldThrowOneWarningCode()
         {
             var frameworks = new string[]
             {
                 ".NETFramework4.7.2"
-            };
-            var files = new string[]
+            }.Select(f => NuGetFramework.Parse(f));
+            var fileStrings = new string[]
             {
                 "lib/net45/test.dll"
             };
+
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -208,35 +191,51 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Validate_PackageHasNoDepencyNodeAndHasFilesInLib_ShouldNotWarn()
         {
-            var frameworks = Array.Empty<string>();
-            var files = new string[]
+            var frameworks = Array.Empty<NuGetFramework>();
+            var fileStrings = new string[]
             {
                 "lib/test.dll"
             };
+
             // Act
             var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
                                                         AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            byte[] byteArray = Encoding.ASCII.GetBytes(CreateNuspecContent(frameworks));
-            MemoryStream stream = new MemoryStream(byteArray);
-            var issues = rule.Validate(files, stream).ToList();
+            var issues = rule.Validate(fileStrings, frameworks).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
         }
 
-        public static string CreateNuspecContent(string[] frameworks)
+        [Fact]
+        public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldContainCorrectFrameworks()
         {
-            string dependencies = "<dependencies>";
-            foreach(var framework in frameworks)
+            //Arrange
+            var frameworks = new string[]
             {
-                dependencies = dependencies + "<group targetFramework= \"" + framework + "\" />";
-            }
-            dependencies = dependencies + "</dependencies>";
-            return NuspecContent.Replace("</language>", "</language>" + dependencies);
+                ".NETFramework3.5",
+                ".NETFramework4.0",
+                ".NETFramework4.5",
+            }.Select(f => NuGetFramework.Parse(f));
+
+            var fileStrings = new string[]
+            {
+                "lib/net20/test.dll",
+                "lib/net35/test.dll",
+                "lib/net40/test.dll"
+            };
+            _collection.Load(fileStrings);
+            var files = ContentExtractor.GetGroupFrameworks(ContentExtractor.GetContentForPattern(_collection, _managedCodeConventions.Patterns.CompileLibAssemblies));
+
+            // Act
+            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
+                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
+            (var testStringExact, var testStringCompat) = rule.Validate(files, frameworks, _managedCodeConventions);
+
+            // Assert
+            Assert.True(testStringExact.Contains("Add lib or ref assemblies for the net45 target framework"));
+            Assert.True(testStringExact.Contains(" Add a dependency group for .NETFramework2.0 to the nuspec"));
+            Assert.True(testStringCompat == string.Empty);
         }
     }
 }
-
-
-    
