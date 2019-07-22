@@ -249,28 +249,28 @@ namespace NuGet.Frameworks.Test
             Assert.Contains(".NETCoreApp,Version=v3.0", actual);
             Assert.Contains(".NETStandard,Version=v2.1", actual);
             Assert.Contains("Tizen,Version=v6.0", actual);
+            Assert.Contains("MonoAndroid,Version=v0.0", actual);
+            Assert.Contains("MonoMac,Version=v0.0", actual);
+            Assert.Contains("MonoTouch,Version=v0.0", actual);
+            Assert.Contains("Xamarin.iOS,Version=v0.0", actual);
+            Assert.Contains("Xamarin.Mac,Version=v0.0", actual);
+            Assert.Contains("Xamarin.TVOS,Version=v0.0", actual);
+            Assert.Contains("Xamarin.WatchOS,Version=v0.0", actual);
 
             // negative
             Assert.DoesNotContain(".NETFramework,Version=v4.7", actual); // frameworks with no relationship are not returned
             Assert.DoesNotContain(".NETPlatform,Version=v5.6", actual); // frameworks with no relationship are not returned
             Assert.DoesNotContain("DNXCore,Version=v5.0", actual);
             Assert.DoesNotContain("DNX,Version=v4.6.1", actual);
-            Assert.DoesNotContain("MonoAndroid,Version=v0.0", actual);
-            Assert.DoesNotContain("MonoMac,Version=v0.0", actual);
-            Assert.DoesNotContain("MonoTouch,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.iOS,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.Mac,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation3,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStation4,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.PlayStationVita,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.TVOS,Version=v0.0", actual);
-            Assert.DoesNotContain("Xamarin.WatchOS,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.Xbox360,Version=v0.0", actual);
             Assert.DoesNotContain("Xamarin.XboxOne,Version=v0.0", actual);
             Assert.DoesNotContain("UAP,Version=v10.0.15064", actual);
 
             // count
-            Assert.Equal(4, actual.Length);
+            Assert.Equal(11, actual.Length);
         }
     }
 }
