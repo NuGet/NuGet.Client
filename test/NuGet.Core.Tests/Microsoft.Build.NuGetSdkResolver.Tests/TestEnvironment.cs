@@ -92,6 +92,11 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 // Assert invariants
                 foreach (var item in _invariants)
                     item.AssertInvariant(_output);
+
+                if (_defaultTestDirectory.IsValueCreated)
+                {
+                    _defaultTestDirectory.Value.Revert();
+                }
             }
         }
 
@@ -316,8 +321,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 Console.WriteLine(format, args);
             }
         }
-
-        
 
         /// <summary>
         ///     Creates a test variant representing a test project with files relative to the project root. All files
@@ -882,7 +885,6 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
             return splits;
         }
-
     }
 
     #region MockLogger

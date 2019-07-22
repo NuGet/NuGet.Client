@@ -160,10 +160,11 @@ namespace NuGet.Protocol
             else
             {
                 // Scan the folder for the nuspec
-                var folderReader = new PackageFolderReader(expandedPath);
-
-                // This will throw if the nuspec is not found
-                nuspec = new NuspecReader(folderReader.GetNuspec());
+                using (var folderReader = new PackageFolderReader(expandedPath))
+                {
+                    // This will throw if the nuspec is not found
+                    nuspec = new NuspecReader(folderReader.GetNuspec());
+                }
             }
 
             return nuspec;

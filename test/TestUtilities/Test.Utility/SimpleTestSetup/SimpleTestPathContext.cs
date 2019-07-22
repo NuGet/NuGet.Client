@@ -52,11 +52,6 @@ namespace NuGet.Test.Utility
         public string HttpCacheFolder { get; }
 
         /// <summary>
-        /// If false the folder will be left after the test finishes
-        /// </summary>
-        public bool CleanUp { get; set; } = true;
-
-        /// <summary>
         /// settings from <see cref="NuGetConfig"/>
         /// </summary>
         public SimpleTestSettingsContext Settings { get; }
@@ -84,10 +79,7 @@ namespace NuGet.Test.Utility
 
         public void Dispose()
         {
-            if (CleanUp)
-            {
-                WorkingDirectory.Dispose();
-            }
+            WorkingDirectory.Dispose();
         }
     }
 }
