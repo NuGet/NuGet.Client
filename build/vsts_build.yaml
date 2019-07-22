@@ -50,6 +50,7 @@ phases:
 
   - task: PowerShell@1
     displayName: "Add Build Tags"
+    continueOnError: "false"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
