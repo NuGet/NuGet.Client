@@ -205,7 +205,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SolutionManager_ProjectsChanged(object sender, NuGetProjectEventArgs e)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
 
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible && Model.IsSolution)
@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SolutionManager_ActionsExecuted(object sender, ActionsExecutedEventArgs e)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SolutionManager_CacheUpdated(object sender, NuGetEventArgs<string> e)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not refresh if the UI is not visible. It will be refreshed later when the loaded event is called.
             if (IsVisible)
             {
@@ -303,7 +303,7 @@ namespace NuGet.PackageManagement.UI
 
         private void RefreshWhenNotExecutingAction(RefreshOperationSource source)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
             if (!_isExecutingAction)
             {
@@ -331,7 +331,7 @@ namespace NuGet.PackageManagement.UI
                                     ));
         }
 
-        private TimeSpan GetTimeSinceLastRefresh()
+        private TimeSpan GetTimeSinceLastRefreshAndRestart()
         {
             var elapsed = _stopWatch.Elapsed;
             _stopWatch.Restart();
@@ -348,7 +348,7 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageManagerLoaded(object sender, RoutedEventArgs e)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Do not trigger a refresh if the browse tab is open and this is not the first load of the control.
             // The loaded event is triggered once all the data binding has occurred, which effectively means we'll just display what was loaded earlier and not trigger another search
             if (!(_loadedAndInitialized && _topPanel.Filter == ItemFilter.All))
@@ -449,7 +449,7 @@ namespace NuGet.PackageManagement.UI
             // _sourceRepoList_SelectionChanged(). This method will start the new
             // search when needed by itself.
             _dontStartNewSearch = true;
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             try
             {
                 var prevSelectedItem = SelectedSource;
@@ -614,7 +614,7 @@ namespace NuGet.PackageManagement.UI
         private void UpdateAfterPackagesMissingStatusChanged()
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
-            var timeSinceLastRefresh = GetTimeSinceLastRefresh();
+            var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
             Refresh();
             EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success);
             _packageDetail.Refresh();
@@ -937,7 +937,7 @@ namespace NuGet.PackageManagement.UI
 
         private void SourceRepoList_SelectionChanged(object sender, EventArgs e)
         {
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             if (_dontStartNewSearch || !_initialized)
             {
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.NoOp);
@@ -960,7 +960,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (_initialized)
             {
-                var timeSpan = GetTimeSinceLastRefresh();
+                var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
@@ -1012,7 +1012,7 @@ namespace NuGet.PackageManagement.UI
             {
                 return;
             }
-            var timeSpan = GetTimeSinceLastRefresh();
+            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             RegistrySettingUtility.SetBooleanSetting(
                 Constants.IncludePrereleaseRegistryName,
                 _topPanel.CheckboxPrerelease.IsChecked == true);
@@ -1042,7 +1042,7 @@ namespace NuGet.PackageManagement.UI
 
         public void ClearSearch()
         {
-            EmitRefreshEvent(GetTimeSinceLastRefresh(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
+            EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
             SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
         }
 
@@ -1201,7 +1201,7 @@ namespace NuGet.PackageManagement.UI
                     _isExecutingAction = false;
                     if (_isRefreshRequired)
                     {
-                        var timeSinceLastRefresh = GetTimeSinceLastRefresh();
+                        var timeSinceLastRefresh = GetTimeSinceLastRefreshAndRestart();
                         Refresh();
                         EmitRefreshEvent(timeSinceLastRefresh, RefreshOperationSource.ExecuteAction, RefreshOperationStatus.Success);
                         _isRefreshRequired = false;
@@ -1262,7 +1262,7 @@ namespace NuGet.PackageManagement.UI
 
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
-            EmitRefreshEvent(GetTimeSinceLastRefresh(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
+            EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
             SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
             RefreshConsolidatablePackagesCount();
         }
