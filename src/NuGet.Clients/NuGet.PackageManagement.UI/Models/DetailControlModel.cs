@@ -390,7 +390,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            return alternatePackageMetadata.Range.ToPackageVersionRangeSpecificationString(alternatePackageMetadata.PackageId);
+            return $"{alternatePackageMetadata.PackageId} {alternatePackageMetadata.Range.PrettyPrint()}";
         }
 
         protected abstract void CreateVersions();

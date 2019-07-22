@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using NuGet.Shared;
 
 namespace NuGet.Versioning
@@ -402,60 +401,6 @@ namespace NuGet.Versioning
         public override int GetHashCode()
         {
             return base.GetHashCode();
-        }
-
-        /// <summary>
-        /// Format the version range as a package version range specification string.
-        /// </summary>
-        /// <param name="packageId">The package id to be used in the dependency group.</param>
-        /// <example>
-        /// Package.Id >= 1.0.0
-        /// </example>
-        /// <remarks>
-        /// Used to label dependency groups or alternate packages.
-        /// </remarks>
-        public string ToPackageVersionRangeSpecificationString(string packageId)
-        {
-            if (packageId == null)
-            {
-                throw new ArgumentNullException(nameof(packageId));
-            }
-
-            var sb = new StringBuilder();
-            sb.Append(packageId);
-
-            if (HasLowerBound)
-            {
-                sb.Append(" ");
-
-                if (IsMinInclusive)
-                {
-                    sb.Append(">= ");
-                }
-                else
-                {
-                    sb.Append("> ");
-                }
-
-                if (IsFloating)
-                {
-                    sb.Append(Float.ToString());
-                }
-                else
-                {
-                    sb.Append(MinVersion.ToNormalizedString());
-                }
-            }
-
-            if (HasUpperBound)
-            {
-                sb.Append(" ");
-
-                sb.Append(IsMaxInclusive ? "<= " : "< ");
-                sb.Append(MaxVersion.ToNormalizedString());
-            }
-
-            return sb.ToString();
         }
     }
 }
