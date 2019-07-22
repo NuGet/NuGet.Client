@@ -54,8 +54,8 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEVERSIONAUTHOR"
-        Write-Host "##vso[build.addbuildtag]$env:BUILD_SOURCEBRANCHNAME"
+        Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEVERSIONAUTHOR}"
+        Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEBRANCHNAME}"
 
 - phase: Build_and_UnitTest
   dependsOn: Initialize_Build
