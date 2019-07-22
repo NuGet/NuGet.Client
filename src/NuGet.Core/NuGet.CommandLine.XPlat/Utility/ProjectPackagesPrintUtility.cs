@@ -128,8 +128,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                        p => "",
                        p => p.Name,
                        p => "",
-                       p => PrintVersion(p.ResolvedVersion),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestVersion));
+                       p => PrintVersion(p.ResolvedPackageMetadata),
+                       p => p.LatestPackageMetadata == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestPackageMetadata));
             }
             else if (outdated && !printingTransitive)
             {
@@ -148,8 +148,8 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => PrintVersion(p.ResolvedVersion),
-                       p => p.LatestVersion == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestVersion));
+                       p => PrintVersion(p.ResolvedPackageMetadata),
+                       p => p.LatestPackageMetadata == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestPackageMetadata));
             }
             else if (!outdated && printingTransitive)
             {
@@ -159,7 +159,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                         p => "",
                         p => p.Name,
                         p => "",
-                        p => PrintVersion(p.ResolvedVersion));
+                        p => PrintVersion(p.ResolvedPackageMetadata));
             }
             else
             {
@@ -178,7 +178,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => PrintVersion(p.ResolvedVersion));
+                       p => PrintVersion(p.ResolvedPackageMetadata));
             }
 
             //Handle printing with colors
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
 
-            deprecatedFound = packages.Any(p => p.LatestVersion.DeprecationMetadata != null || p.ResolvedVersion.DeprecationMetadata != null);
+            deprecatedFound = packages.Any(p => p.LatestPackageMetadata.DeprecationMetadata != null || p.ResolvedPackageMetadata.DeprecationMetadata != null);
 
             return new PrintPackagesResult(autoReferenceFound, deprecatedFound);
         }

@@ -118,8 +118,8 @@ namespace NuGet.CommandLine.XPlat
                                     //Filter the packages for outdated
                                     foreach (var frameworkPackages in packages)
                                     {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion.Identity.Version < p.LatestVersion.Identity.Version));
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion.Identity.Version < p.LatestVersion.Identity.Version);
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
                                         if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
                                         {
                                             noPackagesLeft = false;
@@ -268,17 +268,17 @@ namespace NuGet.CommandLine.XPlat
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
                     var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
 
-                    topLevelPackage.LatestVersion = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
-                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion.Identity.Version, topLevelPackage.LatestVersion.Identity.Version);
+                    topLevelPackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
+                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
 
                     // Update resolved version with deprecated information returned by the server.
                     var resolvedVersionFromServer = matchingPackage.Value
-                        .Where(v => v.Identity.Version == topLevelPackage.ResolvedVersion.Identity.Version && v.DeprecationMetadata != null)
+                        .Where(v => v.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
                         .FirstOrDefault();
 
                     if (resolvedVersionFromServer != null)
                     {
-                        topLevelPackage.ResolvedVersion = resolvedVersionFromServer;
+                        topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer;
                     }
                 }
 
@@ -287,16 +287,16 @@ namespace NuGet.CommandLine.XPlat
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
                     var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
 
-                    transitivePackage.LatestVersion = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
-                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion.Identity.Version, transitivePackage.LatestVersion.Identity.Version);
+                    transitivePackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
+                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
 
                     // Update resolved version with deprecated information returned by the server.
                     var resolvedVersionFromServer = matchingPackage.Value
-                        .Where(v => v.Identity.Version == transitivePackage.ResolvedVersion.Identity.Version && v.DeprecationMetadata != null)
+                        .Where(v => v.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
                         .FirstOrDefault();
                     if (resolvedVersionFromServer != null)
                     {
-                        transitivePackage.ResolvedVersion = resolvedVersionFromServer;
+                        transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer;
                     }
                 }
             }
@@ -391,16 +391,16 @@ namespace NuGet.CommandLine.XPlat
         /// <returns>Whether the new version meets the constraints or not</returns>
         private bool MeetsConstraints(NuGetVersion newVersion, InstalledPackageReference package, ListPackageArgs listPackageArgs)
         {
-            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedVersion.Identity.Version.IsPrerelease;
+            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedPackageMetadata.Identity.Version.IsPrerelease;
 
             if (listPackageArgs.HighestPatch)
             {
-                result = newVersion.Minor.Equals(package.ResolvedVersion.Identity.Version.Minor) && newVersion.Major.Equals(package.ResolvedVersion.Identity.Version.Major) && result;
+                result = newVersion.Minor.Equals(package.ResolvedPackageMetadata.Identity.Version.Minor) && newVersion.Major.Equals(package.ResolvedPackageMetadata.Identity.Version.Major) && result;
             }
 
             if (listPackageArgs.HighestMinor)
             {
-                result = newVersion.Major.Equals(package.ResolvedVersion.Identity.Version.Major) && result;
+                result = newVersion.Major.Equals(package.ResolvedPackageMetadata.Identity.Version.Major) && result;
             }
 
             return result;

@@ -440,7 +440,7 @@ namespace NuGet.CommandLine.XPlat
                             };
                         }
 
-                        installedPackage.ResolvedVersion = PackageSearchMetadataBuilder.FromIdentity(
+                        installedPackage.ResolvedPackageMetadata = PackageSearchMetadataBuilder.FromIdentity(
                             new PackageIdentity(library.Name, library.Version)).Build();
 
                         installedPackage.AutoReference = topLevelPackage.AutoReferenced;
@@ -453,7 +453,7 @@ namespace NuGet.CommandLine.XPlat
                     {
                         var installedPackage = new InstalledPackageReference(library.Name)
                         {
-                            ResolvedVersion = PackageSearchMetadataBuilder.FromIdentity(
+                            ResolvedPackageMetadata = PackageSearchMetadataBuilder.FromIdentity(
                                 new PackageIdentity(library.Name, library.Version)).Build()
                         };
                         transitivePackages.Add(installedPackage);
