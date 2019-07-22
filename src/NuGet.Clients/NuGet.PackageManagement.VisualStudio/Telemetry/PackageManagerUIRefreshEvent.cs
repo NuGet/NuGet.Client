@@ -8,7 +8,7 @@ namespace NuGet.PackageManagement.Telemetry
 {
     public class PackageManagerUIRefreshEvent : TelemetryEvent
     {
-        private const string EventName = "PMUIRefreshOperation";
+        private const string EventName = "PMUIRefresh";
 
         public PackageManagerUIRefreshEvent(
         Guid parentId,
