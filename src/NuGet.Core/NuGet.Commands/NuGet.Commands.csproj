@@ -11,7 +11,7 @@
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573;CS1584;CS1658</NoWarn>
-    <NoWarn Condition=" '$(IsCore)' == 'true' ">$(NoWarn);CS1998</NoWarn>
+    <NoWarn Condition=" $(TargetFramework.StartsWith('netstandard')) ">$(NoWarn);CS1998</NoWarn>
     <PackProject>true</PackProject>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Shipping>true</Shipping>
