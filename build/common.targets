@@ -327,4 +327,15 @@
       Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonVersionCore)' " />
   </Target>
 
+  <!--
+    ==========================================================================================
+    Temporary Workaround Target related to issue https://github.com/dotnet/cli/issues/11378
+    ==========================================================================================
+  -->
+  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets" Condition="'$(IsCore30)' == 'true'">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="NETStandard.Library" />
+    </ItemGroup>
+  </Target>
+
 </Project>
