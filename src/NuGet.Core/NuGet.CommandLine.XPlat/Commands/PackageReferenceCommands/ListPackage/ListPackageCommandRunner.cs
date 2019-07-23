@@ -124,7 +124,7 @@ namespace NuGet.CommandLine.XPlat
                                             .Where(p => p.LatestPackageMetadata == null
                                                 || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
 
-                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TransitivePackages.Any())
+                                        if (frameworkPackages.TopLevelPackages.Any())
                                         {
                                             noPackagesLeft = false;
                                         }
