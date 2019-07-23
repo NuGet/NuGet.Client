@@ -16,6 +16,8 @@ Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 $Version = New-Object -TypeName System.Version -ArgumentList "4.0"
 
 if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
