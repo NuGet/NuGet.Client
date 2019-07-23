@@ -526,11 +526,20 @@ phases:
       failOnStderr: "true"
     condition: "always()"
 
+  - task: PowerShell@2
+    displayName: "Set Environment Variables"
+    inputs:
+      targetType: "inline"
+      script: |
+        SET $env:MSBUILDDISABLENODEREUSE=1"
+      failOnStderr: "true"
+    condition: "always()"
+
   - task: ShellScript@2
     displayName: "Run Tests"
     continueOnError: "true"
     inputs:
-      scriptPath: "MSBUILDDISABLENODEREUSE=1 scripts/funcTests/runFuncTests.sh"
+      scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
 
