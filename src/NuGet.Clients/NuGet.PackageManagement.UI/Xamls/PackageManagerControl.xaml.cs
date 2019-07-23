@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
         private Guid _sessionGuid = Guid.NewGuid();
-        private Stopwatch _stopWatch;
+        private Stopwatch _lastRefresh;
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
             INuGetUILogger uiLogger = null)
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
-            _stopWatch = Stopwatch.StartNew();
+            _lastRefresh = Stopwatch.StartNew();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -333,8 +333,8 @@ namespace NuGet.PackageManagement.UI
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
         {
-            var elapsed = _stopWatch.Elapsed;
-            _stopWatch.Restart();
+            var elapsed = _lastRefresh.Elapsed;
+            _lastRefresh.Restart();
             return elapsed;
         }
 
