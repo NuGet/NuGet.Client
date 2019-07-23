@@ -256,9 +256,12 @@ namespace NuGet.Test.Utility
 
             if (isUsingTempStream)
             {
+                using (tempStream)
 #if IS_DESKTOP
                 using (var signPackage = new SignedPackageArchive(tempStream, stream))
+#endif
                 {
+#if IS_DESKTOP
                     using (var request = GetPrimarySignRequest(packageContext))
                     {
                         await AddSignatureToPackageAsync(packageContext, signPackage, request, testLogger);
@@ -275,10 +278,8 @@ namespace NuGet.Test.Utility
                             await AddRepositoryCountersignatureToSignedPackageAsync(packageContext, signPackage, request, testLogger);
                         }
                     }
-                }
 #endif
-
-                tempStream.Dispose();
+                }
             }
 
             // Reset position
