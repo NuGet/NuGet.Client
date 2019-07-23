@@ -103,7 +103,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual string ToNormalizedString()
         {
-            return ToString("N", new VersionRangeFormatter());
+            return ToString("N", VersionRangeFormatter.Instance);
         }
 
         /// <summary>
@@ -111,7 +111,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual string ToLegacyString()
         {
-            return ToString("D", new VersionRangeFormatter());
+            return ToString("D", VersionRangeFormatter.Instance);
         }
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual string ToLegacyShortString()
         {
-            return ToString("T", new VersionRangeFormatter());
+            return ToString("T", VersionRangeFormatter.Instance);
         }
 
         /// <summary>
@@ -165,7 +165,7 @@ namespace NuGet.Versioning
         /// </summary>
         public string PrettyPrint()
         {
-            return ToString("P", new VersionRangeFormatter());
+            return ToString("P", VersionRangeFormatter.Instance);
         }
 
         /// <summary>
@@ -364,7 +364,7 @@ namespace NuGet.Versioning
         /// </summary>
         public virtual string ToShortString()
         {
-            return ToString("A", new VersionRangeFormatter());
+            return ToString("A", VersionRangeFormatter.Instance);
         }
 
         /// <summary>
