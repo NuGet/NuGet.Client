@@ -530,7 +530,7 @@ phases:
     displayName: "Run Tests"
     continueOnError: "true"
     inputs:
-      scriptPath: "scripts/funcTests/runFuncTests.sh"
+      scriptPath: "MSBUILDDISABLENODEREUSE=1 scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
 
