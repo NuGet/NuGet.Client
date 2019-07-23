@@ -60,9 +60,8 @@ namespace NuGet.ProjectModel.Test
                             }
                         },
                         ""downloadDependencies"": [
-                            {""name"" : ""a"", ""version"" : ""[1.0.0, )""},
-                            {""name"" : ""b"", ""version"" : ""[2.0.0, )""},
-                            {""name"" : ""b"", ""version"" : ""[2.0.0, )""}
+                            {""name"" : ""a"", ""version"" : ""[1.0.0, 1.0.0]""},
+                            {""name"" : ""b"", ""version"" : ""[1.0.0, 1.0.0];[2.0.0, 2.0.0]""}
                         ]
                     }
                   }

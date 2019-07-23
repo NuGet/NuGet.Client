@@ -6831,7 +6831,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleTFM_SameIdMultiPackageDownload()
+        public async Task RestoreNetCore_SingleTFM_InstallFirstPackageDownload()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -6888,81 +6888,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreNetCore_SingleTFM_SameIdSameVersionMultiDeclaration_SinglePackageDownload()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var projectFrameworks = "net46";
-
-                var projectA = SimpleTestProjectContext.CreateNETCoreWithSDK(
-                            projectName: "a",
-                            solutionRoot: pathContext.SolutionRoot,
-                            frameworks: MSBuildStringUtility.Split(projectFrameworks));
-
-                var packageX1 = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-
-                var packageX2 = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "2.0.0"
-                };
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                    pathContext.PackageSource,
-                    packageX1,
-                    packageX2);
-
-                projectA.AddPackageDownloadToAllFrameworks(packageX1);
-                projectA.AddPackageDownloadToAllFrameworks(packageX2);
-
-                solution.Projects.Add(projectA);
-                solution.Create(pathContext.SolutionRoot);
-
-                // Add one more - Adding them through the Test Context adds only exact versions.
-
-                var xml = projectA.GetXML();
-
-                var props = new Dictionary<string, string>();
-                var attributes = new Dictionary<string, string>();
-                attributes.Add("Version", "[1.0.0, 1.0.0]");
-                ProjectFileUtils.AddItem(
-                                    xml,
-                                    "PackageDownload",
-                                    packageX1.Id,
-                                    NuGetFramework.AnyFramework,
-                                    props,
-                                    attributes);
-
-                xml.Save(projectA.ProjectPath);
-
-                // Act
-                var r = Util.RestoreSolution(pathContext);
-
-                // Assert
-                Assert.True(r.Success, r.AllOutput);
-                Assert.True(File.Exists(projectA.AssetsFileOutputPath), r.AllOutput);
-
-                var lockFile = LockFileUtilities.GetLockFile(projectA.AssetsFileOutputPath, Common.NullLogger.Instance);
-                Assert.Equal(0, lockFile.Libraries.Count);
-                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
-                Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies.Count);
-                Assert.Equal("x", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].Name);
-                Assert.Equal($"[{packageX1.Version}, {packageX1.Version}]", lockFile.PackageSpec.TargetFrameworks[0].DownloadDependencies[0].VersionRange.ToNormalizedString());
-
-                Assert.True(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX1.Identity.Id, packageX1.Version)), $"{packageX1.ToString()} is not installed");
-                Assert.False(Directory.Exists(Path.Combine(pathContext.UserPackagesFolder, packageX2.Identity.Id, packageX2.Version)), $"{packageX2.ToString()} should not be installed");
-            }
-        }
-
-        [Fact]
-        public async Task RestoreNetCore_SingleTFM_SameIdMultipleVersionsSingleDeclaration_MultiPackageDownload()
+        public async Task RestoreNetCore_SingleTFM_SameIdMultipleVersions_MultiPackageDownload()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

@@ -473,11 +473,13 @@ namespace NuGet.ProjectModel
 
             writer.WriteArrayStart("downloadDependencies");
 
-            foreach (var dependency in downloadDependencies.OrderBy(dep => dep))
+            foreach (var dependency in downloadDependencies.GroupBy(dep => dep.Name).OrderBy(dep => dep.Key))
             {
+                var version = string.Join(";", dependency.Select(dep => dep.VersionRange).OrderBy(dep => dep.MinVersion).Select(dep => dep.ToNormalizedString()));
+
                 writer.WriteObjectInArrayStart();
-                SetValue(writer, "name", dependency.Name);
-                SetValue(writer, "version", dependency.VersionRange.ToNormalizedString());
+                SetValue(writer, "name", dependency.Key);
+                SetValue(writer, "version", version);
                 writer.WriteObjectEnd();
 
             }

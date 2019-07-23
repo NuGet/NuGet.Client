@@ -1287,7 +1287,7 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-        public async Task NominateProjectAsync_PackageDownload_AllowsDuplicateIds()
+        public async Task NominateProjectAsync_PackageDownload_IgnoreDuplicateIds()
         {
             var consoleAppProjectJson = @"{
     ""frameworks"": {
@@ -1336,13 +1336,13 @@ namespace NuGet.SolutionRestoreManager.Test
             AssertPackages(actualTfi,
                 "NuGet.Protocol:5.1.0");
             AssertDownloadPackages(actualTfi,
-                "NetCoreTargetingPack:[1.0.0]",
-                "NetCoreTargetingPack:[2.0.0]"
-                );
+                "NetCoreTargetingPack:[1.0.0]");
         }
 
-        [Fact]
-        public async Task NominateProjectAsync_PackageDownload_AllowsVersionList()
+        [Theory]
+        [InlineData("[1.0.0];[2.0.0]")]
+        [InlineData(";[1.0.0];;[2.0.0];")]
+        public async Task NominateProjectAsync_PackageDownload_AllowsVersionList(string versionString)
         {
             var consoleAppProjectJson = @"{
     ""frameworks"": {
@@ -1354,7 +1354,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 },
             },
             ""downloadDependencies"": [
-                {""name"" : ""NetCoreTargetingPack"", ""version"" : ""[1.0.0];[2.0.0]""}
+                {""name"" : ""NetCoreTargetingPack"", ""version"" : """ + versionString + @"""}
             ]
             }
         }
@@ -1391,8 +1391,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 "NuGet.Protocol:5.1.0");
             AssertDownloadPackages(actualTfi,
                 "NetCoreTargetingPack:[1.0.0]",
-                "NetCoreTargetingPack:[2.0.0]"
-                );
+                "NetCoreTargetingPack:[2.0.0]");
         }
 
         [Fact]

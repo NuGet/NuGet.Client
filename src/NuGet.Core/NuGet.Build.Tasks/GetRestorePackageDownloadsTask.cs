@@ -7,7 +7,6 @@ using System.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
-using NuGet.Shared;
 
 namespace NuGet.Build.Tasks
 {
@@ -41,7 +40,7 @@ namespace NuGet.Build.Tasks
             log.LogDebug($"(in) PackageDownloads '{string.Join(";", PackageDownloads.Select(p => p.ItemSpec))}'");
 
             var entries = new List<ITaskItem>();
-            var seenIds = new HashSet<Tuple<string, string>>(new CustomEqualityComparer());
+            var seenIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var msbuildItem in PackageDownloads)
             {
@@ -53,13 +52,9 @@ namespace NuGet.Build.Tasks
                 properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 
-                properties.TryGetValue("VersionRange", out var versionRange);
-
-                var key = new Tuple<string, string>(packageId, versionRange);
-
-                if (string.IsNullOrEmpty(packageId) || !seenIds.Add(key))
+                if (string.IsNullOrEmpty(packageId) || !seenIds.Add(packageId))
                 {
-                    // Skip duplicate id/version combinations
+                    // Skip duplicate ids.
                     continue;
                 }
 
@@ -74,24 +69,6 @@ namespace NuGet.Build.Tasks
             RestoreGraphItems = entries.ToArray();
 
             return true;
-        }
-
-        private class CustomEqualityComparer : IEqualityComparer<Tuple<string, string>>
-        {
-
-            public bool Equals(Tuple<string, string> lhs, Tuple<string, string> rhs)
-            {
-                return StringComparer.OrdinalIgnoreCase.Equals(lhs.Item1, rhs.Item1)
-               && StringComparer.OrdinalIgnoreCase.Equals(lhs.Item2, rhs.Item2);
-            }
-
-            public int GetHashCode(Tuple<string, string> tuple)
-            {
-                var combiner = new HashCodeCombiner();
-                combiner.AddStringIgnoreCase(tuple.Item1);
-                combiner.AddStringIgnoreCase(tuple.Item2);
-                return combiner.CombinedHash;
-            }
         }
     }
 }

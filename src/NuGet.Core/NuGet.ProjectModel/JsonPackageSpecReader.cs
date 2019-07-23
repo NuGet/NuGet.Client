@@ -852,6 +852,10 @@ namespace NuGet.ProjectModel
 
         private static void PopulateDownloadDependencies(IList<DownloadDependency> downloadDependencies, JObject properties, string packageSpecPath)
         {
+            var splitChars = new[] { ';' };
+
+            var seenIds = new HashSet<string>();
+
             var downloadDependenciesProperty = properties["downloadDependencies"] as JArray;
             if (downloadDependenciesProperty != null)
             {
@@ -865,6 +869,11 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
                     var name = dependency["name"].Value<string>();
+                    if (!seenIds.Add(name))
+                    {
+                        // package ID already seen, only use first definition.
+                        continue;
+                    }
 
                     string versionValue = null;
 
@@ -879,7 +888,7 @@ namespace NuGet.ProjectModel
 
                     if (!string.IsNullOrEmpty(versionValue))
                     {
-                        var versions = versionValue.Split(';');
+                        var versions = versionValue.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
                         foreach (var singleVersionValue in versions)
                         {
                             try
