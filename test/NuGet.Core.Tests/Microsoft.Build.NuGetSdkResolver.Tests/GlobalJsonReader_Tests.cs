@@ -71,18 +71,24 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             using (var testEnvironment = TestEnvironment.Create())
             {
                 var testFolder = testEnvironment.CreateFolder();
-                var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
 
+                try
+                {
+                    var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
+                    var globalJsonPath = WriteGlobalJson(testFolder.FolderPath, expectedVersions, additionalcontent: ", abc");
 
-                var globalJsonPath = WriteGlobalJson(testFolder.FolderPath, expectedVersions, additionalcontent: ", abc");
+                    var context = new MockSdkResolverContext(projectFile.Path);
 
-                var context = new MockSdkResolverContext(projectFile.Path);
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
-
-                context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
-                context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
-                    $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path \'msbuild-sdks\', line 6, position 5.");
+                    context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
+                    context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
+                        $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path \'msbuild-sdks\', line 6, position 5.");
+                }
+                finally
+                {
+                    testFolder.Revert();
+                }
             }
         }
 
@@ -94,16 +100,25 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 {"foo", "1.0.0"},
                 {"bar", "2.0.0"}
             };
+
             using (var testEnvironment = TestEnvironment.Create())
             {
                 var testFolder = testEnvironment.CreateFolder();
-                var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
 
-                WriteGlobalJson(testFolder.FolderPath, expectedVersions);
+                try
+                {
+                    var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
 
-                var context = new MockSdkResolverContext(projectFile.Path);
+                    WriteGlobalJson(testFolder.FolderPath, expectedVersions);
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(expectedVersions);
+                    var context = new MockSdkResolverContext(projectFile.Path);
+
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(expectedVersions);
+                }
+                finally
+                {
+                    testFolder.Revert();
+                }
             }
         }
     }

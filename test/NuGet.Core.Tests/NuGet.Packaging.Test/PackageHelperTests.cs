@@ -207,17 +207,20 @@ namespace NuGet.Packaging.Test
         {
             using (var test = PackageHelperTest.Create(TestPackagesCore.GetPackageContentReaderTestPackage()))
             {
-                await PackageExtractor.ExtractPackageAsync(
-                    test.Root,
-                    test.Reader,
-                    test.GetPackageStream(),
-                    test.Resolver,
-                    new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        clientPolicyContext: null,
-                        logger: NullLogger.Instance),
-                    CancellationToken.None);
+                using (var packageStream = test.GetPackageStream())
+                {
+                    await PackageExtractor.ExtractPackageAsync(
+                        test.Root,
+                        test.Reader,
+                        packageStream,
+                        test.Resolver,
+                        new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            clientPolicyContext: null,
+                            logger: NullLogger.Instance),
+                        CancellationToken.None);
+                }
 
                 var packageIdentity = test.Reader.GetIdentity();
                 var packageDirectoryName = $"{packageIdentity.Id}.{packageIdentity.Version.ToNormalizedString()}";
