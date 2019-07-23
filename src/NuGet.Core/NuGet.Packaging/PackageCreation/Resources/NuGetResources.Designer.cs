@@ -88,7 +88,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Cannot open icon file &apos;{0}&apos;: {1}..
+        ///   Looks up a localized string similar to Cannot open the icon file &apos;{0}&apos;: {1}..
         /// </summary>
         internal static string IconCannotOpenFile {
             get {
@@ -108,14 +108,14 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         /// <summary>
         ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
         /// </summary>
-        internal static string IconMaxFilseSizeExceeded {
+        internal static string IconMaxFileSizeExceeded {
             get {
-                return ResourceManager.GetString("IconMaxFilseSizeExceeded", resourceCulture);
+                return ResourceManager.GetString("IconMaxFileSizeExceeded", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec..
+        ///   Looks up a localized string similar to The icon file &apos;{0}&apos; does not exist in the package..
         /// </summary>
         internal static string IconNoFileElement {
             get {

@@ -196,16 +196,16 @@
     <comment>Please don't localize licenseUrl and license</comment>
   </data>
   <data name="IconCannotOpenFile" xml:space="preserve">
-    <value>Cannot open icon file '{0}': {1}.</value>
+    <value>Cannot open the icon file '{0}': {1}.</value>
     <comment>0 - Path to the icon file, 1 - Error message for not opening the icon</comment>
   </data>
-  <data name="IconMaxFilseSizeExceeded" xml:space="preserve">
+  <data name="IconMaxFileSizeExceeded" xml:space="preserve">
     <value>The icon file size must not exceed 1 megabyte.</value>
   </data>
   <data name="IconErrorEmpty" xml:space="preserve">
     <value>The icon file is empty.</value>
   </data>
   <data name="IconNoFileElement" xml:space="preserve">
-    <value>No icon &lt;file&gt; element found for &lt;icon&gt; in the nuspec.</value>
+    <value>The icon file '{0}' does not exist in the package.</value>
   </data>
 </root>

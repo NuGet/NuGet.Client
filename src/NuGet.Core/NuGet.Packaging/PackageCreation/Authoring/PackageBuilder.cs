@@ -29,7 +29,7 @@ namespace NuGet.Packaging
         private readonly bool _includeEmptyDirectories;
 
         /// <summary>
-        /// Maximun Icon file size: 1 megabyte
+        /// Maximunm Icon file size: 1 megabyte
         /// </summary>
         public const int MaxIconFileSize = 1024 * 1024;
 
@@ -543,7 +543,9 @@ namespace NuGet.Packaging
 
                 if (iconFileList.Count() == 0)
                 {
-                    throw new PackagingException(NuGetLogCode.NU5036, NuGetResources.IconNoFileElement);
+                    throw new PackagingException(
+                        NuGetLogCode.NU5036,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath));
                 }
 
                 IPackageFile iconFile = iconFileList.First();
@@ -558,7 +560,7 @@ namespace NuGet.Packaging
 
                         if (fileSize > MaxIconFileSize)
                         {
-                            throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconMaxFilseSizeExceeded);
+                            throw new PackagingException(Common.NuGetLogCode.NU5037, NuGetResources.IconMaxFileSizeExceeded);
                         }
 
                         if (fileSize == 0)

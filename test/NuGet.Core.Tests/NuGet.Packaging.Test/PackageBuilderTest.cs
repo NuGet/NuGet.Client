@@ -2501,7 +2501,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         {
             TestIconPackaging(
                 new IconTestSourceDirectory("icon.jpg", "icono.jpg", 100),
-                "No icon <file> element found for <icon> in the nuspec.");
+                "The icon file 'icon.jpg' does not exist in the package.");
         }
 
         [Fact]
