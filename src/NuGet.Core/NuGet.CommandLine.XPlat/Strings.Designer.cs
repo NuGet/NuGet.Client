@@ -592,7 +592,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid command. Combining &apos;--outdated&apos; and &apos;--deprecated&apos; options is not supported..
+        ///   Looks up a localized string similar to Invalid command. Combining the &apos;--outdated&apos; and &apos;--deprecated&apos; options is not supported..
         /// </summary>
         internal static string ListPkg_InvalidOptionsOutdatedAndDeprecated {
             get {

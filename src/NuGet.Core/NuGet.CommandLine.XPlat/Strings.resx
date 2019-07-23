@@ -574,6 +574,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The following sources were used:</value>
   </data>
   <data name="ListPkg_InvalidOptionsOutdatedAndDeprecated" xml:space="preserve">
-    <value>Invalid command. Combining '--outdated' and '--deprecated' options is not supported.</value>
+    <value>Invalid command. Combining the '--outdated' and '--deprecated' options is not supported.</value>
   </data>
 </root>
