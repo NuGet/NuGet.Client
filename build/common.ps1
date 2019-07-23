@@ -16,6 +16,8 @@ Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 $Version = New-Object -TypeName System.Version -ArgumentList "4.0"
 
 if ($PSVersionTable.PSVersion.CompareTo($Version) -lt 0) {
@@ -213,7 +215,7 @@ Function Install-DotnetCLI {
 
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
-        Invoke-WebRequest 'https://raw.githubusercontent.com/dotnet/cli/master/scripts/obtain/dotnet-install.ps1' -OutFile $DotNetInstall
+        Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
         & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
