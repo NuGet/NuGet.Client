@@ -863,8 +863,7 @@ namespace NuGet.Commands.Test
                         ""x"": ""1.0.0""
                     },
                     ""downloadDependencies"": [
-                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
-                       {""name"" : ""y"", ""version"" : ""[2.0.0]""}
+                       {""name"" : ""y"", ""version"" : ""[1.0.0];[2.0.0]""}
                     ]
                 }
               }
@@ -938,9 +937,11 @@ namespace NuGet.Commands.Test
                     Assert.Equal("x", lockFile.Targets.First().Libraries.First().Name);
                     Assert.Equal(0, lockFile.LogMessages.Count);
                     Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.Count);
-                    Assert.Equal(1, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
+                    Assert.Equal(2, lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Count);
                     Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.First().Name);
+                    Assert.Equal("y", lockFile.PackageSpec.TargetFrameworks.First().DownloadDependencies.Last().Name);
                     Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "1.0.0"))); // Y 1.0.0 is installed
+                    Assert.True(Directory.Exists(Path.Combine(globalPackagesFolder.FullName, "y", "2.0.0"))); // Y 2.0.0 is installed
                     Assert.True(File.Exists(targetsPath));
                     Assert.True(File.Exists(propsPath));
                 }
