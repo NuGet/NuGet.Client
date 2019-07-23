@@ -531,7 +531,7 @@ phases:
     inputs:
       targetType: "inline"
       script: |
-        SET $env:MSBUILDDISABLENODEREUSE=1"
+        SET $env:MSBUILDDISABLENODEREUSE="1"
       failOnStderr: "true"
     condition: "always()"
 
