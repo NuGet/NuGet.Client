@@ -117,9 +117,14 @@ namespace NuGet.CommandLine.XPlat
                                     // Filter the packages for outdated
                                     foreach (var frameworkPackages in packages)
                                     {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
-                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
+                                            .Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
+
+                                        frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
+                                            .Where(p => p.LatestPackageMetadata == null
+                                                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
+
+                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TransitivePackages.Any())
                                         {
                                             noPackagesLeft = false;
                                         }
