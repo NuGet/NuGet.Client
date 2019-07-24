@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Moq;
 using NuGet.Common;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.VisualStudio;
-using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.PackageManagement.VisualStudio.Test
@@ -65,6 +65,75 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.NotNull(isPRUpgradable);
             Assert.IsType<bool>(isPRUpgradable);
             Assert.Equal(projectInformation.IsProjectPRUpgradable, isPRUpgradable);
+        }
+
+        [Theory]
+        [InlineData(RefreshOperationSource.ActionsExecuted, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.CacheUpdated, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.CheckboxPrereleaseChanged, RefreshOperationStatus.NoOp)]
+        [InlineData(RefreshOperationSource.ClearSearch, RefreshOperationStatus.NoOp)]
+        [InlineData(RefreshOperationSource.ExecuteAction, RefreshOperationStatus.NotApplicable)]
+        [InlineData(RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.NotApplicable)]
+        [InlineData(RefreshOperationSource.PackageManagerLoaded, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.PackagesMissingStatusChanged, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.ProjectsChanged, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success)]
+        [InlineData(RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success)]
+        public void NuGetTelemetryService_EmitsPMUIRefreshEvent(RefreshOperationSource expectedRefreshSource, RefreshOperationStatus expectedRefreshStatus)
+        {
+            // Arrange
+            var telemetrySession = new Mock<ITelemetrySession>();
+            TelemetryEvent lastTelemetryEvent = null;
+            telemetrySession
+                .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
+                .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
+
+            var expectedGuid = Guid.NewGuid();
+            var expectedIsSolutionLevel = true;
+            var expectedTab = "All";
+            var expectedTimeSinceLastRefresh = TimeSpan.FromSeconds(1);
+            var refreshEvent = new PackageManagerUIRefreshEvent(expectedGuid, expectedIsSolutionLevel, expectedRefreshSource, expectedRefreshStatus, expectedTab, expectedTimeSinceLastRefresh);
+            var target = new NuGetVSTelemetryService(telemetrySession.Object);
+
+            // Act
+            target.EmitTelemetryEvent(refreshEvent);
+
+            // Assert
+            telemetrySession.Verify(x => x.PostEvent(It.IsAny<TelemetryEvent>()), Times.Once);
+            Assert.NotNull(lastTelemetryEvent);
+            Assert.Equal("PMUIRefresh", lastTelemetryEvent.Name);
+            Assert.Equal(6, lastTelemetryEvent.Count);
+
+            var parentIdGuid = lastTelemetryEvent["ParentId"];
+            Assert.NotNull(parentIdGuid);
+            Assert.IsType<string>(parentIdGuid);
+            Assert.Equal(expectedGuid.ToString(), parentIdGuid);
+
+            var solutionLevel = lastTelemetryEvent["IsSolutionLevel"];
+            Assert.NotNull(solutionLevel);
+            Assert.IsType<bool>(solutionLevel);
+            Assert.Equal(expectedIsSolutionLevel, solutionLevel);
+
+            var refreshSource = lastTelemetryEvent["RefreshSource"];
+            Assert.NotNull(refreshSource);
+            Assert.IsType<RefreshOperationSource>(refreshSource);
+            Assert.Equal(expectedRefreshSource, refreshSource);
+
+            var refreshStatus = lastTelemetryEvent["RefreshStatus"];
+            Assert.NotNull(refreshStatus);
+            Assert.IsType<RefreshOperationStatus>(refreshStatus);
+            Assert.Equal(expectedRefreshStatus, refreshStatus);
+
+            var tab = lastTelemetryEvent["Tab"];
+            Assert.NotNull(tab);
+            Assert.IsType<string>(tab);
+            Assert.Equal(expectedTab, tab);
+
+            var timeSinceLastRefresh = lastTelemetryEvent["TimeSinceLastRefresh"];
+            Assert.NotNull(timeSinceLastRefresh);
+            Assert.IsType<double>(timeSinceLastRefresh);
+            Assert.Equal(expectedTimeSinceLastRefresh.TotalMilliseconds, timeSinceLastRefresh);
         }
     }
 }
