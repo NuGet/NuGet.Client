@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -35,16 +36,17 @@ namespace NuGet.CommandLine.XPlat
             }
             //If the given file is a solution, get the list of projects
             //If not, then it's a project, which is put in a list
-            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln")?
-                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)):
+            var projectsPaths = Path.GetExtension(listPackageArgs.Path).Equals(".sln") ?
+                           MSBuildAPIUtility.GetProjectsFromSolution(listPackageArgs.Path).Where(f => File.Exists(f)) :
                            new List<string>(new string[] { listPackageArgs.Path });
 
             var autoReferenceFound = false;
+            var deprecatedFound = false;
 
             var msBuild = new MSBuildAPIUtility(listPackageArgs.Logger);
 
             //Print sources
-            if(listPackageArgs.IncludeOutdated)
+            if (listPackageArgs.IncludeOutdated)
             {
                 Console.WriteLine();
                 Console.WriteLine(Strings.ListPkg_SourcesUsedDescription);
@@ -52,7 +54,6 @@ namespace NuGet.CommandLine.XPlat
                 Console.WriteLine();
             }
 
-            //Loop through all of the project paths
             foreach (var projectPath in projectsPaths)
             {
                 //Open project to evaluate properties for the assets
@@ -72,7 +73,7 @@ namespace NuGet.CommandLine.XPlat
 
                 var assetsPath = project.GetPropertyValue(ProjectAssetsFile);
 
-                //If the file was not found, print an error message and continue to next project
+                // If the file was not found, print an error message and continue to next project
                 if (!File.Exists(assetsPath))
                 {
                     Console.Error.WriteLine(string.Format(CultureInfo.CurrentCulture,
@@ -90,7 +91,7 @@ namespace NuGet.CommandLine.XPlat
                         assetsFile.Targets != null &&
                         assetsFile.Targets.Count != 0)
                     {
-                        //Get all the packages that are referenced in a project
+                        // Get all the packages that are referenced in a project
                         var packages = msBuild.GetResolvedVersions(project.FullPath, listPackageArgs.Frameworks, assetsFile, listPackageArgs.IncludeTransitive);
 
                         // If packages equals null, it means something wrong happened
@@ -98,7 +99,7 @@ namespace NuGet.CommandLine.XPlat
                         // in MSBuildAPIUtility function, but we need to move to the next project
                         if (packages != null)
                         {
-                            //No packages means that no package references at all were found 
+                            // No packages means that no package references at all were found 
                             if (!packages.Any())
                             {
                                 Console.WriteLine(string.Format(Strings.ListPkg_NoPackagesFoundForFrameworks, projectName));
@@ -107,18 +108,23 @@ namespace NuGet.CommandLine.XPlat
                             {
                                 var printPackages = true;
 
-                                //Handle outdated
+                                // Handle outdated
                                 if (listPackageArgs.IncludeOutdated)
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
                                     var noPackagesLeft = true;
 
-                                    //Filter the packages for outdated
+                                    // Filter the packages for outdated
                                     foreach (var frameworkPackages in packages)
                                     {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => !p.AutoReference && (p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion));
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages.Where(p => p.LatestVersion == null || p.ResolvedVersion < p.LatestVersion);
-                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TopLevelPackages.Any())
+                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
+                                            .Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
+
+                                        frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
+                                            .Where(p => p.LatestPackageMetadata == null
+                                                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
+
+                                        if (frameworkPackages.TopLevelPackages.Any())
                                         {
                                             noPackagesLeft = false;
                                         }
@@ -137,10 +143,14 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    //Printing packages of a single project and keeping track if
-                                    //an auto-referenced package was printed
-                                    ProjectPackagesPrintUtility.PrintPackages(packages, projectName, listPackageArgs.IncludeTransitive, listPackageArgs.IncludeOutdated, out var autoRefFoundWithinProject);
-                                    autoReferenceFound = autoReferenceFound || autoRefFoundWithinProject;
+                                    var printPackagesResult = ProjectPackagesPrintUtility.PrintPackages(
+                                        packages,
+                                        projectName,
+                                        listPackageArgs.IncludeTransitive,
+                                        listPackageArgs.IncludeOutdated);
+
+                                    autoReferenceFound = autoReferenceFound || printPackagesResult.AutoReferenceFound;
+                                    deprecatedFound = deprecatedFound || printPackagesResult.DeprecatedFound;
                                 }
                             }
                         }
@@ -150,16 +160,23 @@ namespace NuGet.CommandLine.XPlat
                         Console.WriteLine(string.Format(Strings.ListPkg_ErrorReadingAssetsFile, assetsPath));
                     }
 
-                    //Unload project
+                    // Unload project
                     ProjectCollection.GlobalProjectCollection.UnloadProject(project);
                 }
             }
 
-            //If any auto-references were found, a line is printed
-            //explaining what (A) means
+            // If any auto-references were found, a line is printed
+            // explaining what (A) means
             if (autoReferenceFound)
             {
                 Console.WriteLine(Strings.ListPkg_AutoReferenceDescription);
+            }
+
+            // If any deprecated packages were found, a line is printed
+            // explaining what (D) means.
+            if (deprecatedFound)
+            {
+                Console.WriteLine(Strings.ListPkg_DeprecatedPkgDescription);
             }
         }
 
@@ -181,7 +198,7 @@ namespace NuGet.CommandLine.XPlat
             var latestVersionsRequests = new List<Task>();
 
             //Unique Dictionary for packages and list of latest versions to handle different sources
-            var packagesVersionsDict = new Dictionary<string, IList<NuGetVersion>>();
+            var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
             AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
@@ -215,7 +232,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages"> Packages found in the project </param>
         /// <param name="packagesVersionsDict"> An empty dictionary to be filled with packages </param>
         private void AddPackagesToDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             foreach (var frameworkPackages in packages)
             {
@@ -223,7 +240,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!packagesVersionsDict.ContainsKey(topLevelPackage.Name))
                     {
-                        packagesVersionsDict.Add(topLevelPackage.Name, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(topLevelPackage.Name, new List<IPackageSearchMetadata>());
                     }
                 }
 
@@ -231,7 +248,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     if (!packagesVersionsDict.ContainsKey(transitivePackage.Name))
                     {
-                        packagesVersionsDict.Add(transitivePackage.Name, new List<NuGetVersion>());
+                        packagesVersionsDict.Add(transitivePackage.Name, new List<IPackageSearchMetadata>());
                     }
                 }
             }
@@ -245,7 +262,7 @@ namespace NuGet.CommandLine.XPlat
         /// from different sources </param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
         private void GetVersionsFromDict(IEnumerable<FrameworkPackages> packages,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict,
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
             ListPackageArgs listPackageArgs)
         {
             foreach (var frameworkPackages in packages)
@@ -253,15 +270,38 @@ namespace NuGet.CommandLine.XPlat
                 foreach (var topLevelPackage in frameworkPackages.TopLevelPackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    topLevelPackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion, topLevelPackage, listPackageArgs)).Max();
-                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedVersion, topLevelPackage.LatestVersion);
+                    var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
+
+                    topLevelPackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
+                    topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
+
+                    // Update resolved version with deprecated information returned by the server.
+                    var resolvedVersionFromServer = matchingPackage.Value
+                        .Where(v => v.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
+                        .FirstOrDefault();
+
+                    if (resolvedVersionFromServer != null)
+                    {
+                        topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer;
+                    }
                 }
 
                 foreach (var transitivePackage in frameworkPackages.TransitivePackages)
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
-                    transitivePackage.LatestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion, transitivePackage, listPackageArgs)).Max();
-                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedVersion, transitivePackage.LatestVersion);
+                    var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
+
+                    transitivePackage.LatestPackageMetadata = matchingPackage.Value.First(p => p.Identity.Version == latestVersion);
+                    transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
+
+                    // Update resolved version with deprecated information returned by the server.
+                    var resolvedVersionFromServer = matchingPackage.Value
+                        .Where(v => v.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
+                        .FirstOrDefault();
+                    if (resolvedVersionFromServer != null)
+                    {
+                        transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer;
+                    }
                 }
             }
         }
@@ -306,7 +346,7 @@ namespace NuGet.CommandLine.XPlat
             string package,
             ListPackageArgs listPackageArgs,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             var latestVersionsRequests = new List<Task>();
             var sources = listPackageArgs.PackageSources;
@@ -326,18 +366,18 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="providers">The providers to use when looking at sources</param>
         /// <param name="packagesVersionsDict">A reference to the unique packages in the project
         /// to be able to handle different sources having different latest versions</param>
-        /// <returns>An updated pacakge with the highest version at a single source</returns>
+        /// <returns>An updated package with the highest version at a single source</returns>
         private async Task GetLatestVersionPerSourceAsync(
             PackageSource packageSource,
             ListPackageArgs listPackageArgs,
             string package,
             IEnumerable<Lazy<INuGetResourceProvider>> providers,
-            Dictionary<string, IList<NuGetVersion>> packagesVersionsDict)
+            Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict)
         {
             var sourceRepository = Repository.CreateSource(providers, packageSource, FeedType.Undefined);
-            var dependencyInfoResource = await sourceRepository.GetResourceAsync<MetadataResource>(listPackageArgs.CancellationToken);
+            var packageMetadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(listPackageArgs.CancellationToken);
 
-            var packages = (await dependencyInfoResource.GetVersions(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
+            var packages = (await packageMetadataResource.GetMetadataAsync(package, true, false, new SourceCacheContext(), NullLogger.Instance, listPackageArgs.CancellationToken));
 
             var latestVersionsForPackage = packagesVersionsDict.Where(p => p.Key.Equals(package, StringComparison.OrdinalIgnoreCase)).Single().Value;
             latestVersionsForPackage.AddRange(packages);
@@ -354,17 +394,17 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="listPackageArgs">Used to get the constraints</param>
         /// <returns>Whether the new version meets the constraints or not</returns>
         private bool MeetsConstraints(NuGetVersion newVersion, InstalledPackageReference package, ListPackageArgs listPackageArgs)
-        {                
-            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedVersion.IsPrerelease;
+        {
+            var result = !newVersion.IsPrerelease || listPackageArgs.Prerelease || package.ResolvedPackageMetadata.Identity.Version.IsPrerelease;
 
             if (listPackageArgs.HighestPatch)
             {
-                result = newVersion.Minor.Equals(package.ResolvedVersion.Minor) && newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
+                result = newVersion.Minor.Equals(package.ResolvedPackageMetadata.Identity.Version.Minor) && newVersion.Major.Equals(package.ResolvedPackageMetadata.Identity.Version.Major) && result;
             }
 
             if (listPackageArgs.HighestMinor)
             {
-                result = newVersion.Major.Equals(package.ResolvedVersion.Major) && result;
+                result = newVersion.Major.Equals(package.ResolvedPackageMetadata.Identity.Version.Major) && result;
             }
 
             return result;

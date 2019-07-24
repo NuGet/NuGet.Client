@@ -91,11 +91,11 @@ namespace NuGet.CommandLine.XPlat
 
                     var settings = ProcessConfigFile(config.Value(), path.Value);
                     var sources = source.Values;
-                    
+
                     var packageSources = GetPackageSources(settings, sources, config);
 
                     VerifyValidFrameworks(framework);
-                    
+
                     var packageRefArgs = new ListPackageArgs(
                         path.Value,
                         packageSources,
@@ -109,8 +109,13 @@ namespace NuGet.CommandLine.XPlat
                         logger,
                         CancellationToken.None);
 
+                    if (includeOutdated.HasValue() && includeDeprecated.HasValue())
+                    {
+                        throw new ArgumentException(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated);
+                    }
+
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
-                    
+
                     var listPackageCommandRunner = getCommandRunner();
                     await listPackageCommandRunner.ExecuteCommandAsync(packageRefArgs);
                     return 0;
@@ -147,7 +152,6 @@ namespace NuGet.CommandLine.XPlat
 
         private static IEnumerable<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, CommandOption config)
         {
-            
             var sourceProvider = new PackageSourceProvider(settings);
             var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
             var uniqueSources = new HashSet<string>();

@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
@@ -20,23 +19,11 @@ namespace NuGet.Protocol
     public class MetadataResourceV3 : MetadataResource
     {
         private RegistrationResourceV3 _regResource;
-        private HttpSource _client;
 
-        public MetadataResourceV3(HttpSource client, RegistrationResourceV3 regResource)
+        public MetadataResourceV3(RegistrationResourceV3 regResource)
             : base()
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException("client");
-            }
-
-            if (regResource == null)
-            {
-                throw new ArgumentNullException("regResource");
-            }
-
-            _regResource = regResource;
-            _client = client;
+            _regResource = regResource ?? throw new ArgumentNullException(nameof(regResource));
         }
 
         /// <summary>

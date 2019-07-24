@@ -526,7 +526,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The project `{0}` uses package.config for NuGet packages, while the command works only with package reference projects.</value>
   </data>
   <data name="ListPkg_DeprecatedPkgDescription" xml:space="preserve">
-    <value>(D) : The owner has unlisted this package. This could mean the package is deprecated or shouldn't be used anymore.</value>
+    <value>(D): Deprecated package(s). Use 'dotnet list package --deprecated' for more info.</value>
   </data>
   <data name="ListPkg_ErrorReadingAssetsFile" xml:space="preserve">
     <value>Unable to read the assets file `{0}`. Please make sure the file has the write format.</value>
@@ -572,5 +572,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="ListPkg_SourcesUsedDescription" xml:space="preserve">
     <value>The following sources were used:</value>
+  </data>
+  <data name="ListPkg_InvalidOptionsOutdatedAndDeprecated" xml:space="preserve">
+    <value>Invalid command. Combining the '--outdated' and '--deprecated' options is not supported.</value>
   </data>
 </root>
