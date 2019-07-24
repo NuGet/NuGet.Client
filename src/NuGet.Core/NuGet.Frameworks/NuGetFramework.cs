@@ -166,7 +166,7 @@ namespace NuGet.Frameworks
                     throw new FrameworkException(string.Format(
                         CultureInfo.CurrentCulture,
                         Strings.InvalidFrameworkIdentifier,
-                        shortFramework));
+                        framework.Framework));
                 }
 
                 // add framework
