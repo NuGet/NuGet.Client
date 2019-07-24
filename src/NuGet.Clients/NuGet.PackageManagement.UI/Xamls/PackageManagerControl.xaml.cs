@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageManagerModel Model { get; }
 
-        public Configuration.ISettings Settings { get; }
+        public ISettings Settings { get; }
 
         internal ItemFilter ActiveFilter { get => _topPanel.Filter; set => _topPanel.SelectFilter(value); }
 
@@ -93,8 +93,9 @@ namespace NuGet.PackageManagement.UI
 
         public bool IncludePrerelease => _topPanel.CheckboxPrerelease.IsChecked == true;
 
-        private Guid _sessionGuid = Guid.NewGuid();
-        private Stopwatch _lastRefresh;
+        private readonly Guid _sessionGuid = Guid.NewGuid();
+        private readonly Stopwatch _sinceLastRefresh;
+
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -103,7 +104,7 @@ namespace NuGet.PackageManagement.UI
             INuGetUILogger uiLogger = null)
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
-            _lastRefresh = Stopwatch.StartNew();
+            _sinceLastRefresh = Stopwatch.StartNew();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -220,7 +221,7 @@ namespace NuGet.PackageManagement.UI
                 var projects = solutionModel.Projects.Select(p => p.NuGetProject);
                 Model.Context.Projects = projects;
 
-                RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged);
+                RefreshWhenNotExecutingAction(RefreshOperationSource.ProjectsChanged, timeSpan);
             }
             else
             {
@@ -236,7 +237,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted);
+                    RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
                 }
                 else
                 {
@@ -248,7 +249,7 @@ namespace NuGet.PackageManagement.UI
                     if (e.Actions.Any(action =>
                         NuGetProject.GetUniqueNameOrName(action.Project) == projectName))
                     {
-                        RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted);
+                        RefreshWhenNotExecutingAction(RefreshOperationSource.ActionsExecuted, timeSpan);
                     }
                     else
                     {
@@ -270,7 +271,7 @@ namespace NuGet.PackageManagement.UI
             {
                 if (Model.IsSolution)
                 {
-                    RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated);
+                    RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
                 }
                 else
                 {
@@ -287,7 +288,7 @@ namespace NuGet.PackageManagement.UI
                     // We also refresh the UI if projectFullPath is not present.
                     if (!projectContainsFullPath || projectFullName == eventProjectFullName)
                     {
-                        RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated);
+                        RefreshWhenNotExecutingAction(RefreshOperationSource.CacheUpdated, timeSpan);
                     }
                     else
                     {
@@ -301,20 +302,18 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void RefreshWhenNotExecutingAction(RefreshOperationSource source)
+        private void RefreshWhenNotExecutingAction(RefreshOperationSource source, TimeSpan timeSpanSinceLastRefresh)
         {
-            var timeSpan = GetTimeSinceLastRefreshAndRestart();
             // Only refresh if there is no executing action. Tell the operation execution to refresh when done otherwise.
-            if (!_isExecutingAction)
+            if (_isExecutingAction)
             {
-                Refresh();
-                EmitRefreshEvent(timeSpan, source, RefreshOperationStatus.Success);
+                _isRefreshRequired = true;
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp)
             }
             else
             {
-                _isRefreshRequired = true;
-                EmitRefreshEvent(timeSpan, source, RefreshOperationStatus.NoOp);
-
+                Refresh();
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.Success);
             }
         }
 
@@ -327,14 +326,13 @@ namespace NuGet.PackageManagement.UI
                                     refreshOperationSource,
                                     status,
                                     _topPanel.Filter.ToString(),
-                                    timeSpan
-                                    ));
+                                    timeSpan));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
         {
-            var elapsed = _lastRefresh.Elapsed;
-            _lastRefresh.Restart();
+            var elapsed = _sinceLastRefresh.Elapsed;
+            _sinceLastRefresh.Restart();
             return elapsed;
         }
 
@@ -455,16 +453,16 @@ namespace NuGet.PackageManagement.UI
                 var prevSelectedItem = SelectedSource;
                 PopulateSourceRepoList();
 
-                // force a new search explicitly if active source has changed
-                if (prevSelectedItem != SelectedSource)
+                // force a new search explicitly only if active source has changed
+                if (prevSelectedItem == SelectedSource)
+                {
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable);
+                }
+                else
                 {
                     SaveSettings();
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
                     EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.Success);
-                }
-                else
-                {
-                    EmitRefreshEvent(timeSpan, RefreshOperationSource.PackageSourcesChanged, RefreshOperationStatus.NotApplicable);
                 }
             }
             finally
@@ -769,7 +767,6 @@ namespace NuGet.PackageManagement.UI
                     };
 
                     _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
-
                 }
                 else
                 {
@@ -952,7 +949,6 @@ namespace NuGet.PackageManagement.UI
                 SaveSettings();
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.SourceSelectionChanged, RefreshOperationStatus.Success);
-
             }
         }
 

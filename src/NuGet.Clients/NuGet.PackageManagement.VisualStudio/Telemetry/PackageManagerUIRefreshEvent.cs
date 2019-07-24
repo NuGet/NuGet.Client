@@ -6,24 +6,24 @@ using NuGet.Common;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public class PackageManagerUIRefreshEvent : TelemetryEvent
+    public sealed class PackageManagerUIRefreshEvent : TelemetryEvent
     {
         private const string EventName = "PMUIRefresh";
 
         public PackageManagerUIRefreshEvent(
-        Guid parentId,
-        bool isSolutionLevel,
-        RefreshOperationSource refreshSource,
-        RefreshOperationStatus refreshStatus,
-        string tab,
-        TimeSpan timeSinceLastRefresh) : base(EventName)
+            Guid parentId,
+            bool isSolutionLevel,
+            RefreshOperationSource refreshSource,
+            RefreshOperationStatus refreshStatus,
+            string tab,
+            TimeSpan timeSinceLastRefresh) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
             base["RefreshSource"] = refreshSource;
             base["RefreshStatus"] = refreshStatus;
             base["Tab"] = tab;
-            base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalSeconds;
+            base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
         }
     }
 
