@@ -35,7 +35,7 @@ namespace NuGet.Configuration
             }
             catch (XmlException)
             {
-                return XmlConvert.EncodeName(name);
+                return XmlConvert.EncodeLocalName(name);
             }
         }
 

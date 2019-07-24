@@ -511,6 +511,22 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
+        public void CredentialsItem_AsXNode_WithUrlInName_ReturnsCorrectElementName()
+        {
+            // Arrange
+            var credentialsItem = new CredentialsItem("https://nuget.contoso.com/v3/index.json", "username", "password", isPasswordClearText: false, validAuthenticationTypes: null);
+
+            // Act
+            var xnode = credentialsItem.AsXNode();
+
+            // Assert
+            xnode.Should().BeOfType<XElement>();
+            var xelement = xnode as XElement;
+
+            xelement.Name.LocalName.Should().Be("https_x003A__x002F__x002F_nuget.contoso.com_x002F_v3_x002F_index.json");
+        }
+
+        [Fact]
         public void CredentialsItem_AsXNode_WithUsernameAndPassword_ReturnsCorrectElement()
         {
             // Arrange
