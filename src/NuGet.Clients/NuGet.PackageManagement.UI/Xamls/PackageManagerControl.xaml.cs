@@ -308,7 +308,7 @@ namespace NuGet.PackageManagement.UI
             if (_isExecutingAction)
             {
                 _isRefreshRequired = true;
-                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp)
+                EmitRefreshEvent(timeSpanSinceLastRefresh, source, RefreshOperationStatus.NoOp);
             }
             else
             {
