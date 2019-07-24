@@ -331,8 +331,12 @@ namespace NuGet.PackageManagement.UI
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
         {
-            var elapsed = _sinceLastRefresh.Elapsed;
-            _sinceLastRefresh.Restart();
+            TimeSpan elapsed;
+            lock (_sinceLastRefresh)
+            {
+                elapsed = _sinceLastRefresh.Elapsed;
+                _sinceLastRefresh.Restart();
+            }
             return elapsed;
         }
 
