@@ -518,7 +518,7 @@ phases:
     demands: sh
 
   steps:
-  - bash: echo $(MSBUILDDISABLENODEREUSE)
+  - bash: echo MSBUILDDISABLENODEREUSE=$(MSBUILDDISABLENODEREUSE)
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
