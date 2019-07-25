@@ -71,7 +71,7 @@ namespace NuGet.Packaging
             {
                 throw new PackagingException(NuGetLogCode.NU5128, string.Format(
                                             CultureInfo.CurrentCulture,
-                                            Strings.MissingRequiredFiles,
+                                            Strings.Error_MissingRequiredFiles,
                                             _root.FullName));              
             }
             else if (nuspecFiles.Length > 1)

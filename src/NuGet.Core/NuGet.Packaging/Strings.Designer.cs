@@ -223,6 +223,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The global package folder is missing one or more files. Delete package folder and run the restore again: {0}.
+        /// </summary>
+        internal static string Error_MissingRequiredFiles {
+            get {
+                return ResourceManager.GetString("Error_MissingRequiredFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
         /// </summary>
         internal static string Error_NoClientAllowList {
@@ -750,15 +759,6 @@ namespace NuGet.Packaging {
         internal static string MissingPackageTypeName {
             get {
                 return ResourceManager.GetString("MissingPackageTypeName", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The global package folder copy of package &apos;{0}&apos; is missing one or more files..
-        /// </summary>
-        internal static string MissingRequiredFiles {
-            get {
-                return ResourceManager.GetString("MissingRequiredFiles", resourceCulture);
             }
         }
         

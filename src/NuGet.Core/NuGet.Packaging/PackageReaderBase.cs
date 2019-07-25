@@ -532,7 +532,7 @@ namespace NuGet.Packaging
 
                 throw new PackagingException(NuGetLogCode.NU5128, string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.MissingRequiredFiles,
+                            Strings.Error_MissingRequiredFiles,
                             file.DirectoryName));
             }
             else if (nuspecPaths.Count > 1)
@@ -559,7 +559,7 @@ namespace NuGet.Packaging
                     Strings.ErrorUnsafePackageEntry,
                     packageIdentity));
             }
-        }
+        }        
 
         protected string NormalizeDirectoryPath(string path)
         {

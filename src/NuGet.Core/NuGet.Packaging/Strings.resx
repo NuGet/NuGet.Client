@@ -149,8 +149,8 @@
   <data name="MinClientVersionAlreadyExist" xml:space="preserve">
     <value>MinClientVersion already exists in packages.config</value>
   </data>
-  <data name="MissingRequiredFiles" xml:space="preserve">
-    <value>The global package folder copy of package '{0}' is missing one or more files.</value>
+  <data name="Error_MissingRequiredFiles" xml:space="preserve">
+    <value>The global package folder is missing one or more files. Delete package folder and run the restore again: {0}</value>
     <comment>{0} is the folder name in which required files such as .nuspec etc., are missing</comment>
   </data>
   <data name="PackageEntryAlreadyExist" xml:space="preserve">
