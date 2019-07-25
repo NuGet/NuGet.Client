@@ -2518,7 +2518,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     iconName: "icon.jpg",
                     fileName: "icon.jpg", 
                     iconFileSize: 400),
-                exceptionMessage: string.Empty);
+                exceptionMessage: null);
         }
 
         [Fact(Skip="Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
@@ -2539,8 +2539,8 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             TestIconPackaging(
                 sourceDir: new IconTestSourceDirectory(
                     iconName: "icon.jpg",
-                    fileName: fileList,
-                    iconFileSize: fileEntriesList),
+                    files: fileList,
+                    fileEntries: fileEntriesList),
                 exceptionMessage: "Multiple files resolved as the embedded icon.");
         }
 
@@ -2552,7 +2552,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             {
                 PackageBuilder pkgBuilder = new PackageBuilder(nuspecStream, sourceDir.BaseDir);
 
-                if (!string.IsNullOrEmpty(exceptionMessage))
+                if (exceptionMessage != null)
                 {
                     ExceptionAssert.Throws<PackagingException>(
                         () => pkgBuilder.Save(outputNuPkgStream),
@@ -2686,7 +2686,7 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         /// <summary>
         /// Package directory for testing embedded icon functionality
         /// </summary>
-        public sealed class IconTestSourceDirectory : IDisposable
+        protected sealed class IconTestSourceDirectory : IDisposable
         {
             private const string NuspecFilename = "iconPackage.nuspec";
             public string IconEntry { get; set; }
@@ -2746,7 +2746,11 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
                     var dir = Path.GetDirectoryName(filepath);
 
                     Directory.CreateDirectory(dir);
-                    File.WriteAllBytes(Path.Combine(BaseDir, f.Item1), new byte[f.Item2]);
+                    using (var fileStream = File.OpenWrite(Path.Combine(BaseDir, f.Item1)))
+                    {
+                        fileStream.SetLength(f.Item2);
+                    }
+                    //File.WriteAllBytes(Path.Combine(BaseDir, f.Item1), new byte[f.Item2]);
                 }
             }
 
