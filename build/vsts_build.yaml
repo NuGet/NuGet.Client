@@ -510,6 +510,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   queue:
     name: DDNuGet-Linux
@@ -517,21 +518,13 @@ phases:
     demands: sh
 
   steps:
+  - bash: echo $(MSBUILDDISABLENODEREUSE)
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
       targetType: "inline"
       script: |
         Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-      failOnStderr: "true"
-    condition: "always()"
-
-  - task: PowerShell@2
-    displayName: "Set Environment Variables"
-    inputs:
-      targetType: "inline"
-      script: |
-        SET $env:MSBUILDDISABLENODEREUSE="1"
       failOnStderr: "true"
     condition: "always()"
 
