@@ -207,7 +207,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
 
-            deprecatedFound = packages.Any(p => p.LatestPackageMetadata.DeprecationMetadata != null || p.ResolvedPackageMetadata.DeprecationMetadata != null);
+            deprecatedFound = packages.Any(p => p.LatestPackageMetadata?.DeprecationMetadata != null || p.ResolvedPackageMetadata?.DeprecationMetadata != null);
 
             return new PrintPackagesResult(autoReferenceFound, deprecatedFound);
         }
