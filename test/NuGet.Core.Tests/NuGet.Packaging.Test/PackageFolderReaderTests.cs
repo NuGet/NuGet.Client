@@ -370,7 +370,7 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    Assert.Matches("^The global package folder copy of package .* is missing one or more files.$", exception.Message);
                 }
             }
         }
@@ -422,7 +422,7 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    Assert.Matches("^The global package folder copy of package .* is missing one or more files.$", exception.Message);
                 }
             }
         }
@@ -452,7 +452,7 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    Assert.Matches("^The global package folder copy of package .* is missing one or more files.$", exception.Message);
                 }
             }
         }

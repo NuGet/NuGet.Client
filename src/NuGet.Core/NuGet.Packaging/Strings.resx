@@ -149,8 +149,9 @@
   <data name="MinClientVersionAlreadyExist" xml:space="preserve">
     <value>MinClientVersion already exists in packages.config</value>
   </data>
-  <data name="MissingNuspec" xml:space="preserve">
-    <value>Nuspec file does not exist in package.</value>
+  <data name="MissingRequiredFiles" xml:space="preserve">
+    <value>The global package folder copy of package '{0}' is missing one or more files.</value>
+    <comment>{0} is the folder name in which required files such as .nuspec etc., are missing</comment>
   </data>
   <data name="PackageEntryAlreadyExist" xml:space="preserve">
     <value>Package entry already exists in packages.config. Id: {0}</value>

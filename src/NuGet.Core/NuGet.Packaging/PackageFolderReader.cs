@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -68,7 +69,10 @@ namespace NuGet.Packaging
 
             if (nuspecFiles.Length == 0)
             {
-                throw new PackagingException(Strings.MissingNuspec);
+                throw new PackagingException(NuGetLogCode.NU5128, string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.MissingRequiredFiles,
+                                            _root.FullName));              
             }
             else if (nuspecFiles.Length > 1)
             {

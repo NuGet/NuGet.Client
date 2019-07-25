@@ -745,20 +745,20 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Nuspec file does not exist in package..
-        /// </summary>
-        internal static string MissingNuspec {
-            get {
-                return ResourceManager.GetString("MissingNuspec", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Nuspec file contains a package type that is missing the name attribute..
         /// </summary>
         internal static string MissingPackageTypeName {
             get {
                 return ResourceManager.GetString("MissingPackageTypeName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The global package folder copy of package &apos;{0}&apos; is missing one or more files..
+        /// </summary>
+        internal static string MissingRequiredFiles {
+            get {
+                return ResourceManager.GetString("MissingRequiredFiles", resourceCulture);
             }
         }
         

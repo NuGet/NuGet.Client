@@ -527,7 +527,13 @@ namespace NuGet.Packaging
 
             if (nuspecPaths.Count == 0)
             {
-                throw new PackagingException(Strings.MissingNuspec);
+                // Find the package directory name by inspecting first file in the folder
+                FileInfo file = new FileInfo(files.ElementAtOrDefault(0));
+
+                throw new PackagingException(NuGetLogCode.NU5128, string.Format(
+                            CultureInfo.CurrentCulture,
+                            Strings.MissingRequiredFiles,
+                            file.DirectoryName));
             }
             else if (nuspecPaths.Count > 1)
             {
