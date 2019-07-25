@@ -29,7 +29,7 @@ namespace NuGet.Packaging
         private readonly bool _includeEmptyDirectories;
 
         /// <summary>
-        /// Maximunm Icon file size: 1 megabyte
+        /// Maximum Icon file size: 1 megabyte
         /// </summary>
         public const int MaxIconFileSize = 1024 * 1024;
 

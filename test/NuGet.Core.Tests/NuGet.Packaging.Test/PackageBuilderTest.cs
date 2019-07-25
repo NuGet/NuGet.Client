@@ -2492,24 +2492,33 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         public void Icon_IconMaxFileSizeExceeded_ThrowsException()
         {
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", "icon.jpg", PackageBuilder.MaxIconFileSize + 1),
-                "The icon file size must not exceed 1 megabyte.");
+                sourceDir: new IconTestSourceDirectory(
+                    iconName: "icon.jpg",
+                    fileName: "icon.jpg",
+                    iconFileSize: PackageBuilder.MaxIconFileSize + 1),
+                exceptionMessage: "The icon file size must not exceed 1 megabyte.");
         }
 
         [Fact]
         public void Icon_IconFileEntryNotFound_ThrowsException()
         {
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", "icono.jpg", 100),
-                "The icon file 'icon.jpg' does not exist in the package.");
+                sourceDir: new IconTestSourceDirectory(
+                    iconName: "icon.jpg",
+                    fileName: "icono.jpg",
+                    iconFileSize: 100),
+                exceptionMessage: "The icon file 'icon.jpg' does not exist in the package.");
         }
 
         [Fact]
         public void Icon_HappyPath_Suceed()
         {
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", "icon.jpg", 400),
-                string.Empty);
+                sourceDir: new IconTestSourceDirectory(
+                    iconName: "icon.jpg",
+                    fileName: "icon.jpg", 
+                    iconFileSize: 400),
+                exceptionMessage: string.Empty);
         }
 
         [Fact(Skip="Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
@@ -2528,11 +2537,12 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             fileEntriesList.Add("folder2\\*");
 
             TestIconPackaging(
-                new IconTestSourceDirectory("icon.jpg", fileList, fileEntriesList),
-                "Multiple files resolved as the embedded icon.");
+                sourceDir: new IconTestSourceDirectory(
+                    iconName: "icon.jpg",
+                    fileName: fileList,
+                    iconFileSize: fileEntriesList),
+                exceptionMessage: "Multiple files resolved as the embedded icon.");
         }
-
-
 
         private void TestIconPackaging(IconTestSourceDirectory sourceDir, string exceptionMessage)
         {
