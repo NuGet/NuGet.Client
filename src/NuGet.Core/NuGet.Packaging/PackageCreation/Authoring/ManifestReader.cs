@@ -154,6 +154,9 @@ namespace NuGet.Packaging
                     case "license":
                         manifestMetadata.LicenseMetadata = ReadLicenseMetadata(element);
                         break;
+                    case "icon":
+                        manifestMetadata.Icon = value;
+                        break;
                 }
             }
             catch (Exception ex)

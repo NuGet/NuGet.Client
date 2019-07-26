@@ -767,6 +767,37 @@ namespace NuGet.Test.Utility
             return stream;
         }
 
+        /// <summary>
+        /// Generates a test .nupkg with icon information
+        /// </summary>
+        /// <param name="iconByteSize">if it is less than zero, it will not include the zip file</param>
+        /// <returns></returns>
+        public static TempFile GetTestPackageIcon(int iconByteSize)
+        {
+            var stream = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(stream), ZipArchiveMode.Create))
+            {
+                if (iconByteSize >= 0)
+                {
+                    zip.AddEntry("content/big.jpg", new byte[ iconByteSize ]);
+                }
+                
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>iconPackage</id>
+                                <version>5.2.0</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample icon description</description>
+                                <icon>content/big.jpg</icon>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return stream;
+        }
+
         public static async Task<FileInfo> GetPackageWithSHA512AtRoot(string path, string packageId, string packageVersion)
         {
             return await GeneratePackageAsync(path, packageId, packageVersion, DateTimeOffset.UtcNow.LocalDateTime,
