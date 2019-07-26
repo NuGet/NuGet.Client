@@ -29,7 +29,7 @@
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">master</ToolsetTargetBranches>
     <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
     changes we might have made.-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
     <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.2</ReleaseLabel>
   </PropertyGroup>
