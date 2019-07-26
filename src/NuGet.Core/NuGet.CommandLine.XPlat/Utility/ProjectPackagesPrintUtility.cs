@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
@@ -128,8 +129,14 @@ namespace NuGet.CommandLine.XPlat.Utility
                        p => "",
                        p => p.Name,
                        p => "",
-                       p => PrintVersion(p.ResolvedPackageMetadata),
-                       p => p.LatestPackageMetadata == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestPackageMetadata));
+                       p => PrintVersion(
+                                p.ResolvedPackageMetadata.Identity.Version,
+                                p.ResolvedPackageMetadata.DeprecationMetadata != null),
+                       p => p.LatestPackageMetadata?.Identity?.Version == null
+                            ? Strings.ListPkg_NotFoundAtSources
+                            : PrintVersion(
+                                p.LatestPackageMetadata.Identity.Version,
+                                p.LatestPackageMetadata.DeprecationMetadata != null));
             }
             else if (outdated && !printingTransitive)
             {
@@ -148,8 +155,14 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => PrintVersion(p.ResolvedPackageMetadata),
-                       p => p.LatestPackageMetadata == null ? Strings.ListPkg_NotFoundAtSources : PrintVersion(p.LatestPackageMetadata));
+                       p => PrintVersion(
+                                p.ResolvedPackageMetadata.Identity.Version,
+                                p.ResolvedPackageMetadata.DeprecationMetadata != null),
+                       p => p.LatestPackageMetadata?.Identity?.Version == null
+                            ? Strings.ListPkg_NotFoundAtSources
+                            : PrintVersion(
+                                p.LatestPackageMetadata.Identity.Version,
+                                p.LatestPackageMetadata.DeprecationMetadata != null));
             }
             else if (!outdated && printingTransitive)
             {
@@ -159,7 +172,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                         p => "",
                         p => p.Name,
                         p => "",
-                        p => PrintVersion(p.ResolvedPackageMetadata));
+                        p => PrintVersion(
+                                p.ResolvedPackageMetadata.Identity.Version,
+                                p.ResolvedPackageMetadata.DeprecationMetadata != null));
             }
             else
             {
@@ -178,7 +193,9 @@ namespace NuGet.CommandLine.XPlat.Utility
                            return "";
                        },
                        p => p.OriginalRequestedVersion,
-                       p => PrintVersion(p.ResolvedPackageMetadata));
+                       p => PrintVersion(
+                                p.ResolvedPackageMetadata.Identity.Version,
+                                p.ResolvedPackageMetadata.DeprecationMetadata != null));
             }
 
             //Handle printing with colors
@@ -190,16 +207,16 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
 
-            deprecatedFound = packages.Any(p => p.LatestPackageMetadata.DeprecationMetadata != null || p.ResolvedPackageMetadata.DeprecationMetadata != null);
+            deprecatedFound = packages.Any(p => p.LatestPackageMetadata?.DeprecationMetadata != null || p.ResolvedPackageMetadata?.DeprecationMetadata != null);
 
             return new PrintPackagesResult(autoReferenceFound, deprecatedFound);
         }
 
-        private static string PrintVersion(IPackageSearchMetadata metadata)
+        private static string PrintVersion(NuGetVersion version, bool isDeprecated)
         {
-            var output = metadata.Identity.Version.ToString();
+            var output = version.ToString();
 
-            if (metadata.DeprecationMetadata != null)
+            if (isDeprecated)
             {
                 output += " (D)";
             }
