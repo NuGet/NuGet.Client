@@ -462,6 +462,17 @@ namespace NuGet.Test.Utility
             }
         }
 
+        ///<summary>
+        ///Delete file in global package folder
+        ///</summary>
+        public static void DeletePackageFolderFile(string root,string packageName,string version,string fileName)
+        {
+            string file = Path.Combine(root, packageName, version, fileName);
+
+            if(File.Exists(file))
+                File.Delete(file);
+        }
+
         /// <summary>
         /// Create a v3 folder of nupkgs
         /// </summary>

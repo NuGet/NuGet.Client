@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
@@ -137,6 +138,62 @@ namespace NuGet.CommandLine.Test
                 log.Level.Should().Be(LogLevel.Warning);
                 log.TargetGraphs.Select(e => string.Join(",", e)).Should().Contain(netcoreapp1.DotNetFrameworkName);
                 log.Message.Should().Contain("Detected package version outside of dependency constraint: x 1.0.0 requires z (= 1.0.0) but version z 2.0.0 was resolved.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyNU5128MessageAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>x</id>
+                            <version>1.0.0</version>
+                            <title />
+                            <dependencies>
+                                <group>
+                                    <dependency id=""z"" version=""[1.0.0]"" />
+                                </group>
+                            </dependencies>
+                        </metadata>
+                        </package>")
+                };
+
+                var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
+                var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageZ1, packageZ2);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageZ2);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                SimpleTestPackageUtility.DeletePackageFolderFile(pathContext.PackageSource, packageX.Id,
+                    packageX.Version,packageX.Id + NuGetConstants.ManifestExtension);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("The global package folder is missing one or more files. Delete package folder and run the restore again: " +
+                    Path.Combine(pathContext.PackageSource,packageX.Id,packageX.Version));
             }
         }
 
