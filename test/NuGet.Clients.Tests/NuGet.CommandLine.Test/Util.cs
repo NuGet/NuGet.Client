@@ -1204,9 +1204,9 @@ EndProject");
             Assert.Contains("usage:", result.Item2);
         }
 
-        //This is a temperary change since the VS on CI doesn't have the latest hostfxr, it could not resolve the preview SDK.
+        //This is a temporary change since the VS on CI doesn't have the latest hostfxr, it could not resolve the preview SDK.
         //Will be removed when CI has the latest version of VS, or SDK3.0 released RTM version.
-        //Create a global.json file in temperary testing folder, to make sure msbuild could choose preview version of SDK.
+        //Create a global.json file in temporary testing folder, to make sure msbuild could choose preview version of SDK.
         public static void CreateTempGlobalJson(string solutionRoot)
         {
             //put the global.json at one level up to solutionRoot path
