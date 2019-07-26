@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.IO;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.VisualStudio
@@ -16,23 +17,35 @@ namespace NuGet.VisualStudio
         [ImportingConstructor]
         public VsPackageSourceProvider(ISourceRepositoryProvider sourceRepositoryProvider)
         {
+            if (sourceRepositoryProvider == null)
+            {
+                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
+            }
+
             _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             _packageSourceProvider.PackageSourcesChanged += PackageSourcesChanged;
         }
 
         public IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled)
         {
-            List<KeyValuePair<string, string>> sources = new List<KeyValuePair<string, string>>();
+            var sources = new List<KeyValuePair<string, string>>();
 
-            foreach (var source in _packageSourceProvider.LoadPackageSources())
+            try
             {
-                if ((IsOfficial(source) || includeUnOfficial)
-                    && (source.IsEnabled || includeDisabled))
+                foreach (var source in _packageSourceProvider.LoadPackageSources())
                 {
-                    // Name -> Source Uri
-                    var pair = new KeyValuePair<string, string>(source.Name, source.Source);
-                    sources.Add(pair);
+                    if ((IsOfficial(source) || includeUnOfficial)
+                        && (source.IsEnabled || includeDisabled))
+                    {
+                        // Name -> Source Uri
+                        var pair = new KeyValuePair<string, string>(source.Name, source.Source);
+                        sources.Add(pair);
+                    }
                 }
+            }
+            catch (Exception ex) when (!IsExpected(ex))
+            {
+                throw new InvalidOperationException(ex.Message, ex);
             }
 
             return sources;
@@ -63,6 +76,14 @@ namespace NuGet.VisualStudio
             }
 
             return official;
+        }
+
+        private static bool IsExpected(Exception ex)
+        {
+            return ex is ArgumentException
+                || ex is ArgumentNullException
+                || ex is InvalidDataException
+                || ex is InvalidOperationException;
         }
     }
 }
