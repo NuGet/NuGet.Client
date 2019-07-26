@@ -562,7 +562,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The given file `{0}` was not found</value>
   </data>
   <data name="ListPkg_NoUpdatesForFramework" xml:space="preserve">
-    <value>No updates available for this framework packages.</value>
+    <value>No package updates available for this framework.</value>
   </data>
   <data name="ListPkg_NoUpdatesForProject" xml:space="preserve">
     <value>The given project `{0}` has no updates given the current sources.</value>
@@ -575,5 +575,20 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="ListPkg_InvalidOptionsOutdatedAndDeprecated" xml:space="preserve">
     <value>Invalid command. Combining the '--outdated' and '--deprecated' options is not supported.</value>
+  </data>
+  <data name="ListPkg_NoDeprecatedPackagesForProject" xml:space="preserve">
+    <value>The given project `{0}` has no deprecated packages given the current sources.</value>
+  </data>
+  <data name="ListPkg_ProjectDeprecationsHeaderLog" xml:space="preserve">
+    <value>Project `{0}` has the following deprecated packages</value>
+  </data>
+  <data name="ListPkg_NoDeprecationsForFramework" xml:space="preserve">
+    <value>No deprecated packages for this framework.</value>
+  </data>
+  <data name="ListPkg_DeprecationAlternative" xml:space="preserve">
+    <value>Alternative</value>
+  </data>
+  <data name="ListPkg_DeprecationReasons" xml:space="preserve">
+    <value>Reason(s)</value>
   </data>
 </root>
