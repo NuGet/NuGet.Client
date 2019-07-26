@@ -12,6 +12,9 @@ using NuGet.Versioning;
 
 namespace NuGet.Packaging
 {
+    /// <summary>
+    /// Manifest (user created .nuspec) file metadata model
+    /// </summary>
     public class ManifestMetadata : IPackageMetadata
     {
         private string _minClientVersionString;
@@ -58,6 +61,7 @@ namespace NuGet.Packaging
             DevelopmentDependency = copy.DevelopmentDependency;
             Repository = copy.Repository;
             LicenseMetadata = copy.LicenseMetadata;
+            Icon = copy.Icon;
         }
 
         [ManifestVersion(5)]
@@ -116,6 +120,8 @@ namespace NuGet.Packaging
                 return new Uri(_iconUrl);
             }
         }
+
+        public string Icon { get; set; }
 
         public void SetLicenseUrl(string licenseUrl)
         {

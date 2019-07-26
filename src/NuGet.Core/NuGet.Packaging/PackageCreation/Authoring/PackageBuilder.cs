@@ -16,6 +16,8 @@ using NuGet.Frameworks;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
+using NuGet.Packaging.Rules;
+using System.Reflection.Emit;
 
 namespace NuGet.Packaging
 {
@@ -27,6 +29,11 @@ namespace NuGet.Packaging
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
         private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+        /// <summary>
+        /// Maximum Icon file size: 1 megabyte
+        /// </summary>
+        public const int MaxIconFileSize = 1024 * 1024;
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
@@ -141,6 +148,12 @@ namespace NuGet.Packaging
         }
 
         public Uri IconUrl
+        {
+            get;
+            set;
+        }
+
+        public string Icon
         {
             get;
             set;
@@ -365,6 +378,7 @@ namespace NuGet.Packaging
             ValidateDependencies(Version, DependencyGroups);
             ValidateReferenceAssemblies(Files, PackageAssemblyReferences);
             ValidateLicenseFile(Files, LicenseMetadata);
+            ValidateIconFile(Files, Icon);
 
             using (var package = new ZipArchive(stream, ZipArchiveMode.Create, leaveOpen: true))
             {
@@ -579,6 +593,62 @@ namespace NuGet.Packaging
             }
         }
 
+        /// <summary>
+        /// Given a list of resolved files,
+        /// determine which file will be used as the icon file and validate its size.
+        /// </summary>
+        /// <param name="files">Files resolved from the file entries in the nuspec</param>
+        /// <param name="iconPath">iconpath found in the .nuspec</param>
+        /// <exception cref="PackagingException">When a validation rule is not met</exception>
+        private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
+        {
+            if (!string.IsNullOrEmpty(iconPath))
+            {
+                // Validate entry
+                var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
+
+                var iconFileList = files.Where(f =>
+                        iconPath.Equals(
+                            PathUtility.StripLeadingDirectorySeparators(f.Path),
+                            PathUtility.GetStringComparisonBasedOnOS()));
+
+                if (iconFileList.Count() == 0)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5046,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconNoFileElement, iconPath));
+                }
+
+                IPackageFile iconFile = iconFileList.First();
+
+                try
+                {
+                    // Validate Icon open file
+                    using (var iconStream = iconFile.GetStream())
+                    {
+                        // Validate file size
+                        long fileSize = iconStream.Length;
+
+                        if (fileSize > MaxIconFileSize)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5047, NuGetResources.IconMaxFileSizeExceeded);
+                        }
+
+                        if (fileSize == 0)
+                        {
+                            throw new PackagingException(Common.NuGetLogCode.NU5047, NuGetResources.IconErrorEmpty);
+                        }
+                    }
+                }
+                catch (FileNotFoundException e)
+                {
+                    throw new PackagingException(
+                        NuGetLogCode.NU5046,
+                        string.Format(CultureInfo.CurrentCulture, NuGetResources.IconCannotOpenFile, iconPath, e.Message));
+                }
+            }
+        }
+
         private void ReadManifest(Stream stream, string basePath, Func<string, string> propertyProvider)
         {
             // Deserialize the document and extract the metadata
@@ -623,6 +693,7 @@ namespace NuGet.Packaging
             Repository = metadata.Repository;
             ContentFiles = new Collection<ManifestContentFiles>(manifestMetadata.ContentFiles.ToList());
             LicenseMetadata = metadata.LicenseMetadata;
+            Icon = metadata.Icon;
 
             if (metadata.Tags != null)
             {
