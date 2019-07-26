@@ -35,6 +35,11 @@ namespace NuGet.Packaging
         /// </summary>
         public const int MaxIconFileSize = 1024 * 1024;
 
+        /// <summary>
+        /// Maximum Icon file size: 1 megabyte
+        /// </summary>
+        public const int MaxIconFileSize = 1024 * 1024;
+
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
         {
