@@ -510,6 +510,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   queue:
     name: DDNuGet-Linux
@@ -536,7 +537,6 @@ phases:
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
-    condition: "succeededOrFailed()"
     inputs:
       testRunner: "XUnit"
       testResultsFiles: "*.xml"
