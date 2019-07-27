@@ -5628,7 +5628,103 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
+        [Fact]
+        public void PackCommand_PackIcon_ImplicitFile()
+        {
+            var nugetexe = Util.GetNuGetExePath();
 
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
+
+                // Arrange
+                Util.CreateFile(workingDirectory + "\\content", "icon.jpg", "abcabc");
+
+                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
+<package >
+  <metadata>
+    <id>icon.test</id>
+    <version>0.0.1</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <description>Description</description>
+    <icon>icon.jpg</icon>
+  </metadata>
+  <files>
+    <file src=""content\*"" />
+  </files>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r);
+                Assert.True(File.Exists(nupkgPath));
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.NotNull(nuspecReader.GetIcon());
+                    Assert.True(nupkgReader.GetEntry("icon.jpg") != null);
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_Folder()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
+
+                // Arrange
+                Util.CreateFile(workingDirectory + "\\content", "icon.jpg", "abcabc");
+
+                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
+<package >
+  <metadata>
+    <id>icon.test</id>
+    <version>0.0.1</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <description>Description</description>
+    <icon>utils\icon.jpg</icon>
+  </metadata>
+  <files>
+    <file src=""content\*"" target=""utils"" />
+  </files>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r);
+                Assert.True(File.Exists(nupkgPath));
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.NotNull(nuspecReader.GetIcon());
+                    Assert.True(nupkgReader.GetEntry("utils/icon.jpg") != null);
+                }
+            }
+        }
 
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {

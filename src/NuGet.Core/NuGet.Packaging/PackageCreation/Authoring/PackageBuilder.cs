@@ -613,7 +613,7 @@ namespace NuGet.Packaging
                 var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
 
                 var iconFileList = files.Where(f =>
-                        iconPath.Equals(
+                        iconPathStripped.Equals(
                             PathUtility.StripLeadingDirectorySeparators(f.Path),
                             PathUtility.GetStringComparisonBasedOnOS()));
 
