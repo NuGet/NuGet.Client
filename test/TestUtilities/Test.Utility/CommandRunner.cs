@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -81,7 +82,8 @@ namespace NuGet.Test.Utility
 #endif
                     if (!processExited)
                     {
-                        p.Kill();
+                        Kill(p);
+                        WaitForExit(p);
 
                         var processName = Path.GetFileName(process);
 
@@ -114,6 +116,40 @@ namespace NuGet.Test.Utility
             while ((line = await reader.ReadLineAsync()) != null)
             {
                 lines.AppendLine(line);
+            }
+        }
+
+        private static void Kill(Process process)
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (Win32Exception)
+            {
+            }
+        }
+
+        private static void WaitForExit(Process process)
+        {
+            try
+            {
+                if (!process.HasExited)
+                {
+                    process.WaitForExit();
+                }
+            }
+            catch (InvalidOperationException)
+            {
+            }
+            catch (Win32Exception)
+            {
+            }
+            catch (SystemException)
+            {
             }
         }
     }
