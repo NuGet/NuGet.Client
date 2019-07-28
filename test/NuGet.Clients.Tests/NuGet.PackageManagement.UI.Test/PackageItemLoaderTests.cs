@@ -72,7 +72,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotEmpty(loaded);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8393")]
         public async Task EmitsSearchTelemetryEvents()
         {
             // Arrange
