@@ -223,7 +223,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/8394")]
         public void PackCommand_PackProject_PackageReferenceFloatingVersionRange()
         {
             // Arrange
