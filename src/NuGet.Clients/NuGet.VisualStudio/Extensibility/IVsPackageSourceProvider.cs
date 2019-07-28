@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.InteropServices;
 
 namespace NuGet.VisualStudio
@@ -20,6 +21,10 @@ namespace NuGet.VisualStudio
         /// <param name="includeUnOfficial">Unofficial sources will be included in the results</param>
         /// <param name="includeDisabled">Disabled sources will be included in the results</param>
         /// <remarks>Does not require the UI thread.</remarks>
+        /// <exception cref="ArgumentException">Thrown if a NuGet configuration file is invalid.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if a NuGet configuration file is invalid.</exception>
+        /// <exception cref="InvalidOperationException">Thrown if a NuGet configuration file is invalid.</exception>
+        /// <exception cref="InvalidDataException">Thrown if a NuGet configuration file is invalid.</exception>
         /// <returns>Key: source name Value: source URI</returns>
         IEnumerable<KeyValuePair<string, string>> GetSources(bool includeUnOfficial, bool includeDisabled);
 
