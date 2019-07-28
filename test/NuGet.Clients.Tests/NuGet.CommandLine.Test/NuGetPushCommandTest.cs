@@ -1224,7 +1224,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server, plugin provider returns abort
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8395")]
         public void PushCommand_PushToServer_WhenPluginTimesOut_ThrowsAndDoesNotFallBackToConsoleProvider()
         {
             var nugetexe = Util.GetNuGetExePath();
