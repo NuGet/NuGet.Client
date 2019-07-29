@@ -324,7 +324,7 @@ namespace NuGet.Protocol.Tests
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8392")]
         public async Task HttpRetryHandler_TimesOutDownload()
         {
             // Arrange
