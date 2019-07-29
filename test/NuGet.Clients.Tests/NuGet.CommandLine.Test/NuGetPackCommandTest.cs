@@ -5636,9 +5636,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             using (var workingDirectory = TestDirectory.Create())
             {
                 var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
+                var dirSep = Path.DirectorySeparatorChar;
 
                 // Arrange
-                Util.CreateFile(workingDirectory + "\\content", "icon.jpg", "abcabc");
+                Util.CreateFile(workingDirectory + string.Format("{0}content", dirSep), "icon.jpg", "abcabc");
 
                 Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
 <package >
@@ -5685,9 +5686,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             using (var workingDirectory = TestDirectory.Create())
             {
                 var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
+                var dirSep = Path.DirectorySeparatorChar;
 
                 // Arrange
-                Util.CreateFile(workingDirectory + "\\content", "icon.jpg", "abcabc");
+                Util.CreateFile(workingDirectory + string.Format("{0}content", dirSep), "icon.jpg", "abcabc");
 
                 Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
 <package >
@@ -5734,9 +5736,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             using (var workingDirectory = TestDirectory.Create())
             {
                 var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
+                var dirSep = Path.DirectorySeparatorChar;
 
                 // Arrange
-                Util.CreateFile(workingDirectory + "\\content\\nested", "icon.jpg", "abcabc");
+                Util.CreateFile(workingDirectory + string.Format("{0}content{0}nested", dirSep), "icon.jpg", "abcabc");
 
                 Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
 <package >
