@@ -854,26 +854,27 @@ function Test-SimpleBindingRedirectsIndirectReference {
     Assert-BindingRedirect $c app.config F '0.0.0.0-1.0.5.0' '1.0.5.0'
 }
 
-function Test-SimpleBindingRedirectsNonWeb {
-    param(
-        $context
-    )
-    # Arrange
-    $a = New-ConsoleApplication
-    $b = New-WPFApplication
-    $projects = @($a, $b)
-
-    # Act
-    #$projects | Install-Package E -Source $context.RepositoryPath
-    $a | Install-Package E -Source $context.RepositoryPath
-    $b | Install-Package E -Source $context.RepositoryPath
-    $a | Update-Package F -Safe -Source $context.RepositoryPath
-    $b | Update-Package F -Safe -Source $context.RepositoryPath
-
-    # Assert
-    $projects | %{ Assert-Package $_ E;
-                   Assert-BindingRedirect $_ app.config F '0.0.0.0-1.0.5.0' '1.0.5.0' }
-}
+# Flaky test.  See https://github.com/NuGet/Home/issues/8402.
+# function Test-SimpleBindingRedirectsNonWeb {
+#     param(
+#         $context
+#     )
+#     # Arrange
+#     $a = New-ConsoleApplication
+#     $b = New-WPFApplication
+#     $projects = @($a, $b)
+# 
+#     # Act
+#     #$projects | Install-Package E -Source $context.RepositoryPath
+#     $a | Install-Package E -Source $context.RepositoryPath
+#     $b | Install-Package E -Source $context.RepositoryPath
+#     $a | Update-Package F -Safe -Source $context.RepositoryPath
+#     $b | Update-Package F -Safe -Source $context.RepositoryPath
+# 
+#     # Assert
+#     $projects | %{ Assert-Package $_ E;
+#                    Assert-BindingRedirect $_ app.config F '0.0.0.0-1.0.5.0' '1.0.5.0' }
+# }
 
 function Test-BindingRedirectComplex {
     param(
