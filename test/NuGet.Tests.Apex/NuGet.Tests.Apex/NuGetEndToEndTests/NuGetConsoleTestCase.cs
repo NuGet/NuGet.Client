@@ -240,7 +240,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory]
+        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/8386")]
         [InlineData(ProjectTemplate.ClassLibrary, false)]
         [InlineData(ProjectTemplate.NetCoreConsoleApp, true)]
         [InlineData(ProjectTemplate.NetStandardClassLib, true)]
