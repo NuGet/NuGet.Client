@@ -154,7 +154,7 @@ namespace NuGet.CommandLine.XPlat
                                         frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
                                             .Where(p => p.ResolvedPackageMetadata.DeprecationMetadata != null);
 
-                                        if (frameworkPackages.TopLevelPackages.Any() || frameworkPackages.TransitivePackages.Any())
+                                        if (frameworkPackages.TopLevelPackages.Any())
                                         {
                                             noPackagesLeft = false;
                                         }
