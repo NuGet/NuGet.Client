@@ -28,8 +28,7 @@ namespace NuGet.Packaging.Rules
                 new UnrecognizedLicenseIdentifierRule(AnalysisResources.UnrecognizedLicenseIdentifier),
                 new LicenseUrlDeprecationWarning(AnalysisResources.LicenseUrlDeprecationWarning),
                 new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage),
-                new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch),
+                new DependeciesGroupsForEachTFMRule(),
             }
         );
 

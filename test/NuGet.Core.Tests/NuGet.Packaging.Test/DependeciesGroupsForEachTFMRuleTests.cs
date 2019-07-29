@@ -45,9 +45,9 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -79,11 +79,11 @@ namespace NuGet.Packaging.Test
                 "ref/netstandard1.3/test.dll",
                 "ref/netstandard2.0/test.dll",
             };
-           
+
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -113,9 +113,9 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -134,11 +134,11 @@ namespace NuGet.Packaging.Test
             {
                 "lib/net472/test.dll"
             };
-            
+
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && !p.Message.Contains(".NETFramework4.7.2")));
@@ -157,9 +157,9 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -179,9 +179,9 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -198,9 +198,9 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            var issues = rule.Validate(fileStrings, frameworks).ToList();
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
+            var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
@@ -218,19 +218,18 @@ namespace NuGet.Packaging.Test
                 ".NETFramework4.5",
             }.Select(f => NuGetFramework.Parse(f));
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
                 "lib/net40/test.dll"
             };
-            _collection.Load(fileStrings);
-            var files = ContentExtractor.GetGroupFrameworks(ContentExtractor.GetContentForPattern(_collection, _managedCodeConventions.Patterns.CompileLibAssemblies));
+            
 
             // Act
-            var rule = new DependeciesGroupsForEachTFMRule(AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch,
-                                                        AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch);
-            (var testStringExact, var testStringCompat) = rule.Validate(files, frameworks, _managedCodeConventions);
+            var rule = new DependeciesGroupsForEachTFMRule();
+            var (compat, file, nuspec) = rule.CatagoriseTFMs(files, frameworks);
+            var (testStringExact, testStringCompat) = rule.GenerateWarningString(file, nuspec, compat);
 
             // Assert
             Assert.True(testStringExact.Contains("Add lib or ref assemblies for the net45 target framework"));
