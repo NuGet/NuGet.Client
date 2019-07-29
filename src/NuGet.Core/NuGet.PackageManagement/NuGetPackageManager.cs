@@ -637,8 +637,9 @@ namespace NuGet.PackageManagement
             var tasks = new List<Task<IEnumerable<NuGetProjectAction>>>(maxTasks);
             var nugetActions = new List<NuGetProjectAction>();
 
-            var buildIntegratedProjects = nuGetProjects.OfType<BuildIntegratedNuGetProject>().ToList();
-            var nonBuildIntegratedProjects = nuGetProjects.Except(buildIntegratedProjects).ToList();
+            var nuGetProjectList = nuGetProjects.ToList();
+            var buildIntegratedProjects = nuGetProjectList.OfType<BuildIntegratedNuGetProject>().ToList();
+            var nonBuildIntegratedProjects = nuGetProjectList.Except(buildIntegratedProjects).ToList();
 
             var shouldFilterProjectsForUpdate = false;
             if (packageIdentities.Count > 0)
