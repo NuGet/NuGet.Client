@@ -25,6 +25,18 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
 
+        private static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForOutdated =
+            p => !p.AutoReference
+                 && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
+        private static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForOutdated =
+            p => p.LatestPackageMetadata == null
+                 || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version;
+
+        private static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForDeprecated =
+            p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
+        private static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForDeprecated =
+            p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
+
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
             if (!File.Exists(listPackageArgs.Path))
@@ -112,30 +124,14 @@ namespace NuGet.CommandLine.XPlat
                                 if (listPackageArgs.IncludeOutdated)
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
-                                    var noPackagesLeft = true;
 
-                                    // Filter the packages for outdated
-                                    foreach (var frameworkPackages in packages)
-                                    {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
-                                            .Where(p => !p.AutoReference && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
-
-                                        frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
-                                            .Where(p => p.LatestPackageMetadata == null
-                                                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
-
-                                        if (frameworkPackages.TopLevelPackages.Any())
-                                        {
-                                            noPackagesLeft = false;
-                                        }
-                                    }
+                                    printPackages = FilterOutdatedPackages(packages);
 
                                     // If after filtering, all packages were found up to date, inform the user
                                     // and do not print anything
-                                    if (noPackagesLeft)
+                                    if (!printPackages)
                                     {
                                         Console.WriteLine(string.Format(Strings.ListPkg_NoUpdatesForProject, projectName));
-                                        printPackages = false;
                                     }
                                 }
                                 // Handle --deprecated
@@ -143,29 +139,13 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     await GetDeprecationInfoAsync(packages, listPackageArgs);
 
-                                    var noPackagesLeft = true;
-
-                                    // Filter the packages for deprecated
-                                    foreach (var frameworkPackages in packages)
-                                    {
-                                        frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
-                                            .Where(p => p.ResolvedPackageMetadata.DeprecationMetadata != null);
-
-                                        frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
-                                            .Where(p => p.ResolvedPackageMetadata.DeprecationMetadata != null);
-
-                                        if (frameworkPackages.TopLevelPackages.Any())
-                                        {
-                                            noPackagesLeft = false;
-                                        }
-                                    }
+                                    printPackages = FilterDeprecatedPackages(packages);
 
                                     // If after filtering, no packages were found to be deprecated, inform the user
                                     // and do not print anything
-                                    if (noPackagesLeft)
+                                    if (!printPackages)
                                     {
                                         Console.WriteLine(string.Format(Strings.ListPkg_NoDeprecatedPackagesForProject, projectName));
-                                        printPackages = false;
                                     }
                                 }
 
@@ -211,6 +191,54 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        private static bool FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
+        {
+            return FilterPackages(
+                packages,
+                TopLevelPackagesFilterForOutdated,
+                TransitivePackagesFilterForOutdated);
+        }
+
+        private static bool FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
+        {
+            return FilterPackages(
+                packages,
+                TopLevelPackagesFilterForDeprecated,
+                TransitivePackagesFilterForDeprecated);
+        }
+
+        /// <summary>
+        /// Filters top-level and transitive packages.
+        /// </summary>
+        /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
+        /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
+        /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
+        /// <returns><c>True</c> whether at least 1 top-level packages is part of the filtered resultset; otherwise <c>False</c>.</returns>
+        private static bool FilterPackages(
+            IEnumerable<FrameworkPackages> packages,
+            Func<InstalledPackageReference, bool> topLevelPackagesFilter,
+            Func<InstalledPackageReference, bool> transitivePackagesFilter)
+        {
+            var hasTopLevelPackage = false;
+
+            // Filter the packages for deprecated
+            foreach (var frameworkPackages in packages)
+            {
+                frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
+                    .Where(topLevelPackagesFilter);
+
+                frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
+                    .Where(transitivePackagesFilter);
+
+                if (frameworkPackages.TopLevelPackages.Any())
+                {
+                    hasTopLevelPackage = true;
+                }
+            }
+
+            return hasTopLevelPackage;
+        }
+
         /// <summary>
         /// Fetches the latest versions for all of the packages that are
         /// to be listed
@@ -222,35 +250,25 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<FrameworkPackages> packages,
             ListPackageArgs listPackageArgs)
         {
-            var providers = Repository.Provider.GetCoreV3();
-
-            //Handling concurrency and throttling variables
-            var maxTasks = Environment.ProcessorCount;
-            var contactSourcesRunningTasks = new List<Task>();
-            var latestVersionsRequests = new List<Task>();
-
             //Unique Dictionary for packages and list of latest versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
             AddPackagesToDict(packages, packagesVersionsDict);
 
             //Prepare requests for each of the packages
+            var providers = Repository.Provider.GetCoreV3();
+            var getLatestVersionsRequests = new List<Task>();
             foreach (var package in packagesVersionsDict)
             {
-                latestVersionsRequests.AddRange(PrepareLatestVersionsRequests(package.Key, listPackageArgs, providers, packagesVersionsDict));
+                getLatestVersionsRequests.AddRange(
+                    PrepareLatestVersionsRequests(
+                        package.Key,
+                        listPackageArgs,
+                        providers,
+                        packagesVersionsDict));
             }
 
-            //Make the calls to the sources
-            foreach (var latestVersionTask in latestVersionsRequests)
-            {
-                contactSourcesRunningTasks.Add(Task.Run(() => latestVersionTask));
-                //Throttle if needed
-                if (maxTasks <= contactSourcesRunningTasks.Count)
-                {
-                    var finishedTask = await Task.WhenAny(contactSourcesRunningTasks);
-                    contactSourcesRunningTasks.Remove(finishedTask);
-                }
-            }
-            await Task.WhenAll(contactSourcesRunningTasks);
+            // Make requests in parallel.
+            await RequestNuGetResourcesInParallelAsync(getLatestVersionsRequests);
 
             //Save latest versions within the InstalledPackageReference
             GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
@@ -265,13 +283,6 @@ namespace NuGet.CommandLine.XPlat
             IEnumerable<FrameworkPackages> packages,
             ListPackageArgs listPackageArgs)
         {
-            var providers = Repository.Provider.GetCoreV3();
-
-            // Handling concurrency and throttling variables
-            var maxTasks = Environment.ProcessorCount;
-            var contactSourcesRunningTasks = new List<Task>();
-            var currentVersionsRequests = new List<Task>();
-
             // Unique dictionary for packages and list of versions to handle different sources
             var packagesVersionsDict = new Dictionary<string, IList<IPackageSearchMetadata>>();
             AddPackagesToDict(packages, packagesVersionsDict);
@@ -281,11 +292,13 @@ namespace NuGet.CommandLine.XPlat
             var distinctPackageVersionsDict = GetUniqueResolvedPackages(packages);
 
             // Prepare requests for each of the packages
+            var providers = Repository.Provider.GetCoreV3();
+            var resourceRequestTasks = new List<Task>();
             foreach (var packageIdAndVersions in distinctPackageVersionsDict)
             {
                 foreach (var packageVersion in packageIdAndVersions.Value)
                 {
-                    currentVersionsRequests.AddRange(
+                    resourceRequestTasks.AddRange(
                         PrepareCurrentVersionsRequests(
                             packageIdAndVersions.Key,
                             packageVersion,
@@ -295,10 +308,28 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
+            // Make requests in parallel.
+            await RequestNuGetResourcesInParallelAsync(resourceRequestTasks);
+
+            // Save resolved versions within the InstalledPackageReference
+            GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+        }
+
+        /// <summary>
+        /// Handles concurrency and throttling for a list of tasks that request NuGet resources.
+        /// </summary>
+        /// <param name="resourceRequestTasks"></param>
+        /// <returns></returns>
+        private static async Task RequestNuGetResourcesInParallelAsync(IReadOnlyList<Task> resourceRequestTasks)
+        {
+            // Handling concurrency and throttling variables
+            var maxTasks = Environment.ProcessorCount;
+            var contactSourcesRunningTasks = new List<Task>();
+
             // Make the calls to the sources
-            foreach (var currentVersionTask in currentVersionsRequests)
+            foreach (var requestTask in resourceRequestTasks)
             {
-                contactSourcesRunningTasks.Add(Task.Run(() => currentVersionTask));
+                contactSourcesRunningTasks.Add(Task.Run(() => requestTask));
 
                 // Throttle if needed
                 if (maxTasks <= contactSourcesRunningTasks.Count)
@@ -307,10 +338,8 @@ namespace NuGet.CommandLine.XPlat
                     contactSourcesRunningTasks.Remove(finishedTask);
                 }
             }
-            await Task.WhenAll(contactSourcesRunningTasks);
 
-            // Save resolved versions within the InstalledPackageReference
-            GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+            await Task.WhenAll(contactSourcesRunningTasks);
         }
 
         /// <summary>
