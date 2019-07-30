@@ -35,8 +35,8 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
-            var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
@@ -90,30 +90,30 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
 
-
-            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "/v3/index.json";
+            // Mock all the remote calls our test will try to make.
+            var source = NuGetConstants.V3FeedUrl;
+            var query = "https://api-v2v3search-0.nuget.org/query";
 
             var responses = new Dictionary<string, string>
             {
                 {
-                    serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
-                "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
-                    "work"
+                    source,
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.index.json", typeof(PackageItemLoaderTests))
                 },
-                { serviceAddress,
-                    string.Empty
-                }
+                {
+                    query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0",
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.nugetSearchPage1.json", typeof(PackageItemLoaderTests))
+                },
+                {
+                    query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0",
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.nugetSearchPage2.json", typeof(PackageItemLoaderTests))
+                },
             };
 
-            // add index json and track all by setting a breakpoint in TestMessageHandler Line:105
-            // look at TryCreate_WhenResourceIsPresent_CreatesVersionedHttpCacheEntry.
-
-            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
-            var packageSource = new PackageSource(serviceAddress);
+            var httpSource = new TestHttpSource(new PackageSource(source), responses);
             var injectedHttpSources = new Dictionary<string, HttpSource>();
-            injectedHttpSources.Add(serviceAddress, httpSource);
-
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { packageSource }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
+            injectedHttpSources.Add(source, httpSource);
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source) }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
