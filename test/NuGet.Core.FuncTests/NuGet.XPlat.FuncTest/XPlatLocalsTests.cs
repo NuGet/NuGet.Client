@@ -15,18 +15,6 @@ namespace NuGet.XPlat.FuncTest
         private static readonly string DotnetCli = DotnetCliUtil.GetDotnetCli();
         private static readonly string XplatDll = DotnetCliUtil.GetXplatDll();
 
-        public static void Locals_Get_Right_XplatDll(string args)
-        {
-            // Assert
-#if IS_CORECLR
-#if IS_NETCORE30
-            Assert.Contains(XplatDll,"netcoreapp3.0");
-#else
-            Assert.Contains(XplatDll, "netcoreapp2.1");
-#endif
-#endif
-        }
-
         [Theory]
         [InlineData("locals all --list")]
         [InlineData("locals all -l")]
