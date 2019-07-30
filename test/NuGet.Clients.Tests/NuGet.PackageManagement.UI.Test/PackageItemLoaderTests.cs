@@ -110,61 +110,63 @@ namespace NuGet.PackageManagement.UI.Test
                 },
             };
 
-            var httpSource = new TestHttpSource(new PackageSource(source), responses);
-            var injectedHttpSources = new Dictionary<string, HttpSource>();
-            injectedHttpSources.Add(source, httpSource);
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source) }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
-            var repositories = sourceRepositoryProvider.GetRepositories();
+            using (var httpSource = new TestHttpSource(new PackageSource(source), responses))
+            {
+                var injectedHttpSources = new Dictionary<string, HttpSource>();
+                injectedHttpSources.Add(source, httpSource);
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source) }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
+                var repositories = sourceRepositoryProvider.GetRepositories();
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
+                var context = new PackageLoadContext(repositories, false, uiContext);
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
+                var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
 
-            // Act
-            var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
-            await loader.LoadNextAsync(null, CancellationToken.None);
-            await loader.LoadNextAsync(null, CancellationToken.None);
+                // Act
+                var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
+                await loader.LoadNextAsync(null, CancellationToken.None);
+                await loader.LoadNextAsync(null, CancellationToken.None);
 
-            // Assert
-            var events = eventsQueue.ToArray();
-            Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
+                // Assert
+                var events = eventsQueue.ToArray();
+                Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
-            var search = events[0];
-            Assert.Equal("Search", search.Name);
-            Assert.Equal(true, search["IncludePrerelease"]);
-            Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
-            var operationId = Assert.IsType<string>(search["OperationId"]);
-            var parsedOperationId = Guid.ParseExact(operationId, "D");
+                var search = events[0];
+                Assert.Equal("Search", search.Name);
+                Assert.Equal(true, search["IncludePrerelease"]);
+                Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
+                var operationId = Assert.IsType<string>(search["OperationId"]);
+                var parsedOperationId = Guid.ParseExact(operationId, "D");
 
-            var sources = events[1];
-            Assert.Equal("SearchPackageSourceSummary", sources.Name);
-            Assert.Equal(1, sources["NumHTTPv3Feeds"]);
-            Assert.Equal("YesV3", sources["NuGetOrg"]);
-            Assert.Equal(operationId, sources["ParentId"]);
+                var sources = events[1];
+                Assert.Equal("SearchPackageSourceSummary", sources.Name);
+                Assert.Equal(1, sources["NumHTTPv3Feeds"]);
+                Assert.Equal("YesV3", sources["NuGetOrg"]);
+                Assert.Equal(operationId, sources["ParentId"]);
 
-            var page0 = events[2];
-            Assert.Equal("SearchPage", page0.Name);
-            Assert.Equal("Ready", page0["LoadingStatus"]);
-            Assert.Equal(0, page0["PageIndex"]);
-            Assert.Equal(operationId, page0["ParentId"]);
-            Assert.IsType<int>(page0["ResultCount"]);
-            Assert.IsType<double>(page0["Duration"]);
-            Assert.IsType<double>(page0["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page0["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
+                var page0 = events[2];
+                Assert.Equal("SearchPage", page0.Name);
+                Assert.Equal("Ready", page0["LoadingStatus"]);
+                Assert.Equal(0, page0["PageIndex"]);
+                Assert.Equal(operationId, page0["ParentId"]);
+                Assert.IsType<int>(page0["ResultCount"]);
+                Assert.IsType<double>(page0["Duration"]);
+                Assert.IsType<double>(page0["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page0["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
 
-            var page1 = events[3];
-            Assert.Equal("SearchPage", page1.Name);
-            Assert.Equal("Ready", page1["LoadingStatus"]);
-            Assert.Equal(1, page1["PageIndex"]);
-            Assert.Equal(operationId, page1["ParentId"]);
-            Assert.IsType<int>(page1["ResultCount"]);
-            Assert.IsType<double>(page1["Duration"]);
-            Assert.IsType<double>(page1["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page1["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+                var page1 = events[3];
+                Assert.Equal("SearchPage", page1.Name);
+                Assert.Equal("Ready", page1["LoadingStatus"]);
+                Assert.Equal(1, page1["PageIndex"]);
+                Assert.Equal(operationId, page1["ParentId"]);
+                Assert.IsType<int>(page1["ResultCount"]);
+                Assert.IsType<double>(page1["Duration"]);
+                Assert.IsType<double>(page1["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page1["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
 
-            Assert.Equal(parsedOperationId, loader.State.OperationId);
+                Assert.Equal(parsedOperationId, loader.State.OperationId);
+            }
         }
 
         [Fact]
