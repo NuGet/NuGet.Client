@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
@@ -21,7 +22,7 @@ namespace NuGet.Common
         public static IEnumerable<T> GetMatches<T>(IEnumerable<T> source, Func<T, string> getPath, IEnumerable<string> wildcards)
         {
             var filters = wildcards.Select(WildcardToRegex);
-            return source.Where(item =>
+            return source.AsParallel().Where(item =>
             {
                 string path = getPath(item);
                 return filters.Any(f => f.IsMatch(path));
