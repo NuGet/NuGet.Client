@@ -198,6 +198,20 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
+        public void DotnetListPackage_DeprecatedAndOutdated_Fail()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --deprecated --outdated",
+                    true);
+
+                Assert.False(listResult.Success);
+            }
+        }
 
         // In 2.2.100 of CLI. DotNet list package would show a section for each TFM and for each TFM/RID.
         // This is testing to ensure that it only shows one section for each TFM.
@@ -241,10 +255,10 @@ namespace Dotnet.Integration.Test
 
                 //make sure there is no duplicate in output
                 Assert.True(NoDuplicateSection(listResult.AllOutput), listResult.AllOutput);
-               
+
             }
         }
-        
+
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("1.0.0", "", "2.1.0")]
@@ -345,7 +359,7 @@ namespace Dotnet.Integration.Test
             {
                 return false;
             }
-            
+
             for (var i = 1; i <= sections.Length - 2; i++)
             {
                 for (var j = i + 1; j <= sections.Length - 1; j++)
