@@ -34,7 +34,7 @@
     <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' != 'true'">
+    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' == 'true'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
