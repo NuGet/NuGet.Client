@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
@@ -25,7 +26,7 @@ namespace Dotnet.Integration.Test
 
 
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_Succeed()
+        public async Task DotnetListPackage_Succeed()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -55,7 +56,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_NoRestore_Fail()
+        public async Task DotnetListPackage_NoRestore_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -82,7 +83,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_Transitive()
+        public async Task DotnetListPackage_Transitive()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -128,7 +129,7 @@ namespace Dotnet.Integration.Test
         [InlineData("--framework net451 --framework net46", "net451", null)]
         [InlineData("--framework net451", "net451", "net46")]
         [InlineData("--framework net46", "net46", "net451")]
-        public async void DotnetListPackage_FrameworkSpecific_Success(string args, string shouldInclude, string shouldntInclude)
+        public async Task DotnetListPackage_FrameworkSpecific_Success(string args, string shouldInclude, string shouldntInclude)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -165,7 +166,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_InvalidFramework_Fail()
+        public async Task DotnetListPackage_InvalidFramework_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -201,7 +202,7 @@ namespace Dotnet.Integration.Test
         // In 2.2.100 of CLI. DotNet list package would show a section for each TFM and for each TFM/RID.
         // This is testing to ensure that it only shows one section for each TFM.
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_ShowFrameworksOnly_SDK()
+        public async Task DotnetListPackage_ShowFrameworksOnly_SDK()
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -253,7 +254,7 @@ namespace Dotnet.Integration.Test
         [InlineData("1.0.0", "--highest-minor", "1.9.0")]
         [InlineData("1.0.0", "--highest-patch --include-prerelease", "1.0.10-beta")]
         [InlineData("1.0.0", "--highest-minor --include-prerelease", "1.10.0-beta")]
-        public async void DotnetListPackage_Outdated_Succeed(string currentVersion, string args, string expectedVersion)
+        public async Task DotnetListPackage_Outdated_Succeed(string currentVersion, string args, string expectedVersion)
         {
             using (var pathContext = new SimpleTestPathContext())
             {
@@ -290,7 +291,7 @@ namespace Dotnet.Integration.Test
         // We read the original PackageReference items by calling the CollectPackageReference target.
         // If a project has InitialTargets we need to deal with the response properly in the C# based invocation.
         [PlatformFact(Platform.Windows)]
-        public async void DotnetListPackage_ProjectWithInitialTargets_Succeeds()
+        public async Task DotnetListPackage_ProjectWithInitialTargets_Succeeds()
         {
             using (var pathContext = new SimpleTestPathContext())
             {

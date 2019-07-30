@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft;
 using NuGet.Commands;
 using NuGet.Common;
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_Success()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_Success()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -126,7 +127,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_GenerateLockFile()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_GenerateLockFile()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -267,7 +268,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_ReadLockFile()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_ReadLockFile()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -393,7 +394,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_UpdateLockFile()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_UpdateLockFile()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -545,7 +546,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_RestorePackagesWithLockFile_False()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_RestorePackagesWithLockFile_False()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -635,7 +636,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_LockedMode()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_LockedMode()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -769,7 +770,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackageShaValidationFailed()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackageShaValidationFailed()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -893,7 +894,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_Duality()
+        public async Task TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_Duality()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -949,7 +950,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         projectTargetFrameworkStr);
 
                     var projectServicesA = new TestProjectSystemServices();
-                    
+
                     projectServicesA.SetupProjectDependencies(
                         new ProjectRestoreReference
                         {
@@ -991,7 +992,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_developmentDependency()
+        public async Task TestPacMan_InstallPackageAsync_LegacyPackageRefProjects_developmentDependency()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1085,7 +1086,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void TestPacMan_LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
+        public async Task TestPacMan_LegacyPackageRefProjects_UpdatePackage_KeepExistingMetadata()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1191,7 +1192,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_MissingProjectsInSolution()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_MissingProjectsInSolution()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1336,7 +1337,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_ResolveExactVersion()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1500,7 +1501,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_P2PReference()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_PackagesLockFile_P2PReference()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1666,7 +1667,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async void DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive()
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_Restore_BuildTransitive()
         {
             using (var packageSource = TestDirectory.Create())
             {
