@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Rules
 
         public string MessageFormat => AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch;
 
-        public string CompatMatchFoundWarningMessageFormat => AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch;
+        private string CompatMatchFoundWarningMessageFormat => AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch;
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
@@ -103,6 +103,7 @@ namespace NuGet.Packaging.Rules
                     if (isCompatible(fileTFM, nuspecTFM))
                     {
                         compatNotExactMatches.Add(fileTFM);
+                        break;
                     }
                 }
             }
@@ -174,17 +175,16 @@ namespace NuGet.Packaging.Rules
             return (noExactMatchString.ToString(), compatMatchString.ToString());
         }
 
-        private static IEnumerable<NuGetFramework> ExtractTFMsFromNuspec(Stream packageNuspec)
+        private static IEnumerable<NuGetFramework> ExtractTFMsFromNuspec(Stream packageNuspecStream)
         {
-            var tfmsFromNuspec = new List<NuGetFramework>();
-            var stream = new NuspecReader(packageNuspec);
-            var nuspec = stream.Xml;
+            var packageNuspec = new NuspecReader(packageNuspecStream);
+            var nuspec = packageNuspec.Xml;
             if (nuspec != null)
             {
                 XNamespace name = nuspec.Root.Name.Namespace;
-                return nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}dependencies")).Elements().Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value)).ToList();
+                return nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}dependencies")).Elements().Attributes("targetFramework").Select(f => NuGetFramework.Parse(f.Value));
             }
-            return new List<NuGetFramework>();
+            return Array.Empty<NuGetFramework>();
         }
     }
 }

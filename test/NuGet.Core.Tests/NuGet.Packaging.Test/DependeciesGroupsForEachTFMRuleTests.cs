@@ -22,17 +22,18 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Validate_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
         {
-            var frameworks = new string[]
-            {
-                ".NETFramework2.0",
-                ".NETFramework3.5",
-                ".NETFramework4.0",
-                ".NETFramework4.5",
-                ".NETStandard1.0",
-                ".NETStandard1.3",
-                ".NETStandard2.0"
-            }.Select(f => NuGetFramework.Parse(f));
             //Arrange
+            var frameworks = new NuGetFramework[]
+            {
+                FrameworkConstants.CommonFrameworks.Net2,
+                FrameworkConstants.CommonFrameworks.Net35,
+                FrameworkConstants.CommonFrameworks.Net4,
+                FrameworkConstants.CommonFrameworks.Net45,
+                FrameworkConstants.CommonFrameworks.NetStandard10,
+                FrameworkConstants.CommonFrameworks.NetStandard13,
+                FrameworkConstants.CommonFrameworks.NetStandard20,
+            };
+
             var fileStrings = new string[]
             {
                 "lib/net20/test.dll",
@@ -57,16 +58,16 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Validate_PackageWithDependenciesInRefHasExactMatch_ShouldNotWarn()
         {
-            var frameworks = new string[]
+            var frameworks = new NuGetFramework[]
             {
-                ".NETFramework2.0",
-                ".NETFramework3.5",
-                ".NETFramework4.0",
-                ".NETFramework4.5",
-                ".NETStandard1.0",
-                ".NETStandard1.3",
-                ".NETStandard2.0"
-            }.Select(f => NuGetFramework.Parse(f));
+                FrameworkConstants.CommonFrameworks.Net2,
+                FrameworkConstants.CommonFrameworks.Net35,
+                FrameworkConstants.CommonFrameworks.Net4,
+                FrameworkConstants.CommonFrameworks.Net45,
+                FrameworkConstants.CommonFrameworks.NetStandard10,
+                FrameworkConstants.CommonFrameworks.NetStandard13,
+                FrameworkConstants.CommonFrameworks.NetStandard20,
+            };
 
             //Arrange
             var fileStrings = new string[]
@@ -94,16 +95,16 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldThrowOneWarningCode()
         {
             //Arrange
-            var frameworks = new string[]
+            var frameworks = new NuGetFramework[]
             {
-                ".NETFramework2.0",
-                ".NETFramework3.5",
-                ".NETFramework4.0",
-                ".NETFramework4.5",
-                ".NETStandard1.0",
-                ".NETStandard1.3",
-                ".NETStandard2.0"
-            }.Select(f => NuGetFramework.Parse(f));
+                FrameworkConstants.CommonFrameworks.Net2,
+                FrameworkConstants.CommonFrameworks.Net35,
+                FrameworkConstants.CommonFrameworks.Net4,
+                FrameworkConstants.CommonFrameworks.Net45,
+                FrameworkConstants.CommonFrameworks.NetStandard10,
+                FrameworkConstants.CommonFrameworks.NetStandard13,
+                FrameworkConstants.CommonFrameworks.NetStandard20,
+            };
 
             var fileStrings = new string[]
             {
@@ -125,10 +126,10 @@ namespace NuGet.Packaging.Test
         [Fact]
         public void Validate_PackageWithDependenciesHasCompatMatchNotExactMatch_ShouldThrowTwoWarningCodes()
         {
-            var frameworks = new string[]
+            var frameworks = new NuGetFramework[]
             {
-                ".NETFramework4.5"
-            }.Select(f => NuGetFramework.Parse(f));
+                FrameworkConstants.CommonFrameworks.Net45,
+            };
 
             var fileStrings = new string[]
             {
@@ -173,6 +174,7 @@ namespace NuGet.Packaging.Test
             {
                 ".NETFramework4.7.2"
             }.Select(f => NuGetFramework.Parse(f));
+
             var fileStrings = new string[]
             {
                 "lib/net45/test.dll"
@@ -211,12 +213,12 @@ namespace NuGet.Packaging.Test
         public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldContainCorrectFrameworks()
         {
             //Arrange
-            var frameworks = new string[]
+            var frameworks = new NuGetFramework[]
             {
-                ".NETFramework3.5",
-                ".NETFramework4.0",
-                ".NETFramework4.5",
-            }.Select(f => NuGetFramework.Parse(f));
+                FrameworkConstants.CommonFrameworks.Net35,
+                FrameworkConstants.CommonFrameworks.Net4,
+                FrameworkConstants.CommonFrameworks.Net45,
+            };
 
             var files = new string[]
             {
