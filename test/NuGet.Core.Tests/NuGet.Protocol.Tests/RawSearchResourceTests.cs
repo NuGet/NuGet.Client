@@ -31,7 +31,7 @@ namespace NuGet.Protocol.Tests
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
-            var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) } );
+            var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) });
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -110,8 +110,8 @@ namespace NuGet.Protocol.Tests
             tokenSource.Cancel();
 
             // Act/Assert
-            await Assert.ThrowsAsync<TaskCanceledException> (() =>
-                searchResource.Search("Sentry", searchFilter, 0, 1, NullLogger.Instance, tokenSource.Token));
+            await Assert.ThrowsAsync<TaskCanceledException>(() =>
+               searchResource.Search("Sentry", searchFilter, 0, 1, NullLogger.Instance, tokenSource.Token));
         }
     }
 }

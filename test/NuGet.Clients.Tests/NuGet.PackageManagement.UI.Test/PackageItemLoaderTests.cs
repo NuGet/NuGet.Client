@@ -11,8 +11,10 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
@@ -72,7 +74,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotEmpty(loaded);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/8393")]
+        [Fact]
         public async Task EmitsSearchTelemetryEvents()
         {
             // Arrange
@@ -88,9 +90,30 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
 
-            var source = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source });
+            var serviceAddress = ProtocolUtility.CreateServiceAddress() + "/v3/index.json";
+
+            var responses = new Dictionary<string, string>
+            {
+                {
+                    serviceAddress + "?q=azure%20b&skip=0&take=1&prerelease=false" +
+                "&supportedFramework=.NETFramework,Version=v4.5&semVerLevel=2.0.0",
+                    "work"
+                },
+                { serviceAddress,
+                    string.Empty
+                }
+            };
+
+            // add index json and track all by setting a breakpoint in TestMessageHandler Line:105
+            // look at TryCreate_WhenResourceIsPresent_CreatesVersionedHttpCacheEntry.
+
+            var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
+            var packageSource = new PackageSource(serviceAddress);
+            var injectedHttpSources = new Dictionary<string, HttpSource>();
+            injectedHttpSources.Add(serviceAddress, httpSource);
+
+            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { packageSource }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
             var repositories = sourceRepositoryProvider.GetRepositories();
 
             var context = new PackageLoadContext(repositories, false, uiContext);
@@ -104,7 +127,7 @@ namespace NuGet.PackageManagement.UI.Test
 
             // Assert
             var events = eventsQueue.ToArray();
-            Assert.Equal(4, events.Length);
+            Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
             var search = events[0];
             Assert.Equal("Search", search.Name);
@@ -153,8 +176,8 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
-            var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
@@ -247,6 +270,31 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 return Task.FromResult(results);
+            }
+        }
+
+        private class TestHttpSourceResourceProvider : ResourceProvider
+        {
+            private Dictionary<string, HttpSource> InjectedHttpSources { get; }
+
+            public TestHttpSourceResourceProvider(Dictionary<string, HttpSource> injectedHttpSources)
+                : base(typeof(HttpSourceResource),
+                      nameof(HttpSourceResource),
+                      NuGetResourceProviderPositions.First)
+            {
+                InjectedHttpSources = injectedHttpSources;
+            }
+
+            public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+            {
+                HttpSourceResource curResource = null;
+
+                if (InjectedHttpSources.TryGetValue(source.PackageSource.Source, out HttpSource httpSource))
+                {
+                    curResource = new HttpSourceResource(httpSource);
+                }
+
+                return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
             }
         }
     }
