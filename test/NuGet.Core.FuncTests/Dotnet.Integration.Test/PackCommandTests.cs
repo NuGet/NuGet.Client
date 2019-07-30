@@ -3790,18 +3790,14 @@ namespace ClassLibrary
             }
         }
 
-        [Fact(Skip = "waiting for getting knownFrameworkReference, https://github.com/NuGet/Home/issues/8155")]
-        public void PackCommand_PackProject_PacksFrameworkReferences()
-        {
-        }
-    /*
+
         [PlatformTheory(Platform.Windows)]
         [InlineData("Microsoft.NETCore.App", "true", "netstandard1.4;net461", "", "net461")]
         [InlineData("Microsoft.NETCore.App", "false", "netstandard1.4;net461", "", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "netstandard1.4;net46", "", "net46")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net46;net461", "net461", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net461", "", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms;Microsoft.WindowsDesktop.App|WPF", "true;false", "netstandard1.4;net461", "", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms", "true", "netstandard1.4;net46", "", "net46")]
+        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms", "true", "net46;net461", "net461", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms", "true", "net461", "", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms;Microsoft.WindowsDesktop.App.WPF", "true;false", "netstandard1.4;net461", "", "net461")]
         public void PackCommand_PackProject_PacksFrameworkReferences(string frameworkReferences, string packForFrameworkRefs, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
             // Arrange
@@ -3833,7 +3829,7 @@ namespace ClassLibrary
                     }
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
 
-                    foreach(var frameworkRef in frameworkReftoPack)
+                    foreach (var frameworkRef in frameworkReftoPack)
                     {
                         var attributes = new Dictionary<string, string>();
 
@@ -3890,14 +3886,10 @@ namespace ClassLibrary
                 }
             }
         }
-        */
 
-        [Fact(Skip = "waiting for getting knownFrameworkReference, https://github.com/NuGet/Home/issues/8155")]
-        public void PackCommand_PackProject_PacksFrameworkReferences_FrameworkReferencesAreCaseInsensitive()
-        { }
-        /*
+
         [PlatformTheory(Platform.Windows)]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms;Microsoft.WindowsDesktop.App|windowsforms", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App.WindowsForms;Microsoft.WindowsDesktop.App.windowsforms", "net461")]
         public void PackCommand_PackProject_PacksFrameworkReferences_FrameworkReferencesAreCaseInsensitive(string frameworkReferences, string targetFramework)
         {
             // Arrange
@@ -3910,7 +3902,7 @@ namespace ClassLibrary
 
                 var frameworkReftoPack = new Dictionary<string, bool>();
                 var frameworkRefs = frameworkReferences.Split(";");
-                foreach(var frameworkRef in frameworkRefs)
+                foreach (var frameworkRef in frameworkRefs)
                 {
                     frameworkReftoPack.Add(frameworkRef, true);
                 }
@@ -3920,7 +3912,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    
+
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", targetFramework);
 
                     foreach (var frameworkRef in frameworkReftoPack)
@@ -3966,7 +3958,7 @@ namespace ClassLibrary
                 }
             }
         }
-        */
+
         [PlatformFact(Platform.Windows)]
         public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
         {
