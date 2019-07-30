@@ -11,8 +11,10 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Test.Utility;
@@ -33,8 +35,8 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
-            var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
@@ -72,7 +74,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotEmpty(loaded);
         }
 
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/8393")]
+        [Fact]
         public async Task EmitsSearchTelemetryEvents()
         {
             // Arrange
@@ -88,60 +90,83 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(e => eventsQueue.Enqueue(e));
 
-            var source = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            // Mock all the remote calls our test will try to make.
+            var source = NuGetConstants.V3FeedUrl;
+            var query = "https://api-v2v3search-0.nuget.org/query";
 
-            var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source });
-            var repositories = sourceRepositoryProvider.GetRepositories();
+            var responses = new Dictionary<string, string>
+            {
+                {
+                    source,
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.index.json", typeof(PackageItemLoaderTests))
+                },
+                {
+                    query + "?q=nuget&skip=0&take=26&prerelease=true&semVerLevel=2.0.0",
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.nugetSearchPage1.json", typeof(PackageItemLoaderTests))
+                },
+                {
+                    query + "?q=nuget&skip=25&take=26&prerelease=true&semVerLevel=2.0.0",
+                    ProtocolUtility.GetResource("NuGet.PackageManagement.UI.Test.compiler.resources.nugetSearchPage2.json", typeof(PackageItemLoaderTests))
+                },
+            };
 
-            var context = new PackageLoadContext(repositories, false, uiContext);
+            using (var httpSource = new TestHttpSource(new PackageSource(source), responses))
+            {
+                var injectedHttpSources = new Dictionary<string, HttpSource>();
+                injectedHttpSources.Add(source, httpSource);
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { new PackageSource(source) }, new Lazy<INuGetResourceProvider>[] { new Lazy<INuGetResourceProvider>(() => new TestHttpSourceResourceProvider(injectedHttpSources)) });
+                var repositories = sourceRepositoryProvider.GetRepositories();
 
-            var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
+                var context = new PackageLoadContext(repositories, false, uiContext);
 
-            // Act
-            var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
-            await loader.LoadNextAsync(null, CancellationToken.None);
-            await loader.LoadNextAsync(null, CancellationToken.None);
+                var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: telemetryService.Object);
 
-            // Assert
-            var events = eventsQueue.ToArray();
-            Assert.Equal(4, events.Length);
+                // Act
+                var loader = new PackageItemLoader(context, packageFeed, searchText: "nuget", includePrerelease: true);
+                await loader.LoadNextAsync(null, CancellationToken.None);
+                await loader.LoadNextAsync(null, CancellationToken.None);
 
-            var search = events[0];
-            Assert.Equal("Search", search.Name);
-            Assert.Equal(true, search["IncludePrerelease"]);
-            Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
-            var operationId = Assert.IsType<string>(search["OperationId"]);
-            var parsedOperationId = Guid.ParseExact(operationId, "D");
+                // Assert
+                var events = eventsQueue.ToArray();
+                Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
-            var sources = events[1];
-            Assert.Equal("SearchPackageSourceSummary", sources.Name);
-            Assert.Equal(1, sources["NumHTTPv3Feeds"]);
-            Assert.Equal("YesV3", sources["NuGetOrg"]);
-            Assert.Equal(operationId, sources["ParentId"]);
+                var search = events[0];
+                Assert.Equal("Search", search.Name);
+                Assert.Equal(true, search["IncludePrerelease"]);
+                Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
+                var operationId = Assert.IsType<string>(search["OperationId"]);
+                var parsedOperationId = Guid.ParseExact(operationId, "D");
 
-            var page0 = events[2];
-            Assert.Equal("SearchPage", page0.Name);
-            Assert.Equal("Ready", page0["LoadingStatus"]);
-            Assert.Equal(0, page0["PageIndex"]);
-            Assert.Equal(operationId, page0["ParentId"]);
-            Assert.IsType<int>(page0["ResultCount"]);
-            Assert.IsType<double>(page0["Duration"]);
-            Assert.IsType<double>(page0["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page0["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
+                var sources = events[1];
+                Assert.Equal("SearchPackageSourceSummary", sources.Name);
+                Assert.Equal(1, sources["NumHTTPv3Feeds"]);
+                Assert.Equal("YesV3", sources["NuGetOrg"]);
+                Assert.Equal(operationId, sources["ParentId"]);
 
-            var page1 = events[3];
-            Assert.Equal("SearchPage", page1.Name);
-            Assert.Equal("Ready", page1["LoadingStatus"]);
-            Assert.Equal(1, page1["PageIndex"]);
-            Assert.Equal(operationId, page1["ParentId"]);
-            Assert.IsType<int>(page1["ResultCount"]);
-            Assert.IsType<double>(page1["Duration"]);
-            Assert.IsType<double>(page1["ResultsAggregationDuration"]);
-            Assert.IsType<string>(page1["IndividualSourceDurations"]);
-            Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+                var page0 = events[2];
+                Assert.Equal("SearchPage", page0.Name);
+                Assert.Equal("Ready", page0["LoadingStatus"]);
+                Assert.Equal(0, page0["PageIndex"]);
+                Assert.Equal(operationId, page0["ParentId"]);
+                Assert.IsType<int>(page0["ResultCount"]);
+                Assert.IsType<double>(page0["Duration"]);
+                Assert.IsType<double>(page0["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page0["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
 
-            Assert.Equal(parsedOperationId, loader.State.OperationId);
+                var page1 = events[3];
+                Assert.Equal("SearchPage", page1.Name);
+                Assert.Equal("Ready", page1["LoadingStatus"]);
+                Assert.Equal(1, page1["PageIndex"]);
+                Assert.Equal(operationId, page1["ParentId"]);
+                Assert.IsType<int>(page1["ResultCount"]);
+                Assert.IsType<double>(page1["Duration"]);
+                Assert.IsType<double>(page1["ResultsAggregationDuration"]);
+                Assert.IsType<string>(page1["IndividualSourceDurations"]);
+                Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page1["IndividualSourceDurations"])).Values<double>().Count());
+
+                Assert.Equal(parsedOperationId, loader.State.OperationId);
+            }
         }
 
         [Fact]
@@ -153,8 +178,8 @@ namespace NuGet.PackageManagement.UI.Test
                 .Setup(x => x.SolutionManager)
                 .Returns(solutionManager);
 
-            var source1 = new Configuration.PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
-            var source2 = new Configuration.PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
+            var source1 = new PackageSource("https://dotnet.myget.org/F/nuget-volatile/api/v3/index.json", "NuGetVolatile");
+            var source2 = new PackageSource("https://api.nuget.org/v3/index.json", "NuGet.org");
 
             var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { source1, source2 });
             var repositories = sourceRepositoryProvider.GetRepositories();
@@ -247,6 +272,31 @@ namespace NuGet.PackageManagement.UI.Test
                 };
 
                 return Task.FromResult(results);
+            }
+        }
+
+        private class TestHttpSourceResourceProvider : ResourceProvider
+        {
+            private Dictionary<string, HttpSource> InjectedHttpSources { get; }
+
+            public TestHttpSourceResourceProvider(Dictionary<string, HttpSource> injectedHttpSources)
+                : base(typeof(HttpSourceResource),
+                      nameof(HttpSourceResource),
+                      NuGetResourceProviderPositions.First)
+            {
+                InjectedHttpSources = injectedHttpSources;
+            }
+
+            public override Task<Tuple<bool, INuGetResource>> TryCreate(SourceRepository source, CancellationToken token)
+            {
+                HttpSourceResource curResource = null;
+
+                if (InjectedHttpSources.TryGetValue(source.PackageSource.Source, out HttpSource httpSource))
+                {
+                    curResource = new HttpSourceResource(httpSource);
+                }
+
+                return Task.FromResult(new Tuple<bool, INuGetResource>(curResource != null, curResource));
             }
         }
     }

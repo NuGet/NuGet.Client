@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -44,7 +45,6 @@ namespace Test.Utility
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources)
         {
             var thisUtility = new TestSourceRepositoryUtility();
-            //var container = thisUtility.Initialize();
             thisUtility.Initialize();
             var packageSourceProvider = new TestPackageSourceProvider(packageSources);
 
@@ -52,10 +52,20 @@ namespace Test.Utility
             return sourceRepositoryProvider;
         }
 
+        public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources, IEnumerable<Lazy<INuGetResourceProvider>> mockNuGetResourceProviders)
+        {
+            var thisUtility = new TestSourceRepositoryUtility();
+            thisUtility.Initialize();
+            var packageSourceProvider = new TestPackageSourceProvider(packageSources);
+
+            var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, mockNuGetResourceProviders.Concat(thisUtility.ResourceProviders));
+            return sourceRepositoryProvider;
+        }
+
+
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IPackageSourceProvider packageSourceProvider)
         {
             var thisUtility = new TestSourceRepositoryUtility();
-            //var container = thisUtility.Initialize();
             thisUtility.Initialize();
 
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
