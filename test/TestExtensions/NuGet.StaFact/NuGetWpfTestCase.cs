@@ -28,9 +28,12 @@ namespace NuGet.StaFact
 
         public ISourceInformation SourceInformation
         {
-            get { return _testCase.SourceInformation; }
-            set { _testCase.SourceInformation = value; }
+            get => _testCase.SourceInformation;
+            set => _testCase.SourceInformation = value;
         }
+
+        public Exception InitializationException => _testCase.InitializationException;
+        public int Timeout => _testCase.Timeout;
 
         public NuGetWpfTestCase(IXunitTestCase testCase)
         {
