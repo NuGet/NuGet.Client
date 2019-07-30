@@ -45,7 +45,6 @@ namespace Test.Utility
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources)
         {
             var thisUtility = new TestSourceRepositoryUtility();
-            //var container = thisUtility.Initialize();
             thisUtility.Initialize();
             var packageSourceProvider = new TestPackageSourceProvider(packageSources);
 
@@ -56,7 +55,6 @@ namespace Test.Utility
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IEnumerable<PackageSource> packageSources, IEnumerable<Lazy<INuGetResourceProvider>> mockNuGetResourceProviders)
         {
             var thisUtility = new TestSourceRepositoryUtility();
-            //var container = thisUtility.Initialize();
             thisUtility.Initialize();
             var packageSourceProvider = new TestPackageSourceProvider(packageSources);
 
@@ -68,7 +66,6 @@ namespace Test.Utility
         public static SourceRepositoryProvider CreateSourceRepositoryProvider(IPackageSourceProvider packageSourceProvider)
         {
             var thisUtility = new TestSourceRepositoryUtility();
-            //var container = thisUtility.Initialize();
             thisUtility.Initialize();
 
             var sourceRepositoryProvider = new SourceRepositoryProvider(packageSourceProvider, thisUtility.ResourceProviders);
