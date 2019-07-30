@@ -223,7 +223,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The global package folder is missing one or more files. Delete package folder and run the restore again: {0}.
+        ///   Looks up a localized string similar to The package doesn&apos;t contain {0} file: {1}.
         /// </summary>
         internal static string Error_MissingRequiredFiles {
             get {

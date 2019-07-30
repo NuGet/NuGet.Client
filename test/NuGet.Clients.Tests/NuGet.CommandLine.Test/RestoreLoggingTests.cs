@@ -141,7 +141,7 @@ namespace NuGet.CommandLine.Test
             }
         }
         [Fact]
-        public async Task RestoreLogging_VerifyNU5128ErrorMessageAsync()
+        public async Task RestoreLogging_VerifyNU5036ErrorMessageAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -149,7 +149,52 @@ namespace NuGet.CommandLine.Test
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                var netcoreapp1 = NuGetFramework.Parse("netcoreapp1.0");
+                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0")
+                {
+                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
+                        <package>
+                        <metadata>
+                            <id>x</id>
+                            <version>1.0.0</version>
+                            <title />
+                        </metadata>
+                        </package>")
+                };            
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
+                projectA.AddPackageToAllFrameworks(packageX);                
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                
+                File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
+
+                // Act                
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();                
+                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_VerifyNU5036ErrorMessageWithDependencyAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                     "a",
@@ -174,24 +219,20 @@ namespace NuGet.CommandLine.Test
                 };
 
                 var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
-                var packageZ2 = new SimpleTestPackageContext("z", "2.0.0");
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageZ1, packageZ2);
-
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageZ1);
                 projectA.AddPackageToAllFrameworks(packageX);
-                projectA.AddPackageToAllFrameworks(packageZ2);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                // Act
-                File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id,packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
+                File.Delete(Path.Combine(pathContext.PackageSource, packageZ1.Id, packageZ1.Version, packageZ1.Id + NuGetConstants.ManifestExtension));
+
+                // Act                
                 var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("The global package folder is missing one or more files. Delete package folder and run the restore again: " +
-                    Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file: " + Path.Combine(pathContext.PackageSource, packageZ1.Id, packageZ1.Version));
             }
         }
 

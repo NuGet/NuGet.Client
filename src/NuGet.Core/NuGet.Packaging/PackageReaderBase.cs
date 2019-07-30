@@ -8,9 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -527,13 +526,14 @@ namespace NuGet.Packaging
 
             if (nuspecPaths.Count == 0)
             {
-                // Find the package directory name by inspecting first file in the folder
-                FileInfo file = new FileInfo(files.ElementAtOrDefault(0));
+                // Find the package directory name by inspecting first file in the folder if it exists
+                string directory = files.Count() > 0 ? new FileInfo(files.First()).DirectoryName : string.Empty;
 
-                throw new PackagingException(NuGetLogCode.NU5128, string.Format(
+                throw new PackagingException(NuGetLogCode.NU5036, string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_MissingRequiredFiles,
-                            file.DirectoryName));
+                            NuGetConstants.ManifestExtension,
+                            directory));                
             }
             else if (nuspecPaths.Count > 1)
             {
@@ -559,7 +559,7 @@ namespace NuGet.Packaging
                     Strings.ErrorUnsafePackageEntry,
                     packageIdentity));
             }
-        }        
+        }
 
         protected string NormalizeDirectoryPath(string path)
         {

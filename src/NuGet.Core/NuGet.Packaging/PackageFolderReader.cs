@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -69,9 +70,10 @@ namespace NuGet.Packaging
 
             if (nuspecFiles.Length == 0)
             {
-                throw new PackagingException(NuGetLogCode.NU5128, string.Format(
+                throw new PackagingException(NuGetLogCode.NU5036, string.Format(
                                             CultureInfo.CurrentCulture,
                                             Strings.Error_MissingRequiredFiles,
+                                            NuGetConstants.ManifestExtension,
                                             _root.FullName));              
             }
             else if (nuspecFiles.Length > 1)
