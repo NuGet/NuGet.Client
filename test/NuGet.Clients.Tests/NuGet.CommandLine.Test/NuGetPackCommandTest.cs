@@ -5578,190 +5578,90 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
-
         [Fact]
         public void PackCommand_PackIcon_HappyPath()
         {
-            var nugetexe = Util.GetNuGetExePath();
-
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
-
-                // Arrange
-                Util.CreateFile(workingDirectory, "icon.jpg", "abcabc");
-
-                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
-<package >
-  <metadata>
-    <id>icon.test</id>
-    <version>0.0.1</version>
-    <title>packageA</title>
-    <authors>test</authors>
-    <owners>test</owners>
-    <description>Description</description>
-    <icon>icon.jpg</icon>
-  </metadata>
-  <files>
-    <file src=""icon.jpg"" />
-  </files>
-</package>");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec",
-                    waitForExit: true);
-
-                // Assert
-                Util.VerifyResultSuccess(r);
-                Assert.True(File.Exists(nupkgPath));
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry("icon.jpg") != null);
-                }
-            }
+            var iconTestSourceDir = new IconTestSourceDirectory("icon.jpg", "icon.jpg", 6);
+            TestPackIcon(iconTestSourceDir);
         }
 
         [Fact]
         public void PackCommand_PackIcon_ImplicitFile()
         {
-            var nugetexe = Util.GetNuGetExePath();
+            var fileEntries = new List<string>();
+            var files = new List<Tuple<string, int>>();
+            var _ = Path.DirectorySeparatorChar;
 
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
-                var dirSep = Path.DirectorySeparatorChar;
+            files.Add(Tuple.Create($"content{_}icon.jpg", 6));
+            fileEntries.Add(@"content\*");
 
-                // Arrange
-                Util.CreateFile(workingDirectory + string.Format("{0}content", dirSep), "icon.jpg", "abcabc");
+            var iconTestSourceDir = new IconTestSourceDirectory("icon.jpg", files, fileEntries);
 
-                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
-<package >
-  <metadata>
-    <id>icon.test</id>
-    <version>0.0.1</version>
-    <title>packageA</title>
-    <authors>test</authors>
-    <owners>test</owners>
-    <description>Description</description>
-    <icon>icon.jpg</icon>
-  </metadata>
-  <files>
-    <file src=""content\*"" />
-  </files>
-</package>");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec",
-                    waitForExit: true);
-
-                // Assert
-                Util.VerifyResultSuccess(r);
-                Assert.True(File.Exists(nupkgPath));
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry("icon.jpg") != null);
-                }
-            }
+            TestPackIcon(iconTestSourceDir);
         }
 
         [Fact]
         public void PackCommand_PackIcon_Folder()
         {
-            var nugetexe = Util.GetNuGetExePath();
+            var fileEntries = new List<Tuple<string, string>>();
+            var files = new List<Tuple<string, int>>();
+            var _ = Path.DirectorySeparatorChar;
 
-            using (var workingDirectory = TestDirectory.Create())
-            {
-                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
-                var dirSep = Path.DirectorySeparatorChar;
+            files.Add(Tuple.Create($"content{_}icon.jpg", 6));
+            fileEntries.Add(Tuple.Create(@"content\*", "utils"));
 
-                // Arrange
-                Util.CreateFile(workingDirectory + string.Format("{0}content", dirSep), "icon.jpg", "abcabc");
+            var iconTestSourceDir = new IconTestSourceDirectory(@"utils/icon.jpg", files, fileEntries);
 
-                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
-<package >
-  <metadata>
-    <id>icon.test</id>
-    <version>0.0.1</version>
-    <title>packageA</title>
-    <authors>test</authors>
-    <owners>test</owners>
-    <description>Description</description>
-    <icon>utils\icon.jpg</icon>
-  </metadata>
-  <files>
-    <file src=""content\*"" target=""utils"" />
-  </files>
-</package>");
-
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec",
-                    waitForExit: true);
-
-                // Assert
-                Util.VerifyResultSuccess(r);
-                Assert.True(File.Exists(nupkgPath));
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry("utils/icon.jpg") != null);
-                }
-            }
+            TestPackIcon(iconTestSourceDir, "utils/icon.jpg");
         }
 
         [Fact]
         public void PackCommand_PackIcon_FolderNested()
         {
-            var nugetexe = Util.GetNuGetExePath();
+            var fileEntries = new List<Tuple<string, string>>();
+            var files = new List<Tuple<string, int>>();
+            var _ = Path.DirectorySeparatorChar;
 
-            using (var workingDirectory = TestDirectory.Create())
+            files.Add(Tuple.Create($"content{_}nested{_}icon.jpg", 6));
+            files.Add(Tuple.Create($"content{_}dummy.txt", 6));
+            files.Add(Tuple.Create($"content{_}data.txt", 6));
+            fileEntries.Add(Tuple.Create(@"content\**", "utils"));
+
+            var iconTestSourceDir = new IconTestSourceDirectory("utils/nested/icon.jpg", files, fileEntries);
+
+            TestPackIcon(iconTestSourceDir, "utils/nested/icon.jpg");
+        }
+
+        /// <summary>
+        /// Tests successful nuget.exe icon pack functionality with nuspec
+        /// </summary>
+        /// <remarks>
+        /// Test that:
+        /// <list type="bullet">
+        /// <item>
+        ///     <description>The package is successfully created.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The icon file exists in the nupkg in the specified icon entry.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The icon entry equals the &lt;icon /&gt; entry in the output nuspec</description>
+        /// </item>
+        /// </list>
+        /// </remarks>
+        /// <param name="iconTestSourceDir">Icon Source Directory for creating the package</param>
+        /// <param name="iconEntry">Zip entry to validate</param>
+        private void TestPackIcon(IconTestSourceDirectory iconTestSourceDir, string iconEntry = "icon.jpg")
+        {
+            using (iconTestSourceDir)
             {
-                var nupkgPath = Path.Combine(workingDirectory, "icon.test.0.0.1.nupkg");
-                var dirSep = Path.DirectorySeparatorChar;
-
-                // Arrange
-                Util.CreateFile(workingDirectory + string.Format("{0}content{0}nested", dirSep), "icon.jpg", "abcabc");
-
-                Util.CreateFile(workingDirectory, "packageA.nuspec", $@"<?xml version=""1.0""?>
-<package >
-  <metadata>
-    <id>icon.test</id>
-    <version>0.0.1</version>
-    <title>packageA</title>
-    <authors>test</authors>
-    <owners>test</owners>
-    <description>Description</description>
-    <icon>utils\icon.jpg</icon>
-  </metadata>
-  <files>
-    <file src=""content\*"" target=""utils"" />
-  </files>
-</package>");
+                var nupkgPath = Path.Combine(iconTestSourceDir.BaseDir, "iconPackage.5.2.0.nupkg");
 
                 // Act
                 var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec",
+                    Util.GetNuGetExePath(),
+                    iconTestSourceDir.BaseDir,
+                    $"pack {iconTestSourceDir.NuspecPath}",
                     waitForExit: true);
 
                 // Assert
@@ -5773,7 +5673,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var nuspecReader = nupkgReader.NuspecReader;
 
                     Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry("utils/icon.jpg") != null);
+                    Assert.True(nupkgReader.GetEntry(iconEntry) != null);
+                    Assert.True(iconEntry.Equals(nuspecReader.GetIcon()));
                 }
             }
         }

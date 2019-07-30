@@ -16,8 +16,6 @@ using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
 using NuGet.Test.Utility;
-using System.Text;
-using NuGet.Common;
 
 namespace NuGet.Packaging.Test
 {
@@ -2681,114 +2679,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
 
             return resultStream;
-        }
-
-        /// <summary>
-        /// Package directory for testing embedded icon functionality
-        /// </summary>
-        protected sealed class IconTestSourceDirectory : IDisposable
-        {
-            private const string NuspecFilename = "iconPackage.nuspec";
-            public string IconEntry { get; set; }
-
-            /// <summary>
-            /// Base directory for test
-            /// </summary>
-            private TestDirectory TestDirectory { get; set; }
-
-            public string BaseDir => TestDirectory.Path;
-
-            public string NuspecPath => Path.Combine(BaseDir, NuspecFilename);
-
-            /// <summary>
-            /// If iconFileSize is less than zero, it will not write the file
-            /// </summary>
-            /// <param name="iconFileSize"></param>
-            public IconTestSourceDirectory(string iconName, string fileName, int iconFileSize)
-            {
-                IconEntry = iconName;
-
-                var entriesList = new List<string>();
-
-                var fileList = new List<Tuple<string, int>>();
-
-                if (!string.IsNullOrEmpty(fileName))
-                {
-                    entriesList.Add(fileName);
-                }
-
-                if (iconFileSize > 0)
-                {
-                    fileList.Add(Tuple.Create(fileName, iconFileSize));
-                }
-
-                TestDirectory = TestDirectory.Create();
-
-                CreateFiles(fileList);
-                CreateNuspec(entriesList);
-            }
-
-            public IconTestSourceDirectory(string iconName, IEnumerable<Tuple<string, int>> files, IEnumerable<string> fileEntries)
-            {
-                IconEntry = iconName;
-
-                TestDirectory = TestDirectory.Create();
-
-                CreateFiles(files);
-                CreateNuspec(fileEntries);
-            }
-
-            private void CreateFiles(IEnumerable<Tuple<string, int>> files)
-            {
-                foreach (var f in files)
-                {
-                    var filepath = Path.Combine(BaseDir, f.Item1);
-                    var dir = Path.GetDirectoryName(filepath);
-
-                    Directory.CreateDirectory(dir);
-                    using (var fileStream = File.OpenWrite(Path.Combine(BaseDir, f.Item1)))
-                    {
-                        fileStream.SetLength(f.Item2);
-                    }
-                    //File.WriteAllBytes(Path.Combine(BaseDir, f.Item1), new byte[f.Item2]);
-                }
-            }
-
-            private void CreateNuspec(IEnumerable<string> fileEntries)
-            {
-                StringBuilder sb = new StringBuilder();
-
-                sb.Append(@"<?xml version=""1.0"" encoding=""utf-8""?>
-                            <package>
-                              <metadata>
-                                <id>iconPackage</id>
-                                <version>5.2.0</version>
-                                <authors>Author1, author2</authors>
-                                <description>Sample icon description</description>");
-
-                if (!string.IsNullOrEmpty(IconEntry))
-                {
-                    sb.Append("<icon>");
-                    sb.Append(IconEntry);
-                    sb.Append("</icon>\n");
-                }
-                                
-                sb.Append(@"</metadata>
-                          <files>");
-                foreach (var fe in fileEntries)
-                {
-                    sb.Append($"<file src=\"{fe}\" />\n");
-                }                        
-                sb.Append(@"</files>
-                            </package>");
-
-                File.WriteAllText(NuspecPath, sb.ToString());
-            }
-
-            public void Dispose()
-            {
-                TestDirectory.Dispose();
-            }
         }
 
         /*
