@@ -17,7 +17,8 @@ using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
 {
-    internal class DependeciesGroupsForEachTFMRule : IPackageRule
+    internal class DependenciesGroupsForEachTFMRule
+        : IPackageRule
     {
         private static readonly NuGetFramework Net00 = NuGetFramework.Parse("net00");
 
