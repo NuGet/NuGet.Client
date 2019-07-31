@@ -20,16 +20,16 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
-                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                var nugetConfigFilePath = Path.Combine(directory, "nuget.Config");
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var disabledReplacement = string.Empty;
                 var activeReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 File.WriteAllText(nugetConfigFilePath, CreateNuGetConfigContent(enabledReplacement, disabledReplacement, activeReplacement));
 
-                var settings = new Settings(nugetConfigFileFolder, "nuget.Config");
+                var settings = new Settings(directory, "nuget.Config");
 
                 var before = new PackageSourceProvider(settings);
                 Assert.Equal(NuGetConstants.FeedName, before.ActivePackageSourceName);
@@ -44,15 +44,15 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
-                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                var nugetConfigFilePath = Path.Combine(directory, "nuget.Config");
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var text = CreateNuGetConfigContent(enabledReplacement);
                 File.WriteAllText(nugetConfigFilePath, text);
 
-                var settings = new Settings(nugetConfigFileFolder, "nuget.config");
+                var settings = new Settings(directory, "nuget.config");
                 var before = new PackageSourceProvider(settings);
                 Assert.Null(before.ActivePackageSourceName);
 
@@ -66,9 +66,9 @@ namespace NuGet.Configuration.Test
         {
             // Act
             //Create nuget.config that has active package source defined
-            using (var nugetConfigFileFolder = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
-                var nugetConfigFilePath = Path.Combine(nugetConfigFileFolder, "nuget.Config");
+                var nugetConfigFilePath = Path.Combine(directory, "nuget.Config");
 
                 var enabledReplacement = @"<add key='" + NuGetConstants.FeedName + "' value='" + NuGetConstants.V2FeedUrl + "' />";
                 var fileContents = CreateNuGetConfigContent(enabledReplacement);
@@ -76,7 +76,7 @@ namespace NuGet.Configuration.Test
                 fileContents = fileContents.Replace("</activePackageSource>", string.Empty);
                 File.WriteAllText(nugetConfigFilePath, fileContents);
 
-                var settings = new Settings(nugetConfigFileFolder, "nuget.Config");
+                var settings = new Settings(directory, "nuget.Config");
                 var before = new PackageSourceProvider(settings);
                 Assert.Null(before.ActivePackageSourceName);
 
@@ -93,28 +93,28 @@ namespace NuGet.Configuration.Test
             var configContent = @"<?xml version='1.0' encoding='utf-8'?>
 <configuration>
   <apikeys>
-    <add key='https://www.nuget.org' value='removed' />
-    <add key='https://www.myget.org/F/somecompanyfeed-unstable/' value='removed' />
-    <add key='https://www.myget.org/F/somecompanyfeed/' value='removed' />
-    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/package' value='removed' />
-    <add key='https://www.myget.org/F/somecompanyfeed/api/v2/package' value='removed' />
-    <add key='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' value='removed' />
-    <add key='https://nuget.smbsrc.net/' value='removed' />
+    <add key='https://a.test' value='removed' />
+    <add key='https://b.test/somecompanyfeed-unstable/' value='removed' />
+    <add key='https://b.test/somecompanyfeed/' value='removed' />
+    <add key='https://b.test/somecompanyfeed-unstable/api/v2/package' value='removed' />
+    <add key='https://b.test/somecompanyfeed/api/v2/package' value='removed' />
+    <add key='https://b.test/somecompanyfeed-unstable/api/v2/' value='removed' />
+    <add key='https://c.test/' value='removed' />
   </apikeys>
   <packageRestore>
     <add key='enabled' value='True' />
     <add key='automatic' value='True' />
   </packageRestore>
   <activePackageSource>
-    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
+    <add key='d' value='https://d.test/' />
   </activePackageSource>
   <packageSources>
-    <add key='CodeCrackerUnstable' value='https://www.myget.org/F/codecrackerbuild/api/v2' />
-    <add key='CompanyFeedUnstable' value='https://www.myget.org/F/somecompanyfeed-unstable/api/v2/' />
-    <add key='NuGet.org' value='https://nuget.org/api/v2/' />
-    <add key='AspNetVNextStable' value='https://www.myget.org/F/aspnetmaster/api/v2' />
-    <add key='AspNetVNextUnstable' value='https://www.myget.org/F/aspnetvnext/api/v2' />
-    <add key='CompanyFeed' value='https://www.myget.org/F/somecompanyfeed/api/v2/' />
+    <add key='CodeCrackerUnstable' value='https://b.test/codecrackerbuild/api/v2' />
+    <add key='CompanyFeedUnstable' value='https://b.test/somecompanyfeed-unstable/api/v2/' />
+    <add key='d' value='https://d.test/' />
+    <add key='AspNetVNextStable' value='https://b.test/aspnetmaster/api/v2' />
+    <add key='AspNetVNextUnstable' value='https://b.test/aspnetvnext/api/v2' />
+    <add key='CompanyFeed' value='https://b.test/somecompanyfeed/api/v2/' />
   </packageSources>
   <packageSourceCredentials>
     <CodeCrackerUnstable>
@@ -144,10 +144,10 @@ namespace NuGet.Configuration.Test
   </packageSourceCredentials>
 </configuration>";
 
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var directory = TestDirectory.Create())
             {
-                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
-                var settings = new Settings(mockBaseDirectory);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, directory, configContent);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -196,26 +196,26 @@ namespace NuGet.Configuration.Test
 <configuration>
 </configuration>";
 
-            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var directory = TestDirectory.Create())
             {
-                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, mockBaseDirectory, configContent);
-                var settings = new Settings(mockBaseDirectory);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigFilePath, directory, configContent);
+                var settings = new Settings(directory);
                 var provider = CreatePackageSourceProvider(settings);
 
                 // Act
                 provider.SavePackageSources(
                     new PackageSource[]
                         {
-                        new PackageSource("http://a", "a")
+                        new PackageSource("http://a.test", "a")
                             {
                                 IsEnabled = true
                             },
-                        new PackageSource("http://b", "b")
+                        new PackageSource("http://b.test", "b")
                             {
                                 IsEnabled = false
                             },
-                        new PackageSource("http://c", "c", isEnabled: true, isOfficial: false, isPersistable: false),
-                        new PackageSource("http://d", "d", isEnabled: false, isOfficial: false, isPersistable: false),
+                        new PackageSource("http://c.test", "c", isEnabled: true, isOfficial: false, isPersistable: false),
+                        new PackageSource("http://d.test", "d", isEnabled: false, isOfficial: false, isPersistable: false),
                         });
 
                 // Assert:
@@ -224,12 +224,12 @@ namespace NuGet.Configuration.Test
                 // - source c is not spersisted at all since its IsPersistable is false and it's enabled.
                 // - source d is persisted in <disabledPackageSources> only since its IsPersistable is false and it's disabled.
 
-                var configFileContent = File.ReadAllText(Path.Combine(mockBaseDirectory, nugetConfigFilePath));
+                var configFileContent = File.ReadAllText(Path.Combine(directory, nugetConfigFilePath));
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""a"" value=""http://a"" />
-    <add key=""b"" value=""http://b"" />
+    <add key=""a"" value=""http://a.test"" />
+    <add key=""b"" value=""http://b.test"" />
   </packageSources>
   <disabledPackageSources>
     <add key=""b"" value=""true"" />
@@ -244,21 +244,21 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesWithRelativePath()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""Packages"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
@@ -276,36 +276,36 @@ namespace NuGet.Configuration.Test
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""Packages"" />
     </packageSources>
 </configuration>
 ".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(directory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSourcesWithRelativePathAndAddNewSource()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""Packages"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                var settingsFile = new FileInfo(Path.Combine(directory.Path, "NuGet.config"));
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                File.WriteAllText(settingsFile.FullName, configContents);
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    settingsFile.Directory,
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -313,45 +313,45 @@ namespace NuGet.Configuration.Test
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
                 // Act
-                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceList.Add(new PackageSource("https://c.test", "c"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
                 // Assert
                 Assert.Equal(
-                       @"<?xml version=""1.0"" encoding=""utf-8""?>
+                       $@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""Packages"" />
-        <add key=""test3"" value=""https://test3.net"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""Packages"" />
+        <add key=""c"" value=""https://c.test"" />
     </packageSources>
 </configuration>
 ".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(settingsFile.FullName).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSourcesWithOneClear()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
          <clear />
-        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
-        <add key=""test2"" value=""https://test2.net"" />
+        <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
+        <add key=""c"" value=""https://c.test"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
@@ -362,7 +362,7 @@ namespace NuGet.Configuration.Test
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
                 // act
-                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceList.Add(new PackageSource("https://d.test", "d"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
                 // Assert
@@ -370,41 +370,41 @@ namespace NuGet.Configuration.Test
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
          <clear />
-        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
-        <add key=""test2"" value=""https://test2.net"" />
-        <add key=""test3"" value=""https://test3.net"" />
+        <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
+        <add key=""c"" value=""https://c.test"" />
+        <add key=""d"" value=""https://d.test"" />
     </packageSources>
 </configuration>
 ".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(directory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSourcesWithMoreClear()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
         <clear />
-        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
+        <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
         <clear />
-        <add key=""test2"" value=""https://test2.net"" />
+        <add key=""c"" value=""https://c.test"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
@@ -415,7 +415,7 @@ namespace NuGet.Configuration.Test
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
                 // act
-                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceList.Add(new PackageSource("https://d.test", "d"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
                 // Assert
@@ -423,24 +423,24 @@ namespace NuGet.Configuration.Test
                        @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
         <clear />
-        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
+        <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
         <clear />
-        <add key=""test2"" value=""https://test2.net"" />
-        <add key=""test3"" value=""https://test3.net"" />
+        <add key=""c"" value=""https://c.test"" />
+        <add key=""d"" value=""https://d.test"" />
     </packageSources>
 </configuration>
 ".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(directory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSourcesWithOnlyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -454,9 +454,9 @@ namespace NuGet.Configuration.Test
     </disabledPackageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
@@ -467,7 +467,7 @@ namespace NuGet.Configuration.Test
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
                 // act
-                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceList.Add(new PackageSource("https://a.test", "a"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
                 // Assert
@@ -476,21 +476,21 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <clear />
-        <add key=""test3"" value=""https://test3.net"" />
+        <add key=""a"" value=""https://a.test"" />
     </packageSources>
     <disabledPackageSources>
         <clear />
     </disabledPackageSources>
 </configuration>
 ".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(directory.Path, "NuGet.config")).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSourcesWithHierarchyClear()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // assert
                 var nugetConfigPath = "NuGet.Config";
@@ -499,20 +499,20 @@ namespace NuGet.Configuration.Test
   <packageSources>
     <!-- i.e. ignore values from prior conf files -->
     <clear />
-    <add key=""key2"" value=""https://test.org/2"" />
+    <add key=""a"" value=""https://a.test"" />
   </packageSources>
 </configuration>";
-                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1", "dir2"), config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(directory, "dir1", "dir2"), config);
                 config = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""key1"" value=""https://test.org/1"" />
+    <add key=""b"" value=""https://b.test"" />
     <clear />
   </packageSources>
 </configuration>";
-                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(mockBaseDirectory, "dir1"), config);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, Path.Combine(directory, "dir1"), config);
 
-                var rootPath = Path.Combine(Path.Combine(mockBaseDirectory, "dir1", "dir2"), Path.GetRandomFileName());
+                var rootPath = Path.Combine(Path.Combine(directory, "dir1", "dir2"), Path.GetRandomFileName());
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
                     machineWideSettings: null,
@@ -523,7 +523,7 @@ namespace NuGet.Configuration.Test
                 var packageSourceList = packageSourceProvider.LoadPackageSources().ToList();
 
                 // act
-                packageSourceList.Add(new PackageSource("https://test3.net", "test3"));
+                packageSourceList.Add(new PackageSource("https://c.test", "c"));
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
                 // Assert
@@ -533,36 +533,36 @@ namespace NuGet.Configuration.Test
   <packageSources>
     <!-- i.e. ignore values from prior conf files -->
     <clear />
-    <add key=""key2"" value=""https://test.org/2"" />
-    <add key=""test3"" value=""https://test3.net"" />
+    <add key=""a"" value=""https://a.test"" />
+    <add key=""c"" value=""https://c.test"" />
   </packageSources>
 </configuration>".Replace("\r\n", "\n"),
-                   File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "dir1", "dir2", "NuGet.Config")).Replace("\r\n", "\n"));
+                   File.ReadAllText(Path.Combine(directory.Path, "dir1", "dir2", "NuGet.Config")).Replace("\r\n", "\n"));
 
                 Assert.Equal(
                      @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""key1"" value=""https://test.org/1"" />
+    <add key=""b"" value=""https://b.test"" />
     <clear />
   </packageSources>
 </configuration>".Replace("\r\n", "\n"),
-                  File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "dir1", "NuGet.Config")).Replace("\r\n", "\n"));
+                  File.ReadAllText(Path.Combine(directory.Path, "dir1", "NuGet.Config")).Replace("\r\n", "\n"));
             }
         }
 
         [Fact]
         public void SavePackageSources_RetainUnavailableDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""a"" value=""https://a"" />
-        <add key=""b"" value=""https://b"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
     </packageSources>
     <disabledPackageSources>
         <add key=""Microsoft and .NET"" value=""true"" />
@@ -570,9 +570,9 @@ namespace NuGet.Configuration.Test
     </disabledPackageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
                 var settings = Settings.LoadSettings(rootPath,
                     configFileName: null,
@@ -613,15 +613,15 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_EnablesDisabledSources()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""a"" value=""https://a"" />
-        <add key=""b"" value=""https://b"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
     </packageSources>
     <disabledPackageSources>
         <add key=""Microsoft and .NET"" value=""true"" />
@@ -629,12 +629,12 @@ namespace NuGet.Configuration.Test
     </disabledPackageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -662,8 +662,8 @@ namespace NuGet.Configuration.Test
                 packageSourceList[1].IsEnabled = true;
                 packageSourceProvider.SavePackageSources(packageSourceList);
 
-                var newSettings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var newSettings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -761,12 +761,12 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var settings = new Mock<ISettings>();
-            var settingWithV3Protocol1 = new SourceItem("Source2", "https://source-with-newer-protocol", "3");
+            var settingWithV3Protocol1 = new SourceItem("Source2", "https://source-with-newer-protocol.test", "3");
             var settingWithV3Protocol2 = new SourceItem("Source3", "Source3", "3");
 
             settings.Setup(s => s.GetSection("packageSources"))
                 .Returns(new VirtualSettingSection("packageSources",
-                    new SourceItem("Source1", "https://some-source.org"),
+                    new SourceItem("Source1", "https://some-source.test"),
                     settingWithV3Protocol1,
                     settingWithV3Protocol2,
                     new SourceItem("Source3", "Source3"),
@@ -794,7 +794,7 @@ namespace NuGet.Configuration.Test
                 source =>
                     {
                         Assert.Equal("Source1", source.Name);
-                        Assert.Equal("https://some-source.org", source.Source);
+                        Assert.Equal("https://some-source.test", source.Source);
                         Assert.Null(source.Credentials);
                         Assert.Equal(2, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
@@ -802,7 +802,7 @@ namespace NuGet.Configuration.Test
                 source =>
                     {
                         Assert.Equal("Source2", source.Name);
-                        Assert.Equal("https://source-with-newer-protocol", source.Source);
+                        Assert.Equal("https://source-with-newer-protocol.test", source.Source);
                         Assert.Null(source.Credentials);
                         Assert.Equal(3, source.ProtocolVersion);
                         Assert.True(source.IsEnabled);
@@ -835,7 +835,6 @@ namespace NuGet.Configuration.Test
             settings.Setup(s => s.AddOrUpdate("disabledPackageSources", It.IsAny<AddItem>())).Verifiable();
             settings.Setup(s => s.SaveToDisk()).Verifiable();
 
-
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
@@ -852,8 +851,7 @@ namespace NuGet.Configuration.Test
             var settings = new Mock<ISettings>(MockBehavior.Strict);
             settings.Setup(s => s.GetSection("disabledPackageSources"))
                 .Returns(new VirtualSettingSection("disabledPackageSources",
-                    new AddItem("A", "sdfds")
-                    ));
+                    new AddItem("A", "sdfds")));
             var provider = CreatePackageSourceProvider(settings.Object);
 
             // Act
@@ -992,15 +990,15 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSourcesSaveCorrectDataToSettings()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = new Settings(mockBaseDirectory);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = new[] { new PackageSource("one"), new PackageSource("two"), new PackageSource("three") };
 
@@ -1029,7 +1027,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackage_KeepsBothNewAndOldSources()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
@@ -1039,8 +1037,8 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = new Settings(mockBaseDirectory);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = new[]
                     {
@@ -1073,15 +1071,15 @@ namespace NuGet.Configuration.Test
         public void SavePackageSourcesSaveCorrectDataToSettingsWhenSomePackageSourceIsDisabled()
         {
 
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = new Settings(mockBaseDirectory);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = new[] { new PackageSource("one"), new PackageSource("two", "two", isEnabled: false), new PackageSource("three") };
 
@@ -1116,15 +1114,15 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_SavesEncryptedCredentials()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = new Settings(mockBaseDirectory);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var encryptedPassword = Guid.NewGuid().ToString();
                 var credentials = new PackageSourceCredential("twoname", "User", encryptedPassword, isPasswordClearText: false, validAuthenticationTypesText: null);
@@ -1132,7 +1130,7 @@ namespace NuGet.Configuration.Test
                 var sources = new[]
                 {
                     new PackageSource("one"),
-                    new PackageSource("http://twosource", "twoname") { Credentials = credentials },
+                    new PackageSource("http://twosource.test", "twoname") { Credentials = credentials },
                     new PackageSource("three")
                 };
 
@@ -1149,7 +1147,7 @@ namespace NuGet.Configuration.Test
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("twoname");
-                children[1].GetValueAsPath().Should().Be("http://twosource");
+                children[1].GetValueAsPath().Should().Be("http://twosource.test");
                 children[1].ProtocolVersion.Should().BeNullOrEmpty();
                 children[2].Key.Should().Be("three");
                 children[2].ProtocolVersion.Should().BeNullOrEmpty();
@@ -1172,22 +1170,22 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_SavesClearTextCredentials()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = new Settings(mockBaseDirectory);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = new Settings(directory);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var credentials = new PackageSourceCredential("twoname", "User", "password", isPasswordClearText: true, validAuthenticationTypesText: null);
 
                 var sources = new[]
                 {
                     new PackageSource("one"),
-                    new PackageSource("http://twosource", "twoname") { Credentials = credentials },
+                    new PackageSource("http://twosource.test", "twoname") { Credentials = credentials },
                     new PackageSource("three")
                 };
 
@@ -1204,7 +1202,7 @@ namespace NuGet.Configuration.Test
                 children[0].Key.Should().Be("one");
                 children[0].ProtocolVersion.Should().BeNullOrEmpty();
                 children[1].Key.Should().Be("twoname");
-                children[1].GetValueAsPath().Should().Be("http://twosource");
+                children[1].GetValueAsPath().Should().Be("http://twosource.test");
                 children[1].ProtocolVersion.Should().BeNullOrEmpty();
                 children[2].Key.Should().Be("three");
                 children[2].ProtocolVersion.Should().BeNullOrEmpty();
@@ -1262,7 +1260,7 @@ namespace NuGet.Configuration.Test
         public void HighPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1271,15 +1269,14 @@ namespace NuGet.Configuration.Test
 </configuration>";
                 var configContent2 = @"<configuration>
     <packageSources>
-        <add key='a' value='http://a' />
+        <add key='a' value='http://a.test' />
     </packageSources>
 </configuration>";
-                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent1);
-                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent2);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(directory, "a", "b"), configContent1);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(directory, "a", "b", "c"), configContent2);
 
                 var settings = Settings.LoadSettings(
-                    Path.Combine(mockBaseDirectory, "a", "b", "c"),
-                    configFileName: null,
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1292,7 +1289,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(1, values.Count);
                 Assert.False(values[0].IsEnabled);
                 Assert.Equal("a", values[0].Name);
-                Assert.Equal("http://a", values[0].Source);
+                Assert.Equal("http://a.test", values[0].Source);
             }
         }
 
@@ -1302,7 +1299,7 @@ namespace NuGet.Configuration.Test
         public void LowPrioritySourceDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 var configContent1 = @"<configuration>
     <disabledPackageSources>
@@ -1311,15 +1308,14 @@ namespace NuGet.Configuration.Test
 </configuration>";
                 var configContent2 = @"<configuration>
     <packageSources>
-        <add key='a' value='http://a' />
+        <add key='a' value='http://a.test' />
     </packageSources>
 </configuration>";
-                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b"), configContent2);
-                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(mockBaseDirectory, "a", "b", "c"), configContent1);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(directory, "a", "b"), configContent2);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", Path.Combine(directory, "a", "b", "c"), configContent1);
 
                 var settings = Settings.LoadSettings(
-                    Path.Combine(mockBaseDirectory, "a", "b", "c"),
-                    configFileName: null,
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1333,7 +1329,7 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(1, values.Count);
                 Assert.False(values[0].IsEnabled);
                 Assert.Equal("a", values[0].Name);
-                Assert.Equal("http://a", values[0].Source);
+                Assert.Equal("http://a.test", values[0].Source);
             }
         }
 
@@ -1341,17 +1337,17 @@ namespace NuGet.Configuration.Test
         public void V2NotDisabled()
         {
             // Arrange
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 var configContent = @"<configuration>
     <packageSources>
         <add key='nuget.org' value='https://www.nuget.org/api/v2/' />
     </packageSources>
 </configuration>";
-                SettingsTestUtils.CreateConfigurationFile("nuget.config", mockBaseDirectory, configContent);
+                SettingsTestUtils.CreateConfigurationFile("nuget.config", directory, configContent);
 
                 var settings = Settings.LoadSettings(
-                    mockBaseDirectory,
+                    directory,
                     configFileName: null,
                     machineWideSettings: null,
                     loadUserWideSettings: false,
@@ -1371,20 +1367,20 @@ namespace NuGet.Configuration.Test
         public void AddPackageSourcesWithConfigFile()
         {
 
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
                      @"<?xml version=""1.0""?>
 <configuration>
     <packageSources>
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='a' value='https://a.test' />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                var settings = Settings.LoadSettings(directory.Path,
                    configFileName: "NuGet.config",
                    machineWideSettings: null,
                    loadUserWideSettings: true,
@@ -1393,7 +1389,7 @@ namespace NuGet.Configuration.Test
 
                 // Act
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
-                sources.Add(new PackageSource("https://test.org", "test"));
+                sources.Add(new PackageSource("https://b.test", "b"));
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
@@ -1401,40 +1397,40 @@ namespace NuGet.Configuration.Test
                       SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""NuGet.org"" value=""https://NuGet.org"" />
-        <add key=""test"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
     </packageSources>
 </configuration>
 "),
-                  SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                  SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory.Path, "NuGet.config"))));
             }
         }
 
         [Fact]
         public void SavePackageSources_AddDisabledSourceToTheConfigContainingSource()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var config1Contents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""NuGet.org"" value=""https://NuGet.org"" />
+        <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
 
                 var config2Contents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>";
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
                 Directory.CreateDirectory(rootPath);
                 File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1445,8 +1441,8 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 var source = Assert.Single(sources);
-                Assert.Equal("NuGet.org", source.Name);
-                Assert.Equal("https://NuGet.org", source.Source);
+                Assert.Equal("a", source.Name);
+                Assert.Equal("https://a.test", source.Source);
                 Assert.True(source.IsEnabled);
 
                 // Act - 2
@@ -1460,27 +1456,27 @@ namespace NuGet.Configuration.Test
                         SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""NuGet.org"" value=""https://NuGet.org"" />
+        <add key=""a"" value=""https://a.test"" />
     </packageSources>
     <disabledPackageSources>
-        <add key=""NuGet.org"" value=""true"" />
+        <add key=""a"" value=""true"" />
     </disabledPackageSources>
 </configuration>
-"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory.Path, "NuGet.config"))));
             }
         }
 
         [Fact]
         public void SavePackageSources_WritesToTheSettingsFileWithTheNearestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var config1Contents =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""NuGet.org"" value=""https://NuGet.org"" />
+        <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>
 ";
@@ -1488,19 +1484,19 @@ namespace NuGet.Configuration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key='test.org' value='https://test.org' />
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='b' value='https://b.test' />
+        <add key='a' value='https://a.test' />
     </packageSources>
 </configuration>
 ";
-              File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+              File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
                 Directory.CreateDirectory(rootPath);
                 File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1513,14 +1509,14 @@ namespace NuGet.Configuration.Test
                 Assert.Collection(sources,
                     source =>
                     {
-                        Assert.Equal("test.org", source.Name);
-                        Assert.Equal("https://test.org", source.Source);
+                        Assert.Equal("b", source.Name);
+                        Assert.Equal("https://b.test", source.Source);
                         Assert.True(source.IsEnabled);
                     },
                     source =>
                     {
-                        Assert.Equal("NuGet.org", source.Name);
-                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.Equal("a", source.Name);
+                        Assert.Equal("https://a.test", source.Source);
                         Assert.True(source.IsEnabled);
                     });
 
@@ -1530,16 +1526,16 @@ namespace NuGet.Configuration.Test
 
                 // Assert - 2
                 Assert.Equal(SettingsTestUtils.RemoveWhitespace(config1Contents),
-                    SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                    SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory.Path, "NuGet.config"))));
 
                 Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-            <add key=""test.org"" value=""https://test.org"" />
-            <add key=""NuGet.org"" value=""https://NuGet.org"" />
+            <add key=""b"" value=""https://b.test"" />
+            <add key=""a"" value=""https://a.test"" />
     </packageSources>
     <disabledPackageSources>
-        <add key=""NuGet.org"" value=""true"" />
+        <add key=""a"" value=""true"" />
     </disabledPackageSources>
 </configuration>"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
@@ -1548,30 +1544,30 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsNewSourcesToTheSettingWithLowestPriority()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var config1Contents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""test.org"" value=""https://test.org"" />
+        <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>";
 
                 var config2Contents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='b' value='https://b.test' />
     </packageSources>
 </configuration>";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), config1Contents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), config1Contents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
                 Directory.CreateDirectory(rootPath);
                 File.WriteAllText(Path.Combine(rootPath, "NuGet.config"), config2Contents);
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1584,21 +1580,21 @@ namespace NuGet.Configuration.Test
                 Assert.Collection(sources,
                     source =>
                     {
-                        Assert.Equal("NuGet.org", source.Name);
-                        Assert.Equal("https://NuGet.org", source.Source);
+                        Assert.Equal("b", source.Name);
+                        Assert.Equal("https://b.test", source.Source);
                         Assert.True(source.IsEnabled);
                     },
                     source =>
                     {
-                        Assert.Equal("test.org", source.Name);
-                        Assert.Equal("https://test.org", source.Source);
+                        Assert.Equal("a", source.Name);
+                        Assert.Equal("https://a.test", source.Source);
                         Assert.True(source.IsEnabled);
                     }
                     );
 
                 // Act - 2
                 sources[1].IsEnabled = false;
-                sources.Add(new PackageSource("http://newsource", "NewSourceName"));
+                sources.Add(new PackageSource("http://c.test", "c"));
 
                 packageSourceProvider.SavePackageSources(sources);
 
@@ -1606,14 +1602,14 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
                     <packageSources>
-                        <add key=""test.org"" value=""https://test.org"" />
-                        <add key=""NewSourceName"" value=""http://newsource"" />
+                        <add key=""a"" value=""https://a.test"" />
+                        <add key=""c"" value=""http://c.test"" />
                     </packageSources>
                     <disabledPackageSources>
-                        <add key=""test.org"" value=""true"" />
+                        <add key=""a"" value=""true"" />
                     </disabledPackageSources>
                 </configuration>
-                "), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+                "), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory.Path, "NuGet.config"))));
 
                 Assert.Equal(SettingsTestUtils.RemoveWhitespace(config2Contents), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(rootPath, "NuGet.config"))));
             }
@@ -1622,24 +1618,24 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_AddsOrderingForCollapsedFeeds()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
-        <add key=""test.org"" value=""https://new.test.org"" protocolVersion=""3"" />
-        <add key=""test2"" value=""https://test2.net"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
+        <add key=""b"" value=""https://new.b.test"" protocolVersion=""3"" />
+        <add key=""c"" value=""https://c.test"" />
     </packageSources>
 </configuration>";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.config"), configContents);
 
-                var rootPath = Path.Combine(mockBaseDirectory.Path, Path.GetRandomFileName());
+                var rootPath = Path.Combine(directory.Path, Path.GetRandomFileName());
 
-                var settings = Settings.LoadSettings(rootPath,
-                    configFileName: null,
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
                     machineWideSettings: null,
                     loadUserWideSettings: false,
                     useTestingGlobalPath: false);
@@ -1652,26 +1648,26 @@ namespace NuGet.Configuration.Test
                 Assert.Collection(sources,
                     source =>
                         {
-                            Assert.Equal("nuget.org", source.Name);
-                            Assert.Equal("https://nuget.org", source.Source);
+                            Assert.Equal("a", source.Name);
+                            Assert.Equal("https://a.test", source.Source);
                             Assert.True(source.IsEnabled);
                         },
                     source =>
                         {
-                            Assert.Equal("test.org", source.Name);
-                            Assert.Equal("https://new.test.org", source.Source);
+                            Assert.Equal("b", source.Name);
+                            Assert.Equal("https://new.b.test", source.Source);
                             Assert.True(source.IsEnabled);
                             Assert.Equal(3, source.ProtocolVersion);
                         },
                     source =>
                         {
-                            Assert.Equal("test2", source.Name);
-                            Assert.Equal("https://test2.net", source.Source);
+                            Assert.Equal("c", source.Name);
+                            Assert.Equal("https://c.test", source.Source);
                             Assert.True(source.IsEnabled);
                         });
 
                 // Act - 2
-                sources[1].Source = "https://new2.test.org";
+                sources[1].Source = "https://newer.b.test";
                 var sourcesToSave = new[]
                     {
                         sources[1], sources[2], sources[0]
@@ -1682,19 +1678,19 @@ namespace NuGet.Configuration.Test
                 Assert.Equal(SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-        <add key=""nuget.org"" value=""https://nuget.org"" />
-        <add key=""test.org"" value=""https://test.org"" />
-        <add key=""test.org"" value=""https://new2.test.org"" protocolVersion=""3"" />
-        <add key=""test2"" value=""https://test2.net"" />
+        <add key=""a"" value=""https://a.test"" />
+        <add key=""b"" value=""https://b.test"" />
+        <add key=""b"" value=""https://newer.b.test"" protocolVersion=""3"" />
+        <add key=""c"" value=""https://c.test"" />
     </packageSources>
-</configuration>"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.config"))));
+</configuration>"), SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory.Path, "NuGet.config"))));
             }
         }
 
         [Fact]
-        public void SavePackageSources_DisabledOneMachineWideSource()
+        public void SavePackageSources_DisabledOnMachineWideSource()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -1702,24 +1698,24 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
         <add key=""Microsoft and .NET""
-         value = ""https://www.nuget.org/api/v2/curated-feeds/microsoftdotnet/"" />
+         value = ""https://a.test"" />
         <add key=""test1""
          value = ""//test/source"" />
     </packageSources>
 </configuration>
 ";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "machinewide.config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "machinewide.config"), configContents);
 
-                var machineWideSetting = new Settings(mockBaseDirectory.Path, "machinewide.config", isMachineWide: true);
+                var machineWideSetting = new Settings(directory.Path, "machinewide.config", isMachineWide: true);
                 var m = new Mock<IMachineWideSettings>();
                 m.SetupGet(obj => obj.Settings).Returns(machineWideSetting);
 
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
-                   configFileName: null,
-                   machineWideSettings: m.Object,
-                   loadUserWideSettings: true,
-                   useTestingGlobalPath: true);
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
+                    machineWideSettings: m.Object,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
 
@@ -1740,14 +1736,16 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DisabledMachineWideSourceByDefaultWithNull()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
+                CreateSettingsFileInTestingGlobalDirectory(directory);
+
                 // Arrange
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
-                                  configFileName: null,
-                                  machineWideSettings: null,
-                                  loadUserWideSettings: true,
-                                  useTestingGlobalPath: true);
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
+                    machineWideSettings: null,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
                 // Act
@@ -1761,7 +1759,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceEmptyConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -1772,8 +1770,8 @@ namespace NuGet.Configuration.Test
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "nuget.config"), configContents);
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                File.WriteAllText(Path.Combine(directory.Path, "nuget.config"), configContents);
+                var settings = Settings.LoadSettings(directory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
                                   loadUserWideSettings: true,
@@ -1791,7 +1789,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSourceLocalConfigFileOnUserMachine()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -1799,12 +1797,12 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test"" value=""https://nuget/test"" />
+      <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "nuget.config"), configContents);
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                File.WriteAllText(Path.Combine(directory.Path, "nuget.config"), configContents);
+                var settings = Settings.LoadSettings(directory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
                                   loadUserWideSettings: true,
@@ -1816,8 +1814,8 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(1, sources.Count);
-                Assert.Equal(@"https://nuget/test", sources[0].Source);
-                Assert.Equal("test", sources[0].Name);
+                Assert.Equal("https://a.test", sources[0].Source);
+                Assert.Equal("a", sources[0].Name);
             }
         }
 
@@ -1825,7 +1823,7 @@ namespace NuGet.Configuration.Test
 
         public void SavePackageSources_IgnoreSettingBeforeClear()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -1833,12 +1831,12 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test"" value=""https://nuget/test"" />
+      <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>
 ";
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "nuget.config"), configContents);
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                File.WriteAllText(Path.Combine(directory.Path, "nuget.config"), configContents);
+                var settings = Settings.LoadSettings(directory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
                                   loadUserWideSettings: true,
@@ -1851,7 +1849,7 @@ namespace NuGet.Configuration.Test
                 packageSourceProvider.SavePackageSources(sources);
 
                 // Assert
-                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")));
+                var text = SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(directory, "TestingGlobalPath", "NuGet.Config")));
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -1865,7 +1863,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void SavePackageSources_ThrowWhenConfigReadOnly()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -1873,17 +1871,17 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test"" value=""https://nuget/test"" />
+      <add key=""a"" value=""https://a.test"" />
     </packageSources>
 </configuration>
 ";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                File.SetAttributes(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), FileAttributes.ReadOnly);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                File.SetAttributes(Path.Combine(directory.Path, "NuGet.Config"), FileAttributes.ReadOnly);
 
                 try
                 {
-                    var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                    var settings = Settings.LoadSettings(directory.Path,
                         configFileName: null,
                         machineWideSettings: null,
                         loadUserWideSettings: true,
@@ -1893,17 +1891,17 @@ namespace NuGet.Configuration.Test
                     // Act
                     var sources = packageSourceProvider.LoadPackageSources().ToList();
 
-                    sources.Add(new PackageSource("https://test3.net", "test3"));
+                    sources.Add(new PackageSource("https://b.test", "b"));
 
                     var ex = Assert.Throws<NuGetConfigurationException>(() => packageSourceProvider.SavePackageSources(sources));
 
                     // Assert
-                    var path = Path.Combine(mockBaseDirectory, "NuGet.Config");
+                    var path = Path.Combine(directory, "NuGet.Config");
                     Assert.Equal($"Failed to read NuGet.Config due to unauthorized access. Path: '{path}'.", ex.Message);
                 }
                 finally
                 {
-                    File.SetAttributes(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), FileAttributes.Normal);
+                    File.SetAttributes(Path.Combine(directory.Path, "NuGet.Config"), FileAttributes.Normal);
                 }
             }
         }
@@ -1911,31 +1909,31 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void DefaultPushSourceInNuGetConfig()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContentsWithDefault =
 @"<?xml version='1.0'?>
 <configuration>
     <config>
-        <add key='DefaultPushSource' value='\\myshare\packages' />
+        <add key='DefaultPushSource' value='\\myshare.test\packages' />
     </config>
     <packageSources>
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='a' value='https://a.test' />
     </packageSources>
 </configuration>";
                 var configContentWithoutDefault = configContentsWithDefault.Replace("DefaultPushSource", "WithoutDefaultPushSource");
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "WithDefaultPushSource.config"), configContentsWithDefault);
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "WithoutDefaultPushSource.config"), configContentWithoutDefault);
+                File.WriteAllText(Path.Combine(directory.Path, "WithDefaultPushSource.config"), configContentsWithDefault);
+                File.WriteAllText(Path.Combine(directory.Path, "WithoutDefaultPushSource.config"), configContentWithoutDefault);
 
-                var settingsWithDefault = Settings.LoadSettings(mockBaseDirectory.Path,
+                var settingsWithDefault = Settings.LoadSettings(directory.Path,
                    configFileName: "WithDefaultPushSource.config",
                    machineWideSettings: null,
                    loadUserWideSettings: true,
                    useTestingGlobalPath: false);
 
-                var settingsWithoutDefault = Settings.LoadSettings(mockBaseDirectory.Path,
+                var settingsWithoutDefault = Settings.LoadSettings(directory.Path,
                    configFileName: "WithoutDefaultPushSource.config",
                    machineWideSettings: null,
                    loadUserWideSettings: true,
@@ -1949,7 +1947,7 @@ namespace NuGet.Configuration.Test
                 var defaultPushSourceWithoutDefault = packageSourceProviderWithoutDefault.DefaultPushSource;
 
                 // Assert
-                Assert.Equal(@"\\myshare\packages", defaultPushSourceWithDefault);
+                Assert.Equal(@"\\myshare.test\packages", defaultPushSourceWithDefault);
                 Assert.True(string.IsNullOrEmpty(defaultPushSourceWithoutDefault));
             }
         }
@@ -1957,25 +1955,25 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_DoesNotDecryptPassword()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test"" value=""https://nuget/test"" />
+      <add key=""a"" value=""https://a.test"" />
     </packageSources>
 <packageSourceCredentials>
-    <test>
+    <a>
       <add key='Username' value='myusername' />
       <add key='Password' value='random-encrypted-password' />
-    </test>
+    </a>
   </packageSourceCredentials>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
+                var settings = Settings.LoadSettings(directory.Path,
                                   configFileName: null,
                                   machineWideSettings: null,
                                   loadUserWideSettings: false,
@@ -1987,22 +1985,22 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(1, sources.Count);
-                Assert.Equal("test", sources[0].Name);
-                Assert.Equal("https://nuget/test", sources[0].Source);
-                AssertCredentials(sources[0].Credentials, "test", "myusername", "random-encrypted-password", isPasswordClearText: false);
+                Assert.Equal("a", sources[0].Name);
+                Assert.Equal("https://a.test", sources[0].Source);
+                AssertCredentials(sources[0].Credentials, "a", "myusername", "random-encrypted-password", isPasswordClearText: false);
             }
         }
 
         [Fact]
         public void LoadPackageSources_DoesNotLoadClearedSource()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents = @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <packageSources>
-      <add key=""test"" value=""https://nuget/test"" />
+      <add key=""a"" value=""https://a.test"" />
     </packageSources>
 <packageSourceCredentials>
     <test>
@@ -2016,17 +2014,17 @@ namespace NuGet.Configuration.Test
 <configuration>
     <packageSources>
       <clear />
-      <add key=""test2"" value=""https://nuget/test2"" />
+      <add key=""b"" value=""https://b.test"" />
     </packageSources>
 </configuration>
 ";
                 SettingsTestUtils.CreateConfigurationFile(
                     "nuget.config",
-                    Path.Combine(mockBaseDirectory, "TestingGlobalPath"),
+                    Path.Combine(directory, "TestingGlobalPath"),
                     configContents);
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents1);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents1);
                 var settings = Settings.LoadSettings(
-                    mockBaseDirectory.Path,
+                    directory.Path,
                     configFileName: null,
                     machineWideSettings: null,
                     loadUserWideSettings: true,
@@ -2038,8 +2036,8 @@ namespace NuGet.Configuration.Test
 
                 // Assert
                 Assert.Equal(1, sources.Count);
-                Assert.Equal("test2", sources[0].Name);
-                Assert.Equal("https://nuget/test2", sources[0].Source);
+                Assert.Equal("b", sources[0].Name);
+                Assert.Equal("https://b.test", sources[0].Source);
                 Assert.Null(sources[0].Credentials);
             }
         }
@@ -2047,7 +2045,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_SetMaxHttpRequest()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
@@ -2057,18 +2055,17 @@ namespace NuGet.Configuration.Test
         <add key='maxHttpRequestsPerSource' value='2' />
     </config>
     <packageSources>
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='a' value='https://a.test' />
     </packageSources>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
 
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                var settings = Settings.LoadSettings(directory.Path,
                    configFileName: null,
                    machineWideSettings: null,
                    loadUserWideSettings: true,
                    useTestingGlobalPath: false);
-
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
@@ -2083,25 +2080,24 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void LoadPackageSources_NoMaxHttpRequest()
         {
-            using (var mockBaseDirectory = TestDirectory.CreateInTemp())
+            using (var directory = TestDirectory.Create())
             {
                 // Arrange
                 var configContents =
 @"<?xml version='1.0'?>
 <configuration>
     <packageSources>
-        <add key='NuGet.org' value='https://NuGet.org' />
+        <add key='a' value='https://a.test' />
     </packageSources>
 </configuration>";
 
-                File.WriteAllText(Path.Combine(mockBaseDirectory.Path, "NuGet.Config"), configContents);
+                File.WriteAllText(Path.Combine(directory.Path, "NuGet.Config"), configContents);
 
-                var settings = Settings.LoadSettings(mockBaseDirectory.Path,
+                var settings = Settings.LoadSettings(directory.Path,
                    configFileName: "NuGet.Config",
                    machineWideSettings: null,
                    loadUserWideSettings: true,
                    useTestingGlobalPath: false);
-
 
                 var packageSourceProvider = new PackageSourceProvider(settings);
 
@@ -2187,6 +2183,15 @@ namespace NuGet.Configuration.Test
             Assert.Equal(userName, actual.Username);
             Assert.Equal(passwordText, actual.PasswordText);
             Assert.Equal(isPasswordClearText, actual.IsPasswordClearText);
+        }
+
+        private static void CreateSettingsFileInTestingGlobalDirectory(TestDirectory directory)
+        {
+            var settingsFile = new FileInfo(Path.Combine(directory.Path, "TestingGlobalPath", "NuGet.config"));
+
+            settingsFile.Directory.Create();
+
+            File.WriteAllText(settingsFile.FullName, @"<?xml version=""1.0"" encoding=""utf-8""?><configuration />");
         }
     }
 }
