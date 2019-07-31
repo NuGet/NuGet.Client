@@ -193,18 +193,22 @@ namespace NuGet.CommandLine.XPlat
 
         private static bool FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
         {
-            return FilterPackages(
+            FilterPackages(
                 packages,
                 TopLevelPackagesFilterForOutdated,
                 TransitivePackagesFilterForOutdated);
+
+            return packages.Any(p => p.TopLevelPackages.Any());
         }
 
         private static bool FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
         {
-            return FilterPackages(
+            FilterPackages(
                 packages,
                 TopLevelPackagesFilterForDeprecated,
                 TransitivePackagesFilterForDeprecated);
+
+            return packages.Any(p => p.TopLevelPackages.Any());
         }
 
         /// <summary>
@@ -213,15 +217,11 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
         /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
         /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
-        /// <returns><c>True</c> whether at least 1 top-level packages is part of the filtered resultset; otherwise <c>False</c>.</returns>
-        private static bool FilterPackages(
+        private static void FilterPackages(
             IEnumerable<FrameworkPackages> packages,
             Func<InstalledPackageReference, bool> topLevelPackagesFilter,
             Func<InstalledPackageReference, bool> transitivePackagesFilter)
         {
-            var hasTopLevelPackage = false;
-
-            // Filter the packages for deprecated
             foreach (var frameworkPackages in packages)
             {
                 frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
@@ -229,14 +229,7 @@ namespace NuGet.CommandLine.XPlat
 
                 frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
                     .Where(transitivePackagesFilter);
-
-                if (frameworkPackages.TopLevelPackages.Any())
-                {
-                    hasTopLevelPackage = true;
-                }
             }
-
-            return hasTopLevelPackage;
         }
 
         /// <summary>
