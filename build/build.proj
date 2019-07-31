@@ -380,14 +380,14 @@
     <!-- Desktop -->
     <Exec Command="$(DesktopTestCommand)"
           ContinueOnError="true"
-          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' AND '$(SkipDesktopTests)' != 'true' ">
+          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' ">
       <Output TaskParameter="ExitCode" PropertyName="DesktopTestErrorCode"/>
     </Exec>
 
     <!-- VSTest/NETCore -->
     <Exec Command="$(VSTestCommand)"
           ContinueOnError="true"
-          Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' AND '$(SkipCoreTests)' != 'true' ">
+          Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' ">
       <Output TaskParameter="ExitCode" PropertyName="VSTestErrorCode"/>
     </Exec>
 
