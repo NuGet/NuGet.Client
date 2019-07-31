@@ -3790,9 +3790,8 @@ namespace ClassLibrary
             }
         }
 
-        /*
-        [PlatformTheory(Platform.Windows)]
-        */
+
+        //[PlatformTheory(Platform.Windows)]
         [Theory(Skip = "waiting for getting knownFrameworkReference, https://github.com/NuGet/Home/issues/8155")]
         [InlineData("Microsoft.NETCore.App", "true", "netstandard1.4;net461", "", "net461")]
         [InlineData("Microsoft.NETCore.App", "false", "netstandard1.4;net461", "", "net461")]
@@ -3889,9 +3888,7 @@ namespace ClassLibrary
             }
         }
 
-        /*
-        [PlatformTheory(Platform.Windows)]
-        */
+        //[PlatformTheory(Platform.Windows)]
         [Theory(Skip = "waiting for getting knownFrameworkReference, https://github.com/NuGet/Home/issues/8155")]
         [InlineData("Microsoft.WindowsDesktop.App.WindowsForms;Microsoft.WindowsDesktop.App.windowsforms", "net461")]
         public void PackCommand_PackProject_PacksFrameworkReferences_FrameworkReferencesAreCaseInsensitive(string frameworkReferences, string targetFramework)
