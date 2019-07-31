@@ -2529,6 +2529,132 @@ namespace NuGet.Commands.Test
             }
         }
 
+        [Theory]
+        [InlineData("[1.0.0]")]
+        [InlineData("[1.0.0, 1.0.0]")]
+        [InlineData("[1.0.0];[1.0.0]")]
+        public void MSBuildRestoreUtility_AddPackageDownloads_SinglePackageSingleVersion(string versionString)
+        {
+            // Arrange
+            var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
+
+            var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
+            {
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "CrossTargeting", "true" },
+                })
+                });
+
+            var packageX = new Mock<IMSBuildItem>();
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns("x");
+            packageX.Setup(p => p.GetProperty("VersionRange")).Returns(versionString);
+            packageX.Setup(p => p.GetProperty("TargetFrameworks")).Returns(targetFramework.GetShortFolderName());
+
+            var msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act
+            MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems);
+
+            // Assert
+            var framework = spec.GetTargetFramework(targetFramework);
+            Assert.Equal(1, framework.DownloadDependencies.Count);
+            Assert.Equal("x", framework.DownloadDependencies[0].Name);
+            Assert.Equal("[1.0.0]", framework.DownloadDependencies[0].VersionRange.ToShortString());
+        }
+
+        [Theory]
+        [InlineData("[1.0.0];[2.0.0]")]
+        [InlineData(";[1.0.0];;[2.0.0];")]
+        public void MSBuildRestoreUtility_AddPackageDownloads_SinglePackageMultipleVersions(string versionString)
+        {
+            // Arrange
+            var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
+
+            var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
+            {
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "CrossTargeting", "true" },
+                })
+                });
+
+            var packageX = new Mock<IMSBuildItem>();
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns("x");
+            packageX.Setup(p => p.GetProperty("VersionRange")).Returns(versionString);
+            packageX.Setup(p => p.GetProperty("TargetFrameworks")).Returns(targetFramework.GetShortFolderName());
+
+            var msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act
+            MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems);
+
+            // Assert
+            var framework = spec.GetTargetFramework(targetFramework);
+            Assert.Equal(2, framework.DownloadDependencies.Count);
+            Assert.Equal(1, framework.DownloadDependencies.Count(d => d.Name == "x" && d.VersionRange.ToShortString() == "[1.0.0]"));
+            Assert.Equal(1, framework.DownloadDependencies.Count(d => d.Name == "x" && d.VersionRange.ToShortString() == "[2.0.0]"));
+        }
+
+        [Theory]
+        [InlineData("1.0.0")]
+        [InlineData("[1.0.0, )")]
+        [InlineData("(, 1.0.0]")]
+        [InlineData("(, 1.0.0)")]
+        [InlineData("[1.0.0, 2.0.0]")]
+        [InlineData("[1.0.0, 2.0.0)")]
+        [InlineData("[1.0.0];2.0.0")]
+        public void MSBuildRestoreUtility_AddPackageDownloads_InvalidVersionRange(string versionString)
+        {
+            // Arrange
+            var targetFramework = FrameworkConstants.CommonFrameworks.NetStandard20;
+
+            var spec = MSBuildRestoreUtility.GetPackageSpec(new[]
+            {
+                CreateItems(new Dictionary<string, string>()
+                {
+                    { "Type", "ProjectSpec" },
+                    { "ProjectName", "a" },
+                    { "ProjectStyle", "PackageReference" },
+                    { "ProjectUniqueName", "a" },
+                    { "TargetFrameworks", targetFramework.GetShortFolderName() },
+                    { "CrossTargeting", "true" },
+                })
+                });
+
+            var packageX = new Mock<IMSBuildItem>();
+            packageX.Setup(p => p.GetProperty("Type")).Returns("DownloadDependency");
+            packageX.Setup(p => p.GetProperty("Id")).Returns("x");
+            packageX.Setup(p => p.GetProperty("VersionRange")).Returns(versionString);
+            packageX.Setup(p => p.GetProperty("TargetFrameworks")).Returns(targetFramework.GetShortFolderName());
+
+            var msbuildItems = new[]
+            {
+                packageX.Object
+            };
+
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => MSBuildRestoreUtility.AddPackageDownloads(spec, msbuildItems));
+        }
+
         private static IDictionary<string, string> CreateProject(string root, string uniqueName)
         {
             var project1Path = Path.Combine(root, "a.csproj");

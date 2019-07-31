@@ -863,8 +863,7 @@ namespace NuGet.Commands.Test
                         ""x"": ""1.0.0""
                     },
                     ""downloadDependencies"": [
-                       {""name"" : ""y"", ""version"" : ""[1.0.0]""},
-                       {""name"" : ""y"", ""version"" : ""[2.0.0]""}
+                       {""name"" : ""y"", ""version"" : ""[1.0.0];[2.0.0]""}
                     ]
                 }
               }
