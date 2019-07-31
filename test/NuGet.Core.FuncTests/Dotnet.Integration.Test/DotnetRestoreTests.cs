@@ -225,7 +225,7 @@ EndGlobal";
                     var xml = XDocument.Load(stream);
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-#if IS_NETCORE30
+#if NETCORE3_0
                     ProjectFileUtils.ChangeProperty(
                         xml,
                         "TargetFramework",

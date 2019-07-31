@@ -12,8 +12,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-    <DefineConstants>$(DefineConstants);IS_NETCORE30</DefineConstants>
-    <IsCore30>true</IsCore30>
+    <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
   </PropertyGroup>
 
   <!-- Include shared files for netcore projects -->
@@ -330,7 +329,7 @@
     Temporary Workaround Target related to issue https://github.com/dotnet/cli/issues/11378
     ==========================================================================================
   -->
-  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets" Condition="'$(IsCore30)' == 'true'">
+  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
     <ItemGroup>
       <TransitiveFrameworkReference Remove="NETStandard.Library" />
     </ItemGroup>

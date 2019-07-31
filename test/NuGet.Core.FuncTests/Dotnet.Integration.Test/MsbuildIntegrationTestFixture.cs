@@ -31,7 +31,7 @@ namespace Dotnet.Integration.Test
             TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
 
             var sdkPaths = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk"));
-#if IS_NETCORE30
+#if NETCORE3_0
             MsBuildSdksPath = Path.Combine(
              sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
              , "Sdks");
@@ -285,7 +285,7 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
-#if IS_NETCORE30
+#if NETCORE3_0
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
 #else
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack.Sdk2x");
@@ -295,7 +295,7 @@ namespace Dotnet.Integration.Test
 
             var sdkPaths = Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"));
 
-#if IS_NETCORE30
+#if NETCORE3_0
             var pathToSdkInCli = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First();
 #else
             var pathToSdkInCli = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("2")).First();
@@ -320,7 +320,7 @@ namespace Dotnet.Integration.Test
             foreach (var nupkgName in nupkgsToCopy) {
                 using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
                 {
-#if IS_NETCORE30
+#if NETCORE3_0
                      var files = nupkg.GetFiles()
                     .Where(fileName => fileName.StartsWith("lib/netstandard2.1")
                                     || fileName.StartsWith("lib/netcoreapp3.0")

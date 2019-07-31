@@ -131,7 +131,7 @@ namespace NuGet.XPlat.FuncTest
 
                 var relativePaths = new string[]
                 {
-#if IS_NETCORE30
+#if NETCORE3_0
                     Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp3.0", XPlatDll),
 #else
                     Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp2.1", XPlatDll),

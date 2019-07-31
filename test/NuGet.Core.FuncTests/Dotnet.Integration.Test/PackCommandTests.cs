@@ -530,7 +530,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-#if IS_NETCORE30
+#if NETCORE3_0
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp30,
                         dependencyGroups[0].TargetFramework);
 #else
@@ -549,7 +549,7 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-#if IS_NETCORE30
+#if NETCORE3_0
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp30, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
