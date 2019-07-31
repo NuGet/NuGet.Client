@@ -9,6 +9,7 @@ using NuGet.Packaging;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 using Xunit;
+using Strings = NuGet.CommandLine.XPlat.Strings;
 
 namespace Dotnet.Integration.Test
 {
@@ -23,7 +24,6 @@ namespace Dotnet.Integration.Test
         {
             _fixture = fixture;
         }
-
 
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_Succeed()
@@ -210,6 +210,7 @@ namespace Dotnet.Integration.Test
                     true);
 
                 Assert.False(listResult.Success);
+                Assert.Contains(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated, listResult.Errors);
             }
         }
 
@@ -258,7 +259,6 @@ namespace Dotnet.Integration.Test
 
             }
         }
-
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("1.0.0", "", "2.1.0")]
