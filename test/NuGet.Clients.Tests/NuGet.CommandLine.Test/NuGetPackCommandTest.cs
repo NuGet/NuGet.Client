@@ -5608,7 +5608,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             var _ = Path.DirectorySeparatorChar;
 
             files.Add(Tuple.Create($"content{_}icon.jpg", 6));
-            fileEntries.Add(Tuple.Create(@"content\*", "utils"));
+            fileEntries.Add(Tuple.Create($"content{_}*", "utils"));
 
             var iconTestSourceDir = new IconTestSourceDirectory(@"utils/icon.jpg", files, fileEntries);
 
@@ -5625,7 +5625,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             files.Add(Tuple.Create($"content{_}nested{_}icon.jpg", 6));
             files.Add(Tuple.Create($"content{_}dummy.txt", 6));
             files.Add(Tuple.Create($"content{_}data.txt", 6));
-            fileEntries.Add(Tuple.Create(@"content\**", "utils"));
+            fileEntries.Add(Tuple.Create($"content{_}**", "utils"));
 
             var iconTestSourceDir = new IconTestSourceDirectory("utils/nested/icon.jpg", files, fileEntries);
 
