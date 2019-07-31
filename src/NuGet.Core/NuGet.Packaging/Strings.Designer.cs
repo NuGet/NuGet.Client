@@ -223,11 +223,11 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package doesn&apos;t contain {0} file: {1}.
+        ///   Looks up a localized string similar to The package doesn&apos;t contain .nuspec file: {0}.
         /// </summary>
-        internal static string Error_MissingRequiredFiles {
+        internal static string Error_MissingNuspecFile {
             get {
-                return ResourceManager.GetString("Error_MissingRequiredFiles", resourceCulture);
+                return ResourceManager.GetString("Error_MissingNuspecFile", resourceCulture);
             }
         }
         

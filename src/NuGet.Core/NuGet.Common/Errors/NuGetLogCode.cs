@@ -778,7 +778,7 @@ namespace NuGet.Common
         /// <summary>
         /// No ref or lib folder in the package
         /// </summary>
-        NU5127 = 5127,       
+        NU5127 = 5127,
 
         /// <summary>
         /// TFM dependencies in the lib or ref folder don't have exact matches in the nuspec
@@ -803,6 +803,6 @@ namespace NuGet.Common
         /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500
+        NU5500 = 5500,
     }
 }

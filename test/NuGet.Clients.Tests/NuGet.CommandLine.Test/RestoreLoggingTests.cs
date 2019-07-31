@@ -141,7 +141,7 @@ namespace NuGet.CommandLine.Test
             }
         }
         [Fact]
-        public async Task RestoreLogging_VerifyNU5036ErrorMessageAsync()
+        public async Task RestoreLogging_VerifyNU5036WithMissingNuspecInSourceErrorMessageAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -156,17 +156,7 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp1);
 
-                var packageX = new SimpleTestPackageContext("x", "1.0.0")
-                {
-                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>x</id>
-                            <version>1.0.0</version>
-                            <title />
-                        </metadata>
-                        </package>")
-                };            
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");          
 
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
                 projectA.AddPackageToAllFrameworks(packageX);                
@@ -186,7 +176,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNU5036ErrorMessageWithDependencyAsync()
+        public async Task RestoreLogging_VerifyNU5036WithMissingNuspecInGlobalPackageErrorMessageAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -201,38 +191,24 @@ namespace NuGet.CommandLine.Test
                     pathContext.SolutionRoot,
                     netcoreapp1);
 
-                var packageX = new SimpleTestPackageContext("x", "1.0.0")
-                {
-                    Nuspec = XDocument.Parse($@"<?xml version=""1.0"" encoding=""utf-8""?>
-                        <package>
-                        <metadata>
-                            <id>x</id>
-                            <version>1.0.0</version>
-                            <title />
-                            <dependencies>
-                                <group>
-                                    <dependency id=""z"" version=""[1.0.0]"" />
-                                </group>
-                            </dependencies>
-                        </metadata>
-                        </package>")
-                };
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
 
-                var packageZ1 = new SimpleTestPackageContext("z", "1.0.0");
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX, packageZ1);
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
                 projectA.AddPackageToAllFrameworks(packageX);
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
-                File.Delete(Path.Combine(pathContext.PackageSource, packageZ1.Id, packageZ1.Version, packageZ1.Id + NuGetConstants.ManifestExtension));
-
                 // Act                
-                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                //delete the project.assets file to avoid no-op restore
+                File.Delete(projectA.AssetsFileOutputPath);
+                File.Delete(Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file: " + Path.Combine(pathContext.PackageSource, packageZ1.Id, packageZ1.Version));
+                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
             }
         }
 
