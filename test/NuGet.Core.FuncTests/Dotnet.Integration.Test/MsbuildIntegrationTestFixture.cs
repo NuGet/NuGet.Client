@@ -164,7 +164,6 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
-            //CreateTempGlobalJson(workingDirectory);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -182,7 +181,6 @@ namespace Dotnet.Integration.Test
 
         private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args)
         {
-            //CreateTempGlobalJson(workingDirectory);
 
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
@@ -201,7 +199,6 @@ namespace Dotnet.Integration.Test
         /// </summary>
         internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
         {
-            //CreateTempGlobalJson(workingDirectory);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -225,7 +222,6 @@ namespace Dotnet.Integration.Test
 
         private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
         {
-            //CreateTempGlobalJson(workingDirectory);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -242,7 +238,6 @@ namespace Dotnet.Integration.Test
 
         internal void BuildProject(string workingDirectory, string projectName, string args)
         {
-            //CreateTempGlobalJson(workingDirectory);
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
