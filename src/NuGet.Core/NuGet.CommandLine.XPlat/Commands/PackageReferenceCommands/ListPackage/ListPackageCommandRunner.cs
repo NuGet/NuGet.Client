@@ -24,16 +24,16 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
 
-        private static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForOutdated =
+        internal static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForOutdated =
             p => !p.AutoReference
                  && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
-        private static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForOutdated =
+        internal static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForOutdated =
             p => p.LatestPackageMetadata == null
                  || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version;
 
-        private static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForDeprecated =
+        internal static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForDeprecated =
             p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
-        private static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForDeprecated =
+        internal static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForDeprecated =
             p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
