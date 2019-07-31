@@ -119,7 +119,12 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
+            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+                "- Add lib or ref assemblies for the net45 target framework\r\n" +
+                "- Add lib or ref assemblies for the netstandard1.0 target framework\r\n" +
+                "- Add lib or ref assemblies for the netstandard1.3 target framework\r\n" +
+                "- Add lib or ref assemblies for the netstandard2.0 target framework\r\n";
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
         }
 
@@ -142,8 +147,12 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && !p.Message.Contains(".NETFramework4.7.2")));
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+                "- Add lib or ref assemblies for the net45 target framework\r\n";
+            var testStringCompat = AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch + "\n" +
+                "- Add a dependency group for .NETFramework4.7.2 to the nuspec\r\n";
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5130 && p.Message == testStringCompat));
         }
 
         [Fact]
@@ -163,7 +172,11 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
+            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+                "- Add a dependency group for .NETFramework2.0 to the nuspec\r\n" +
+                "- Add a dependency group for .NETFramework3.5 to the nuspec\r\n" +
+                "- Add a dependency group for .NETFramework4.7.2 to the nuspec\r\n";
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
         }
 
@@ -186,7 +199,10 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128));
+            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+                "- Add a dependency group for .NETFramework4.5 to the nuspec\r\n" +
+                "- Add lib or ref assemblies for the net472 target framework\r\n";
+            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
             Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
         }
 

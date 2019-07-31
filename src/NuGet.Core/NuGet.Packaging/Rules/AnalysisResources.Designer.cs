@@ -88,7 +88,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to - Add lib or ref assemblies for the .
+        ///   Looks up a localized string similar to - Add lib or ref assemblies for the.
         /// </summary>
         public static string DependenciesGroupsForEachTFMBeginningToFiles {
             get {
@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to - Add a dependency group for .
+        ///   Looks up a localized string similar to - Add a dependency group for.
         /// </summary>
         public static string DependenciesGroupsForEachTFMBeginningToNuspec {
             get {

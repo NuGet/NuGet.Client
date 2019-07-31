@@ -127,10 +127,10 @@
     <value>The value "{0}" for {1} is a sample value and should be removed. Replace it with an appropriate value or remove it and rebuild your package.</value>
   </data>
   <data name="DependenciesGroupsForEachTFMBeginningToFiles" xml:space="preserve">
-    <value>- Add lib or ref assemblies for the </value>
+    <value>- Add lib or ref assemblies for the</value>
   </data>
   <data name="DependenciesGroupsForEachTFMBeginningToNuspec" xml:space="preserve">
-    <value>- Add a dependency group for </value>
+    <value>- Add a dependency group for</value>
   </data>
   <data name="DependenciesGroupsForEachTFMEndingToFile" xml:space="preserve">
     <value>target framework</value>

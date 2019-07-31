@@ -125,51 +125,60 @@ namespace NuGet.Packaging.Rules
             var noExactMatchString = new StringBuilder();
             var compatMatchString = new StringBuilder();
 
-            var beginning = AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec;
-            var ending = " " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec;
-
-            var firstElement = new StringBuilder();
-
             if (noExactMatchesFromFile.Count != 0)
             {
-                firstElement.Append(beginning);
-                firstElement.Append(noExactMatchesFromFile.Select(t => t.GetFrameworkString()).First());
+                foreach (var tfm in noExactMatchesFromFile)
+                {
+                    if(tfm == noExactMatchesFromFile.First())
+                    { 
+                        noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
+                        noExactMatchString.Append(" " + tfm.GetFrameworkString());
+                        continue;
+                    }
 
-                noExactMatchString.Append(noExactMatchesFromFile.Count > 1 ? beginning +
-                    string.Join(ending + beginning,
-                        noExactMatchesFromFile.Select(t => t.GetFrameworkString()).ToArray()) :
-                        firstElement.ToString());
-                noExactMatchString.Append(ending);
+                    noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
+                    noExactMatchString.Append(" " + tfm.GetFrameworkString());
+                }
+
+                noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
             }
 
             if (noExactMatchesFromNuspec.Count != 0)
             {
-                beginning = AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles;
-                ending = " " + AnalysisResources.DependenciesGroupsForEachTFMEndingToFile;
-                firstElement.Clear();
-                firstElement.Append(beginning);
-                firstElement.Append(noExactMatchesFromNuspec.Select(t => t.GetShortFolderName()).First());
+                foreach (var tfm in noExactMatchesFromNuspec)
+                {
+                    if (tfm == noExactMatchesFromNuspec.First())
+                    {
+                        noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles);
+                        noExactMatchString.Append(" " + tfm.GetShortFolderName());
+                        continue;
+                    }
 
-                noExactMatchString.Append(noExactMatchesFromNuspec.Count > 1 ? beginning +
-                    string.Join(ending + beginning,
-                        noExactMatchesFromNuspec.Select(t => t.GetShortFolderName()).ToArray()) :
-                    firstElement.ToString());
-                noExactMatchString.Append(ending);
+                    noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                    noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles);
+                    noExactMatchString.Append(" " + tfm.GetShortFolderName());
+                }
+                
+                noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
             }
 
             if (compatNotExactMatches.Count != 0)
             {
-                beginning = AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec;
-                ending = " " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec;
-                firstElement.Clear();
-                firstElement.Append(beginning);
-                firstElement.Append(compatNotExactMatches.Select(t => t.GetFrameworkString()).First());
+                foreach (var tfm in compatNotExactMatches)
+                {
+                    if (tfm == compatNotExactMatches.First())
+                    {
+                        compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
+                        compatMatchString.Append(" " + tfm.GetFrameworkString());
+                        continue;
+                    }
 
-                compatMatchString.Append(compatNotExactMatches.Count > 1 ? beginning +
-                    string.Join(ending + beginning,
-                        compatNotExactMatches.Select(t => t.GetFrameworkString()).ToArray()):
-                    firstElement.ToString());
-                compatMatchString.Append(ending);
+                    compatMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
+                    compatMatchString.Append(" " + tfm.GetFrameworkString());
+                }
+                compatMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
             }
 
             return (noExactMatchString.ToString(), compatMatchString.ToString());
