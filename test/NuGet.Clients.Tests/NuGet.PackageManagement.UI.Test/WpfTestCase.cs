@@ -28,9 +28,13 @@ namespace NuGet.PackageManagement.UI.Test
 
         public ISourceInformation SourceInformation
         {
-            get { return _testCase.SourceInformation; }
-            set { _testCase.SourceInformation = value; }
+            get => _testCase.SourceInformation;
+            set => _testCase.SourceInformation = value;
         }
+
+        public Exception InitializationException => _testCase.InitializationException;
+
+        public int Timeout => _testCase.Timeout;
 
         public WpfTestCase(IXunitTestCase testCase)
         {

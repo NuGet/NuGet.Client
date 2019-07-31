@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -129,7 +130,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("*")]
         [InlineData("1.*")]
         [InlineData("1.0.*")]
-        public async void AddPkg_UnconditionalAdd_Success(string userInputVersion)
+        public async Task AddPkg_UnconditionalAdd_Success(string userInputVersion)
         {
             // Arrange
 
@@ -165,7 +166,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("*")]
         [InlineData("1.*")]
         [InlineData("1.0.*")]
-        public async void AddPkg_UnconditionalAddIntoExeProject_Success(string userInputVersion)
+        public async Task AddPkg_UnconditionalAddIntoExeProject_Success(string userInputVersion)
         {
             // Arrange
 
@@ -204,7 +205,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("*")]
         [InlineData("1.*")]
         [InlineData("1.0.*")]
-        public async void AddPkg_UnconditionalAddWithDotnetCliTool_Success(string userInputVersion)
+        public async Task AddPkg_UnconditionalAddWithDotnetCliTool_Success(string userInputVersion)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -254,7 +255,6 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-
         [Theory]
         [InlineData("net46", "net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp1.0", "net46; netcoreapp1.0", "1.*")]
@@ -265,7 +265,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46", "net46; netstandard2.0", "1.*")]
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "1.*")]
         [InlineData("netstandard2.0", "net46; netstandard2.0", "1.*")]
-        public async void AddPkg_UnconditionalAddWithNoRestore_Success(string packageFrameworks,
+        public async Task AddPkg_UnconditionalAddWithNoRestore_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputVersion)
         {
@@ -305,7 +305,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netcoreapp1.0", "1.*")]
         [InlineData("net46; netcoreapp2.0", "1.*")]
         [InlineData("net46; netstandard2.0", "1.*")]
-        public async void AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string projectFrameworks,
+        public async Task AddPkg_UnconditionalAddWithDotnetCliToolAndNoRestore_Success(string projectFrameworks,
             string userInputVersion)
         {
             // Arrange
@@ -357,7 +357,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void AddPkg_UnconditionalAddWithoutVersion_Success()
+        public async Task AddPkg_UnconditionalAddWithoutVersion_Success()
         {
             // Arrange
 
@@ -396,7 +396,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46", "net46; netcoreapp2.0", "*")]
         [InlineData("net46", "net46; netstandard2.0", "1.0.0")]
         [InlineData("net46", "net46; netstandard2.0", "*")]
-        public async void AddPkg_ConditionalAddWithoutUserInputFramework_Success(string packageFrameworks,
+        public async Task AddPkg_ConditionalAddWithoutUserInputFramework_Success(string packageFrameworks,
             string projectFrameworks, string userInputVersion)
         {
             // Arrange
@@ -444,7 +444,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46")]
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
         [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
-        public async void AddPkg_ConditionalAddWithUserInputFramework_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
+        public async Task AddPkg_ConditionalAddWithUserInputFramework_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
 
@@ -492,7 +492,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "net46")]
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
         [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
-        public async void AddPkg_ConditionalAddWithoutVersion_Success(string packageFrameworks,
+        public async Task AddPkg_ConditionalAddWithoutVersion_Success(string packageFrameworks,
             string projectFrameworks,
             string userInputFrameworks)
         {
@@ -539,7 +539,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46", "unknown_framework")]
         [InlineData("netcoreapp1.0", "unknown_framework")]
         [InlineData("net46; netcoreapp1.0", "unknown_framework")]
-        public async void AddPkg_FailureIncompatibleFrameworks(string packageFrameworks, string userInputFrameworks)
+        public async Task AddPkg_FailureIncompatibleFrameworks(string packageFrameworks, string userInputFrameworks)
         {
             // Arrange
 
@@ -570,7 +570,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void AddPkg_FailureUnknownPackage()
+        public async Task AddPkg_FailureUnknownPackage()
         {
             // Arrange
 
@@ -601,7 +601,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void AddPkg_UnconditionalAddTwoPackages_Success()
+        public async Task AddPkg_UnconditionalAddTwoPackages_Success()
         {
             // Arrange
 
@@ -658,7 +658,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netstandard2.0", "net46; netstandard2.0", "netstandard2.0")]
         [InlineData("net46", "net46; netstandard2.0", "net46; netstandard2.0")]
         [InlineData("netstandard2.0", "net46; netstandard2.0", "net46; netstandard2.0")]
-        public async void AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
+        public async Task AddPkg_ConditionalAddTwoPackages_Success(string packageFrameworks, string projectFrameworks, string userInputFrameworks)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -707,7 +707,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void AddPkg_UnconditionalAddWithPackageDirectory_Success()
+        public async Task AddPkg_UnconditionalAddWithPackageDirectory_Success()
         {
             // Arrange
 
@@ -754,7 +754,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("*", "1.0.0", false)]
         [InlineData("*", "0.9", false)]
         [InlineData("*", "1.*", false)]
-        public async void AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew, bool noVersion)
+        public async Task AddPkg_UnconditionalAddAsUpdate_Succcess(string userInputVersionOld, string userInputVersionNew, bool noVersion)
         {
             // Arrange
 
@@ -823,7 +823,7 @@ namespace NuGet.XPlat.FuncTest
         [InlineData("net46; netstandard2.0", "*", "0.9", false)]
         [InlineData("net46; netstandard2.0", "*", "1.*", false)]
         [InlineData("net46; netstandard2.0", "0.0.5", "*", true)]
-        public async void AddPkg_ConditionalAddAsUpdate_Success(string projectFrameworks, string userInputVersionOld, string userInputVersionNew, bool noVersion)
+        public async Task AddPkg_ConditionalAddAsUpdate_Success(string projectFrameworks, string userInputVersionOld, string userInputVersionNew, bool noVersion)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -870,7 +870,7 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [Fact]
-        public async void AddPkg_DevelopmentDependency()
+        public async Task AddPkg_DevelopmentDependency()
         {
             // Arrange
 

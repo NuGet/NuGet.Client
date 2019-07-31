@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Threading.Tasks;
 using Moq;
 using NuGet.CommandLine.Commands;
 using NuGet.Commands;
@@ -110,7 +111,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("temp")]
         [InlineData("http-cache")]
         [InlineData("global-packages")]
-        public async void LocalsCommand_ParsingValidation_WithNoConfigParam(string arg)
+        public async Task LocalsCommand_ParsingValidation_WithNoConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
             using (var mockCurrentDirectory = TestDirectory.Create())
@@ -153,7 +154,7 @@ namespace NuGet.CommandLine.Test
         [InlineData("temp")]
         [InlineData("http-cache")]
         [InlineData("global-packages")]
-        public async void LocalsCommand_ParsingValidation_WithConfigParam(string arg)
+        public async Task LocalsCommand_ParsingValidation_WithConfigParam(string arg)
         {
             // Use a test directory to validate test key-value pairs within ISettings object passed to Runner
             using (var mockCurrentDirectory = TestDirectory.Create())

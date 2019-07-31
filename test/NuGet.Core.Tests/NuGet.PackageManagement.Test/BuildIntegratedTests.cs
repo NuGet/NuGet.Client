@@ -1711,7 +1711,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async void TestPacMan_BuildIntegrated_PreviewUpdatesAsync_NoUpdatesAvailable()
+        public async Task TestPacMan_BuildIntegrated_PreviewUpdatesAsync_NoUpdatesAvailable()
         {
             using (var packageSource = TestDirectory.Create())
             {
@@ -1775,7 +1775,7 @@ namespace NuGet.Test
         }
 
         [Fact]
-        public async void TestPacMan_BuildIntegrated_PreviewUpdatesAsync_WithStrictVersionRange()
+        public async Task TestPacMan_BuildIntegrated_PreviewUpdatesAsync_WithStrictVersionRange()
         {
             // Set up Package Source
             var packages = new List<SourcePackageDependencyInfo>

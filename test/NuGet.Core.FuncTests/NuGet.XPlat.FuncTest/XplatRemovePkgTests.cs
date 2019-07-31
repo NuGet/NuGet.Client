@@ -3,6 +3,7 @@
 
 using System.Collections.Generic;
 using System.IO;
+using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using Moq;
 using NuGet.CommandLine.XPlat;
@@ -69,7 +70,7 @@ namespace NuGet.XPlat.FuncTest
         // Remove Related Tests
 
         [Fact]
-        public async void RemovePkg_UnconditionalRemove_Success()
+        public async Task RemovePkg_UnconditionalRemove_Success()
         {
             // Arrange
 
@@ -134,7 +135,7 @@ namespace NuGet.XPlat.FuncTest
         [Theory]
         [InlineData("net46")]
         [InlineData("netcoreapp1.0")]
-        public async void RemovePkg_ConditionalRemove_Success(string packageframework)
+        public async Task RemovePkg_ConditionalRemove_Success(string packageframework)
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
