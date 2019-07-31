@@ -3984,6 +3984,7 @@ namespace ClassLibrary
                 Assert.True(result.Success);
             }
         }
+        
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackAsMsbuildTargets()
         {
