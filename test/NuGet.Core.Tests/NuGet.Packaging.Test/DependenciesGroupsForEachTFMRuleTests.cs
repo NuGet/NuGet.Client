@@ -233,7 +233,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithPerfectlyMatchedTFMsInLibAndNuspec_ShouldAllBeEmpty()
+        public void Categorize_PackageWithPerfectlyMatchedTFMsInLibAndNuspec_ShouldAllBeEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -268,7 +268,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithUnmatchedTFMsInNuspec_ShouldHaveOneNotEmpty()
+        public void Categorize_PackageWithUnmatchedTFMsInNuspec_ShouldHaveOneNotEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -303,7 +303,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithUnmatchedTFMsInFile_ShouldHaveOneNotEmpty()
+        public void Categorize_PackageWithUnmatchedTFMsInFile_ShouldHaveOneNotEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -338,7 +338,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithUnmatchedTFMsInNuspecAndFile_ShouldHaveTwoNotEmpty()
+        public void Categorize_PackageWithUnmatchedTFMsInNuspecAndFile_ShouldHaveTwoNotEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -373,7 +373,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithUnmatchedTFMsInNuspecAndFile_ShouldHaveAllNotEmpty()
+        public void Categorize_PackageWithUnmatchedTFMsInNuspecAndFile_ShouldHaveAllNotEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -407,7 +407,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithNoFilesOnlyDependencies_ShouldHaveNuspecNotEmpty()
+        public void Categorize_PackageWithNoFilesOnlyDependencies_ShouldHaveNuspecNotEmpty()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -438,7 +438,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void CatagorizeTFMs_PackageWithNoDependenciesOnlyFiles_ShouldHaveFileNotEmpty()
+        public void Categorize_PackageWithNoDependenciesOnlyFiles_ShouldHaveFileNotEmpty()
         {
             //Arrange
             var frameworks = Array.Empty<NuGetFramework>();
