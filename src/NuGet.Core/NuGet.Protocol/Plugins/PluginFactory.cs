@@ -159,7 +159,8 @@ namespace NuGet.Protocol.Plugins
                 RedirectStandardError = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                WindowStyle = ProcessWindowStyle.Hidden,
             };
 #else
             var startInfo = new ProcessStartInfo
@@ -170,7 +171,8 @@ namespace NuGet.Protocol.Plugins
                 RedirectStandardError = false,
                 RedirectStandardInput = true,
                 RedirectStandardOutput = true,
-                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)
+                StandardOutputEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false),
+                WindowStyle = ProcessWindowStyle.Hidden,
             };
 #endif
             var pluginProcess = new PluginProcess(startInfo);
