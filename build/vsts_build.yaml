@@ -48,10 +48,10 @@ phases:
         Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
         Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
 
-  -task: PowerShell@1
-   displayName: "Get SDK Version For Build"
-   name: "getSDKVersionForBuild"
-   inputs:
+  - task: PowerShell@1
+    displayName: "Get SDK Version For Build"
+    name: "getSDKVersionForBuild"
+    inputs:
       scriptType: "inlineScript"
       inlineScript: |
         $SDKVersionForBuild = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliVersionForBuilding
