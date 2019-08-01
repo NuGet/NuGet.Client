@@ -47,10 +47,21 @@ echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
 $DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
 DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
-for DOTNET_BRANCH in $(echo $DOTNET_BRANCHES | tr ";" "\n")
+echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
 do
 	echo $DOTNET_BRANCH
-	cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH -nopath
+	ChannelAndVersion=$(echo $DOTNET_BRANCH | tr " " "\n")
+
+	Channel = ${ChannelAndVersion[0]}
+	
+	if [ ${#ChannelAndVersion[@]} -eq 1 ]
+	then
+		Version = "latest"
+	else
+		Version = ${ChannelAndVersion[1]}
+	fi
+	
+	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
 
 	# Display current version

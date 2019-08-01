@@ -79,7 +79,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
 
@@ -460,7 +460,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
 
@@ -543,7 +543,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
       
@@ -601,7 +601,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
       
@@ -666,7 +666,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
 
@@ -774,7 +774,7 @@ phases:
     displayName: 'Use .NET Core sdk'
     inputs:
       packageType: sdk
-      version: 3.0.x
+      version: 3.0.100-preview6-012264
       includePreviewVersions: true
       installationPath: $(Agent.TempDirectory)/dotnet
     
