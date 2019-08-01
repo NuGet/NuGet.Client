@@ -127,7 +127,7 @@ namespace NuGet.Test.Utility
                 sb.Append($"<file src=\"{fe.Item1}\"");
                 if (!string.Empty.Equals(fe.Item2))
                 {
-                    sb.Append($" target=\"{fe.Item1}\"");
+                    sb.Append($" target=\"{fe.Item2}\"");
                 }
                 sb.Append(" />\n");
             }
