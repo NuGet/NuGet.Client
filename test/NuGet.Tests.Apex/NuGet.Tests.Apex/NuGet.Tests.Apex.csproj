@@ -60,8 +60,8 @@
     <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Test.Apex-d16.0stg">
-      <Version>16.0.28417.3003</Version>
+    <PackageReference Include="Microsoft.Test.Apex.VisualStudio">
+      <Version>16.3.29131.53-pre</Version>
     </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
     <PackageReference Include="Xunit.StaFact" Version="0.2.9" />
