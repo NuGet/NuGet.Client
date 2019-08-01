@@ -441,7 +441,12 @@ phases:
     demands: 
         - DotNetFramework
         - msbuild
-
+    matrix:
+      IsDesktop:
+        SkipCoreAssemblies: "true"
+      IsCore:
+        SkipDesktopAssemblies: "true"
+        
   steps:
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -483,7 +488,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -503,7 +508,7 @@ phases:
       arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
       inlineScript: |
         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "Functional Tests On Windows"
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "$env:AGENT_JOBNAME"
     condition: "always()"
 
 - phase: Tests_On_Linux

@@ -14,7 +14,7 @@ Function Update-GitCommitStatus {
         [Parameter(Mandatory = $True)]
         [string]$PersonalAccessToken,
         [Parameter(Mandatory = $True)]
-        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional Tests On Windows", "EndToEnd Tests On Windows", "Apex Tests On Windows", "Rebuild")]
+        [ValidateSet( "Unit Tests On Windows", "Tests On Mac", "Tests On Linux", "Functional_Tests_On_Windows IsDesktop", "Functional_Tests_On_Windows IsCore", "EndToEnd Tests On Windows", "Apex Tests On Windows", "Rebuild")]
         [string]$TestName,
         [Parameter(Mandatory = $True)]
         [ValidateSet( "pending", "success", "error", "failure")]
@@ -58,11 +58,14 @@ Function InitializeAllTestsToPending {
     Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Unit Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     if($env:RunFunctionalTestsOnWindows -eq "true")
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+        # Setup individual states for the matrixing of jobs in "Functional Tests On Windows".
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsDesktop" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsCore" -Status "pending" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "in progress"
     } 
     else 
     {
-        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional Tests On Windows" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsDesktop" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
+        Update-GitCommitStatus -PersonalAccessToken $PersonalAccessToken -TestName "Functional_Tests_On_Windows IsCore" -Status "success" -CommitSha $CommitSha -TargetUrl $env:BUILDURL -Description "skipped"
     }
     if($env:RunTestsOnMac -eq "true")
     {
