@@ -51,18 +51,16 @@ echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
 do
 	echo $DOTNET_BRANCH
 	ChannelAndVersion=$(echo $DOTNET_BRANCH | tr " " "\n")
-
 	Channel = ${ChannelAndVersion[0]}
-	
 	if [ ${#ChannelAndVersion[@]} -eq 1 ]
 	then
 		Version = "latest"
 	else
 		Version = ${ChannelAndVersion[1]}
 	fi
-	
+	echo "Channel is: $Channel"
+	echo "Version is: $Version"
 	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
-
 
 	# Display current version
 	$DOTNET --version
