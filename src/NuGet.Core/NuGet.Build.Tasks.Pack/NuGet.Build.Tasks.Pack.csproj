@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -129,10 +129,10 @@
     <ItemGroup>
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.dll" KeepDuplicates="false">
         <StrongName>MsSharedLib72</StrongName>
-        <Authenticode>Microsoft</Authenticode>
+        <Authenticode>Microsoft400</Authenticode>
       </DllsInOutputDir>
       <DllsInOutputDir Include="$(OutputPath)ilmerge\*.xml" KeepDuplicates="false">
-        <Authenticode>XML94</Authenticode>
+        <Authenticode>MicrosoftXmlSHA2</Authenticode>
       </DllsInOutputDir>
     </ItemGroup>
   </Target>
