@@ -50,7 +50,7 @@ DOTNET_BRANCHES="$(dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranc
 echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
 do
 	echo $DOTNET_BRANCH
-	ChannelAndVersion=$(echo $DOTNET_BRANCH | tr " " "\n")
+	ChannelAndVersion=($DOTNET_BRANCH)
 	Channel=${ChannelAndVersion[0]}
 	if [ ${#ChannelAndVersion[@]} -eq 1 ]
 	then
