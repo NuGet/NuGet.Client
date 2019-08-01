@@ -51,12 +51,12 @@ echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
 do
 	echo $DOTNET_BRANCH
 	ChannelAndVersion=$(echo $DOTNET_BRANCH | tr " " "\n")
-	Channel = ${ChannelAndVersion[0]}
+	Channel=${ChannelAndVersion[0]}
 	if [ ${#ChannelAndVersion[@]} -eq 1 ]
 	then
-		Version = "latest"
+		Version="latest"
 	else
-		Version = ${ChannelAndVersion[1]}
+		Version=${ChannelAndVersion[1]}
 	fi
 	echo "Channel is: $Channel"
 	echo "Version is: $Version"
