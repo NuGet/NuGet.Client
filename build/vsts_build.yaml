@@ -54,6 +54,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
         $SDKVersionForBuild = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliVersionForBuilding
         Write-Host "##vso[task.setvariable variable=SDKVersionForBuild;isOutput=true]$SDKVersionForBuild"
 
