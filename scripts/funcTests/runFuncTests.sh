@@ -38,15 +38,15 @@ curl -o cli/dotnet-install.sh https://dot.net/v1/dotnet-install.sh
 chmod +x cli/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
-cli/dotnet-install.sh -i cli -NoPath
+#cli/dotnet-install.sh -i cli -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
-echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
-$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
-DOTNET_BRANCHES="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
+DOTNET_BRANCHES="$(dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
 do
 	echo $DOTNET_BRANCH
