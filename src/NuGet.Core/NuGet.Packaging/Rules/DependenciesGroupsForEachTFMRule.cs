@@ -43,14 +43,12 @@ namespace NuGet.Packaging.Rules
 
             if (noExactMatchesFromFile.Count != 0 || noExactMatchesFromNuspec.Count != 0)
             {
-                issues.Add(PackagingLogMessage.CreateWarning(string.Join("\n", MessageFormat, noExactMatchString),
-                    NuGetLogCode.NU5128));
+                issues.Add(PackagingLogMessage.CreateWarning(noExactMatchString, NuGetLogCode.NU5128));
             }
 
             if (compatNotExactMatches.Count != 0)
             {
-                issues.Add(PackagingLogMessage.CreateWarning(string.Join("\n", CompatMatchFoundWarningMessageFormat, compatMatchString),
-                    NuGetLogCode.NU5130));
+                issues.Add(PackagingLogMessage.CreateWarning(compatMatchString, NuGetLogCode.NU5130));
             }
 
             if (issues.Count != 0)
@@ -128,58 +126,72 @@ namespace NuGet.Packaging.Rules
 
             if (noExactMatchesFromFile.Count != 0)
             {
+                noExactMatchString.AppendLine(MessageFormat);
                 foreach (var tfm in noExactMatchesFromFile)
                 {
                     if(tfm == noExactMatchesFromFile.First())
                     { 
                         noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
-                        noExactMatchString.Append(" " + tfm.GetFrameworkString());
+                        noExactMatchString.Append(" ");
+                        noExactMatchString.Append(tfm.GetFrameworkString());
                         continue;
                     }
-
-                    noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    noExactMatchString.Append(" ");
+                    noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
                     noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
-                    noExactMatchString.Append(" " + tfm.GetFrameworkString());
+                    noExactMatchString.Append(" ");
+                    noExactMatchString.Append(tfm.GetFrameworkString());
                 }
-
-                noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                noExactMatchString.Append(" ");
+                noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
             }
 
             if (noExactMatchesFromNuspec.Count != 0)
             {
+                if (noExactMatchString.Length == 0)
+                {
+                    noExactMatchString.AppendLine(MessageFormat);
+                }
+
                 foreach (var tfm in noExactMatchesFromNuspec)
                 {
                     if (tfm == noExactMatchesFromNuspec.First())
                     {
                         noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles);
-                        noExactMatchString.Append(" " + tfm.GetShortFolderName());
+                        noExactMatchString.Append(" ");
+                        noExactMatchString.Append(tfm.GetShortFolderName());
                         continue;
                     }
-
-                    noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                    noExactMatchString.Append(" ");
+                    noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
                     noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles);
-                    noExactMatchString.Append(" " + tfm.GetShortFolderName());
+                    noExactMatchString.Append(" ");
+                    noExactMatchString.Append(tfm.GetShortFolderName());
                 }
-                
-                noExactMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                noExactMatchString.Append(" ");
+                noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
             }
 
             if (compatNotExactMatches.Count != 0)
             {
+                compatMatchString.AppendLine(CompatMatchFoundWarningMessageFormat);
                 foreach (var tfm in compatNotExactMatches)
                 {
                     if (tfm == compatNotExactMatches.First())
                     {
                         compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
-                        compatMatchString.Append(" " + tfm.GetFrameworkString());
+                        compatMatchString.Append(" ");
+                        compatMatchString.Append(tfm.GetFrameworkString());
                         continue;
                     }
-
-                    compatMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    compatMatchString.Append(" ");
+                    compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
                     compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
-                    compatMatchString.Append(" " + tfm.GetFrameworkString());
+                    compatMatchString.Append(" ");
+                    compatMatchString.Append(tfm.GetFrameworkString());
                 }
-                compatMatchString.AppendLine(" " + AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                compatMatchString.Append(" ");
+                compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
             }
 
             return (noExactMatchString.ToString(), compatMatchString.ToString());

@@ -11,6 +11,7 @@ using NuGet.RuntimeModel;
 using NuGet.Client;
 using NuGet.ContentModel;
 using NuGet.Packaging.Core;
+using System.Reflection;
 
 namespace NuGet.Packaging.Test
 {
@@ -46,18 +47,12 @@ namespace NuGet.Packaging.Test
             };
 
             // Act
-<<<<<<< HEAD:test/NuGet.Core.Tests/NuGet.Packaging.Test/DependeciesGroupsForEachTFMRuleTests.cs
-            var rule = new DependeciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.CatagoriseTFMs(fileStrings, frameworks);
-=======
             var rule = new DependenciesGroupsForEachTFMRule();
             var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
->>>>>>> fixed misspelling:test/NuGet.Core.Tests/NuGet.Packaging.Test/DependenciesGroupsForEachTFMRuleTests.cs
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+            Assert.Equal(0, issues.Count);
         }
 
         [Fact]
@@ -92,8 +87,7 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+            Assert.Equal(0, issues.Count);
         }
 
         [Fact]
@@ -124,13 +118,15 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
                 "- Add lib or ref assemblies for the net45 target framework\r\n" +
                 "- Add lib or ref assemblies for the netstandard1.0 target framework\r\n" +
                 "- Add lib or ref assemblies for the netstandard1.3 target framework\r\n" +
                 "- Add lib or ref assemblies for the netstandard2.0 target framework\r\n";
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+
+            var warning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
+            Assert.Equal(expectedWarningMessageExact, warning.Message);
+            Assert.Equal(1, issues.Count);
         }
 
         [Fact]
@@ -152,12 +148,16 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
                 "- Add lib or ref assemblies for the net45 target framework\r\n";
-            var testStringCompat = AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch + "\n" +
+            var expectedWarningMessageCompat = AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch + "\r\n" +
                 "- Add a dependency group for .NETFramework4.7.2 to the nuspec\r\n";
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5130 && p.Message == testStringCompat));
+
+            var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
+            Assert.Equal(expectedWarningMessageExact, firstWarning.Message);
+            var secondWarning = issues.Single(p => p.Code == NuGetLogCode.NU5130);
+            Assert.Equal(expectedWarningMessageCompat, secondWarning.Message);
+            Assert.Equal(2, issues.Count);
         }
 
         [Fact]
@@ -177,12 +177,14 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
                 "- Add a dependency group for .NETFramework2.0 to the nuspec\r\n" +
                 "- Add a dependency group for .NETFramework3.5 to the nuspec\r\n" +
                 "- Add a dependency group for .NETFramework4.7.2 to the nuspec\r\n";
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+
+            var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
+            Assert.Equal(expectedWarningMessageExact, firstWarning.Message);
+            Assert.Equal(1, issues.Count);
         }
 
         [Fact]
@@ -204,11 +206,12 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var testStringExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
                 "- Add a dependency group for .NETFramework4.5 to the nuspec\r\n" +
                 "- Add lib or ref assemblies for the net472 target framework\r\n";
-            Assert.True(issues.Any(p => p.Code == NuGetLogCode.NU5128 && p.Message == testStringExact));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+            var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
+            Assert.Equal(expectedWarningMessageExact, firstWarning.Message);
+            Assert.Equal(1, issues.Count);
         }
 
         [Fact]
@@ -226,8 +229,7 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5128));
-            Assert.False(issues.Any(p => p.Code == NuGetLogCode.NU5130));
+            Assert.Equal(0, issues.Count);
         }
 
         [Fact]
@@ -296,7 +298,8 @@ namespace NuGet.Packaging.Test
 
             Assert.Empty(compat);
             Assert.Empty(file);
-            Assert.NotEmpty(nuspec);
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.Equal(1, nuspec.Count);
         }
 
         [Fact]
@@ -329,7 +332,8 @@ namespace NuGet.Packaging.Test
             var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
 
             Assert.Empty(compat);
-            Assert.NotEmpty(file);
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.Equal(file.Count, 1);
             Assert.Empty(nuspec);
         }
 
@@ -362,8 +366,10 @@ namespace NuGet.Packaging.Test
             var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
 
             Assert.Empty(compat);
-            Assert.NotEmpty(file);
-            Assert.NotEmpty(nuspec);
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net2));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.Equal(file.Count, 1);
+            Assert.Equal(nuspec.Count, 1);
         }
 
         [Fact]
@@ -392,9 +398,12 @@ namespace NuGet.Packaging.Test
             var rule = new DependenciesGroupsForEachTFMRule();
             var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
 
-            Assert.NotEmpty(compat);
-            Assert.NotEmpty(file);
-            Assert.NotEmpty(nuspec);
+            Assert.True(compat.Contains(NuGetFramework.Parse("net472")));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net2));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.Equal(file.Count, 1);
+            Assert.Equal(nuspec.Count, 1);
+            Assert.Equal(compat.Count, 1);
         }
 
         [Fact]
@@ -419,7 +428,13 @@ namespace NuGet.Packaging.Test
 
             Assert.Empty(compat);
             Assert.Empty(file);
-            Assert.NotEmpty(nuspec);
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net35));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net4));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.NetStandard10));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.NetStandard13));
+            Assert.True(nuspec.Contains(FrameworkConstants.CommonFrameworks.NetStandard20));
+            Assert.Equal(nuspec.Count, 6);
         }
 
         [Fact]
@@ -430,10 +445,9 @@ namespace NuGet.Packaging.Test
 
             var fileStrings = new string[]
             {
-                "lib/net20/test.dll",
                 "lib/net35/test.dll",
                 "lib/net40/test.dll",
-                "lib/net472/test.dll",
+                "lib/net45/test.dll",
                 "lib/netstandard1.0/test.dll",
                 "lib/netstandard1.3/test.dll",
                 "lib/netstandard2.0/test.dll",
@@ -444,10 +458,15 @@ namespace NuGet.Packaging.Test
             var rule = new DependenciesGroupsForEachTFMRule();
             var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
 
-            // Assert
-            Assert.True(testStringExact.Contains("Add lib or ref assemblies for the net45 target framework"));
-            Assert.True(testStringExact.Contains(" Add a dependency group for .NETFramework2.0 to the nuspec"));
-            Assert.True(testStringCompat == string.Empty);
+            Assert.Empty(compat);
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net35));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net4));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net45));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.NetStandard10));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.NetStandard13));
+            Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.NetStandard20));
+            Assert.Equal(file.Count, 6);
+            Assert.Empty(nuspec);
         }
     }
 }
