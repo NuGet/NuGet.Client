@@ -43,7 +43,7 @@ namespace NuGet.Configuration
 
         private readonly SettingsFile _settingsHead;
 
-        private Dictionary<string, VirtualSettingSection> _computedSections { get; set; }
+        private readonly Dictionary<string, VirtualSettingSection> _computedSections;
 
         public SettingSection GetSection(string sectionName)
         {
@@ -367,6 +367,38 @@ namespace NuGet.Configuration
             return LoadSettingsForSpecificConfigs(
                 root,
                 configFileName,
+                validSettingFiles,
+                machineWideSettings,
+                loadUserWideSettings,
+                useTestingGlobalPath);
+        }
+
+        /// <summary>
+        /// For internal use only.
+        /// Finds and loads all configuration files within <paramref name="root" />.
+        /// Does not load configuration files outside of <paramref name="root" />.
+        /// </summary>
+        internal static ISettings LoadSettings(
+            DirectoryInfo root,
+            IMachineWideSettings machineWideSettings,
+            bool loadUserWideSettings,
+            bool useTestingGlobalPath)
+        {
+            var validSettingFiles = new List<SettingsFile>();
+            var comparer = PathUtility.GetStringComparisonBasedOnOS();
+            var settingsFiles = root.GetFileSystemInfos("*.*", SearchOption.AllDirectories)
+                .OfType<FileInfo>()
+                .OrderByDescending(file => file.FullName.Count(c => c == Path.DirectorySeparatorChar))
+                .Where(file => OrderedSettingsFileNames.Any(fileName => fileName.Equals(file.Name, comparer)));
+
+            validSettingFiles.AddRange(
+                settingsFiles
+                    .Select(file => ReadSettings(file.DirectoryName, file.FullName))
+                    .Where(file => file != null));
+
+            return LoadSettingsForSpecificConfigs(
+                root.FullName,
+                configFileName: null,
                 validSettingFiles,
                 machineWideSettings,
                 loadUserWideSettings,

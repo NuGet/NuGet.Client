@@ -19,7 +19,7 @@ namespace NuGet.Configuration.Test
             Directory.CreateDirectory(mockBaseDirectory);
             using (var file = File.Create(Path.Combine(mockBaseDirectory, configurationPath)))
             {
-                var info = new UTF8Encoding(true).GetBytes(configurationContent);
+                var info = Encoding.UTF8.GetBytes(configurationContent);
                 file.Write(info, 0, info.Count());
             }
         }
