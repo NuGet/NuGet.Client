@@ -786,13 +786,13 @@ phases:
     clean: true
     submodules: true
     
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
-    inputs:
-      packageType: sdk
-      version: 3.0.x
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
     
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -852,6 +852,48 @@ phases:
   #         }
   #       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
   #   condition: "failed()"
+
+  # - task: NuGetCommand@2
+  #   displayName: "Add  .NET Core 3.0 SDK Feed Source1"
+  #   inputs:
+  #     command: "custom"
+  #     arguments: "sources add -Name dotnet-core -Source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source2"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name dotnet-windowsdesktop -Source https://dotnetfeed.blob.core.windows.net/dotnet-windowsdesktop/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source3"
+    inputs:
+      command: "custom"
+      arguments:  sources add -Name aspnet-aspnetcore -Source https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source4"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name aspnet-aspnetcore-tooling -Source https://dotnetfeed.blob.core.windows.net/aspnet-aspnetcore-tooling/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source5"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name aspnet-entityframeworkcore -Source https://dotnetfeed.blob.core.windows.net/aspnet-entityframeworkcore/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source6"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name aspnet-extensions -Source https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+                  
+  - task: NuGetCommand@2
+    displayName: "Add  .NET Core 3.0 SDK Feed Source7"
+    inputs:
+      command: "custom"
+      arguments: "sources add -Name gRPC repository -Source https://grpc.jfrog.io/grpc/api/nuget/v3/grpc-nuget-dev -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
 
   - task: MSBuild@1
     displayName: "Restore for VS2019"
