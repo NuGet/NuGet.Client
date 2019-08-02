@@ -130,15 +130,9 @@ namespace NuGet.SolutionRestoreManager
                 return restoreTask;
             }
             catch (Exception e)
-            when (e is InvalidOperationException || e is ArgumentException || e is FormatException)
             {
                 _logger.LogError(e.ToString());
                 return Task.FromResult(false);
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e.ToString());
-                throw;
             }
         }
 
