@@ -786,14 +786,6 @@ phases:
     clean: true
     submodules: true
     
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
-    
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
