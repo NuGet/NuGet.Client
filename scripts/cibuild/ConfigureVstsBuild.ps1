@@ -193,8 +193,16 @@ else
         ToolsetTargetBranches = $ToolsetTargetBranches.Trim()
     }
 
-    New-Item $BuildInfoJsonFile -Force
-    $jsonRepresentation | ConvertTo-Json | Set-Content $BuildInfoJsonFile
+    # First create the file locally so that we can laster publish it as a build artifact from a local source file instead of a remote source file.
+    $localBuildInfoJsonFilePath = [System.IO.Path]::Combine("$Env:BUILD_REPOSITORY_LOCALPATH\artifacts", 'buildinfo.json')
+
+    New-Item $localBuildInfoJsonFilePath -Force
+    $jsonRepresentation | ConvertTo-Json | Set-Content $localBuildInfoJsonFilePath
+
+    # Now copy the file to the remote folder.
+    [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($BuildInfoJsonFile))
+    [System.IO.File]::Copy($localBuildInfoJsonFilePath, $BuildInfoJsonFile)
+
     $productVersion = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetSemanticVersion
     if (-not $?)
     {

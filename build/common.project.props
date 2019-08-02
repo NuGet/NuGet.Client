@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="15.0">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.props" Condition="Exists('$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), &quot;README.md&quot;))\packages\Microsoft.VisualStudioEng.MicroBuild.Core.0.4.1\build\Microsoft.VisualStudioEng.MicroBuild.Core.props')" />
+
   <!-- Helper properties -->
   <PropertyGroup>
     <IsXPlat>false</IsXPlat>
@@ -274,4 +276,5 @@
    <ApexProjects Include="$(RepositoryRootDirectory)test\NuGet.Tests.Apex\*\*.csproj" />
   </ItemGroup>
 
+  <Import Project="OptProfV2.props"/>
 </Project>
