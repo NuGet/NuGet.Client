@@ -853,11 +853,11 @@ phases:
   #       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
   #   condition: "failed()"
 
-  - task: NuGetCommand@2
-    displayName: "Add  .NET Core 3.0 SDK Feed Source1"
-    inputs:
-      command: "custom"
-      arguments: "sources add -Name dotnet-core -Source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
+  # - task: NuGetCommand@2
+  #   displayName: "Add  .NET Core 3.0 SDK Feed Source1"
+  #   inputs:
+  #     command: "custom"
+  #     arguments: "sources add -Name dotnet-core -Source https://dotnetfeed.blob.core.windows.net/dotnet-core/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
                   
   - task: NuGetCommand@2
     displayName: "Add  .NET Core 3.0 SDK Feed Source2"
