@@ -889,7 +889,7 @@ phases:
       command: "custom"
       arguments: "sources add -Name aspnet-extensions -Source https://dotnetfeed.blob.core.windows.net/aspnet-extensions/index.json -UserName $(ApexPackageFeedUsername) -Password $(ApexPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\\NuGet.config"
                   
-- task: NuGetCommand@2
+  - task: NuGetCommand@2
     displayName: "Add  .NET Core 3.0 SDK Feed Source7"
     inputs:
       command: "custom"
