@@ -35,6 +35,7 @@ function Test-NetCoreProjectExecuteInitScriptOnInstall {
 }
 
 function Test-NetCoreProjectExecuteInitScriptOnlyOnce {
+    [SkipTest('https://github.com/NuGet/Home/issues/7891')]
     param($context)
 
     Remove-Variable PackageInitPS1Var -Scope Global -Force -ErrorAction Ignore
