@@ -126,7 +126,8 @@ namespace NuGet.Packaging.Rules
 
             if (noExactMatchesFromFile.Count != 0)
             {
-                noExactMatchString.AppendLine(MessageFormat);
+                noExactMatchString.Append(MessageFormat);
+                noExactMatchString.Append(Environment.NewLine);
                 foreach (var tfm in noExactMatchesFromFile)
                 {
                     if(tfm == noExactMatchesFromFile.First())
@@ -137,20 +138,23 @@ namespace NuGet.Packaging.Rules
                         continue;
                     }
                     noExactMatchString.Append(" ");
-                    noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    noExactMatchString.Append(Environment.NewLine);
                     noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
                     noExactMatchString.Append(" ");
                     noExactMatchString.Append(tfm.GetFrameworkString());
                 }
                 noExactMatchString.Append(" ");
-                noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                noExactMatchString.Append(Environment.NewLine);
             }
 
             if (noExactMatchesFromNuspec.Count != 0)
             {
                 if (noExactMatchString.Length == 0)
                 {
-                    noExactMatchString.AppendLine(MessageFormat);
+                    noExactMatchString.Append(MessageFormat);
+                    noExactMatchString.Append(Environment.NewLine);
                 }
 
                 foreach (var tfm in noExactMatchesFromNuspec)
@@ -163,18 +167,21 @@ namespace NuGet.Packaging.Rules
                         continue;
                     }
                     noExactMatchString.Append(" ");
-                    noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                    noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                    noExactMatchString.Append(Environment.NewLine);
                     noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToFiles);
                     noExactMatchString.Append(" ");
                     noExactMatchString.Append(tfm.GetShortFolderName());
                 }
                 noExactMatchString.Append(" ");
-                noExactMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                noExactMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToFile);
+                noExactMatchString.Append(Environment.NewLine);
             }
 
             if (compatNotExactMatches.Count != 0)
             {
-                compatMatchString.AppendLine(CompatMatchFoundWarningMessageFormat);
+                compatMatchString.Append(CompatMatchFoundWarningMessageFormat);
+                compatMatchString.Append(Environment.NewLine);
                 foreach (var tfm in compatNotExactMatches)
                 {
                     if (tfm == compatNotExactMatches.First())
@@ -185,16 +192,18 @@ namespace NuGet.Packaging.Rules
                         continue;
                     }
                     compatMatchString.Append(" ");
-                    compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                    compatMatchString.Append(Environment.NewLine);
                     compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMBeginningToNuspec);
                     compatMatchString.Append(" ");
                     compatMatchString.Append(tfm.GetFrameworkString());
                 }
                 compatMatchString.Append(" ");
-                compatMatchString.AppendLine(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                compatMatchString.Append(AnalysisResources.DependenciesGroupsForEachTFMEndingToNuspec);
+                compatMatchString.Append(Environment.NewLine);
             }
 
-            return (noExactMatchString.ToString(), compatMatchString.ToString());
+            return (noExactMatchString.ToString().Trim(), compatMatchString.ToString().Trim());
         }
 
         private static IEnumerable<NuGetFramework> ExtractTFMsFromNuspec(Stream packageNuspecStream)
