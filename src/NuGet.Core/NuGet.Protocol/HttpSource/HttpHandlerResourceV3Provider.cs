@@ -44,6 +44,7 @@ namespace NuGet.Protocol
             var clientHandler = new HttpClientHandler
             {
                 Proxy = proxy,
+                DefaultProxyCredentials = CredentialCache.DefaultCredentials,
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
 
