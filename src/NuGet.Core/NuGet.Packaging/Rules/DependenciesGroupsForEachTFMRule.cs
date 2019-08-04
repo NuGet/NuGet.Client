@@ -31,7 +31,7 @@ namespace NuGet.Packaging.Rules
             var files = builder.GetFiles().
                 Where(t => PathUtility.GetPathWithDirectorySeparator(t).Count(m => m == Path.DirectorySeparatorChar) > 1);
             var packageNuspec = ExtractTFMsFromNuspec(builder.GetNuspec());
-            var (compatNotExactMatches, noExactMatchesFromFile, noExactMatchesFromNuspec) = CatagoriseTFMs(files, packageNuspec);
+            var (compatNotExactMatches, noExactMatchesFromFile, noExactMatchesFromNuspec) = Categorize(files, packageNuspec);
             return GenerateWarnings(compatNotExactMatches, noExactMatchesFromFile, noExactMatchesFromNuspec);
         }
 
@@ -59,7 +59,7 @@ namespace NuGet.Packaging.Rules
             return Array.Empty<PackagingLogMessage>();
         }
 
-        internal (HashSet<NuGetFramework>, HashSet<NuGetFramework>, HashSet<NuGetFramework>) CatagoriseTFMs(IEnumerable<string> files, IEnumerable<NuGetFramework> tfmsFromNuspec)
+        internal (HashSet<NuGetFramework>, HashSet<NuGetFramework>, HashSet<NuGetFramework>) Categorize(IEnumerable<string> files, IEnumerable<NuGetFramework> tfmsFromNuspec)
         {
             var managedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
             Func<object, object, bool> isCompatible = managedCodeConventions.Properties["tfm"].CompatibilityTest;
