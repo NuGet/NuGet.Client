@@ -79,21 +79,8 @@ namespace NuGet.Packaging.Rules
             var noExactMatchesFromNuspec = new HashSet<NuGetFramework>();
             var compatNotExactMatches = new HashSet<NuGetFramework>();
 
-            foreach (var fileTFM in tfmsFromFiles)
-            {
-                if (!tfmsFromNuspec.Contains(fileTFM))
-                {
-                    noExactMatchesFromFile.Add(fileTFM);
-                }
-            }
-
-            foreach (var nuspecTFM in tfmsFromNuspec)
-            {
-                if (!tfmsFromFiles.Contains(nuspecTFM))
-                {
-                    noExactMatchesFromNuspec.Add(nuspecTFM);
-                }
-            }
+            noExactMatchesFromFile.AddRange(tfmsFromFiles.Where(t => !tfmsFromNuspec.Contains(t)));
+            noExactMatchesFromNuspec.AddRange(tfmsFromNuspec.Where(t => !tfmsFromFiles.Contains(t)));
 
             foreach (var fileTFM in noExactMatchesFromFile)
             {
@@ -109,10 +96,7 @@ namespace NuGet.Packaging.Rules
 
             if (compatNotExactMatches.Count != 0)
             {
-                foreach(var compatTFM in compatNotExactMatches)
-                {
-                    noExactMatchesFromFile.Remove(compatTFM);
-                }
+                noExactMatchesFromFile.RemoveWhere(p => compatNotExactMatches.Contains(p));
             }
 
             return (compatNotExactMatches, noExactMatchesFromFile, noExactMatchesFromNuspec);

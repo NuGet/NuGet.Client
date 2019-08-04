@@ -21,7 +21,7 @@ namespace NuGet.Packaging.Test
         ContentItemCollection _collection = new ContentItemCollection();
 
         [Fact]
-        public void Validate_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
+        public void GenerateWarnings_PackageWithDependenciesForEachTFMInLib_ShouldNotWarn()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -35,7 +35,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -48,7 +48,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageWithDependenciesInRefHasExactMatch_ShouldNotWarn()
+        public void GenerateWarnings_PackageWithDependenciesInRefHasExactMatch_ShouldNotWarn()
         {
             var frameworks = new NuGetFramework[]
             {
@@ -70,7 +70,7 @@ namespace NuGet.Packaging.Test
             };
 
             //Arrange
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "ref/net20/test.dll",
                 "ref/net35/test.dll",
@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -91,7 +91,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageWithoutDependenciesForEachTFMInLib_ShouldThrowOneWarningCode()
+        public void GenerateWarnings_PackageWithoutDependenciesForEachTFMInLib_ShouldThrowOneWarningCode()
         {
             //Arrange
             var frameworks = new NuGetFramework[]
@@ -105,7 +105,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -114,7 +114,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -130,21 +130,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageWithDependenciesHasCompatMatchNotExactMatch_ShouldThrowTwoWarningCodes()
+        public void GenerateWarnings_PackageWithDependenciesHasCompatMatchNotExactMatch_ShouldThrowTwoWarningCodes()
         {
             var frameworks = new NuGetFramework[]
             {
                 FrameworkConstants.CommonFrameworks.Net45,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net472/test.dll"
             };
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -161,10 +161,10 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageHasNoDependencyGroupWithFilesInTheLib_ShouldThrowOneWarningCode()
+        public void GenerateWarnings_PackageHasNoDependencyGroupWithFilesInTheLib_ShouldThrowOneWarningCode()
         {
             var frameworks = Array.Empty<NuGetFramework>();
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -173,7 +173,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -188,21 +188,21 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageHasCompatMatchFromNuspecToPackage_ShouldThrowOneWarningCode()
+        public void GenerateWarnings_PackageHasCompatMatchFromNuspecToPackage_ShouldThrowOneWarningCode()
         {
             var frameworks = new string[]
             {
                 ".NETFramework4.7.2"
             }.Select(f => NuGetFramework.Parse(f));
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net45/test.dll"
             };
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -215,17 +215,17 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void Validate_PackageHasNoDepencyNodeAndHasFilesInLib_ShouldNotWarn()
+        public void GenerateWarnings_PackageHasNoDepencyNodeAndHasFilesInLib_ShouldNotWarn()
         {
             var frameworks = Array.Empty<NuGetFramework>();
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/test.dll"
             };
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
@@ -247,7 +247,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -260,7 +260,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.Empty(file);
@@ -282,7 +282,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -294,7 +294,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.Empty(file);
@@ -316,7 +316,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -329,7 +329,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net45));
@@ -351,7 +351,7 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
@@ -363,7 +363,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net2));
@@ -379,7 +379,6 @@ namespace NuGet.Packaging.Test
             var frameworks = new NuGetFramework[]
             {
                 FrameworkConstants.CommonFrameworks.Net35,
-                FrameworkConstants.CommonFrameworks.Net4,
                 FrameworkConstants.CommonFrameworks.Net45,
             };
 
@@ -387,16 +386,12 @@ namespace NuGet.Packaging.Test
             {
                 "lib/net20/test.dll",
                 "lib/net35/test.dll",
-                "lib/net40/test.dll",
                 "lib/net472/test.dll",
-                "lib/netstandard1.0/test.dll",
-                "lib/netstandard1.3/test.dll",
-                "lib/netstandard2.0/test.dll",
             };
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.True(compat.Contains(NuGetFramework.Parse("net472")));
             Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net2));
@@ -420,11 +415,11 @@ namespace NuGet.Packaging.Test
                 FrameworkConstants.CommonFrameworks.NetStandard20,
             };
 
-            var fileStrings = Array.Empty<string>();
+            var files = Array.Empty<string>();
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.Empty(file);
@@ -443,7 +438,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var frameworks = Array.Empty<NuGetFramework>();
 
-            var fileStrings = new string[]
+            var files = new string[]
             {
                 "lib/net35/test.dll",
                 "lib/net40/test.dll",
@@ -456,7 +451,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var rule = new DependenciesGroupsForEachTFMRule();
-            var (compat, file, nuspec) = rule.Categorize(fileStrings, frameworks);
+            var (compat, file, nuspec) = rule.Categorize(files, frameworks);
 
             Assert.Empty(compat);
             Assert.True(file.Contains(FrameworkConstants.CommonFrameworks.Net35));
