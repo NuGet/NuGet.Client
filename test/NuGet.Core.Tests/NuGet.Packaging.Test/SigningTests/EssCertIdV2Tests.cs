@@ -168,7 +168,7 @@ namespace NuGet.Packaging.Test
             SigningTestUtility.VerifyByteArrays(bcIssuerSerial.Serial.Value.ToByteArray(), essCertIdV2.IssuerSerial.SerialNumber);
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void Read_WithValidInput_ReturnsEssCertId()
         {

@@ -16,6 +16,8 @@ using NuGet.Packaging.Licenses;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using NuGet.XPlat.FuncTest;
+
 
 
 namespace Dotnet.Integration.Test
@@ -616,6 +618,7 @@ namespace Dotnet.Integration.Test
 
                     Assert.Equal(framework,
                         dependencyGroups[0].TargetFramework);
+                        
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
                         packagesA.Count);
@@ -4047,7 +4050,7 @@ namespace ClassLibrary
                     }
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
 
-                    foreach(var frameworkRef in frameworkReftoPack)
+                    foreach (var frameworkRef in frameworkReftoPack)
                     {
                         var attributes = new Dictionary<string, string>();
 
@@ -4427,4 +4430,5 @@ namespace ClassLibrary
             }
         }
     }
+
 }

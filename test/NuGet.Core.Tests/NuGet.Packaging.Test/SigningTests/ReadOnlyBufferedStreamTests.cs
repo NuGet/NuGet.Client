@@ -249,7 +249,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void Close_WhenLeaveOpenFalse_DisposesUnderlyingStream()
         {

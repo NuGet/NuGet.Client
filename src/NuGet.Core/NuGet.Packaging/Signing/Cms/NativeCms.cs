@@ -3,12 +3,13 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
-using NuGet.Common;
+using System.Security.Cryptography.X509Certificates;
 
 
 namespace NuGet.Packaging.Signing
@@ -232,17 +233,18 @@ namespace NuGet.Packaging.Signing
             return new NativeCms(handle);
         }
 
-        internal void AddCertificates(IEnumerable<byte[]> encodedCertificates)
+        internal void AddCertificates(IEnumerable<X509Certificate2> certificates)
         {
-            foreach (var cert in encodedCertificates)
+            foreach (var cert in certificates)
             {
+                byte[] encodedCert = cert.RawData;
                 using (var hb = new HeapBlockRetainer())
                 {
-                    var unmanagedCert = hb.Alloc(cert.Length);
-                    Marshal.Copy(cert, 0, unmanagedCert, cert.Length);
+                    var unmanagedCert = hb.Alloc(encodedCert.Length);
+                    Marshal.Copy(encodedCert, 0, unmanagedCert, encodedCert.Length);
                     var blob = new CRYPT_INTEGER_BLOB()
                     {
-                        cbData = (uint)cert.Length,
+                        cbData = (uint)encodedCert.Length,
                         pbData = unmanagedCert
                     };
 
@@ -260,7 +262,8 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
-#if IS_DESKTOP
+
+#if IS_SIGNING_SUPPORTED
         internal unsafe void AddCountersignature(CmsSigner cmsSigner, CngKey privateKey)
         {
             using (var hb = new HeapBlockRetainer())
@@ -273,12 +276,10 @@ namespace NuGet.Packaging.Signing
                     cCountersigners: 1,
                     rgCountersigners: signerInfo));
 
-                AddCertificates(CertificateUtility.GetRawDataForCollection(cmsSigner.Certificates));
+                AddCertificates(cmsSigner.Certificates.OfType<X509Certificate2>());
             }
         }
-#endif
 
-#if IS_DESKTOP
         internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())
@@ -510,7 +511,10 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _handle.Dispose();
+            if (!_handle.IsInvalid)
+            {
+                _handle.Dispose();
+            }
         }
     }
 }
