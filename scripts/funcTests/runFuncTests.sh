@@ -30,7 +30,8 @@ chmod +x scripts/funcTests/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
-scripts/funcTests/dotnet-install.sh -i cli -c 2.2
+scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
+# cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
@@ -41,18 +42,32 @@ if [ $? -ne 0 ]; then
 	exit 1
 fi
 
-echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
-DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
-echo $DOTNET_BRANCH
-# Issue 8936 - TEMPORARILY using direct path to script
-scripts/funcTests/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+# run it twice so dotnet cli can expand and decompress without affecting the result of the target
+dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
+DOTNET_BRANCHES="$(dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
+echo $DOTNET_BRANCHES | tr ";" "\n" |  while read -r DOTNET_BRANCH
+do
+	echo $DOTNET_BRANCH
+	ChannelAndVersion=($DOTNET_BRANCH)
+	Channel=${ChannelAndVersion[0]}
+	if [ ${#ChannelAndVersion[@]} -eq 1 ]
+	then
+		Version="latest"
+	else
+		Version=${ChannelAndVersion[1]}
+	fi
+	echo "Channel is: $Channel"
+	echo "Version is: $Version"
+	script/funcTests/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
-# Install the 2.x runtime because our tests target netcoreapp2x
-# Issue 8936 - TEMPORARILY using direct path to script
-scripts/funcTests/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
-# Display current version
-$DOTNET --version
+	# Display current version
+	$DOTNET --version
+	dotnet --info
+done
+echo "================="
+
 
 echo "Deleting .NET Core temporary files"
 rm -rf "/tmp/"dotnet.*
@@ -75,16 +90,16 @@ then
 fi
 
 # restore packages
-echo "$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:Restore /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
 
 # Unit tests
-echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	echo "CoreUnitTests failed!!"
@@ -103,8 +118,8 @@ else
 fi
 
 # Func tests
-echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
-$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
+echo "dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
+dotnet msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta
 
 if [ $? -ne 0 ]; then
 	RESULTCODE='1'

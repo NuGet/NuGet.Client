@@ -30,11 +30,17 @@ namespace Dotnet.Integration.Test
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
-            MsBuildSdksPath = Path.Combine(Directory.GetDirectories
-                (Path.Combine(_cliDirectory, "sdk"))
-                .First(), "Sdks");
+            var sdkPaths = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk"));
+#if NETCORE3_0
+            MsBuildSdksPath = Path.Combine(
+             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
+             , "Sdks");
+#else
+            MsBuildSdksPath = Path.Combine(
+             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("2")).First()
+             , "Sdks");
+#endif        
             _templateDirectory = TestDirectory.Create();
-
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -76,15 +82,42 @@ namespace Dotnet.Integration.Test
 
         private static void CopyFromTemplate(string projectName, string args, string workingDirectory, DirectoryInfo templateDirectoryInfo)
         {
-            foreach(var file in templateDirectoryInfo.GetFiles())
+            foreach (var file in templateDirectoryInfo.GetFiles())
             {
                 File.Copy(file.FullName, Path.Combine(workingDirectory, file.Name));
             }
+            CreateTempGlobalJson(solutionRoot);
+
             File.Move(
                 Path.Combine(workingDirectory, args + ".csproj"),
                 Path.Combine(workingDirectory, projectName + ".csproj"));
         }
 
+        //create a global.json file in temperary testing folder, to make sure testing with the correct sdk when there're multiple of them in CLI folder.
+        internal void CreateTempGlobalJson(string solutionRoot)
+        {
+            //put the global.json at one level up to solutionRoot path
+            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split(Path.DirectorySeparatorChar).Last().Length);
+            if (File.Exists(pathToPlaceGlobalJsonFile + Path.DirectorySeparatorChar + "global.json"))
+            {
+                return;
+            }
+
+            var sdkVersion = MsBuildSdksPath.Split(Path.DirectorySeparatorChar).ElementAt(MsBuildSdksPath.Split(Path.DirectorySeparatorChar).Count() - 2);
+
+            var globalJsonFile =
+@"{
+    ""sdk"": {
+              ""version"": """ + sdkVersion + @"""
+             }
+}";
+
+            using (var outputFile = new StreamWriter(Path.Combine(pathToPlaceGlobalJsonFile, "global.json")))
+            {
+                outputFile.WriteLine(globalJsonFile);
+                outputFile.Close();
+            }
+        }
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
@@ -93,13 +126,16 @@ namespace Dotnet.Integration.Test
                 Directory.CreateDirectory(workingDirectory);
             }
 
+            CreateTempGlobalJson(solutionRoot);
+
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
             var restoreSolutionDirectory = workingDirectory;
             var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
             var packageReference = string.Empty;
-            foreach (var package in packages) {
+            foreach (var package in packages)
+            {
                 packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
             }
 
@@ -171,7 +207,7 @@ namespace Dotnet.Integration.Test
         /// <summary>
         /// dotnet.exe args
         /// </summary>
-        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
+        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode = false)
         {
 
             var result = CommandRunner.Run(TestDotnetCli,
@@ -282,24 +318,29 @@ namespace Dotnet.Integration.Test
             foreach (var projectName in sdkDependencies)
             {
                 var projectArtifactsFolder = new DirectoryInfo(Path.Combine(artifactsDirectory, projectName, toolsetVersion, "bin", configuration));
-                foreach (var frameworkArtifactsFolder in projectArtifactsFolder.EnumerateDirectories())
+
+                var artifactDirectories = projectArtifactsFolder.EnumerateDirectories();
+
+                IEnumerable<DirectoryInfo> frameworkArtifactFolders = artifactDirectories.Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp3.0"));
+                if (!frameworkArtifactsFolders.Any())
                 {
-                    if (frameworkArtifactsFolder.FullName.Contains("netstandard") ||
-                        frameworkArtifactsFolder.FullName.Contains("netcoreapp"))
+                    frameworkArtifactsFolders = frameworkArtifactsFolders.Where(folder => folder.FullName.Contains("netstandard2.0"));
+                }
+
+                foreach (var frameworkArtifactsFolder in frameworkArtifactsFolders)
+                {
+                    var fileName = projectName + ".dll";
+                    File.Copy(
+                            sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
+                            destFileName: Path.Combine(pathToSdkInCli, fileName),
+                            overwrite: true);
+                    // Copy the restore targets.
+                    if (projectName.Equals(restoreProjectName))
                     {
-                        var fileName = projectName + ".dll";
                         File.Copy(
-                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
-                                destFileName: Path.Combine(pathToSdkInCli, fileName),
-                                overwrite: true);
-                        // Copy the restore targets.
-                        if (projectName.Equals(restoreProjectName))
-                        {
-                            File.Copy(
-                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
-                                destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
-                                overwrite: true);
-                        }
+                            sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
+                            destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
+                            overwrite: true);
                     }
                 }
             }
@@ -412,7 +453,7 @@ namespace Dotnet.Integration.Test
 
                 for (var i = 0; i < MaxTries; i++)
                 {
-                    
+
                     try
                     {
                         Directory.Delete(path, recursive: true);
