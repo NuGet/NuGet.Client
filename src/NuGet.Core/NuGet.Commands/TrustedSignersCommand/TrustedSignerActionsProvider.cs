@@ -67,7 +67,7 @@ namespace NuGet.Commands
             throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture, Strings.Error_TrustedRepositoryDoesNotExist, name));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Adds a trusted signer item to the settings based a signed package.
         /// </summary>
@@ -257,7 +257,7 @@ namespace NuGet.Commands
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private CertificateItem GetCertificateItemForSignature(ISignature signature, bool allowUntrustedRoot = false)
         {
             var defaultHashAlgorithm = HashAlgorithmName.SHA256;
