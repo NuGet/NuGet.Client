@@ -147,7 +147,7 @@ namespace Test.Utility.Signing
                         IsCA = true
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root);
                     issuer = cert;
                 }
                 else if (i < length - 1) // intermediate CA cert
@@ -161,7 +161,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority);
                     issuer = cert;
                 }
                 else // leaf cert
@@ -175,7 +175,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My);
                 }
 
                 certChain.Add(cert);
@@ -243,7 +243,12 @@ namespace Test.Utility.Signing
 
             var keyUsage = X509KeyUsageFlags.DigitalSignature;
 
-            if (chainCertificateRequest != null)
+            if (chainCertificateRequest == null)
+            {
+                // Self-signed certificates should have this flag set.
+                keyUsage |= X509KeyUsageFlags.KeyCertSign;
+            }
+            else
             {
                 if (chainCertificateRequest.Issuer != null)
                 {
@@ -286,6 +291,7 @@ namespace Test.Utility.Signing
 
             var padding = paddingMode.ToPadding();
             var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+            bool isCa = isSelfSigned ? true : (chainCertificateRequest?.IsCA ?? false);
 
             certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
@@ -301,7 +307,7 @@ namespace Test.Utility.Signing
             certGen.Extensions.Add(
                 new X509KeyUsageExtension(keyUsage, critical: false));
             certGen.Extensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: isCa, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
 
             // Allow changes
             modifyGenerator?.Invoke(certGen);
@@ -490,7 +496,7 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
@@ -541,7 +547,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateExpired()
@@ -551,7 +557,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateNotYetValid()
@@ -561,7 +567,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon(TimeSpan expiresIn)
@@ -571,7 +577,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
@@ -654,6 +660,8 @@ namespace Test.Utility.Signing
             Assert.Equal(expectedHex, actualHex);
         }
 
+        //We will not change the original X509ChainStatus.StatusInformation of OfflineRevocation if we directly call API CertificateChainUtility.GetCertificateChain (or SigningUtility.Verify)
+        //So if we use APIs above to verify the results of chain.build, we should use AssertOfflineRevocation 
         public static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
             string offlineRevocation;
@@ -677,7 +685,30 @@ namespace Test.Utility.Signing
                 issue.Message.Contains(offlineRevocation));
         }
 
+        //We will change the original X509ChainStatus.StatusInformation of OfflineRevocation to VerifyCertTrustOfflineWhileRevocationModeOffline or VerifyCertTrustOfflineWhileRevocationModeOnline in Signature.cs and Timestamp.cs
+        //So if we use APIs above to verify the results of chain.build, we should use assert AssertOfflineRevocationOnlineMode and AssertOfflineRevocationOfflineMode
+        public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
+        }
+
+        public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
+        {
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.Undefined &&
+                issue.Level == LogLevel.Information &&
+                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
+        }
+
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            AssertRevocationStatusUnknown(issues, logLevel, NuGetLogCode.NU3018);
+        }
+
+        public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel, NuGetLogCode code)
         {
             string revocationStatusUnknown;
 
@@ -693,9 +724,9 @@ namespace Test.Utility.Signing
             {
                 revocationStatusUnknown = "unable to get certificate CRL";
             }
-
+            
             Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Code == code &&
                 issue.Level == logLevel &&
                 issue.Message.Contains(revocationStatusUnknown));
         }
@@ -710,7 +741,7 @@ namespace Test.Utility.Signing
             }
             else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                untrustedRoot = "The trust policy was not trusted.";
+                untrustedRoot = "The certificate was not trusted.";
             }
             else
             {
@@ -739,7 +770,7 @@ namespace Test.Utility.Signing
             {
                 notTimeValid = "certificate has expired";
             }
-
+            
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&

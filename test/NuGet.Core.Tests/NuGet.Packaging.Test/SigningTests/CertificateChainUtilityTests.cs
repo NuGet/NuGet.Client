@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificateType", exception.ParamName);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
+        [Fact]
         public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
             using (var chainHolder = new X509ChainHolder())
@@ -100,19 +100,26 @@ namespace NuGet.Packaging.Test
 
                 if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux)
                 {
+#if NETCORE5_0
+                    Assert.Equal(2, logger.Warnings);
+#else
                     Assert.Equal(RuntimeEnvironmentHelper.IsWindows ? 2 : 1, logger.Warnings);
-
+#endif
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
 
+#if NETCORE5_0
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+#else
                     if (RuntimeEnvironmentHelper.IsWindows)
                     {
                         SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                     }
+#endif
                 }
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
+        [Fact]
         public void GetCertificateChain_WithUntrustedSelfIssuedCertificate_ReturnsChain()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -131,14 +138,19 @@ namespace NuGet.Packaging.Test
                 }
 
                 Assert.Equal(0, logger.Errors);
+#if (IS_DESKTOP || NETCORE5_0)
+                Assert.Equal(1, logger.Warnings);
+#else
                 Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
-
+#endif
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
+#if !NETCORE5_0
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
+#endif
             }
         }
 
