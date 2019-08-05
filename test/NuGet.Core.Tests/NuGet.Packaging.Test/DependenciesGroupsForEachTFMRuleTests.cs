@@ -118,10 +118,10 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
-                "- Add lib or ref assemblies for the net45 target framework\r\n" +
-                "- Add lib or ref assemblies for the netstandard1.0 target framework\r\n" +
-                "- Add lib or ref assemblies for the netstandard1.3 target framework\r\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + Environment.NewLine +
+                "- Add lib or ref assemblies for the net45 target framework" + Environment.NewLine +
+                "- Add lib or ref assemblies for the netstandard1.0 target framework" + Environment.NewLine +
+                "- Add lib or ref assemblies for the netstandard1.3 target framework" + Environment.NewLine +
                 "- Add lib or ref assemblies for the netstandard2.0 target framework";
 
             var warning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
@@ -148,9 +148,9 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + Environment.NewLine +
                 "- Add lib or ref assemblies for the net45 target framework";
-            var expectedWarningMessageCompat = AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch + "\r\n" +
+            var expectedWarningMessageCompat = AnalysisResources.DependenciesGroupsForEachTFMHasCompatMatch + Environment.NewLine +
                 "- Add a dependency group for .NETFramework4.7.2 to the nuspec";
 
             var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
@@ -177,9 +177,9 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
-                "- Add a dependency group for .NETFramework2.0 to the nuspec\r\n" +
-                "- Add a dependency group for .NETFramework3.5 to the nuspec\r\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + Environment.NewLine +
+                "- Add a dependency group for .NETFramework2.0 to the nuspec" + Environment.NewLine +
+                "- Add a dependency group for .NETFramework3.5 to the nuspec" + Environment.NewLine +
                 "- Add a dependency group for .NETFramework4.7.2 to the nuspec";
 
             var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
@@ -193,7 +193,7 @@ namespace NuGet.Packaging.Test
             var frameworks = new string[]
             {
                 ".NETFramework4.7.2"
-            }.Select(f => NuGetFramework.Parse(f));
+            }.Select(f => NuGetFramework.Parse(f)); //.NETFrameowrk4.7.2 doesn't have a constant
 
             var files = new string[]
             {
@@ -206,8 +206,8 @@ namespace NuGet.Packaging.Test
             var issues = rule.GenerateWarnings(compat, file, nuspec).ToList();
 
             // Assert
-            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + "\r\n" +
-                "- Add a dependency group for .NETFramework4.5 to the nuspec\r\n" +
+            var expectedWarningMessageExact = AnalysisResources.DependenciesGroupsForEachTFMHasNoExactMatch + Environment.NewLine +
+                "- Add a dependency group for .NETFramework4.5 to the nuspec" + Environment.NewLine +
                 "- Add lib or ref assemblies for the net472 target framework";
             var firstWarning = issues.Single(p => p.Code == NuGetLogCode.NU5128);
             Assert.Equal(expectedWarningMessageExact, firstWarning.Message);
