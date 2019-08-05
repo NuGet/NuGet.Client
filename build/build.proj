@@ -227,16 +227,6 @@
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion)" />
-
-    <Message Text="Packing for 2nd NuGet.Build.Tasks.pack" Importance="high" />
-    <!-- Pack the 2nd NuGet.Build.Tasks.pack only when IsXPlat != true  -->
-    <MSBuild Condition=" '$(IsXPlat)' != 'true' "
-             BuildInParallel="false"
-             Projects="$(NuGetBuildTasksPackProject)"
-             Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);
-                         Create2ndNupkg=true" />
   </Target>
 
   <!--
@@ -252,14 +242,6 @@
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
                          VisualStudioVersion=$(VisualStudioVersion)" />
-
-    <Message Text="Packing for 2nd NuGet.Build.Tasks.pack   $(NuGetBuildTasksPackProject)" Importance="high" />
-    <MSBuild BuildInParallel="false"
-             Projects="$(NuGetBuildTasksPackProject)"
-             Targets="PackProjects"
-             Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);
-                         Create2ndNupkg=true" />
   </Target>
 
   <!--
