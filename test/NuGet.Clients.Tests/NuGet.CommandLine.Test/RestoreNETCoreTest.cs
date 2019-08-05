@@ -6839,6 +6839,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6892,6 +6894,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -6962,6 +6966,8 @@ namespace NuGet.CommandLine.Test
 
                 xml.Save(projectA.ProjectPath);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -7021,6 +7027,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7086,6 +7094,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7200,6 +7210,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7216,6 +7228,7 @@ namespace NuGet.CommandLine.Test
                 Directory.Delete(packagePath, true);
 
                 Assert.False(Directory.Exists(packagePath), $"{packageX.ToString()} should not be installed anymore.");
+
 
                 // Act
                 r = Util.RestoreSolution(pathContext);
@@ -7257,6 +7270,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7270,6 +7285,7 @@ namespace NuGet.CommandLine.Test
                 var packagePath = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version);
                 Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
                 Assert.Contains("Writing cache file", r.Item2);
+
 
                 // Act
                 r = Util.RestoreSolution(pathContext);
@@ -7315,6 +7331,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7379,6 +7397,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7453,6 +7473,8 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectB.ProjectPath);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7544,6 +7566,8 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectA.ProjectPath);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
