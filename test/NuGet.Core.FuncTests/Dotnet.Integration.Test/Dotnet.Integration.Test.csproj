@@ -1,12 +1,16 @@
 ﻿<Project>
+  <PropertyGroup>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
   <PropertyGroup>
-    <TargetFrameworks>$(NETCoreTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(NETCoreTargetFrameworks)</TargetFrameworks>
     <TestProject>true</TestProject>
   </PropertyGroup>
-
+  
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
@@ -20,7 +24,7 @@
   <ItemGroup>
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
-
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

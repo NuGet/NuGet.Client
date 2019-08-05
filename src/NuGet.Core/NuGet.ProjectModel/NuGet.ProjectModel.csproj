@@ -1,4 +1,8 @@
 <Project>
+  <PropertyGroup>
+    <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
+  </PropertyGroup>
+
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -21,7 +25,7 @@
     <ProjectReference Include="..\NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
+  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.Threading.Thread" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
