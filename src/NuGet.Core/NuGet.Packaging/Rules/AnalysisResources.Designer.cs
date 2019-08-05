@@ -88,6 +88,60 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to - Add lib or ref assemblies for the.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMBeginningToFiles {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMBeginningToFiles", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - Add a dependency group for.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMBeginningToNuspec {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMBeginningToNuspec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to target framework.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMEndingToFile {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMEndingToFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to to the nuspec.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMEndingToNuspec {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMEndingToNuspec", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some target frameworks declared in the dependencies group of the nuspec and the lib/ref folder have compatible matches, but not exact matches in the other location. Unless intentional, consult the list of actions below:.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMHasCompatMatch {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMHasCompatMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Some target frameworks declared in the dependencies group of the nuspec and the lib/ref folder do not have exact matches in the other location. Consult the list of actions below:.
+        /// </summary>
+        public static string DependenciesGroupsForEachTFMHasNoExactMatch {
+            get {
+                return ResourceManager.GetString("DependenciesGroupsForEachTFMHasNoExactMatch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The file &apos;{0}&apos; path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name..
         /// </summary>
         public static string FilePathTooLongWarning {
@@ -196,8 +250,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to This package does not contain a lib/ or ref/ folder, and will therefore be treated as compatible for all
-        ///frameworks. Since framework specific files were found under the build/ directory for {0}, consider creating the following empty files to correctly narrow the compatibility of the package:
+        ///   Looks up a localized string similar to This package does not contain a lib/ or ref/ folder, and will therefore be treated as compatible for all frameworks. Since framework specific files were found under the build/ directory for {0}, consider creating the following empty files to correctly narrow the compatibility of the package:
         ///{1}.
         /// </summary>
         public static string NoRefOrLibFolderInPackage {
