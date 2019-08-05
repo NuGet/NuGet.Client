@@ -61,6 +61,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to An absolute URI is required..
+        /// </summary>
+        internal static string AnAbsoluteUriIsRequired {
+            get {
+                return ResourceManager.GetString("AnAbsoluteUriIsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The argument cannot be null or empty..
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty {
@@ -552,6 +561,15 @@ namespace NuGet.Packaging {
         internal static string FallbackFolderNotFound {
             get {
                 return ResourceManager.GetString("FallbackFolderNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to HTTP or HTTPS is required..
+        /// </summary>
+        internal static string HttpOrHttpsIsRequired {
+            get {
+                return ResourceManager.GetString("HttpOrHttpsIsRequired", resourceCulture);
             }
         }
         
@@ -1569,6 +1587,24 @@ namespace NuGet.Packaging {
         internal static string TimestampResponseExceptionGeneral {
             get {
                 return ResourceManager.GetString("TimestampResponseExceptionGeneral", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The timestamp service responded with HTTP status code &apos;{0}&apos; (&apos;{1}&apos;)..
+        /// </summary>
+        internal static string TimestampServiceRespondedError {
+            get {
+                return ResourceManager.GetString("TimestampServiceRespondedError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The reply from the timestamp server was invalid..
+        /// </summary>
+        internal static string TimestampServiceRespondedInvalidFormat {
+            get {
+                return ResourceManager.GetString("TimestampServiceRespondedInvalidFormat", resourceCulture);
             }
         }
         

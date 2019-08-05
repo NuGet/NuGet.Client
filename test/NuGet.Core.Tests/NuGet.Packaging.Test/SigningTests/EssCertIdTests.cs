@@ -36,7 +36,7 @@ namespace NuGet.Packaging.Test
                 () => EssCertId.Read(new byte[] { 0x30, 0x0b }));
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void Read_WithValidInput_ReturnsEssCertId()
         {

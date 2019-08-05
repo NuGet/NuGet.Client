@@ -8,7 +8,7 @@ using System.Globalization;
 using System.Security.Cryptography.X509Certificates;
 using System.Linq;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -16,7 +16,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class Timestamp
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
         /// <summary>
         /// Upper limit of Timestamp.
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp token info for this timestamp.
         /// </summary>
-        internal Rfc3161TimestampTokenInfo TstInfo { get; }
+        internal IRfc3161TimestampTokenInfo TstInfo { get; }
 
         /// <summary>
         /// Default constructor. Limits are set to current time.

@@ -2362,7 +2362,7 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-#if IS_CORECLR
+#if IS_CORECLR && !IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExtractPackageAsync_RequireMode_UnsignedPackage_InCoreCLR_SkipsSigningVerificationAsync()
         {

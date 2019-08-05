@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 #endif
@@ -14,8 +14,7 @@ namespace NuGet.Packaging.Signing
 {
     public sealed class AuthorPrimarySignature : PrimarySignature
     {
-#if IS_DESKTOP
-
+#if IS_SIGNING_SUPPORTED
         public AuthorPrimarySignature(SignedCms signedCms)
             : base(signedCms, SignatureType.Author)
         {
