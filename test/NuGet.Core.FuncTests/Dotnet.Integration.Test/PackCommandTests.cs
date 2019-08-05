@@ -3960,6 +3960,8 @@ namespace ClassLibrary
             }
         }
 
+        //skip this test for netcoreapp3.0, as the Github issue https://github.com/dotnet/sdk/issues/3367. Our issue to enable this test https://github.com/NuGet/Home/issues/8423
+#if !NETCORE3_0
         [PlatformFact(Platform.Windows)]
         public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
         {
@@ -3984,7 +3986,9 @@ namespace ClassLibrary
                 Assert.True(result.Success);
             }
         }
-        
+#endif
+
+
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackAsMsbuildTargets()
         {
