@@ -15,7 +15,7 @@ namespace Test.Utility.Signing
 {
     public static class SignatureTestUtility
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
 

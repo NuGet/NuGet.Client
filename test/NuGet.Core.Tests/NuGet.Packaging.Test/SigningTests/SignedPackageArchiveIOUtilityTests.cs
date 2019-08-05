@@ -165,7 +165,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void ReadAndHashUntilPosition_WhenPositionAtStart_ReadsAndHashes()
         {
@@ -248,7 +248,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void HashBytes_WithInputBytes_Hashes()
         {
@@ -486,7 +486,7 @@ namespace NuGet.Packaging.Test
 
             internal string GetHash()
             {
-#if !IS_CORECLR
+#if IS_SIGNING_SUPPORTED
                 HashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
 
                 return Convert.ToBase64String(HashAlgorithm.Hash);

@@ -829,4 +829,17 @@ Valid from:</comment>
     <value>Path: {0}</value>
     <comment>0 - folder path</comment>
   </data>
+  <data name="AnAbsoluteUriIsRequired" xml:space="preserve">
+    <value>An absolute URI is required.</value>
+  </data>
+  <data name="HttpOrHttpsIsRequired" xml:space="preserve">
+    <value>HTTP or HTTPS is required.</value>
+  </data>
+  <data name="TimestampServiceRespondedError" xml:space="preserve">
+    <value>The timestamp service responded with HTTP status code '{0}' ('{1}').</value>
+    <comment>{0} is the httpResponse.StatusCode, {1} is the httpResponse.ReasonPhrase.</comment>
+  </data>
+  <data name="TimestampServiceRespondedInvalidFormat" xml:space="preserve">
+    <value>The reply from the timestamp server was invalid.</value>
+  </data>
 </root>

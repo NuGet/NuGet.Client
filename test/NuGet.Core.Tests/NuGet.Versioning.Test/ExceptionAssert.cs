@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -75,13 +75,16 @@ namespace NuGet.Versioning.Test
         public static void ThrowsArgumentException<TArgException>(Action act, string paramName, string message) where TArgException : ArgumentException
         {
             Throws<TArgException>(act, ex =>
-                {
-                    Assert.Equal(paramName, ex.ParamName);
-                    var lines = ex.Message.Split(Environment.NewLine.ToCharArray(), StringSplitOptions.RemoveEmptyEntries);
-                    Assert.Equal(2, lines.Length);
-                    Assert.Equal(message, lines[0]);
-                    Assert.True(lines[1].EndsWith(paramName));
-                });
+            {
+                Assert.Equal(paramName, ex.ParamName);
+                Assert.Contains(message, ex.Message);
+                //Remove the expected message from the exception message, the rest part should have param info.
+                //Background of this change: System.ArgumentException(string message, string paramName) used to generate two lines of message before, but changed to generate one line
+                //in PR: https://github.com/dotnet/coreclr/pull/25185/files#diff-0365d5690376ef849bf908dfc225b8e8
+                var paramPart = ex.Message.Substring(ex.Message.IndexOf(message) + message.Length);
+                Assert.Contains("Parameter", paramPart);
+                Assert.Contains(paramName, paramPart);
+            });
         }
     }
 }
