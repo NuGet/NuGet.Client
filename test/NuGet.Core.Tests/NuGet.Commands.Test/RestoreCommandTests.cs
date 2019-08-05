@@ -971,7 +971,7 @@ namespace NuGet.Commands.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task RestoreCommand_InvalidSignedPackageAsync()
         {

@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -108,7 +109,8 @@ namespace NuGet.Commands.Test
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
-                test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
+                //X509 store is opened in ReadOnly mode in this code path. Hence StoreLocation is set to LocalMachine.
+                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation(readOnly: true);         
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
@@ -150,7 +152,6 @@ namespace NuGet.Commands.Test
             }
         }
 #endif
-
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

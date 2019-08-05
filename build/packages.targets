@@ -7,6 +7,8 @@
         <VSFrameworkVersion>16.5.29714.20</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
         <VSThreadingVersion>16.5.126</VSThreadingVersion>
+        <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/NuGet/Home/issues/8508 -->
+        <PatchedSystemPackagesVersion>5.0.0-alpha1.19473.1</PatchedSystemPackagesVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->
@@ -65,6 +67,8 @@
         <PackageReference Update="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" /> 
         <PackageReference Update="System.Runtime.Serialization.Formatters" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Runtime.Serialization.Primitives" Version="$(SystemPackagesVersion)" />
+        <PackageReference Update="System.Security.Cryptography.Pkcs" Version="$(PatchedSystemPackagesVersion)" />
+        <PackageReference Update="System.Security.Cryptography.Cng" Version="$(PatchedSystemPackagesVersion)" />
         <PackageReference Update="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Threading.Tasks.Dataflow" Version="4.9.0" />
         <PackageReference Update="System.Threading.Thread" Version="$(SystemPackagesVersion)" />
@@ -96,7 +100,6 @@
         <PackageReference Update="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="System.Runtime.Loader" Version="$(SystemPackagesVersion)" />
-        <PackageReference Update="System.Security.Cryptography.Pkcs" Version="4.5.2" />
         <PackageReference Update="System.Threading.Tasks.Parallel" Version="$(SystemPackagesVersion)" />
         <PackageReference Update="Xunit.StaFact" Version="0.2.9" />
         <PackageReference Update="xunit" Version="$(XunitVersion)" />

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
+        [Fact]
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -112,8 +112,12 @@ namespace NuGet.Packaging.Test
                 
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
+#if NETCORE5_0
+                    Assert.Equal(1, logger.Warnings);
+#else
                     Assert.Equal(2, logger.Warnings);
                     SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+#endif
                 }
                 else
                 {
@@ -125,7 +129,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
+        [Fact]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
@@ -136,18 +140,26 @@ namespace NuGet.Packaging.Test
                 SigningUtility.Verify(request, logger);
 
                 Assert.Equal(0, logger.Errors);
+#if (IS_DESKTOP || NETCORE5_0)
+                Assert.Equal(1, logger.Warnings);
+#else
                 Assert.Equal(RuntimeEnvironmentHelper.IsLinux ? 2 : 1, logger.Warnings);
+#endif
 
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
 
+
+#if !NETCORE5_0
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
+#endif
             }
+
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public void CreateSignedAttributes_SignPackageRequest_WhenRequestNull_Throws()
         {
@@ -527,14 +539,8 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, test.Logger.Errors);
                 Assert.Equal(1, test.Logger.Warnings);
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Error &&
-                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                SigningTestUtility.AssertNotTimeValid(test.Logger.LogMessages, LogLevel.Error);
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
             }
         }
 
@@ -557,7 +563,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0, test.Logger.Errors);
                 Assert.Equal(1, test.Logger.Warnings);
                 Assert.Equal(1, test.Logger.Messages.Count());
-                Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
             }
         }
 
@@ -601,7 +607,7 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(0, test.Logger.Errors);
                     Assert.Equal(1, test.Logger.Warnings);
                     Assert.Equal(1, test.Logger.Messages.Count());
-                    Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                    SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
