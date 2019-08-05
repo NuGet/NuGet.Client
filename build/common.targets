@@ -11,6 +11,10 @@
     <IsCore>true</IsCore>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
+  </PropertyGroup>
+
   <!-- Include shared files for netcore projects -->
   <ItemGroup Condition=" ('$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' != 'true') OR '$(IncludeNuGetSharedFiles)' == 'true'">
     <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
@@ -318,6 +322,17 @@
     <Error
       Text="Newtonsoft.Json must be version $(NewtonsoftJsonVersionCore) but resolved %(Reference.NuGetPackageVersion)"
       Condition=" %(Reference.NuGetPackageId) == 'Newtonsoft.Json' AND %(Reference.NuGetPackageVersion) != '$(NewtonsoftJsonVersionCore)' " />
+  </Target>
+
+  <!--
+    ==========================================================================================
+    Temporary Workaround Target related to issue https://github.com/dotnet/cli/issues/11378
+    ==========================================================================================
+  -->
+  <Target Name="WorkaroundNetStandard" AfterTargets="ResolvePackageAssets" Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
+    <ItemGroup>
+      <TransitiveFrameworkReference Remove="NETStandard.Library" />
+    </ItemGroup>
   </Target>
 
 </Project>
