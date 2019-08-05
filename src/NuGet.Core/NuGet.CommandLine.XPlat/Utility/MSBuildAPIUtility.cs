@@ -458,6 +458,7 @@ namespace NuGet.CommandLine.XPlat
                                 .FromIdentity(new PackageIdentity(library.Name, library.Version))
                                 .Build()
                         };
+                        installedPackage.Type = library.Type;
                         transitivePackages.Add(installedPackage);
                     }
                 }

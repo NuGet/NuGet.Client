@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.LibraryModel;
 using NuGet.Protocol;
 using NuGet.Versioning;
 
@@ -119,6 +120,9 @@ namespace NuGet.CommandLine.XPlat.Utility
             var autoReferenceFound = false;
             var deprecatedFound = false;
 
+            // Exclude known project references from the listing.
+            packages = packages.Where(p => p.Type != LibraryType.Project);
+
             if (!packages.Any())
             {
                 return new PrintPackagesResult(autoReferenceFound, deprecatedFound);
@@ -174,6 +178,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                        async p => p.LatestPackageMetadata?.Identity?.Version == null
                             ? Strings.ListPkg_NotFoundAtSources
                             : PrintVersion(
+
                                 p.LatestPackageMetadata.Identity.Version,
                                 await p.LatestPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated));

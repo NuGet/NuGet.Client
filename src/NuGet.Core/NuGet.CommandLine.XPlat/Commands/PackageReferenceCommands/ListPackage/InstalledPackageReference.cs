@@ -22,6 +22,10 @@ namespace NuGet.CommandLine.XPlat
         internal IPackageSearchMetadata LatestPackageMetadata { get; set; }
         internal bool AutoReference { get; set; }
         internal UpdateLevel UpdateLevel { get; set; }
+        /// <summary>
+        ///  The particular type of dependency, as a string. For example, "package", "project", or others.
+        /// </summary>
+        internal string Type { get; set; }
 
         /// <summary>
         /// A constructor that takes a name of a package

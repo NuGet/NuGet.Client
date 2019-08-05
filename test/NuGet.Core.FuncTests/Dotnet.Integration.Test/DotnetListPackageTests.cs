@@ -54,7 +54,7 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
+                ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0");
             }
         }
 
@@ -81,7 +81,7 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "No assets file was found".Replace(" ", "")));
+                ContainsIgnoringSpaces(listResult.AllOutput, "No assets file was found".Replace(" ", ""));
             }
         }
 
@@ -115,12 +115,12 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, "packageY"));
+                DoesNotContainIgnoringSpaces(listResult.AllOutput, "packageY");
 
                 listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package --include-transitive");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageY"));
+                ContainsIgnoringSpaces(listResult.AllOutput, "packageY");
 
             }
         }
@@ -158,11 +158,11 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package {args}");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, shouldInclude.Replace(" ", "")));
+                ContainsIgnoringSpaces(listResult.AllOutput, shouldInclude.Replace(" ", ""));
 
                 if (shouldntInclude != null)
                 {
-                    Assert.False(ContainsIgnoringSpaces(listResult.AllOutput, shouldntInclude.Replace(" ", "")));
+                    DoesNotContainIgnoringSpaces(listResult.AllOutput, shouldntInclude.Replace(" ", ""));
                 }
 
             }
@@ -299,7 +299,7 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package --outdated {args}");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}"));
+                ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}");
 
             }
         }
@@ -389,6 +389,49 @@ namespace Dotnet.Integration.Test
                 // Assert
                 var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                 Assert.True(lines.Any(l => l.Contains("packageX") && l.Contains("Not found at the sources")), "Line containing 'packageX' and 'Not found at the sources' not found: " + listResult.AllOutput);
+
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_Outdated_ProjectReferences_AreNotDisplayed()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var currentVersion = "1.0.0";
+                var expectedVersion = "2.1.0";
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectB = XPlatTestUtils.CreateProject(ProjectName + "2", pathContext, "net46");
+
+                var versions = new List<string> { currentVersion, expectedVersion };
+                foreach (var version in versions)
+                {
+                    var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: version);
+
+                    // Generate Package
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageX);
+                }
+
+
+                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
+                Assert.True(addResult.Success);
+
+                var referenceResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
+
+                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {Directory.GetParent(projectA.ProjectPath).FullName}");
+                Assert.True(restoreResult.Success);
+
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --outdated --include-transitive");
+
+                ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}");
+                DoesNotContainIgnoringSpaces(listResult.AllOutput, projectB.ProjectName);
             }
         }
 
@@ -431,15 +474,22 @@ namespace Dotnet.Integration.Test
                 var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"list {projectA.ProjectPath} package");
 
-                Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0"));
+                ContainsIgnoringSpaces(listResult.AllOutput, "packageX1.0.01.0.0");
             }
         }
 
-        private static bool ContainsIgnoringSpaces(string output, string pattern)
+        private static void ContainsIgnoringSpaces(string output, string pattern)
         {
             var commandResultNoSpaces = output.Replace(" ", "");
 
-            return commandResultNoSpaces.ToLowerInvariant().Contains(pattern.ToLowerInvariant());
+            Assert.Contains(pattern.ToLowerInvariant(), commandResultNoSpaces.ToLowerInvariant());
+        }
+
+        private static void DoesNotContainIgnoringSpaces(string output, string pattern)
+        {
+            var commandResultNoSpaces = output.Replace(" ", "");
+
+            Assert.DoesNotContain(pattern.ToLowerInvariant(), commandResultNoSpaces.ToLowerInvariant());
         }
 
         private static bool NoDuplicateSection(string output)
