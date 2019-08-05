@@ -116,14 +116,6 @@ phases:
       arguments: "-BuildCounterFile $(BuildCounterFile) -BuildInfoJsonFile $(BuildInfoJsonFile) -BuildRTM $(BuildRTM) -SkipUpdateBuildNumber"
     displayName: "Configure VSTS CI Environment"
 
-  - task: PublishBuildArtifacts@1
-    displayName: 'Publish buildinfo.json as an artifact'
-    inputs:
-      ArtifactName: 'BuildInfo'
-      ArtifactType: 'Container'
-      PathToPublish: '$(Build.Repository.LocalPath)\artifacts\buildinfo.json'
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'))"
-
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
