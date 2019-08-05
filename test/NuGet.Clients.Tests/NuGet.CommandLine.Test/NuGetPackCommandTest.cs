@@ -5579,14 +5579,14 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_HappyPath()
+        public void PackCommand_PackIcon_HappyPath_Succeed()
         {
             var iconTestSourceDir = new IconTestSourceDirectory("icon.jpg", "icon.jpg", 6);
             TestPackIcon(iconTestSourceDir);
         }
 
         [Fact]
-        public void PackCommand_PackIcon_ImplicitFile()
+        public void PackCommand_PackIcon_ImplicitFile_Succeed()
         {
             var fileEntries = new List<string>();
             var files = new List<Tuple<string, int>>();
@@ -5601,7 +5601,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_Folder()
+        public void PackCommand_PackIcon_Folder_Succeed()
         {
             var fileEntries = new List<Tuple<string, string>>();
             var files = new List<Tuple<string, int>>();
@@ -5616,7 +5616,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_FolderNested()
+        public void PackCommand_PackIcon_FolderNested_Succeed()
         {
             var fileEntries = new List<Tuple<string, string>>();
             var files = new List<Tuple<string, int>>();
@@ -5630,6 +5630,32 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             var iconTestSourceDir = new IconTestSourceDirectory("utils/nested/icon.jpg", files, fileEntries);
 
             TestPackIcon(iconTestSourceDir, "utils/nested/icon.jpg");
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_IconAndIconUrl_Fail()
+        {
+            var iconTestSourceDir = new IconTestSourceDirectory(
+                iconName: "icon.jpg",
+                fileName: "icon.jpg",
+                iconFileSize: 6,
+                iconUrlEntry: "http://test/");
+
+            using (iconTestSourceDir)
+            {
+                var nupkgPath = Path.Combine(iconTestSourceDir.BaseDir, "iconPackage.5.2.0.nupkg");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    iconTestSourceDir.BaseDir,
+                    $"pack {iconTestSourceDir.NuspecPath}",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultFailure(r, "The iconUrl and icon elements cannot be used together.");
+            }
+
         }
 
         /// <summary>

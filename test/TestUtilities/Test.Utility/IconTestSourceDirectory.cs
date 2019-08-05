@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,6 +17,8 @@ namespace NuGet.Test.Utility
         private const string NuspecFilename = "iconPackage.nuspec";
         public string IconEntry { get; set; }
 
+        public string IconUrlEntry { get; set; }
+
         /// <summary>
         /// Base directory for test
         /// </summary>
@@ -22,6 +27,35 @@ namespace NuGet.Test.Utility
         public string BaseDir => TestDirectory.Path;
 
         public string NuspecPath => Path.Combine(BaseDir, NuspecFilename);
+
+        /// <summary>
+        /// Constructor for test cases with one icon file.
+        /// </summary>
+        /// <param name="iconName">&lt;icon /&gt; entry in the nuspec.</param>
+        /// <param name="fileName">Package relative icon file name.</param>
+        /// <param name="iconFileSize">Icon file size. If it is less than zero, it will not write the file.</param>
+        /// <param name="iconUrlEntry">&lt;iconUrl /&gt; entry in the nuspec.</param>
+        public IconTestSourceDirectory(string iconName, string fileName, int iconFileSize, string iconUrlEntry)
+        {
+            IconEntry = iconName;
+            IconUrlEntry = iconUrlEntry;
+
+            var entriesList = new List<Tuple<string, string>>();
+
+            var fileList = new List<Tuple<string, int>>();
+
+            if (!string.IsNullOrEmpty(fileName))
+            {
+                entriesList.Add(Tuple.Create(fileName, string.Empty));
+            }
+
+            if (iconFileSize > 0)
+            {
+                fileList.Add(Tuple.Create(fileName, iconFileSize));
+            }
+
+            Init(fileList, entriesList);
+        }
 
         /// <summary>
         /// Constructor for test cases with one icon file.
@@ -47,12 +81,8 @@ namespace NuGet.Test.Utility
                 fileList.Add(Tuple.Create(fileName, iconFileSize));
             }
 
-            TestDirectory = TestDirectory.Create();
-
-            CreateFiles(fileList);
-            CreateNuspec(entriesList);
+            Init(fileList, entriesList);
         }
-
 
         /// <summary>
         /// Constructor for test cases with multiple files and multiple &lt;file /&gt; entries in the nuspec.
@@ -64,10 +94,7 @@ namespace NuGet.Test.Utility
         {
             IconEntry = iconName;
 
-            TestDirectory = TestDirectory.Create();
-
-            CreateFiles(files);
-            CreateNuspec(fileEntries.Select(x => Tuple.Create(x, string.Empty)));
+            Init(files, fileEntries.Select(x => Tuple.Create(x, string.Empty)));
         }
 
         /// <summary>
@@ -80,6 +107,11 @@ namespace NuGet.Test.Utility
         {
             IconEntry = iconName;
 
+            Init(files, fileEntries);
+        }
+
+        private void Init(IEnumerable<Tuple<string, int>> files, IEnumerable<Tuple<string, string>> fileEntries)
+        {
             TestDirectory = TestDirectory.Create();
 
             CreateFiles(files);
@@ -104,35 +136,46 @@ namespace NuGet.Test.Utility
         private void CreateNuspec(IEnumerable<Tuple<string, string>> fileEntries)
         {
             StringBuilder sb = new StringBuilder();
+            var nl = Environment.NewLine;
 
-            sb.Append(@"<?xml version=""1.0"" encoding=""utf-8""?>
-                            <package>
-                              <metadata>
-                                <id>iconPackage</id>
-                                <version>5.2.0</version>
-                                <authors>Author1, author2</authors>
-                                <description>Sample icon description</description>");
+            sb.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>").Append(nl);
+            sb.Append("<package>").Append(nl);
+            sb.Append("  <metadata>").Append(nl);
+            sb.Append("    <id>iconPackage</id>").Append(nl);
+            sb.Append("    <version>5.2.0</version>").Append(nl);
+            sb.Append("    <authors>Author1, author2</authors>").Append(nl);
+            sb.Append("    <description>Sample icon description</description>").Append(nl);
 
-            if (!string.IsNullOrEmpty(IconEntry))
+            if (IconEntry != null)
             {
-                sb.Append("<icon>");
-                sb.Append(IconEntry);
-                sb.Append("</icon>\n");
+                sb.Append("    <icon>")
+                    .Append(IconEntry)
+                    .Append("</icon>")
+                    .Append(nl);
             }
 
-            sb.Append(@"</metadata>
-                          <files>");
+            if (IconUrlEntry != null)
+            {
+                sb.Append("    <iconUrl>")
+                    .Append(IconUrlEntry)
+                    .Append("</iconUrl>")
+                    .Append(nl);
+            }
+
+            sb.Append("  </metadata>").Append(nl);
+            sb.Append("  <files>").Append(nl);
             foreach (var fe in fileEntries)
             {
-                sb.Append($"<file src=\"{fe.Item1}\"");
+                sb.Append($"    <file src=\"{fe.Item1}\"");
                 if (!string.Empty.Equals(fe.Item2))
                 {
                     sb.Append($" target=\"{fe.Item2}\"");
                 }
-                sb.Append(" />\n");
+                sb.Append(" />");
+                sb.Append(nl);
             }
-            sb.Append(@"</files>
-                            </package>");
+            sb.Append("  </files>").Append(nl);
+            sb.Append("</package>").Append(nl);
 
             File.WriteAllText(NuspecPath, sb.ToString());
         }
