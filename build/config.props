@@ -23,7 +23,7 @@
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.3xx</CliBranchForTesting>
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
-    <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">Release</VsTargetChannel>
+    <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">Preview</VsTargetChannel>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
