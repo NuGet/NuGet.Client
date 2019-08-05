@@ -132,13 +132,6 @@ phases:
         gci env:* | sort-object name
 
   - task: NuGetCommand@2
-    displayName: 'MicroBuild:  add package source'
-    inputs:
-      command: 'custom'
-      arguments: 'sources add -Name MicroBuild -Source $(MicroBuildToolsetPackageFeedUrl) -UserName $(MicroBuildToolsetPackageFeedUsername) -Password $(MicroBuildToolsetPackageFeedPassword) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config'
-    condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
-
-  - task: NuGetCommand@2
     displayName: 'MicroBuild:  install core package'
     inputs:
       command: 'custom'
