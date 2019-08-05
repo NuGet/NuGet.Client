@@ -5655,7 +5655,30 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 // Assert
                 Util.VerifyResultFailure(r, "The iconUrl and icon elements cannot be used together.");
             }
+        }
 
+        [Fact]
+        public void PackCommand_PackIcon_EmptyIcon_Fail()
+        {
+            var iconTestSourceDir = new IconTestSourceDirectory(
+                iconName: string.Empty,
+                fileName: "icon.jpg",
+                iconFileSize: 6);
+
+            using (iconTestSourceDir)
+            {
+                var nupkgPath = Path.Combine(iconTestSourceDir.BaseDir, "iconPackage.5.2.0.nupkg");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    iconTestSourceDir.BaseDir,
+                    $"pack {iconTestSourceDir.NuspecPath}",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultFailure(r, "The element 'icon' cannot be empty.");
+            }
         }
 
         /// <summary>

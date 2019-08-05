@@ -115,6 +115,15 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The element &apos;icon&apos; cannot be empty..
+        /// </summary>
+        internal static string IconMissingRequiredValue {
+            get {
+                return ResourceManager.GetString("IconMissingRequiredValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The icon file &apos;{0}&apos; does not exist in the package..
         /// </summary>
         internal static string IconNoFileElement {

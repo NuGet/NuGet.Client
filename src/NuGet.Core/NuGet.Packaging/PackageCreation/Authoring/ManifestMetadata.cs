@@ -337,6 +337,11 @@ namespace NuGet.Packaging
                 yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl");
             }
 
+            if (Icon == string.Empty)
+            {
+                yield return string.Format(CultureInfo.CurrentCulture, NuGetResources.IconMissingRequiredValue);
+            }
+
             if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))
             {
                 yield return NuGetResources.Manifest_RequireLicenseAcceptanceRequiresLicenseUrl;
