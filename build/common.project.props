@@ -13,9 +13,12 @@
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">netcoreapp2.1</NETCoreTargetFrameworks>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">netcoreapp2.1;netcoreapp3.0</NETCoreTargetFrameworks>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
-    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
-    <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">$(NETFXTargetFramework);$(NetStandardVersion);netstandard2.1</TargetFrameworksLibrary>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
@@ -33,6 +36,7 @@
     <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
     <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackProject Condition="Exists('$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj')">$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj</NuGetBuildTasksPackProject>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>

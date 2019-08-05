@@ -55,6 +55,16 @@ phases:
         Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
 
   - task: PowerShell@1
+    displayName: "Get SDK Version For Build"
+    name: "getSDKVersionForBuild"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
+        $SDKVersionForBuild = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliVersionForBuilding
+        Write-Host "##vso[task.setvariable variable=SDKVersionForBuild;isOutput=true]$SDKVersionForBuild"
+
+  - task: PowerShell@1
     displayName: "Add Build Tags"
     inputs:
       scriptType: "inlineScript"
@@ -69,6 +79,7 @@ phases:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   queue:
     name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 90
@@ -83,6 +94,14 @@ phases:
       - msbuild
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
   - task: PowerShell@1
     displayName: "Update Build Number"
     inputs:
@@ -539,6 +558,7 @@ phases:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   queue:
     name: VSEng-MicroBuildSxS
@@ -553,6 +573,14 @@ phases:
         SkipDesktopAssemblies: "true"
         
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -620,6 +648,7 @@ phases:
   dependsOn: Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   queue:
@@ -628,6 +657,14 @@ phases:
     demands: sh
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+      
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -671,6 +708,7 @@ phases:
   - Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
     name: VSEng-MicroBuildMacSierra
@@ -678,6 +716,14 @@ phases:
     demands: sh
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+      
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -728,6 +774,7 @@ phases:
   - Initialize_Build
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   queue:
     timeoutInMinutes: 90
@@ -735,6 +782,14 @@ phases:
     demands: DotNetFramework
 
   steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -825,6 +880,7 @@ phases:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   queue:
     name: DDNuGet-Windows
@@ -893,14 +949,6 @@ phases:
   #         }
   #       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
   #   condition: "failed()"
-
-  - task: MSBuild@1
-    displayName: "Restore for VS2019"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber)"
 
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
