@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using NuGet.Common;
@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
 {
     public abstract class PrimarySignature : Signature
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -105,9 +105,9 @@ namespace NuGet.Packaging.Signing
 
         public override byte[] GetSignatureValue()
         {
-            using (var nativeCms = NativeCms.Decode(SignedCms.Encode()))
+            using (ICms cms = CmsFactory.Create(SignedCms.Encode()))
             {
-                return nativeCms.GetPrimarySignatureSignatureValue();
+                return cms.GetPrimarySignatureSignatureValue();
             }
         }
 
@@ -127,7 +127,6 @@ namespace NuGet.Packaging.Signing
         {
             throw new SignatureException(NuGetLogCode.NU3011, Strings.InvalidPrimarySignature);
         }
-
 
         private static void VerifySigningCertificate(
             SignedCms signedCms,

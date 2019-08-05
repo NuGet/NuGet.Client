@@ -13,9 +13,13 @@
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">netcoreapp2.1</NETCoreTargetFrameworks>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' and '$(TestForLatestNetCoreOnly)' != 'true' ">netcoreapp2.1;netcoreapp5.0</NETCoreTargetFrameworks>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' and '$(TestForLatestNetCoreOnly)' == 'true' ">netcoreapp5.0</NETCoreTargetFrameworks>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
-    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
-    <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">$(NETFXTargetFramework);$(NetStandardVersion);netstandard2.1</TargetFrameworksLibrary>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
@@ -61,6 +65,8 @@
     <MoqVersion>4.12.0</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.5.0-preview-19606-01</MicrosoftBuildPackageVersion>
+    <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/NuGet/Home/issues/8508 -->
+    <PatchedSystemPackagesVersion>5.0.0-alpha1.19473.1</PatchedSystemPackagesVersion>
   </PropertyGroup>
 
   <!-- Defaults -->

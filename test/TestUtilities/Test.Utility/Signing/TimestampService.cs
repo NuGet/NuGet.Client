@@ -136,7 +136,7 @@ namespace Test.Utility.Signing
             return new TimestampService(certificateAuthority, certificate, issueCertificateOptions.KeyPair, uri, serviceOptions);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)

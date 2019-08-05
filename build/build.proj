@@ -226,7 +226,7 @@
              Projects="@(SolutionProjects)"
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         VisualStudioVersion=$(VisualStudioVersion)" />
   </Target>
 
   <!--
@@ -241,7 +241,7 @@
              Projects="@(XPLATProjects)"
              Targets="PackProjects"
              Properties="$(CommonMSBuildProperties);
-                         VisualStudioVersion=$(VisualStudioVersion);" />
+                         VisualStudioVersion=$(VisualStudioVersion)" />
   </Target>
 
   <!--

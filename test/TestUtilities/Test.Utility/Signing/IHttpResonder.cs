@@ -10,7 +10,7 @@ namespace Test.Utility.Signing
     {
         Uri Url { get; }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         void Respond(HttpListenerContext context);
 #endif
     }

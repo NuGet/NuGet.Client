@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 
 namespace Test.Utility.Signing
 {
@@ -36,17 +37,23 @@ namespace Test.Utility.Signing
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        /// According to https://github.com/dotnet/corefx/blob/master/Documentation/architecture/cross-platform-cryptography.md#x509store
+        /// Linux could not read/write LocalMachine\Root , but could only read/write CurrentUser\Root
+        public TrustedTestCert<TestCertificate> WithTrust()
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, storeLocation);
         }
 
         /// <summary>
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople)
         {
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+
             return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
         }
 
