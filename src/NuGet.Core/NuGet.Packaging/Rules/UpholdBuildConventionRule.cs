@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
+using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
@@ -36,16 +37,29 @@ namespace NuGet.Packaging.Rules
         internal IEnumerable<PackagingLogMessage> GenerateWarnings(IDictionary<string, string> conventionViolatorsProps, IDictionary<string, string> conventionViolatorsTargets)
         {
             var issues = new List<PackagingLogMessage>();
+            var warningMessage = new StringBuilder();
             foreach (var props in conventionViolatorsProps)
             {
-                var warning = string.Format(MessageFormat, _propsExtension, props.Key, props.Value);
-                issues.Add(PackagingLogMessage.CreateWarning(warning, NuGetLogCode.NU5129));
+                string usedString = props.Key;
+                if(usedString == "unsupported")
+                {
+                    usedString = "build or other";
+                }
+                warningMessage.AppendLine(string.Format(MessageFormat, _propsExtension, usedString, props.Value));
             }
 
             foreach (var targets in conventionViolatorsTargets)
             {
-                var warning = string.Format(MessageFormat, _targetsExtension, targets.Key, targets.Value);
-                issues.Add(PackagingLogMessage.CreateWarning(warning, NuGetLogCode.NU5129));
+                string usedString = targets.Key;
+                if (usedString == "unsupported")
+                {
+                    usedString = "build or other";
+                }
+                warningMessage.AppendLine(string.Format(MessageFormat, _targetsExtension, usedString, targets.Value));
+            }
+            if(warningMessage.ToString() != string.Empty)
+            {
+                issues.Add(PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129));
             }
             return issues;
         }
@@ -56,59 +70,49 @@ namespace NuGet.Packaging.Rules
             collection.Load(files.Where(t => PathUtility.GetPathWithDirectorySeparator(t).Count(m => m == Path.DirectorySeparatorChar) > 1));
 
             var buildItems = ContentExtractor.GetContentForPattern(collection, ManagedCodeConventions.Patterns.MSBuildFiles);
-            var tfms = ContentExtractor.GetGroupFrameworks(buildItems).Select(m => m.GetShortFolderName());
+            var tfms = ContentExtractor.GetGroupFrameworks(buildItems).Select(m => m.GetShortFolderName()).ToArray();
 
+            var groupedFiles = files.GroupBy(t => GetFolderName(t), m => GetFile(m));
             var conventionViolatorsProps = new Dictionary<string, string>();
             var conventionViolatorsTargets = new Dictionary<string, string>();
 
-            var correctProps = packageId + _propsExtension;
-            var correctTargets = packageId + _targetsExtension;
+            var correctPropsPattern = packageId + _propsExtension;
+            var correctTargetsPattern = packageId + _targetsExtension;
 
-            var filesUnderTFM = files.Where(t => t.Count(m => m == '/') > 1);
-            var filesUnderBuild = files.Where(t => t.Count(m => m == '/') == 1);
 
             if (files.Count() != 0)
             {
-                if (filesUnderBuild.Count() != 0)
+                foreach(var group in groupedFiles)
                 {
-                    var hasPropsUnderBuild = filesUnderBuild.Any(t => t.EndsWith(_propsExtension));
-                    var hasTargetsUnderBuild = filesUnderBuild.Any(t => t.EndsWith(_targetsExtension));
+                    var hasProps = group.Any(t => t.EndsWith(_propsExtension));
+                    var hasTargets = group.Any(t => t.EndsWith(_targetsExtension));
 
-                    var correctPropsFilesUnderBuild = filesUnderBuild.Where(t => t.EndsWith(_propsExtension) && t.EndsWith(correctProps));
-                    var correctTargetsFilesUnderBuild = filesUnderBuild.Where(t => t.EndsWith(_targetsExtension) && t.EndsWith(correctTargets));
+                    var correctTargetsFiles = group.Where(t => t.Equals(correctTargetsPattern,StringComparison.OrdinalIgnoreCase));
+                    var correctPropsFiles = group.Where(t => t.Equals(correctPropsPattern, StringComparison.OrdinalIgnoreCase));
 
-                    if (correctPropsFilesUnderBuild.Count() == 0 && hasPropsUnderBuild)
+                    if (correctPropsFiles.Count() == 0 && hasProps)
                     {
-                        conventionViolatorsProps.Add(PackagingConstants.Folders.Build, correctProps);
+                        conventionViolatorsProps.Add(group.Key, correctPropsPattern);
                     }
 
-                    if (correctTargetsFilesUnderBuild.Count() == 0 && hasTargetsUnderBuild)
+                    if (correctTargetsFiles.Count() == 0 && hasTargets)
                     {
-                        conventionViolatorsTargets.Add(PackagingConstants.Folders.Build, correctTargets);
-                    }
-                }
-
-                foreach (var tfm in tfms)
-                {
-                    var hasPropsUnderTFMs = filesUnderTFM.Any(t => t.StartsWith(PackagingConstants.Folders.Build + "/" + tfm) && t.EndsWith(_propsExtension));
-                    var hasTargetsUnderTFMs = filesUnderTFM.Any(t => t.StartsWith(PackagingConstants.Folders.Build + "/" + tfm) && t.EndsWith(_targetsExtension));
-
-                    var correctTargetsFiles = filesUnderTFM.Where(t => t.StartsWith(PackagingConstants.Folders.Build + "/" + tfm) && t.EndsWith(correctTargets));
-                    var correctPropsFiles = filesUnderTFM.Where(t => t.StartsWith(PackagingConstants.Folders.Build + "/" + tfm) && t.EndsWith(correctProps));
-
-                    if (correctPropsFiles.Count() == 0 && hasPropsUnderTFMs)
-                    {
-                        conventionViolatorsProps.Add(PackagingConstants.Folders.Build + "/" + tfm, correctProps);
-                    }
-
-                    if (correctTargetsFiles.Count() == 0 && hasTargetsUnderTFMs)
-                    {
-                        conventionViolatorsTargets.Add(PackagingConstants.Folders.Build + "/" + tfm, correctTargets);
+                        conventionViolatorsTargets.Add(group.Key, correctTargetsPattern);
                     }
                 }
             }
 
             return (conventionViolatorsProps,conventionViolatorsTargets);
+        }
+
+        internal string GetFolderName(string filePath)
+        {
+            return NuGetFramework.ParseFolder(filePath.Split('/')[1]).GetShortFolderName();
+        }
+
+        private string GetFile(string filePath)
+        {
+            return filePath.Split('/')[filePath.Count(p => p == '/')];
         }
     }
 }

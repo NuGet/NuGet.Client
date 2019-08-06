@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A {0} file was found in &apos;{1}&apos;. However, this file is not &apos;{2}&apos;. Change the file to fit this format..
+        ///   Looks up a localized string similar to - A {0} file was found in the folder &apos;{1}&apos;. However, this file is not &apos;{2}&apos;. Change the file to fit this format..
         /// </summary>
         public static string BuildConventionIsViolatedWarning {
             get {
