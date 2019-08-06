@@ -18,7 +18,6 @@ namespace NuGet.Packaging
         IEnumerable<string> Owners { get; }
         Uri IconUrl { get; }
         Uri LicenseUrl { get; }
-        string Icon { get; }
         Uri ProjectUrl { get; }
         bool RequireLicenseAcceptance { get; }
         bool DevelopmentDependency { get; }
@@ -29,6 +28,7 @@ namespace NuGet.Packaging
         string Tags { get; }
         bool Serviceable { get; }
         string Copyright { get; }
+        string Icon { get; }
 
         /// <summary>
         /// Specifies assemblies from GAC that the package depends on.

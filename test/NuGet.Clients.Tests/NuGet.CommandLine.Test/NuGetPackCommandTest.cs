@@ -5590,9 +5590,9 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var fileEntries = new List<string>();
             var files = new List<Tuple<string, int>>();
-            var _ = Path.DirectorySeparatorChar;
+            var s = Path.DirectorySeparatorChar;
 
-            files.Add(Tuple.Create($"content{_}icon.jpg", 6));
+            files.Add(Tuple.Create($"content{s}icon.jpg", 6));
             fileEntries.Add(@"content\*");
 
             var iconTestSourceDir = new IconTestSourceDirectory("icon.jpg", files, fileEntries);
@@ -5605,10 +5605,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var fileEntries = new List<Tuple<string, string>>();
             var files = new List<Tuple<string, int>>();
-            var _ = Path.DirectorySeparatorChar;
+            var s = Path.DirectorySeparatorChar;
 
-            files.Add(Tuple.Create($"content{_}icon.jpg", 6));
-            fileEntries.Add(Tuple.Create($"content{_}*", "utils"));
+            files.Add(Tuple.Create($"content{s}icon.jpg", 6));
+            fileEntries.Add(Tuple.Create($"content{s}*", "utils"));
 
             var iconTestSourceDir = new IconTestSourceDirectory(@"utils/icon.jpg", files, fileEntries);
 
@@ -5620,12 +5620,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         {
             var fileEntries = new List<Tuple<string, string>>();
             var files = new List<Tuple<string, int>>();
-            var _ = Path.DirectorySeparatorChar;
+            var s = Path.DirectorySeparatorChar;
 
-            files.Add(Tuple.Create($"content{_}nested{_}icon.jpg", 6));
-            files.Add(Tuple.Create($"content{_}dummy.txt", 6));
-            files.Add(Tuple.Create($"content{_}data.txt", 6));
-            fileEntries.Add(Tuple.Create($"content{_}**", "utils"));
+            files.Add(Tuple.Create($"content{s}nested{s}icon.jpg", 6));
+            files.Add(Tuple.Create($"content{s}dummy.txt", 6));
+            files.Add(Tuple.Create($"content{s}data.txt", 6));
+            fileEntries.Add(Tuple.Create($"content{s}**", "utils"));
 
             var iconTestSourceDir = new IconTestSourceDirectory("utils/nested/icon.jpg", files, fileEntries);
 
