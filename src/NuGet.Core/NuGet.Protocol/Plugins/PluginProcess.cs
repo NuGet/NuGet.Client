@@ -136,7 +136,7 @@ namespace NuGet.Protocol.Plugins
             UpdateIdIfNecessary();
         }
 
-        internal void Start()
+        public void Start()
         {
             if (_hasStarted)
             {
