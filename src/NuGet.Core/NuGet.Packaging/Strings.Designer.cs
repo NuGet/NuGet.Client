@@ -223,7 +223,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package doesn&apos;t contain .nuspec file: {0}.
+        ///   Looks up a localized string similar to The package doesn&apos;t contain .nuspec file. {0}.
         /// </summary>
         internal static string Error_MissingNuspecFile {
             get {
@@ -732,6 +732,15 @@ namespace NuGet.Packaging {
         internal static string Log_InstallingPackage {
             get {
                 return ResourceManager.GetString("Log_InstallingPackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path: {0}.
+        /// </summary>
+        internal static string Message_Path {
+            get {
+                return ResourceManager.GetString("Message_Path", resourceCulture);
             }
         }
         

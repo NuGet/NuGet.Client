@@ -150,7 +150,7 @@
     <value>MinClientVersion already exists in packages.config</value>
   </data>
   <data name="Error_MissingNuspecFile" xml:space="preserve">
-    <value>The package doesn't contain .nuspec file: {0}</value>
+    <value>The package doesn't contain .nuspec file. {0}</value>
     <comment>0 - package folder which doesn't contain .nuspec file</comment>
   </data>
   <data name="PackageEntryAlreadyExist" xml:space="preserve">
@@ -823,5 +823,9 @@ Valid from:</comment>
   </data>
   <data name="MultiplePackageTypes" xml:space="preserve">
     <value>Nuspec file contains multiple package types. Zero or one package type nodes are allowed.</value>
+  </data>
+  <data name="Message_Path" xml:space="preserve">
+    <value>Path: {0}</value>
+    <comment>0 - folder path</comment>
   </data>
 </root>

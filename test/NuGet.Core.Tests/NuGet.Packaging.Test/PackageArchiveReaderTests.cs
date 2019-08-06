@@ -735,7 +735,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     var log = exception.AsLogMessage();
                     Assert.Equal(NuGetLogCode.NU5036, log.Code);
-                    Assert.Matches("^The package doesn't contain .nuspec file: .*$", log.Message);
+                    Assert.Contains("The package doesn't contain .nuspec file.", log.Message);
                 }
             }
         }
@@ -783,7 +783,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     var log = exception.AsLogMessage();
                     Assert.Equal(NuGetLogCode.NU5036, log.Code);
-                    Assert.Matches("^The package doesn't contain .nuspec file: .*$", log.Message);
+                    Assert.Contains("The package doesn't contain .nuspec file.", log.Message);
                 }
             }
         }
@@ -812,7 +812,7 @@ namespace NuGet.Packaging.Test
                     // Assert
                     var log = exception.AsLogMessage();
                     Assert.Equal(NuGetLogCode.NU5036, log.Code);
-                    Assert.Matches("^The package doesn't contain .nuspec file: .*$", log.Message);
+                    Assert.Contains("The package doesn't contain .nuspec file.", log.Message);
                 }
             }
         }

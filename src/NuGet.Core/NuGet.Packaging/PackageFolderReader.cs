@@ -73,7 +73,11 @@ namespace NuGet.Packaging
                 throw new PackagingException(NuGetLogCode.NU5036, string.Format(
                                             CultureInfo.CurrentCulture,
                                             Strings.Error_MissingNuspecFile,
-                                            _root.FullName));              
+                                            string.Format(
+                                                CultureInfo.CurrentCulture,
+                                                Strings.Message_Path,
+                                                _root.FullName))
+                                            );              
             }
             else if (nuspecFiles.Length > 1)
             {
