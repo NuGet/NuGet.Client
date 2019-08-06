@@ -11,5 +11,7 @@ namespace NuGet.Protocol.Plugins
         internal const string IdleTimeout = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
         internal const string PluginPaths = "NUGET_PLUGIN_PATHS";
         internal const string RequestTimeout = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
+        internal const string DesktopPluginPaths = "NUGET_NETFX_PLUGIN_PATHS";
+        internal const string CorePluginPaths = "NUGET_NETCORE_PLUGIN_PATHS";
     }
 }
