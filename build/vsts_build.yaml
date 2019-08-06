@@ -127,7 +127,7 @@ phases:
     displayName: 'MicroBuild:  install core package'
     inputs:
       command: 'custom'
-      arguments: 'install Microsoft.VisualStudioEng.MicroBuild.Core -Version 0.4.1 -Source $(MicroBuildToolsetPackageFeedUrl) -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
+      arguments: 'install Microsoft.VisualStudioEng.MicroBuild.Core -Version 0.4.1 -ConfigFile $(System.DefaultWorkingDirectory)\NuGet.config -OutputDirectory $(System.DefaultWorkingDirectory)\packages'
     condition: "and(succeeded(), eq(variables['BuildRTM'], 'false'), eq(variables['IsOfficialBuild'], 'true'))"
 
   - task: MicroBuildLocalizationPlugin@1
