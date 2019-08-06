@@ -83,7 +83,7 @@ namespace NuGet.Packaging.Test
                 "build/netcoreapp1.1/package_Id.props"
 
             };
-            var tfms = files.Select(t => t.Split('/')[1]);
+
             //Act
             var rule = new UpholdBuildConventionRule();
             var (propsViolators, targetsViolators) = rule.IdentifyViolators(files, packageId);

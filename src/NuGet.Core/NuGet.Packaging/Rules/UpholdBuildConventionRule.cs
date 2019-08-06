@@ -66,19 +66,12 @@ namespace NuGet.Packaging.Rules
 
         internal (IDictionary<string, string>, IDictionary<string, string>) IdentifyViolators(IEnumerable<string> files, string packageId)
         {
-            var collection = new ContentItemCollection();
-            collection.Load(files.Where(t => PathUtility.GetPathWithDirectorySeparator(t).Count(m => m == Path.DirectorySeparatorChar) > 1));
-
-            var buildItems = ContentExtractor.GetContentForPattern(collection, ManagedCodeConventions.Patterns.MSBuildFiles);
-            var tfms = ContentExtractor.GetGroupFrameworks(buildItems).Select(m => m.GetShortFolderName()).ToArray();
-
             var groupedFiles = files.GroupBy(t => GetFolderName(t), m => GetFile(m));
             var conventionViolatorsProps = new Dictionary<string, string>();
             var conventionViolatorsTargets = new Dictionary<string, string>();
 
             var correctPropsPattern = packageId + _propsExtension;
             var correctTargetsPattern = packageId + _targetsExtension;
-
 
             if (files.Count() != 0)
             {
