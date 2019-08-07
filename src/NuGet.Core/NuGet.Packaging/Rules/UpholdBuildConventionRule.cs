@@ -88,11 +88,6 @@ namespace NuGet.Packaging.Rules
             return filePath.Split('/')[0] + '/' + hi + '/';
         }
 
-        private string GetFile(string filePath)
-        {
-            return filePath.Split('/')[filePath.Count(p => p == '/')];
-        }
-
         internal class ConventionViolator
         {
             public string Path { get; }
