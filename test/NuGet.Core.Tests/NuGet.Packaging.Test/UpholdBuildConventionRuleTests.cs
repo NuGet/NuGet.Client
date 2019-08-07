@@ -114,7 +114,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GenerateWarnings_PackageWithPropsAndTargetsInCrosspleSubFolders_ShouldWarn()
+        public void GenerateWarnings_PackageWithPropsAndTargetsInMultipleSubFolders_ShouldWarn()
         {
             //Arrange
             string packageId = "packageId";
