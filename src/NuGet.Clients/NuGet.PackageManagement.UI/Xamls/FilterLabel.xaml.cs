@@ -118,14 +118,7 @@ namespace NuGet.PackageManagement.UI
             set
             {
                 _showWarning = value;
-                if (_showWarning)
-                {
-                    _warningIcon.Visibility = Visibility.Visible;
-                }
-                else
-                {
-                    _warningIcon.Visibility = Visibility.Collapsed;
-                }
+                _warningIcon.Visibility = _showWarning ? Visibility.Visible : Visibility.Collapsed;
             }
         }
 

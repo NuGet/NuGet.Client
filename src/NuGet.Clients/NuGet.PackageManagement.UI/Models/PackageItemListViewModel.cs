@@ -41,7 +41,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // The installed version of the package.
+        /// <summary>
+        /// The installed version of the package.
+        /// </summary>
         private NuGetVersion _installedVersion;
         public NuGetVersion InstalledVersion
         {
@@ -59,8 +61,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // The version that can be installed or updated to. It is null
-        // if the installed version is already the latest.
+        /// <summary>
+        /// The version that can be installed or updated to. It is null
+        /// if the installed version is already the latest.
+        /// </summary>
         private NuGetVersion _latestVersion;
         public NuGetVersion LatestVersion
         {
@@ -92,7 +96,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // True if the package is AutoReferenced
+        /// <summary>
+        /// True if the package is AutoReferenced
+        /// </summary>
         private bool _autoReferenced;
         public bool AutoReferenced
         {
