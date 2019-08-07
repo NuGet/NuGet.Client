@@ -63,7 +63,11 @@ namespace NuGet.Packaging.Test
                     new object[] { new string[] { "build/PackageID.props", "build/PackageID.targets" } },
                     new object[] { new string[] { "build/extra/packageId.props", "build/packageId.props" } },
                     new object[] { new string[] { "build/net45/extra/packageId.props", "build/net45/packageId.props" } },
-                    new object[] { new string[] { "build/random.dll" } }
+                    new object[] { new string[] { "build/random.dll" } },
+                    new object[] { new string[] { "buildCrossTargeting/packageId.props", "buildCrossTargeting/packageId.targets" } },
+                    new object[] { new string[] { "buildCrossTargeting/net45/packageId.props", "buildCrossTargeting/net45/packageId.targets" } },
+                    new object[] { new string[] { "buildTransitive/packageId.props", "buildTransitive/packageId.targets" } },
+                    new object[] { new string[] { "buildTransitive/net45/packageId.props", "buildTransitive/net45/packageId.targets" } }
                 };
 
             public static readonly List<object[]> WarningRaisedData
@@ -75,6 +79,14 @@ namespace NuGet.Packaging.Test
                     new object[] { new string[] { "build/package_Id.targets" } },
                     new object[] { new string[] { "build/extra/packageId.props" } },
                     new object[] { new string[] { "build/net45/extra/packageId.props" } },
+                    new object[] { new string[] { "buildCrossTargeting/net45/package_Id.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/net45/extra/packageId.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/package_Id.props"} },
+                    new object[] { new string[] { "buildCrossTargeting/extra/package_Id.props"} },
+                    new object[] { new string[] { "buildTransitive/net45/package_Id.props"} },
+                    new object[] { new string[] { "buildTransitive/net45/extra/packageId.props"} },
+                    new object[] { new string[] { "buildTransitive/package_Id.props"} },
+                    new object[] { new string[] { "buildTransitive/extra/package_Id.props"} }
                 };
         }
 
@@ -102,7 +114,7 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GenerateWarnings_PackageWithPropsAndTargetsInMultipleSubFolders_ShouldWarn()
+        public void GenerateWarnings_PackageWithPropsAndTargetsInCrosspleSubFolders_ShouldWarn()
         {
             //Arrange
             string packageId = "packageId";

@@ -7,8 +7,11 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 using NuGet.Client;
 using NuGet.Common;
 using NuGet.ContentModel;
@@ -21,12 +24,14 @@ namespace NuGet.Packaging.Rules
     internal class UpholdBuildConventionRule : IPackageRule
     {
         private static ManagedCodeConventions ManagedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
-
+        
         public string MessageFormat => AnalysisResources.BuildConventionIsViolatedWarning;
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var files = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Build));
+            var files = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Build) ||
+                                                    t.StartsWith(PackagingConstants.Folders.BuildTransitive) ||
+                                                    t.StartsWith(PackagingConstants.Folders.BuildCrossTargeting));
             var packageId = builder.NuspecReader.GetId();
             var conventionViolators = IdentifyViolators(files, packageId);
             return GenerateWarnings(conventionViolators);
