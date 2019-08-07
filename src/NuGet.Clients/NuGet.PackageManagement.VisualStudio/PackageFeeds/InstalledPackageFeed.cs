@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
-                (p, t) => _metadataProvider.GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
+                (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
             //  The packages were originally sorted which is important because we Skip and Take based on that sort
@@ -98,6 +98,18 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return result;
+        }
+
+        public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        {
+            // first we try and load the metadata from a local package
+            var packageMetadata = await _metadataProvider.GetLocalPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            if (packageMetadata == null)
+            {
+                // and failing that we go to the network
+                packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            }
+            return packageMetadata;
         }
     }
 }
