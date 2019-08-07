@@ -726,7 +726,7 @@ namespace NuGet.PackageManagement.UI
             if (useCacheForUpdates)
             {
                 loadContext.CachedPackages = Model.CachedUpdates;
-            };
+            }
 
             var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
 
@@ -751,7 +751,7 @@ namespace NuGet.PackageManagement.UI
                 pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
             }
 
-            // We only refresh update count, when we don't use cache so check it it's false
+            // We only refresh update count, when we don't use cache so check if it's false
             if (!useCacheForUpdates)
             {
                 // clear existing caches
@@ -774,28 +774,40 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    RefreshAvailableUpdatesCount();
+                    RefreshInstalledAndUpdatesTabs();
                 }
             }
         }
 
-        private void RefreshAvailableUpdatesCount()
+        private void RefreshInstalledAndUpdatesTabs()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                _topPanel._labelInstalled.ShowWarning = false;
                 _topPanel._labelUpgradeAvailable.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
-                // cancel previous refresh update count task, if any
+                // cancel previous refresh tabs task, if any
                 // and start a new one.
                 var refreshCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
+                // Update installed tab warning icon
+                var installedPackages = await loadContext.GetInstalledPackagesAsync();
+                var installedPackageMetadata = await Task.WhenAll(
+                    installedPackages.Select(
+                        p => metadataProvider.GetPackageMetadataAsync(p, true, refreshCts.Token)));
+                Model.HasInstalledDeprecatedPackages = installedPackageMetadata.Any(p => p.DeprecationMetadata != null);
+
+                _topPanel._labelInstalled.ShowWarning = Model.HasInstalledDeprecatedPackages;
+
+                // Update updates tab count
                 Model.CachedUpdates = new PackageSearchMetadataCache
                 {
                     Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
@@ -804,7 +816,7 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshAvailableUpdatesCount)));
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
         }
 
         private void RefreshConsolidatablePackagesCount()
@@ -990,7 +1002,7 @@ namespace NuGet.PackageManagement.UI
                 })
                 .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Refresh)));
 
-                RefreshAvailableUpdatesCount();
+                RefreshInstalledAndUpdatesTabs();
             }
 
             RefreshConsolidatablePackagesCount();
