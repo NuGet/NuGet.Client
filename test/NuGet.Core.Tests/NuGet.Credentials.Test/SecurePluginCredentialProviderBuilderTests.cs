@@ -131,7 +131,12 @@ namespace NuGet.Credentials.Test
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == CredentialTestConstants.PluginPathsEnvironmentVariable)))
                     .Returns(string.Join(";", plugins.Select(e => e.Key)));
-
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                    .Returns((string)null);
+                reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                    .Returns((string)null);
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == CredentialTestConstants.PluginRequestTimeoutEnvironmentVariable)))
                     .Returns("b");

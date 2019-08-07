@@ -19,10 +19,6 @@ namespace NuGet.Protocol.Plugins.Tests
 {
     public class PluginResourceProviderTests
     {
-        private const string _pluginHandshakeTimeoutEnvironmentVariable = "NUGET_PLUGIN_HANDSHAKE_TIMEOUT_IN_SECONDS";
-        private const string _pluginIdleTimeoutEnvironmentVariable = "NUGET_PLUGIN_IDLE_TIMEOUT_IN_SECONDS";
-        private const string _pluginPathsEnvironmentVariable = "NUGET_PLUGIN_PATHS";
-        private const string _pluginRequestTimeoutEnvironmentVariable = "NUGET_PLUGIN_REQUEST_TIMEOUT_IN_SECONDS";
         private const string _sourceUri = "https://unit.test";
 
         [Fact]
@@ -246,16 +242,22 @@ namespace NuGet.Protocol.Plugins.Tests
                 _environmentVariableReader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
                     .Returns(pluginsPath);
                 _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                    .Returns((string)null);
+                _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                    .Returns((string)null);
+                _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
                     .Returns("b");
                 _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
                     .Returns("c");
                 _environmentVariableReader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
                     .Returns("d");
 
                 _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
@@ -327,16 +329,22 @@ namespace NuGet.Protocol.Plugins.Tests
                 _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginPathsEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
                     .Returns(pluginFilePath);
                 _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginRequestTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                    .Returns((string)null);
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                    .Returns((string)null);
+                _reader.Setup(x => x.GetEnvironmentVariable(
+                        It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
                     .Returns("RequestTimeout");
                 _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginIdleTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
                     .Returns("IdleTimeout");
                 _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == _pluginHandshakeTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
                     .Returns("HandshakeTimeout");
 
                 _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);

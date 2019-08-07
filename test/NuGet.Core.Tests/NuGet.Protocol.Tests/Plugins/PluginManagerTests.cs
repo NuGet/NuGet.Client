@@ -267,6 +267,12 @@ namespace NuGet.Protocol.Plugins.Tests
                             It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
                         .Returns(pluginFilePath);
                     _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                        .Returns((string)null);
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                        .Returns((string)null);
+                    _reader.Setup(x => x.GetEnvironmentVariable(
                             It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
                         .Returns("RequestTimeout");
                     _reader.Setup(x => x.GetEnvironmentVariable(
