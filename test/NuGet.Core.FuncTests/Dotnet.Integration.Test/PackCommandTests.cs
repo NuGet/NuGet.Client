@@ -4027,7 +4027,8 @@ namespace ClassLibrary
             var builder = PackageIconTestSourceDirectoryBuilder
                 .Create("test")
                 .WithPackageIcon("icon.jpg")
-                .WithFile("icon.jpg", 10);
+                .WithFile("icon.jpg", 10)
+                .WithItem("None", "icon.jpg", null);
 
             using (var srcDir = builder.Build(msbuildFixture))
             {
