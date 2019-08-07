@@ -21,8 +21,6 @@ namespace NuGet.Packaging.Rules
     internal class UpholdBuildConventionRule : IPackageRule
     {
         private static ManagedCodeConventions ManagedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
-        private string _propsExtension = ManagedCodeConventions.Properties["msbuild"].FileExtensions[1];
-        private string _targetsExtension = ManagedCodeConventions.Properties["msbuild"].FileExtensions[0];
 
         public string MessageFormat => AnalysisResources.BuildConventionIsViolatedWarning;
 
@@ -30,82 +28,81 @@ namespace NuGet.Packaging.Rules
         {
             var files = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Build));
             var packageId = builder.NuspecReader.GetId();
-            var (conventionViolatorsProps, conventionViolatorsTargets) = IdentifyViolators(files, packageId);
-            return GenerateWarnings(conventionViolatorsProps, conventionViolatorsTargets);
+            var conventionViolators = IdentifyViolators(files, packageId);
+            return GenerateWarnings(conventionViolators);
         }
 
-        internal IEnumerable<PackagingLogMessage> GenerateWarnings(IDictionary<string, string> conventionViolatorsProps, IDictionary<string, string> conventionViolatorsTargets)
+        internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<ConventionViolator> conventionViolators)
         {
             var issues = new List<PackagingLogMessage>();
             var warningMessage = new StringBuilder();
-            foreach (var props in conventionViolatorsProps)
+            foreach (var vio in conventionViolators)
             {
-                string usedString = props.Key;
-                if(usedString == "unsupported")
-                {
-                    usedString = "build or other";
-                }
-                warningMessage.AppendLine(string.Format(MessageFormat, _propsExtension, usedString, props.Value));
+                warningMessage.AppendLine(string.Format(MessageFormat, vio.Extension, vio.Path, vio.ExpectedPath));
             }
 
-            foreach (var targets in conventionViolatorsTargets)
-            {
-                string usedString = targets.Key;
-                if (usedString == "unsupported")
-                {
-                    usedString = "build or other";
-                }
-                warningMessage.AppendLine(string.Format(MessageFormat, _targetsExtension, usedString, targets.Value));
-            }
-            if(warningMessage.ToString() != string.Empty)
+            if (warningMessage.ToString() != string.Empty)
             {
                 issues.Add(PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129));
             }
             return issues;
         }
 
-        internal (IDictionary<string, string>, IDictionary<string, string>) IdentifyViolators(IEnumerable<string> files, string packageId)
+        internal IEnumerable<ConventionViolator> IdentifyViolators(IEnumerable<string> files, string packageId)
         {
-            var groupedFiles = files.GroupBy(t => GetFolderName(t), m => GetFile(m));
-            var conventionViolatorsProps = new Dictionary<string, string>();
-            var conventionViolatorsTargets = new Dictionary<string, string>();
-
-            var correctPropsPattern = packageId + _propsExtension;
-            var correctTargetsPattern = packageId + _targetsExtension;
+            var groupedFiles = files.GroupBy(t => GetFolderName(t));
+            var conventionViolators = new List<ConventionViolator>();
 
             if (files.Count() != 0)
             {
-                foreach(var group in groupedFiles)
+                foreach (var group in groupedFiles)
                 {
-                    var hasProps = group.Any(t => t.EndsWith(_propsExtension));
-                    var hasTargets = group.Any(t => t.EndsWith(_targetsExtension));
-
-                    var correctTargetsFiles = group.Where(t => t.Equals(correctTargetsPattern,StringComparison.OrdinalIgnoreCase));
-                    var correctPropsFiles = group.Where(t => t.Equals(correctPropsPattern, StringComparison.OrdinalIgnoreCase));
-
-                    if (correctPropsFiles.Count() == 0 && hasProps)
+                    foreach (var extension in ManagedCodeConventions.Properties["msbuild"].FileExtensions)
                     {
-                        conventionViolatorsProps.Add(group.Key, correctPropsPattern);
-                    }
+                        var correctFilePattern = group.Key + packageId + extension;
+                        var hasFiles = group.Any(t => t.EndsWith(extension));
+                        var correctFiles = group.Where(t => t.Equals(correctFilePattern, StringComparison.OrdinalIgnoreCase));
 
-                    if (correctTargetsFiles.Count() == 0 && hasTargets)
-                    {
-                        conventionViolatorsTargets.Add(group.Key, correctTargetsPattern);
+                        if (correctFiles.Count() == 0 && hasFiles)
+                        {
+                            conventionViolators.Add(new ConventionViolator(group.First(), extension, correctFilePattern));
+                        }
                     }
                 }
             }
-
-            return (conventionViolatorsProps,conventionViolatorsTargets);
+            return conventionViolators;
         }
 
         internal string GetFolderName(string filePath)
         {
-            return NuGetFramework.ParseFolder(filePath.Split('/')[1]).GetShortFolderName();
+            var hi = NuGetFramework.ParseFolder(filePath.Split('/')[1]).GetShortFolderName();
+            if (hi == "unsupported")
+            {
+                return filePath.Split('/')[0] + '/';
+            }
+            return filePath.Split('/')[0] + '/' + hi + '/';
         }
 
         private string GetFile(string filePath)
         {
             return filePath.Split('/')[filePath.Count(p => p == '/')];
         }
+
+        internal class ConventionViolator
+        {
+            public string Path { get; }
+
+            public string Extension { get; }
+
+            public string ExpectedPath { get; }
+
+            public ConventionViolator(string filePath, string extension, string expectedFile)
+            {
+                Path = filePath.Replace(filePath.Split('/')[filePath.Count(p => p == '/')], string.Empty);
+                Extension = extension;
+                ExpectedPath = expectedFile;
+            }
+        }
+            
     }
 }
