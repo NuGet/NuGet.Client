@@ -253,6 +253,7 @@ Copyright (c) .NET Foundation. All rights reserved.
               PackageLicenseExpression="$(PackageLicenseExpression)"
               PackageLicenseExpressionVersion="$(PackageLicenseExpressionVersion)"
               Deterministic="$(Deterministic)"
+              PackageIcon="$(PackageIcon)"
               />
   </Target>
 
