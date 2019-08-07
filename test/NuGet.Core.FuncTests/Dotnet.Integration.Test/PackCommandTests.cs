@@ -4021,5 +4021,29 @@ namespace ClassLibrary
             }
         }
 
+        [Fact]
+        public void PackCommand_PackPackageIcon_HappyPath_Suceed()
+        {
+            var builder = PackageIconTestSourceDirectoryBuilder
+                .Create("test")
+                .WithPackageIcon("icon.jpg")
+                .WithFile("icon.jpg", 10);
+
+            using (var srcDir = builder.Build(msbuildFixture))
+            {
+                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
+                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
+                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
+                }
+            }
+        }
     }
 }
