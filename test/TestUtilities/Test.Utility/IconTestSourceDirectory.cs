@@ -136,34 +136,31 @@ namespace NuGet.Test.Utility
         private void CreateNuspec(IEnumerable<Tuple<string, string>> fileEntries)
         {
             StringBuilder sb = new StringBuilder();
-            var nl = Environment.NewLine;
 
-            sb.Append("<?xml version=\"1.0\" encoding=\"utf-8\"?>").Append(nl);
-            sb.Append("<package>").Append(nl);
-            sb.Append("  <metadata>").Append(nl);
-            sb.Append("    <id>iconPackage</id>").Append(nl);
-            sb.Append("    <version>5.2.0</version>").Append(nl);
-            sb.Append("    <authors>Author1, author2</authors>").Append(nl);
-            sb.Append("    <description>Sample icon description</description>").Append(nl);
+            sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            sb.AppendLine("<package>");
+            sb.AppendLine("  <metadata>");
+            sb.AppendLine("    <id>iconPackage</id>");
+            sb.AppendLine("    <version>5.2.0</version>");
+            sb.AppendLine("    <authors>Author1, author2</authors>");
+            sb.AppendLine("    <description>Sample icon description</description>");
 
             if (IconEntry != null)
             {
                 sb.Append("    <icon>")
                     .Append(IconEntry)
-                    .Append("</icon>")
-                    .Append(nl);
+                    .AppendLine("</icon>");
             }
 
             if (IconUrlEntry != null)
             {
                 sb.Append("    <iconUrl>")
                     .Append(IconUrlEntry)
-                    .Append("</iconUrl>")
-                    .Append(nl);
+                    .AppendLine("</iconUrl>");
             }
 
-            sb.Append("  </metadata>").Append(nl);
-            sb.Append("  <files>").Append(nl);
+            sb.AppendLine("  </metadata>");
+            sb.AppendLine("  <files>");
             foreach (var fe in fileEntries)
             {
                 sb.Append($"    <file src=\"{fe.Item1}\"");
@@ -171,11 +168,10 @@ namespace NuGet.Test.Utility
                 {
                     sb.Append($" target=\"{fe.Item2}\"");
                 }
-                sb.Append(" />");
-                sb.Append(nl);
+                sb.AppendLine(" />");
             }
-            sb.Append("  </files>").Append(nl);
-            sb.Append("</package>").Append(nl);
+            sb.AppendLine("  </files>");
+            sb.AppendLine("</package>");
 
             File.WriteAllText(NuspecPath, sb.ToString());
         }
