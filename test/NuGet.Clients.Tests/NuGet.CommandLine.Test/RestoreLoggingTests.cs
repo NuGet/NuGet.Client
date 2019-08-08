@@ -140,8 +140,9 @@ namespace NuGet.CommandLine.Test
                 log.Message.Should().Contain("Detected package version outside of dependency constraint: x 1.0.0 requires z (= 1.0.0) but version z 2.0.0 was resolved.");
             }
         }
+
         [Fact]
-        public async Task RestoreLogging_VerifyNU5036WithMissingNuspecInSourceErrorMessageAsync()
+        public async Task RestoreLogging_MissingNuspecInSource_FailsWithNU5036Async()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -171,12 +172,12 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();                
-                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+                r.AllOutput.Should().Contain("The package doesn't contain nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
             }
         }
 
         [Fact]
-        public async Task RestoreLogging_VerifyNU5036WithMissingNuspecInGlobalPackageErrorMessageAsync()
+        public async Task RestoreLogging_MissingNuspecInGlobalPackages_FailsWithNU5036Async()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -208,7 +209,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("The package doesn't contain .nuspec file. Path: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
+                r.AllOutput.Should().Contain("The package doesn't contain nuspec file. Path: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
             }
         }
 
