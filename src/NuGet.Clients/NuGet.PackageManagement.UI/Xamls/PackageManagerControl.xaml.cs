@@ -886,7 +886,7 @@ namespace NuGet.PackageManagement.UI
 
                 var context = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var metadataProvider = CreatePackageMetadataProvider(context);
-                await _detailModel.LoadPackageMetadaAsync(metadataProvider, CancellationToken.None);
+                await _detailModel.LoadPackageMetadataAsync(metadataProvider, CancellationToken.None);
             }
         }
 

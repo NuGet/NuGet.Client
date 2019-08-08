@@ -458,7 +458,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        internal async Task LoadPackageMetadaAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
+        internal async Task LoadPackageMetadataAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
             var versions = await GetVersionsWithDeprecationMetadataAsync(metadataProvider);
 
