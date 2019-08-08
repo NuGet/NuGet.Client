@@ -61,7 +61,6 @@ function Push-ToMyGet {
 }
 
 $NupkgsDir = Join-Path $env:BUILD_REPOSITORY_LOCALPATH artifacts\nupkgs
-$NuGetExe = Join-Path $env:BUILD_REPOSITORY_LOCALPATH .nuget\nuget.exe
 
 if(Test-Path $NupkgsDir)
 {

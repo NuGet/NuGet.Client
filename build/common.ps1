@@ -356,15 +356,12 @@ Function Restore-SolutionPackages{
     [CmdletBinding()]
     param(
     )
-    $opts = , '-t:restore'
+    $opts = 'msbuild', '-t:restore'
     $opts += "${NuGetClientRoot}\build\bootstrap.proj"
 
     Trace-Log "Restoring packages @""$NuGetClientRoot"""
-    $vsMajorVersion = Get-VSMajorVersion
-    Write-Host "vsmajor version is $vsMajorVersion"
-    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
-    Trace-Log "$MSBuildExe $opts"
-    & $MSBuildExe $opts
+    Trace-Log "dotnet $opts"
+    & dotnet $opts
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }

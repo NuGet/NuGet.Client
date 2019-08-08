@@ -18,13 +18,6 @@ pushd $DIR/
 
 mono --version
 
-#restore solution packages
-msbuild -t:restore "$DIR/build/bootstrap.proj"
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
-
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
@@ -37,6 +30,13 @@ chmod +x cli/dotnet-install.sh
 cli/dotnet-install.sh -i cli
 
 DOTNET="$(pwd)/cli/dotnet"
+
+#restore solution packages
+$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
 
 echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
