@@ -24,17 +24,26 @@ namespace NuGet.Packaging.Rules
     internal class UpholdBuildConventionRule : IPackageRule
     {
         private static ManagedCodeConventions ManagedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
-        
+        string[] _folders = new string[]
+        {
+            PackagingConstants.Folders.Build,
+            PackagingConstants.Folders.BuildTransitive,
+            PackagingConstants.Folders.BuildCrossTargeting
+        };
+
         public string MessageFormat => AnalysisResources.BuildConventionIsViolatedWarning;
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var files = builder.GetFiles().Where(t => t.StartsWith(PackagingConstants.Folders.Build) ||
-                                                    t.StartsWith(PackagingConstants.Folders.BuildTransitive) ||
-                                                    t.StartsWith(PackagingConstants.Folders.BuildCrossTargeting));
-            var packageId = builder.NuspecReader.GetId();
-            var conventionViolators = IdentifyViolators(files, packageId);
-            return GenerateWarnings(conventionViolators);
+            var warnings = new List<PackagingLogMessage>();
+            foreach (var folder in _folders)
+            {
+                var files = builder.GetFiles().Where(t => t.StartsWith(folder));
+                var packageId = builder.NuspecReader.GetId();
+                var conventionViolators = IdentifyViolators(files, packageId);
+                warnings.AddRange(GenerateWarnings(conventionViolators));
+            }
+            return warnings;
         }
 
         internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<ConventionViolator> conventionViolators)
