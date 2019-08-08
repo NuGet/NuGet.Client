@@ -781,6 +781,11 @@ namespace NuGet.Common
         NU5128 = 5128,
 
         /// <summary>
+        /// No build files that follow the build convention ("package_id".props)
+        /// </summary>
+        NU5129 = 5129,
+
+        /// <summary>
         /// TFM dependencies in the lib or ref folder has a compatible match, but not an exact match
         /// </summary>
         NU5130 = 5130,
