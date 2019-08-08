@@ -892,4 +892,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The runtime.json specified in the project '{0}' could not be parsed. {1}</value>
     <comment>0 - runtime.json path, 1 - Additional Message, Please do not localize 'runtime.json'.</comment>
   </data>
+  <data name="Log_PackageContentHashValidationFailed" xml:space="preserve">
+    <value>Content hash package validation failed for {0}. Expected: {1} Actual: {2}</value>
+    <comment>0 - package ID, 1 - expected Sha, 2 - actual sha</comment>
+  </data>
 </root>

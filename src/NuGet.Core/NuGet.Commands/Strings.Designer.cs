@@ -1106,6 +1106,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Content hash package validation failed for {0}. Expected: {1} Actual: {2}.
+        /// </summary>
+        internal static string Log_PackageContentHashValidationFailed {
+            get {
+                return ResourceManager.GetString("Log_PackageContentHashValidationFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package {0} {1} is not compatible with {2}..
         /// </summary>
         internal static string Log_PackageNotCompatibleWithFx {

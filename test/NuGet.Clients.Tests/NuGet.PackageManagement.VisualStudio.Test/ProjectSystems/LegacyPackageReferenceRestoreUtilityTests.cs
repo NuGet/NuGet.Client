@@ -776,9 +776,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
-                    new List<Configuration.PackageSource>()
+                    new List<PackageSource>()
                     {
-                        new Configuration.PackageSource(packageSource.Path)
+                        new PackageSource(packageSource.Path)
                     });
 
                 using (var testSolutionManager = new TestSolutionManager())
@@ -888,6 +888,143 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.False(restoreSummary.Success);
                         Assert.True(restoreSummary.Errors.Count > 0);
                         Assert.NotNull(restoreSummary.Errors.FirstOrDefault(message => (message as RestoreLogMessage).Code == NuGetLogCode.NU1403));
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task LegacyPackageReference_Restore_PackageShaValidationFailed_LogsAllPackageIds()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        new TestDeleteOnRestartManager());
+
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPath = Path.Combine(testSolutionManager.TestDirectory, "project1.csproj");
+                    var projectNames = new ProjectNames(
+                        fullName: fullProjectPath,
+                        uniqueName: Path.GetFileName(fullProjectPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
+                        customUniqueName: Path.GetFileName(fullProjectPath));
+                    var vsProjectAdapter = new TestVSProjectAdapter(
+                        fullProjectPath,
+                        projectNames,
+                        projectTargetFrameworkStr);
+
+                    var projectServices = new TestProjectSystemServices();
+                    projectServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageA",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        },
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                            "packageB",
+                            VersionRange.Parse("1.*"),
+                            LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProject = new LegacyPackageReferenceProject(
+                        vsProjectAdapter,
+                        Guid.NewGuid().ToString(),
+                        projectServices,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+
+                    var packageA = new SimpleTestPackageContext("packageA", "1.0.0");
+                    packageA.AddFile("lib/net45/a.dll");
+                    var packageB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    packageB.AddFile("lib/net45/b.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(packageA, packageSource);
+                    SimpleTestPackageUtility.CreateOPCPackage(packageB, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+                    var projectLockFilePath = Path.Combine(testSolutionManager.TestDirectory, "packages.project1.lock.json");
+                    File.Create(projectLockFilePath).Close();
+
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    Assert.True(File.Exists(projectLockFilePath));
+
+                    // delete existing restore output files
+                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
+
+                    // clean packages folder
+                    Directory.Delete(testSolutionManager.GlobalPackagesFolder, true);
+                    Directory.CreateDirectory(testSolutionManager.GlobalPackagesFolder);
+
+                    // overwrite the package
+                    FileUtility.Delete(packageSource);
+                    var newPackageA = new SimpleTestPackageContext("packageA", "1.0.0");
+                    newPackageA.AddFile("lib/net45/a1.dll");
+                    var newPackageB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    newPackageB.AddFile("lib/net45/b1.dll");
+                    SimpleTestPackageUtility.CreateOPCPackage(newPackageA, packageSource);
+                    SimpleTestPackageUtility.CreateOPCPackage(newPackageB, packageSource);
+
+                    // Act
+                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        new RestoreCommandProvidersCache(),
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        Guid.Empty,
+                        false,
+                        true,
+                        testLogger,
+                        CancellationToken.None);
+
+                    // Assert
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.False(restoreSummary.Success);
+                        Assert.True(restoreSummary.Errors.Count > 0);
+                        var nu1403Message = restoreSummary.Errors.FirstOrDefault(message => (message as RestoreLogMessage).Code == NuGetLogCode.NU1403);
+                        Assert.NotNull(nu1403Message);
+                        Assert.Contains("packageA.1.0.0", nu1403Message.Message);
+                        Assert.Contains("packageB.1.0.0", nu1403Message.Message);
                     }
                 }
             }
