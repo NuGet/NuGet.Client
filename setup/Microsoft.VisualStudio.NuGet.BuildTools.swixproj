@@ -17,8 +17,8 @@
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\$(VisualStudioVersion)\bin\$(Configuration)\</ReferenceOutputPath>
     <NuGetTargetsPath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets</NuGetTargetsPath>
-    <XmlTransformPath>$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\</XmlTransformPath>
-    <NewtonsoftJsonPath>$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\</NewtonsoftJsonPath>
+    <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\</XmlTransformPath>
+    <NewtonsoftJsonPath>$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\</NewtonsoftJsonPath>
   </PropertyGroup>
 
   <PropertyGroup>

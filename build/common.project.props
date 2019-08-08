@@ -29,10 +29,10 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console.2.4.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
-    <ILMergeExePath>$(SolutionPackagesFolder)ILMerge.3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
-    <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)XunitXml.TestLogger.2.0.0\build\_common</XunitXmlLoggerDirectory>
-    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)NuGet.Build.Tasks.Pack.4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console\2.4.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
+    <ILMergeExePath>$(SolutionPackagesFolder)ilmerge\3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
+    <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)xunitxml.testlogger\2.0.0\build\_common</XunitXmlLoggerDirectory>
+    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)nuget.build.tasks.pack\4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)nuget.build.tasks.pack\4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -41,10 +41,10 @@
     <NuGetBuildLocalizationRepository>$(RepositoryRootDirectory)submodules\NuGet.Build.Localization\</NuGetBuildLocalizationRepository>
     <LocalizationRootDirectory>$(NuGetBuildLocalizationRepository)localize</LocalizationRootDirectory>
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
-    <MicroBuildDirectory>$(SolutionPackagesFolder)MicroBuild.Core.0.2.0\build\</MicroBuildDirectory>
+    <MicroBuildDirectory>$(SolutionPackagesFolder)microbuild.core\0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
-    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)Microsoft.DotNet.Build.Tasks.Feed.2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
-    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)Microsoft.DotNet.Maestro.Tasks.1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
+    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
+    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
     <!-- These cause a NU5104 warning. When upgrading to a stable version of this package, remove the no warns from the respective projects -->
     <VSServicesVersion>16.144.1-preview</VSServicesVersion>
@@ -103,7 +103,7 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\Microsoft.VSSDK.BuildTools.15.9.3032</VSSDKRoot>
+    <VSSDKRoot>$(RepositoryRootDirectory)packages\microsoft.vssdk.buildtools\15.9.3032</VSSDKRoot>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>

@@ -20,13 +20,13 @@
 
   <Target Name="BatchSign">
     <ItemGroup>
-      <FilesToSign Include="$(SolutionPackagesFolder)Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll">
+      <FilesToSign Include="$(SolutionPackagesFolder)lucene.net\3.0.3\lib\NET40\Lucene.Net.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
-      <FilesToSign Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
+      <FilesToSign Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
-      <FilesToSign Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
+      <FilesToSign Include="$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">
         <Authenticode>Microsoft400</Authenticode>
         <StrongName>67</StrongName>
       </FilesToSign>

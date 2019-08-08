@@ -14,10 +14,10 @@
 
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)\packages\Microsoft.VisualStudio.ProjectSystem.16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Build">
-      <HintPath>$(EnlistmentRoot)\packages\Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />

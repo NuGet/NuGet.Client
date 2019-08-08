@@ -5,6 +5,7 @@
         <BaseIntermediateOutputPath>$(RestorePackagesPath)obj/</BaseIntermediateOutputPath>
         <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
         <TargetFramework>netstandard2.0</TargetFramework>
+        <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
 
     <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
