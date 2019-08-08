@@ -5603,6 +5603,62 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 Assert.NotNull(Packaging.Manifest.ReadFrom(nuspecStream, validateSchema: true));
             }
         }
+
+        [Fact]
+        public void PackCommand_Determinstic_Succeeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib/netstandard1.6/"),
+                    "a.dll",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0-beta.1</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+    <dependencies>
+        <group targetFramework=""netstandard1.6"">
+            <dependency id=""packageB"" version=""1.0.0-beta.1.build.234"" />
+        </group>
+    </dependencies>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec -Deterministic",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0-beta.1.nupkg");
+
+                using (var reader = new PackageArchiveReader(path))
+                {
+                    var version = reader.NuspecReader.GetVersion();
+                    var dependency = reader.NuspecReader.GetDependencyGroups().Single().Packages.Single();
+
+                    Assert.Equal("1.0.0-beta.1", version.ToString());
+                    Assert.Equal("1.0.0-beta.1.build.234", dependency.VersionRange.ToLegacyShortString());
+                }
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions
