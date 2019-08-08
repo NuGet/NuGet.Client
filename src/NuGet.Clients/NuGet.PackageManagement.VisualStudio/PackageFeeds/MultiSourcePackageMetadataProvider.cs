@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -156,8 +157,11 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (result != null)
                 {
-                    return result.WithVersions(asyncValueFactory: 
-                        () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
+                    return PackageSearchMetadataBuilder
+                        .FromMetadata(result)
+                        .WithVersions(AsyncLazy.New(() => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken)))
+                        .WithDeprecation(AsyncLazy.New(() => FetchDeprecationMetadataAsync(identity, cancellationToken)))
+                        .Build();
                 }
             }
 
@@ -191,6 +195,27 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks)).Where(m => m != null);
 
             return await MergeVersionsAsync(identity, completed);
+        }
+
+        private async Task<PackageDeprecationMetadata> FetchDeprecationMetadataAsync(PackageIdentity identity, CancellationToken cancellationToken)
+        {
+            // Take the deprecation metadata from the first source it is found in
+            foreach (var source in _sourceRepositories)
+            {
+                var metadata = await source.GetPackageMetadataAsync(identity, true, cancellationToken);
+                if (metadata == null)
+                {
+                    continue;
+                }
+
+                var deprecationMetadata = await metadata.GetDeprecationMetadataAsync();
+                if (deprecationMetadata != null)
+                {
+                    return deprecationMetadata;
+                }
+            }
+
+            return null;
         }
 
         private async Task<T> GetMetadataTaskAsyncSafe<T>(Func<Task<T>> getMetadataTask) where T: class

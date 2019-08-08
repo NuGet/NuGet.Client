@@ -27,6 +27,7 @@ using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Protocol;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -800,10 +801,10 @@ namespace NuGet.PackageManagement.UI
 
                 // Update installed tab warning icon
                 var installedPackages = await loadContext.GetInstalledPackagesAsync();
-                var installedPackageMetadata = await Task.WhenAll(
-                    installedPackages.Select(
-                        p => metadataProvider.GetPackageMetadataAsync(p, true, refreshCts.Token)));
-                Model.HasInstalledDeprecatedPackages = installedPackageMetadata.Any(p => p.DeprecationMetadata != null);
+                var installedPackageDeprecationMetadata = await Task.WhenAll(
+                    installedPackages.Select(p => GetPackageDeprecationMetadata(p, metadataProvider, refreshCts)));
+
+                Model.HasInstalledDeprecatedPackages = installedPackageDeprecationMetadata.Any(d => d != null);
 
                 _topPanel._labelInstalled.ShowWarning = Model.HasInstalledDeprecatedPackages;
 
@@ -817,6 +818,18 @@ namespace NuGet.PackageManagement.UI
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             })
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
+        }
+
+        private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadata(
+            PackageCollectionItem package, IPackageMetadataProvider metadataProvider, CancellationTokenSource refreshCts)
+        {
+            var metadata = await metadataProvider.GetPackageMetadataAsync(package, true, refreshCts.Token);
+            if (metadata == null)
+            {
+                return null;
+            }
+
+            return await metadata.GetDeprecationMetadataAsync();
         }
 
         private void RefreshConsolidatablePackagesCount()

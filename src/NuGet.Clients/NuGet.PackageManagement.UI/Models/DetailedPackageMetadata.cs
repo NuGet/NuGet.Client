@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.UI
         {
         }
 
-        public DetailedPackageMetadata(IPackageSearchMetadata serverData, long? downloadCount)
+        public DetailedPackageMetadata(IPackageSearchMetadata serverData, PackageDeprecationMetadata deprecationMetadata, long? downloadCount)
         {
             Id = serverData.Identity.Id;
             Version = serverData.Identity.Version;
@@ -39,7 +39,7 @@ namespace NuGet.PackageManagement.UI
                 dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
-            DeprecationMetadata = serverData.DeprecationMetadata;
+            DeprecationMetadata = deprecationMetadata;
             _localMetadata = serverData as LocalPackageSearchMetadata;
 
             // Determine the package details URL and text.

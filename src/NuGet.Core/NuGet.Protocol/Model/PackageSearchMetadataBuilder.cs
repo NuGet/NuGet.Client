@@ -18,9 +18,15 @@ namespace NuGet.Protocol.Core.Types
     {
         private readonly IPackageSearchMetadata _metadata;
         private AsyncLazy<IEnumerable<VersionInfo>> _lazyVersionsFactory;
+        private AsyncLazy<PackageDeprecationMetadata> _lazyDeprecationFactory;
 
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
+            public ClonedPackageSearchMetadata()
+            {
+                LazyDeprecationFactory = AsyncLazy.New((PackageDeprecationMetadata)null);
+            }
+
             public string Authors { get; set; }
             public IEnumerable<PackageDependencyGroup> DependencySets { get; set; }
             public string Description { get; set; }
@@ -39,7 +45,9 @@ namespace NuGet.Protocol.Core.Types
             public string Title { get; set; }
             public bool PrefixReserved { get; set; }
             public LicenseMetadata LicenseMetadata { get; set; }
-            public PackageDeprecationMetadata DeprecationMetadata { get; set; }
+
+            public AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
+            public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await LazyDeprecationFactory;
 
             public AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
 
@@ -59,7 +67,13 @@ namespace NuGet.Protocol.Core.Types
 
         public PackageSearchMetadataBuilder WithVersions(AsyncLazy<IEnumerable<VersionInfo>> lazyVersionsFactory)
         {
-            _lazyVersionsFactory= lazyVersionsFactory;
+            _lazyVersionsFactory = lazyVersionsFactory;
+            return this;
+        }
+
+        public PackageSearchMetadataBuilder WithDeprecation(AsyncLazy<PackageDeprecationMetadata> lazyDeprecationFactory)
+        {
+            _lazyDeprecationFactory = lazyDeprecationFactory;
             return this;
         }
 
@@ -87,7 +101,7 @@ namespace NuGet.Protocol.Core.Types
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
-                DeprecationMetadata = _metadata.DeprecationMetadata
+                LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync)
             };
 
             return clonedMetadata;

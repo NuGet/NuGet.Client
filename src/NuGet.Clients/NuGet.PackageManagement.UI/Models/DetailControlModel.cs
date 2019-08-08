@@ -14,6 +14,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 
@@ -459,19 +460,19 @@ namespace NuGet.PackageManagement.UI
 
         internal async Task LoadPackageMetadaAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
-            var versions = await _searchResultPackage.GetVersionsAsync();
+            var versions = await GetVersionsWithDeprecationMetadataAsync(metadataProvider);
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
-            // about each version at the same time as fetching the version list (that it, V2). This also acts as a
+            // about each version at the same time as fetching the version list (that is, V2). This also acts as a
             // means to cache version metadata.
             _metadataDict = versions
-                .Where(v => v.PackageSearchMetadata != null)
+                .Where(v => v.VersionInfo.PackageSearchMetadata != null)
                 .ToDictionary(
-                    v => v.Version,
-                    v => new DetailedPackageMetadata(v.PackageSearchMetadata, v.DownloadCount));
+                    v => v.VersionInfo.Version,
+                    v => new DetailedPackageMetadata(v.VersionInfo.PackageSearchMetadata, v.DeprecationMetadata, v.VersionInfo.DownloadCount));
 
             // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
-            if (versions.Select(v => v.Version).Except(_metadataDict.Keys).Any())
+            if (versions.Select(v => v.VersionInfo.Version).Except(_metadataDict.Keys).Any())
             {
                 try
                 {
@@ -482,26 +483,30 @@ namespace NuGet.PackageManagement.UI
                         includeUnlisted: false,
                         cancellationToken: token);
 
-                    var uniquePackages = packages
+                    var packagesWithDeprecationMetadata = await Task.WhenAll(
+                        packages.Select(v => PackageSearchMetadataWithDeprecationMetadata.FromPackageSearchMetadata(v)));
+
+                    var uniquePackages = packagesWithDeprecationMetadata
                         .GroupBy(
-                            m => m.Identity.Version,
+                            m => m.SearchMetadata.Identity.Version,
                             (v, ms) => ms.First());
 
                     _metadataDict = uniquePackages
                         .GroupJoin(
                             versions,
-                            m => m.Identity.Version,
-                            d => d.Version,
+                            m => m.SearchMetadata.Identity.Version,
+                            d => d.VersionInfo.Version,
                             (m, d) =>
                             {
-                                var versionInfo = d.OrderByDescending(v => v.DownloadCount).FirstOrDefault();
+                                var versionInfo = d.OrderByDescending(v => v.VersionInfo?.DownloadCount ?? 0).FirstOrDefault();
                                 if (versionInfo != null)
                                 {
                                     // Save the metadata about this version to the VersionInfo instance.
-                                    versionInfo.PackageSearchMetadata = m;
+                                    versionInfo.VersionInfo.PackageSearchMetadata = m.SearchMetadata;
+                                    versionInfo.DeprecationMetadata = m.DeprecationMetadata;
                                 }
 
-                                return new DetailedPackageMetadata(m, versionInfo?.DownloadCount);
+                                return new DetailedPackageMetadata(m.SearchMetadata, versionInfo.DeprecationMetadata, versionInfo.VersionInfo?.DownloadCount);
                             })
                          .ToDictionary(m => m.Version);
                 }
@@ -517,6 +522,59 @@ namespace NuGet.PackageManagement.UI
             {
                 PackageMetadata = p;
             }
+        }
+
+        private async Task<IEnumerable<VersionInfoWithDeprecationMetadata>> GetVersionsWithDeprecationMetadataAsync(IPackageMetadataProvider metadataProvider)
+        {
+            var versions = await _searchResultPackage.GetVersionsAsync();
+            return await Task.WhenAll(
+                versions.Select(VersionInfoWithDeprecationMetadata.FromVersionInfoAsync));
+        }
+
+        private class VersionInfoWithDeprecationMetadata
+        {
+            public VersionInfoWithDeprecationMetadata(
+                VersionInfo version,
+                PackageDeprecationMetadata deprecationMetadata)
+            {
+                VersionInfo = version;
+                DeprecationMetadata = deprecationMetadata;
+            }
+
+            public static async Task<VersionInfoWithDeprecationMetadata> FromVersionInfoAsync(
+                VersionInfo version)
+            {
+                var deprecationMetadata = version != null && version.PackageSearchMetadata != null
+                    ? await version.PackageSearchMetadata.GetDeprecationMetadataAsync()
+                    : null;
+
+                return new VersionInfoWithDeprecationMetadata(version, deprecationMetadata);
+            }
+
+            public VersionInfo VersionInfo { get; }
+
+            public PackageDeprecationMetadata DeprecationMetadata { get; set; }
+        }
+
+        private class PackageSearchMetadataWithDeprecationMetadata
+        {
+            public PackageSearchMetadataWithDeprecationMetadata(
+                IPackageSearchMetadata searchMetadata,
+                PackageDeprecationMetadata deprecationMetadata)
+            {
+                SearchMetadata = searchMetadata;
+                DeprecationMetadata = deprecationMetadata;
+            }
+
+            public static async Task<PackageSearchMetadataWithDeprecationMetadata> FromPackageSearchMetadata(
+                IPackageSearchMetadata searchMetadata)
+            {
+                var deprecationMetadata = await searchMetadata.GetDeprecationMetadataAsync();
+                return new PackageSearchMetadataWithDeprecationMetadata(searchMetadata, deprecationMetadata);
+            }
+
+            public IPackageSearchMetadata SearchMetadata { get; }
+            public PackageDeprecationMetadata DeprecationMetadata { get; }
         }
 
         public abstract bool IsSolution { get; }

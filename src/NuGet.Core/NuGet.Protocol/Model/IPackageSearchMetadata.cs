@@ -36,7 +36,7 @@ namespace NuGet.Protocol.Core.Types
         bool PrefixReserved { get; }
 
         LicenseMetadata LicenseMetadata { get; }
-        PackageDeprecationMetadata DeprecationMetadata { get; }
+        Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync();
         Task<IEnumerable<VersionInfo>> GetVersionsAsync();
     }
 }
