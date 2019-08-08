@@ -4046,5 +4046,90 @@ namespace ClassLibrary
                 }
             }
         }
+
+        [Fact]
+        public void PackCommand_PackageIcon_ImplicitFile_Suceeds()
+        {
+            var builder = PackageIconTestSourceDirectoryBuilder
+                .Create("test")
+                .WithPackageIcon("media\\icon.jpg")
+                .WithFile("media\\icon.jpg", 10)
+                .WithFile("media\\example.txt", 10)
+                .WithFile("media\\readme.txt", 10)
+                .WithItem("None", "media\\*", "media");
+
+            using (var srcDir = builder.Build(msbuildFixture))
+            {
+                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
+                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
+                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackageIcon_FolderNested_Suceeds()
+        {
+            var builder = PackageIconTestSourceDirectoryBuilder
+                .Create("test")
+                .WithPackageIcon("media\\nested\\icon.jpg")
+                .WithFile("folder\\nested\\icon.jpg", 10)
+                .WithFile("folder\\nested\\sample.txt", 10)
+                .WithFile("folder\\nested\\media\\readme.txt", 10)
+                .WithItem("None", "folder\\**", "media");
+
+            using (var srcDir = builder.Build(msbuildFixture))
+            {
+                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
+                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
+                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
+                }
+            }
+        }
+
+
+        [Fact]
+        public void PackCommand_PackageIcon_FolderNestedFlatPack_Suceeds()
+        {
+            var builder = PackageIconTestSourceDirectoryBuilder
+                .Create("test")
+                .WithPackageIcon("icon.jpg")
+                .WithFile("folder\\nested\\icon.jpg", 10)
+                .WithFile("folder\\nested\\sample.txt", 10)
+                .WithFile("folder\\nested\\media\\readme.txt", 10)
+                .WithItem("None", "folder\\**", "");
+
+            using (var srcDir = builder.Build(msbuildFixture))
+            {
+                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
+                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
+                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
+                }
+            }
+        }
     }
 }
