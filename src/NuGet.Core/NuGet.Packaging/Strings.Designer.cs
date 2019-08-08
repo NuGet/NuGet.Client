@@ -223,7 +223,7 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package doesn&apos;t contain nuspec file. {0}.
+        ///   Looks up a localized string similar to The package is missing the required nuspec file. {0}.
         /// </summary>
         internal static string Error_MissingNuspecFile {
             get {

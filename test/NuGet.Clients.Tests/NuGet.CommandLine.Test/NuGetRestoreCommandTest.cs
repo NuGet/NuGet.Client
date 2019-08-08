@@ -220,7 +220,7 @@ namespace NuGet.CommandLine.Test
                 var packageFileA = Path.Combine(workingPath, @"outputDir", "a.1.1.0", "a.1.1.0.nupkg");
                 Assert.False(File.Exists(packageFileA));
                 Assert.Equal(_failureCode, r.Item1);
-                Assert.Contains("The package doesn't contain nuspec file.", r.AllOutput);
+                Assert.Contains("The package is missing the required nuspec file.", r.AllOutput);
             }
         }
 

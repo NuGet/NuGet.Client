@@ -172,7 +172,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();                
-                r.AllOutput.Should().Contain("The package doesn't contain nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
             }
         }
 
@@ -209,7 +209,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 r.Success.Should().BeFalse();
-                r.AllOutput.Should().Contain("The package doesn't contain nuspec file. Path: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
+                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
             }
         }
 
