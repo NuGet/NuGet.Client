@@ -48,16 +48,21 @@ namespace NuGet.Packaging.Rules
 
         internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<ConventionViolator> conventionViolators)
         {
-            var issues = new List<PackagingLogMessage>();
-            var warningMessage = new StringBuilder();
-            foreach (var vio in conventionViolators)
-            {
-                warningMessage.AppendLine(string.Format(MessageFormat, vio.Extension, vio.Path, vio.ExpectedPath));
-            }
 
-            if (warningMessage.ToString() != string.Empty)
+            var issues = new List<PackagingLogMessage>();
+            foreach (var folder in _folders)
             {
-                issues.Add(PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129));
+                var warningMessage = new StringBuilder();
+                var currentConventionViolators = conventionViolators.Where(t => t.ExpectedPath.StartsWith(folder + '/'));
+                foreach (var conViolator in currentConventionViolators)
+                {
+                    warningMessage.AppendLine(string.Format(MessageFormat, conViolator.Extension, conViolator.Path, conViolator.ExpectedPath));
+                }
+
+                if (warningMessage.ToString() != string.Empty)
+                {
+                    issues.Add(PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129));
+                }
             }
             return issues;
         }
