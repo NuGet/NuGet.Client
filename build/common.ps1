@@ -271,6 +271,8 @@ Function Install-DotnetCLI {
         & $DotNetExe --info
     }
 
+    # install SDK2 runtime as we encounter problems on running dotnet vstest command when only download SDK3.
+    & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
     
 }
 
