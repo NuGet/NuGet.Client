@@ -59,10 +59,11 @@ namespace Dotnet.Integration.Test
 
                 var attributes = new Dictionary<string, string>();
                 var properties = new Dictionary<string, string>();
+                attributes["Pack"] = "true";
                 foreach (var tup in fileEntries)
                 {
-                    attributes.Clear();
-
+                    attributes.Remove("PackagePath");
+                   
                     if(tup.Item3 != null)
                     {
                         attributes["PackagePath"] = tup.Item3;
@@ -79,11 +80,11 @@ namespace Dotnet.Integration.Test
         {
             foreach (var f in files)
             {
-                var filepath = Path.Combine(BaseDir, f.Item1);
+                var filepath = Path.Combine(ProjectFolder, f.Item1);
                 var dir = Path.GetDirectoryName(filepath);
 
                 Directory.CreateDirectory(dir);
-                using (var fileStream = File.OpenWrite(Path.Combine(BaseDir, f.Item1)))
+                using (var fileStream = File.OpenWrite(filepath))
                 {
                     fileStream.SetLength(f.Item2);
                 }
