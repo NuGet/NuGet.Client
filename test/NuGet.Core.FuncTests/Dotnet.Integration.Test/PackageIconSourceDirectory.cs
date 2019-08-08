@@ -48,14 +48,13 @@ namespace Dotnet.Integration.Test
 
                 if (PackageIconUrlEntry != null)
                 {
-                    ProjectFileUtils.AddProperty(xml, "PackageIconUrl", PackageIconEntry);
+                    ProjectFileUtils.AddProperty(xml, "PackageIconUrl", PackageIconUrlEntry);
                 }
 
                 if (PackageIconEntry != null)
                 {
                     ProjectFileUtils.AddProperty(xml, "PackageIcon", PackageIconEntry);
                 }
-
 
                 var attributes = new Dictionary<string, string>();
                 var properties = new Dictionary<string, string>();
