@@ -734,7 +734,7 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var log = exception.AsLogMessage();
-                    Assert.Equal(NuGetLogCode.NU5036, log.Code);
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
                     Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }
@@ -782,7 +782,7 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var log = exception.AsLogMessage();
-                    Assert.Equal(NuGetLogCode.NU5036, log.Code);
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
                     Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }
@@ -811,7 +811,7 @@ namespace NuGet.Packaging.Test
 
                     // Assert
                     var log = exception.AsLogMessage();
-                    Assert.Equal(NuGetLogCode.NU5036, log.Code);
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
                     Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }

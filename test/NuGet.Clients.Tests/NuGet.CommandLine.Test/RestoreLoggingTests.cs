@@ -142,7 +142,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_MissingNuspecInSource_FailsWithNU5036Async()
+        public async Task RestoreLogging_MissingNuspecInSource_FailsWithNU5037Async()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -177,7 +177,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public async Task RestoreLogging_MissingNuspecInGlobalPackages_FailsWithNU5036Async()
+        public async Task RestoreLogging_MissingNuspecInGlobalPackages_FailsWithNU5037Async()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

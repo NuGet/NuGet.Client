@@ -526,7 +526,7 @@ namespace NuGet.Packaging
 
             if (nuspecPaths.Count == 0)
             {
-                throw new PackagingException(NuGetLogCode.NU5036, string.Format(
+                throw new PackagingException(NuGetLogCode.NU5037, string.Format(
                             CultureInfo.CurrentCulture,
                             Strings.Error_MissingNuspecFile,
                             string.Empty));
