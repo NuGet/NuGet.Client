@@ -5605,7 +5605,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_Determinstic_Succeeds()
+        public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
             var nugetexe = Util.GetNuGetExePath();
 
@@ -5638,25 +5638,37 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   </metadata>
 </package>");
 
-                // Act
-                var r = CommandRunner.Run(
-                    nugetexe,
-                    workingDirectory,
-                    "pack packageA.nuspec -Deterministic",
-                    waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                var command = "pack packageA.nuspec -Deterministic -OutputDirectory {0}";
+                byte[][] packageBytes = new byte[2][];
 
-                // Assert
-                var path = Path.Combine(workingDirectory, "packageA.1.0.0-beta.1.nupkg");
-
-                using (var reader = new PackageArchiveReader(path))
+                for (var i = 0; i < 2; i++)
                 {
-                    var version = reader.NuspecReader.GetVersion();
-                    var dependency = reader.NuspecReader.GetDependencyGroups().Single().Packages.Single();
+                    var path = Path.Combine(workingDirectory, i.ToString());
+                    var packagePath = Path.Combine(path, "packageA.1.0.0-beta.1.nupkg");
+                    // Act
+                    var r = CommandRunner.Run(
+                        nugetexe,
+                        workingDirectory,
+                        string.Format(command, path),
+                        waitForExit: true);
+                    Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
-                    Assert.Equal("1.0.0-beta.1", version.ToString());
-                    Assert.Equal("1.0.0-beta.1.build.234", dependency.VersionRange.ToLegacyShortString());
+
+                    using (var reader = new PackageArchiveReader(packagePath))
+                    {
+                        var version = reader.NuspecReader.GetVersion();
+                        Assert.Equal("1.0.0-beta.1", version.ToString());
+                    }
+
+                    using (var reader = new FileStream(packagePath, FileMode.Open))
+                    using (var ms = new MemoryStream())
+                    {
+                        reader.CopyTo(ms);
+                        packageBytes[i] = ms.ToArray();
+                    }
                 }
+
+                Assert.Equal(packageBytes[0], packageBytes[1]);
             }
         }
     }

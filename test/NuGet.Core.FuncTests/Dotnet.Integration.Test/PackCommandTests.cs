@@ -3968,7 +3968,7 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackDeterministicProject_Succeeds()
+        public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -3985,41 +3985,41 @@ namespace ClassLibrary
                 }
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-
                 // Act
-                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+                byte[][] packageBytes = new byte[2][];
 
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                for (var i = 0; i < 2; i++)
                 {
-                    var nuspecReader = nupkgReader.NuspecReader;
+                    var packageOutputPath = Path.Combine(workingDirectory, i.ToString());
+                    var nupkgPath = Path.Combine(packageOutputPath, $"{projectName}.1.0.0.nupkg");
+                    var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                    // Validate the output .nuspec.
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetId());
-                    Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
-                    Assert.Equal("Package Description", nuspecReader.GetDescription());
-                    Assert.False(nuspecReader.GetRequireLicenseAcceptance());
+                    // Act
+                    msbuildFixture.PackProject(workingDirectory, projectName, $"-o {packageOutputPath}");
 
-                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
-                    Assert.Equal(1, dependencyGroups.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
-                    var packages = dependencyGroups[0].Packages.ToList();
-                    Assert.Equal(0, packages.Count);
+                    Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                    Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
-                    // Validate the assets.
-                    var libItems = nupkgReader.GetLibItems().ToList();
-                    Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                    {
+                        var nuspecReader = nupkgReader.NuspecReader;
+
+                        // Validate the output .nuspec.
+                        Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                        Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    }
+
+                    using (var reader = new FileStream(nupkgPath, FileMode.Open))
+                    using (var ms = new MemoryStream())
+                    {
+                        reader.CopyTo(ms);
+                        packageBytes[i] = ms.ToArray();
+                    }
                 }
-
+                // Assert
+                Assert.Equal(packageBytes[0], packageBytes[1]);
             }
         }
+
     }
 }

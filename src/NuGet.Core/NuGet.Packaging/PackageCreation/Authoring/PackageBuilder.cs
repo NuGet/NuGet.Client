@@ -26,7 +26,7 @@ namespace NuGet.Packaging
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
         private readonly bool _deterministic;
-        private static readonly DateTime _unixEpoch = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        private static readonly DateTime ZipFormatMinDate = new DateTime(1980, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
         public PackageBuilder(string path, Func<string, string> propertyProvider, bool includeEmptyDirectories)
             : this(path, propertyProvider, includeEmptyDirectories, deterministic: false)
@@ -351,40 +351,6 @@ namespace NuGet.Packaging
             set;
         }
 
-        private static byte[] ReadAllBytes(Stream stream)
-        {
-            using (var ms = new MemoryStream())
-            {
-                ms.CopyTo(ms);
-                return ms.ToArray();
-            }
-        }
-
-        private string CalcPsmdcpName()
-        {
-            if (_deterministic)
-            {
-                using (var hashFunc = new Sha512HashFunction())
-                {
-                    foreach (var file in Files)
-                    {
-                        var data = ReadAllBytes(file.GetStream());
-                        hashFunc.Update(data, 0, data.Length);
-                    }
-                    return ToHexString(hashFunc.GetHashBytes()).Substring(0, 32);
-                }
-            }
-            else
-            {
-                return Guid.NewGuid().ToString("N");
-            }
-        }
-
-        private static string ToHexString(byte[] arr)
-        {
-            return BitConverter.ToString(arr).ToLower().Replace("-", "");
-        }
-
         public void Save(Stream stream)
         {
             // Make sure we're saving a valid package id
@@ -419,6 +385,58 @@ namespace NuGet.Packaging
             }
         }
 
+        private static byte[] ReadAllBytes(Stream stream)
+        {
+            using (var ms = new MemoryStream())
+            {
+                stream.CopyTo(ms);
+                return ms.ToArray();
+            }
+        }
+
+        private string CalcPsmdcpName()
+        {
+            if (_deterministic)
+            {
+                using (var hashFunc = new Sha512HashFunction())
+                {
+                    foreach (var file in Files)
+                    {
+                        var data = ReadAllBytes(file.GetStream());
+                        hashFunc.Update(data, 0, data.Length);
+                    }
+                    return EncodeHexString(hashFunc.GetHashBytes()).Substring(0, 32);
+                }
+            }
+            else
+            {
+                return Guid.NewGuid().ToString("N");
+            }
+        }
+
+        private static readonly char[] HexValues = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+        // Reference https://github.com/dotnet/corefx/blob/2c2e4a599889652ec579a870054b0f8915ea70fd/src/System.Security.Cryptography.Xml/src/System/Security/Cryptography/Xml/Utils.cs#L736
+        internal static string EncodeHexString(byte[] sArray)
+        {
+            uint start = 0;
+            uint end = (uint)sArray.Length;
+            string result = null;
+            if (sArray != null)
+            {
+                char[] hexOrder = new char[(end - start) * 2];
+                uint digit;
+                for (uint i = start, j = 0; i < end; i++)
+                {
+                    digit = (uint)((sArray[i] & 0xf0) >> 4);
+                    hexOrder[j++] = HexValues[digit];
+                    digit = (uint)(sArray[i] & 0x0f);
+                    hexOrder[j++] = HexValues[digit];
+                }
+                result = new string(hexOrder);
+            }
+            return result;
+        }
+
         private static string CreatorInfo()
         {
             List<string> creatorInfo = new List<string>();
@@ -434,7 +452,7 @@ namespace NuGet.Packaging
                 creatorInfo.Add(attribute.FrameworkDisplayName);
             }
 
-            return String.Join(";", creatorInfo);
+            return string.Join(";", creatorInfo);
         }
 
         private static int DetermineMinimumSchemaVersion(
@@ -636,9 +654,18 @@ namespace NuGet.Packaging
 
         private ZipArchiveEntry CreateEntry(ZipArchive package, string entryName, CompressionLevel compressionLevel)
         {
-            var entry = package.CreateEntry(entryName, CompressionLevel.Optimal);
+            var entry = package.CreateEntry(entryName, compressionLevel);
             if (_deterministic)
-                entry.LastWriteTime = _unixEpoch;
+            {
+                entry.LastWriteTime = ZipFormatMinDate;
+            }
+            return entry;
+        }
+
+        private ZipArchiveEntry CreatePackageFileEntry(ZipArchive package, string entryName, DateTimeOffset timeOffset, CompressionLevel compressionLevel)
+        {
+            var entry = package.CreateEntry(entryName, compressionLevel);
+            entry.LastWriteTime = timeOffset;
             return entry;
         }
 
@@ -668,8 +695,11 @@ namespace NuGet.Packaging
                 {
                     try
                     {
-                        var lastWriteTime = _deterministic ? _unixEpoch : file.LastWriteTime;
-                        CreatePart(package, file.Path, stream, lastWriteTime); 
+                        CreatePart(
+                            package,
+                            file.Path,
+                            stream,
+                            lastWriteTime : _deterministic ? ZipFormatMinDate : file.LastWriteTime); 
                         var fileExtension = Path.GetExtension(file.Path);
 
                         // We have files without extension (e.g. the executables for Nix)
@@ -819,9 +849,8 @@ namespace NuGet.Packaging
             }
 
             string entryName = CreatePartEntryName(path);
-            var entry = CreateEntry(package, entryName, CompressionLevel.Optimal);
-            if(!_deterministic)
-                entry.LastWriteTime = lastWriteTime;
+            var entry = CreatePackageFileEntry(package, entryName, lastWriteTime, CompressionLevel.Optimal);
+
             using (var stream = entry.Open())
             {
                 sourceStream.CopyTo(stream);
@@ -834,7 +863,7 @@ namespace NuGet.Packaging
             var segments = path.Split(new[] { '/', '\\', Path.DirectorySeparatorChar }, StringSplitOptions.None)
                 .Select(Uri.EscapeDataString);
 
-            var escapedPath = String.Join("/", segments);
+            var escapedPath = string.Join("/", segments);
 
             // retrieve only relative path with resolved . or ..
             return GetStringForPartUri(escapedPath);
@@ -974,7 +1003,7 @@ namespace NuGet.Packaging
                 var data = System.Text.Encoding.UTF8.GetBytes(path);
                 hashFunc.Update(data, 0, data.Length);
                 var hash = hashFunc.GetHashBytes();
-                var hex = ToHexString(hash);
+                var hex = EncodeHexString(hash);
                 return "R" + hex.Substring(0, 16);
             }
         }
