@@ -641,6 +641,11 @@ namespace NuGet.Common
         NU5035 = 5035,
 
         /// <summary>
+        /// https://aka.ms/malformedNuGetLicenseUrl
+        /// </summary>
+        NU5036 = 5036,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
