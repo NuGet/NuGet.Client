@@ -7,12 +7,10 @@ $ConfigureJson = Join-Path $Artifacts configure.json
 $BuiltInVsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$NuGetExe = Join-Path $NuGetClientRoot '.nuget\nuget.exe'
 $XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console\2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ilmerge\2.14.1208\tools\ILMerge.exe'
 
 Set-Alias dotnet $DotNetExe
-Set-Alias nuget $NuGetExe
 Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
@@ -164,22 +162,6 @@ Function Update-Submodules {
     }
 }
 
-# Downloads NuGet.exe if missing
-Function Install-NuGet {
-    [CmdletBinding()]
-    param(
-        [switch]$Force
-    )
-    if ($Force -or -not (Test-Path $NuGetExe)) {
-        Trace-Log 'Downloading nuget.exe'
-
-        wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe -OutFile $NuGetExe
-    }
-
-    # Display nuget info
-    & $NuGetExe locals all -list -verbosity detailed
-}
-
 Function Install-DotnetCLI {
     [CmdletBinding()]
     param(
@@ -313,7 +295,7 @@ Function Test-BuildEnvironment {
         Invoke-Expression $configureScriptPath
     }
 
-    $Installed = (Test-Path $DotNetExe) -and (Test-Path $NuGetExe)
+    $Installed = (Test-Path $DotNetExe)
     if (-not $Installed) {
         Error-Log 'Build environment is not configured. Please run configure.ps1 first.' -Fatal
     }
@@ -349,7 +331,7 @@ Function Clear-PackageCache {
     param()
     Trace-Log 'Cleaning local caches'
 
-    & nuget locals all -clear -verbosity detailed
+    & dotnet nuget locals all --clear --verbosity detailed
 }
 
 Function Clear-Artifacts {
@@ -373,30 +355,16 @@ Function Clear-Nupkgs {
 Function Restore-SolutionPackages{
     [CmdletBinding()]
     param(
-        [Alias('path')]
-        [string]$SolutionPath,
-        [ValidateSet(15)]
-        [int]$MSBuildVersion
     )
-    $opts = , 'restore'
-    if (-not $SolutionPath) {
-        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot
-    }
-    else {
-        $opts += $SolutionPath
-    }
-
-    if ($MSBuildVersion) {
-        $opts += '-MSBuildVersion', $MSBuildVersion
-    }
-
-    if (-not $VerbosePreference) {
-        $opts += '-verbosity', 'quiet'
-    }
+    $opts = , '-t:restore'
+    $opts += "${NuGetClientRoot}\build\bootstrap.proj"
 
     Trace-Log "Restoring packages @""$NuGetClientRoot"""
-    Trace-Log "$NuGetExe $opts"
-    & $NuGetExe $opts
+    $vsMajorVersion = Get-VSMajorVersion
+    Write-Host "vsmajor version is $vsMajorVersion"
+    $MSBuildExe = Get-MSBuildExe $vsMajorVersion
+    Trace-Log "$MSBuildExe $opts"
+    & $MSBuildExe $opts
     if (-not $?) {
         Error-Log "Restore failed @""$NuGetClientRoot"". Code: ${LASTEXITCODE}"
     }

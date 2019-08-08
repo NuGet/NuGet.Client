@@ -16,14 +16,10 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$SCRIPTDIR/../..
 pushd $DIR/
 
-NuGetExe="$DIR/.nuget/nuget.exe"
-#Get NuGet.exe
-curl -o $NuGetExe --retry 5 --retry-delay 10 -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-
 mono --version
 
 #restore solution packages
-mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR/"
+msbuild -t:restore "$DIR/build/bootstrap.proj"
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1

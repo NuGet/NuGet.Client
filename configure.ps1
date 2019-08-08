@@ -39,10 +39,6 @@ Invoke-BuildStep 'Configuring git repo' {
     Update-SubModules -Force:$Force
 } -ev +BuildErrors
 
-Invoke-BuildStep 'Installing NuGet.exe' {
-    Install-NuGet -Force:$Force
-} -ev +BuildErrors
-
 Invoke-BuildStep 'Installing .NET CLI' {
     Install-DotnetCLI -Force:$Force   
 } -ev +BuildErrors
