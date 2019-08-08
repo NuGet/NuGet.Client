@@ -1,0 +1,36 @@
+<Project>
+
+    <PropertyGroup>
+        <RestorePackagesPath>$(MSBuildThisFileDirectory)../packages/</RestorePackagesPath>
+        <BaseIntermediateOutputPath>$(RestorePackagesPath)obj/</BaseIntermediateOutputPath>
+        <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
+        <TargetFramework>netstandard2.0</TargetFramework>
+    </PropertyGroup>
+
+    <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
+
+    <ItemGroup>
+        <PackageDownload Include="ILMerge" version="[3.0.21]" />
+        <PackageDownload Include="Lucene.Net" version="[3.0.3]" />
+        <PackageDownload Include="MicroBuild.Core" version="[0.2.0]" />
+        <PackageDownload Include="Microsoft.Build" version="[15.1.262-preview5]" />
+        <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Feed" version="[2.2.0-beta.19178.1]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
+        <PackageDownload Include="Microsoft.DotNet.Maestro.Tasks" version="[1.1.0-beta.19178.1]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
+        <PackageDownload Include="Microsoft.VisualStudio.Composition" version="[15.8.98]" />
+        <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.0.201-pre-g7d366164d0]" />
+        <PackageDownload Include="Microsoft.VSSDK.BuildTools" version="[15.9.3032]" />
+        <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
+        <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
+        <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[4.9.2]" />
+        <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />
+        <PackageDownload Include="NuGet.Core" version="[2.14.0-rtm-832]" />
+        <PackageDownload Include="NuGetValidator" version="[2.0.1]" />
+        <PackageDownload Include="VSLangProj140" version="[14.0.25029]" />
+        <PackageDownload Include="VSLangProj150" version="[1.0.0]" />
+        <PackageDownload Include="xunit.runner.console" version="[2.4.1]" />
+        <PackageDownload Include="XunitXml.TestLogger" version="[2.0.0]" />
+    </ItemGroup>
+
+    <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
+
+</Project>
