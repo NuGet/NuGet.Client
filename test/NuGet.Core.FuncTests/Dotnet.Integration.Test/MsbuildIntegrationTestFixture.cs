@@ -31,16 +31,11 @@ namespace Dotnet.Integration.Test
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
             var sdkPaths = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk"));
-#if NETCORE3_0
+
             MsBuildSdksPath = Path.Combine(
              sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
              , "Sdks");
-#else
-            MsBuildSdksPath = Path.Combine(
-             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("2")).First()
-             , "Sdks");
-#endif        
-            _templateDirectory = TestDirectory.Create();
+     
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -86,38 +81,11 @@ namespace Dotnet.Integration.Test
             {
                 File.Copy(file.FullName, Path.Combine(workingDirectory, file.Name));
             }
-            CreateTempGlobalJson(solutionRoot);
-
             File.Move(
                 Path.Combine(workingDirectory, args + ".csproj"),
                 Path.Combine(workingDirectory, projectName + ".csproj"));
         }
 
-        //create a global.json file in temperary testing folder, to make sure testing with the correct sdk when there're multiple of them in CLI folder.
-        internal void CreateTempGlobalJson(string solutionRoot)
-        {
-            //put the global.json at one level up to solutionRoot path
-            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split(Path.DirectorySeparatorChar).Last().Length);
-            if (File.Exists(pathToPlaceGlobalJsonFile + Path.DirectorySeparatorChar + "global.json"))
-            {
-                return;
-            }
-
-            var sdkVersion = MsBuildSdksPath.Split(Path.DirectorySeparatorChar).ElementAt(MsBuildSdksPath.Split(Path.DirectorySeparatorChar).Count() - 2);
-
-            var globalJsonFile =
-@"{
-    ""sdk"": {
-              ""version"": """ + sdkVersion + @"""
-             }
-}";
-
-            using (var outputFile = new StreamWriter(Path.Combine(pathToPlaceGlobalJsonFile, "global.json")))
-            {
-                outputFile.WriteLine(globalJsonFile);
-                outputFile.Close();
-            }
-        }
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
@@ -125,8 +93,6 @@ namespace Dotnet.Integration.Test
             {
                 Directory.CreateDirectory(workingDirectory);
             }
-
-            CreateTempGlobalJson(solutionRoot);
 
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 

@@ -36,9 +36,9 @@
     <!-- when LockSDKVersion is not true, it will ignore the properties and just use the latest version for the channel specified in CliVersionForBuilding for building, CliBranchForTesting for testing -->
     <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == ''"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">release/3.0.1xx 3.0.100-preview7-012802;release/2.2.3xx</OverrideCliBranchForTesting>
+    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">release/3.0.1xx 3.0.100-preview7-012802</OverrideCliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/3.0.1xx;release/2.2.3xx</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/3.0.1xx</CliBranchForTesting>
     <CliVersionForBuilding Condition="'$(LockSDKVersion)' == ''">3.0.x</CliVersionForBuilding>
     <CliVersionForBuilding Condition="'$(LockSDKVersion)' == 'true'">3.0.100-preview6-012264</CliVersionForBuilding>
     <!-- This branches are used for creating insertion PRs -->
