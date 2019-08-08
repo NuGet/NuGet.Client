@@ -1,7 +1,7 @@
 ﻿<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
-    <TestForOneSDK>true</TestForOneSDK>
+    <TestForLatestNetCoreOnly>true</TestForLatestNetCoreOnly>
   </PropertyGroup>
 
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
