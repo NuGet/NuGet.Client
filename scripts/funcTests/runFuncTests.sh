@@ -68,6 +68,8 @@ do
 done
 echo "================="
 
+# install SDK2 runtime as we encounter problems on running dotnet vstest command when only download SDK3.
+cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
 
 echo "Deleting .NET Core temporary files"
 rm -rf "/tmp/"dotnet.*

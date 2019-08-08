@@ -18,9 +18,7 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
-    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' != 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
-    <TargetsForTfmSpecificContentInPackage Condition=" '$(Create2ndNupkg)' == 'true'">$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg2X</TargetsForTfmSpecificContentInPackage>
-    <PackageId Condition=" '$(Create2ndNupkg)' == 'true'">$(AssemblyName).Sdk2x</PackageId>
+    <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
@@ -32,9 +30,6 @@
     <Compile Include="..\NuGet.Build.Tasks\Common\MSBuildLogger.cs" />
     <Compile Include="..\NuGet.Build.Tasks\GetProjectTargetFrameworksTask.cs" />
     <Content Include="NuGet.Build.Tasks.Pack.targets" Pack="true" PackagePath="build;buildCrossTargeting">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="NuGet.Build.Tasks.Pack.Sdk2x.targets" Pack="true" PackagePath="build;buildCrossTargeting" Condition=" '$(Create2ndNupkg)' == 'true'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -174,33 +169,6 @@
       </TfmSpecificPackageFile>
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
-        <PackagePath>CoreCLR/</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
-        <PackagePath>CoreCLR/</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\*.dll" Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">
-        <PackagePath>CoreCLR/</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>    
-  </Target>
-
-   <!--These targets help get files for packing the second NuGet.Build.Tasks.Pack.Sdk2x package, for netstandard2.0.-->
-   <Target Name="CreatePackNupkg2X">
-    <PropertyGroup>
-      <!-- Build from source can't use ILMerge. -->
-      <ILMergeSubpath Condition="'$(IsBuildOnlyXPLATProjects)' != 'true'">ilmerge\</ILMergeSubpath>
-    </PropertyGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == '$(NETFXTargetFramework)' AND '$(IsBuildOnlyXPLATProjects)' != 'true'">
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
-        <PackagePath>Desktop/</PackagePath>
-      </TfmSpecificPackageFile>
-      <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)**\NuGet*.resources.dll">
-        <PackagePath>Desktop/</PackagePath>
-      </TfmSpecificPackageFile>
-    </ItemGroup>
-    <ItemGroup Condition="'$(TargetFramework)' == '$(NetStandardVersion)'">
       <TfmSpecificPackageFile Include="$(OutputPath)\$(ILMergeSubpath)NuGet.Build.Tasks.Pack.dll">
         <PackagePath>CoreCLR/</PackagePath>
       </TfmSpecificPackageFile>
