@@ -11,6 +11,9 @@ using NuGet.Packaging;
 
 namespace NuGet.Commands
 {
+    /// <summary>
+    /// Pack arguments shared between dotnet.exe and nuget.exe
+    /// </summary>
     public class PackArgs
     {
         private string _currentDirectory;

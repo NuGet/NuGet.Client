@@ -215,6 +215,7 @@ namespace NuGet.Build.Tasks.Pack
                 PackageLicenseFile = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseFile),
                 PackageLicenseExpressionVersion = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageLicenseExpressionVersion),
                 Deterministic = Deterministic,
+                PackageIcon = MSBuildStringUtility.TrimAndGetNullForEmpty(PackageIcon),
             };
         }
     }
