@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Versioning;
 
 namespace NuGet.CommandLine.XPlat.Utility
@@ -125,9 +126,9 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             packages = packages.OrderBy(p => p.Name);
 
-            //To enable coloring only the latest version as appropriate
-            //we need to map every string in the table to a color, which
-            //this is used for
+            // To enable coloring only the latest version as appropriate
+            // we need to map every string in the table to a color, which
+            // this is used for
             IEnumerable<string> tableToPrint;
 
             var headers = BuildTableHeaders(printingTransitive, outdated, deprecated);
@@ -258,8 +259,8 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             foreach (var package in packages)
             {
-                var latestDeprecationMetadata = await package.LatestPackageMetadata?.GetDeprecationMetadataAsync();
-                var resolvedDeprecationMetadata = await package.ResolvedPackageMetadata?.GetDeprecationMetadataAsync();
+                var latestDeprecationMetadata = await (package.LatestPackageMetadata?.GetDeprecationMetadataAsync() ?? Task.FromResult<PackageDeprecationMetadata>(null));
+                var resolvedDeprecationMetadata = await (package.ResolvedPackageMetadata?.GetDeprecationMetadataAsync() ?? Task.FromResult<PackageDeprecationMetadata>(null));
                 if (latestDeprecationMetadata != null || resolvedDeprecationMetadata != null)
                 {
                     deprecatedFound = true;
