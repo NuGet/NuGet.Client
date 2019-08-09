@@ -198,7 +198,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact(Skip = "Requires a version of dotnet.exe that supports forwarding the --deprecated command argument.")]
         public void DotnetListPackage_DeprecatedAndOutdated_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
