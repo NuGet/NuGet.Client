@@ -4010,7 +4010,7 @@ namespace ClassLibrary
                     }
 
                     using (var reader = new FileStream(nupkgPath, FileMode.Open))
-                    using (var ms = new MemoryStream(reader.Length))
+                    using (var ms = new MemoryStream())
                     {
                         reader.CopyTo(ms);
                         packageBytes[i] = ms.ToArray();
