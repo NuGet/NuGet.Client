@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,6 +23,7 @@ namespace NuGet.Packaging.Rules
     {
         private string _addToRefFormat = AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarningAddToRefListItemFormat;
         private string _addToNuspecFormat = AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat;
+        private string _addToNuspecNoTfmFormat = AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecNoTfmListItemFormat;
         public string MessageFormat => AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarning;
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
@@ -30,54 +34,82 @@ namespace NuGet.Packaging.Rules
             return GenerateWarnings(missingItems);
         }
 
-        internal IDictionary<string, string[]> GetReferencesFromNuspec(Stream nuspecStream)
+        internal IDictionary<string, IEnumerable<string>> GetReferencesFromNuspec(Stream nuspecStream)
         {
-            var nuspecReferences = new Dictionary<string, string[]>();
+            var nuspecReferences = new Dictionary<string, IEnumerable<string>>();
             var packageNuspec = new NuspecReader(nuspecStream);
             var nuspec = packageNuspec.Xml;
             if (nuspec != null)
             {
                 XNamespace name = nuspec.Root.Name.Namespace;
-                var keys = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("targetFramework");
-                var shortName = keys.Select(t => NuGetFramework.Parse(t.Value).GetShortFolderName());
-                nuspecReferences = shortName.Zip(keys.Select(t => t.Parent.Elements().Attributes("file").Select(m => m.Value)), (tfm, refFiles) => new { tfm, refFiles = refFiles.ToArray() })
-                    .ToDictionary(val => val.tfm, val => val.refFiles);
+                var targetFrameworks = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("targetFramework");
+                //if (targetFrameworks.Count() != 0)
+                //{
+                nuspecReferences = targetFrameworks.ToDictionary(k => NuGetFramework.Parse(k.Value).GetShortFolderName(), k => k.Parent.Elements().Attributes("file").Select(f => f.Value));
+                //}
+                //else
+                //{
+                var filesWithoutTFM = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("file").Select(f => f.Value);
+                nuspecReferences.Add("any", filesWithoutTFM);
+                //}
             }
             return nuspecReferences;
         }
 
-        internal IEnumerable<MissingReference> Compare(IDictionary<string, string[]> nuspecReferences, IEnumerable<string> refFiles)
+        internal IEnumerable<MissingReference> Compare(IDictionary<string, IEnumerable<string>> nuspecReferences, IEnumerable<string> refFiles)
         {
-            var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1).GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => GetFile(t));
             var missingItems = new List<MissingReference>();
-
-            foreach (var files in filesByTFM)
+            if (nuspecReferences.Count() != 0)
             {
-                if(files.Key == "unsupported")
+                if (refFiles.Count() != 0)
                 {
-                    continue;
-                }
+                    var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1).GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
+                    foreach (var files in filesByTFM)
+                    {
+                        if (files.Key == "unsupported")
+                        {
+                            continue;
+                        }
 
-                var missingFiles = Array.Empty<string>();
-                var missingReferences = Array.Empty<string>();    
-                if (nuspecReferences.TryGetValue(files.Key, out var currentReferences))
-                {
-                    missingReferences = files.Where(m => !currentReferences.Contains(m)).ToArray();
-                    missingFiles = currentReferences.Where(t => !files.Contains(t)).ToArray();
+                        string[] missingReferences;
+                        string[] missingFiles;
+                        IEnumerable<string> anyReferences = null;
+                        if (nuspecReferences.TryGetValue(files.Key, out var currentReferences) || nuspecReferences.TryGetValue("any", out anyReferences))
+                        {
+                            if (anyReferences != null && currentReferences == null)
+                            {
+                                missingReferences = files.Where(m => !anyReferences.Contains(m)).ToArray();
+                                missingFiles = anyReferences.Where(t => !files.Contains(t)).ToArray();
+                            }
+                            else
+                            {
+                                missingReferences = files.Where(m => !currentReferences.Contains(m)).ToArray();
+                                missingFiles = currentReferences.Where(t => !files.Contains(t)).ToArray();
+                            }
+                        }
+                        else
+                        {
+                            missingReferences = files.ToArray();
+                            missingFiles = Array.Empty<string>();
+                        }
+
+                        if (missingFiles.Length != 0)
+                        {
+                            missingItems.Add(new MissingReference("ref", files.Key, missingFiles));
+                        }
+
+                        if (missingReferences.Length != 0)
+                        {
+                            missingItems.Add(new MissingReference("nuspec", files.Key, missingReferences));
+                        }
+                    }
                 }
                 else
                 {
-                    missingReferences = files.ToArray();
-                }
-
-                if (missingFiles.Length != 0)
-                {
-                    missingItems.Add(new MissingReference("ref", files.Key, missingFiles));
-                }
-
-                if (missingReferences.Length != 0)
-                {
-                    missingItems.Add(new MissingReference("nuspec", files.Key, missingReferences));
+                    foreach (var item in nuspecReferences)
+                    {
+                        missingItems.Add(new MissingReference("ref", item.Key, item.Value.ToArray()));
+                    }
                 }
             }
             return missingItems;
@@ -96,7 +128,7 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach(var item in file.MissingItems)
                     {
-                        message.AppendLine(string.Format(_addToRefFormat, item, file.TFM));
+                        message.AppendLine(string.Format(_addToRefFormat, item, file.Tfm));
                     }
                 }
 
@@ -104,7 +136,14 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (var item in reference.MissingItems)
                     {
-                        message.AppendLine(string.Format(_addToNuspecFormat, item, reference.TFM));
+                        if(reference.Tfm.Equals("any"))
+                        {
+                            message.AppendLine(string.Format(_addToNuspecNoTfmFormat, item));
+                        }
+                        else
+                        {
+                            message.AppendLine(string.Format(_addToNuspecFormat, item, reference.Tfm));
+                        }
                     }
                 }
                 issues.Add(PackagingLogMessage.CreateWarning(message.ToString(), NuGetLogCode.NU5131));
@@ -112,24 +151,18 @@ namespace NuGet.Packaging.Rules
             return issues;
         }
 
-        private string GetFile(string filePath)
-        {
-            return filePath.Split('/')[filePath.Count(p => p == '/')];
-        }
-
-
         internal class MissingReference
         {
             public string MissingFrom { get; }
 
-            public string TFM { get; }
+            public string Tfm { get; }
 
             public string[] MissingItems { get; }
 
             public MissingReference(string missingFrom, string tfm, string[] missingItems)
             {
                 MissingFrom = missingFrom;
-                TFM = tfm;
+                Tfm = tfm;
                 MissingItems = missingItems;
             }
         }

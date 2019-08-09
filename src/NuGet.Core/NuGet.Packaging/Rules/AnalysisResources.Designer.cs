@@ -278,7 +278,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to References were found in the nuspec, but some were not found within the ref folder. Add the following reference assemblies:.
+        ///   Looks up a localized string similar to References were found in the nuspec, but some reference assemblies were not found in both the nuspec and ref folder. Add the following reference assemblies:.
         /// </summary>
         public static string ReferencesInNuspecAndRefFilesDontMatchWarning {
             get {
@@ -292,6 +292,15 @@ namespace NuGet.Packaging.Rules {
         public static string ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat {
             get {
                 return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - Add {0} to the references element in the nuspec.
+        /// </summary>
+        public static string ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecNoTfmListItemFormat {
+            get {
+                return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecNoTfmListItemFormat", resourceCulture);
             }
         }
         
