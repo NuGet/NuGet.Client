@@ -939,9 +939,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         new LibraryDependency
                         {
                             LibraryRange = new LibraryRange(
-                            "packageB",
-                            VersionRange.Parse("1.*"),
-                            LibraryDependencyTarget.Package)
+                                "packageB",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
                         });
 
                     var legacyPRProject = new LegacyPackageReferenceProject(
@@ -973,8 +973,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         (c) => { },
                         sourceRepositoryProvider.GetRepositories(),
                         Guid.Empty,
-                        false,
-                        true,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
                         testLogger,
                         CancellationToken.None);
 
@@ -1011,8 +1011,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         (c) => { },
                         sourceRepositoryProvider.GetRepositories(),
                         Guid.Empty,
-                        false,
-                        true,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
                         testLogger,
                         CancellationToken.None);
 
@@ -1021,11 +1021,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     {
                         Assert.False(restoreSummary.Success);
                         Assert.True(restoreSummary.Errors.Count > 0);
-                        var nu1403Message = restoreSummary.Errors.FirstOrDefault(message => (message as RestoreLogMessage).Code == NuGetLogCode.NU1403);
+                        var nu1403Message = restoreSummary.Errors.SingleOrDefault(message => (message as RestoreLogMessage).Code == NuGetLogCode.NU1403);
                         Assert.NotNull(nu1403Message);
                         Assert.Contains("packageA.1.0.0", nu1403Message.Message);
                         Assert.Contains("packageB.1.0.0", nu1403Message.Message);
                     }
+                    var allVerboseMessages = string.Join(Environment.NewLine, testLogger.VerboseMessages);
+                    Assert.Contains("Package content hash validation failed for packageA.1.0.0. Expected: ", allVerboseMessages);
+                    Assert.Contains("Package content hash validation failed for packageB.1.0.0. Expected: ", allVerboseMessages);
                 }
             }
         }
