@@ -5661,7 +5661,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     }
 
                     using (var reader = new FileStream(packagePath, FileMode.Open))
-                    using (var ms = new MemoryStream())
+                    using (var ms = new MemoryStream(reader.Length))
                     {
                         reader.CopyTo(ms);
                         packageBytes[i] = ms.ToArray();

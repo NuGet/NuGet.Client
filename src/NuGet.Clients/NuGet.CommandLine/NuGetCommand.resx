@@ -5541,4 +5541,7 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   <data name="RestoreCommandUseLockFile" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
   </data>
+  <data name="PackageCommandDeterministic" xml:space="preserve">
+    <value>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package.</value>
+  </data>
 </root>

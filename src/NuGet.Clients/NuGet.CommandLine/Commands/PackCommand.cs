@@ -92,7 +92,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
         public new string ConfigFile { get; set; }
 
-        [Option(typeof(NuGetCommand), "Deterministic TODO NK")]
+        [Option(typeof(NuGetCommand), "PackageCommandDeterministic")]
         public bool Deterministic { get; set; }
 
         public override void ExecuteCommand()
