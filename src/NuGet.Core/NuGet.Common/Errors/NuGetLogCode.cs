@@ -796,11 +796,6 @@ namespace NuGet.Common
         NU5130 = 5130,
 
         /// <summary>
-        /// References in the nuspec don't match up with the ref folder in the package
-        /// </summary>
-        NU5131 = 5131,
-
-        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500
