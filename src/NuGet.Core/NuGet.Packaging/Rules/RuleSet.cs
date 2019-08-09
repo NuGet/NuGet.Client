@@ -30,6 +30,7 @@ namespace NuGet.Packaging.Rules
                 new NoRefOrLibFolderInPackageRule(AnalysisResources.NoRefOrLibFolderInPackage),
                 new DependenciesGroupsForEachTFMRule(),
                 new UpholdBuildConventionRule(),
+                new ReferencesInNuspecMatchRefAssetsRule(),
             }
         );
 

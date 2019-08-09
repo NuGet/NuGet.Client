@@ -278,6 +278,42 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to References were found in the nuspec, but some reference assemblies were not found in both the nuspec and ref folder. Add the following reference assemblies:.
+        /// </summary>
+        public static string ReferencesInNuspecAndRefFilesDontMatchWarning {
+            get {
+                return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - Add {0} to the {1} reference group in the nuspec.
+        /// </summary>
+        public static string ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat {
+            get {
+                return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - Add {0} to the references element in the nuspec.
+        /// </summary>
+        public static string ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecNoTfmListItemFormat {
+            get {
+                return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecNoTfmListItemFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to - Add {0} to the ref/{1}/ directory.
+        /// </summary>
+        public static string ReferencesInNuspecAndRefFilesDontMatchWarningAddToRefListItemFormat {
+            get {
+                return ResourceManager.GetString("ReferencesInNuspecAndRefFilesDontMatchWarningAddToRefListItemFormat", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The script file &apos;{0}&apos; is outside the &apos;tools&apos; folder and hence will not be executed during installation of this package. Move it into the &apos;tools&apos; folder..
         /// </summary>
         public static string ScriptOutsideToolsWarning {
