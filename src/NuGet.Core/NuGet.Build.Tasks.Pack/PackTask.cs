@@ -73,7 +73,6 @@ namespace NuGet.Build.Tasks.Pack
         public string PackageLicenseFile { get; set; }
         public string PackageLicenseExpressionVersion { get; set; }
         public bool Deterministic { get; set; }
-
         public ILogger Logger => new MSBuildLogger(Log);
 
         private IPackTaskLogic _packTaskLogic;
