@@ -194,16 +194,22 @@ namespace NuGet.Credentials.Test
         private void EnsureAllEnvironmentVariablesAreCalled(string pluginFilePath)
         {
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == CredentialTestConstants.PluginPathsEnvironmentVariable)))
+                    It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
                 .Returns(pluginFilePath);
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == CredentialTestConstants.PluginRequestTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                .Returns((string)null);
+            _reader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                .Returns((string)null);
+            _reader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
                 .Returns("RequestTimeout");
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == CredentialTestConstants.PluginIdleTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
                 .Returns("IdleTimeout");
             _reader.Setup(x => x.GetEnvironmentVariable(
-                    It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
+                    It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
                 .Returns("HandshakeTimeout");
         }
 

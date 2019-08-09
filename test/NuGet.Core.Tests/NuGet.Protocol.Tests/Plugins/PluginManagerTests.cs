@@ -131,6 +131,109 @@ namespace NuGet.Protocol.Plugins.Tests
             }
         }
 
+        [Theory]
+        [InlineData(PluginFilePath)]
+        public async Task PluginManager_CreatePlugin_PrefersFrameworkSpecificEnvironmentVariable(string pluginPath)
+        {
+            var operationClaims = new[] { OperationClaim.Authentication };
+            var mockReader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
+                .Returns("badPluginPath");
+#if IS_DESKTOP
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                .Returns(pluginPath);
+#else
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                .Returns(pluginPath);
+#endif
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
+                .Returns("RequestTimeout");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
+                .Returns("IdleTimeout");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
+                .Returns("HandshakeTimeout");
+
+            using (var test = new PluginManagerTest(pluginPath, PluginFileState.Valid, operationClaims, mockReader))
+            {
+                var discoveryResult = new PluginDiscoveryResult(
+                    new PluginFile(
+                        PluginFilePath,
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid)));
+
+                Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
+                    discoveryResult,
+                    OperationClaim.Authentication,
+                    CancellationToken.None);
+                bool wasSomethingCreated = result.Item1;
+                PluginCreationResult creationResult = result.Item2;
+
+                Assert.True(wasSomethingCreated);
+                Assert.NotNull(creationResult);
+
+                Assert.Null(creationResult.Message);
+                Assert.Null(creationResult.Exception);
+                Assert.Same(test.Plugin, creationResult.Plugin);
+                Assert.NotNull(creationResult.PluginMulticlientUtilities);
+                Assert.Equal(operationClaims, creationResult.Claims);
+            }
+        }
+
+        [Theory]
+        [InlineData(PluginFilePath)]
+        public async Task PluginManager_CreatePlugin_EmptyFrameworkSpecificEnvironmentVariableFallsBackTo(string pluginPath)
+        {
+            var operationClaims = new[] { OperationClaim.Authentication };
+            var mockReader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
+                .Returns(pluginPath);
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                .Returns("   ");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                .Returns("   ");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
+                .Returns("RequestTimeout");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
+                .Returns("IdleTimeout");
+            mockReader.Setup(x => x.GetEnvironmentVariable(
+                    It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
+                .Returns("HandshakeTimeout");
+
+            using (var test = new PluginManagerTest(pluginPath, PluginFileState.Valid, operationClaims, mockReader))
+            {
+                var discoveryResult = new PluginDiscoveryResult(
+                    new PluginFile(
+                        PluginFilePath,
+                        new Lazy<PluginFileState>(() => PluginFileState.Valid)));
+
+                Tuple<bool, PluginCreationResult> result = await test.PluginManager.TryGetSourceAgnosticPluginAsync(
+                    discoveryResult,
+                    OperationClaim.Authentication,
+                    CancellationToken.None);
+                bool wasSomethingCreated = result.Item1;
+                PluginCreationResult creationResult = result.Item2;
+
+                Assert.True(wasSomethingCreated);
+                Assert.NotNull(creationResult);
+
+                Assert.Null(creationResult.Message);
+                Assert.Null(creationResult.Exception);
+                Assert.Same(test.Plugin, creationResult.Plugin);
+                Assert.NotNull(creationResult.PluginMulticlientUtilities);
+                Assert.Equal(operationClaims, creationResult.Claims);
+            }
+        }
+
         private sealed class PluginManagerTest : IDisposable
         {
             private readonly Mock<IConnection> _connection;
@@ -138,7 +241,6 @@ namespace NuGet.Protocol.Plugins.Tests
             private readonly Mock<IPlugin> _plugin;
             private readonly Mock<IPluginDiscoverer> _pluginDiscoverer;
             private readonly Mock<IEnvironmentVariableReader> _reader;
-            private readonly string _pluginFilePath;
             private readonly TestDirectory _testDirectory;
 
             internal IPlugin Plugin { get; }
@@ -148,24 +250,38 @@ namespace NuGet.Protocol.Plugins.Tests
             internal PluginManagerTest(
                 string pluginFilePath,
                 PluginFileState pluginFileState,
-                IReadOnlyList<OperationClaim> operationClaims)
+                IReadOnlyList<OperationClaim> operationClaims,
+                Mock<IEnvironmentVariableReader> mockEnvironmentVariableReader = null)
             {
-                _pluginFilePath = pluginFilePath;
-                _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
                 _testDirectory = TestDirectory.Create();
 
-                _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
-                    .Returns(pluginFilePath);
-                _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
-                    .Returns("RequestTimeout");
-                _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
-                    .Returns("IdleTimeout");
-                _reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
-                    .Returns("HandshakeTimeout");
+                if (mockEnvironmentVariableReader != null)
+                {
+                    _reader = mockEnvironmentVariableReader;
+                }
+                else
+                {
+                    _reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
+
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
+                        .Returns(pluginFilePath);
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
+                        .Returns((string)null);
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
+                        .Returns((string)null);
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
+                        .Returns("RequestTimeout");
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
+                        .Returns("IdleTimeout");
+                    _reader.Setup(x => x.GetEnvironmentVariable(
+                            It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
+                        .Returns("HandshakeTimeout");
+                }
 
                 _pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
 
@@ -244,5 +360,7 @@ namespace NuGet.Protocol.Plugins.Tests
                 _factory.Verify();
             }
         }
+
+        
     }
 }
