@@ -4022,7 +4022,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public void PackCommand_PackPackageIcon_HappyPath_Suceed()
+        public void PackCommand_PackageIcon_HappyPath_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
                 .Create("test")
@@ -4108,7 +4108,7 @@ namespace ClassLibrary
         {
             var builder = PackageIconTestSourceDirectoryBuilder
                 .Create("test")
-                .WithPackageIcon("icon.jpg")
+                .WithPackageIcon("nested\\icon.jpg")
                 .WithFile("folder\\nested\\icon.jpg", 10)
                 .WithFile("folder\\nested\\sample.txt", 10)
                 .WithFile("folder\\nested\\media\\readme.txt", 10)
@@ -4132,7 +4132,7 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public void PackCommand_PackPackageIcon_PackageIconUrl_Fail()
+        public void PackCommand_PackPackageIcon_PackageIconUrl_Fails()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
                 .Create("test")
