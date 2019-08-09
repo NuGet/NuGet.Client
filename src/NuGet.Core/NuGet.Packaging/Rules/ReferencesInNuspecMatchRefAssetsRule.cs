@@ -43,8 +43,10 @@ namespace NuGet.Packaging.Rules
             {
                 XNamespace name = nuspec.Root.Name.Namespace;
                 var targetFrameworks = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("targetFramework");
-                nuspecReferences = targetFrameworks.ToDictionary(k => NuGetFramework.Parse(k.Value).GetShortFolderName(), k => k.Parent.Elements().Attributes("file").Select(f => f.Value));
-                var filesWithoutTFM = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references")).Elements().Attributes("file").Select(f => f.Value);
+                nuspecReferences = targetFrameworks.ToDictionary(k => NuGetFramework.Parse(k.Value).GetShortFolderName(),
+                                                                k => k.Parent.Elements().Attributes("file").Select(f => f.Value));
+                var filesWithoutTFM = nuspec.Descendants(XName.Get("{" + name.NamespaceName + "}references"))
+                    .Elements().Attributes("file").Select(f => f.Value);
                 nuspecReferences.Add("any", filesWithoutTFM);
             }
             return nuspecReferences;
@@ -57,8 +59,12 @@ namespace NuGet.Packaging.Rules
             {
                 if (refFiles.Count() != 0)
                 {
-                    var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1).GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
-                    var missingSubfolderInFiles = nuspecReferences.Keys.Where(t => !GetAllKeys(filesByTFM).Contains(t) && !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported") && !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any"));
+                    var filesByTFM = refFiles.Where(t => t.Count(m => m == '/') > 1)
+                        .GroupBy(t => NuGetFramework.ParseFolder(t.Split('/')[1]).GetShortFolderName(), t => Path.GetFileName(t));
+                    var keys = GetAllKeys(filesByTFM);
+                    var missingSubfolderInFiles = nuspecReferences.Keys.Where(t => !keys.Contains(t) &&
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("unsupported") &&
+                    !NuGetFramework.ParseFolder(t).GetShortFolderName().Equals("any"));
                     if (missingSubfolderInFiles.Count() != 0)
                     {
                         var subfolder = nuspecReferences.Where(t => missingSubfolderInFiles.Contains(t.Key));
@@ -78,7 +84,8 @@ namespace NuGet.Packaging.Rules
                         string[] missingNuspecReferences;
                         string[] missingFiles;
                         IEnumerable<string> anyReferences = null;
-                        if (nuspecReferences.TryGetValue(files.Key, out var currentReferences) || nuspecReferences.TryGetValue("any", out anyReferences))
+                        if (nuspecReferences.TryGetValue(files.Key, out var currentReferences) ||
+                            nuspecReferences.TryGetValue("any", out anyReferences))
                         {
                             if (anyReferences != null && currentReferences == null)
                             {
