@@ -455,8 +455,8 @@ namespace NuGet.CommandLine.XPlat
                         var installedPackage = new InstalledPackageReference(library.Name)
                         {
                             ResolvedPackageMetadata = PackageSearchMetadataBuilder
-                                .FromIdentity(new PackageIdentity(library.Name, library.Version))
-                                .Build()
+                            .FromIdentity(new PackageIdentity(library.Name, library.Version))
+                            .Build()
                         };
                         transitivePackages.Add(installedPackage);
                     }
