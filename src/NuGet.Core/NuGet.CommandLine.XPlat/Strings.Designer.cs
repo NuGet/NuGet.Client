@@ -520,6 +520,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Alternative.
+        /// </summary>
+        internal static string ListPkg_DeprecationAlternative {
+            get {
+                return ResourceManager.GetString("ListPkg_DeprecationAlternative", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Reason(s).
+        /// </summary>
+        internal static string ListPkg_DeprecationReasons {
+            get {
+                return ResourceManager.GetString("ListPkg_DeprecationReasons", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Lists all the packages used by the current project(s)..
         /// </summary>
         internal static string ListPkg_Description {
@@ -610,6 +628,24 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The given project `{0}` has no deprecated packages given the current sources..
+        /// </summary>
+        internal static string ListPkg_NoDeprecatedPackagesForProject {
+            get {
+                return ResourceManager.GetString("ListPkg_NoDeprecatedPackagesForProject", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No deprecated packages for this framework..
+        /// </summary>
+        internal static string ListPkg_NoDeprecationsForFramework {
+            get {
+                return ResourceManager.GetString("ListPkg_NoDeprecationsForFramework", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to No packages were found for this framework..
         /// </summary>
         internal static string ListPkg_NoPackagesForFramework {
@@ -637,7 +673,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No updates available for this framework packages..
+        ///   Looks up a localized string similar to No package updates available for this framework..
         /// </summary>
         internal static string ListPkg_NoUpdatesForFramework {
             get {
@@ -678,6 +714,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string ListPkg_PrereleaseDescription {
             get {
                 return ResourceManager.GetString("ListPkg_PrereleaseDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project `{0}` has the following deprecated packages.
+        /// </summary>
+        internal static string ListPkg_ProjectDeprecationsHeaderLog {
+            get {
+                return ResourceManager.GetString("ListPkg_ProjectDeprecationsHeaderLog", resourceCulture);
             }
         }
         
