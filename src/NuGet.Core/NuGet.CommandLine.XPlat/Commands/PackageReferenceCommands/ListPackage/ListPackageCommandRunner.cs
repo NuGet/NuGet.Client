@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -24,17 +25,19 @@ namespace NuGet.CommandLine.XPlat
         private const string ProjectAssetsFile = "ProjectAssetsFile";
         private const string ProjectName = "MSBuildProjectName";
 
-        internal static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForOutdated =
-            p => !p.AutoReference
-                 && (p.LatestPackageMetadata == null || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
-        internal static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForOutdated =
-            p => p.LatestPackageMetadata == null
-                 || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version;
+        internal static readonly Func<InstalledPackageReference, Task<bool>> TopLevelPackagesFilterForOutdated =
+            p => Task.FromResult(
+                !p.AutoReference && (p.LatestPackageMetadata == null
+                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version));
+        internal static readonly Func<InstalledPackageReference, Task<bool>> TransitivePackagesFilterForOutdated =
+            p => Task.FromResult(
+                p.LatestPackageMetadata == null
+                || p.ResolvedPackageMetadata.Identity.Version < p.LatestPackageMetadata.Identity.Version);
 
-        internal static readonly Func<InstalledPackageReference, bool> TopLevelPackagesFilterForDeprecated =
-            p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
-        internal static readonly Func<InstalledPackageReference, bool> TransitivePackagesFilterForDeprecated =
-            p => p.ResolvedPackageMetadata.DeprecationMetadata != null;
+        internal static readonly Func<InstalledPackageReference, Task<bool>> TopLevelPackagesFilterForDeprecated =
+            async p => await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null;
+        internal static readonly Func<InstalledPackageReference, Task<bool>> TransitivePackagesFilterForDeprecated =
+            async p => await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null;
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
@@ -124,7 +127,7 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
 
-                                    printPackages = FilterOutdatedPackages(packages);
+                                    printPackages = await FilterOutdatedPackages(packages);
 
                                     // If after filtering, all packages were found up to date, inform the user
                                     // and do not print anything
@@ -138,7 +141,7 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     await GetDeprecationInfoAsync(packages, listPackageArgs);
 
-                                    printPackages = FilterDeprecatedPackages(packages);
+                                    printPackages = await FilterDeprecatedPackages(packages);
 
                                     // If after filtering, no packages were found to be deprecated, inform the user
                                     // and do not print anything
@@ -152,7 +155,7 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    var printPackagesResult = ProjectPackagesPrintUtility.PrintPackages(
+                                    var printPackagesResult = await ProjectPackagesPrintUtility.PrintPackages(
                                         packages,
                                         projectName,
                                         listPackageArgs.IncludeTransitive,
@@ -190,9 +193,9 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static bool FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
+        private static async Task<bool> FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
         {
-            FilterPackages(
+            await FilterPackages(
                 packages,
                 TopLevelPackagesFilterForOutdated,
                 TransitivePackagesFilterForOutdated);
@@ -200,9 +203,9 @@ namespace NuGet.CommandLine.XPlat
             return packages.Any(p => p.TopLevelPackages.Any());
         }
 
-        private static bool FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
+        private static async Task<bool> FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
         {
-            FilterPackages(
+            await FilterPackages(
                 packages,
                 TopLevelPackagesFilterForDeprecated,
                 TransitivePackagesFilterForDeprecated);
@@ -216,19 +219,35 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
         /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
         /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
-        private static void FilterPackages(
+        private static async Task FilterPackages(
             IEnumerable<FrameworkPackages> packages,
-            Func<InstalledPackageReference, bool> topLevelPackagesFilter,
-            Func<InstalledPackageReference, bool> transitivePackagesFilter)
+            Func<InstalledPackageReference, Task<bool>> topLevelPackagesFilter,
+            Func<InstalledPackageReference, Task<bool>> transitivePackagesFilter)
         {
             foreach (var frameworkPackages in packages)
             {
-                frameworkPackages.TopLevelPackages = frameworkPackages.TopLevelPackages
-                    .Where(topLevelPackagesFilter);
+                frameworkPackages.TopLevelPackages = await GetInstalledPackageReferencesWithFilter(
+                    frameworkPackages.TopLevelPackages, topLevelPackagesFilter);
 
-                frameworkPackages.TransitivePackages = frameworkPackages.TransitivePackages
-                    .Where(transitivePackagesFilter);
+                frameworkPackages.TransitivePackages = await GetInstalledPackageReferencesWithFilter(
+                    frameworkPackages.TransitivePackages, transitivePackagesFilter);
             }
+        }
+
+        private static async Task<IEnumerable<InstalledPackageReference>> GetInstalledPackageReferencesWithFilter(
+            IEnumerable<InstalledPackageReference> references,
+            Func<InstalledPackageReference, Task<bool>> filter)
+        {
+            var filteredReferences = new List<InstalledPackageReference>();
+            foreach (var reference in references)
+            {
+                if (await filter(reference))
+                {
+                    filteredReferences.Add(reference);
+                }
+            }
+
+            return filteredReferences;
         }
 
         /// <summary>
@@ -263,7 +282,7 @@ namespace NuGet.CommandLine.XPlat
             await RequestNuGetResourcesInParallelAsync(getLatestVersionsRequests);
 
             //Save latest versions within the InstalledPackageReference
-            GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+            await GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
         }
 
         /// <summary>
@@ -304,7 +323,7 @@ namespace NuGet.CommandLine.XPlat
             await RequestNuGetResourcesInParallelAsync(resourceRequestTasks);
 
             // Save resolved versions within the InstalledPackageReference
-            GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+            await GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
         }
 
         /// <summary>
@@ -425,7 +444,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packagesVersionsDict"> Unique packages that are mapped to latest versions
         /// from different sources </param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
-        private void GetVersionsFromDict(
+        private async Task GetVersionsFromDict(
             IEnumerable<FrameworkPackages> packages,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
             ListPackageArgs listPackageArgs)
@@ -444,14 +463,17 @@ namespace NuGet.CommandLine.XPlat
                         topLevelPackage.UpdateLevel = GetUpdateLevel(topLevelPackage.ResolvedPackageMetadata.Identity.Version, topLevelPackage.LatestPackageMetadata.Identity.Version);
                     }
 
+                    var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
+                        matchingPackage.Value.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
+
                     // Update resolved version with deprecated information returned by the server.
-                    var resolvedVersionFromServer = matchingPackage.Value
-                        .Where(v => v.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
+                    var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
+                        .Where(v => v.SearchMetadata.Identity.Version == topLevelPackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
                         .FirstOrDefault();
 
                     if (resolvedVersionFromServer != null)
                     {
-                        topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer;
+                        topLevelPackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
                     }
                 }
 
@@ -467,14 +489,17 @@ namespace NuGet.CommandLine.XPlat
                         transitivePackage.UpdateLevel = GetUpdateLevel(transitivePackage.ResolvedPackageMetadata.Identity.Version, transitivePackage.LatestPackageMetadata.Identity.Version);
                     }
 
+                    var matchingPackagesWithDeprecationMetadata = await Task.WhenAll(
+                        matchingPackage.Value.Select(async v => new { SearchMetadata = v, DeprecationMetadata = await v.GetDeprecationMetadataAsync() }));
+
                     // Update resolved version with deprecated information returned by the server.
-                    var resolvedVersionFromServer = matchingPackage.Value
-                        .Where(v => v.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
+                    var resolvedVersionFromServer = matchingPackagesWithDeprecationMetadata
+                        .Where(v => v.SearchMetadata.Identity.Version == transitivePackage.ResolvedPackageMetadata.Identity.Version && v.DeprecationMetadata != null)
                         .FirstOrDefault();
 
                     if (resolvedVersionFromServer != null)
                     {
-                        transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer;
+                        transitivePackage.ResolvedPackageMetadata = resolvedVersionFromServer.SearchMetadata;
                     }
                 }
             }
