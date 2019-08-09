@@ -129,7 +129,7 @@ namespace NuGet.Credentials.Test
                 var reader = new Mock<IEnvironmentVariableReader>(MockBehavior.Strict);
 
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == CredentialTestConstants.PluginPathsEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.PluginPaths)))
                     .Returns(string.Join(";", plugins.Select(e => e.Key)));
                 reader.Setup(x => x.GetEnvironmentVariable(
                         It.Is<string>(value => value == EnvironmentVariableConstants.CorePluginPaths)))
@@ -138,13 +138,13 @@ namespace NuGet.Credentials.Test
                         It.Is<string>(value => value == EnvironmentVariableConstants.DesktopPluginPaths)))
                     .Returns((string)null);
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == CredentialTestConstants.PluginRequestTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.RequestTimeout)))
                     .Returns("b");
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == CredentialTestConstants.PluginIdleTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.IdleTimeout)))
                     .Returns("c");
                 reader.Setup(x => x.GetEnvironmentVariable(
-                        It.Is<string>(value => value == CredentialTestConstants.PluginHandshakeTimeoutEnvironmentVariable)))
+                        It.Is<string>(value => value == EnvironmentVariableConstants.HandshakeTimeout)))
                     .Returns("d");
 
                 var pluginDiscoverer = new Mock<IPluginDiscoverer>(MockBehavior.Strict);
