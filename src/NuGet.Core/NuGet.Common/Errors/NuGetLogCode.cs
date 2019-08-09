@@ -779,7 +779,7 @@ namespace NuGet.Common
         /// TFM dependencies in the lib or ref folder don't have exact matches in the nuspec
         /// </summary>
         NU5128 = 5128,
-        
+
         /// <summary>
         /// No build files that follow the build convention ("package_id".props)
         /// </summary>

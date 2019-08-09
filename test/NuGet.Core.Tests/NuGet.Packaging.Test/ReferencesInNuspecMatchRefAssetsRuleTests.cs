@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -22,7 +25,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll", "MyHelpers.dll"} }
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
             };
             var files = new string[]
             {
@@ -32,10 +35,10 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Empty(missingItems);
+            Assert.Empty(missingReferences);
         }
 
         [Fact]
@@ -51,10 +54,10 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Empty(missingItems);
+            Assert.Empty(missingReferences);
         }
 
         [Fact]
@@ -63,7 +66,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll", "MyHelpers.dll"} }
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
             };
             var files = new string[]
             {
@@ -72,14 +75,14 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Equal(missingItems.Count(), 1);
-            var singleIssue = missingItems.Single(t => t.Tfm.Equals("net462") && t.MissingItems.Contains("MyHelpers.dll"));
-            Assert.Equal("net462", missingItems.First().Tfm);
-            Assert.Equal(1, missingItems.First().MissingItems.Count());
-            Assert.Equal("MyHelpers.dll", missingItems.First().MissingItems[0]);
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleIssue = missingReferences.Single(t => t.Tfm.Equals("net462") && t.MissingItems.Contains("MyHelpers.dll"));
+            Assert.Equal("net462", missingReferences.First().Tfm);
+            Assert.Equal(1, missingReferences.First().MissingItems.Count());
+            Assert.Equal("MyHelpers.dll", missingReferences.First().MissingItems[0]);
         }
 
         [Fact]
@@ -88,7 +91,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll"} }
+                { "net462", new List<string>() { "MyLib.dll" } }
             };
             var files = new string[]
             {
@@ -98,11 +101,11 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Equal(missingItems.Count(), 1);
-            var singleIssue = missingItems.Single(t => t.Tfm.Equals("net462") && t.MissingItems.Contains("MyHelpers.dll"));
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleIssue = missingReferences.Single(t => t.Tfm.Equals("net462") && t.MissingItems.Contains("MyHelpers.dll"));
         }
 
         [Fact]
@@ -111,7 +114,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>()
             {
-                {"net462", new List<string>() {"MyLib.dll", "MyHelpers.dll"} }
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
             };
             var files = new string[]
             {
@@ -121,10 +124,15 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Empty(missingItems);
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleIssue = missingReferences.Single(t => t.MissingFrom.Equals("ref"));
+            Assert.Equal("net462", missingReferences.First().Tfm);
+            Assert.Equal(2, missingReferences.First().MissingItems.Count());
+            Assert.True(missingReferences.First().MissingItems.Contains("MyLib.dll"));
+            Assert.True(missingReferences.First().MissingItems.Contains("MyHelpers.dll"));
         }
 
         [Fact]
@@ -133,7 +141,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>()
             {
-                { "MyCompany", new List<string>() {"MyLib.dll"} }
+                { "MyCompany", new List<string>() { "MyLib.dll" } }
             };
             var files = new string[]
             {
@@ -143,10 +151,10 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Empty(missingItems);
+            Assert.Empty(missingReferences);
         }
 
         [Fact]
@@ -155,8 +163,8 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll", "MyHelpers.dll"} },
-                {"net472", new List<string>() { "MyLib.dll"} }
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } },
+                { "net472", new List<string>() { "MyLib.dll" } }
             };
             var files = new string[]
             {
@@ -167,15 +175,14 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Equal(missingItems.Count(), 2);
-            var singleRefFilesMissing = missingItems.Single(t => t.MissingFrom.Equals("ref"));
-            var singleReferencesMissing = missingItems.Single(t => t.MissingFrom.Equals("nuspec"));
+            Assert.Equal(missingReferences.Count(), 2);
+            var singleRefFilesMissing = missingReferences.Single(t => t.MissingFrom.Equals("ref"));
+            var singleReferencesMissing = missingReferences.Single(t => t.MissingFrom.Equals("nuspec"));
             Assert.Equal("net462", singleRefFilesMissing.Tfm);
             Assert.Equal(1, singleRefFilesMissing.MissingItems.Count());
-            Assert.Equal("MyHelpers.dll", singleRefFilesMissing.MissingItems[0]);
             Assert.Equal("net472", singleReferencesMissing.Tfm);
             Assert.Equal(1, singleReferencesMissing.MissingItems.Count());
             Assert.Equal("MyHelpers.dll", singleReferencesMissing.MissingItems[0]);
@@ -187,21 +194,21 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll"} }
+                { "net462", new List<string>() { "MyLib.dll" } }
             };
             var files = Array.Empty<string>();
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Equal(missingItems.Count(), 1);
-            var singleIssue = missingItems.Single(t => t.Tfm.Equals("net462"));
-            Assert.Equal("net462", missingItems.First().Tfm);
-            Assert.Equal(1, missingItems.First().MissingItems.Count());
-            Assert.Equal("MyLib.dll", missingItems.First().MissingItems[0]);
-            Assert.Equal("ref", missingItems.First().MissingFrom);
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleIssue = missingReferences.Single(t => t.Tfm.Equals("net462"));
+            Assert.Equal("net462", missingReferences.First().Tfm);
+            Assert.Equal(1, missingReferences.First().MissingItems.Count());
+            Assert.Equal("MyLib.dll", missingReferences.First().MissingItems[0]);
+            Assert.Equal("ref", missingReferences.First().MissingFrom);
         }
 
         [Fact]
@@ -210,7 +217,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var references = new Dictionary<string, IEnumerable<string>>
             {
-                {"net462", new List<string>() {"MyLib.dll", "MyHelpers.dll"} }
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
             };
             var files = new string[]
             {
@@ -220,22 +227,123 @@ namespace NuGet.Packaging.Test
 
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
+            var missingReferences = rule.Compare(references, files);
 
             //Assert
-            Assert.Empty(missingItems);
+            Assert.Empty(missingReferences);
         }
 
+        [Fact]
+        public void Compare_NuspecHasFilesWithNoSpecificTfmWithMatchingRefFiles_ShouldBeEmpty()
+        {
+            //Arrange
+            var references = new Dictionary<string, IEnumerable<string>>
+            {
+                { "any", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
+            };
+            var files = new string[]
+            {
+                "ref/net462/MyLib.dll",
+                "ref/net462/MyHelpers.dll",
+                "ref/net472/MyLib.dll",
+                "ref/net472/MyHelpers.dll"
+            };
+
+            //Act
+            var rule = new ReferencesInNuspecMatchRefAssetsRule();
+            var missingReferences = rule.Compare(references, files);
+
+            //Assert
+            Assert.Empty(missingReferences);
+        }
+        
+        [Fact]
+        public void Compare_MissingSubFolderInNuspec_ShouldHaveSubFolder()
+        {
+            //Arrange
+            var references = new Dictionary<string, IEnumerable<string>>
+            {
+                { "net462", new List<string>() { "MyLib.dll", "MyHelpers.dll" } },
+                { "net472", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
+            };
+            var files = new string[]
+            {
+                "ref/net462/MyLib.dll",
+                "ref/net462/MyHelpers.dll",
+            };
+
+            //Act
+            var rule = new ReferencesInNuspecMatchRefAssetsRule();
+            var missingReferences = rule.Compare(references, files);
+
+            //Assert
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleMissingReference = missingReferences.Single(t => t.MissingFrom.Equals("ref"));
+            Assert.Equal("net472", singleMissingReference.Tfm);
+            Assert.Equal(2, singleMissingReference.MissingItems.Count());
+            Assert.True(singleMissingReference.MissingItems.Contains("MyLib.dll"));
+            Assert.True(singleMissingReference.MissingItems.Contains("MyHelpers.dll"));
+        }
+        [Fact]
+        public void Compare_NuspecHasFilesWithNoSpecificTfmWithMissingRefFiles_ShouldWarnOnce()
+        {
+            //Arrange
+            var references = new Dictionary<string, IEnumerable<string>>
+            {
+                { "any", new List<string>() { "MyLib.dll", "MyHelpers.dll" } }
+            };
+            var files = new string[]
+            {
+                "ref/net462/MyLib.dll"
+            };
+
+            //Act
+            var rule = new ReferencesInNuspecMatchRefAssetsRule();
+            var missingReferences = rule.Compare(references, files);
+
+            //Assert
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleMissingReference = missingReferences.Single(t => t.MissingFrom.Equals("ref"));
+            Assert.Equal("net462", singleMissingReference.Tfm);
+            Assert.Equal(1, singleMissingReference.MissingItems.Count());
+            Assert.True(singleMissingReference.MissingItems.Contains("MyHelpers.dll"));
+        }
+
+        [Fact]
+        public void Compare_NuspecHasFilesWithNoSpecificTfmWithMissingReferences_ShouldWarn()
+        {
+            //Arrange
+            var references = new Dictionary<string, IEnumerable<string>>
+            {
+                { "any", new List<string>() { "MyLib.dll",} }
+            };
+            var files = new string[]
+            {
+                "ref/net462/MyLib.dll",
+                "ref/net462/MyHelpers.dll",
+            };
+
+            //Act
+            var rule = new ReferencesInNuspecMatchRefAssetsRule();
+            var missingReferences = rule.Compare(references, files);
+
+            //Assert
+            Assert.Equal(missingReferences.Count(), 1);
+            var singleMissingReference = missingReferences.Single(t => t.MissingFrom.Equals("nuspec"));
+            Assert.Equal("net462", singleMissingReference.Tfm);
+            Assert.Equal(1, singleMissingReference.MissingItems.Count());
+            Assert.True(singleMissingReference.MissingItems.Contains("MyHelpers.dll"));
+        }
         [Fact]
         public void GenerateWarnings_PackageWithReferencesMissingFromTheNuspec_ShouldWarn()
         {
             //Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = new List<MissingReference>
+            var missingReferences = new List<MissingReference>
             {
-                new MissingReference("nuspec", "net462", new string[] { "MyHelpers.dll"})
+                new MissingReference("nuspec", "net462", new string[] { "MyHelpers.dll" })
             };
-            var issues = rule.GenerateWarnings(missingItems);
+            var issues = rule.GenerateWarnings(missingReferences);
 
             //Assert
             Assert.Equal(issues.Count(), 1);
@@ -250,11 +358,11 @@ namespace NuGet.Packaging.Test
         {
             //Arrange & Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = new List<MissingReference>
+            var missingReferences = new List<MissingReference>
             {
-                new MissingReference("ref", "net462", new string[] { "MyHelpers.dll"})
+                new MissingReference("ref", "net462", new string[] { "MyHelpers.dll" })
             };
-            var issues = rule.GenerateWarnings(missingItems);
+            var issues = rule.GenerateWarnings(missingReferences);
 
             //Assert
             Assert.Equal(issues.Count(), 1);
@@ -269,15 +377,15 @@ namespace NuGet.Packaging.Test
         {
             //Arrange & Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = new List<MissingReference>
+            var missingReferences = new List<MissingReference>
             {
-                new MissingReference("ref", "net472", new string[] { "MyLib.dll"}),
-                new MissingReference("nuspec", "net462", new string[] { "MyHelpers.dll"})
+                new MissingReference("ref", "net472", new string[] { "MyLib.dll" }),
+                new MissingReference("nuspec", "net462", new string[] { "MyHelpers.dll" })
             };
-            var issues = rule.GenerateWarnings(missingItems);
+            var issues = rule.GenerateWarnings(missingReferences);
 
             //Assert
-            Assert.Equal(1 ,issues.Count());
+            Assert.Equal(1, issues.Count());
             var singleIssue = issues.Single(t => t.Code == NuGetLogCode.NU5131);
             var expectedMessage = "References were found in the nuspec, but some reference assemblies were not found in both the nuspec and ref folder. Add the following reference assemblies:" + Environment.NewLine +
                 "- Add MyLib.dll to the ref/net472/ directory" + Environment.NewLine +
@@ -290,88 +398,11 @@ namespace NuGet.Packaging.Test
         {
             //Arrange & Act
             var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = Array.Empty<MissingReference>();
-            var issues = rule.GenerateWarnings(missingItems);
+            var missingReferences = Array.Empty<MissingReference>();
+            var issues = rule.GenerateWarnings(missingReferences);
 
             //Assert
             Assert.Empty(issues);
-        }
-
-        [Fact]
-        public void Compare_NuspecHasFilesWithNoSpecificTfmWithMatchingRefFiles_ShouldBeEmpty()
-        {
-            //Arrange
-            var references = new Dictionary<string, IEnumerable<string>>
-            {
-                {"any", new List<string>() { "MyLib.dll", "MyHelpers.dll"} }
-            };
-            var files = new string[]
-            {
-                "ref/net462/MyLib.dll",
-                "ref/net462/MyHelpers.dll",
-                "ref/net472/MyLib.dll",
-                "ref/net472/MyHelpers.dll"
-            };
-
-            //Act
-            var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
-
-            //Assert
-            Assert.Empty(missingItems);
-        }
-
-        [Fact]
-        public void GenerateWarnings_NuspecHasFilesWithNoSpecificTfmWithMissingRefFiles_ShouldWarnOnce()
-        {
-            //Arrange
-            var references = new Dictionary<string, IEnumerable<string>>
-            {
-                {"any", new List<string>() { "MyLib.dll", "MyHelpers.dll"} }
-            };
-            var files = new string[]
-            {
-                "ref/net462/MyLib.dll"
-            };
-
-            //Act
-            var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
-            var issues = rule.GenerateWarnings(missingItems);
-
-            //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(t => t.Code == NuGetLogCode.NU5131);
-            var expectedMessage = "References were found in the nuspec, but some reference assemblies were not found in both the nuspec and ref folder. Add the following reference assemblies:" + Environment.NewLine +
-                "- Add MyHelpers.dll to the ref/net462/ directory" + Environment.NewLine;
-            Assert.Equal(singleIssue.Message, expectedMessage);
-        }
-
-        [Fact]
-        public void GenerateWarnings_NuspecHasFilesWithNoSpecificTfmWithMissingReferences_ShouldWarn()
-        {
-            //Arrange
-            var references = new Dictionary<string, IEnumerable<string>>
-            {
-                {"any", new List<string>() { "MyLib.dll",} }
-            };
-            var files = new string[]
-            {
-                "ref/net462/MyLib.dll",
-                "ref/net462/MyHelpers.dll",
-            };
-
-            //Act
-            var rule = new ReferencesInNuspecMatchRefAssetsRule();
-            var missingItems = rule.Compare(references, files);
-            var issues = rule.GenerateWarnings(missingItems);
-
-            //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(t => t.Code == NuGetLogCode.NU5131);
-            var expectedMessage = "References were found in the nuspec, but some reference assemblies were not found in both the nuspec and ref folder. Add the following reference assemblies:" + Environment.NewLine +
-                "- Add MyHelpers.dll to the net462 reference group in the nuspec" + Environment.NewLine;
-            Assert.Equal(singleIssue.Message, expectedMessage);
         }
     }
 }
