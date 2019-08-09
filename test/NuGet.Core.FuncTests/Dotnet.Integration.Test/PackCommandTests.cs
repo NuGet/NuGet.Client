@@ -4099,6 +4099,8 @@ namespace ClassLibrary
                     var nuspecReader = nupkgReader.NuspecReader;
 
                     Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
+
+                    Assert.NotNull(nupkgReader.GetEntry(nuspecReader.GetIcon().Replace('\\', '/')));
                 }
             }
         }
