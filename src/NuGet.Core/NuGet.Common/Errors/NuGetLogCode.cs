@@ -651,6 +651,16 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Waring_IconURLDeprecationMessage
+        /// </summary>
+        NU5048 = 5048,
+
+        /// <summary>
+        /// Waring_IconUrlAndIconDeprecationMessage
+        /// </summary>
+        NU5049 = 5049,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,

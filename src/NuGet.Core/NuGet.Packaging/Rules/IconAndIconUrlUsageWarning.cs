@@ -8,14 +8,9 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    public class IconUrlDeprecationWarning : IPackageRule
+    public class IconAndIconUrlUsageWarning : IPackageRule
     {
-        public string MessageFormat { get; }
-
-        public IconUrlDeprecationWarning(string messageFormat)
-        {
-            MessageFormat = messageFormat ?? throw new ArgumentNullException(nameof(messageFormat));
-        }
+        public string MessageFormat => throw new NotImplementedException();
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
@@ -23,11 +18,11 @@ namespace NuGet.Packaging.Rules
             var icon = nuspecReader.GetIcon();
             var iconUrl = nuspecReader.GetIconUrl();
 
-            if (icon == null && iconUrl != null)
+            if (icon != null && iconUrl != null)
             {
                 yield return PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, MessageFormat),
-                    NuGetLogCode.NU5048);
+                    NuGetLogCode.NU5049);
             }
         }
     }
