@@ -356,11 +356,6 @@ namespace NuGet.Packaging
             {
                 yield return NuGetResources.Manifest_LicenseUrlCannotBeUsedWithLicenseMetadata;
             }
-
-            if (_iconUrl != null && Icon != null)
-            {
-                yield return NuGetResources.Manifest_IconUrlCannotBeUsedWithIcon;
-            }
         }
     }
 }
