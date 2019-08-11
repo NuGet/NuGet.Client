@@ -150,7 +150,7 @@
     <value>MinClientVersion already exists in packages.config</value>
   </data>
   <data name="Error_MissingNuspecFile" xml:space="preserve">
-    <value>The package is missing the required nuspec file. {0}</value>
+    <value>The package is missing the required nuspec file. </value>
     <comment>0 - package folder</comment>
   </data>
   <data name="PackageEntryAlreadyExist" xml:space="preserve">

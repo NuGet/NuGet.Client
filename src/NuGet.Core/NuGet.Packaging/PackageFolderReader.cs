@@ -6,10 +6,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -70,14 +70,10 @@ namespace NuGet.Packaging
 
             if (nuspecFiles.Length == 0)
             {
-                throw new PackagingException(NuGetLogCode.NU5037, string.Format(
-                                            CultureInfo.CurrentCulture,
-                                            Strings.Error_MissingNuspecFile,
-                                            string.Format(
-                                                CultureInfo.CurrentCulture,
-                                                Strings.Message_Path,
-                                                _root.FullName))
-                                            );              
+                var message = new StringBuilder();
+                message.AppendFormat(CultureInfo.CurrentCulture, Strings.Error_MissingNuspecFile);
+                message.AppendFormat(CultureInfo.CurrentCulture, Strings.Message_Path, _root.FullName);
+                throw new PackagingException(NuGetLogCode.NU5037, message.ToString());
             }
             else if (nuspecFiles.Length > 1)
             {

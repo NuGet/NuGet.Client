@@ -528,8 +528,7 @@ namespace NuGet.Packaging
             {
                 throw new PackagingException(NuGetLogCode.NU5037, string.Format(
                             CultureInfo.CurrentCulture,
-                            Strings.Error_MissingNuspecFile,
-                            string.Empty));
+                            Strings.Error_MissingNuspecFile));
             }
             else if (nuspecPaths.Count > 1)
             {
