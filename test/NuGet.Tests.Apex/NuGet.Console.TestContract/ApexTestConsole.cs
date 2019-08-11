@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using NuGet.VisualStudio;
 using NuGetConsole;
@@ -75,6 +76,18 @@ namespace NuGet.Console.TestContract
                 }
             }
             return false;
+        }
+
+        public string GetText()
+        {
+            if (!EnsureInitilizeConsole())
+            {
+                return null;
+            }
+
+            ITextSnapshot snapshot = (_wpfConsole.Content as IWpfTextViewHost).TextView.TextBuffer.CurrentSnapshot;
+
+            return snapshot.GetText();
         }
 
         public void Clear()
