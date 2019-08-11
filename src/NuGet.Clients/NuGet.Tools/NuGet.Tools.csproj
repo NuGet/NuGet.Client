@@ -111,6 +111,11 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
+    <!-- NuGet.VisualStudio.Implementation is referenced only to enable generation of .pkgdef entries via ProvideCodeBaseAttribute. -->
+    <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
+      <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
+      <Name>NuGet.VisualStudio.Implementation</Name>
+    </ProjectReference>
     <!-- NuGet.VisualStudio.Interop is referenced only to enable generation of .pkgdef entries via ProvideCodeBaseAttribute. -->
     <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7db43fe1-75e1-49f9-b2c8-06a552ba2144}</Project>

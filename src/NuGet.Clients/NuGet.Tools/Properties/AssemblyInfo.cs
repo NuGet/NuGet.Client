@@ -34,6 +34,7 @@ using Microsoft.VisualStudio.Shell;
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.Versioning.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.Common.dll")]
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.Implementation.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\NuGet.VisualStudio.Interop.dll")]
 
 #if SIGNED_BUILD
