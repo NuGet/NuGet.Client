@@ -71,7 +71,7 @@ namespace NuGet.Packaging
             if (nuspecFiles.Length == 0)
             {
                 var message = new StringBuilder();
-                message.AppendFormat(CultureInfo.CurrentCulture, Strings.Error_MissingNuspecFile);
+                message.Append(Strings.Error_MissingNuspecFile);
                 message.AppendFormat(CultureInfo.CurrentCulture, Strings.Message_Path, _root.FullName);
                 throw new PackagingException(NuGetLogCode.NU5037, message.ToString());
             }
