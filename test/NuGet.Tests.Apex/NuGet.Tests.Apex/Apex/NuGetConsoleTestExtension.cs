@@ -69,5 +69,10 @@ namespace NuGet.Tests.Apex
         {
             _pmConsole.Clear();
         }
+
+        public string GetText()
+        {
+            return _pmConsole.GetText();
+        }
     }
 }

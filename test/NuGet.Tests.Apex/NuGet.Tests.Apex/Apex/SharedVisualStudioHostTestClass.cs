@@ -26,6 +26,8 @@ namespace NuGet.Tests.Apex
     {
         private readonly IVisualStudioHostFixtureFactory _contextFixtureFactory;
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
+        private NuGetConsoleTestExtension _console;
+        private string _packageManagerOutputWindowText;
 
         /// <summary>
         /// ITestOutputHelper wrapper
@@ -57,6 +59,8 @@ namespace NuGet.Tests.Apex
 
         public override void CloseVisualStudioHost()
         {
+            _packageManagerOutputWindowText = GetPackageManagerOutputWindowPaneText();
+
             VisualStudio.Stop();
         }
 
@@ -70,15 +74,36 @@ namespace NuGet.Tests.Apex
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
 
             XunitLogger.LogInformation("GetPackageManagerConsole");
-            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
+            _console = nugetTestService.GetPackageManagerConsole(project.Name);
 
             nugetTestService.WaitForAutoRestore();
 
             XunitLogger.LogInformation("GetConsole complete");
 
-            return nugetConsole;
+            return _console;
         }
 
         public IOperations Operations => _hostFixture.Value.Operations;
+
+        public override void Dispose()
+        {
+            if (_console != null)
+            {
+                string text = _console.GetText();
+
+                XunitLogger.LogInformation($"Package Manager Console contents:  {text}");
+            }
+
+            _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
+
+            XunitLogger.LogInformation($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+
+            base.Dispose();
+        }
+
+        private string GetPackageManagerOutputWindowPaneText()
+        {
+            return string.Join(Environment.NewLine, VisualStudio.GetOutputWindowsLines());
+        }
     }
 }
