@@ -5788,6 +5788,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         [Fact]
         public void PackCommand_PackagesDirAndSolutionDir()
         {
+            Func<string, string> createProject = x => $@"namespace {x} {{
+  class Program {{
+    public string Greet() {{ return ""Hello""; }}
+  }}
+}}";
+
             var nugetexe = Util.GetNuGetExePath();
 
             using (var workingDirectory = TestDirectory.Create())
@@ -5799,7 +5805,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 var packagesFolder = Path.Combine(workingDirectory, "pkgs");
                 var packagesFolder2 = Path.Combine(workingDirectory, "pkgs2");
 
-
                 var complexProjFileContents = @"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
@@ -5809,6 +5814,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include='..\proj2\proj2.csproj' />
+    <Compile Include='Program.cs' />
   </ItemGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>";
@@ -5820,8 +5826,17 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <OutputPath>out</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='Program.cs' />
+  </ItemGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>";
+
+                var configFileContent = $@"<configuration>
+  <config>
+    <add key='repositoryPath' value='../pkgs' />
+  </config>
+</configuration>";
 
                 // create folders
                 Directory.CreateDirectory(packagesFolder);
@@ -5832,8 +5847,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // create project files
                 Util.CreateFile(proj1Directory, "proj1.csproj", complexProjFileContents);
+                Util.CreateFile(proj1Directory, "Program.cs", createProject("proj1"));
                 Util.CreateFile(proj2Directory, "proj2.csproj", simpleProjFileContents);
+                Util.CreateFile(proj2Directory, "Program.cs", createProject("proj2"));
                 Util.CreateFile(proj3Directory, "proj3.csproj", complexProjFileContents);
+                Util.CreateFile(proj3Directory, "Program.cs", createProject("proj3"));
 
                 Util.CreateFile(
                     proj1Directory,
@@ -5876,20 +5894,12 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 Util.CreateFile(
                     solDirectory,
                     "nuget.config",
-                    $@"<configuration>
-  <config>
-    <add key='repositoryPath' value='../pkgs' />
-  </config>
-</configuration>");
+                    configFileContent);
 
                 Util.CreateFile(
                     solDirectory,
                     "AlternateNuget.config",
-                    $@"<configuration>
-  <config>
-    <add key='repositoryPath' value='../pkgs' />
-  </config>
-</configuration>");
+                    configFileContent);
 
                 // Act
                 var r = CommandRunner.Run(
@@ -5898,6 +5908,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     $"pack proj1.csproj -build -packagesDir {packagesFolder} -solutionDir {solDirectory}",
                     waitForExit: true);
                 Util.VerifyResultSuccess(r);
+                Assert.True(File.Exists(Path.Combine(proj1Directory, "proj1.0.0.0.nupkg")));
 
                 // It overrides the nuget.config
                 var r2 = CommandRunner.Run(
@@ -5906,7 +5917,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     $"pack proj3.csproj -build -packagesDir {packagesFolder2} -solutionDir {solDirectory} -configFile {Path.Combine(solDirectory, "AlternateNuget.config")}",
                     waitForExit: true);
                 Util.VerifyResultSuccess(r2);
-
+                Assert.True(File.Exists(Path.Combine(proj3Directory, "proj3.0.0.0.nupkg")));
             }
         }
     }
