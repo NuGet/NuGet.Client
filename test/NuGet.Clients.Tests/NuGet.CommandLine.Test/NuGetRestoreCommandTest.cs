@@ -16,11 +16,10 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Text.RegularExpressions;
-using NuGet.Protocol.Core.Types;
-using NuGet.Protocol;
 using NuGet.Common;
-using Test.Utility;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine.Test
 {
@@ -188,6 +187,40 @@ namespace NuGet.CommandLine.Test
                 var packageFileB = Path.Combine(workingPath, @"outputDir", "packageB.2.2.0", "packageB.2.2.0.nupkg");
                 Assert.True(File.Exists(packageFileA));
                 Assert.True(File.Exists(packageFileB));
+            }
+        }
+
+        [Fact]
+        public async void RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var a = new PackageIdentity("a", new NuGetVersion(1, 0, 0));
+                await SimpleTestPackageUtility.CreateFolderFeedV2Async(repositoryPath, a);
+                await SimpleTestPackageUtility.DeleteNuspecFileFromPackageAsync(Path.Combine(repositoryPath, a.ToString() + NuGetConstants.PackageExtension));
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+  <package id=""a"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                var packageFileA = Path.Combine(workingPath, @"outputDir", "a.1.1.0", "a.1.1.0.nupkg");
+                Assert.False(File.Exists(packageFileA));
+                Assert.Equal(_failureCode, r.Item1);
+                Assert.Contains("The package is missing the required nuspec file.", r.AllOutput);
             }
         }
 

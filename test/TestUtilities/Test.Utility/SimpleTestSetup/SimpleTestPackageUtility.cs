@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
@@ -592,6 +593,24 @@ namespace NuGet.Test.Utility
             }
         }
 
+        /// <summary>
+        /// Delete nuspec file from the package
+        /// </summary>
+        /// <param name="nupkgPath">Path to package file</param>
+        public static Task DeleteNuspecFileFromPackageAsync(string nupkgPath)
+        {
+            return Task.Run(() => {
+                using (FileStream zipToOpen = new FileStream(nupkgPath, FileMode.Open))
+                {
+                    using (ZipArchive archive = new ZipArchive(zipToOpen, ZipArchiveMode.Update))
+                    {
+                        var nuspec = archive.Entries.Where(entry => entry.Name.EndsWith(NuGetConstants.ManifestExtension)).SingleOrDefault();
+                        nuspec?.Delete();
+                    }
+                }
+            }, CancellationToken.None);
+
+        }
         private static IPackageFile CreatePackageFile(string name)
         {
             var file = new InMemoryFile

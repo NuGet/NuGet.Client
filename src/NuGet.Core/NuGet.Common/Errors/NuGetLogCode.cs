@@ -646,6 +646,11 @@ namespace NuGet.Common
         NU5036 = 5036,
 
         /// <summary>
+        /// Error_MissingNuspecFile
+        /// </summary>
+        NU5037 = 5037,
+
+        /// <summary>
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
@@ -803,6 +808,6 @@ namespace NuGet.Common
         /// <summary>
         /// Undefined package warning
         /// </summary>
-        NU5500 = 5500
+        NU5500 = 5500,
     }
 }
