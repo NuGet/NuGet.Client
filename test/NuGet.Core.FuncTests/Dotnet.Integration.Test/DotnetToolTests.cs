@@ -259,46 +259,6 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("net461", "any", "win-x64")]
-        [InlineData("netcoreapp2.0", "any", "win-x64")]
-        [InlineData("net461", "any", "win-x86")]
-        [InlineData("netcoreapp2.0", "any", "win-x86")]
-        public async Task DotnetToolTests_PackageWithoutRuntimeJson_RuntimeIdentifierAny_FailsAsync(string tfm, string packageRID, string projectRID)
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var projectName = "ToolRestoreProject";
-                var workingDirectory = Path.Combine(testDirectory, projectName);
-                var source = Path.Combine(testDirectory, "packageSource");
-                var packageName = string.Join("ToolPackage-", tfm, packageRID);
-                var packageVersion = NuGetVersion.Parse("1.0.0");
-                var packages = new List<PackageIdentity>() { new PackageIdentity(packageName, packageVersion) };
-
-                var package = new SimpleTestPackageContext(packageName, packageVersion.OriginalVersion);
-                package.Files.Clear();
-                package.AddFile($"tools/{tfm}/{packageRID}/a.dll");
-                package.AddFile($"tools/{tfm}/{packageRID}/Settings.json");
-                package.PackageType = PackageType.DotnetTool;
-                package.UseDefaultRuntimeAssemblies = false;
-                package.PackageTypes.Add(PackageType.DotnetTool);
-                await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
-
-                _msbuildFixture.CreateDotnetToolProject(solutionRoot: testDirectory.Path,
-                    projectName: projectName, targetFramework: tfm, rid: projectRID,
-                    source: source, packages: packages);
-
-                // Act
-                var result = _msbuildFixture.RestoreToolProject(workingDirectory, projectName, string.Empty);
-
-                var framework = NuGetFramework.Parse(tfm);
-                // Assert
-                Assert.True(result.Item1 == 1, result.AllOutput);
-                Assert.Contains("NU1202", result.AllOutput);
-                Assert.Contains($"supports: {tfm} ({framework.DotNetFrameworkName}) / {packageRID}", result.AllOutput);
-            }
-        }
-
-        [PlatformTheory(Platform.Windows)]
         [InlineData("net461")]
         [InlineData("netcoreapp1.0")]
         public async Task DotnetToolTests_RegularDependencyAndToolPackageWithDependenciesToolRestore_ThrowsErrorAsync(string tfm)

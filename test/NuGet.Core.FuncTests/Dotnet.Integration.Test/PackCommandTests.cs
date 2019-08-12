@@ -482,6 +482,7 @@ namespace Dotnet.Integration.Test
                 var referencedProject = "ClassLibrary2";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp30; // TODO NK - Get the version from the runtime.
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
@@ -528,7 +529,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1,
                         dependencyGroups.Count);
 
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22,
+                    Assert.Equal(framework,
                         dependencyGroups[0].TargetFramework);
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
@@ -542,10 +543,10 @@ namespace Dotnet.Integration.Test
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
-                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetCoreApp22, libItems[0].TargetFramework);
+                    Assert.Equal(framework, libItems[0].TargetFramework);
                     Assert.Equal(
                         new[]
-                        {"lib/netcoreapp2.2/ClassLibrary1.dll", "lib/netcoreapp2.2/ClassLibrary1.runtimeconfig.json"},
+                        {$"lib/{framework.GetShortFolderName()}/ClassLibrary1.dll", $"lib/{framework.GetShortFolderName()}/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
                 }
             }
@@ -3776,12 +3777,11 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("Microsoft.NETCore.App", "true", "netstandard1.4;net461", "", "net461")]
-        [InlineData("Microsoft.NETCore.App", "false", "netstandard1.4;net461", "", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "netstandard1.4;net46", "", "net46")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net46;net461", "net461", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms", "true", "net461", "", "net461")]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms;Microsoft.WindowsDesktop.App|WPF", "true;false", "netstandard1.4;net461", "", "net461")]
+        [InlineData("Microsoft.NETCore.App", "true", "netcoreapp3.0", "", "netcoreapp3.0")]
+        [InlineData("Microsoft.NETCore.App", "false", "netcoreapp3.0", "", "netcoreapp3.0")]
+        [InlineData("Microsoft.WindowsDesktop.App", "true", "netstandard2.1;netcoreapp3.0", "netcoreapp3.0", "netcoreapp3.0")]
+        [InlineData("Microsoft.WindowsDesktop.App;Microsoft.AspNetCore.App", "true;true", "netcoreapp3.0", "netcoreapp3.0", "netcoreapp3.0")]
+        [InlineData("Microsoft.WindowsDesktop.App.WPF;Microsoft.WindowsDesktop.App.WindowsForms", "true;false", "netcoreapp3.0", "", "netcoreapp3.0")]
         public void PackCommand_PackProject_PacksFrameworkReferences(string frameworkReferences, string packForFrameworkRefs, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
             // Arrange
@@ -3872,7 +3872,7 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("Microsoft.WindowsDesktop.App|WindowsForms;Microsoft.WindowsDesktop.App|windowsforms", "net461")]
+        [InlineData("Microsoft.WindowsDesktop.App.wpF;Microsoft.WindowsDesktop.App.windowsforms", "netcoreapp3.0")]
         public void PackCommand_PackProject_PacksFrameworkReferences_FrameworkReferencesAreCaseInsensitive(string frameworkReferences, string targetFramework)
         {
             // Arrange
@@ -3942,7 +3942,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/8423")]
         public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
         {
             using (var testDirectory = TestDirectory.Create())

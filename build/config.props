@@ -20,7 +20,7 @@
     <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.3xx</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/3.0.1xx</CliBranchForTesting>
     <!-- This branches are used for creating insertion PRs -->
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">Preview</VsTargetChannel>
