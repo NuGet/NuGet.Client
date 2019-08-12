@@ -262,12 +262,12 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("1.0.0", "", "2.1.0")]
-        //[InlineData("1.0.0", "--include-prerelease", "2.2.0-beta")]
-        //[InlineData("1.0.0-beta", "", "2.2.0-beta")]
-        //[InlineData("1.0.0", "--highest-patch", "1.0.9")]
-        //[InlineData("1.0.0", "--highest-minor", "1.9.0")]
-        //[InlineData("1.0.0", "--highest-patch --include-prerelease", "1.0.10-beta")]
-        //[InlineData("1.0.0", "--highest-minor --include-prerelease", "1.10.0-beta")]
+        [InlineData("1.0.0", "--include-prerelease", "2.2.0-beta")]
+        [InlineData("1.0.0-beta", "", "2.2.0-beta")]
+        [InlineData("1.0.0", "--highest-patch", "1.0.9")]
+        [InlineData("1.0.0", "--highest-minor", "1.9.0")]
+        [InlineData("1.0.0", "--highest-patch --include-prerelease", "1.0.10-beta")]
+        [InlineData("1.0.0", "--highest-minor --include-prerelease", "1.10.0-beta")]
         public async Task DotnetListPackage_Outdated_Succeed(string currentVersion, string args, string expectedVersion)
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -284,6 +284,15 @@ namespace Dotnet.Integration.Test
                         PackageSaveMode.Defaultv3,
                         packageX);
                 }
+
+
+                //using (var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite))
+                //{
+                //    var xml = XDocument.Load(stream);
+                //    ProjectFileUtils.AddProperty(xml, "GenerateRuntimeConfigurationFiles", "true");
+
+                //    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                //}
 
                 var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
