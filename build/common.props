@@ -4,9 +4,6 @@
     <IsNetCoreProject>true</IsNetCoreProject>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19351-01" PrivateAssets="All"/>
-  </ItemGroup>
   <!-- When building on non-Windows machines, we need the reference assemblies to build full-framework assemblies. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(DotNetBuildFromSource)' == 'true'">
      <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0-alpha-5" PrivateAssets="All" />

@@ -3,9 +3,6 @@
   <PropertyGroup>
     <IsNetCoreProject>false</IsNetCoreProject>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19351-01" PrivateAssets="All"/>
-  </ItemGroup>
   
   <!-- Load config -->
   <Import Project="config.props" />
