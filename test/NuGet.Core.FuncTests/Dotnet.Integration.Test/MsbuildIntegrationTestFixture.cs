@@ -56,25 +56,6 @@ namespace Dotnet.Integration.Test
                 CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
             }
         }
-        public static void CreateTempGlobalJson(string solutionRoot)
-        {
-            //put the global.json at one level up to solutionRoot path
-            var pathToPlaceGlobalJsonFile = solutionRoot.Substring(0, solutionRoot.Length - 1 - solutionRoot.Split(Path.DirectorySeparatorChar).Last().Length);
-
-            var globalJsonFile =
-@"{
-    ""sdk"": {
-              ""version"": ""3.0.100 - preview""
-             }
-}";
-
-            using (var outputFile = new StreamWriter(Path.Combine(pathToPlaceGlobalJsonFile, "global.json")))
-            {
-                outputFile.WriteLine(globalJsonFile);
-                outputFile.Close();
-            }
-
-        }
 
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {

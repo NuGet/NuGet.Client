@@ -285,15 +285,6 @@ namespace Dotnet.Integration.Test
                         packageX);
                 }
 
-
-                //using (var stream = File.Open(projectA.ProjectPath, FileMode.Open, FileAccess.ReadWrite))
-                //{
-                //    var xml = XDocument.Load(stream);
-                //    ProjectFileUtils.AddProperty(xml, "GenerateRuntimeConfigurationFiles", "true");
-
-                //    ProjectFileUtils.WriteXmlToFile(xml, stream);
-                //}
-
                 var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
                 Assert.True(addResult.Success);
