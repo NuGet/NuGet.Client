@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
-    <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0-beta2-19351-01" PrivateAssets="All"/>
   </ItemGroup>
   <!-- When building on non-Windows machines, we need the reference assemblies to build full-framework assemblies. -->
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework' AND '$(DotNetBuildFromSource)' == 'true'">
