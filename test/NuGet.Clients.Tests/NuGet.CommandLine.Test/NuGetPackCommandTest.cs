@@ -5714,6 +5714,24 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
+        public void PackCommand_PackIconAndIconUrl_Fails()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithIcon(string.Empty)
+                .WithIconUrl(string.Empty);
+
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackIconFailure(testDirBuilder, "The element 'icon' cannot be empty.");
+        }
+
+        [Fact]
         public void PackCommand_PackIcon_MissingIconFile_Fail()
         {
             NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
@@ -5727,6 +5745,79 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithNuspec(nuspecBuilder);
 
             TestPackIconFailure(testDirBuilder, "NU5019");
+        }
+
+        [Theory]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Suceeds(SymbolPackageFormat symbolPackageFormat)
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            var projectFileContent =
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
+
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithFile("icon.jpg")
+                .WithIcon("icon.jpg");
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithTextFile("A.csproj", projectFileContent)
+                .WithTextFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, filepath: "A.nuspec");
+
+            using (testDirBuilder.Build())
+            {
+                var packageFilenameBase = $"{nuspecBuilder.PackageIdEntry}.{nuspecBuilder.PackageVersionEntry}";
+                var symbolExtension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
+                var nupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{packageFilenameBase}.nupkg");
+                var snupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{packageFilenameBase}.{symbolExtension}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack A.csproj -Build -Symbols -SymbolPackageFormat {symbolExtension}",
+                    waitForExit: true);
+
+                // Verify
+                Util.VerifyResultSuccess(r);
+                
+                Assert.True(File.Exists(nupkgPath));
+                Assert.True(File.Exists(snupkgPath));
+
+                using (var nupkg = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkg.NuspecReader;
+                    Assert.NotEqual(string.Empty, nuspecReader.GetIcon());
+                    VerifyNuspecRoundTrips(nupkg, $"A.nuspec");
+                }
+
+                using (var snupkg = new PackageArchiveReader(snupkgPath))
+                {
+                    if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
+                    {
+                        var nuspecReader = snupkg.NuspecReader;
+                        Assert.Equal(string.Empty, nuspecReader.GetIcon());
+                    }
+                }
+            }
         }
 
         /// <summary>

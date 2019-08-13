@@ -12,12 +12,14 @@ namespace NuGet.Test.Utility
         public NuspecBuilder NuspecBuilder { get; private set; }
         public string NuspecFile { get; private set; }
         public Dictionary<string, int> Files { get; private set; }
+        public Dictionary<string, string> TextFiles { get; private set; }
         public string BaseDir { get; private set; }
         public string NuspecPath => Path.Combine(BaseDir, NuspecFile);
 
         private TestDirectoryBuilder()
         {
             Files = new Dictionary<string, int>();
+            TextFiles = new Dictionary<string, string>();
         }
 
         public static TestDirectoryBuilder Create()
@@ -38,12 +40,19 @@ namespace NuGet.Test.Utility
             return this;
         }
 
+        public TestDirectoryBuilder WithTextFile(string filepath, string content)
+        {
+            TextFiles.Add(filepath, content);
+            return this;
+        }
+
         public TestDirectory Build()
         {
             TestDirectory testDirectory = TestDirectory.Create();
             BaseDir = testDirectory.Path;
 
             CreateFiles();
+            CreateTextFiles();
 
             if (NuspecBuilder != null)
             {
@@ -65,6 +74,18 @@ namespace NuGet.Test.Utility
                 {
                     fileStream.SetLength(f.Value);
                 }
+            }
+        }
+
+        private void CreateTextFiles()
+        {
+            foreach (var f in TextFiles)
+            {
+                var filepath = Path.Combine(BaseDir, f.Key);
+                var dir = Path.GetDirectoryName(filepath);
+
+                Directory.CreateDirectory(dir);
+                File.WriteAllText(Path.Combine(BaseDir, f.Key), f.Value);
             }
         }
     }
