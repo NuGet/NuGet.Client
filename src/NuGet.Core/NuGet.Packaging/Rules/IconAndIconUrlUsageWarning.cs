@@ -10,7 +10,12 @@ namespace NuGet.Packaging.Rules
 {
     public class IconAndIconUrlUsageWarning : IPackageRule
     {
-        public string MessageFormat => throw new NotImplementedException();
+        public string MessageFormat { get; }
+
+        public IconAndIconUrlUsageWarning(string messageFormat)
+        {
+            MessageFormat = messageFormat ?? throw new ArgumentNullException(nameof(messageFormat));
+        }
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
@@ -18,7 +23,7 @@ namespace NuGet.Packaging.Rules
             var icon = nuspecReader.GetIcon();
             var iconUrl = nuspecReader.GetIconUrl();
 
-            if (icon != null && iconUrl != null)
+            if (!string.Empty.Equals(icon) && !string.Empty.Equals(iconUrl))
             {
                 yield return PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, MessageFormat),

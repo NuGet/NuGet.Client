@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Rules
             var icon = nuspecReader.GetIcon();
             var iconUrl = nuspecReader.GetIconUrl();
 
-            if (icon == null && iconUrl != null)
+            if (string.Empty.Equals(icon) && !string.Empty.Equals(iconUrl))
             {
                 yield return PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, MessageFormat),
