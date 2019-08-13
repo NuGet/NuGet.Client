@@ -6,9 +6,12 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using Microsoft.Build.Locator;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+
+#if DEBUG
+using Microsoft.Build.Locator;
+#endif
 
 namespace NuGet.CommandLine.XPlat
 {
