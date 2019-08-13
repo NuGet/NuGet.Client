@@ -26,7 +26,24 @@
       <InstrumentationArguments>/ExeConfig:"%VisualStudio.InstallationUnderTest.Path%\Common7\IDE\vsn.exe"</InstrumentationArguments>
       <Scenarios>
         <TestContainer Name="NuGet.Tests">
+          <TestCase Weight="100" FullyQualifiedName="NuGet.OptProfV2Tests.IVsPackageSourceProvider_GetSources" />
           <TestCase Weight="100" FullyQualifiedName="NuGet.OptProfV2Tests.OpenSolutionAndBuild_PackageReferenceSdk" />
+        </TestContainer>
+      </Scenarios>
+    </OptProf>
+  </ItemGroup>
+  <ItemGroup Label="OptProfV2 Configuration"
+    Condition="'$(IsXPlat)' == 'false' and
+      (
+        '$(AssemblyName)' == 'NuGet.VisualStudio.Implementation'
+      )">
+    <OptProf Include="$(OutputPath)$(AssemblyName).dll">
+      <Technology>IBC</Technology>
+      <InstallationPath>Common7\IDE\CommonExtensions\Microsoft\NuGet\$(AssemblyName).dll</InstallationPath>
+      <InstrumentationArguments>/ExeConfig:"%VisualStudio.InstallationUnderTest.Path%\Common7\IDE\vsn.exe"</InstrumentationArguments>
+      <Scenarios>
+        <TestContainer Name="NuGet.Tests">
+          <TestCase Weight="100" FullyQualifiedName="NuGet.OptProfV2Tests.IVsPackageSourceProvider_GetSources" />
         </TestContainer>
       </Scenarios>
     </OptProf>
