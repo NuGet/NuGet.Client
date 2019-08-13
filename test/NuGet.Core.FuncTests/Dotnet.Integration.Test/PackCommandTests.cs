@@ -3966,5 +3966,60 @@ namespace ClassLibrary
                 Assert.True(result.Success);
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "Deterministic", "true");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                // Act
+                byte[][] packageBytes = new byte[2][];
+
+                for (var i = 0; i < 2; i++)
+                {
+                    var packageOutputPath = Path.Combine(workingDirectory, i.ToString());
+                    var nupkgPath = Path.Combine(packageOutputPath, $"{projectName}.1.0.0.nupkg");
+                    var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                    // Act
+                    msbuildFixture.PackProject(workingDirectory, projectName, $"-o {packageOutputPath}");
+
+                    Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                    Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                    using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                    {
+                        var nuspecReader = nupkgReader.NuspecReader;
+
+                        // Validate the output .nuspec.
+                        Assert.Equal("ClassLibrary1", nuspecReader.GetId());
+                        Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
+                    }
+
+                    using (var reader = new FileStream(nupkgPath, FileMode.Open))
+                    using (var ms = new MemoryStream())
+                    {
+                        reader.CopyTo(ms);
+                        packageBytes[i] = ms.ToArray();
+                    }
+                }
+                // Assert
+                Assert.Equal(packageBytes[0], packageBytes[1]);
+            }
+        }
+
     }
 }
