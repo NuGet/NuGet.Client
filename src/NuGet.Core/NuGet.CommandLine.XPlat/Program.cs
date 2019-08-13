@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Build.Locator;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 
@@ -30,6 +31,8 @@ namespace NuGet.CommandLine.XPlat
         public static int MainInternal(string[] args, CommandOutputLogger log)
         {
 #if DEBUG
+            MSBuildLocator.RegisterDefaults();
+
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
             if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
