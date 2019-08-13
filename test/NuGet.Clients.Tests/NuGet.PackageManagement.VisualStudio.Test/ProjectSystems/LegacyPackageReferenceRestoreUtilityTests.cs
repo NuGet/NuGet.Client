@@ -960,6 +960,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     packageB.AddFile("lib/net45/b.dll");
                     SimpleTestPackageUtility.CreateOPCPackage(packageA, packageSource);
                     SimpleTestPackageUtility.CreateOPCPackage(packageB, packageSource);
+                    var packageAOriginalHash = GetPackageHash(packageSource, packageA);
+                    var packageBOriginalHash = GetPackageHash(packageSource, packageB);
 
                     var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
                     var projectLockFilePath = Path.Combine(testSolutionManager.TestDirectory, "packages.project1.lock.json");
@@ -1027,9 +1029,22 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         Assert.Contains("packageB.1.0.0", nu1403Message.Message);
                     }
                     var allVerboseMessages = string.Join(Environment.NewLine, testLogger.VerboseMessages);
-                    Assert.Contains("Package content hash validation failed for packageA.1.0.0. Expected: ", allVerboseMessages);
-                    Assert.Contains("Package content hash validation failed for packageB.1.0.0. Expected: ", allVerboseMessages);
+                    var verboseMessageFormat = "Package content hash validation failed for {0}. Expected: {1} Actual: {2}";
+
+                    var packageANewHash = GetPackageHash(packageSource, packageA);
+                    var packageBNewHash = GetPackageHash(packageSource, packageB);
+
+                    Assert.Contains(string.Format(verboseMessageFormat, packageA.Identity.ToString(), packageAOriginalHash, packageANewHash), allVerboseMessages);
+                    Assert.Contains(string.Format(verboseMessageFormat, packageB.Identity.ToString(), packageBOriginalHash, packageBNewHash), allVerboseMessages);
                 }
+            }
+        }
+
+        private static string GetPackageHash(TestDirectory packageSource, SimpleTestPackageContext packageA)
+        {
+            using (var stream = new FileStream(Path.Combine(packageSource.Path, packageA.PackageName), FileMode.Open))
+            {
+                return Convert.ToBase64String(new CryptoHashProvider("SHA512").CalculateHash(stream));
             }
         }
 
