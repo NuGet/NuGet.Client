@@ -1716,8 +1716,43 @@ namespace NuGet.SolutionRestoreManager.Test
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
 
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo2)null, CancellationToken.None));
+        }
 
+        [Fact]
+        public async Task NominateProjectAsync_InvalidTargetFrameworkMoniker_DoesNotThrow()
+        {
+            // Arrange
+            var cache = new Mock<IProjectSystemCache>();
+            cache.Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
 
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+
+            var logger = new Mock<ILogger>();
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
+                new VsTargetFrameworks2(new []
+                {
+                    new VsTargetFrameworkInfo2(
+                        targetFrameworkMoniker: "_,Version=2.0",
+                        packageReferences: emptyReferenceItems,
+                        projectReferences: emptyReferenceItems,
+                        packageDownloads: emptyReferenceItems,
+                        frameworkReferences: emptyReferenceItems,
+                        projectProperties: Array.Empty<IVsProjectProperty>())
+                }));
+
+            // Act
+            var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
+
+            // Assert
+            Assert.False(result);
+            logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains(nameof(FrameworkException)))), Times.Once);
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(

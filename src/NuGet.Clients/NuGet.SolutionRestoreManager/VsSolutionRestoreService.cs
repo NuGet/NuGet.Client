@@ -129,6 +129,10 @@ namespace NuGet.SolutionRestoreManager
 
                 return restoreTask;
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
