@@ -2566,7 +2566,7 @@ namespace ClassLibrary
             }
         }
         
-        [PlatformTheory(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/8453")]
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
