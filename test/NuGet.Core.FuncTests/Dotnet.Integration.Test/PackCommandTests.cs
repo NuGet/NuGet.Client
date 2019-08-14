@@ -2566,7 +2566,7 @@ namespace ClassLibrary
             }
         }
         
-        [PlatformTheory(Platform.Windows)] // TODO NK - Fix the test
+        [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
@@ -3871,7 +3871,78 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("Microsoft.WindowsDesktop.App.wpF;Microsoft.WindowsDesktop.App.windowsforms", "netcoreapp3.0")]
+        public void PackCommand_PackProject_PacksFrameworkReferences_FrameworkReferencesAreCaseInsensitive(string frameworkReferences, string targetFramework)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                var frameworkReftoPack = new Dictionary<string, bool>();
+                var frameworkRefs = frameworkReferences.Split(";");
+                foreach(var frameworkRef in frameworkRefs)
+                {
+                    frameworkReftoPack.Add(frameworkRef, true);
+                }
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", targetFramework);
+
+                    foreach (var frameworkRef in frameworkReftoPack)
+                    {
+                        var attributes = new Dictionary<string, string>();
+
+                        var properties = new Dictionary<string, string>();
+                        if (!frameworkRef.Value)
+                        {
+                            attributes["Pack"] = "false";
+                        }
+                        ProjectFileUtils.AddItem(
+                            xml,
+                            "FrameworkReference",
+                            frameworkRef.Key,
+                            string.Empty,
+                            properties,
+                            attributes);
+                    }
+
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var frameworkItems = nupkgReader.NuspecReader.GetFrameworkRefGroups();
+                    var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.GetShortFolderName().Equals(targetFramework)).FirstOrDefault();
+                    var frameworkRef = frameworkReftoPack.First();
+
+                    Assert.True(frameworkSpecificGroup.FrameworkReferences.Contains(new FrameworkReference(frameworkRef.Key)));
+                    Assert.Equal(1, frameworkSpecificGroup.FrameworkReferences.Count()); // The framework refs are case insensitive
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/8423")]
         public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
         {
             using (var testDirectory = TestDirectory.Create())

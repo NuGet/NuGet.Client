@@ -198,7 +198,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, Skip = "Requires a version of dotnet.exe that supports forwarding the --deprecated command argument. https://github.com/NuGet/Home/issues/8440")]
         public void DotnetListPackage_DeprecatedAndOutdated_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -210,7 +210,7 @@ namespace Dotnet.Integration.Test
                     true);
 
                 Assert.False(listResult.Success);
-                Assert.Contains("Option '--outdated' and '--deprecated' cannot be combined.", listResult.Errors);
+                Assert.Contains(Strings.ListPkg_InvalidOptionsOutdatedAndDeprecated, listResult.Errors);
             }
         }
 
