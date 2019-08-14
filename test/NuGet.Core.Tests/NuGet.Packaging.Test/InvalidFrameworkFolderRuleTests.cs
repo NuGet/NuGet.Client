@@ -53,7 +53,6 @@ namespace NuGet.Packaging.Test
                         OutputDirectory = testDirectory,
                         Path = nuspecPath,
                         Exclude = Array.Empty<string>(),
-                        Symbols = true,
                         Logger = NullLogger.Instance
                     },
                     MSBuildProjectFactory.ProjectCreator,
@@ -115,7 +114,6 @@ namespace NuGet.Packaging.Test
                         OutputDirectory = testDirectory,
                         Path = nuspecPath,
                         Exclude = Array.Empty<string>(),
-                        Symbols = true,
                         Logger = NullLogger.Instance
                     },
                     MSBuildProjectFactory.ProjectCreator,

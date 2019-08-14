@@ -87,7 +87,6 @@ namespace NuGet.Build.Tasks.Pack.Test
                         OutputDirectory = directory,
                         Path = nuspecPath,
                         Exclude = Array.Empty<string>(),
-                        Symbols = true,
                         Logger = NullLogger.Instance
                     },
                     MSBuildProjectFactory.ProjectCreator,

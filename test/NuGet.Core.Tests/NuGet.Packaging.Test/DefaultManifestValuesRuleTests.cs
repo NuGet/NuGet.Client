@@ -50,7 +50,6 @@ urlMetadata +
                         OutputDirectory = testDirectory,
                         Path = nuspecPath,
                         Exclude = Array.Empty<string>(),
-                        Symbols = true,
                         Logger = NullLogger.Instance
                     },
                     MSBuildProjectFactory.ProjectCreator,
@@ -108,7 +107,6 @@ urlMetadata +
                         OutputDirectory = testDirectory,
                         Path = nuspecPath,
                         Exclude = Array.Empty<string>(),
-                        Symbols = true,
                         Logger = NullLogger.Instance
                     },
                     MSBuildProjectFactory.ProjectCreator,
