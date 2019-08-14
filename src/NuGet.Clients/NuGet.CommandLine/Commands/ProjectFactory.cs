@@ -75,7 +75,9 @@ namespace NuGet.CommandLine
                 MachineWideSettings = packArgs.MachineWideSettings,
                 Build = packArgs.Build,
                 IncludeReferencedProjects = packArgs.IncludeReferencedProjects,
-                SymbolPackageFormat = packArgs.SymbolPackageFormat
+                SymbolPackageFormat = packArgs.SymbolPackageFormat,
+                PackagesDirectory = packArgs.PackagesDirectory,
+                SolutionDirectory = packArgs.SolutionDirectory,
             };
         }
 
@@ -194,6 +196,10 @@ namespace NuGet.CommandLine
         public LogLevel LogLevel { get; set; }
 
         public SymbolPackageFormat SymbolPackageFormat { get; set; }
+
+        public string PackagesDirectory { get; set; }
+
+        public string SolutionDirectory { get; set; }
 
         public ILogger Logger
         {
@@ -1012,15 +1018,22 @@ namespace NuGet.CommandLine
 
             var references = packagesProject.GetInstalledPackagesAsync(CancellationToken.None).Result;
 
-            var solutionDir = GetSolutionDir();
             string packagesFolderPath;
-            if (solutionDir == null)
+            if (!string.IsNullOrEmpty(PackagesDirectory))
             {
-                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_project.DirectoryPath, ReadSettings(_project.DirectoryPath));
+                packagesFolderPath = PackagesDirectory;
             }
             else
             {
-                packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+                var solutionDir = GetSolutionDir();
+                if (solutionDir == null)
+                {
+                    packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(_project.DirectoryPath, ReadSettings(_project.DirectoryPath));
+                }
+                else
+                {
+                    packagesFolderPath = PackagesFolderPathUtility.GetPackagesFolderPath(solutionDir, ReadSettings(solutionDir));
+                }
             }
 
             var findLocalPackagesResource = Repository
@@ -1178,6 +1191,10 @@ namespace NuGet.CommandLine
 
         private string GetSolutionDir()
         {
+            if (!string.IsNullOrEmpty(SolutionDirectory))
+            {
+                return SolutionDirectory;
+            }
             return ProjectHelper.GetSolutionDir(_project.DirectoryPath);
         }
 

@@ -7706,6 +7706,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Specifies the packages folder..
+        /// </summary>
+        internal static string PackageCommandPackagesDirectory {
+            get {
+                return ResourceManager.GetString("PackageCommandPackagesDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to specify a semicolon &quot;;&quot; delimited list of properties when creating a package..
         /// </summary>
         internal static string PackageCommandPropertiesDescription {
@@ -7828,6 +7837,15 @@ namespace NuGet.CommandLine {
         internal static string PackageCommandPropertiesDescription_trk {
             get {
                 return ResourceManager.GetString("PackageCommandPropertiesDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Specifies the solution directory..
+        /// </summary>
+        internal static string PackageCommandSolutionDirectory {
+            get {
+                return ResourceManager.GetString("PackageCommandSolutionDirectory", resourceCulture);
             }
         }
         
