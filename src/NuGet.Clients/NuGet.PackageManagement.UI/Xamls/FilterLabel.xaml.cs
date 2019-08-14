@@ -122,6 +122,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private string _warningToolTip;
+        public string WarningToolTip
+        {
+            get
+            {
+                return _warningToolTip;
+            }
+            set
+            {
+                _warningToolTip = value;
+                _warningIcon.ToolTip = _warningToolTip;
+            }
+        }
+
         private void _labelText_MouseEnter(object sender, MouseEventArgs e)
         {
             if(_selected)

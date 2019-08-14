@@ -804,7 +804,15 @@ namespace NuGet.PackageManagement.UI
                 var installedPackageDeprecationMetadata = await Task.WhenAll(
                     installedPackages.Select(p => GetPackageDeprecationMetadata(p, metadataProvider, refreshCts)));
 
-                _topPanel._labelInstalled.ShowWarning = installedPackageDeprecationMetadata.Any(d => d != null);
+                var installedDeprecatedPackagesCount = installedPackageDeprecationMetadata.Count(d => d != null);
+                var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
+                _topPanel._labelInstalled.ShowWarning = hasInstalledDeprecatedPackages;
+                _topPanel._labelInstalled.WarningToolTip = hasInstalledDeprecatedPackages
+                    ? string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Resources.Label_Installed_DeprecatedWarning,
+                        installedDeprecatedPackagesCount)
+                    : null;
 
                 // Update updates tab count
                 Model.CachedUpdates = new PackageSearchMetadataCache
