@@ -126,7 +126,7 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     await AddLatestVersionsAsync(packages, listPackageArgs);
 
-                                    printPackages = await FilterOutdatedPackages(packages);
+                                    printPackages = await FilterOutdatedPackagesAsync(packages);
 
                                     // If after filtering, all packages were found up to date, inform the user
                                     // and do not print anything
@@ -140,7 +140,7 @@ namespace NuGet.CommandLine.XPlat
                                 {
                                     await GetDeprecationInfoAsync(packages, listPackageArgs);
 
-                                    printPackages = await FilterDeprecatedPackages(packages);
+                                    printPackages = await FilterDeprecatedPackagesAsync(packages);
 
                                     // If after filtering, no packages were found to be deprecated, inform the user
                                     // and do not print anything
@@ -192,9 +192,9 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        private static async Task<bool> FilterOutdatedPackages(IEnumerable<FrameworkPackages> packages)
+        private static async Task<bool> FilterOutdatedPackagesAsync(IEnumerable<FrameworkPackages> packages)
         {
-            await FilterPackages(
+            await FilterPackagesAsync(
                 packages,
                 TopLevelPackagesFilterForOutdated,
                 TransitivePackagesFilterForOutdated);
@@ -202,9 +202,9 @@ namespace NuGet.CommandLine.XPlat
             return packages.Any(p => p.TopLevelPackages.Any());
         }
 
-        private static async Task<bool> FilterDeprecatedPackages(IEnumerable<FrameworkPackages> packages)
+        private static async Task<bool> FilterDeprecatedPackagesAsync(IEnumerable<FrameworkPackages> packages)
         {
-            await FilterPackages(
+            await FilterPackagesAsync(
                 packages,
                 TopLevelPackagesFilterForDeprecated,
                 TransitivePackagesFilterForDeprecated);
@@ -218,22 +218,22 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packages">The <see cref="FrameworkPackages"/> to filter.</param>
         /// <param name="topLevelPackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TopLevelPackages"/>.</param>
         /// <param name="transitivePackagesFilter">The filter to be applied on all <see cref="FrameworkPackages.TransitivePackages"/>.</param>
-        private static async Task FilterPackages(
+        private static async Task FilterPackagesAsync(
             IEnumerable<FrameworkPackages> packages,
             Func<InstalledPackageReference, Task<bool>> topLevelPackagesFilter,
             Func<InstalledPackageReference, Task<bool>> transitivePackagesFilter)
         {
             foreach (var frameworkPackages in packages)
             {
-                frameworkPackages.TopLevelPackages = await GetInstalledPackageReferencesWithFilter(
+                frameworkPackages.TopLevelPackages = await GetInstalledPackageReferencesWithFilterAsync(
                     frameworkPackages.TopLevelPackages, topLevelPackagesFilter);
 
-                frameworkPackages.TransitivePackages = await GetInstalledPackageReferencesWithFilter(
+                frameworkPackages.TransitivePackages = await GetInstalledPackageReferencesWithFilterAsync(
                     frameworkPackages.TransitivePackages, transitivePackagesFilter);
             }
         }
 
-        private static async Task<IEnumerable<InstalledPackageReference>> GetInstalledPackageReferencesWithFilter(
+        private static async Task<IEnumerable<InstalledPackageReference>> GetInstalledPackageReferencesWithFilterAsync(
             IEnumerable<InstalledPackageReference> references,
             Func<InstalledPackageReference, Task<bool>> filter)
         {
