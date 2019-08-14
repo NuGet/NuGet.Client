@@ -174,10 +174,11 @@ namespace NuGet.CommandLine.XPlat
                     {
                         projectInfo = ProcessPRBasedProject(projectPath, solutionDirectoryPath, assetsPath, listPackageArgs, msBuildUtility);
                     }
-                    else
-                    {
-                        projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath), projectPath, solutionDirectoryPath, ProjectStyle.Unknown);
-                    }
+                    // Commenting out so that NuGet.RecommendPackages can get to the PC based processing for now
+                    //else
+                    //{
+                    //    projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath), projectPath, solutionDirectoryPath, ProjectStyle.Unknown);
+                    //}
                 }
             }
 

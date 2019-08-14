@@ -12,7 +12,8 @@
     <PackProject>true</PackProject>
     <XPLATProject>true</XPLATProject>
     <PackAsTool>true</PackAsTool>
-    <ToolCommandName>NuGet.ListPackage</ToolCommandName>
+   <!-- <ToolCommandName>NuGet.RecommendPackages</ToolCommandName> -->
+    <Version>0.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>
