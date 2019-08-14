@@ -498,7 +498,7 @@ namespace NuGet.PackageManagement.UI
                             d => d.VersionInfo.Version,
                             (m, d) =>
                             {
-                                var versionInfo = d.OrderByDescending(v => v.VersionInfo?.DownloadCount ?? 0).FirstOrDefault();
+                                var versionInfo = d.OrderByDescending(v => v.VersionInfo.DownloadCount ?? 0).FirstOrDefault();
                                 if (versionInfo != null)
                                 {
                                     // Save the metadata about this version to the VersionInfo instance.

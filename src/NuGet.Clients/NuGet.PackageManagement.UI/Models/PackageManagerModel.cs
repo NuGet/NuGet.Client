@@ -49,11 +49,6 @@ namespace NuGet.PackageManagement.UI
         public INuGetUI UIController { get; }
 
         /// <summary>
-        /// Whether or not any installed packages are deprecated, cached by a background thread.
-        /// </summary>
-        public bool HasInstalledDeprecatedPackages { get; set; }
-
-        /// <summary>
         /// Cached Package Metadata collected when we set the "count" of updates in the background
         /// </summary>
         public PackageSearchMetadataCache CachedUpdates { get; set; }
