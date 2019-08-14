@@ -7,12 +7,14 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -207,14 +209,12 @@ namespace NuGet.PackageManagement.UI
                 if (!_providersLoaderStarted && ProvidersLoader != null)
                 {
                     _providersLoaderStarted = true;
-                    Task.Run(async () =>
-                    {
-                        var result = await ProvidersLoader.Value;
-
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        Providers = result;
-                    });
+                    NuGetUIThreadHelper.JoinableTaskFactory
+                        .RunAsync(ReloadProvidersAsync)
+                        .FileAndForget(
+                            TelemetryUtility.CreateFileAndForgetEventName(
+                                nameof(PackageItemListViewModel),
+                                nameof(ReloadProvidersAsync)));
                 }
 
                 return _providers;
@@ -291,33 +291,52 @@ namespace NuGet.PackageManagement.UI
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
             {
-#pragma warning disable VSTHRD110 // Observe result of async calls
-                Task.Run(async () =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
-                {
-                    var result = await _backgroundLatestVersionLoader.Value;
-
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    LatestVersion = result;
-                    Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-                });
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageVersionsAsync)
+                    .FileAndForget(
+                        TelemetryUtility.CreateFileAndForgetEventName(
+                            nameof(PackageItemListViewModel),
+                            nameof(ReloadPackageVersionsAsync)));
             }
 
 
             if (!_backgroundDeprecationMetadataLoader.IsValueCreated)
             {
-#pragma warning disable VSTHRD110 // Observe result of async calls
-                Task.Run(async () =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
-                {
-                    var result = await _backgroundDeprecationMetadataLoader.Value;
-
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    IsPackageDeprecated = result != null;
-                });
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageDeprecationAsync)
+                    .FileAndForget(
+                        TelemetryUtility.CreateFileAndForgetEventName(
+                            nameof(PackageItemListViewModel),
+                            nameof(ReloadPackageDeprecationAsync)));
             }
+        }
+
+        private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
+        {
+            var result = await _backgroundLatestVersionLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            LatestVersion = result;
+            Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+        }
+
+        private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
+        {
+            var result = await _backgroundDeprecationMetadataLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            IsPackageDeprecated = result != null;
+        }
+
+        private async System.Threading.Tasks.Task ReloadProvidersAsync()
+        {
+            var result = await ProvidersLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Providers = result;
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
