@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net;
 
 namespace NuGet.Common
 {
@@ -404,6 +405,14 @@ namespace NuGet.Common
                         Uri.UnescapeDataString(z.FullName),
                         ReplaceDirSeparatorWithAltDirSeparator(path),
                         StringComparison.OrdinalIgnoreCase));
+        }
+
+        /// <summary>
+        /// Returns a new path by trimming invalid chars from given path
+        /// </summary>
+        public static string RemoveInvalidChars(string path)
+        {
+            return path.Trim(Path.GetInvalidPathChars());
         }
 
         public static bool IsFileSystemCaseInsensitive
