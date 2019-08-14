@@ -5596,7 +5596,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_ImplicitFile_Succeed()
+        public void PackCommand_PackIcon_ImplicitFile_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
@@ -5614,7 +5614,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
                 
         [Fact]
-        public void PackCommand_PackIcon_Folder_Succeed()
+        public void PackCommand_PackIcon_Folder_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
             var testDir = TestDirectoryBuilder.Create();
@@ -5632,7 +5632,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_FolderNested_Succeed2()
+        public void PackCommand_PackIcon_FolderNested_Succeeds()
         {
             var nuspec = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5666,11 +5666,13 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("icon.jpg", 6)
                 .WithNuspec(nuspecBuilder);
 
-            TestPackIconSuccess(testDirBuilder, message: "NU5049");
+            var warnMessage = $"WARNING: {NuGetLogCode.NU5049.ToString()}: {AnalysisResources.IconUrlAndIconWarning}";
+
+            TestPackIconSuccess(testDirBuilder, message: warnMessage);
         }
 
         [Fact]
-        public void PackCommand_PackIcon_IconUrl_Warn_Suceeds()
+        public void PackCommand_PackIconUrl_Warn_Suceeds()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5698,7 +5700,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_EmptyIconEntry_Fail()
+        public void PackCommand_PackIcon_EmptyIconEntry_Fails()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5715,7 +5717,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIconAndIconUrl_Fails()
+        public void PackCommand_EmptyPackIconAndIconUrl_Fails()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5733,7 +5735,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_MissingIconFile_Fail()
+        public void PackCommand_PackIcon_MissingIconFile_Fails()
         {
             NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
             TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
@@ -5745,20 +5747,19 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             testDirBuilder
                 .WithNuspec(nuspecBuilder);
 
-            TestPackIconFailure(testDirBuilder, "NU5019");
+            TestPackIconFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
         }
 
         [Theory]
         [InlineData(SymbolPackageFormat.Snupkg)]
         [InlineData(SymbolPackageFormat.SymbolsNupkg)]
-        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Suceeds(SymbolPackageFormat symbolPackageFormat)
+        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Suceed(SymbolPackageFormat symbolPackageFormat)
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
 
             var projectFileContent =
-@"<Project ToolsVersion='4.0' DefaultTargets='Build'
-xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>library</OutputType>
     <OutputPath>out</OutputPath>
@@ -5815,7 +5816,7 @@ xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
                     if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
                     {
                         var nuspecReader = snupkg.NuspecReader;
-                        Assert.Equal(string.Empty, nuspecReader.GetIcon());
+                        Assert.Equal(null, nuspecReader.GetIcon());
                     }
                 }
             }

@@ -157,7 +157,7 @@
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>
   </data>
   <data name="IconUrlAndIconWarning" xml:space="preserve">
-    <value>Detected 'iconUrl' and 'icon' elements. Learn more at aka.ms/nugeticonurl</value>
+    <value>Both 'iconUrl' and 'icon' elements were detected. Consider removing the 'iconUrl' element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl.</value>
   </data>
   <data name="IconUrlDeprecationWarning" xml:space="preserve">
     <value>The 'iconUrl' element will be deprecated. Consider using the 'icon' element instead.</value>

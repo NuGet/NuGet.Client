@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Detected &apos;iconUrl&apos; and &apos;icon&apos; elements. Learn more at aka.ms/nugeticonurl.
+        ///   Looks up a localized string similar to Both &apos;iconUrl&apos; and &apos;icon&apos; elements were detected. Consider removing the &apos;iconUrl&apos; element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl..
         /// </summary>
         public static string IconUrlAndIconWarning {
             get {
