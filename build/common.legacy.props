@@ -3,9 +3,6 @@
   <PropertyGroup>
     <IsNetCoreProject>false</IsNetCoreProject>
   </PropertyGroup>
-  <ItemGroup Condition="'$(Shipping)' == 'true' AND '$(IsXPlat)' != 'true'">
-    <PackageReference Include="PdbGit" Version="3.0.41" PrivateAssets="all"/>
-  </ItemGroup>
   
   <!-- Load config -->
   <Import Project="config.props" />
