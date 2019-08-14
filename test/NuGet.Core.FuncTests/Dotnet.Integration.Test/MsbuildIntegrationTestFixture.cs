@@ -415,7 +415,6 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                // Ignore UnauthorizedAccessException for the first attempts
                 var MaxTries = 100;
 
                 for (var i = 0; i < MaxTries; i++)
@@ -423,11 +422,10 @@ namespace Dotnet.Integration.Test
                     
                     try
                     {
-                        Directory.Delete(path, true);
-
+                        Directory.Delete(path, recursive: true);
                         break;
                     }
-                    catch (Exception ex) when ((i < (MaxTries - 1)) && (ex is UnauthorizedAccessException))
+                    catch (UnauthorizedAccessException) when (i < (MaxTries - 1))
                     {
                         Thread.Sleep(100);
                     }
