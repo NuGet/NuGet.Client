@@ -208,10 +208,6 @@
   <data name="IconNoFileElement" xml:space="preserve">
     <value>The icon file '{0}' does not exist in the package.</value>
   </data>
-  <data name="Manifest_IconUrlCannotBeUsedWithIcon" xml:space="preserve">
-    <value>The iconUrl and icon elements cannot be used together.</value>
-    <comment>Please, don't localize iconUrl and icon</comment>
-  </data>
   <data name="IconMissingRequiredValue" xml:space="preserve">
     <value>The element 'icon' cannot be empty.</value>
     <comment>Please, don't localize icon</comment>

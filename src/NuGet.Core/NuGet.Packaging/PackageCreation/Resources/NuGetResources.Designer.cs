@@ -169,15 +169,6 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The iconUrl and icon elements cannot be used together..
-        /// </summary>
-        internal static string Manifest_IconUrlCannotBeUsedWithIcon {
-            get {
-                return ResourceManager.GetString("Manifest_IconUrlCannotBeUsedWithIcon", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Id must not exceed 100 characters..
         /// </summary>
         internal static string Manifest_IdMaxLengthExceeded {

@@ -5692,7 +5692,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     $"pack {testDirBuilder.NuspecPath}",
                     waitForExit: true);
 
-                Util.VerifyResultSuccess(r, expectedOutputMessage: "NU5048");
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Util.VerifyResultSuccess(r, expectedOutputMessage: AnalysisResources.IconUrlDeprecationWarning);
             }
         }
 
