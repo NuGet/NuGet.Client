@@ -2566,7 +2566,7 @@ namespace ClassLibrary
             }
         }
         
-        [PlatformTheory(Platform.Windows)]
+        [PlatformTheory(Platform.Windows)] // TODO NK - Fix the test
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
