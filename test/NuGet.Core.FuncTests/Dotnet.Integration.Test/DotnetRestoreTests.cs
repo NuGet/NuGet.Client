@@ -100,7 +100,7 @@ EndGlobal";
                 {
                     var xml = XDocument.Load(stream);
 
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "netstandard1.3");
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
@@ -108,7 +108,7 @@ EndGlobal";
                         xml,
                         "PackageReference",
                         "TestPackage.AuthorSigned",
-                        "net472",
+                        "netstandard1.3",
                         new Dictionary<string, string>(),
                         attributes);
 
@@ -204,11 +204,10 @@ EndGlobal";
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var tfm = "net472";
                 var testDirectory = pathContext.SolutionRoot;
                 var pkgX = new SimpleTestPackageContext("x", "1.0.0");
                 pkgX.Files.Clear();
-                pkgX.AddFile($"lib/{tfm}/x.dll", tfm);
+                pkgX.AddFile($"lib/netstandard2.0/x.dll", "netstandard2.0");
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, pkgX);
 
@@ -224,7 +223,6 @@ EndGlobal";
                 using (var stream = File.Open(projectFile1, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", tfm);
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
@@ -232,7 +230,7 @@ EndGlobal";
                         xml,
                         "PackageReference",
                         "x",
-                        tfm,
+                        (NuGetFramework)null,
                         new Dictionary<string, string>(),
                         attributes);
 
