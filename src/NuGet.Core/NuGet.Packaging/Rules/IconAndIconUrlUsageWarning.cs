@@ -20,10 +20,10 @@ namespace NuGet.Packaging.Rules
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
             var nuspecReader = builder?.NuspecReader;
-            var icon = nuspecReader.GetIcon();
-            var iconUrl = nuspecReader.GetIconUrl();
+            var icon = nuspecReader?.GetIcon();
+            var iconUrl = nuspecReader?.GetIconUrl();
 
-            if (!string.Empty.Equals(icon) && !string.Empty.Equals(iconUrl))
+            if (icon != null && !string.IsNullOrEmpty(iconUrl))
             {
                 yield return PackagingLogMessage.CreateWarning(
                     string.Format(CultureInfo.CurrentCulture, MessageFormat),
