@@ -137,7 +137,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [CIOnlyNuGetWpfTheory, Skip="https://github.com/NuGet/Home/issues/8146"]
+        [CIOnlyNuGetWpfTheory(Skip="https://github.com/NuGet/Home/issues/8146")]
         [MemberData(nameof(GetPackagesConfigTemplates))]
         public async Task Tampered_InstallFromPMCForPC_FailAsync(ProjectTemplate projectTemplate)
         {
