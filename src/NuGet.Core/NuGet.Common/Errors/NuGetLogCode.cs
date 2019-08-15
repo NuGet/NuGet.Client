@@ -651,6 +651,16 @@ namespace NuGet.Common
         NU5037 = 5037,
 
         /// <summary>
+        /// Error_Manifest_IconCannotOpenFile
+        /// </summary>
+        NU5046 = 5046,
+
+        /// <summary>
+        /// Error_Icon_InvalidSize
+        /// </summary>
+        NU5047 = 5047,
+
+        /// <summary>
         /// IconUrlDeprecationWarning
         /// </summary>
         NU5048 = 5048,
@@ -664,16 +674,6 @@ namespace NuGet.Common
         /// AssemblyOutsideLibWarning
         /// </summary>
         NU5100 = 5100,
-
-        /// <summary>
-        /// Error_Manifest_IconCannotOpenFile
-        /// </summary>
-        NU5046 = 5046,
-
-        /// <summary>
-        /// Error_Icon_InvalidSize
-        /// </summary>
-        NU5047 = 5047,
 
         /// <summary>
         /// AssemblyDirectlyUnderLibWarning

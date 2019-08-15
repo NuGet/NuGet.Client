@@ -5780,8 +5780,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             testDirBuilder
                 .WithFile("icon.jpg", 6)
-                .WithTextFile("A.csproj", projectFileContent)
-                .WithTextFile("B.cs", sourceFileContent)
+                .WithFile("A.csproj", projectFileContent)
+                .WithFile("B.cs", sourceFileContent)
                 .WithNuspec(nuspecBuilder, filepath: "A.nuspec");
 
             using (testDirBuilder.Build())

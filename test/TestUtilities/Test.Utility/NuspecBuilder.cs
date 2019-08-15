@@ -1,11 +1,15 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace NuGet.Test.Utility
 {
+    /// <summary>
+    /// Represents a builder object for .nuspec file cotents. For testing purposes
+    /// </summary>
     public class NuspecBuilder
     {
         public List<Tuple<string, string>> FileEntries { get; private set; }
@@ -19,6 +23,10 @@ namespace NuGet.Test.Utility
             FileEntries = new List<Tuple<string, string>>();
         }
 
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <returns>A <c>NuspecBuilder</c> factory object</returns>
         public static NuspecBuilder Create()
         {
             var builder = new NuspecBuilder();
@@ -60,6 +68,10 @@ namespace NuGet.Test.Utility
             return this;
         }
 
+        /// <summary>
+        /// Creates the nuspec
+        /// </summary>
+        /// <returns>A <c>StringBuilder</c> object with the .nuspec content</returns>
         public StringBuilder Build()
         {
             StringBuilder sb = new StringBuilder();
