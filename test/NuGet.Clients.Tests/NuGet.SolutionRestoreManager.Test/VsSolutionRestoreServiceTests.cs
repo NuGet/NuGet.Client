@@ -1812,6 +1812,49 @@ namespace NuGet.SolutionRestoreManager.Test
             // restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
+        [Fact]
+        public async Task NominateProjectAsync_CancelledToken_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var cache = new Mock<IProjectSystemCache>();
+            cache.Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
+
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
+                    It.IsAny<SolutionRestoreRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromException<bool>(new OperationCanceledException()));
+
+            var logger = new Mock<ILogger>();
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
+                new VsTargetFrameworks2(new[]
+                {
+                    new VsTargetFrameworkInfo2(
+                        targetFrameworkMoniker: FrameworkConstants.CommonFrameworks.NetStandard20.ToString(),
+                        packageReferences: new[]
+                        {
+                            new VsReferenceItem("packageId", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "foo")
+                            }))
+                        },
+                        projectReferences: emptyReferenceItems,
+                        packageDownloads: emptyReferenceItems,
+                        frameworkReferences: emptyReferenceItems,
+                        projectProperties: Array.Empty<IVsProjectProperty>())
+                }));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None));
+        }
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath, IVsProjectRestoreInfo pri)
         {
