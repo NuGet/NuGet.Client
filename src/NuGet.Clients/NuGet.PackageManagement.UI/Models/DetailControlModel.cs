@@ -464,13 +464,13 @@ namespace NuGet.PackageManagement.UI
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
             // means to cache version metadata.
             _metadataDict = versions
-                .Where(v => v.versionInfo.PackageSearchMetadata != null)
+                .Where(v => v.Item1.PackageSearchMetadata != null)
                 .ToDictionary(
-                    v => v.versionInfo.Version,
-                    v => new DetailedPackageMetadata(v.versionInfo.PackageSearchMetadata, v.deprecationMetadata, v.versionInfo.DownloadCount));
+                    v => v.Item1.Version,
+                    v => new DetailedPackageMetadata(v.Item1.PackageSearchMetadata, v.Item2, v.Item1.DownloadCount));
 
             // If we are missing any metadata, go to the metadata provider and fetch all of the data again.
-            if (versions.Select(v => v.versionInfo.Version).Except(_metadataDict.Keys).Any())
+            if (versions.Select(v => v.Item1.Version).Except(_metadataDict.Keys).Any())
             {
                 try
                 {
@@ -485,29 +485,23 @@ namespace NuGet.PackageManagement.UI
                         packages.Select(async searchMetadata =>
                         {
                             var deprecationMetadata = await searchMetadata.GetDeprecationMetadataAsync();
-                            return (searchMetadata, deprecationMetadata);
+                            return Tuple.Create(searchMetadata, deprecationMetadata);
                         }));
 
                     var uniquePackages = packagesWithDeprecationMetadata
                         .GroupBy(
-                            m => m.searchMetadata.Identity.Version,
+                            m => m.Item1.Identity.Version,
                             (v, ms) => ms.First());
 
                     _metadataDict = uniquePackages
                         .GroupJoin(
                             versions,
-                            m => m.searchMetadata.Identity.Version,
-                            d => d.versionInfo.Version,
+                            m => m.Item1.Identity.Version,
+                            d => d.Item1.Version,
                             (m, d) =>
                             {
-                                var (versionInfo, deprecationMetadata) = d
-                                    .OrderByDescending(v => v.versionInfo.DownloadCount ?? 0)
-                                    .FirstOrDefault();
-
-                                return new DetailedPackageMetadata(
-                                    m.searchMetadata ?? versionInfo.PackageSearchMetadata,
-                                    m.deprecationMetadata,
-                                    m.searchMetadata?.DownloadCount ?? versionInfo.DownloadCount);
+                                var tuple = d.OrderByDescending(v => v.Item1.DownloadCount ?? 0).FirstOrDefault();
+                                return new DetailedPackageMetadata(m.Item1 ?? tuple.Item1.PackageSearchMetadata, m.Item2, m.Item1?.DownloadCount ?? tuple.Item1.DownloadCount);
                             })
                          .ToDictionary(m => m.Version);
                 }
@@ -525,7 +519,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<IEnumerable<(VersionInfo versionInfo, PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithDeprecationMetadataAsync(IPackageMetadataProvider metadataProvider)
+        private async Task<IEnumerable<Tuple<VersionInfo, PackageDeprecationMetadata>>> GetVersionsWithDeprecationMetadataAsync(IPackageMetadataProvider metadataProvider)
         {
             var versions = await _searchResultPackage.GetVersionsAsync();
             return await Task.WhenAll(
@@ -535,7 +529,7 @@ namespace NuGet.PackageManagement.UI
                         ? await version.PackageSearchMetadata.GetDeprecationMetadataAsync()
                         : null;
 
-                    return (version, deprecationMetadata);
+                    return Tuple.Create(version, deprecationMetadata);
                 }));
         }
 
