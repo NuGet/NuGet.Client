@@ -1776,7 +1776,7 @@ namespace NuGet.SolutionRestoreManager.Test
             restoreWorker.Setup(x => x.ScheduleRestoreAsync(
                     It.IsAny<SolutionRestoreRequest>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(false)); // framework is invalid, restore fails
+                .Returns(Task.FromResult(false)); // version is invalid, restore fails
 
             var logger = new Mock<ILogger>();
 
@@ -1805,7 +1805,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
 
             // Assert
-            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the TFM is invalid.
+            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the version string is invalid.
             Assert.False(result);
             // https://github.com/NuGet/Home/issues/7717
             logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains("'foo' is not a valid version string"))), Times.Once);
