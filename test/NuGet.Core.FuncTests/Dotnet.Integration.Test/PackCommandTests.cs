@@ -4021,134 +4021,139 @@ namespace ClassLibrary
             }
         }
 
+        public void ValidatePackIcon(ProjectFileBuilder projectBuilder)
+        {
+            Assert.True(File.Exists(projectBuilder.ProjectFilepath), "No project was produced");
+            var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
+
+            Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+
+                Assert.Equal(projectBuilder.PackageIcon, nuspecReader.GetIcon());
+            }
+        }
+
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_HappyPath_Suceeds()
         {
-            var builder = PackageIconTestSourceDirectoryBuilder
-                .Create("test")
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10);
+
+            projectBuilder
+                .WithProjectName("test")
                 .WithPackageIcon("content\\icon.jpg")
-                .WithFile("icon.jpg", 10)
                 .WithItem("None", "icon.jpg", null);
 
-            using (var srcDir = builder.Build(msbuildFixture))
+            using (var srcDir = testDirBuilder.Build())
             {
-                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
-                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
-                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
-                Assert.True(File.Exists(nupkgPath), "No package was produced");
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
-                }
+                ValidatePackIcon(projectBuilder);
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_ImplicitFile_Suceeds()
         {
-            var builder = PackageIconTestSourceDirectoryBuilder
-                .Create("test")
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\media\\icon.jpg", 10)
+                .WithFile("test\\media\\example.txt", 10)
+                .WithFile("test\\media\\readme.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
                 .WithPackageIcon("media\\icon.jpg")
-                .WithFile("media\\icon.jpg", 10)
-                .WithFile("media\\example.txt", 10)
-                .WithFile("media\\readme.txt", 10)
                 .WithItem("None", "media\\*", "media");
 
-            using (var srcDir = builder.Build(msbuildFixture))
+            using (var srcDir = testDirBuilder.Build())
             {
-                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
-                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
-                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
-                Assert.True(File.Exists(nupkgPath), "No package was produced");
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
-                }
+                ValidatePackIcon(projectBuilder);
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_FolderNested_Suceeds()
         {
-            var builder = PackageIconTestSourceDirectoryBuilder
-                .Create("test")
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\folder\\nested\\icon.jpg", 10)
+                .WithFile("test\\folder\\nested\\sample.txt", 10)
+                .WithFile("test\\folder\\nested\\media\\readme.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
                 .WithPackageIcon("media\\nested\\icon.jpg")
-                .WithFile("folder\\nested\\icon.jpg", 10)
-                .WithFile("folder\\nested\\sample.txt", 10)
-                .WithFile("folder\\nested\\media\\readme.txt", 10)
                 .WithItem("None", "folder\\**", "media");
-
-            using (var srcDir = builder.Build(msbuildFixture))
+                
+            using (var srcDir = testDirBuilder.Build())
             {
-                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
-                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
-                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
-                Assert.True(File.Exists(nupkgPath), "No package was produced");
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
-
-                    Assert.NotNull(nupkgReader.GetEntry(nuspecReader.GetIcon().Replace('\\', '/')));
-                }
+                ValidatePackIcon(projectBuilder);
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_FolderNestedFlatPack_Suceeds()
         {
-            var builder = PackageIconTestSourceDirectoryBuilder
-                .Create("test")
-                .WithPackageIcon("nested\\icon.jpg")
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
                 .WithFile("folder\\nested\\icon.jpg", 10)
                 .WithFile("folder\\nested\\sample.txt", 10)
-                .WithFile("folder\\nested\\media\\readme.txt", 10)
+                .WithFile("folder\\nested\\media\\readme.txt", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("nested\\icon.jpg")
                 .WithItem("None", "folder\\**", "");
 
-            using (var srcDir = builder.Build(msbuildFixture))
+            using (var srcDir = testDirBuilder.Build())
             {
-                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
-                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty);
-                var nupkgPath = Path.Combine(srcDir.ProjectFolder, "bin", "Debug", $"{srcDir.ProjectName}.1.0.0.nupkg");
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
-                Assert.True(File.Exists(nupkgPath), "No package was produced");
-
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-                {
-                    var nuspecReader = nupkgReader.NuspecReader;
-
-                    Assert.Equal(srcDir.PackageIconEntry, nuspecReader.GetIcon());
-                }
+                ValidatePackIcon(projectBuilder);
             }
         }
 
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_PackageIconUrl_Warns_Suceeds()
         {
-            var builder = PackageIconTestSourceDirectoryBuilder
-                .Create("test")
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10); ;
+
+            projectBuilder
+                .WithProjectName("test")
                 .WithPackageIcon("icon.jpg")
                 .WithPackageIconUrl("http://test.icon")
-                .WithItem("None", "icon.jpg", "")
-                .WithFile("icon.jpg", 10);
+                .WithItem("None", "icon.jpg", "");
 
-            using (var srcDir = builder.Build(msbuildFixture))
+            using (var srcDir = testDirBuilder.Build())
             {
-                Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
-                var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty, validateSuccess: false);
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
 
-                Assert.Equal(0, result.ExitCode);
+                ValidatePackIcon(projectBuilder);
                 Assert.Contains(NuGetLogCode.NU5049.ToString(), result.Output);
             }
         }
