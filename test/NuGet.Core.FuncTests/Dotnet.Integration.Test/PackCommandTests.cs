@@ -4021,7 +4021,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_HappyPath_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
@@ -4047,7 +4047,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_ImplicitFile_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
@@ -4075,7 +4075,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_FolderNested_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
@@ -4105,7 +4105,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_FolderNestedFlatPack_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
@@ -4133,8 +4133,8 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
-        public void PackCommand_PackPackageIcon_PackageIconUrl_Fails()
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIcon_PackageIconUrl_Warns_Suceeds()
         {
             var builder = PackageIconTestSourceDirectoryBuilder
                 .Create("test")
@@ -4148,8 +4148,8 @@ namespace ClassLibrary
                 Assert.True(File.Exists(srcDir.ProjectFile), "No project was produced");
                 var result = msbuildFixture.PackProject(srcDir.ProjectFolder, srcDir.ProjectName, string.Empty, validateSuccess: false);
 
-                Assert.NotEqual(0, result.ExitCode);
-                Assert.Contains("cannot be used together", result.Output);
+                Assert.Equal(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5049.ToString(), result.Output);
             }
         }
     }
