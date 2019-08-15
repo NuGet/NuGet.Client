@@ -45,6 +45,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.6.0-preview8.19405.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
