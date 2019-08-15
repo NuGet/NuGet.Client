@@ -24,7 +24,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated">Whether outdated flag exists or not</param>
         /// <param name="deprecated">Whether deprecated flag exists or not</param>
-        internal static async Task<PrintPackagesResult> PrintPackages(
+        internal static async Task<PrintPackagesResult> PrintPackagesAsync(
             IEnumerable<FrameworkPackages> packages,
             string projectName,
             bool transitive,
@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
                     {
-                        var printPackagesTableResult = await PrintPackagesTable(frameworkTopLevelPackages, false, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTopLevelPackages, false, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print transitive packages
                     if (transitive && frameworkTransitivePackages.Any())
                     {
-                        var printPackagesTableResult = await PrintPackagesTable(frameworkTransitivePackages, true, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTransitivePackages, true, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -110,7 +110,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="outdated">Whether the function is printing outdated packages information.</param>
         /// <param name="deprecated">Whether the function is printing deprecated packages information.</param>
         /// <returns>The table as a string</returns>
-        internal static async Task<PrintPackagesResult> PrintPackagesTable(
+        internal static async Task<PrintPackagesResult> PrintPackagesTableAsync(
             IEnumerable<InstalledPackageReference> packages,
             bool printingTransitive,
             bool outdated,

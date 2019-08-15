@@ -154,7 +154,7 @@ namespace NuGet.CommandLine.XPlat
                                 // outdated filtered all packages out
                                 if (printPackages)
                                 {
-                                    var printPackagesResult = await ProjectPackagesPrintUtility.PrintPackages(
+                                    var printPackagesResult = await ProjectPackagesPrintUtility.PrintPackagesAsync(
                                         packages,
                                         projectName,
                                         listPackageArgs.IncludeTransitive,
