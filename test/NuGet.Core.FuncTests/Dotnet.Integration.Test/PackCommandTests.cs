@@ -4178,8 +4178,7 @@ namespace ClassLibrary
             }
         }
 
-        //[Skip]
-        [PlatformFact(Platform.Windows, Skip = "todo: fix failign test")]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_SnupkgPackage_Suceeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();

@@ -602,7 +602,7 @@ namespace NuGet.Packaging
         /// <exception cref="PackagingException">When a validation rule is not met</exception>
         private void ValidateIconFile(IEnumerable<IPackageFile> files, string iconPath)
         {
-            if (!string.IsNullOrEmpty(iconPath))
+            if (!PackageTypes.Contains(PackageType.SymbolsPackage) && !string.IsNullOrEmpty(iconPath))
             {
                 // Validate entry
                 var iconPathStripped = PathUtility.StripLeadingDirectorySeparators(iconPath);
