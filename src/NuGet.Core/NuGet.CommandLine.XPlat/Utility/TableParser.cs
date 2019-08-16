@@ -11,15 +11,15 @@ namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        internal static Task<IEnumerable<string>> ToStringTable<T>(
+        internal static Task<IEnumerable<string>> ToStringTableAsync<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
           params Func<T, Task<object>>[] valueSelectors)
         {
-            return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
+            return ToStringTableAsync(values.ToArray(), columnHeaders, valueSelectors);
         }
 
-        internal static async Task<IEnumerable<string>> ToStringTable<T>(
+        internal static async Task<IEnumerable<string>> ToStringTableAsync<T>(
           this T[] values,
           string[] columnHeaders,
           params Func<T, Task<object>>[] valueSelectors)

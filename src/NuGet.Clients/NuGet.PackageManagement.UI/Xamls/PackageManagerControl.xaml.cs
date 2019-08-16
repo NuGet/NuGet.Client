@@ -802,7 +802,7 @@ namespace NuGet.PackageManagement.UI
                 // Update installed tab warning icon
                 var installedPackages = await loadContext.GetInstalledPackagesAsync();
                 var installedPackageDeprecationMetadata = await Task.WhenAll(
-                    installedPackages.Select(p => GetPackageDeprecationMetadata(p, metadataProvider, refreshCts)));
+                    installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, refreshCts.Token)));
 
                 var installedDeprecatedPackagesCount = installedPackageDeprecationMetadata.Count(d => d != null);
                 var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
@@ -826,10 +826,10 @@ namespace NuGet.PackageManagement.UI
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
         }
 
-        private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadata(
-            PackageCollectionItem package, IPackageMetadataProvider metadataProvider, CancellationTokenSource refreshCts)
+        private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(
+            PackageCollectionItem package, IPackageMetadataProvider metadataProvider, CancellationToken refreshToken)
         {
-            var metadata = await metadataProvider.GetPackageMetadataAsync(package, true, refreshCts.Token);
+            var metadata = await metadataProvider.GetPackageMetadataAsync(package, includePrerelease: true, refreshToken);
             if (metadata == null)
             {
                 return null;

@@ -46,11 +46,10 @@ namespace NuGet.Protocol.Core.Types
             public bool PrefixReserved { get; set; }
             public LicenseMetadata LicenseMetadata { get; set; }
 
-            public AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
+            internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await LazyDeprecationFactory;
 
-            public AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
-
+            internal AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
             public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await LazyVersionsFactory;
 
             public bool IsListed { get; set; }

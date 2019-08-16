@@ -172,7 +172,7 @@ namespace NuGet.CommandLine.Xplat.Tests
             {
                 resolvedPackageMetadata
                     .Setup(m => m.GetDeprecationMetadataAsync())
-                    .ReturnsAsync(new PackageDeprecationMetadata()); ;
+                    .ReturnsAsync(new PackageDeprecationMetadata());
             }
 
             var installedPackageReference = new InstalledPackageReference(packageId)

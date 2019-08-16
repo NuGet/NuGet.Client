@@ -82,7 +82,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
                     {
-                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTopLevelPackages, false, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTopLevelPackages, printingTransitive: false, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -91,7 +91,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print transitive packages
                     if (transitive && frameworkTransitivePackages.Any())
                     {
-                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTransitivePackages, true, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTransitivePackages, printingTransitive: true, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             if (outdated && printingTransitive)
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
                        p => Task.FromResult((object)string.Empty),
                        p => Task.FromResult((object)p.Name),
@@ -153,7 +153,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else if (outdated && !printingTransitive)
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
                        p => Task.FromResult((object)string.Empty),
                        p => Task.FromResult((object)p.Name),
@@ -180,7 +180,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else if (deprecated && printingTransitive)
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
                         p => Task.FromResult((object)string.Empty),
                         p => Task.FromResult((object)p.Name),
@@ -194,7 +194,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else if (deprecated && !printingTransitive)
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
                         p => Task.FromResult((object)string.Empty),
                         p => Task.FromResult((object)p.Name),
@@ -216,7 +216,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else if (printingTransitive)
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
                         p => Task.FromResult((object)string.Empty),
                         p => Task.FromResult((object)p.Name),
@@ -228,7 +228,7 @@ namespace NuGet.CommandLine.XPlat.Utility
             }
             else
             {
-                tableToPrint = await packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
                        p => Task.FromResult((object)""),
                        p => Task.FromResult((object)p.Name),

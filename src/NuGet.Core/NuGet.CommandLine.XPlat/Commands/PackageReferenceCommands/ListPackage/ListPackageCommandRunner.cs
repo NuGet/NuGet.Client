@@ -281,7 +281,7 @@ namespace NuGet.CommandLine.XPlat
             await RequestNuGetResourcesInParallelAsync(getLatestVersionsRequests);
 
             //Save latest versions within the InstalledPackageReference
-            await GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+            await GetVersionsFromDictAsync(packages, packagesVersionsDict, listPackageArgs);
         }
 
         /// <summary>
@@ -322,7 +322,7 @@ namespace NuGet.CommandLine.XPlat
             await RequestNuGetResourcesInParallelAsync(resourceRequestTasks);
 
             // Save resolved versions within the InstalledPackageReference
-            await GetVersionsFromDict(packages, packagesVersionsDict, listPackageArgs);
+            await GetVersionsFromDictAsync(packages, packagesVersionsDict, listPackageArgs);
         }
 
         /// <summary>
@@ -443,7 +443,7 @@ namespace NuGet.CommandLine.XPlat
         /// <param name="packagesVersionsDict"> Unique packages that are mapped to latest versions
         /// from different sources </param>
         /// <param name="listPackageArgs">Arguments for list package to get the right latest version</param>
-        private async Task GetVersionsFromDict(
+        private async Task GetVersionsFromDictAsync(
             IEnumerable<FrameworkPackages> packages,
             Dictionary<string, IList<IPackageSearchMetadata>> packagesVersionsDict,
             ListPackageArgs listPackageArgs)

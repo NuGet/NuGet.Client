@@ -199,23 +199,39 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<PackageDeprecationMetadata> FetchDeprecationMetadataAsync(PackageIdentity identity, CancellationToken cancellationToken)
         {
-            // Take the deprecation metadata from the first source it is found in
-            foreach (var source in _sourceRepositories)
-            {
-                var metadata = await source.GetPackageMetadataAsync(identity, true, cancellationToken);
-                if (metadata == null)
-                {
-                    continue;
-                }
+            var deprecationMetadataTasks = _sourceRepositories
+                .Select(source => FetchDeprecationMetadataFromSourceAsync(source, identity, cancellationToken))
+                .ToList();
 
-                var deprecationMetadata = await metadata.GetDeprecationMetadataAsync();
-                if (deprecationMetadata != null)
+            while (deprecationMetadataTasks.Any())
+            {
+                var firstTaskToReturnMetadata = await Task.WhenAny(deprecationMetadataTasks);
+                try
                 {
-                    return deprecationMetadata;
+                    // Return the deprecation metadata from the first source it is found in
+                    return await firstTaskToReturnMetadata;
+                }
+                catch (PackageNotFoundProtocolException)
+                {
+                    // If the task threw, the package is not available on the source.
+                    // Remove this source's task from the list and check the rest of the sources.
+                    deprecationMetadataTasks.Remove(firstTaskToReturnMetadata);
                 }
             }
 
             return null;
+        }
+
+        private async Task<PackageDeprecationMetadata> FetchDeprecationMetadataFromSourceAsync(
+            SourceRepository source, PackageIdentity identity, CancellationToken cancellationToken)
+        {
+            var metadata = await source.GetPackageMetadataAsync(identity, includePrerelease: true, cancellationToken);
+            if (metadata == null)
+            {
+                throw new PackageNotFoundProtocolException(identity);
+            }
+
+            return await metadata.GetDeprecationMetadataAsync();
         }
 
         private async Task<T> GetMetadataTaskAsyncSafe<T>(Func<Task<T>> getMetadataTask) where T: class
