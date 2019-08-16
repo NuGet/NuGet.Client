@@ -4,16 +4,16 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using System.Xml.Linq;
 using Dotnet.Integration.Test;
-using NuGet.Commands;
 
 namespace NuGet.Test.Utility
 {
+    /// <summary>
+    /// Represents a builder for dotnet core projects for integration tests.
+    /// Relies on MsbuildIntegrationTestFixture for programmatically create the project
+    /// </summary>
+    /// <seealso cref="MsbuildIntegrationTestFixture"/>
     public class ProjectFileBuilder
     {
         public string PackageIcon { get; private set; }
@@ -29,6 +29,10 @@ namespace NuGet.Test.Utility
             ItemGroupEntries = new List<Tuple<string, string, string>>();
         }
 
+        /// <summary>
+        /// Factory method
+        /// </summary>
+        /// <returns>An instance of <c>ProjectFileBuilder</c></returns>
         public static ProjectFileBuilder Create()
         {
             return new ProjectFileBuilder();
