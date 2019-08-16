@@ -1838,13 +1838,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 {
                     new VsTargetFrameworkInfo2(
                         targetFrameworkMoniker: FrameworkConstants.CommonFrameworks.NetStandard20.ToString(),
-                        packageReferences: new[]
-                        {
-                            new VsReferenceItem("packageId", new VsReferenceProperties(new []
-                            {
-                                new VsReferenceProperty("Version", "foo")
-                            }))
-                        },
+                        packageReferences: emptyReferenceItems,
                         projectReferences: emptyReferenceItems,
                         packageDownloads: emptyReferenceItems,
                         frameworkReferences: emptyReferenceItems,
