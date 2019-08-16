@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using NuGet.Common;
@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
 {
     public abstract class PrimarySignature : Signature
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// A SignedCms object holding the signature and SignerInfo.
         /// </summary>
@@ -25,7 +25,9 @@ namespace NuGet.Packaging.Signing
         public SignatureContent SignatureContent { get; }
 
         public override string FriendlyName => Strings.PrimarySignatureFriendlyName;
+#endif
 
+#if IS_DESKTOP
         /// <summary>
         /// Save the signed cms signature to a stream.
         /// </summary>
@@ -102,7 +104,9 @@ namespace NuGet.Packaging.Signing
                 return Load(ms.ToArray());
             }
         }
+#endif
 
+#if IS_SIGNING_SUPPORTED
         public override byte[] GetSignatureValue()
         {
             using (var nativeCms = NativeCms.Decode(SignedCms.Encode()))
@@ -128,7 +132,9 @@ namespace NuGet.Packaging.Signing
             throw new SignatureException(NuGetLogCode.NU3011, Strings.InvalidPrimarySignature);
         }
 
+#endif
 
+#if IS_DESKTOP
         private static void VerifySigningCertificate(
             SignedCms signedCms,
             SignerInfo signerInfo,
@@ -146,7 +152,9 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
+#endif
 
+#if IS_SIGNING_SUPPORTED
         private static SignerInfo GetSignerInfo(SignedCms signedCms)
         {
             if (signedCms == null)
@@ -155,7 +163,9 @@ namespace NuGet.Packaging.Signing
             }
             return signedCms.SignerInfos[0];
         }
+#endif
 
+#if IS_DESKTOP
         private static SignedCms Decode(byte[] bytes)
         {
             try

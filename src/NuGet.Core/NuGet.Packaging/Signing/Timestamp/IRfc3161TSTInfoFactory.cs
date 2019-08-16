@@ -13,7 +13,9 @@ namespace NuGet.Packaging.Signing
             IRfc3161TimstampTokenInfo iRfc3161TSTInfo = null;
 #if IS_DESKTOP
             iRfc3161TSTInfo = new Rfc3161TimestampTokenInfoNet472Wrapper(bytes);
-#elif NETSTANDARD2_1
+#endif
+
+#if NETSTANDARD2_1
             iRfc3161TSTInfo = new Rfc3161TimestampTokenInfoNetstandard21Wrapper(bytes);
 #endif
             return iRfc3161TSTInfo;

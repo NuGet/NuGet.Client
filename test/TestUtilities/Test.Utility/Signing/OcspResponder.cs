@@ -49,7 +49,7 @@ namespace Test.Utility.Signing
             return new OcspResponder(certificateAuthority, options);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         public override void Respond(HttpListenerContext context)
         {
             if (context == null)

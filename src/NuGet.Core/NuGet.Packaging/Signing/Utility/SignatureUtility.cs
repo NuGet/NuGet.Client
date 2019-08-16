@@ -5,7 +5,7 @@ using System;
 using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
@@ -260,7 +260,9 @@ namespace NuGet.Packaging.Signing
                 signingSpecifications,
                 includeChain);
         }
+#endif
 
+#if IS_SIGNING_SUPPORTED
         public static bool HasRepositoryCountersignature(PrimarySignature primarySignature)
         {
             if (primarySignature == null)

@@ -15,7 +15,7 @@
     <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' OR '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netstandard2.1' OR '$(TargetFramework)' == '$(NETFXTargetFramework)' OR '$(TargetFramework)' == 'netcoreapp3.0'">
     <DefineConstants>$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
   </PropertyGroup>
 

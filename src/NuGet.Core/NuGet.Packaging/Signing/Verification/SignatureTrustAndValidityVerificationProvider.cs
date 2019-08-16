@@ -51,7 +51,7 @@ namespace NuGet.Packaging.Signing
             return Task.FromResult(result);
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private PackageVerificationResult Verify(
             PrimarySignature signature,
             SignedPackageVerifierSettings settings)

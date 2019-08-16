@@ -30,7 +30,7 @@ namespace NuGet.Packaging.Signing
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             // Uri.UriSchemeHttp and Uri.UriSchemeHttps are not available in netstandard 1.3
             if (!string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttp, StringComparison.Ordinal) &&
                 !string.Equals(timeStampServerUrl.Scheme, Uri.UriSchemeHttps, StringComparison.Ordinal))
