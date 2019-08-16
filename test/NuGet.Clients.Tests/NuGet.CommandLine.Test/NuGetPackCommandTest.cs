@@ -448,6 +448,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
                 Assert.True(File.Exists(symbolPath), symbolPath + " does not exist");
+            }
         }
 
         [Fact]
