@@ -186,7 +186,7 @@ namespace Dotnet.Integration.Test
                 }
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                var args = includeSymbols ? $"-o {workingDirectory} --include-symbols" : $"-o {workingDirectory}";
+                var args = includeSymbols ? $"-o {workingDirectory} --include-symbols -p:SymbolPackageFormat=symbols.nupkg" : $"-o {workingDirectory}";
                 msbuildFixture.PackProject(workingDirectory, projectName, args);
 
                 var nupkgPath = includeSymbols
@@ -2016,7 +2016,7 @@ namespace ClassLibrary
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName,
-                    $"--include-source /p:PackageOutputPath={workingDirectory}");
+                    $"--include-source -p:PackageOutputPath={workingDirectory} -p:SymbolPackageFormat=symbols.nupkg");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var symbolsNupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg");
