@@ -9,6 +9,10 @@ using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
 
+#if DEBUG
+using Microsoft.Build.Locator;
+#endif
+
 namespace NuGet.CommandLine.XPlat
 {
     public class Program
@@ -30,6 +34,8 @@ namespace NuGet.CommandLine.XPlat
         public static int MainInternal(string[] args, CommandOutputLogger log)
         {
 #if DEBUG
+            MSBuildLocator.RegisterDefaults();
+
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
             if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
