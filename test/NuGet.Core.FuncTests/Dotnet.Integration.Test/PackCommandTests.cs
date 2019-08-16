@@ -75,6 +75,23 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackNewDefaultProject_DefaultSymbolsPackageFormat()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols -o {workingDirectory}");
+
+                var symbolPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.snupkg");
+                Assert.True(File.Exists(symbolPath), "The output .snupkg is not in the expected place");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeSymbolsWithSnupkg()
         {
             using (var testDirectory = TestDirectory.Create())

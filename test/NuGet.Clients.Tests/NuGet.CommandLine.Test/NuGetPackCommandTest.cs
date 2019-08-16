@@ -404,6 +404,53 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_SymbolPackageDefaultFormat()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.dll",
+                    string.Empty);
+
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "lib", "uap10.0"),
+                    "packageA.pdb",
+                    string.Empty);
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec -symbols",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var symbolPath = Path.Combine(workingDirectory, "packageA.1.0.0.snupkg");
+                Assert.True(File.Exists(symbolPath), symbolPath + " does not exist");
+        }
+
+        [Fact]
         public void PackCommand_SymbolPackageWithNuspecFile()
         {
             var nugetexe = Util.GetNuGetExePath();
