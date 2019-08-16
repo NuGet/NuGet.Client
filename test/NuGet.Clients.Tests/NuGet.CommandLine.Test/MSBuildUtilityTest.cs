@@ -236,6 +236,7 @@ namespace NuGet.CommandLine.Test
         [InlineData('<')]
         [InlineData('>')]
         [InlineData('|')]
+        [InlineData('/')]
         public void GetMsbuildDirectoryFromPath_PATHENVWithInvalidChars_ShouldPass(char invalidChar)
         {
             using (var vsPath = TestDirectory.Create())
