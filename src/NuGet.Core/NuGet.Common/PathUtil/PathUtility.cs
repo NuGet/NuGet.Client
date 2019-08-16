@@ -407,14 +407,6 @@ namespace NuGet.Common
                         StringComparison.OrdinalIgnoreCase));
         }
 
-        /// <summary>
-        /// Returns a new path by trimming invalid chars from given path
-        /// </summary>
-        public static string RemoveInvalidChars(string path)
-        {
-            return path.Trim(Path.GetInvalidPathChars());
-        }
-
         public static bool IsFileSystemCaseInsensitive
         {
             get { return _isFileSystemCaseInsensitive.Value; }
