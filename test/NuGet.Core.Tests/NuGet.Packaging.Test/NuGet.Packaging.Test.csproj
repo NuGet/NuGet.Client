@@ -20,6 +20,7 @@
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.6.0-preview8.19405.3" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
