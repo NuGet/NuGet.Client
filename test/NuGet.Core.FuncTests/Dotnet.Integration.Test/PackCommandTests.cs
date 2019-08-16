@@ -4123,7 +4123,7 @@ namespace ClassLibrary
             projectBuilder
                 .WithProjectName("test")
                 .WithPackageIcon("nested\\icon.jpg")
-                .WithItem("None", "folder\\**", "");
+                .WithItem("None", "folder\\**", string.Empty);
 
             using (var srcDir = testDirBuilder.Build())
             {
@@ -4140,13 +4140,13 @@ namespace ClassLibrary
             var projectBuilder = ProjectFileBuilder.Create();
 
             testDirBuilder
-                .WithFile("test\\icon.jpg", 10); ;
+                .WithFile("test\\icon.jpg", 10);
 
             projectBuilder
                 .WithProjectName("test")
                 .WithPackageIcon("icon.jpg")
                 .WithPackageIconUrl("http://test.icon")
-                .WithItem("None", "icon.jpg", "");
+                .WithItem("None", "icon.jpg", string.Empty);
 
             using (var srcDir = testDirBuilder.Build())
             {
@@ -4155,6 +4155,71 @@ namespace ClassLibrary
 
                 ValidatePackIcon(projectBuilder);
                 Assert.Contains(NuGetLogCode.NU5049.ToString(), result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIcon_MissingFile_Fails()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("icon.jpg");
+
+            using (var srcDir = testDirBuilder.Build())
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
+
+                Assert.NotEqual(0, result.ExitCode);
+                Assert.Contains(NuGetLogCode.NU5046.ToString(), result.Output);
+            }
+        }
+
+        //[Skip]
+        [PlatformFact(Platform.Windows, Skip = "todo: fix failign test")]
+        public void PackCommand_PackageIcon_SnupkgPackage_Suceeds()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("icon.jpg")
+                .WithItem("None", "icon.jpg", "icon.jpg");
+
+            using (var srcDir = testDirBuilder.Build())
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result1 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                var result2 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=snupkg");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackageIcon_SymbolsPackage_Suceeds()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+
+            testDirBuilder
+                .WithFile("test\\icon.jpg", 10);
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIcon("icon.jpg")
+                .WithItem("None", "icon.jpg", "icon.jpg");
+
+            using (var srcDir = testDirBuilder.Build())
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result1 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+                var result2 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=symbols.nupkg");                
             }
         }
     }
