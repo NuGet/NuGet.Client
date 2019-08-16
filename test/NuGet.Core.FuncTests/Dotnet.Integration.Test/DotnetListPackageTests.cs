@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -379,7 +380,7 @@ namespace Dotnet.Integration.Test
 
                 foreach (var nupkg in Directory.EnumerateDirectories(pathContext.PackageSource))
                 {
-                    Directory.Delete(nupkg, true);
+                    Directory.Delete(nupkg, recursive: true);
                 }
 
                 // Act
@@ -387,15 +388,7 @@ namespace Dotnet.Integration.Test
                     $"list {projectA.ProjectPath} package --outdated");
 
                 // Assert
-                var lines = new List<string>();
-                using (var stringReader = new StringReader(listResult.AllOutput))
-                {
-                    string line;
-                    while ((line = stringReader.ReadLine())!= null)
-                    {
-                        lines.Add(line);
-                    }
-                }
+                var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
                 Assert.True(lines.Any(l => l.Contains("packageX") && l.Contains("Not found at the sources")), "Line containing 'packageX' and 'Not found at the sources' not found: " + listResult.AllOutput);
             }
         }
