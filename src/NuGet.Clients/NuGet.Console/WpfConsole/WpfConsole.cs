@@ -37,7 +37,6 @@ namespace NuGetConsole.Implementation.Console
     {
         private readonly IPrivateConsoleStatus _consoleStatus;
         private IVsTextBuffer _bufferAdapter;
-        private int _consoleWidth = -1;
         private IContentType _contentType;
         private int _currentHistoryInputIndex;
         private IPrivateConsoleDispatcher _dispatcher;
@@ -115,11 +114,11 @@ namespace NuGetConsole.Implementation.Console
             {
                 if (_contentType == null)
                 {
-                    _contentType = Factory.ContentTypeRegistryService.GetContentType(this.ContentTypeName);
+                    _contentType = Factory.ContentTypeRegistryService.GetContentType(ContentTypeName);
                     if (_contentType == null)
                     {
                         _contentType = Factory.ContentTypeRegistryService.AddContentType(
-                            this.ContentTypeName, new[] { "text" });
+                            ContentTypeName, new[] { "text" });
                     }
                 }
 
@@ -232,7 +231,7 @@ namespace NuGetConsole.Implementation.Console
 
         public IWpfConsole MarshaledConsole
         {
-            get { return this.Marshaler; }
+            get { return Marshaler; }
         }
 
         public IHost Host
@@ -248,33 +247,7 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        public int ConsoleWidth
-        {
-            get
-            {
-                if (_consoleWidth < 0)
-                {
-                    ITextViewMargin leftMargin = WpfTextViewHost.GetTextViewMargin(PredefinedMarginNames.Left);
-                    ITextViewMargin rightMargin = WpfTextViewHost.GetTextViewMargin(PredefinedMarginNames.Right);
-
-                    double marginSize = 0.0;
-                    if (leftMargin != null
-                        && leftMargin.Enabled)
-                    {
-                        marginSize += leftMargin.MarginSize;
-                    }
-                    if (rightMargin != null
-                        && rightMargin.Enabled)
-                    {
-                        marginSize += rightMargin.MarginSize;
-                    }
-
-                    var n = (int)((WpfTextView.ViewportWidth - marginSize) / WpfTextView.FormattedLineSource.ColumnWidth);
-                    _consoleWidth = Math.Max(80, n); // Larger of 80 or n
-                }
-                return _consoleWidth;
-            }
-        }
+        public int ConsoleWidth => int.MaxValue;
 
         private InputHistory InputHistory
         {
@@ -334,10 +307,6 @@ namespace NuGetConsole.Implementation.Console
                     IEditorOptions editorOptions = Factory.EditorOptionsFactoryService.GetOptions(WpfTextView);
                     editorOptions.SetOptionValue(DefaultTextViewOptions.DragDropEditingId, false);
                     editorOptions.SetOptionValue(DefaultTextViewOptions.WordWrapStyleId, WordWrapStyles.WordWrap);
-
-                    // Reset console width when needed
-                    WpfTextView.ViewportWidthChanged += (sender, e) => ResetConsoleWidth();
-                    WpfTextView.ZoomLevelChanged += (sender, e) => ResetConsoleWidth();
 
                     // Create my Command Filter
                     new WpfConsoleKeyProcessor(this);
@@ -456,11 +425,6 @@ namespace NuGetConsole.Implementation.Console
             }
 
             return null;
-        }
-
-        private void ResetConsoleWidth()
-        {
-            _consoleWidth = -1;
         }
 
         public void Write(string text)
@@ -630,7 +594,7 @@ namespace NuGetConsole.Implementation.Console
             VsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
-                String.Empty,
+                string.Empty,
                 (uint)100,
                 (uint)100);
         }
