@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,13 @@ namespace NuGetConsole
         /// Get the console UIElement to be used as Content for a VS tool window.
         /// </summary>
         object Content { get; }
+
+        /// <summary>
+        /// Sets the console width.  Console width will not change again without calling
+        /// this method with a new value.
+        /// </summary>
+        /// <param name="consoleWidth">The new console width in characters.</param>
+        void SetConsoleWidth(int consoleWidth);
 
         /// <summary>
         /// Tells the Wpf console to update its state when command is executing.
