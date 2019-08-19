@@ -22,9 +22,16 @@ namespace NuGet.Protocol.Core.Types
 
         public class ClonedPackageSearchMetadata : IPackageSearchMetadata
         {
+            private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
+                AsyncLazy.New(Enumerable.Empty<VersionInfo>());
+
+            private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
+                AsyncLazy.New((PackageDeprecationMetadata)null);
+
             public ClonedPackageSearchMetadata()
             {
-                LazyDeprecationFactory = AsyncLazy.New((PackageDeprecationMetadata)null);
+                LazyVersionsFactory = LazyEmptyVersionInfo;
+                LazyDeprecationFactory = LazyNullDeprecationMetadata;
             }
 
             public string Authors { get; set; }
@@ -46,11 +53,11 @@ namespace NuGet.Protocol.Core.Types
             public bool PrefixReserved { get; set; }
             public LicenseMetadata LicenseMetadata { get; set; }
 
-            internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
-            public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await LazyDeprecationFactory;
-
             internal AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
             public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await LazyVersionsFactory;
+
+            internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
+            public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await LazyDeprecationFactory;
 
             public bool IsListed { get; set; }
         }

@@ -22,6 +22,18 @@ namespace NuGet.PackageManagement.UI
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
     public class PackageItemListViewModel : INotifyPropertyChanged
     {
+        private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
+            AsyncLazy.New(Enumerable.Empty<VersionInfo>());
+
+        private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadata)null);
+
+        public PackageItemListViewModel()
+        {
+            Versions = LazyEmptyVersionInfo;
+            DeprecationMetadata = LazyNullDeprecationMetadata;
+        }
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
