@@ -247,7 +247,10 @@ namespace NuGetConsole.Implementation.Console
             }
         }
 
-        public int ConsoleWidth => int.MaxValue;
+        // This is not a magic number.
+        // The number is intended to be large enough to make hard line breaks in object formatting rare,
+        // but not so large as to become a problem.
+        public int ConsoleWidth => 256;
 
         private InputHistory InputHistory
         {
