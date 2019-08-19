@@ -28,12 +28,6 @@ namespace NuGet.Protocol.Core.Types
             private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
                 AsyncLazy.New((PackageDeprecationMetadata)null);
 
-            public ClonedPackageSearchMetadata()
-            {
-                LazyVersionsFactory = LazyEmptyVersionInfo;
-                LazyDeprecationFactory = LazyNullDeprecationMetadata;
-            }
-
             public string Authors { get; set; }
             public IEnumerable<PackageDependencyGroup> DependencySets { get; set; }
             public string Description { get; set; }
@@ -54,10 +48,10 @@ namespace NuGet.Protocol.Core.Types
             public LicenseMetadata LicenseMetadata { get; set; }
 
             internal AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
-            public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await LazyVersionsFactory;
+            public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await (LazyVersionsFactory ?? LazyEmptyVersionInfo);
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
-            public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await LazyDeprecationFactory;
+            public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
 
             public bool IsListed { get; set; }
         }

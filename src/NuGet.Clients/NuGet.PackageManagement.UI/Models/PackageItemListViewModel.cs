@@ -28,12 +28,6 @@ namespace NuGet.PackageManagement.UI
         private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
             AsyncLazy.New((PackageDeprecationMetadata)null);
 
-        public PackageItemListViewModel()
-        {
-            Versions = LazyEmptyVersionInfo;
-            DeprecationMetadata = LazyNullDeprecationMetadata;
-        }
-
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
@@ -291,10 +285,10 @@ namespace NuGet.PackageManagement.UI
         public Uri IconUrl { get; set; }
 
         public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Versions.Value;
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
         public Lazy<Task<PackageDeprecationMetadata>> DeprecationMetadata { private get; set; }
-        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => DeprecationMetadata.Value;
+        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
