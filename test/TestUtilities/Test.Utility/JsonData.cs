@@ -4782,5 +4782,56 @@ namespace Test.Utility
         ]
       }";
         #endregion
+
+        #region PackageRegistrationCatalogEntryWithDeprecationMetadata
+        public const string PackageRegistrationCatalogEntryWithDeprecationMetadata = @"{
+    ""@id"": ""https://apidev.nugettest.org/v3/catalog0/data/2019.06.25.23.44.13/afine.0.0.0.json"",
+    ""@type"": ""PackageDetails"",
+    ""authors"": ""scottbom"",
+    ""dependencyGroups"": [
+        {
+            ""@id"": ""https://apidev.nugettest.org/v3/catalog0/data/2019.06.25.23.44.13/afine.0.0.0.json#dependencygroup"",
+            ""@type"": ""PackageDependencyGroup"",
+            ""dependencies"": [
+                {
+                    ""@id"": ""https://apidev.nugettest.org/v3/catalog0/data/2019.06.25.23.44.13/afine.0.0.0.json#dependencygroup/sampledependency"",
+                    ""@type"": ""PackageDependency"",
+                    ""id"": ""SampleDependency"",
+                    ""range"": ""[1.0.0, )"",
+                    ""registration"": ""https://apidev.nugettest.org/v3-registration3-gz-semver2/sampledependency/index.json""
+                }
+            ]
+        }
+    ],
+    ""deprecation"": {
+        ""@id"": ""https://apidev.nugettest.org/v3/catalog0/data/2019.06.25.23.44.13/afine.0.0.0.json#deprecation"",
+        ""@type"": ""deprecation"",
+        ""message"": ""this is a message"",
+        ""reasons"": [
+            ""CriticalBugs"",
+            ""Legacy""
+        ]
+    },
+    ""description"": ""A new package description"",
+    ""iconUrl"": ""http://icon_url_here_or_delete_this_line/"",
+    ""id"": ""afine"",
+    ""language"": """",
+    ""licenseExpression"": """",
+    ""licenseUrl"": ""http://license_url_here_or_delete_this_line/"",
+    ""listed"": true,
+    ""minClientVersion"": """",
+    ""packageContent"": ""https://apidev.nugettest.org/v3-flatcontainer/afine/0.0.0/afine.0.0.0.nupkg"",
+    ""projectUrl"": ""http://project_url_here_or_delete_this_line/"",
+    ""published"": ""2016-08-01T22:46:26.333+00:00"",
+    ""requireLicenseAcceptance"": false,
+    ""summary"": """",
+    ""tags"": [
+        ""Tag1"",
+        ""Tag2""
+    ],
+    ""title"": """",
+    ""version"": ""0.0.0""
+}";
+        #endregion
     }
 }
