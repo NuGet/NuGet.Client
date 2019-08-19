@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
+using NuGet.Packaging.Rules;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;

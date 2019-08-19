@@ -739,13 +739,12 @@ namespace NuGet.Commands
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
                 {
-                    /* 
-                    var iconRuletset = new IPackageRule[] {
+                    var iconRuleSet = new IPackageRule[] {
                         new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
-                        new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning)
+                        new IconAndIconUrlUsageWarning(AnalysisResources.PackageIconUrlAndPackageIconWarning),
                     };
-                    */
-                    AnalyzePackage(packageArchiveReader);
+                    
+                    AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuleSet));
                 }
 
                 // If we're excluding symbols then do nothing else

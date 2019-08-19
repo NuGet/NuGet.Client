@@ -287,6 +287,24 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Both &apos;PackageIconUrl&apos; and &apos;PackageIcon&apos; elements were detected. Consider removing the &apos;PackageIconUrl&apos; element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl..
+        /// </summary>
+        public static string PackageIconUrlAndPackageIconWarning {
+            get {
+                return ResourceManager.GetString("PackageIconUrlAndPackageIconWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos; element will be deprecated. Consider using the &apos;PackageIcon&apos; element instead..
+        /// </summary>
+        public static string PackageIconUrlDeprecationWarning {
+            get {
+                return ResourceManager.GetString("PackageIconUrlDeprecationWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to An empty folder placeholder file &apos;{0}&apos; is in a non-empty folder and should be removed..
         /// </summary>
         public static string PlaceholderFileInPackageWarning {
