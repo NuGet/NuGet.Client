@@ -121,6 +121,11 @@ namespace NuGet.Console.TestContract
             }
         }
 
+        public void SetConsoleWidth(int consoleWidth)
+        {
+            _wpfConsole.SetConsoleWidth(consoleWidth);
+        }
+
         public void WaitForActionComplete(Action action, TimeSpan timeout)
         {
             if (!EnsureInitilizeConsole())

@@ -68,13 +68,18 @@ namespace NuGet.Tests.Apex
         {
             XunitLogger.LogInformation("GetConsole");
             VisualStudio.ClearWindows();
-            var nugetTestService = GetNuGetTestService();
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
 
             XunitLogger.LogInformation("EnsurePackageManagerConsoleIsOpen");
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
 
             XunitLogger.LogInformation("GetPackageManagerConsole");
             _console = nugetTestService.GetPackageManagerConsole(project.Name);
+
+            // This is not a magic number.
+            // It is intended to eliminate unexpected hard line breaks in PMC output which might foil validation,
+            // but not so large as to create memory problems.
+            _console.SetConsoleWidth(consoleWidth: 1024);
 
             nugetTestService.WaitForAutoRestore();
 
