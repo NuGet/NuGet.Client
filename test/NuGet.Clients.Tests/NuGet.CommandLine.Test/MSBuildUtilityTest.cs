@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text;
 
 namespace NuGet.CommandLine.Test
 {
@@ -236,7 +237,7 @@ namespace NuGet.CommandLine.Test
         [InlineData('<')]
         [InlineData('>')]
         [InlineData('|')]
-        public void GetMsbuildDirectoryFromPath_PATHENVWithInvalidChars_ShouldPass(char invalidChar)
+        public void GetMsbuildDirectoryFromPath_PATHENVWithInvalidChars_Succeeds(char invalidChar)
         {
             using (var vsPath = TestDirectory.Create())
             {
@@ -256,9 +257,15 @@ namespace NuGet.CommandLine.Test
                 }
 
                 var pathValue = Environment.GetEnvironmentVariable("PATH");
-                var newPathValue = invalidChar + msBuild159BinPath + invalidChar + ";" + pathValue;
 
-                Environment.SetEnvironmentVariable("PATH", newPathValue);
+                var newPathValue = new StringBuilder();
+                newPathValue.Append(invalidChar);
+                newPathValue.Append(msBuild159BinPath);
+                newPathValue.Append(invalidChar);
+                newPathValue.Append(';');
+                newPathValue.Append(pathValue);
+                
+                Environment.SetEnvironmentVariable("PATH", newPathValue.ToString());
 
                 // Act;
                 var toolset = MsBuildUtility.GetMsBuildToolset(userVersion: null, console: null);
