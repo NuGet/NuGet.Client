@@ -12,7 +12,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
-using NuGet.Packaging.Rules;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -4022,6 +4021,7 @@ namespace ClassLibrary
             }
         }
 
+<<<<<<< HEAD
         public void ValidatePackIcon(ProjectFileBuilder projectBuilder)
         {
             Assert.True(File.Exists(projectBuilder.ProjectFilepath), "No project was produced");
@@ -4222,5 +4222,7 @@ namespace ClassLibrary
                 var result2 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=symbols.nupkg");                
             }
         }
+=======
+>>>>>>> d2183c745... Reversing dotnet.exe changes
     }
 }
