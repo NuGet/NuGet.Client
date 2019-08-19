@@ -642,7 +642,12 @@ namespace NuGet.Commands
 
             if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                AnalyzePackage(packageArchiveReader);
+                var iconRuletset = new IPackageRule[] {
+                    new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
+                    new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning)
+                };
+                
+                AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuletset));
             }
 
             return packageArchiveReader;
@@ -734,6 +739,12 @@ namespace NuGet.Commands
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
                 {
+                    /* 
+                    var iconRuletset = new IPackageRule[] {
+                        new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
+                        new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning)
+                    };
+                    */
                     AnalyzePackage(packageArchiveReader);
                 }
 
@@ -926,7 +937,11 @@ namespace NuGet.Commands
 
         internal void AnalyzePackage(PackageArchiveReader package)
         {
-            IEnumerable<IPackageRule> packageRules = Rules;
+            AnalyzePackage(package, Rules);
+        }
+
+        internal void AnalyzePackage(PackageArchiveReader package, IEnumerable<IPackageRule> packageRules)
+        {
             IList<PackagingLogMessage> issues = new List<PackagingLogMessage>();
 
             foreach (var rule in packageRules)
