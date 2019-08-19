@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
@@ -800,11 +801,9 @@ namespace NuGet.PackageManagement.UI
                 Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
                 // Update installed tab warning icon
-                var installedPackages = await loadContext.GetInstalledPackagesAsync();
-                var installedPackageDeprecationMetadata = await Task.WhenAll(
-                    installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, refreshCts.Token)));
+                var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
+                    loadContext, metadataProvider, refreshCts.Token);
 
-                var installedDeprecatedPackagesCount = installedPackageDeprecationMetadata.Count(d => d != null);
                 var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
                 _topPanel._labelInstalled.ShowWarning = hasInstalledDeprecatedPackages;
                 _topPanel._labelInstalled.WarningToolTip = hasInstalledDeprecatedPackages
@@ -824,6 +823,18 @@ namespace NuGet.PackageManagement.UI
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             })
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
+        }
+
+        private static async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IPackageMetadataProvider metadataProvider, CancellationToken token)
+        {
+            var installedPackages = await loadContext.GetInstalledPackagesAsync();
+
+            // Switch off the UI thread before fetching deprecation metadata.
+            await TaskScheduler.Default;
+            var installedPackageDeprecationMetadata = await Task.WhenAll(
+                installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, token)));
+
+            return installedPackageDeprecationMetadata.Count(d => d != null);
         }
 
         private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(
