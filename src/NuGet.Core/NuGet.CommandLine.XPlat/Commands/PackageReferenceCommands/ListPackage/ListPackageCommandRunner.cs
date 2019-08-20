@@ -436,7 +436,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(topLevelPackage.Name, StringComparison.OrdinalIgnoreCase)).First();
 
-                    if (!listPackageArgs.IncludeDeprecated)
+                    if (!listPackageArgs.IncludeDeprecated && matchingPackage.Value.Count > 0)
                     {
                         var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, topLevelPackage, listPackageArgs)).Max(i => i.Identity.Version);
 
@@ -459,7 +459,7 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var matchingPackage = packagesVersionsDict.Where(p => p.Key.Equals(transitivePackage.Name, StringComparison.OrdinalIgnoreCase)).First();
 
-                    if (!listPackageArgs.IncludeDeprecated)
+                    if (!listPackageArgs.IncludeDeprecated && matchingPackage.Value.Count > 0)
                     {
                         var latestVersion = matchingPackage.Value.Where(newVersion => MeetsConstraints(newVersion.Identity.Version, transitivePackage, listPackageArgs)).Max(i => i.Identity.Version);
 
