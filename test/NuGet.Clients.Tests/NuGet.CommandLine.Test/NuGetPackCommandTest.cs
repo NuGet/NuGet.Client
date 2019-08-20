@@ -5652,7 +5652,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_IconAndIconUrl_Warn_Suceeds()
+        public void PackCommand_PackIcon_IconAndIconUrl_Suceeds()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5666,9 +5666,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("icon.jpg", 6)
                 .WithNuspec(nuspecBuilder);
 
-            var warnMessage = $"WARNING: {NuGetLogCode.NU5049.ToString()}: {AnalysisResources.IconUrlAndIconWarning}";
-
-            TestPackIconSuccess(testDirBuilder, message: warnMessage);
+            TestPackIconSuccess(testDirBuilder);
         }
 
         [Fact]

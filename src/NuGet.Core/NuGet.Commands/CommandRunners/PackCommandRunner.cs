@@ -644,7 +644,6 @@ namespace NuGet.Commands
             {
                 var iconRuletset = new IPackageRule[] {
                     new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                    new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning)
                 };
                 
                 AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuletset));
@@ -744,13 +743,11 @@ namespace NuGet.Commands
                     if (_packArgs.PackTargetArgs != null) {
                         iconRuleSet = new IPackageRule[] {
                             new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
-                            new IconAndIconUrlUsageWarning(AnalysisResources.PackageIconUrlAndPackageIconWarning),
                         };
                     }
                     else {
                         iconRuleSet = new IPackageRule[] {
                             new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                            new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning),
                         };
                     }
                     

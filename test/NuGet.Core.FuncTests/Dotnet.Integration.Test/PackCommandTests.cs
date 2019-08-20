@@ -4120,7 +4120,7 @@ namespace ClassLibrary
         }
 
         [PlatformFact(Platform.Windows)]
-        public void PackCommand_PackageIcon_PackageIconUrl_Warns_Suceeds()
+        public void PackCommand_PackageIcon_PackageIconUrl_Suceeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var projectBuilder = ProjectFileBuilder.Create();
@@ -4140,7 +4140,6 @@ namespace ClassLibrary
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
 
                 ValidatePackIcon(projectBuilder);
-                Assert.Contains(NuGetLogCode.NU5049.ToString(), result.Output);
             }
         }
 

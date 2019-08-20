@@ -156,9 +156,6 @@
   <data name="FilePathTooLongWarning" xml:space="preserve">
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>
   </data>
-  <data name="IconUrlAndIconWarning" xml:space="preserve">
-    <value>Both 'iconUrl' and 'icon' elements were detected. Consider removing the 'iconUrl' element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl.</value>
-  </data>
   <data name="IconUrlDeprecationWarning" xml:space="preserve">
     <value>The 'iconUrl' element will be deprecated. Consider using the 'icon' element instead.</value>
   </data>
@@ -200,9 +197,6 @@
   <data name="NoRefOrLibFolderInPackage" xml:space="preserve">
     <value>This package does not contain a lib/ or ref/ folder, and will therefore be treated as compatible for all frameworks. Since framework specific files were found under the build/ directory for {0}, consider creating the following empty files to correctly narrow the compatibility of the package:
 {1}</value>
-  </data>
-  <data name="PackageIconUrlAndPackageIconWarning" xml:space="preserve">
-    <value>Both 'PackageIconUrl' and 'PackageIcon' elements were detected. Consider removing the 'PackageIconUrl' element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl.</value>
   </data>
   <data name="PackageIconUrlDeprecationWarning" xml:space="preserve">
     <value>The 'PackageIconUrl' element will be deprecated. Consider using the 'PackageIcon' element instead.</value>
