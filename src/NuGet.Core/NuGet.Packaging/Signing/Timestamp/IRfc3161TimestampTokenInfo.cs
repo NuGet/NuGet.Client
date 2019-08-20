@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Signing
 {
-    public interface IRfc3161TimstampTokenInfo
+    internal interface IRfc3161TimestampTokenInfo
     {
 #if IS_SIGNING_SUPPORTED
         string PolicyId { get; }
@@ -19,6 +19,7 @@ namespace NuGet.Packaging.Signing
         Oid HashAlgorithmId { get; }
 
         bool HasMessageHash(byte[] hash);
+
 #endif
     }
 }

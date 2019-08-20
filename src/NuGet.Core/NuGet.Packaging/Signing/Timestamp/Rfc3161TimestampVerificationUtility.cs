@@ -34,19 +34,19 @@ namespace NuGet.Packaging.Signing
 
         internal static bool TryReadTSTInfoFromSignedCms(
             SignedCms timestampCms,
-            out IRfc3161TimstampTokenInfo tstInfo)
+            out IRfc3161TimestampTokenInfo tstInfo)
         {
             tstInfo = null;
             if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType))
             {
-                tstInfo = IRfc3161TSTFactory.CreateTSTInfo(timestampCms.ContentInfo.Content);
+                tstInfo = IRfc3161TimestampTokenInfoFactory.CreateIRfc3161TimestampTokenInfo(timestampCms.ContentInfo.Content);
                 return true;
             }
             // return false if the signedCms object does not contain the right ContentType
             return false;
         }
 
-        internal static double GetAccuracyInMilliseconds(IRfc3161TimstampTokenInfo tstInfo)
+        internal static double GetAccuracyInMilliseconds(IRfc3161TimestampTokenInfo tstInfo)
         {
             double accuracyInMilliseconds;
 

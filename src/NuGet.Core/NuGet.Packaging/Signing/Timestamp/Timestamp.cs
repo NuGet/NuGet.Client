@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamp token info for this timestamp.
         /// </summary>
-        internal IRfc3161TimstampTokenInfo TstInfo { get; }
+        internal IRfc3161TimestampTokenInfo TstInfo { get; }
 
         /// <summary>
         /// Default constructor. Limits are set to current time.
