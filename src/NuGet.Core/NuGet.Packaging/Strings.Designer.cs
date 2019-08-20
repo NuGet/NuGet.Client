@@ -223,6 +223,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The package is missing the required nuspec file. .
+        /// </summary>
+        internal static string Error_MissingNuspecFile {
+            get {
+                return ResourceManager.GetString("Error_MissingNuspecFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, no trusted signers were specified..
         /// </summary>
         internal static string Error_NoClientAllowList {
@@ -727,6 +736,15 @@ namespace NuGet.Packaging {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path: {0}.
+        /// </summary>
+        internal static string Message_Path {
+            get {
+                return ResourceManager.GetString("Message_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to MinClientVersion already exists in packages.config.
         /// </summary>
         internal static string MinClientVersionAlreadyExist {
@@ -741,15 +759,6 @@ namespace NuGet.Packaging {
         internal static string MissingMetadataNode {
             get {
                 return ResourceManager.GetString("MissingMetadataNode", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Nuspec file does not exist in package..
-        /// </summary>
-        internal static string MissingNuspec {
-            get {
-                return ResourceManager.GetString("MissingNuspec", resourceCulture);
             }
         }
         

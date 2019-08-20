@@ -1716,8 +1716,137 @@ namespace NuGet.SolutionRestoreManager.Test
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
 
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo2)null, CancellationToken.None));
+        }
 
+        [Fact]
+        public async Task NominateProjectAsync_InvalidTargetFrameworkMoniker_Succeeds()
+        {
+            // Arrange
+            var cache = new Mock<IProjectSystemCache>();
+            cache.Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
 
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
+                    It.IsAny<SolutionRestoreRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(false)); // framework is invalid, restore fails
+
+            var logger = new Mock<ILogger>();
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
+                new VsTargetFrameworks2(new []
+                {
+                    new VsTargetFrameworkInfo2(
+                        targetFrameworkMoniker: "_,Version=2.0",
+                        packageReferences: emptyReferenceItems,
+                        projectReferences: emptyReferenceItems,
+                        packageDownloads: emptyReferenceItems,
+                        frameworkReferences: emptyReferenceItems,
+                        projectProperties: Array.Empty<IVsProjectProperty>())
+                }));
+
+            // Act
+            var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
+
+            // Assert
+            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the TFM is invalid.
+            Assert.False(result);
+            // https://github.com/NuGet/Home/issues/7717
+            logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains(nameof(FrameworkException)))), Times.Once);
+            // restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_InvalidDependencyVersion_Succeeds()
+        {
+            // Arrange
+            var cache = new Mock<IProjectSystemCache>();
+            cache.Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
+
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
+                    It.IsAny<SolutionRestoreRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(false)); // version is invalid, restore fails
+
+            var logger = new Mock<ILogger>();
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
+                new VsTargetFrameworks2(new[]
+                {
+                    new VsTargetFrameworkInfo2(
+                        targetFrameworkMoniker: FrameworkConstants.CommonFrameworks.NetStandard20.ToString(),
+                        packageReferences: new[]
+                        {
+                            new VsReferenceItem("packageId", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "foo")
+                            }))
+                        },
+                        projectReferences: emptyReferenceItems,
+                        packageDownloads: emptyReferenceItems,
+                        frameworkReferences: emptyReferenceItems,
+                        projectProperties: Array.Empty<IVsProjectProperty>())
+                }));
+
+            // Act
+            var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
+
+            // Assert
+            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the version string is invalid.
+            Assert.False(result);
+            // https://github.com/NuGet/Home/issues/7717
+            logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains("'foo' is not a valid version string"))), Times.Once);
+            // restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task NominateProjectAsync_CancelledToken_ThrowsOperationCanceledException()
+        {
+            // Arrange
+            var cache = new Mock<IProjectSystemCache>();
+            cache.Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>()))
+                .Returns(true);
+
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
+                    It.IsAny<SolutionRestoreRequest>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromException<bool>(new OperationCanceledException()));
+
+            var logger = new Mock<ILogger>();
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
+                new VsTargetFrameworks2(new[]
+                {
+                    new VsTargetFrameworkInfo2(
+                        targetFrameworkMoniker: FrameworkConstants.CommonFrameworks.NetStandard20.ToString(),
+                        packageReferences: emptyReferenceItems,
+                        projectReferences: emptyReferenceItems,
+                        packageDownloads: emptyReferenceItems,
+                        frameworkReferences: emptyReferenceItems,
+                        projectProperties: Array.Empty<IVsProjectProperty>())
+                }));
+
+            // Act & Assert
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None));
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(

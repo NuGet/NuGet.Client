@@ -197,7 +197,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [NuGetWpfTheory]
+        [NuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/8469")]
         [MemberData(nameof(GetNetCoreTemplates))]
         public async Task NetCoreTransitivePackageReferenceLimitAsync(ProjectTemplate projectTemplate)
         {

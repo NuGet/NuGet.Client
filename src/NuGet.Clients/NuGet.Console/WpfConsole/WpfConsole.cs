@@ -38,6 +38,7 @@ namespace NuGetConsole.Implementation.Console
         private readonly IPrivateConsoleStatus _consoleStatus;
         private IVsTextBuffer _bufferAdapter;
         private int _consoleWidth = -1;
+        private bool _isConsoleWidthExplicitlySet;
         private IContentType _contentType;
         private int _currentHistoryInputIndex;
         private IPrivateConsoleDispatcher _dispatcher;
@@ -115,11 +116,11 @@ namespace NuGetConsole.Implementation.Console
             {
                 if (_contentType == null)
                 {
-                    _contentType = Factory.ContentTypeRegistryService.GetContentType(this.ContentTypeName);
+                    _contentType = Factory.ContentTypeRegistryService.GetContentType(ContentTypeName);
                     if (_contentType == null)
                     {
                         _contentType = Factory.ContentTypeRegistryService.AddContentType(
-                            this.ContentTypeName, new[] { "text" });
+                            ContentTypeName, new[] { "text" });
                     }
                 }
 
@@ -232,7 +233,7 @@ namespace NuGetConsole.Implementation.Console
 
         public IWpfConsole MarshaledConsole
         {
-            get { return this.Marshaler; }
+            get { return Marshaler; }
         }
 
         public IHost Host
@@ -460,7 +461,16 @@ namespace NuGetConsole.Implementation.Console
 
         private void ResetConsoleWidth()
         {
-            _consoleWidth = -1;
+            if (!_isConsoleWidthExplicitlySet)
+            {
+                _consoleWidth = -1;
+            }
+        }
+
+        public void SetConsoleWidth(int consoleWidth)
+        {
+            _consoleWidth = consoleWidth;
+            _isConsoleWidthExplicitlySet = true;
         }
 
         public void Write(string text)
@@ -630,7 +640,7 @@ namespace NuGetConsole.Implementation.Console
             VsStatusBar.Progress(
                 ref _pdwCookieForStatusBar,
                 0 /* completed */,
-                String.Empty,
+                string.Empty,
                 (uint)100,
                 (uint)100);
         }
@@ -814,6 +824,11 @@ namespace NuGetConsole.Implementation.Console
             public void Clear()
             {
                 Invoke(_impl.Clear);
+            }
+
+            public void SetConsoleWidth(int consoleWidth)
+            {
+                Invoke(() => _impl.SetConsoleWidth(consoleWidth));
             }
 
             public void SetExecutionMode(bool isExecuting)

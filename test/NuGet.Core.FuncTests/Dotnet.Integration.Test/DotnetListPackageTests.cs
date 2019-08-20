@@ -1,8 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Packaging;
@@ -299,6 +302,94 @@ namespace Dotnet.Integration.Test
 
                 Assert.True(ContainsIgnoringSpaces(listResult.AllOutput, $"packageX{currentVersion}{currentVersion}{expectedVersion}"));
 
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(false, false)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(true, true)]
+        public void DotnetListPackage_ProjectReference_Succeeds(bool includeTransitive, bool outdated)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
+                var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, "net46");
+
+                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} reference {projectB.ProjectPath}");
+                Assert.True(addResult.Success);
+
+                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+                Assert.True(restoreResult.Success);
+
+                var argsBuilder = new StringBuilder();
+                if (includeTransitive)
+                {
+                    argsBuilder.Append(" --include-transitive");
+                }
+                if (outdated)
+                {
+                    argsBuilder.Append(" --outdated");
+                }
+
+                // Act
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package {argsBuilder}");
+
+                // Assert
+                if (outdated)
+                {
+                    Assert.Contains("The given project `ProjectA` has no updates given the current sources.", listResult.AllOutput);
+                }
+                else if (includeTransitive)
+                {
+                    Assert.Contains("ProjectB", listResult.AllOutput);
+                }
+                else
+                {
+                    Assert.Contains("No packages were found for this framework.", listResult.AllOutput);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetListPackage_OutdatedWithNoVersionsFound_Succeeds()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
+                var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: "1.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                        pathContext.PackageSource,
+                        PackageSaveMode.Defaultv3,
+                        packageX);
+
+                var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"add {projectA.ProjectPath} package packageX --version 1.0.0 --no-restore");
+                Assert.True(addResult.Success);
+
+                var restoreResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"restore {projectA.ProjectName}.csproj");
+                Assert.True(restoreResult.Success);
+
+                foreach (var nupkg in Directory.EnumerateDirectories(pathContext.PackageSource))
+                {
+                    Directory.Delete(nupkg, recursive: true);
+                }
+
+                // Act
+                var listResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
+                    $"list {projectA.ProjectPath} package --outdated");
+
+                // Assert
+                var lines = listResult.AllOutput.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
+                Assert.True(lines.Any(l => l.Contains("packageX") && l.Contains("Not found at the sources")), "Line containing 'packageX' and 'Not found at the sources' not found: " + listResult.AllOutput);
             }
         }
 

@@ -8,9 +8,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -527,7 +526,7 @@ namespace NuGet.Packaging
 
             if (nuspecPaths.Count == 0)
             {
-                throw new PackagingException(Strings.MissingNuspec);
+                throw new PackagingException(NuGetLogCode.NU5037, Strings.Error_MissingNuspecFile);
             }
             else if (nuspecPaths.Count > 1)
             {

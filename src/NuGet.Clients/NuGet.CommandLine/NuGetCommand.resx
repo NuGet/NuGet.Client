@@ -281,8 +281,14 @@ nuget list -verbose -allversions</value>
   <data name="PackageCommandOutputDirDescription" xml:space="preserve">
     <value>Specifies the directory for the created NuGet package file. If not specified, uses the current directory.</value>
   </data>
+  <data name="PackageCommandPackagesDirectory" xml:space="preserve">
+    <value>Specifies the packages folder.</value>
+  </data>
   <data name="PackageCommandPropertiesDescription" xml:space="preserve">
     <value>Provides the ability to specify a semicolon ";" delimited list of properties when creating a package.</value>
+  </data>
+  <data name="PackageCommandSolutionDirectory" xml:space="preserve">
+    <value>Specifies the solution directory.</value>
   </data>
   <data name="PackageCommandSymbolsDescription" xml:space="preserve">
     <value>Determines if a package containing sources and symbols should be created. When specified with a nuspec, creates a regular NuGet package file and the corresponding symbols package.</value>
@@ -5540,5 +5546,8 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   </data>
   <data name="RestoreCommandUseLockFile" xml:space="preserve">
     <value>Enables project lock file to be generated and used with restore.</value>
+  </data>
+  <data name="PackageCommandDeterministic" xml:space="preserve">
+    <value>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package.</value>
   </data>
 </root>

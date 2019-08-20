@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
@@ -137,6 +138,78 @@ namespace NuGet.CommandLine.Test
                 log.Level.Should().Be(LogLevel.Warning);
                 log.TargetGraphs.Select(e => string.Join(",", e)).Should().Contain(netcoreapp1.DotNetFrameworkName);
                 log.Message.Should().Contain("Detected package version outside of dependency constraint: x 1.0.0 requires z (= 1.0.0) but version z 2.0.0 was resolved.");
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_MissingNuspecInSource_FailsWithNU5037Async()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");          
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
+                projectA.AddPackageToAllFrameworks(packageX);                
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                
+                File.Delete(Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
+
+                // Act                
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();                
+                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.PackageSource, packageX.Id, packageX.Version));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreLogging_MissingNuspecInGlobalPackages_FailsWithNU5037Async()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var netcoreapp1 = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp1);
+
+                var packageX = new SimpleTestPackageContext("x", "1.0.0");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(pathContext.PackageSource, packageX);
+                projectA.AddPackageToAllFrameworks(packageX);
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act                
+                var r = Util.RestoreSolution(pathContext, expectedExitCode: 0);
+                //delete the project.assets file to avoid no-op restore
+                File.Delete(projectA.AssetsFileOutputPath);
+                File.Delete(Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version, packageX.Id + NuGetConstants.ManifestExtension));
+                r = Util.RestoreSolution(pathContext, expectedExitCode: 1);
+
+                // Assert
+                r.Success.Should().BeFalse();
+                r.AllOutput.Should().Contain("The package is missing the required nuspec file. Path: " + Path.Combine(pathContext.UserPackagesFolder, packageX.Id, packageX.Version));
             }
         }
 

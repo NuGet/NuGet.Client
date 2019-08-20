@@ -564,7 +564,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
   </data>
   <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
-    <value>Unable to find project information for '{0}'. Inside Visual Studio, this may be because the project is unloaded or not part of current solution so please run a restore from command-line. Otherwise the project file may be invalid or missing targets required for restore.</value>
+    <value>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so please run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</value>
   </data>
   <data name="FoundVersionsInSource" xml:space="preserve">
     <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>
@@ -705,7 +705,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file.</value>
   </data>
   <data name="Error_PackageValidationFailed" xml:space="preserve">
-    <value>The package {0} content hash validation failed. The package is different than the last restore.</value>
+    <value>Package content hash validation failed for {0}. The package is different than the last restore.</value>
     <comment>{0} - package id and version</comment>
   </data>
   <data name="Error_InvalidLockFileInput" xml:space="preserve">
@@ -891,5 +891,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_ProjectRuntimeJsonIsUnreadable" xml:space="preserve">
     <value>The runtime.json specified in the project '{0}' could not be parsed. {1}</value>
     <comment>0 - runtime.json path, 1 - Additional Message, Please do not localize 'runtime.json'.</comment>
+  </data>
+  <data name="Log_PackageContentHashValidationFailed" xml:space="preserve">
+    <value>Package content hash validation failed for {0}. Expected: {1} Actual: {2}</value>
+    <comment>0 - package ID, 1 - expected Sha, 2 - actual sha</comment>
   </data>
 </root>

@@ -73,5 +73,6 @@ namespace NuGet.Build.Tasks.Pack
         string PackageLicenseExpression { get; }
         string PackageLicenseExpressionVersion { get; }
         string PackageLicenseFile { get; }
+        bool Deterministic { get; }
     }
 }

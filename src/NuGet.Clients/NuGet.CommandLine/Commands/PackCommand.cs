@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandIncludeReferencedProjects")]
         public bool IncludeReferencedProjects { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription")]
+        [Option(typeof(NuGetCommand), "PackageCommandPropertiesDescription", AltName = "p")]
         public Dictionary<string, string> Properties
         {
             get
@@ -76,6 +76,12 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "PackageCommandSymbolPackageFormat")]
         public string SymbolPackageFormat { get; set; }
+
+        [Option(typeof(NuGetCommand), "PackageCommandPackagesDirectory")]
+        public string PackagesDirectory { get; set; }
+
+        [Option(typeof(NuGetCommand), "PackageCommandSolutionDirectory")]
+        public string SolutionDirectory { get; set; }
 
         [Option(typeof(NuGetCommand), "CommandMSBuildVersion")]
         public string MSBuildVersion { get; set; }
@@ -92,6 +98,9 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
         public new string ConfigFile { get; set; }
 
+        [Option(typeof(NuGetCommand), "PackageCommandDeterministic")]
+        public bool Deterministic { get; set; }
+
         public override void ExecuteCommand()
         {
             var packArgs = new PackArgs();
@@ -100,6 +109,16 @@ namespace NuGet.CommandLine
             packArgs.OutputDirectory = OutputDirectory;
             packArgs.BasePath = BasePath;
             packArgs.MsBuildDirectory = new Lazy<string>(() => MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path);
+
+            if (!string.IsNullOrEmpty(PackagesDirectory))
+            {
+                packArgs.PackagesDirectory = Path.GetFullPath(PackagesDirectory);
+            }
+
+            if (!string.IsNullOrEmpty(SolutionDirectory))
+            {
+                packArgs.SolutionDirectory = Path.GetFullPath(SolutionDirectory);
+            }
 
             // Get the input file
             packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -121,7 +140,7 @@ namespace NuGet.CommandLine
             {
                 packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
-
+            packArgs.Deterministic = Deterministic;
             packArgs.Build = Build;
             packArgs.Exclude = Exclude;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;

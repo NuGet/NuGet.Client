@@ -26,6 +26,8 @@ namespace NuGet.Tests.Apex
     {
         private readonly IVisualStudioHostFixtureFactory _contextFixtureFactory;
         private readonly Lazy<VisualStudioHostFixture> _hostFixture;
+        private NuGetConsoleTestExtension _console;
+        private string _packageManagerOutputWindowText;
 
         /// <summary>
         /// ITestOutputHelper wrapper
@@ -57,6 +59,8 @@ namespace NuGet.Tests.Apex
 
         public override void CloseVisualStudioHost()
         {
+            _packageManagerOutputWindowText = GetPackageManagerOutputWindowPaneText();
+
             VisualStudio.Stop();
         }
 
@@ -64,21 +68,47 @@ namespace NuGet.Tests.Apex
         {
             XunitLogger.LogInformation("GetConsole");
             VisualStudio.ClearWindows();
-            var nugetTestService = GetNuGetTestService();
+            NuGetApexTestService nugetTestService = GetNuGetTestService();
 
             XunitLogger.LogInformation("EnsurePackageManagerConsoleIsOpen");
             nugetTestService.EnsurePackageManagerConsoleIsOpen().Should().BeTrue("Console was opened");
 
             XunitLogger.LogInformation("GetPackageManagerConsole");
-            var nugetConsole = nugetTestService.GetPackageManagerConsole(project.Name);
+            _console = nugetTestService.GetPackageManagerConsole(project.Name);
+
+            // This is not a magic number.
+            // It is intended to eliminate unexpected hard line breaks in PMC output which might foil validation,
+            // but not so large as to create memory problems.
+            _console.SetConsoleWidth(consoleWidth: 1024);
 
             nugetTestService.WaitForAutoRestore();
 
             XunitLogger.LogInformation("GetConsole complete");
 
-            return nugetConsole;
+            return _console;
         }
 
         public IOperations Operations => _hostFixture.Value.Operations;
+
+        public override void Dispose()
+        {
+            if (_console != null)
+            {
+                string text = _console.GetText();
+
+                XunitLogger.LogInformation($"Package Manager Console contents:  {text}");
+            }
+
+            _packageManagerOutputWindowText = _packageManagerOutputWindowText ?? GetPackageManagerOutputWindowPaneText();
+
+            XunitLogger.LogInformation($"Package Manager Output Window Pane contents:  {_packageManagerOutputWindowText}");
+
+            base.Dispose();
+        }
+
+        private string GetPackageManagerOutputWindowPaneText()
+        {
+            return string.Join(Environment.NewLine, VisualStudio.GetOutputWindowsLines());
+        }
     }
 }

@@ -13,7 +13,7 @@ namespace NuGet.Packaging
     /// </summary>
     public sealed class Sha512HashFunction : IHashFunction
     {
-        private string _hash;
+        private byte[] _hash;
 
 #if IS_DESKTOP
         private readonly SHA512 _hashFunc;
@@ -33,13 +33,12 @@ namespace NuGet.Packaging
             _hashFunc.TransformBlock(data, offset, count, outputBuffer: null, outputOffset: 0);
         }
 
-        public string GetHash()
+        public byte[] GetHashBytes()
         {
             if (_hash == null)
             {
                 _hashFunc.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
-
-                _hash = Convert.ToBase64String(_hashFunc.Hash);
+                _hash = _hashFunc.Hash;
             }
 
             return _hash;
@@ -63,18 +62,21 @@ namespace NuGet.Packaging
             _hashFunc.AppendData(data, offset, count);
         }
 
-        public string GetHash()
+        public byte[] GetHashBytes()
         {
             if (_hash == null)
             {
-                var hash = _hashFunc.GetHashAndReset();
-
-                _hash = Convert.ToBase64String(hash);
+                _hash = _hashFunc.GetHashAndReset();
             }
 
             return _hash;
         }
 #endif
+
+        public string GetHash()
+        {
+            return Convert.ToBase64String(GetHashBytes());
+        }
 
         public void Dispose()
         {

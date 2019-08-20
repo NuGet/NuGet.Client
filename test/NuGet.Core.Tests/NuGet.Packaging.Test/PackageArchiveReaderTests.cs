@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -732,7 +733,9 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    var log = exception.AsLogMessage();
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
+                    Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }
         }
@@ -778,7 +781,9 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    var log = exception.AsLogMessage();
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
+                    Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }
         }
@@ -805,7 +810,9 @@ namespace NuGet.Packaging.Test
                     var exception = Assert.Throws<PackagingException>(() => reader.GetNuspec());
 
                     // Assert
-                    Assert.Equal("Nuspec file does not exist in package.", exception.Message);
+                    var log = exception.AsLogMessage();
+                    Assert.Equal(NuGetLogCode.NU5037, log.Code);
+                    Assert.Contains("The package is missing the required nuspec file.", log.Message);
                 }
             }
         }

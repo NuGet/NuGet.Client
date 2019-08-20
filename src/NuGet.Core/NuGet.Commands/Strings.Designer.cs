@@ -421,7 +421,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The package {0} content hash validation failed. The package is different than the last restore..
+        ///   Looks up a localized string similar to Package content hash validation failed for {0}. The package is different than the last restore..
         /// </summary>
         internal static string Error_PackageValidationFailed {
             get {
@@ -565,7 +565,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. Inside Visual Studio, this may be because the project is unloaded or not part of current solution so please run a restore from command-line. Otherwise the project file may be invalid or missing targets required for restore..
+        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so please run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore..
         /// </summary>
         internal static string Error_UnableToFindProjectInfo {
             get {
@@ -1102,6 +1102,15 @@ namespace NuGet.Commands {
         internal static string Log_PackageCommandSuccess {
             get {
                 return ResourceManager.GetString("Log_PackageCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package content hash validation failed for {0}. Expected: {1} Actual: {2}.
+        /// </summary>
+        internal static string Log_PackageContentHashValidationFailed {
+            get {
+                return ResourceManager.GetString("Log_PackageContentHashValidationFailed", resourceCulture);
             }
         }
         

@@ -227,10 +227,14 @@ namespace Dotnet.Integration.Test
                 }
             }
 
+            var lastWriteTime = DateTime.Now.AddDays(-2);
+
             //Copy files recursively to destination directories
             foreach (var fileName in Directory.GetFiles(cliDir, "*", SearchOption.AllDirectories))
             {
-                File.Copy(fileName, destinationDir + fileName.Substring(cliDir.Length));
+                var destFileName = destinationDir + fileName.Substring(cliDir.Length);
+                File.Copy(fileName, destFileName);
+                File.SetLastWriteTime(destFileName, lastWriteTime);
             }
         }
 

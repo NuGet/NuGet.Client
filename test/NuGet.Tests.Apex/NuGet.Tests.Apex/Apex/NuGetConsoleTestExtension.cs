@@ -11,47 +11,47 @@ namespace NuGet.Tests.Apex
         private ApexTestConsole _pmConsole;
         private TimeSpan _timeout = TimeSpan.FromMinutes(5);
 
-        public string _projectName { get; set; }
+        public string ProjectName { get; set; }
 
         public NuGetConsoleTestExtension(ApexTestConsole console, string projectName)
         {
             _pmConsole = console;
-            _projectName = projectName;
+            ProjectName = projectName;
         }
 
         public void InstallPackageFromPMC(string packageId, string version)
         {
-            var command = $"Install-Package {packageId} -ProjectName {_projectName} -Version {version} ";
+            var command = $"Install-Package {packageId} -ProjectName {ProjectName} -Version {version} ";
             Execute(command);
         }
 
         public void InstallPackageFromPMC(string packageId, string version, string source)
         {
-            var command = $"Install-Package {packageId} -ProjectName {_projectName} -Version {version} -Source {source}";
+            var command = $"Install-Package {packageId} -ProjectName {ProjectName} -Version {version} -Source {source}";
             Execute(command);
         }
 
         public void UninstallPackageFromPMC(string packageId)
         {
-            var command = $"Uninstall-Package {packageId} -ProjectName {_projectName}";
+            var command = $"Uninstall-Package {packageId} -ProjectName {ProjectName}";
             Execute(command);
         }
 
         public void UpdatePackageFromPMC(string packageId, string version)
         {
-            var command = $"Update-Package {packageId} -ProjectName {_projectName} -Version {version}";
+            var command = $"Update-Package {packageId} -ProjectName {ProjectName} -Version {version}";
             Execute(command);
         }
 
         public void UpdatePackageFromPMC(string packageId, string version, string source)
         {
-            var command = $"Update-Package {packageId} -ProjectName {_projectName} -Version {version} -Source {source}";
+            var command = $"Update-Package {packageId} -ProjectName {ProjectName} -Version {version} -Source {source}";
             Execute(command);
         }
 
         public void UpdatePackageFromPMCWithConstraints(string packageId, string flags)
         {
-            var command = $"Update-Package {packageId} -ProjectName {_projectName} {flags}";
+            var command = $"Update-Package {packageId} -ProjectName {ProjectName} {flags}";
             Execute(command);
         }
 
@@ -68,6 +68,16 @@ namespace NuGet.Tests.Apex
         public void Clear()
         {
             _pmConsole.Clear();
+        }
+
+        public string GetText()
+        {
+            return _pmConsole.GetText();
+        }
+
+        public void SetConsoleWidth(int consoleWidth)
+        {
+            _pmConsole.SetConsoleWidth(consoleWidth);
         }
     }
 }
