@@ -4021,21 +4021,6 @@ namespace ClassLibrary
             }
         }
 
-        public void ValidatePackIcon(ProjectFileBuilder projectBuilder)
-        {
-            Assert.True(File.Exists(projectBuilder.ProjectFilepath), "No project was produced");
-            var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
-
-            Assert.True(File.Exists(nupkgPath), "No package was produced");
-
-            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
-            {
-                var nuspecReader = nupkgReader.NuspecReader;
-
-                Assert.Equal(projectBuilder.PackageIcon, nuspecReader.GetIcon());
-            }
-        }
-
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackageIcon_HappyPath_Suceeds()
         {
@@ -4221,7 +4206,7 @@ namespace ClassLibrary
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackIcon_WithNuspec_IconUrl_Warns_Suceeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -4251,6 +4236,21 @@ namespace ClassLibrary
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
                 Assert.Contains("iconUrl", result.Output);
                 Assert.DoesNotContain("PackageIconUrl", result.Output);
+            }
+        }
+
+        public void ValidatePackIcon(ProjectFileBuilder projectBuilder)
+        {
+            Assert.True(File.Exists(projectBuilder.ProjectFilepath), "No project was produced");
+            var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
+
+            Assert.True(File.Exists(nupkgPath), "No package was produced");
+
+            using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+            {
+                var nuspecReader = nupkgReader.NuspecReader;
+
+                Assert.Equal(projectBuilder.PackageIcon, nuspecReader.GetIcon());
             }
         }
     }
