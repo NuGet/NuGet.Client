@@ -5695,7 +5695,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     waitForExit: true);
 
                 Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
-                Util.VerifyResultSuccess(r, expectedOutputMessage: AnalysisResources.IconUrlDeprecationWarning);
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+                Assert.DoesNotContain(AnalysisResources.PackageIconUrlDeprecationWarning, r.Output);
             }
         }
 
@@ -5823,7 +5824,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_ProjectFile_PackageIconUrl_Warns_Suceed()
+        public void PackCommand_ProjectFile_PackageIconUrl_WithNuspec_Warns_Suceed()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5835,6 +5836,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <OutputPath>out</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
+    <PackageLicenseUrl>https://test/icon.jpg</PackageLicenseUrl>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='B.cs' />
@@ -5844,21 +5846,28 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
 
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithIconUrl("http://another/icon.jpg");
+
             testDirBuilder
-                .WithFile("icon.jpg", 6)
                 .WithFile("A.csproj", projectFileContent)
-                .WithFile("B.cs", sourceFileContent);
+                .WithFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, "A.nuspec");
+
 
             using (testDirBuilder.Build())
             {
                 // Act
-                var result = CommandRunner.Run(
+                var r = CommandRunner.Run(
                     Util.GetNuGetExePath(),
                     testDirBuilder.BaseDir,
                     $"pack A.csproj -Build",
                     waitForExit: true);
 
-                Util.VerifyResultSuccess(result, AnalysisResources.PackageIconUrlDeprecationWarning);
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+                Assert.DoesNotContain(AnalysisResources.PackageIconUrlDeprecationWarning, r.Output);
             }
         }
 
