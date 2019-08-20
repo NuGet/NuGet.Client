@@ -739,10 +739,20 @@ namespace NuGet.Commands
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
                 {
-                    var iconRuleSet = new IPackageRule[] {
-                        new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
-                        new IconAndIconUrlUsageWarning(AnalysisResources.PackageIconUrlAndPackageIconWarning),
-                    };
+                    IPackageRule[] iconRuleSet = null;
+                   
+                    if (_packArgs.PackTargetArgs != null) {
+                        iconRuleSet = new IPackageRule[] {
+                            new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
+                            new IconAndIconUrlUsageWarning(AnalysisResources.PackageIconUrlAndPackageIconWarning),
+                        };
+                    }
+                    else {
+                        iconRuleSet = new IPackageRule[] {
+                            new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
+                            new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning),
+                        };
+                    }
                     
                     AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuleSet));
                 }

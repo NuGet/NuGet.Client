@@ -5886,8 +5886,10 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include='NuGet.Build.Tasks.Pack' />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include='B.cs' />
-    <PackageReference Inlcude='NuGet.Build.Tasks.Pack' />
   </ItemGroup>
   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
 </Project>";

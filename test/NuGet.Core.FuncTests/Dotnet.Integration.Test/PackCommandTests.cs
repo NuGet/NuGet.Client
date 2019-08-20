@@ -4127,6 +4127,7 @@ namespace ClassLibrary
 
             using (var srcDir = testDirBuilder.Build())
             {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
                 ValidatePackIcon(projectBuilder);
