@@ -37,7 +37,7 @@ namespace NuGet.PackageManagement.UI
             metadata.Setup(x => x.Identity).Returns(new PackageIdentity("NuGet.Versioning", NuGetVersion.Parse("4.3.0")));
             metadata.Setup(x => x.PackageDetailsUrl).Returns(() => new Uri(url));
 
-            var target = new DetailedPackageMetadata(metadata.Object, downloadCount: null);
+            var target = new DetailedPackageMetadata(metadata.Object, deprecationMetadata: null, downloadCount: null);
 
             Assert.Equal(expected, target.PackageDetailsText);
         }

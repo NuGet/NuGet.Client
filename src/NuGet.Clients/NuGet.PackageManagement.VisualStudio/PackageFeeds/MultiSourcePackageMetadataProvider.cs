@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -9,6 +10,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -53,7 +55,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
                 .ToList();
 
             if (_localRepository != null)
@@ -92,7 +94,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 .FirstOrDefault(v => v != null) ?? VersionRange.All;
 
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions)))
+                .Select(r => GetMetadataTaskSafeAsync(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -113,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
             CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskAsyncSafe(()=> r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken)))
+                .Select(r => GetMetadataTaskSafeAsync(()=> r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken)))
                 .ToArray();
 
             var completed = (await Task.WhenAll(tasks))
@@ -156,8 +158,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (result != null)
                 {
-                    return result.WithVersions(asyncValueFactory: 
-                        () => FetchAndMergeVersionsAsync(identity, includePrerelease, cancellationToken));
+                    var versionsAndDeprecationMetadataTask = FetchAndMergeVersionsAndDeprecationMetadataAsync(identity, includePrerelease, cancellationToken);
+
+                    return PackageSearchMetadataBuilder
+                        .FromMetadata(result)
+                        .WithVersions(AsyncLazy.New(async () => (await versionsAndDeprecationMetadataTask).versions))
+                        .WithDeprecation(AsyncLazy.New(async () => (await versionsAndDeprecationMetadataTask).deprecationMetadata))
+                        .Build();
                 }
             }
 
@@ -178,22 +185,32 @@ namespace NuGet.PackageManagement.VisualStudio
                 .ToArray();
         }
 
-        private async Task<IEnumerable<VersionInfo>> FetchAndMergeVersionsAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
+        private static async Task<PackageDeprecationMetadata> MergeDeprecationMetadataAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
+        {
+            var deprecationMetadatas = await Task.WhenAll(packages.Select(m => m.GetDeprecationMetadataAsync()));
+            return deprecationMetadatas.First(d => d != null);
+        }
+
+        private async Task<(IEnumerable<VersionInfo> versions, PackageDeprecationMetadata deprecationMetadata)> FetchAndMergeVersionsAndDeprecationMetadataAsync(
+            PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
             var tasks = _sourceRepositories
-                .Select(r => GetMetadataTaskAsyncSafe(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken))).ToList();
+                .Select(r => GetMetadataTaskSafeAsync(
+                    () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
+                .ToList();
 
             if (_localRepository != null)
             {
                 tasks.Add(_localRepository.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken));
             }
 
-            var completed = (await Task.WhenAll(tasks)).Where(m => m != null);
+            var metadatas = (await Task.WhenAll(tasks))
+                .Where(m => m != null);
 
-            return await MergeVersionsAsync(identity, completed);
+            return (await MergeVersionsAsync(identity, metadatas), await MergeDeprecationMetadataAsync(identity, metadatas));
         }
 
-        private async Task<T> GetMetadataTaskAsyncSafe<T>(Func<Task<T>> getMetadataTask) where T: class
+        private async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T: class
         {
             try
             {

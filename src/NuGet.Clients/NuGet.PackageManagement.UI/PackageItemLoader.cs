@@ -268,11 +268,12 @@ namespace NuGet.PackageManagement.UI
                         Author = metadata.Authors,
                         DownloadCount = metadata.DownloadCount,
                         Summary = metadata.Summary,
-                        Versions = AsyncLazy.New(() => metadata.GetVersionsAsync()),
+                        Versions = AsyncLazy.New(metadata.GetVersionsAsync),
                         AllowedVersions = allowedVersions,
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
-                        IsPackageDeprecated = metadata.DeprecationMetadata != null,
+                        DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
                     };
+
                     listItem.UpdatePackageStatus(_installedPackages);
 
                     if (!_context.IsSolution && _context.PackageManagerProviders.Any())

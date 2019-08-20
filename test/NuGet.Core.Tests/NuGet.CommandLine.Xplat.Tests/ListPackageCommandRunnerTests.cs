@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
 using Moq;
 using NuGet.CommandLine.XPlat;
 using NuGet.Packaging.Core;
@@ -16,21 +17,21 @@ namespace NuGet.CommandLine.Xplat.Tests
         public class TopLevelPackagesFilterForOutdated
         {
             [Fact]
-            public void FiltersAutoReferencedPackages()
+            public async Task FiltersAutoReferencedPackages()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TopLevelPackagesFilterForOutdated;
                 var installedPackageReference = CreateInstalledPackageReference(autoReference: true);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
             }
 
             [Fact]
-            public void DoesNotFilterPackagesWithLatestMetadataNull()
+            public async Task DoesNotFilterPackagesWithLatestMetadataNull()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TopLevelPackagesFilterForOutdated;
@@ -38,14 +39,14 @@ namespace NuGet.CommandLine.Xplat.Tests
                 installedPackageReference.LatestPackageMetadata = null;
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
             }
 
             [Fact]
-            public void DoesNotFilterPackagesWithNewerVersionAvailable()
+            public async Task DoesNotFilterPackagesWithNewerVersionAvailable()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TopLevelPackagesFilterForOutdated;
@@ -53,7 +54,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     latestPackageVersionString: "2.0.0");
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -63,7 +64,7 @@ namespace NuGet.CommandLine.Xplat.Tests
         public class TransitivePackagesFilterForOutdated
         {
             [Fact]
-            public void DoesNotFilterPackagesWithLatestMetadataNull()
+            public async Task DoesNotFilterPackagesWithLatestMetadataNull()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TransitivePackagesFilterForOutdated;
@@ -71,14 +72,14 @@ namespace NuGet.CommandLine.Xplat.Tests
                 installedPackageReference.LatestPackageMetadata = null;
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
             }
 
             [Fact]
-            public void DoesNotFilterPackagesWithNewerVersionAvailable()
+            public async Task DoesNotFilterPackagesWithNewerVersionAvailable()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TransitivePackagesFilterForOutdated;
@@ -86,7 +87,7 @@ namespace NuGet.CommandLine.Xplat.Tests
                     latestPackageVersionString: "2.0.0");
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -96,28 +97,28 @@ namespace NuGet.CommandLine.Xplat.Tests
         public class TopLevelPackagesFilterForDeprecated
         {
             [Fact]
-            public void FiltersPackagesWithoutDeprecationMetadata()
+            public async Task FiltersPackagesWithoutDeprecationMetadata()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TopLevelPackagesFilterForDeprecated;
                 var installedPackageReference = CreateInstalledPackageReference();
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
             }
 
             [Fact]
-            public void DoesNotFilterPackagesWithDeprecationMetadata()
+            public async Task DoesNotFilterPackagesWithDeprecationMetadata()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TopLevelPackagesFilterForDeprecated;
                 var installedPackageReference = CreateInstalledPackageReference(isDeprecated: true);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -127,28 +128,28 @@ namespace NuGet.CommandLine.Xplat.Tests
         public class TransitivePackagesFilterForDeprecated
         {
             [Fact]
-            public void FiltersPackagesWithoutDeprecationMetadata()
+            public async Task FiltersPackagesWithoutDeprecationMetadata()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TransitivePackagesFilterForDeprecated;
                 var installedPackageReference = CreateInstalledPackageReference();
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.False(result);
             }
 
             [Fact]
-            public void DoesNotFilterPackagesWithDeprecationMetadata()
+            public async Task DoesNotFilterPackagesWithDeprecationMetadata()
             {
                 // Arrange
                 var filter = ListPackageCommandRunner.TransitivePackagesFilterForDeprecated;
                 var installedPackageReference = CreateInstalledPackageReference(isDeprecated: true);
 
                 // Act
-                var result = filter.Invoke(installedPackageReference);
+                var result = await filter.Invoke(installedPackageReference);
 
                 // Assert
                 Assert.True(result);
@@ -169,7 +170,9 @@ namespace NuGet.CommandLine.Xplat.Tests
             resolvedPackageMetadata.Setup(m => m.Identity).Returns(new PackageIdentity(packageId, resolvedPackageVersion));
             if (isDeprecated)
             {
-                resolvedPackageMetadata.Setup(m => m.DeprecationMetadata).Returns(new PackageDeprecationMetadata()); ;
+                resolvedPackageMetadata
+                    .Setup(m => m.GetDeprecationMetadataAsync())
+                    .ReturnsAsync(new PackageDeprecationMetadata());
             }
 
             var installedPackageReference = new InstalledPackageReference(packageId)

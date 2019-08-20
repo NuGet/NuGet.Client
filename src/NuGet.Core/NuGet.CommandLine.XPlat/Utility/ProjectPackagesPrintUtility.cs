@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Versioning;
@@ -23,7 +24,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="transitive">Whether include-transitive flag exists or not</param>
         /// <param name="outdated">Whether outdated flag exists or not</param>
         /// <param name="deprecated">Whether deprecated flag exists or not</param>
-        internal static PrintPackagesResult PrintPackages(
+        internal static async Task<PrintPackagesResult> PrintPackagesAsync(
             IEnumerable<FrameworkPackages> packages,
             string projectName,
             bool transitive,
@@ -81,7 +82,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print top-level packages
                     if (frameworkTopLevelPackages.Any())
                     {
-                        var printPackagesTableResult = PrintPackagesTable(frameworkTopLevelPackages, false, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTopLevelPackages, printingTransitive: false, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -90,7 +91,7 @@ namespace NuGet.CommandLine.XPlat.Utility
                     // Print transitive packages
                     if (transitive && frameworkTransitivePackages.Any())
                     {
-                        var printPackagesTableResult = PrintPackagesTable(frameworkTransitivePackages, true, outdated, deprecated);
+                        var printPackagesTableResult = await PrintPackagesTableAsync(frameworkTransitivePackages, printingTransitive: true, outdated, deprecated);
 
                         autoReferenceFound = autoReferenceFound || printPackagesTableResult.AutoReferenceFound;
                         deprecatedFound = deprecatedFound || printPackagesTableResult.DeprecatedFound;
@@ -109,7 +110,7 @@ namespace NuGet.CommandLine.XPlat.Utility
         /// <param name="outdated">Whether the function is printing outdated packages information.</param>
         /// <param name="deprecated">Whether the function is printing deprecated packages information.</param>
         /// <returns>The table as a string</returns>
-        internal static PrintPackagesResult PrintPackagesTable(
+        internal static async Task<PrintPackagesResult> PrintPackagesTableAsync(
             IEnumerable<InstalledPackageReference> packages,
             bool printingTransitive,
             bool outdated,
@@ -125,124 +126,125 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             packages = packages.OrderBy(p => p.Name);
 
-            //To enable coloring only the latest version as appropriate
-            //we need to map every string in the table to a color, which
-            //this is used for
+            // To enable coloring only the latest version as appropriate
+            // we need to map every string in the table to a color, which
+            // this is used for
             IEnumerable<string> tableToPrint;
 
             var headers = BuildTableHeaders(printingTransitive, outdated, deprecated);
 
             if (outdated && printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
-                       p => string.Empty,
-                       p => p.Name,
-                       p => string.Empty,
-                       p => PrintVersion(
+                       p => Task.FromResult((object)string.Empty),
+                       p => Task.FromResult((object)p.Name),
+                       p => Task.FromResult((object)string.Empty),
+                       async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated),
-                       p => p.LatestPackageMetadata?.Identity?.Version == null
+                       async p => p.LatestPackageMetadata?.Identity?.Version == null
                             ? Strings.ListPkg_NotFoundAtSources
                             : PrintVersion(
                                 p.LatestPackageMetadata.Identity.Version,
-                                p.LatestPackageMetadata.DeprecationMetadata != null,
+                                await p.LatestPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated));
             }
             else if (outdated && !printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
-                       p => string.Empty,
-                       p => p.Name,
+                       p => Task.FromResult((object)string.Empty),
+                       p => Task.FromResult((object)p.Name),
                        p =>
                        {
                            if (p.AutoReference)
                            {
                                autoReferenceFound = true;
-                               return "(A)";
+                               return Task.FromResult((object)"(A)");
                            }
-                           return string.Empty;
+                           return Task.FromResult((object)string.Empty);
                        },
-                       p => p.OriginalRequestedVersion,
-                       p => PrintVersion(
+                       p => Task.FromResult((object)p.OriginalRequestedVersion),
+                       async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated),
-                       p => p.LatestPackageMetadata?.Identity?.Version == null
+                       async p => p.LatestPackageMetadata?.Identity?.Version == null
                             ? Strings.ListPkg_NotFoundAtSources
                             : PrintVersion(
                                 p.LatestPackageMetadata.Identity.Version,
-                                p.LatestPackageMetadata.DeprecationMetadata != null,
+                                await p.LatestPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated));
             }
             else if (deprecated && printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
-                        p => string.Empty,
-                        p => p.Name,
-                        p => PrintVersion(
+                        p => Task.FromResult((object)string.Empty),
+                        p => Task.FromResult((object)p.Name),
+                        p => Task.FromResult((object)string.Empty),
+                        async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated),
-                        p => PrintDeprecationReasons(p.ResolvedPackageMetadata.DeprecationMetadata),
-                        p => PrintAlternativePackage(p.ResolvedPackageMetadata.DeprecationMetadata?.AlternatePackage));
+                        async p => PrintDeprecationReasons(await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync()),
+                        async p => PrintAlternativePackage((await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync()).AlternatePackage));
             }
             else if (deprecated && !printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
-                        p => string.Empty,
-                        p => p.Name,
+                        p => Task.FromResult((object)string.Empty),
+                        p => Task.FromResult((object)p.Name),
                         p =>
                         {
                             if (p.AutoReference)
                             {
                                 autoReferenceFound = true;
-                                return "(A)";
+                                return Task.FromResult((object)"(A)");
                             }
-                            return string.Empty;
+                            return Task.FromResult((object)string.Empty);
                         },
-                        p => PrintVersion(
+                        async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated),
-                        p => PrintDeprecationReasons(p.ResolvedPackageMetadata.DeprecationMetadata),
-                        p => PrintAlternativePackage(p.ResolvedPackageMetadata.DeprecationMetadata?.AlternatePackage));
+                        async p => PrintDeprecationReasons(await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync()),
+                        async p => PrintAlternativePackage((await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync()).AlternatePackage));
             }
             else if (printingTransitive)
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                         headers,
-                        p => string.Empty,
-                        p => p.Name,
-                        p => string.Empty,
-                        p => PrintVersion(
+                        p => Task.FromResult((object)string.Empty),
+                        p => Task.FromResult((object)p.Name),
+                        p => Task.FromResult((object)string.Empty),
+                        async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated));
             }
             else
             {
-                tableToPrint = packages.ToStringTable(
+                tableToPrint = await packages.ToStringTableAsync(
                        headers,
-                       p => string.Empty,
-                       p => p.Name,
+                       p => Task.FromResult((object)""),
+                       p => Task.FromResult((object)p.Name),
                        p =>
                        {
                            if (p.AutoReference)
                            {
                                autoReferenceFound = true;
-                               return "(A)";
+                               return Task.FromResult((object)"(A)");
                            }
-                           return string.Empty;
+                           return Task.FromResult((object)"");
                        },
-                       p => p.OriginalRequestedVersion,
-                       p => PrintVersion(
+                       p => Task.FromResult((object)p.OriginalRequestedVersion),
+                       async p => PrintVersion(
                                 p.ResolvedPackageMetadata.Identity.Version,
-                                p.ResolvedPackageMetadata.DeprecationMetadata != null,
+                                await p.ResolvedPackageMetadata.GetDeprecationMetadataAsync() != null,
                                 outdated));
             }
 
@@ -255,7 +257,16 @@ namespace NuGet.CommandLine.XPlat.Utility
 
             Console.WriteLine();
 
-            deprecatedFound = packages.Any(p => p.LatestPackageMetadata?.DeprecationMetadata != null || p.ResolvedPackageMetadata?.DeprecationMetadata != null);
+            foreach (var package in packages)
+            {
+                var latestDeprecationMetadata = await (package.LatestPackageMetadata?.GetDeprecationMetadataAsync() ?? Task.FromResult<PackageDeprecationMetadata>(null));
+                var resolvedDeprecationMetadata = await (package.ResolvedPackageMetadata?.GetDeprecationMetadataAsync() ?? Task.FromResult<PackageDeprecationMetadata>(null));
+                if (latestDeprecationMetadata != null || resolvedDeprecationMetadata != null)
+                {
+                    deprecatedFound = true;
+                    break;
+                }
+            }
 
             return new PrintPackagesResult(autoReferenceFound, deprecatedFound);
         }

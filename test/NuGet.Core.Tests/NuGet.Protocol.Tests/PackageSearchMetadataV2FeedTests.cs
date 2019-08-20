@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 using Xunit;
@@ -12,7 +13,7 @@ namespace NuGet.Protocol.Tests
     public class PackageSearchMetadataV2FeedTests
     {
         [Fact]
-        public void PackageSearchMetadata_Basic()
+        public async Task PackageSearchMetadata_Basic()
         {
             // Arrange
             var testPackage = CreateTestPackageInfo(new List<string>() { "James Newkirk", "Brad Wilson" },
@@ -34,6 +35,8 @@ namespace NuGet.Protocol.Tests
             Assert.Null(metaData.ProjectUrl);
             Assert.Null(metaData.ReportAbuseUrl);
             Assert.Null(metaData.PackageDetailsUrl);
+            Assert.Null(metaData.DeprecationMetadata);
+            Assert.Null(await metaData.GetDeprecationMetadataAsync());
         }
 
         [Fact]

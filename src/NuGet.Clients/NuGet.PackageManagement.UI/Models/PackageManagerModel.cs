@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -36,15 +36,21 @@ namespace NuGet.PackageManagement.UI
 
         public INuGetUIContext Context => UIController.UIContext;
 
-        // When the model is used for a solution, this property is not null nor empty.
+        /// <remarks>
+        /// When the model is used for a solution, this property is not null nor empty.
+        /// </remarks>
         public string SolutionName { get; set; }
 
-        // Indicates whether the model is used for a solution, or for a project.
+        /// <summary>
+        /// Indicates whether the model is used for a solution, or for a project.
+        /// </summary>
         public bool IsSolution { get; }
 
         public INuGetUI UIController { get; }
 
-        // Cached Package Metadata collected when we set the "count" of updates in the background
+        /// <summary>
+        /// Cached Package Metadata collected when we set the "count" of updates in the background
+        /// </summary>
         public PackageSearchMetadataCache CachedUpdates { get; set; }
 
         public event PropertyChangedEventHandler PropertyChanged;

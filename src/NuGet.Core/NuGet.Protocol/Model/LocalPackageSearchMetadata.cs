@@ -31,7 +31,9 @@ namespace NuGet.Protocol
 
         public string Description => _nuspec.GetDescription();
 
-        // Local packages always have 0 as the download count
+        /// <remarks>
+        /// Local packages always have 0 as the download count
+        /// </remarks>
         public long? DownloadCount => 0;
 
         public Uri IconUrl => Convert(_nuspec.GetIconUrl());
@@ -46,7 +48,9 @@ namespace NuGet.Protocol
 
         public DateTimeOffset? Published => _package.LastWriteTimeUtc;
 
-        // There is no report abuse url for local packages.
+        /// <remarks>
+        /// There is no report abuse url for local packages.
+        /// </remarks>
         public Uri ReportAbuseUrl => null;
 
         public Uri PackageDetailsUrl => null;
@@ -85,13 +89,17 @@ namespace NuGet.Protocol
 
         public bool IsListed => true;
 
-        // The prefix reservation is not applicable to local packages
+        /// <remarks>
+        /// The prefix reservation is not applicable to local packages
+        /// </remarks>
         public bool PrefixReserved => false;
 
         public LicenseMetadata LicenseMetadata => _nuspec.GetLicenseMetadata();
 
-        // Deprecation metadata is not stored within the package and requires an online package source.
-        public PackageDeprecationMetadata DeprecationMetadata => null;
+        /// <remarks>
+        /// Deprecation metadata is not stored within the package and requires an online package source.
+        /// </remarks>
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
 
         private const int FiveMegabytes = 5242880; // 1024 * 1024 * 5, 5MB
 

@@ -204,5 +204,7 @@ namespace NuGet.Protocol
         /// </summary>
         [JsonProperty(PropertyName = JsonProperties.Deprecation)]
         public PackageDeprecationMetadata DeprecationMetadata { get; private set; }
+
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult(DeprecationMetadata);
     }
 }

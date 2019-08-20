@@ -4,9 +4,7 @@
 using System;
 using System.Globalization;
 using System.Windows;
-using System.Windows.Automation.Peers;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
@@ -107,6 +105,34 @@ namespace NuGet.PackageManagement.UI
                 {
                     _textBlockCountContainer.Visibility = Visibility.Collapsed;
                 }
+            }
+        }
+
+        private bool _showWarning;
+        public bool ShowWarning
+        {
+            get
+            {
+                return _showWarning;
+            }
+            set
+            {
+                _showWarning = value;
+                _warningIcon.Visibility = _showWarning ? Visibility.Visible : Visibility.Collapsed;
+            }
+        }
+
+        private string _warningToolTip;
+        public string WarningToolTip
+        {
+            get
+            {
+                return _warningToolTip;
+            }
+            set
+            {
+                _warningToolTip = value;
+                _warningIcon.ToolTip = _warningToolTip;
             }
         }
 

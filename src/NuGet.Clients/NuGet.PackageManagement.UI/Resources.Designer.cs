@@ -871,6 +871,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to You have {0} deprecated package(s) installed..
+        /// </summary>
+        public static string Label_Installed_DeprecatedWarning {
+            get {
+                return ResourceManager.GetString("Label_Installed_DeprecatedWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Installed:.
         /// </summary>
         public static string Label_InstalledColon {

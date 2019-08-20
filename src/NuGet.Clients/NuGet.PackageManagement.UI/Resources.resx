@@ -865,4 +865,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_DeprecationAlternatePackage" xml:space="preserve">
     <value>Alternate package</value>
   </data>
+  <data name="Label_Installed_DeprecatedWarning" xml:space="preserve">
+    <value>You have {0} deprecated package(s) installed.</value>
+  </data>
 </root>

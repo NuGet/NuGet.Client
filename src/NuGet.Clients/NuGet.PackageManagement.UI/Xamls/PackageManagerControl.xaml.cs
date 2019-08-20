@@ -11,6 +11,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
@@ -27,6 +28,7 @@ using VSThreadHelper = Microsoft.VisualStudio.Shell.ThreadHelper;
 using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
+using NuGet.Protocol;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -726,7 +728,7 @@ namespace NuGet.PackageManagement.UI
             if (useCacheForUpdates)
             {
                 loadContext.CachedPackages = Model.CachedUpdates;
-            };
+            }
 
             var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
 
@@ -751,7 +753,7 @@ namespace NuGet.PackageManagement.UI
                 pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
             }
 
-            // We only refresh update count, when we don't use cache so check it it's false
+            // We only refresh update count, when we don't use cache so check if it's false
             if (!useCacheForUpdates)
             {
                 // clear existing caches
@@ -774,28 +776,44 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    RefreshAvailableUpdatesCount();
+                    RefreshInstalledAndUpdatesTabs();
                 }
             }
         }
 
-        private void RefreshAvailableUpdatesCount()
+        private void RefreshInstalledAndUpdatesTabs()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                _topPanel._labelInstalled.ShowWarning = false;
                 _topPanel._labelUpgradeAvailable.Count = 0;
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
-                // cancel previous refresh update count task, if any
+                // cancel previous refresh tabs task, if any
                 // and start a new one.
                 var refreshCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _refreshCts, refreshCts)?.Cancel();
 
+                // Update installed tab warning icon
+                var installedDeprecatedPackagesCount = await GetInstalledDeprecatedPackagesCountAsync(
+                    loadContext, metadataProvider, refreshCts.Token);
+
+                var hasInstalledDeprecatedPackages = installedDeprecatedPackagesCount > 0;
+                _topPanel._labelInstalled.ShowWarning = hasInstalledDeprecatedPackages;
+                _topPanel._labelInstalled.WarningToolTip = hasInstalledDeprecatedPackages
+                    ? string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resx.Resources.Label_Installed_DeprecatedWarning,
+                        installedDeprecatedPackagesCount)
+                    : null;
+
+                // Update updates tab count
                 Model.CachedUpdates = new PackageSearchMetadataCache
                 {
                     Packages = await loader.GetAllPackagesAsync(refreshCts.Token),
@@ -804,7 +822,32 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel._labelUpgradeAvailable.Count = Model.CachedUpdates.Packages.Count;
             })
-            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshAvailableUpdatesCount)));
+            .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(RefreshInstalledAndUpdatesTabs)));
+        }
+
+        private static async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IPackageMetadataProvider metadataProvider, CancellationToken token)
+        {
+            // Switch off the UI thread before fetching installed packages and deprecation metadata.
+            await TaskScheduler.Default;
+
+            var installedPackages = await loadContext.GetInstalledPackagesAsync();
+
+            var installedPackageDeprecationMetadata = await Task.WhenAll(
+                installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, token)));
+
+            return installedPackageDeprecationMetadata.Count(d => d != null);
+        }
+
+        private static async Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync(
+            PackageCollectionItem package, IPackageMetadataProvider metadataProvider, CancellationToken refreshToken)
+        {
+            var metadata = await metadataProvider.GetPackageMetadataAsync(package, includePrerelease: true, refreshToken);
+            if (metadata == null)
+            {
+                return null;
+            }
+
+            return await metadata.GetDeprecationMetadataAsync();
         }
 
         private void RefreshConsolidatablePackagesCount()
@@ -861,7 +904,7 @@ namespace NuGet.PackageManagement.UI
 
                 var context = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var metadataProvider = CreatePackageMetadataProvider(context);
-                await _detailModel.LoadPackageMetadaAsync(metadataProvider, CancellationToken.None);
+                await _detailModel.LoadPackageMetadataAsync(metadataProvider, CancellationToken.None);
             }
         }
 
@@ -990,7 +1033,7 @@ namespace NuGet.PackageManagement.UI
                 })
                 .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(Refresh)));
 
-                RefreshAvailableUpdatesCount();
+                RefreshInstalledAndUpdatesTabs();
             }
 
             RefreshConsolidatablePackagesCount();

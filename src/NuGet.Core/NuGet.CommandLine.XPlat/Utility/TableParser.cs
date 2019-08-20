@@ -5,23 +5,24 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace NuGet.CommandLine.XPlat.Utility
 {
     public static class TableParser
     {
-        internal static IEnumerable<string> ToStringTable<T>(
+        internal static Task<IEnumerable<string>> ToStringTableAsync<T>(
           this IEnumerable<T> values,
           string[] columnHeaders,
-          params Func<T, object>[] valueSelectors)
+          params Func<T, Task<object>>[] valueSelectors)
         {
-            return ToStringTable(values.ToArray(), columnHeaders, valueSelectors);
+            return ToStringTableAsync(values.ToArray(), columnHeaders, valueSelectors);
         }
 
-        internal static IEnumerable<string> ToStringTable<T>(
+        internal static async Task<IEnumerable<string>> ToStringTableAsync<T>(
           this T[] values,
           string[] columnHeaders,
-          params Func<T, object>[] valueSelectors)
+          params Func<T, Task<object>>[] valueSelectors)
         {
             var headerSpace = 1;
 
@@ -48,17 +49,9 @@ namespace NuGet.CommandLine.XPlat.Utility
             {
                 for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
-                    if (colIndex == 1)
-                    {
-                        arrValues[rowIndex, colIndex] = "> " + valueSelectors[colIndex]
-                            .Invoke(values[rowIndex - headerSpace]).ToString();
-                    }
-                    else
-                    {
-                        arrValues[rowIndex, colIndex] = valueSelectors[colIndex]
-                            .Invoke(values[rowIndex - headerSpace]).ToString();
-                    }
-
+                    var data = await valueSelectors[colIndex](values[rowIndex - headerSpace]);
+                    var cellContent = (colIndex == 1 ? "> " : "") + data.ToString();
+                    arrValues[rowIndex, colIndex] = cellContent;
                 }
             }
 

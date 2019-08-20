@@ -138,6 +138,8 @@ namespace NuGet.Protocol
             return uri;
         }
 
+        public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
+
         public bool IsListed { get; }
     }
 }

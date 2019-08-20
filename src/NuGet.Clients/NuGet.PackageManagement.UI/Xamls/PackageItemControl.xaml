@@ -5,6 +5,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"  
+  xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
   x:Name="_self"
   mc:Ignorable="d"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
@@ -237,15 +238,16 @@
                         <ColumnDefinition Width="auto" />
                       </Grid.ColumnDefinitions>
 
-                      <!-- installed indicator -->
+                      <!-- deprecation indicator -->
                       <imaging:CrispImage
-                        x:Name="_installedIndicator"
+                        x:Name="_deprecationIndicator"
                         Grid.Column="0"
                         Width="12"
                         Height="12"
                         Visibility="Visible"
                         VerticalAlignment="Center"
-                        Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}"/>
+                        ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+                        Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
 
                       <!-- installed version -->
                       <TextBlock
@@ -537,17 +539,17 @@
                   <Setter TargetName="_updateButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
 
-                <!-- The installed version indicator becomes invisible when
+                <!-- The deprecation indicator becomes invisible when
                    * IsSolution is true; or
-                   * InstalledVersion is null;
+                   * IsPackageDeprecated is true
                 -->
                 <DataTrigger
                   Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
-                  <Setter TargetName="_installedIndicator" Property="Visibility" Value="Collapsed" />
+                  <Setter TargetName="_deprecationIndicator" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
                 <DataTrigger
-                  Binding="{Binding InstalledVersion}" Value="{x:Null}">
-                  <Setter TargetName="_installedIndicator" Property="Visibility" Value="Collapsed" />
+                  Binding="{Binding IsPackageDeprecated}" Value="false">
+                  <Setter TargetName="_deprecationIndicator" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
               </ControlTemplate.Triggers>
             </ControlTemplate>

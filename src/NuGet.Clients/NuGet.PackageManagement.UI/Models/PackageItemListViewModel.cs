@@ -7,11 +7,14 @@ using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -19,6 +22,12 @@ namespace NuGet.PackageManagement.UI
     // Some of its properties, such as Latest Version, Status, are fetched on-demand in the background.
     public class PackageItemListViewModel : INotifyPropertyChanged
     {
+        private static readonly AsyncLazy<IEnumerable<VersionInfo>> LazyEmptyVersionInfo =
+            AsyncLazy.New(Enumerable.Empty<VersionInfo>());
+
+        private static readonly AsyncLazy<PackageDeprecationMetadata> LazyNullDeprecationMetadata =
+            AsyncLazy.New((PackageDeprecationMetadata)null);
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         public string Id { get; set; }
@@ -41,7 +50,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // The installed version of the package.
+        /// <summary>
+        /// The installed version of the package.
+        /// </summary>
         private NuGetVersion _installedVersion;
         public NuGetVersion InstalledVersion
         {
@@ -59,8 +70,10 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // The version that can be installed or updated to. It is null
-        // if the installed version is already the latest.
+        /// <summary>
+        /// The version that can be installed or updated to. It is null
+        /// if the installed version is already the latest.
+        /// </summary>
         private NuGetVersion _latestVersion;
         public NuGetVersion LatestVersion
         {
@@ -92,7 +105,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // True if the package is AutoReferenced
+        /// <summary>
+        /// True if the package is AutoReferenced
+        /// </summary>
         private bool _autoReferenced;
         public bool AutoReferenced
         {
@@ -200,14 +215,12 @@ namespace NuGet.PackageManagement.UI
                 if (!_providersLoaderStarted && ProvidersLoader != null)
                 {
                     _providersLoaderStarted = true;
-                    Task.Run(async () =>
-                    {
-                        var result = await ProvidersLoader.Value;
-
-                        await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                        Providers = result;
-                    });
+                    NuGetUIThreadHelper.JoinableTaskFactory
+                        .RunAsync(ReloadProvidersAsync)
+                        .FileAndForget(
+                            TelemetryUtility.CreateFileAndForgetEventName(
+                                nameof(PackageItemListViewModel),
+                                nameof(ReloadProvidersAsync)));
                 }
 
                 return _providers;
@@ -272,27 +285,64 @@ namespace NuGet.PackageManagement.UI
         public Uri IconUrl { get; set; }
 
         public Lazy<Task<IEnumerable<VersionInfo>>> Versions { private get; set; }
+        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => (Versions ?? LazyEmptyVersionInfo).Value;
 
-        public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Versions.Value;
+        public Lazy<Task<PackageDeprecationMetadata>> DeprecationMetadata { private get; set; }
+        public Task<PackageDeprecationMetadata> GetPackageDeprecationMetadataAsync() => (DeprecationMetadata ?? LazyNullDeprecationMetadata).Value;
 
-        private Lazy<Task<NuGetVersion>> _backgroundLoader;
+        private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
+        private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
         private void TriggerStatusLoader()
         {
-            if (!_backgroundLoader.IsValueCreated)
+            if (!_backgroundLatestVersionLoader.IsValueCreated)
             {
-#pragma warning disable VSTHRD110 // Observe result of async calls
-                Task.Run(async () =>
-#pragma warning restore VSTHRD110 // Observe result of async calls
-                {
-                    var result = await _backgroundLoader.Value;
-
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    LatestVersion = result;
-                    Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
-                });
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageVersionsAsync)
+                    .FileAndForget(
+                        TelemetryUtility.CreateFileAndForgetEventName(
+                            nameof(PackageItemListViewModel),
+                            nameof(ReloadPackageVersionsAsync)));
             }
+
+
+            if (!_backgroundDeprecationMetadataLoader.IsValueCreated)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .RunAsync(ReloadPackageDeprecationAsync)
+                    .FileAndForget(
+                        TelemetryUtility.CreateFileAndForgetEventName(
+                            nameof(PackageItemListViewModel),
+                            nameof(ReloadPackageDeprecationAsync)));
+            }
+        }
+
+        private async System.Threading.Tasks.Task ReloadPackageVersionsAsync()
+        {
+            var result = await _backgroundLatestVersionLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            LatestVersion = result;
+            Status = GetPackageStatus(LatestVersion, InstalledVersion, AutoReferenced);
+        }
+
+        private async System.Threading.Tasks.Task ReloadPackageDeprecationAsync()
+        {
+            var result = await _backgroundDeprecationMetadataLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            IsPackageDeprecated = result != null;
+        }
+
+        private async System.Threading.Tasks.Task ReloadProvidersAsync()
+        {
+            var result = await ProvidersLoader.Value;
+
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Providers = result;
         }
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
@@ -305,12 +355,12 @@ namespace NuGet.PackageManagement.UI
             // Set auto referenced to true any reference for the given id contains the flag.
             AutoReferenced = installedPackages.IsAutoReferenced(Id);
 
-            _backgroundLoader = AsyncLazy.New(
+            _backgroundLatestVersionLoader = AsyncLazy.New(
                 async () =>
                 {
                     var packageVersions = await GetVersionsAsync();
 
-                    // filter package versions based on allowed versions in pacakge.config
+                    // filter package versions based on allowed versions in packages.config
                     packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
                     var latestAvailableVersion = packageVersions
                         .Select(p => p.Version)
@@ -318,6 +368,8 @@ namespace NuGet.PackageManagement.UI
 
                     return latestAvailableVersion;
                 });
+
+            _backgroundDeprecationMetadataLoader = AsyncLazy.New(GetPackageDeprecationMetadataAsync);
 
             OnPropertyChanged(nameof(Status));
         }
