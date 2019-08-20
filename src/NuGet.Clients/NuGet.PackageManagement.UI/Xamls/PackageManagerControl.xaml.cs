@@ -827,10 +827,11 @@ namespace NuGet.PackageManagement.UI
 
         private static async Task<int> GetInstalledDeprecatedPackagesCountAsync(PackageLoadContext loadContext, IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
+            // Switch off the UI thread before fetching installed packages and deprecation metadata.
+            await TaskScheduler.Default;
+
             var installedPackages = await loadContext.GetInstalledPackagesAsync();
 
-            // Switch off the UI thread before fetching deprecation metadata.
-            await TaskScheduler.Default;
             var installedPackageDeprecationMetadata = await Task.WhenAll(
                 installedPackages.Select(p => GetPackageDeprecationMetadataAsync(p, metadataProvider, token)));
 

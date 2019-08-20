@@ -458,7 +458,7 @@ namespace NuGet.PackageManagement.UI
 
         internal async Task LoadPackageMetadataAsync(IPackageMetadataProvider metadataProvider, CancellationToken token)
         {
-            var versions = await GetVersionsWithDeprecationMetadataAsync(metadataProvider);
+            var versions = await GetVersionsWithDeprecationMetadataAsync();
 
             // First try to load the metadata from the version info. This will happen if we already fetched metadata
             // about each version at the same time as fetching the version list (that is, V2). This also acts as a
@@ -525,7 +525,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private async Task<IEnumerable<(VersionInfo versionInfo, PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithDeprecationMetadataAsync(IPackageMetadataProvider metadataProvider)
+        private async Task<IEnumerable<(VersionInfo versionInfo, PackageDeprecationMetadata deprecationMetadata)>> GetVersionsWithDeprecationMetadataAsync()
         {
             var versions = await _searchResultPackage.GetVersionsAsync();
             return await Task.WhenAll(

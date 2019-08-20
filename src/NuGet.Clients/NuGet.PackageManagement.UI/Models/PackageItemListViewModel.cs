@@ -360,7 +360,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     var packageVersions = await GetVersionsAsync();
 
-                    // filter package versions based on allowed versions in package.config
+                    // filter package versions based on allowed versions in packages.config
                     packageVersions = packageVersions.Where(v => AllowedVersions.Satisfies(v.Version));
                     var latestAvailableVersion = packageVersions
                         .Select(p => p.Version)
