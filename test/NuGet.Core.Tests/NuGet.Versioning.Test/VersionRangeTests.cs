@@ -202,7 +202,7 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-5.1.0-*", "1.0.0-5.1.0")]
         [InlineData("1.0.*", "1.0.0")]
         [InlineData("1.*", "1.0.0")]
-        [InlineData("*", "(, )")]
+        [InlineData("*", "0.0.0")]
         public void VersionRange_VerifyNonSnapshotVersion(string snapshot, string expected)
         {
             // Arrange
