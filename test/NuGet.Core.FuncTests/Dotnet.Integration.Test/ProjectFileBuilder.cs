@@ -23,10 +23,12 @@ namespace NuGet.Test.Utility
         public string BaseDir { get; private set; }
         public string ProjectFilepath => Path.Combine(BaseDir, ProjectName, $"{ProjectName}.csproj");
         public string ProjectFolder => Path.Combine(BaseDir, ProjectName);
+        public Dictionary<string, string> Properties { get; private set; }
 
         private ProjectFileBuilder()
         {
             ItemGroupEntries = new List<Tuple<string, string, string>>();
+            Properties = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -75,6 +77,13 @@ namespace NuGet.Test.Utility
             return this;
         }
 
+        public ProjectFileBuilder WithProperty(string propertyName, string value)
+        {
+            Properties[propertyName] = value;
+
+            return this;
+        }
+
         private void ModifyProjectFile()
         {
             using (FileStream stream = new FileStream(ProjectFilepath, FileMode.Open, FileAccess.ReadWrite))
@@ -90,6 +99,8 @@ namespace NuGet.Test.Utility
                 {
                     ProjectFileUtils.AddProperty(xml, "PackageIcon", PackageIcon);
                 }
+
+                ProjectFileUtils.AddProperties(xml, Properties);
 
                 var attributes = new Dictionary<string, string>();
                 var properties = new Dictionary<string, string>();

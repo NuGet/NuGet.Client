@@ -4222,21 +4222,26 @@ namespace ClassLibrary
         }
 
         [Fact]
-        public void PackCommand_PackageIconUrl_WithNuspec_Warns_Suceeds()
+        public void PackCommand_PackIcon_WithNuspec_IconUrl_Warns_Suceeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
             var projectBuilder = ProjectFileBuilder.Create();
             var nuspecBuilder = NuspecBuilder.Create();
 
             nuspecBuilder
-                .WithIconUrl("https://test/icon2.jpg");
+                .WithIconUrl("https://test/icon2.jpg")
+                .WithFile("dummy.txt");
 
             projectBuilder
                 .WithProjectName("test")
+                .WithProperty("Authors", "Alice")
+                .WithProperty("PackageOutputPath", "bin\\Debug\\")
+                .WithProperty("NuspecFile", "test.nuspec")
                 .WithPackageIconUrl("https://test/icon.jpg");
 
             testDirBuilder
-                .WithNuspec(nuspecBuilder, "test.nuspec");
+                .WithNuspec(nuspecBuilder, "test\\test.nuspec")
+                .WithFile("test\\dummy.txt", 10);
 
             using (var srcDir = testDirBuilder.Build())
             {
@@ -4244,7 +4249,8 @@ namespace ClassLibrary
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
 
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
-                Assert.Contains("PackageIconUrl", result.Output);
+                Assert.Contains("iconUrl", result.Output);
+                Assert.DoesNotContain("PackageIconUrl", result.Output);
             }
         }
     }

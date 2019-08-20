@@ -67,6 +67,8 @@ namespace NuGet.Test.Utility
 
             if (NuspecBuilder != null)
             {
+                var dir = Path.GetDirectoryName(NuspecPath);
+                Directory.CreateDirectory(dir);
                 File.WriteAllText(NuspecPath, NuspecBuilder.Build().ToString());
             }
 
