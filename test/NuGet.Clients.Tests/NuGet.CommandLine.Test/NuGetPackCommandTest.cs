@@ -5871,6 +5871,54 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             }
         }
 
+        [Fact]
+        public void PackCommand_ProjectFile_PackageIconUrl_WithNuspec_WithPackTask_Warns_Suceed()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            var projectFileContent =
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+    <PackageReference Inlcude='NuGet.Build.Tasks.Pack' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
+
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithIconUrl("http://another/icon.jpg");
+
+            testDirBuilder
+                .WithFile("A.csproj", projectFileContent)
+                .WithFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, "A.nuspec");
+
+            using (testDirBuilder.Build())
+            {
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack A.csproj -Build",
+                    waitForExit: true);
+
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+                Assert.DoesNotContain(AnalysisResources.PackageIconUrlDeprecationWarning, r.Output);
+            }
+        }
+
+
         /// <summary>
         /// Tests successful nuget.exe icon pack functionality with nuspec
         /// </summary>
