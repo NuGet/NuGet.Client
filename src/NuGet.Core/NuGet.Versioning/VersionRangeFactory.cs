@@ -21,19 +21,18 @@ namespace NuGet.Versioning
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
-        [Obsolete("Please don't use this VersionRange. The lack of a proper normalized version means that it is not round trippable in the assets file.")]
+        [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
         public static readonly VersionRange AllFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
 
         /// <summary>
         /// A range that accepts all stable versions
         /// </summary>
-        [Obsolete("Please don't use this VersionRange. The lack of a proper normalized version means that it is not round trippable in the assets file.")]
         public static readonly VersionRange AllStable = new VersionRange(null, true, null, true);
 
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
-        [Obsolete("Please don't use this VersionRange. The lack of a proper normalized version means that it is not round trippable in the assets file.")]
+        [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
         public static readonly VersionRange AllStableFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major));
 
         /// <summary>
