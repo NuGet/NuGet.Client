@@ -5884,6 +5884,8 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <OutputPath>out</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
+    <PackageOutputPath>bin\Debug\</PackageOutputPath>
+    <Authors>Alice</Authors>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include='NuGet.Build.Tasks.Pack' />

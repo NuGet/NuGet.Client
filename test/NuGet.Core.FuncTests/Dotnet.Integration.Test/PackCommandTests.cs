@@ -4113,12 +4113,12 @@ namespace ClassLibrary
         public void PackCommand_PackageIcon_FolderNestedFlatPack_Suceeds()
         {
             var testDirBuilder = TestDirectoryBuilder.Create();
-            var projectBuilder = ProjectFileBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();   
 
             testDirBuilder
-                .WithFile("folder\\nested\\icon.jpg", 10)
-                .WithFile("folder\\nested\\sample.txt", 10)
-                .WithFile("folder\\nested\\media\\readme.txt", 10);
+                .WithFile("test\\folder\\nested\\icon.jpg", 10)
+                .WithFile("test\\folder\\nested\\sample.txt", 10)
+                .WithFile("test\\folder\\nested\\media\\readme.txt", 10);
 
             projectBuilder
                 .WithProjectName("test")
@@ -4196,8 +4196,7 @@ namespace ClassLibrary
             using (var srcDir = testDirBuilder.Build())
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result1 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
-                var result2 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=snupkg");
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=snupkg");
             }
         }
 
@@ -4218,8 +4217,34 @@ namespace ClassLibrary
             using (var srcDir = testDirBuilder.Build())
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
-                var result1 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
-                var result2 = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=symbols.nupkg");                
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, "--include-symbols /p:SymbolPackageFormat=symbols.nupkg");                
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackageIconUrl_WithNuspec_Warns_Suceeds()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var projectBuilder = ProjectFileBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+
+            nuspecBuilder
+                .WithIconUrl("https://test/icon2.jpg");
+
+            projectBuilder
+                .WithProjectName("test")
+                .WithPackageIconUrl("https://test/icon.jpg");
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder, "test.nuspec");
+
+            using (var srcDir = testDirBuilder.Build())
+            {
+                projectBuilder.Build(msbuildFixture, srcDir.Path);
+                var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
+
+                Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
+                Assert.Contains("PackageIconUrl", result.Output);
             }
         }
     }
