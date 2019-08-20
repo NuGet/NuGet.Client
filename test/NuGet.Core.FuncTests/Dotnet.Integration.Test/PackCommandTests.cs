@@ -4021,5 +4021,37 @@ namespace ClassLibrary
             }
         }
 
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(null)]
+        [InlineData("snupkg")]
+        [InlineData("symbols.nupkg")]
+        public void PackCommand_IncludeSymbols_DefaultSymbolPackageFormatChangingWarning(string symbolPackageFormat)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(xml, "IncludeSymbols", "true");
+                    if (symbolPackageFormat != null)
+                    {
+                        ProjectFileUtils.AddProperty(xml, "SymbolPackageFormat", symbolPackageFormat);
+                    }
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // Act
+                var packResult = msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                // Assert
+                bool expected = symbolPackageFormat == null;
+                Assert.Equal(expected, packResult.AllOutput.Contains("NU5132"));
+            }
+        }
     }
 }

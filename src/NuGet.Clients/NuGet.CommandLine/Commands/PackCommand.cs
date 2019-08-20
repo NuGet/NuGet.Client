@@ -140,6 +140,11 @@ namespace NuGet.CommandLine
             {
                 packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
+            else if (Symbols)
+            {
+                packArgs.Logger.Log(LogMessage.CreateWarning(NuGetLogCode.NU5132, LocalizedResourceManager.GetString("PackageCommandDefaultSymbolPackageFormatChanging")));
+            }
+
             packArgs.Deterministic = Deterministic;
             packArgs.Build = Build;
             packArgs.Exclude = Exclude;

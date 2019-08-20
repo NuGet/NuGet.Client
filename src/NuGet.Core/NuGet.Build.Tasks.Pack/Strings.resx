@@ -125,6 +125,10 @@
     <value>The assets file produced by restore does not exist. Try restoring the project again. The expected location of the assets file is {0}.</value>
     <comment>{0} is the path to the assets file.</comment>
   </data>
+  <data name="DefaultSymbolsPackageFormatChanging" xml:space="preserve">
+    <value>The default symbols package format will change to snupkg in an upcoming version. Use SymbolPackageFormat to keep using symbols.nupkg.</value>
+    <comment>Please don't localize snupkg, SymbolPackageFormat, or symbols.nupkg.</comment>
+  </data>
   <data name="Error_FileNotFound" xml:space="preserve">
     <value>The file '{0}' to be packed was not found on disk.</value>
     <comment>{0} is the file being packed.</comment>

@@ -5920,6 +5920,81 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 Assert.True(File.Exists(Path.Combine(proj3Directory, "proj3.0.0.0.nupkg")));
             }
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+
+        public void PackCommand_Symbols_DefaultSymbolPackageFormatChangingWarning(SymbolPackageFormat? symbolPackageFormat)
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+            var packageName = "A";
+            var version = "1.0.0";
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                Util.CreateFile(
+                    workingDirectory,
+                    $"{packageName}.csproj",
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+   <PropertyGroup>
+     <OutputType>library</OutputType>
+     <OutputPath>out</OutputPath>
+     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+   </PropertyGroup>
+   <ItemGroup>
+     <Compile Include='B.cs' />
+   </ItemGroup>
+   <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+ </Project>");
+                Util.CreateFile(
+                    workingDirectory,
+                    "B.cs",
+@"public class B
+ {
+     public int C { get; set; }
+ }");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    $"{packageName}.nuspec",
+$@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+   <metadata>
+     <id>{packageName}</id>
+     <version>{version}</version>
+     <title>packageA</title>
+     <authors>test</authors>
+     <owners>test</owners>
+     <description>Description</description>
+     <copyright>Copyright ©  2013</copyright>
+   </metadata>
+ </package>");
+
+                var cmdLine = new StringBuilder();
+                cmdLine.Append($"pack {packageName}.csproj -build -symbols");
+                if (symbolPackageFormat != null)
+                {
+                    cmdLine.Append(" -SymbolPackageFormat ");
+                    var extension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
+                    cmdLine.Append(extension);
+                }
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    cmdLine.ToString(),
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                bool expected = symbolPackageFormat == null;
+                Assert.Equal(expected, r.AllOutput.Contains("NU5132"));
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions

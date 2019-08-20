@@ -7342,6 +7342,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The default symbols package format will change to snupkg in an upcoming version. Use SymbolPackageFormat to keep using symbols.nupkg..
+        /// </summary>
+        public static string PackageCommandDefaultSymbolPackageFormatChanging {
+            get {
+                return ResourceManager.GetString("PackageCommandDefaultSymbolPackageFormatChanging", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File from dependency is changed. Adding file &apos;{0}&apos;..
         /// </summary>
         public static string PackageCommandFileFromDependencyIsChanged {

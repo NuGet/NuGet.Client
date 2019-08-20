@@ -806,6 +806,11 @@ namespace NuGet.Common
         NU5131 = 5131,
 
         /// <summary>
+        /// Default symbols package format changing
+        /// </summary>
+        NU5132 = 5132,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
