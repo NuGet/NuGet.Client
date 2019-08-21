@@ -119,7 +119,11 @@ namespace NuGet.Packaging.Rules
                 {
                     foreach (var item in nuspecReferences)
                     {
-                        missingReferences.Add(new MissingReference("ref", item.Key, item.Value.ToArray()));
+                        var refs = item.Value.ToArray();
+                        if (refs.Length != 0)
+                        {
+                            missingReferences.Add(new MissingReference("ref", item.Key, refs));
+                        }
                     }
                 }
             }
