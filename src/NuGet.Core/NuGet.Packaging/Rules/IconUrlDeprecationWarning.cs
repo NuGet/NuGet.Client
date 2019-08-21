@@ -19,9 +19,9 @@ namespace NuGet.Packaging.Rules
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            var nuspecReader = builder?.NuspecReader;
-            var icon = nuspecReader?.GetIcon();
-            var iconUrl = nuspecReader?.GetIconUrl();
+            var nuspecReader = builder.NuspecReader;
+            var icon = nuspecReader.GetIcon();
+            var iconUrl = nuspecReader.GetIconUrl();
 
             if (icon == null && !string.IsNullOrEmpty(iconUrl))
             {
