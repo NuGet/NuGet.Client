@@ -297,7 +297,7 @@ namespace Dotnet.Integration.Test
             {
                 var projectName = "ClassLibrary1";
                 var availableVersions = "1.0.0;2.0.0";
-                var workingDirectory = Path.Combine(pathContext.WorkingDirectory, projectName);
+                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName);
 
@@ -309,6 +309,9 @@ namespace Dotnet.Integration.Test
                         Id = "x",
                         Version = version
                     };
+
+                    package.Files.Clear();
+                    package.AddFile($"lib/net45/a.dll");
 
                     await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                          pathContext.PackageSource,
