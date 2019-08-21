@@ -72,6 +72,16 @@ namespace NuGet.Packaging.Signing
 
             return value.SequenceEqual(hash);
         }
+
+        public byte[] GetNonce()
+        {
+            var nonce = _rfc3161TimestampTokenInfo.GetNonce();
+            if (nonce.HasValue)
+            {
+                return nonce.Value.ToArray();
+            }
+            return new byte[0];
+        }
     }
 #endif
 }

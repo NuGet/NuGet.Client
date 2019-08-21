@@ -180,7 +180,7 @@ namespace NuGet.Packaging.Signing
         public X509ExtensionCollection GetExtensions() =>
             Rfc3161TimestampTokenInfo.ShallowCopy(Data._extensions, preserveNull: false);
 
-        public unsafe Rfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
+        public unsafe IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
         {
             if (timestampUri == null)
                 throw new ArgumentNullException(nameof(timestampUri));
@@ -239,7 +239,7 @@ namespace NuGet.Packaging.Signing
                 byte[] encoded = new byte[content.cbEncoded];
                 Marshal.Copy(content.pbEncoded, encoded, 0, content.cbEncoded);
 
-                Rfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
+                IRfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfoNet472Wrapper(new Rfc3161TimestampTokenInfo(pTsContext));
                 X509Certificate2 signerCert = new X509Certificate2(pTsSigner);
 
                 using (X509Store extraCerts = new X509Store(hStore))
@@ -254,7 +254,7 @@ namespace NuGet.Packaging.Signing
                         }
                     }
 
-                    return new Rfc3161TimestampToken(
+                    return IRfc3161TimestampTokenFactory.CreateIRfc3161TimestampToken(
                         tstInfo,
                         signerCert,
                         additionalCertsColl,

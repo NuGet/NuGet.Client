@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Signing
 {
-    internal class IRfc3161TimestampTokenInfoFactory
+    public class IRfc3161TimestampTokenInfoFactory
     {
-        internal static IRfc3161TimestampTokenInfo CreateIRfc3161TimestampTokenInfo(byte[] bytes)
+        public static IRfc3161TimestampTokenInfo CreateIRfc3161TimestampTokenInfo(byte[] bytes)
         {
             IRfc3161TimestampTokenInfo iRfc3161TimestampTokenInfo = null;
 #if IS_DESKTOP

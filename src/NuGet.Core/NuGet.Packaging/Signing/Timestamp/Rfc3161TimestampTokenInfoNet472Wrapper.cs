@@ -16,6 +16,11 @@ namespace NuGet.Packaging.Signing
         {
             _rfc3161TimestampTokenInfo = new Rfc3161TimestampTokenInfo(timestampTokenInfo);
         }
+
+        public Rfc3161TimestampTokenInfoNet472Wrapper(NuGet.Packaging.Signing.Rfc3161TimestampTokenInfo timestampTokenInfo)
+        {
+            _rfc3161TimestampTokenInfo = timestampTokenInfo;
+        }
         public string PolicyId
         {
             get
@@ -51,6 +56,10 @@ namespace NuGet.Packaging.Signing
         public bool HasMessageHash(byte[] hash)
         {
             return _rfc3161TimestampTokenInfo.HasMessageHash(hash);
+        }
+        public byte[] GetNonce()
+        {
+            return _rfc3161TimestampTokenInfo.GetNonce();
         }
     }
 #endif
