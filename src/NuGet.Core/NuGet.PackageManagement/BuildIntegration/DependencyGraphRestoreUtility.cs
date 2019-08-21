@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate)
         {
-            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
+            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
             foreach( var source in sources)
             {
                 caching.AddSourceRepository(source);

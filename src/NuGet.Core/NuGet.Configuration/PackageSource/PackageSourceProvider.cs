@@ -18,17 +18,34 @@ namespace NuGet.Configuration
 
         public PackageSourceProvider(
           ISettings settings)
-            : this(settings, ConfigurationDefaults.Instance.DefaultPackageSources)
+            : this(settings, ConfigurationDefaults.Instance.DefaultPackageSources, enablePackageSourcesChangedEvent: true)
+        {
+        }
+
+        public PackageSourceProvider(
+          ISettings settings,
+          bool enablePackageSourcesChangedEvent)
+            : this(settings, ConfigurationDefaults.Instance.DefaultPackageSources, enablePackageSourcesChangedEvent)
         {
         }
 
         public PackageSourceProvider(
             ISettings settings,
-            IEnumerable<PackageSource> configurationDefaultSources
-            )
+            IEnumerable<PackageSource> configurationDefaultSources)
+            : this (settings, configurationDefaultSources, enablePackageSourcesChangedEvent: true)
+        {
+        }
+
+        public PackageSourceProvider(
+            ISettings settings,
+            IEnumerable<PackageSource> configurationDefaultSources,
+            bool enablePackageSourcesChangedEvent)
         {
             Settings = settings ?? throw new ArgumentNullException(nameof(settings));
-            Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
+            if (enablePackageSourcesChangedEvent)
+            {
+                Settings.SettingsChanged += (_, __) => { OnPackageSourcesChanged(); };
+            }
             _configurationDefaultSources = LoadConfigurationDefaultSources(configurationDefaultSources);
         }
 

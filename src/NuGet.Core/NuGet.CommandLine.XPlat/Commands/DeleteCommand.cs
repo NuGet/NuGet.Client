@@ -72,7 +72,7 @@ namespace NuGet.CommandLine.XPlat
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
+                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
 
                     await DeleteRunner.Run(
                         sourceProvider.Settings,

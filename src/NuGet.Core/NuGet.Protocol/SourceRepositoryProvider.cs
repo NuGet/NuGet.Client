@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,7 +18,7 @@ namespace NuGet.Protocol.Core.Types
         private List<SourceRepository> _repositories;
 
         public SourceRepositoryProvider(ISettings settings, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
-            : this(new PackageSourceProvider(settings), resourceProviders)
+            : this(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false), resourceProviders)
         {
         }
 

@@ -2109,6 +2109,24 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void PackageSourcesChanged_EventRunsSubscriptions(bool subscribeToEvent)
+        {
+            // Arrange
+            var setting = new Mock<ISettings>();
+            var target = new PackageSourceProvider(setting.Object, subscribeToEvent);
+            bool eventRun = false;
+            target.PackageSourcesChanged += (s, e) => { eventRun = true; };
+
+            // Act
+            setting.Raise(s => s.SettingsChanged += null, (EventArgs)null);
+
+            // Assert
+            Assert.Equal(subscribeToEvent, eventRun);
+        }
+
         private string CreateNuGetConfigContent(string enabledReplacement = "", string disabledReplacement = "", string activeSourceReplacement = "")
         {
             var nugetConfigBaseString = new StringBuilder();

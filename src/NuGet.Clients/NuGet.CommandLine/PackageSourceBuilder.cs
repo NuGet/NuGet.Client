@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using NuGet.Configuration;
 
 namespace NuGet.CommandLine
@@ -7,7 +7,7 @@ namespace NuGet.CommandLine
     {
         internal static Configuration.PackageSourceProvider CreateSourceProvider(Configuration.ISettings settings)
         {
-            return new Configuration.PackageSourceProvider(settings);
+            return new Configuration.PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
         }
     }
 }

@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.VisualStudio
     /// SourceRepositoryProvider is the high level source for repository objects representing package sources.
     /// </summary>
     [Export(typeof(ISourceRepositoryProvider))]
-    public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider
+    public sealed class ExtensibleSourceRepositoryProvider : ISourceRepositoryProvider, IDisposable
     {
 
         // TODO: add support for reloading sources when changes occur
@@ -59,10 +59,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     _initialized = true;
 
-                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value);
+                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value, true);
 
                     // Hook up event to refresh package sources when the package sources changed
-                    _packageSourceProvider.PackageSourcesChanged += (sender, e) => { ResetRepositories(); };
+                    _packageSourceProvider.PackageSourcesChanged += ResetRepositories;
                 }
             }
         }
@@ -121,6 +121,11 @@ namespace NuGet.PackageManagement.VisualStudio
             _repositories = new Lazy<List<SourceRepository>>(GetRepositoriesCore);
         }
 
+        private void ResetRepositories(object sender, EventArgs e)
+        {
+            ResetRepositories();
+        }
+
         private List<SourceRepository> GetRepositoriesCore()
         {
             var repositories = new List<SourceRepository>();
@@ -134,6 +139,14 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return repositories;
+        }
+
+        public void Dispose()
+        {
+            if (_packageSourceProvider != null)
+            {
+                _packageSourceProvider.PackageSourcesChanged -= ResetRepositories;
+            }
         }
     }
 }

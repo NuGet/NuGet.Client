@@ -100,7 +100,7 @@ namespace NuGet.Commands
                 {
                     AllowNoOp = true,
                     CacheContext = sourceCacheContext,
-                    CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings)),
+                    CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)),
                     Log = logger,
                 };
 
