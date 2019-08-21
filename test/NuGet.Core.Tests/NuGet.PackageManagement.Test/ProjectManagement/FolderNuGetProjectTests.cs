@@ -22,6 +22,8 @@ namespace NuGet.ProjectManagement.Test
 {
     public class FolderNuGetProjectTests
     {
+        private static readonly string Root = Path.GetFullPath("a");
+
         [Fact]
         public void Constructor_String_ThrowsForNullRoot()
         {
@@ -33,9 +35,9 @@ namespace NuGet.ProjectManagement.Test
         [Fact]
         public void Constructor_String_InitializesRootProperty()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(Root);
 
-            Assert.Equal("a", project.Root);
+            Assert.Equal(Root, project.Root);
         }
 
         [Fact]
@@ -44,7 +46,7 @@ namespace NuGet.ProjectManagement.Test
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new FolderNuGetProject(
                     root: null,
-                    packagePathResolver: new PackagePathResolver(rootDirectory: "a")));
+                    packagePathResolver: new PackagePathResolver(rootDirectory: Root)));
 
             Assert.Equal("root", exception.ParamName);
         }
@@ -53,7 +55,7 @@ namespace NuGet.ProjectManagement.Test
         public void Constructor_StringPackagePathResolver_ThrowsForNullPackagePathResolver()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new FolderNuGetProject(root: "a", packagePathResolver: null));
+                () => new FolderNuGetProject(Root, packagePathResolver: null));
 
             Assert.Equal("packagePathResolver", exception.ParamName);
         }
@@ -62,16 +64,16 @@ namespace NuGet.ProjectManagement.Test
         public void Constructor_StringPackagePathResolver_InitializesRootProperty()
         {
             var project = new FolderNuGetProject(
-                root: "a",
-                packagePathResolver: new PackagePathResolver(rootDirectory: "a"));
+                root: Root,
+                packagePathResolver: new PackagePathResolver(rootDirectory: Root));
 
-            Assert.Equal("a", project.Root);
+            Assert.Equal(Root, project.Root);
         }
 
         [Fact]
         public async Task GetInstalledPackagesAsync_DoesNotThrowIfCancelled()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(root: Root);
 
             await project.GetInstalledPackagesAsync(new CancellationToken(canceled: true));
         }
@@ -79,7 +81,7 @@ namespace NuGet.ProjectManagement.Test
         [Fact]
         public async Task GetInstalledPackagesAsync_ReturnsEmptyEnumerable()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(root: Root);
 
             var packages = await project.GetInstalledPackagesAsync(CancellationToken.None);
 
@@ -271,7 +273,7 @@ namespace NuGet.ProjectManagement.Test
         [Fact]
         public void PackageExists_PackageIdentity_ThrowsForNullPackageIdentity()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(root: Root);
 
             var exception = Assert.Throws<ArgumentNullException>(() => project.PackageExists(packageIdentity: null));
 
@@ -361,7 +363,7 @@ namespace NuGet.ProjectManagement.Test
         [Fact]
         public void PackageExists_PackageIdentityPackageSaveMode_ThrowsForNullPackageIdentity()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(root: Root);
 
             var exception = Assert.Throws<ArgumentNullException>(
                 () => project.PackageExists(packageIdentity: null, packageSaveMode: PackageSaveMode.Nupkg));
@@ -758,7 +760,7 @@ namespace NuGet.ProjectManagement.Test
         [Fact]
         public async Task UninstallPackageAsync_DoesNothing()
         {
-            var project = new FolderNuGetProject(root: "a");
+            var project = new FolderNuGetProject(root: Root);
 
             var wasUninstalled = await project.UninstallPackageAsync(
                 new PackageIdentity(id: "a", version: NuGetVersion.Parse("1.0.0")),

@@ -74,7 +74,7 @@ namespace NuGet.CommandLine
 
             CalculateEffectivePackageSaveMode();
             CalculateEffectiveSettings();
-            var installPath = ResolveInstallPath();
+            var installPath = Path.GetFullPath(ResolveInstallPath());
 
             var configFilePath = Path.GetFullPath(Arguments.Count == 0 ? Constants.PackageReferenceFile : Arguments[0]);
             var configFileName = Path.GetFileName(configFilePath);

@@ -259,7 +259,7 @@ namespace NuGet.CommandLine
         private async Task<IReadOnlyList<RestoreSummary>> PerformNuGetV2RestoreAsync(PackageRestoreInputs packageRestoreInputs)
         {
             ReadSettings(packageRestoreInputs);
-            var packagesFolderPath = GetPackagesFolder(packageRestoreInputs);
+            var packagesFolderPath = Path.GetFullPath(GetPackagesFolder(packageRestoreInputs));
 
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(SourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, Settings, packagesFolderPath);

@@ -1,8 +1,9 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
+using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
@@ -12,7 +13,7 @@ namespace NuGet.Packaging.Test
 {
     public class PackagePathResolverTests
     {
-        private const string InMemoryRootDirectory = ".";
+        private static readonly string InMemoryRootDirectory = Directory.GetCurrentDirectory();
         private static readonly PackageIdentity PackageIdentity = new PackageIdentity("PackageA", new NuGetVersion("1.0.0.0-BETA"));
 
         [Fact]
@@ -33,6 +34,25 @@ namespace NuGet.Packaging.Test
                 rootDirectory: string.Empty,
                 useSideBySidePaths: true));
             Assert.Equal("rootDirectory", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsForNonRootedRootDirectory()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var expectedPath = testDirectory.Path;
+                var relativePath = PathUtility.GetRelativePath(Directory.GetCurrentDirectory(), expectedPath);
+
+                // Act
+                var exception = Assert.Throws<ArgumentException>(() => new PackagePathResolver(
+                    rootDirectory: null,
+                    useSideBySidePaths: true));
+
+                // Assert
+                Assert.Equal("rootDirectory", exception.ParamName);
+            }
         }
 
         [Theory]
