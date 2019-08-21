@@ -239,28 +239,24 @@ namespace NuGet.CommandLine.Test
         [InlineData('|')]
         public void GetMsbuildDirectoryFromPath_PATHENVWithInvalidChars_Succeeds(char invalidChar)
         {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
             using (var vsPath = TestDirectory.Create())
             {
+                var msBuild160BinDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "16.0", "Bin"));
+                var msBuild160BinPath = msBuild160BinDir.FullName;
+                var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
 
-                if (RuntimeEnvironmentHelper.IsMono)
-                { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                    return;
-                }
+                File.WriteAllText(msBuild160ExePath, "foo 16.0");
 
-                var msBuild159BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.9", "Bin")).FullName;
-
-                var msBuild159ExePath = Path.Combine(msBuild159BinPath, "msbuild.exe").ToString();
-
-                using (var fs15 = File.CreateText(msBuild159ExePath))
-                {
-                    fs15.Write("foo 15.9");
-                }
-
-                var pathValue = Environment.GetEnvironmentVariable("PATH");
+                var envInstance = EnvironmentVariableWrapper.Instance;
+                var pathValue = envInstance.GetEnvironmentVariable("PATH");
 
                 var newPathValue = new StringBuilder();
                 newPathValue.Append(invalidChar);
-                newPathValue.Append(msBuild159BinPath);
+                newPathValue.Append(msBuild160ExePath);
                 newPathValue.Append(invalidChar);
                 newPathValue.Append(';');
                 newPathValue.Append(pathValue);
@@ -273,7 +269,7 @@ namespace NuGet.CommandLine.Test
 
                 // Assert
                 Assert.NotNull(toolset);
-                Assert.Equal(msBuild159BinPath, toolset.Path);
+                Assert.Equal(msBuild160ExePath, toolset.Path);
             }
         }
 

@@ -6,7 +6,7 @@ using System.Security;
 
 namespace NuGet.Common
 {
-    public class EnvironmentVariableWrapper : IEnvironmentVariableReader
+    public class EnvironmentVariableWrapper : IEnvironmentVariableReader, IEnvironmentVariableSetter
     {
         public static IEnvironmentVariableReader Instance { get; } = new EnvironmentVariableWrapper();
 
@@ -19,6 +19,18 @@ namespace NuGet.Common
             catch (SecurityException)
             {
                 return null;
+            }
+        }
+
+        public void SetEnvironmentVariable(string variable,string value)
+        {
+            try
+            {
+                Environment.SetEnvironmentVariable(variable,value);
+            }
+            catch (SecurityException)
+            {
+                throw;
             }
         }
     }
