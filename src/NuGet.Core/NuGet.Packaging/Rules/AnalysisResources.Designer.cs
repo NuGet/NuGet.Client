@@ -160,6 +160,24 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Both &apos;iconUrl&apos; and &apos;icon&apos; elements were detected. Consider removing the &apos;iconUrl&apos; element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl..
+        /// </summary>
+        public static string IconUrlAndIconWarning {
+            get {
+                return ResourceManager.GetString("IconUrlAndIconWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The &apos;iconUrl&apos; element will be deprecated. Consider using the &apos;icon&apos; element instead..
+        /// </summary>
+        public static string IconUrlDeprecationWarning {
+            get {
+                return ResourceManager.GetString("IconUrlDeprecationWarning", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The folder &apos;{0}&apos; under &apos;lib&apos; is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier..
         /// </summary>
         public static string InvalidFrameworkWarning {
