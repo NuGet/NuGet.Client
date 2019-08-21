@@ -31,8 +31,7 @@ namespace NuGet.CommandLine.XPlat
 
         public async Task ExecuteCommandAsync(ListPackageArgs listPackageArgs)
         {
-            // make the path an absolute path, in case we are run as a dotnet tool.
-            var absPath = Path.GetFullPath(listPackageArgs.Path);
+            var absPath = listPackageArgs.Path;
 
             if (!File.Exists(absPath))
             {

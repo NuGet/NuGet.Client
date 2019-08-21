@@ -88,8 +88,8 @@ namespace NuGet.CommandLine.XPlat
                 listpkg.OnExecute(async () =>
                 {
                     var logger = getLogger();
-
-                    var settings = ProcessConfigFile(config.Value(), path.Value);
+                    var slnOrProjPath = System.IO.Path.GetFullPath(path.Value);
+                    var settings = ProcessConfigFile(config.Value(), slnOrProjPath);
                     var sources = source.Values;
                     
                     var packageSources = GetPackageSources(settings, sources, config);

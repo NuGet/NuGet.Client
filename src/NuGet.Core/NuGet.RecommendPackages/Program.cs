@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -55,8 +56,10 @@ namespace NuGet.CommandLine.XPlat
             }
 
             var app = InitializeApp(args);
-            args = args
-                .Where(e => e != "package")
+            List<string> argsFake = new List<string>();
+            argsFake.Add("list");
+            argsFake.AddRange(args);
+            args = argsFake
                 .ToArray();
 
             var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
@@ -121,15 +124,7 @@ namespace NuGet.CommandLine.XPlat
         private static CommandLineApplication InitializeApp(string[] args)
         {
             var app = new CommandLineApplication();
-
-            if (args.Any() && args[0] == "package")
-            {
-                app.Name = DotnetPackageAppName;
-            }
-            else
-            {
-                app.Name = DotnetNuGetAppName;
-            }
+            app.Name = DotnetPackageAppName;
             app.FullName = Strings.App_FullName;
             app.HelpOption(XPlatUtility.HelpOption);
             app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
@@ -140,14 +135,7 @@ namespace NuGet.CommandLine.XPlat
         private static void RegisterCommands(CommandLineApplication app, CommandOutputLogger log)
         {
             // Register commands
-            if (app.Name == DotnetPackageAppName)
-            {
-                ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
-            }
-            else
-            {
-                ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
-            }
+            ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
         }
 
         /// <summary>

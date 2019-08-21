@@ -55,7 +55,7 @@ namespace NuGet.CommandLine.XPlat
             CancellationToken cancellationToken,
             ISettings settings = null)
         {
-            Path = path ?? throw new ArgumentNullException(nameof(path));
+            Path = System.IO.Path.GetFullPath(path) ?? throw new ArgumentNullException(nameof(path));
             PackageSources = packageSources ?? throw new ArgumentNullException(nameof(packageSources));
             Frameworks = frameworks ?? throw new ArgumentNullException(nameof(frameworks));
             IncludeOutdated = includeOutdated;
