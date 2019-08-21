@@ -40,6 +40,7 @@ namespace NuGet.Packaging
         private const string ExcludeFlags = "exclude";
         private const string LicenseUrl = "licenseUrl";
         private const string Repository = "repository";
+        private const string Icon = "icon";
 
         private static readonly char[] CommaArray = new char[] { ',' };
         private readonly IFrameworkNameProvider _frameworkProvider;
@@ -574,10 +575,11 @@ namespace NuGet.Packaging
         /// <summary>
         /// Gets the icon metadata from the .nuspec
         /// </summary>
-        /// <returns>A string containing the icon path or string.Empty if no icon entry is found</returns>
+        /// <returns>A string containing the icon path or null if no icon entry is found</returns>
         public string GetIcon()
         {
-            return GetMetadataValue("icon");
+            var node = MetadataNode.Elements(XName.Get(Icon, MetadataNode.GetDefaultNamespace().NamespaceName)).FirstOrDefault();
+            return node?.Value;
         }
 
         private static bool? AttributeAsNullableBool(XElement element, string attributeName)

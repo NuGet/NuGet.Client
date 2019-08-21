@@ -31,6 +31,8 @@ namespace NuGet.Packaging.Rules
                 new DependenciesGroupsForEachTFMRule(),
                 new UpholdBuildConventionRule(),
                 new ReferencesInNuspecMatchRefAssetsRule(),
+                new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
+                new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning),
             }
         );
 

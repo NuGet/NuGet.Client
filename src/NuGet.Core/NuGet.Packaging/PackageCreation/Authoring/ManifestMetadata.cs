@@ -289,6 +289,11 @@ namespace NuGet.Packaging
             return new PackageDependencyGroup(dependencyGroup.TargetFramework, dependencies);
         }
 
+        /// <summary>
+        /// Checks that the metadata in the nuspec is enough to create a package
+        /// </summary>
+        /// <returns>A iterable collection with the validation error messages</returns>
+        /// <remarks>Error codes are not associated with the validation error messages returned</remarks>
         public IEnumerable<string> Validate()
         {
             if (String.IsNullOrEmpty(Id))
@@ -335,6 +340,11 @@ namespace NuGet.Packaging
             if (_projectUrl == String.Empty)
             {
                 yield return String.Format(CultureInfo.CurrentCulture, NuGetResources.Manifest_UriCannotBeEmpty, "ProjectUrl");
+            }
+
+            if (Icon == string.Empty)
+            {
+                yield return NuGetResources.IconMissingRequiredValue;
             }
 
             if (RequireLicenseAcceptance && (string.IsNullOrWhiteSpace(_licenseUrl) && LicenseMetadata == null))

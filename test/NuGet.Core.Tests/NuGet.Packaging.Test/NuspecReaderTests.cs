@@ -1125,7 +1125,7 @@ namespace NuGet.Packaging.Test
         [InlineData("<icon>icon.jpg</icon>", "icon.jpg")]
         [InlineData("<icon></icon>", "")]
         [InlineData("<icon/>", "")]
-        [InlineData("", "")]
+        [InlineData("", null)]
         [InlineData("<icon>path/icon.jpg</icon>", "path/icon.jpg")]
         [InlineData("<icon>content\\icon.jpg</icon>", "content\\icon.jpg")]
         public void NuspecReaderTests_EmbeddedIcon(string icon, string expectedRead)
