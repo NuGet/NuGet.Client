@@ -41,22 +41,14 @@ namespace NuGet.Test.Utility
 
         public TestDirectoryBuilder WithFile(string filepath, int size)
         {
-            Files.Add(filepath, new FileEntry
-            {
-                Path = filepath,
-                Size = size,
-            });
+            Files.Add(filepath, new FileEntry(filepath, size));
 
             return this;
         }
 
         public TestDirectoryBuilder WithFile(string filepath, string content)
         {
-            Files.Add(filepath, new FileEntry
-            {
-                Path = filepath,
-                Content = content
-            });
+            Files.Add(filepath, new FileEntry(filepath, content));
 
             return this;
         }
@@ -104,18 +96,28 @@ namespace NuGet.Test.Utility
                 }
             }
         }
-    }
 
-    /// Rerpesents a File to be created by 
-    /// For testing purposes.
-    public class FileEntry
-    {
-        public string Path { get; set; }
-        public string Content { get; set; }
-        public long Size { get; set; } = -1;
-
-        public FileEntry() 
+        /// <summary>
+        /// Rerpesents a File to be created by <c>TestDirecotryBuilder</c>.
+        /// For testing purposes.
+        /// </summary>
+        public class FileEntry
         {
+            public string Path { get; }
+            public string Content { get; }
+            public long Size { get; } = -1;
+
+            public FileEntry(string path, long size)
+            {
+                Path = path;
+                Size = size;
+            }
+
+            public FileEntry(string path, string content)
+            {
+                Path = path;
+                Content = content;
+            }
         }
     }
 }

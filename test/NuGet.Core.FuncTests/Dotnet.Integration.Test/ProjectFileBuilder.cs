@@ -54,12 +54,7 @@ namespace NuGet.Test.Utility
         /// </summary>
         public ProjectFileBuilder WithItem(string itemType, string itemPath, string packagePath)
         {
-            ItemGroupEntries.Add(new ItemEntry 
-            {
-                ItemType = itemType, 
-                ItemPath = itemPath, 
-                PackagePath = packagePath,
-            });
+            ItemGroupEntries.Add(new ItemEntry(itemType, itemPath, packagePath));
 
             return this;
         }
@@ -128,18 +123,23 @@ namespace NuGet.Test.Utility
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
         }
-    }
 
-    /// Represents an MsBuild project file item entry,
-    /// For testing purposes
-    public class ItemEntry
-    {
-        public string ItemType { get; set; }
-        public string ItemPath { get; set; }
-        public string PackagePath { get; set; }
-
-        public ItemEntry() 
+        /// <summary>
+        /// Represents an MSBuild project file Item entry created by <c>ProjectFileBuilder</c>.
+        /// For testing purposes.
+        /// </summary>
+        internal class ItemEntry
         {
+            public string ItemType { get; }
+            public string ItemPath { get; }
+            public string PackagePath { get; }
+
+            public ItemEntry(string itemType, string itemPath, string packagePath)
+            {
+                ItemType = itemType;
+                ItemPath = itemPath;
+                PackagePath = packagePath;
+            }
         }
     }
 }

@@ -926,8 +926,8 @@ namespace NuGet.Commands
 
         internal void AnalyzePackage(PackageArchiveReader package)
         {
-            IList<PackagingLogMessage> issues = new List<PackagingLogMessage>();
             IEnumerable<IPackageRule> packageRules = Rules;
+            IList<PackagingLogMessage> issues = new List<PackagingLogMessage>();
 
             foreach (var rule in packageRules)
             {
