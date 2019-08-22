@@ -57,7 +57,8 @@ namespace Test.Utility.Signing
 
             return PrimarySignature.Load(newBytes);
         }
-
+#endif
+#if IS_SIGNING_SUPPORTED
         public static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
         {
             var found = false;
@@ -92,7 +93,8 @@ namespace Test.Utility.Signing
 
             return byteList.ToArray();
         }
-
+#endif
+#if IS_DESKTOP
         /// <summary>
         /// unsigns a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
