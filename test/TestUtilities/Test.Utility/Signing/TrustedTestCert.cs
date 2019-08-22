@@ -54,7 +54,7 @@ namespace Test.Utility.Signing
                 maximumValidityPeriod = TimeSpan.FromHours(2);
             }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             if (TrustedCert.NotAfter - TrustedCert.NotBefore > maximumValidityPeriod.Value)
             {
                 throw new InvalidOperationException($"The certificate used is valid for more than {maximumValidityPeriod}.");

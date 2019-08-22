@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography.X509Certificates;
+using NuGet.Common;
 
 namespace Test.Utility.Signing
 {
@@ -36,8 +37,24 @@ namespace Test.Utility.Signing
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
+        /// According to https://github.com/dotnet/corefx/blob/master/Documentation/architecture/cross-platform-cryptography.md#x509store
+        /// only windows can read/write LocalMachine\Root, Linux can read/write CurrentUser\Root, mac ??
         public TrustedTestCert<TestCertificate> WithTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
         {
+            
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+            }
+
+            if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, StoreLocation.CurrentUser);
+            }
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+            }
             return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
         }
 
