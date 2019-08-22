@@ -172,7 +172,8 @@ namespace NuGet.Packaging.Signing
 
             return signer;
         }
-
+#endif
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Add a signature to a package.
         /// </summary>

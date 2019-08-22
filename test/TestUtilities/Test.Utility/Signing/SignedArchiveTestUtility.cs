@@ -22,7 +22,7 @@ namespace Test.Utility.Signing
 {
     public static class SignedArchiveTestUtility
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Generates an author signed copy of a package and returns the path to that package
         /// This method can timestamp a package and should only be used with tests marked with [CIOnlyFact]
@@ -53,7 +53,8 @@ namespace Test.Utility.Signing
 
             return await AuthorSignPackageAsync(certificate, timestampService, signatureHashAlgorithm, timestampHashAlgorithm, signedPackagePath, tempPath);
         }
-
+#endif
+#if IS_DESKTOP
         /// <summary>
         /// Generates an author signed copy of a package and returns the path to that package
         /// This method can timestamp a package and should only be used with tests marked with [CIOnlyFact]
@@ -89,7 +90,8 @@ namespace Test.Utility.Signing
 
             return await AuthorSignPackageAsync(certificate, timestampService, signatureHashAlgorithm, timestampHashAlgorithm, signedPackagePath, tempPath);
         }
-
+#endif
+#if IS_SIGNING_SUPPORTED
         private static async Task<string> AuthorSignPackageAsync(
             X509Certificate2 certificate,
             Uri timestampService,

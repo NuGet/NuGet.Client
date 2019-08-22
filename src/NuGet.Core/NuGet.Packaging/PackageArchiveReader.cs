@@ -271,7 +271,7 @@ namespace NuGet.Packaging
                 using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
                 using (var stream = SignedPackageArchiveUtility.OpenPackageSignatureFileStream(reader))
                 {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
                     signature = PrimarySignature.Load(stream);
 #endif
                 }

@@ -18,7 +18,8 @@ namespace Test.Utility.Signing
 #if IS_DESKTOP
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
-
+#endif
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Get the certificate fingerprint for a given hash algorithm
         /// </summary>
@@ -29,7 +30,8 @@ namespace Test.Utility.Signing
         {
             return CertificateUtility.GetHashString(cert, hashAlgorithm);
         }
-
+#endif
+#if IS_DESKTOP
         public static Task WaitForCertificateExpirationAsync(X509Certificate2 certificate)
         {
             DateTimeOffset notAfter = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
