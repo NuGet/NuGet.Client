@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Xml.Linq;
@@ -19,15 +18,15 @@ namespace NuGet.Test.Utility
         public string PackageIcon { get; private set; }
         public string PackageIconUrl { get; private set; }
         public string ProjectName { get; private set; }
-        public List<Tuple<string, string, string>> ItemGroupEntries { get; private set; }
+        public List<ItemEntry> ItemGroupEntries { get; private set; }
         public string BaseDir { get; private set; }
-        public string ProjectFilepath => Path.Combine(BaseDir, ProjectName, $"{ProjectName}.csproj");
+        public string ProjectFilePath => Path.Combine(BaseDir, ProjectName, $"{ProjectName}.csproj");
         public string ProjectFolder => Path.Combine(BaseDir, ProjectName);
         public Dictionary<string, string> Properties { get; private set; }
 
         private ProjectFileBuilder()
         {
-            ItemGroupEntries = new List<Tuple<string, string, string>>();
+            ItemGroupEntries = new List<ItemEntry>();
             Properties = new Dictionary<string, string>();
         }
 
@@ -49,9 +48,18 @@ namespace NuGet.Test.Utility
             ModifyProjectFile();
         }
 
-        public ProjectFileBuilder WithItem(string type, string path, string packagePath)
+        /// <summary>
+        /// Adds and intem inside a &lt;ItemGroup/&gt; node in the following form:
+        /// <c>&lt;{itemType} Include="{itemPath}" [PackagePath="{packagePath}"] /&gt;</c>
+        /// </summary>
+        public ProjectFileBuilder WithItem(string itemType, string itemPath, string packagePath)
         {
-            ItemGroupEntries.Add(Tuple.Create(type, path, packagePath));
+            ItemGroupEntries.Add(new ItemEntry 
+            {
+                ItemType = itemType, 
+                ItemPath = itemPath, 
+                PackagePath =packagePath
+            });
 
             return this;
         }
@@ -86,7 +94,7 @@ namespace NuGet.Test.Utility
 
         private void ModifyProjectFile()
         {
-            using (FileStream stream = new FileStream(ProjectFilepath, FileMode.Open, FileAccess.ReadWrite))
+            using (FileStream stream = new FileStream(ProjectFilePath, FileMode.Open, FileAccess.ReadWrite))
             {
                 var xml = XDocument.Load(stream);
 
@@ -109,16 +117,29 @@ namespace NuGet.Test.Utility
                 {
                     attributes.Remove("PackagePath");
 
-                    if (tup.Item3 != null)
+                    if (tup.PackagePath != null)
                     {
-                        attributes["PackagePath"] = tup.Item3;
+                        attributes["PackagePath"] = tup.PackagePath;
                     }
 
-                    ProjectFileUtils.AddItem(xml, tup.Item1, tup.Item2, string.Empty, properties, attributes);
+                    ProjectFileUtils.AddItem(xml, tup.ItemType, tup.ItemPath, string.Empty, properties, attributes);
                 }
 
                 ProjectFileUtils.WriteXmlToFile(xml, stream);
             }
+        }
+    }
+
+    /// Represents an MsBuild project file item entry,
+    /// For testing purposes
+    public class ItemEntry
+    {
+        public string ItemType { get; set; }
+        public string ItemPath { get; set; }
+        public string PackagePath { get; set; }
+
+        public ItemEntry() 
+        {
         }
     }
 }

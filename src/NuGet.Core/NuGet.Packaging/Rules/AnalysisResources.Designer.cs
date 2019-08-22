@@ -19,7 +19,7 @@ namespace NuGet.Packaging.Rules {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     public class AnalysisResources {
@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;iconUrl&apos; element is deprecated. Consider using the &apos;icon&apos; element instead..
+        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos;/&apos;iconUrl&apos; element is deprecated. Consider using the &apos;PackageIcon&apos;/&apos;icon&apos; element instead..
         /// </summary>
         public static string IconUrlDeprecationWarning {
             get {
@@ -274,15 +274,6 @@ namespace NuGet.Packaging.Rules {
         public static string NoRefOrLibFolderInPackage {
             get {
                 return ResourceManager.GetString("NoRefOrLibFolderInPackage", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos; element is deprecated. Consider using the &apos;PackageIcon&apos; element instead..
-        /// </summary>
-        public static string PackageIconUrlDeprecationWarning {
-            get {
-                return ResourceManager.GetString("PackageIconUrlDeprecationWarning", resourceCulture);
             }
         }
         

@@ -642,11 +642,7 @@ namespace NuGet.Commands
 
             if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
             {
-                var iconRuletset = new IPackageRule[] {
-                    new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                };
-                
-                AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuletset));
+                AnalyzePackage(packageArchiveReader);
             }
 
             return packageArchiveReader;
@@ -737,21 +733,8 @@ namespace NuGet.Commands
                 }
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
-                {
-                    IPackageRule[] iconRuleSet = null;
-                   
-                    if (_packArgs.PackTargetArgs != null) {
-                        iconRuleSet = new IPackageRule[] {
-                            new IconUrlDeprecationWarning(AnalysisResources.PackageIconUrlDeprecationWarning),
-                        };
-                    }
-                    else {
-                        iconRuleSet = new IPackageRule[] {
-                            new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                        };
-                    }
-                    
-                    AnalyzePackage(packageArchiveReader, Rules.Concat(iconRuleSet));
+                {   
+                    AnalyzePackage(packageArchiveReader);
                 }
 
                 // If we're excluding symbols then do nothing else
@@ -943,12 +926,8 @@ namespace NuGet.Commands
 
         internal void AnalyzePackage(PackageArchiveReader package)
         {
-            AnalyzePackage(package, Rules);
-        }
-
-        internal void AnalyzePackage(PackageArchiveReader package, IEnumerable<IPackageRule> packageRules)
-        {
             IList<PackagingLogMessage> issues = new List<PackagingLogMessage>();
+            IEnumerable<IPackageRule> packageRules = Rules;
 
             foreach (var rule in packageRules)
             {

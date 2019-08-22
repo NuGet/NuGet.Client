@@ -4148,9 +4148,9 @@ namespace ClassLibrary
             }
         }
 
-        public void ValidatePackIcon(ProjectFileBuilder projectBuilder)
+        private void ValidatePackIcon(ProjectFileBuilder projectBuilder)
         {
-            Assert.True(File.Exists(projectBuilder.ProjectFilepath), "No project was produced");
+            Assert.True(File.Exists(projectBuilder.ProjectFilePath), "No project was produced");
             var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
 
             Assert.True(File.Exists(nupkgPath), "No package was produced");
