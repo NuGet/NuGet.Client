@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
@@ -278,7 +278,7 @@ namespace NuGet.Packaging.Signing
         }
 #endif
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         internal unsafe void AddTimestampToRepositoryCountersignature(SignedCms timestamp)
         {
             using (var hb = new HeapBlockRetainer())

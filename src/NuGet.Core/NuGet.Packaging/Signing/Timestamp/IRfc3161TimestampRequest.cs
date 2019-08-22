@@ -8,7 +8,7 @@ namespace NuGet.Packaging.Signing
 {
     public interface IRfc3161TimestampRequest
     {
-        unsafe IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout);
+        IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout);
 
     }
 }

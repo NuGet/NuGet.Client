@@ -27,7 +27,7 @@ namespace NuGet.Packaging.Signing
         public override string FriendlyName => Strings.PrimarySignatureFriendlyName;
 #endif
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Save the signed cms signature to a stream.
         /// </summary>
@@ -134,7 +134,7 @@ namespace NuGet.Packaging.Signing
 
 #endif
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static void VerifySigningCertificate(
             SignedCms signedCms,
             SignerInfo signerInfo,
@@ -165,7 +165,7 @@ namespace NuGet.Packaging.Signing
         }
 #endif
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static SignedCms Decode(byte[] bytes)
         {
             try

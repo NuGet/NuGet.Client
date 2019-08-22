@@ -7,7 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography;
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 
@@ -46,7 +46,7 @@ namespace NuGet.Packaging.Signing
             _timestamperUrl = timeStampServerUrl ?? throw new ArgumentNullException(nameof(timeStampServerUrl));
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
@@ -142,7 +142,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, Rfc3161TimestampToken timestampToken)
+        private static void ValidateTimestampCms(SigningSpecifications spec, SignedCms timestampCms, IRfc3161TimestampToken timestampToken)
         {
             var signerInfo = timestampCms.SignerInfos[0];
             try

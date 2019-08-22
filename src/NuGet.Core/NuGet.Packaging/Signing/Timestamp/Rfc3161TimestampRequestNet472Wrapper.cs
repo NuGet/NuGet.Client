@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace NuGet.Packaging.Signing
@@ -30,7 +31,7 @@ namespace NuGet.Packaging.Signing
                 extensions = null);
         }
 
-        public unsafe IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
+        public IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
         {
             return _rfc3161TimestampRequest.SubmitRequest(timestampUri, timeout);
         }

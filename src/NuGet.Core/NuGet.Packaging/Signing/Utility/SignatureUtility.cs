@@ -23,7 +23,7 @@ namespace NuGet.Packaging.Signing
             EitherOrBoth
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Gets certificates in the certificate chain for the primary signature.
         /// </summary>

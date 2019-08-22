@@ -26,6 +26,11 @@ namespace NuGet.Packaging.Signing
                 out int bytesConsumed);
 
         }
+        public Rfc3161TimestampTokenNetstandard21Wrapper(
+            System.Security.Cryptography.Pkcs.Rfc3161TimestampToken rfc3161TimestampToken)
+        {
+            _rfc3161TimestampToken = rfc3161TimestampToken;
+        }
         public IRfc3161TimestampTokenInfo TokenInfo
         {
             get
