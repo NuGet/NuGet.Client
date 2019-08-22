@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ISettings))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VSSettings : ISettings, IDisposable
+    public sealed class VSSettings : ISettings, IDisposable
     {
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
@@ -108,7 +108,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (hasChanged)
             {
-                var invokers = SettingsChanged.GetInvocationList();
                 SettingsChanged?.Invoke(this, EventArgs.Empty);
             }
         }
