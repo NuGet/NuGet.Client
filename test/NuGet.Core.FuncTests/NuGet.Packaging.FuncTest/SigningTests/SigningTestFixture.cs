@@ -106,8 +106,8 @@ namespace NuGet.Packaging.FuncTest
                         var certificate1 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
                         var certificate2 = SigningTestUtility.GenerateCertificate(certificateName, rsa);
 
-                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
-                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                        var testCertificate1 = new TestCertificate() { Cert = certificate1 }.WithTrust();
+                        var testCertificate2 = new TestCertificate() { Cert = certificate2 }.WithTrust();
 
                         _trustedTestCertificateWithReissuedCertificate = new[]
                         {

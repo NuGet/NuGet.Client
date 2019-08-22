@@ -31,9 +31,9 @@ namespace NuGet.Packaging.Signing
                 extensions = null);
         }
 
-        public IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
+        public Task<IRfc3161TimestampToken> SubmitRequestAsync(Uri timestampUri, TimeSpan timeout)
         {
-            return _rfc3161TimestampRequest.SubmitRequest(timestampUri, timeout);
+            return Task.FromResult(_rfc3161TimestampRequest.SubmitRequest(timestampUri, timeout));
         }
     }
 #endif

@@ -33,13 +33,6 @@ namespace NuGet.Packaging.Signing
                 extensions = null);
         }
 
-        public IRfc3161TimestampToken SubmitRequest(Uri timestampUri, TimeSpan timeout)
-        {
-            var task = SubmitRequestAsync(timestampUri, timeout);
-            while (!task.IsCompleted) { }
-            return task.Result;
-
-        }
         public async Task<IRfc3161TimestampToken> SubmitRequestAsync(Uri timestampUri, TimeSpan timeout)
         {
             if (timestampUri == null)

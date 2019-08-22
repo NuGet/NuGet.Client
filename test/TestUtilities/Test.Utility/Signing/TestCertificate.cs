@@ -39,23 +39,23 @@ namespace Test.Utility.Signing
         /// <remarks>Dispose of the object returned!</remarks>
         /// According to https://github.com/dotnet/corefx/blob/master/Documentation/architecture/cross-platform-cryptography.md#x509store
         /// only windows can read/write LocalMachine\Root, Linux can read/write CurrentUser\Root, mac ??
-        public TrustedTestCert<TestCertificate> WithTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        public TrustedTestCert<TestCertificate> WithTrust()
         {
             
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.LocalMachine);
             }
 
             if (RuntimeEnvironmentHelper.IsLinux)
             {
-                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, StoreLocation.CurrentUser);
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
             }
             if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
             }
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, storeName, storeLocation);
+            return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
         }
 
         /// <summary>

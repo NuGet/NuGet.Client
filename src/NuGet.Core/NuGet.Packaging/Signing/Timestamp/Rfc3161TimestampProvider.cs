@@ -51,9 +51,9 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
+        public async Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
         {
-            var timestampCms = GetTimestamp(request, logger, token);
+            var timestampCms = await GetTimestampAsync(request, logger, token);
             using (var signatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
             {
                 if (request.Target == SignaturePlacement.Countersignature)
@@ -64,14 +64,14 @@ namespace NuGet.Packaging.Signing
                 {
                     signatureNativeCms.AddTimestamp(timestampCms);
                 }
-                return Task.FromResult(PrimarySignature.Load(signatureNativeCms.Encode()));
+                return PrimarySignature.Load(signatureNativeCms.Encode());
             }
         }
 
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public SignedCms GetTimestamp(TimestampRequest request, ILogger logger, CancellationToken token)
+        public async Task<SignedCms> GetTimestampAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
@@ -95,7 +95,7 @@ namespace NuGet.Packaging.Signing
 
             // Request a timestamp
             // The response status need not be checked here as lower level api will throw if the response is invalid
-            var timestampToken = rfc3161TimestampRequest.SubmitRequest(
+            var timestampToken = await rfc3161TimestampRequest.SubmitRequestAsync(
                 _timestamperUrl,
                 TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
 

@@ -62,7 +62,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     // Code Sign EKU needs trust to a root authority
                     // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
                     // This makes all the associated tests to require admin privilege
-                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    _trustedTestCertWithoutPrivateKey = TestCertificate.Generate(actionGenerator).WithTrust();
                 }
 
                 return _trustedTestCertWithoutPrivateKey;
