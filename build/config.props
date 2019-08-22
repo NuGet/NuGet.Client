@@ -30,11 +30,13 @@
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</SdkTargetBranches>
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' != ''">$(OverrideToolsetTargetBranches)</ToolsetTargetBranches>
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">master</ToolsetTargetBranches>
-    <!-- We need to update this netcoreassembly build number with every insertion into VS to workaround any breaking api
+    
+    <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
     changes we might have made.-->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">1</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">3</NetCoreAssemblyBuildNumber>
     <!-- Check the VS schedule and manually enter a preview number here that makes sense. -->
-    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">preview.2</ReleaseLabel>
+    <ReleaseLabel Condition=" '$(ReleaseLabel)' == '' ">rtm</ReleaseLabel>
+  
   </PropertyGroup>
 
   <!-- Dependency versions -->
