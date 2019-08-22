@@ -5826,7 +5826,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
 
-            // prepare
+            // Prepare
             var projectFileContent =
 @"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
@@ -5868,7 +5868,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
                 Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
-                Assert.DoesNotContain(AnalysisResources.PackageIconUrlDeprecationWarning, r.Output);
             }
         }
 

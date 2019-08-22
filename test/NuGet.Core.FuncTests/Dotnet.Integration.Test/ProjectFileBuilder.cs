@@ -13,7 +13,7 @@ namespace NuGet.Test.Utility
     /// Relies on <c>MsbuildIntegrationTestFixture</c> to programmatically create the project
     /// </summary>
     /// <seealso cref="MsbuildIntegrationTestFixture"/>
-    public class ProjectFileBuilder
+    internal class ProjectFileBuilder
     {
         public string PackageIcon { get; private set; }
         public string PackageIconUrl { get; private set; }
@@ -58,7 +58,7 @@ namespace NuGet.Test.Utility
             {
                 ItemType = itemType, 
                 ItemPath = itemPath, 
-                PackagePath =packagePath
+                PackagePath = packagePath,
             });
 
             return this;
