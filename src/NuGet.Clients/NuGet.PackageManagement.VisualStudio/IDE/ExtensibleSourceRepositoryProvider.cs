@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
     {
 
         // TODO: add support for reloading sources when changes occur
-        private Configuration.IPackageSourceProvider _packageSourceProvider;
+        private IPackageSourceProvider _packageSourceProvider;
         private IEnumerable<Lazy<INuGetResourceProvider>> _resourceProviders;
         private Lazy<List<SourceRepository>> _repositories;
 
@@ -59,7 +59,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     _initialized = true;
 
-                    _packageSourceProvider = new Configuration.PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
+                    _packageSourceProvider = new PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
 
                     // Hook up event to refresh package sources when the package sources changed
                     _packageSourceProvider.PackageSourcesChanged += ResetRepositories;
@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return new SourceRepository(source, _resourceProviders, type);
         }
 
-        public Configuration.IPackageSourceProvider PackageSourceProvider
+        public IPackageSourceProvider PackageSourceProvider
         {
             get
             {

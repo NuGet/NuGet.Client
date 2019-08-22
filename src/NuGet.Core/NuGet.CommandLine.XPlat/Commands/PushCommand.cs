@@ -98,7 +98,7 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_InvalidTimeout);
                     }
 
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: true);
+                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
 
                     try
                     {
