@@ -733,7 +733,7 @@ namespace NuGet.Commands
                 }
 
                 if (packageArchiveReader != null && !_packArgs.NoPackageAnalysis)
-                {   
+                {
                     AnalyzePackage(packageArchiveReader);
                 }
 

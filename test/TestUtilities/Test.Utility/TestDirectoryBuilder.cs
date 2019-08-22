@@ -46,6 +46,7 @@ namespace NuGet.Test.Utility
                 Path = filepath,
                 Size = size,
             });
+
             return this;
         }
 
