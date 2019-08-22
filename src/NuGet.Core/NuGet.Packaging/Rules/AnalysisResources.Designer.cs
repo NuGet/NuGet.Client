@@ -160,7 +160,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;iconUrl&apos; element will be deprecated. Consider using the &apos;icon&apos; element instead..
+        ///   Looks up a localized string similar to The &apos;iconUrl&apos; element is deprecated. Consider using the &apos;icon&apos; element instead..
         /// </summary>
         public static string IconUrlDeprecationWarning {
             get {
@@ -278,7 +278,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos; element will be deprecated. Consider using the &apos;PackageIcon&apos; element instead..
+        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos; element is deprecated. Consider using the &apos;PackageIcon&apos; element instead..
         /// </summary>
         public static string PackageIconUrlDeprecationWarning {
             get {

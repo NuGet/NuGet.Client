@@ -11,7 +11,7 @@ namespace NuGet.Test.Utility
 {
     /// <summary>
     /// Represents a builder for dotnet core projects for integration tests.
-    /// Relies on MsbuildIntegrationTestFixture for programmatically create the project
+    /// Relies on <c>MsbuildIntegrationTestFixture</c> to programmatically create the project
     /// </summary>
     /// <seealso cref="MsbuildIntegrationTestFixture"/>
     public class ProjectFileBuilder

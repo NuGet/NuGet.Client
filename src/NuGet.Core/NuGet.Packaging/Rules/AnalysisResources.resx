@@ -157,7 +157,7 @@
     <value>The file '{0}' path, name, or both are too long. Your package might not work without long file path support. Please shorten the file path or file name.</value>
   </data>
   <data name="IconUrlDeprecationWarning" xml:space="preserve">
-    <value>The 'iconUrl' element will be deprecated. Consider using the 'icon' element instead.</value>
+    <value>The 'iconUrl' element is deprecated. Consider using the 'icon' element instead.</value>
   </data>
   <data name="InvalidFrameworkWarning" xml:space="preserve">
     <value>The folder '{0}' under 'lib' is not recognized as a valid framework name or a supported culture identifier. Rename it to a valid framework name or culture identifier.</value>
@@ -199,7 +199,7 @@
 {1}</value>
   </data>
   <data name="PackageIconUrlDeprecationWarning" xml:space="preserve">
-    <value>The 'PackageIconUrl' element will be deprecated. Consider using the 'PackageIcon' element instead.</value>
+    <value>The 'PackageIconUrl' element is deprecated. Consider using the 'PackageIcon' element instead.</value>
   </data>
   <data name="PlaceholderFileInPackageWarning" xml:space="preserve">
     <value>An empty folder placeholder file '{0}' is in a non-empty folder and should be removed.</value>

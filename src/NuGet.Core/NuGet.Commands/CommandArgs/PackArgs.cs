@@ -12,7 +12,7 @@ using NuGet.Packaging;
 namespace NuGet.Commands
 {
     /// <summary>
-    /// Pack arguments shared between dotnet.exe and nuget.exe
+    /// Pack arguments shared between dotnet.exe and msbuild.exe /t:pack
     /// </summary>
     public class PackArgs
     {
