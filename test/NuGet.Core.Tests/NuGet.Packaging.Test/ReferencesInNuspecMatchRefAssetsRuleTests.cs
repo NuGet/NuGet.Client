@@ -42,6 +42,24 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
+        public void Compare_EmptyNuspecReferences_ShouldBeEmpty()
+        {
+            //Arrange
+            var references = new Dictionary<string, IEnumerable<string>>
+            {
+                { "any", new List<string>() }
+            };
+            var files = new string[] { };
+
+            //Act
+            var rule = new ReferencesInNuspecMatchRefAssetsRule();
+            var missingReferences = rule.Compare(references, files);
+
+            //Assert
+            Assert.Empty(missingReferences);
+        }
+
+        [Fact]
         public void Compare_PackageWithNoReferences_ShouldBeEmpty()
         {
             //Arrange
