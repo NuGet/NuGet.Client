@@ -279,6 +279,9 @@
   <data name="Button_Cancel" xml:space="preserve">
     <value>Cancel</value>
   </data>
+  <data name="Button_Copy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
   <data name="Text_Loading" xml:space="preserve">
     <value>Loading...</value>
   </data>

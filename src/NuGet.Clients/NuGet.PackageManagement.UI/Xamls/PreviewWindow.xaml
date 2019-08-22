@@ -22,7 +22,11 @@
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
   </Window.Resources>
-
+  <nuget:VsDialogWindow.CommandBindings>
+    <CommandBinding
+      Command="{x:Static ApplicationCommands.Copy}"
+      Executed="ExecuteCopyToClipboard" />
+  </nuget:VsDialogWindow.CommandBindings>
   <Grid>
     <Grid.RowDefinitions>
       <RowDefinition
@@ -31,14 +35,30 @@
       <RowDefinition
         Height="auto" />
     </Grid.RowDefinitions>
-    <TextBlock
+    <Grid
+      Grid.Row="0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="auto" />
+        <ColumnDefinition Width="auto" />
+      </Grid.ColumnDefinitions>
+      <TextBlock
       Grid.Row="0"
+      Grid.Column="0"
       Margin="12,12,12,0"
       TextWrapping="Wrap"
       x:Name="_changesText"
       AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_Changes}" />
-
+      <Button
+        Grid.Column="1"
+        MinWidth="{Binding ButtonMinWidth}"
+        MinHeight="24"
+        Margin="12"
+        AutomationProperties.AutomationId="Copy"
+        Content="{x:Static nuget:Resources.Button_Copy}"
+        Click="CopyButtonClicked" />
+    </Grid>
     <Border
       Grid.Row="1"
       Margin="12,12"

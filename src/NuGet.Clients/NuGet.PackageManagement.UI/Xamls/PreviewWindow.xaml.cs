@@ -1,13 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Text;
 using System.Windows;
+using System.Linq;
 using NuGet.PackageManagement.VisualStudio;
+using System.Windows.Input;
 
 namespace NuGet.PackageManagement.UI
 {
     /// <summary>
-    /// Interaction logic for InstallPreviewWindow.xaml
+    /// Interaction logic for PreviewWindow.xaml
     /// </summary>
     public partial class PreviewWindow : VsDialogWindow
     {
@@ -20,7 +23,16 @@ namespace NuGet.PackageManagement.UI
             _uiContext = uiContext;
             InitializeComponent();
             _doNotShowCheckBox.IsChecked = IsDoNotShowPreviewWindowEnabled();
-
+            var copyBindings = ApplicationCommands.Copy.InputGestures;
+            foreach (KeyGesture gesture in copyBindings)
+            {
+                InputBindings.Add(
+                    new KeyBinding(
+                        ApplicationCommands.Copy,
+                        gesture
+                    )
+                );
+            }
             _initialized = true;
         }
 
@@ -34,8 +46,25 @@ namespace NuGet.PackageManagement.UI
             DialogResult = true;
         }
 
+        private void CopyToClipboard()
+        {
+            var windowModel = _changesItems.DataContext as PreviewWindowModel;
+            Clipboard.SetText(windowModel.ToString());
+        }
+
+        private void CopyButtonClicked(object sender, RoutedEventArgs e)
+        {
+            CopyToClipboard();
+        }
+
+        private void ExecuteCopyToClipboard(object sender, ExecutedRoutedEventArgs e)
+        {
+            CopyToClipboard();
+        }
+
         private void DoNotShowCheckBox_Checked(object sender, RoutedEventArgs e)
         {
+
             if (!_initialized)
             {
                 return;
