@@ -516,6 +516,7 @@ Write-Host 'Assertion successful'
 }
 
 function Test-InstallPackageWithNestedContentFile {
+    [SkipTest('https://github.com/NuGet/Home/issues/8486')]
     param(
         $context
     )
