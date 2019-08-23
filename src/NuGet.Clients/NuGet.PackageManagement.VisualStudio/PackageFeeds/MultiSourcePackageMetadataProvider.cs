@@ -188,7 +188,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private static async Task<PackageDeprecationMetadata> MergeDeprecationMetadataAsync(PackageIdentity identity, IEnumerable<IPackageSearchMetadata> packages)
         {
             var deprecationMetadatas = await Task.WhenAll(packages.Select(m => m.GetDeprecationMetadataAsync()));
-            return deprecationMetadatas.First(d => d != null);
+            return deprecationMetadatas.FirstOrDefault(d => d != null);
         }
 
         private async Task<(IEnumerable<VersionInfo> versions, PackageDeprecationMetadata deprecationMetadata)> FetchAndMergeVersionsAndDeprecationMetadataAsync(
