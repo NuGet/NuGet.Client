@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
         public static IRfc3161TimestampRequest CreateIRfc3161TimestampRequest(
             byte[] messageHash,
             HashAlgorithmName hashAlgorithm,
-            Oid requestedPolicyId = null,
+            Oid requestedPolicyId,
             byte[] nonce,
             bool requestSignerCertificates,
             X509ExtensionCollection extensions)
