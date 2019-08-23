@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.common.props')" />
@@ -31,6 +31,7 @@
     <IsProductComponent>true</IsProductComponent>
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>
+    <NgenPriorityDefault>3</NgenPriorityDefault>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' And '$(BuildingInsideVisualStudio)' == 'True'">
     <StartAction>Program</StartAction>
@@ -115,7 +116,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Configuration\NuGet.Configuration.csproj">
       <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
@@ -123,7 +124,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.DependencyResolver.Core\NuGet.DependencyResolver.Core.csproj">
       <Project>{cf8e1753-ee98-410f-bb4b-6624b19c6b64}</Project>
@@ -131,7 +132,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Frameworks\NuGet.Frameworks.csproj">
       <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
@@ -139,7 +140,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.LibraryModel\NuGet.LibraryModel.csproj">
       <Project>{13883e8e-7de1-4edd-8e4a-c5357ba8cd81}</Project>
@@ -147,7 +148,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj">
       <Project>{394aeb96-493c-4839-a5ac-8d93cd2fad40}</Project>
@@ -157,7 +158,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Packaging\NuGet.Packaging.csproj">
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
@@ -165,7 +166,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.ProjectModel\NuGet.ProjectModel.csproj">
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
@@ -173,7 +174,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj">
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
@@ -181,7 +182,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Resolver\NuGet.Resolver.csproj">
       <Project>{51aa27a9-b8b4-458f-9211-e6889b441573}</Project>
@@ -193,7 +194,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Tools\NuGet.Tools.csproj">
       <Project>{D0F9864B-D782-4471-81A2-29555E5DC0D7}</Project>
@@ -215,7 +216,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Credentials\NuGet.Credentials.csproj">
       <Project>{32a23995-14c7-483b-98c3-0ae4185373ea}</Project>
@@ -231,7 +232,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
@@ -241,7 +242,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj">
       <Project>{26dc17ac-a390-4515-a2c0-07a0950036c5}</Project>
@@ -263,7 +264,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj">
       <Project>{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}</Project>
@@ -279,7 +280,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>
@@ -289,7 +290,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
       <Project>{50e33da2-af14-486d-81b8-bd8409744a38}</Project>
@@ -299,7 +300,7 @@
       <Ngen>True</Ngen>
       <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>2</NgenPriority>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="..\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj">
       <Project>{5a79eef3-51c0-4a14-8d37-50ef38ad835d}</Project>
