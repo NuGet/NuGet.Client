@@ -288,18 +288,15 @@ namespace NuGet.Packaging
 
             var isSigned = false;
 
-#if IS_DESKTOP
-            if (RuntimeEnvironmentHelper.IsWindows)
+#if IS_SIGNING_SUPPORTED
+            using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
             {
-                using (var zip = new ZipArchive(ZipReadStream, ZipArchiveMode.Read, leaveOpen: true))
-                {
-                    var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
+                var signatureEntry = zip.GetEntry(SigningSpecifications.SignaturePath);
 
-                    if (signatureEntry != null &&
-                        string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
-                    {
-                        isSigned = true;
-                    }
+                if (signatureEntry != null &&
+                   string.Equals(signatureEntry.Name, SigningSpecifications.SignaturePath, StringComparison.Ordinal))
+                {
+                    isSigned = true;
                 }
             }
 #endif
