@@ -160,16 +160,7 @@ namespace NuGet.Packaging.Rules {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Both &apos;iconUrl&apos; and &apos;icon&apos; elements were detected. Consider removing the &apos;iconUrl&apos; element since it will be deprecated. To learn more, go to https://aka.ms/deprecateIconUrl..
-        /// </summary>
-        public static string IconUrlAndIconWarning {
-            get {
-                return ResourceManager.GetString("IconUrlAndIconWarning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to The &apos;iconUrl&apos; element will be deprecated. Consider using the &apos;icon&apos; element instead..
+        ///   Looks up a localized string similar to The &apos;PackageIconUrl&apos;/&apos;iconUrl&apos; element is deprecated. Consider using the &apos;PackageIcon&apos;/&apos;icon&apos; element instead. Learn more at https://aka.ms/deprecateIconUrl.
         /// </summary>
         public static string IconUrlDeprecationWarning {
             get {

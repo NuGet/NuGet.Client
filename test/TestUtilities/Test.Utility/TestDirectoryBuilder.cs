@@ -14,15 +14,13 @@ namespace NuGet.Test.Utility
     {
         public NuspecBuilder NuspecBuilder { get; private set; }
         public string NuspecFile { get; private set; }
-        public Dictionary<string, int> Files { get; private set; }
-        public Dictionary<string, string> TextFiles { get; private set; }
+        public Dictionary<string, FileEntry> Files { get; private set; }
         public string BaseDir { get; private set; }
         public string NuspecPath => Path.Combine(BaseDir, NuspecFile);
 
         private TestDirectoryBuilder()
         {
-            Files = new Dictionary<string, int>();
-            TextFiles = new Dictionary<string, string>();
+            Files = new Dictionary<string, FileEntry>();
         }
 
         /// <summary>
@@ -43,13 +41,15 @@ namespace NuGet.Test.Utility
 
         public TestDirectoryBuilder WithFile(string filepath, int size)
         {
-            Files.Add(filepath, size);
+            Files.Add(filepath, new FileEntry(filepath, size));
+
             return this;
         }
 
         public TestDirectoryBuilder WithFile(string filepath, string content)
         {
-            TextFiles.Add(filepath, content);
+            Files.Add(filepath, new FileEntry(filepath, content));
+
             return this;
         }
 
@@ -63,10 +63,11 @@ namespace NuGet.Test.Utility
             BaseDir = testDirectory.Path;
 
             CreateFiles();
-            CreateTextFiles();
 
             if (NuspecBuilder != null)
             {
+                var dir = Path.GetDirectoryName(NuspecPath);
+                Directory.CreateDirectory(dir);
                 File.WriteAllText(NuspecPath, NuspecBuilder.Build().ToString());
             }
 
@@ -81,22 +82,41 @@ namespace NuGet.Test.Utility
                 var dir = Path.GetDirectoryName(filepath);
 
                 Directory.CreateDirectory(dir);
-                using (var fileStream = File.OpenWrite(Path.Combine(BaseDir, f.Key)))
+
+                if (f.Value.Content != null)
                 {
-                    fileStream.SetLength(f.Value);
+                    File.WriteAllText(Path.Combine(BaseDir, f.Key), f.Value.Content);
+                }
+                else if (f.Value.Size > -1)
+                {
+                    using (var fileStream = File.OpenWrite(Path.Combine(BaseDir, f.Key)))
+                    {
+                        fileStream.SetLength(f.Value.Size);
+                    }
                 }
             }
         }
 
-        private void CreateTextFiles()
+        /// <summary>
+        /// Rerpesents a File to be created by <c>TestDirecotryBuilder</c>.
+        /// For testing purposes.
+        /// </summary>
+        public class FileEntry
         {
-            foreach (var f in TextFiles)
-            {
-                var filepath = Path.Combine(BaseDir, f.Key);
-                var dir = Path.GetDirectoryName(filepath);
+            public string Path { get; }
+            public string Content { get; }
+            public long Size { get; } = -1;
 
-                Directory.CreateDirectory(dir);
-                File.WriteAllText(Path.Combine(BaseDir, f.Key), f.Value);
+            public FileEntry(string path, long size)
+            {
+                Path = path;
+                Size = size;
+            }
+
+            public FileEntry(string path, string content)
+            {
+                Path = path;
+                Content = content;
             }
         }
     }

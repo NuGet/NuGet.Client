@@ -32,7 +32,6 @@ namespace NuGet.Packaging.Rules
                 new UpholdBuildConventionRule(),
                 new ReferencesInNuspecMatchRefAssetsRule(),
                 new IconUrlDeprecationWarning(AnalysisResources.IconUrlDeprecationWarning),
-                new IconAndIconUrlUsageWarning(AnalysisResources.IconUrlAndIconWarning),
             }
         );
 

@@ -5652,7 +5652,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         }
 
         [Fact]
-        public void PackCommand_PackIcon_IconAndIconUrl_Warn_Suceeds()
+        public void PackCommand_PackIcon_IconAndIconUrl_Succeeds()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5666,13 +5666,11 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 .WithFile("icon.jpg", 6)
                 .WithNuspec(nuspecBuilder);
 
-            var warnMessage = $"WARNING: {NuGetLogCode.NU5049.ToString()}: {AnalysisResources.IconUrlAndIconWarning}";
-
-            TestPackIconSuccess(testDirBuilder, message: warnMessage);
+            TestPackIconSuccess(testDirBuilder);
         }
 
         [Fact]
-        public void PackCommand_PackIconUrl_Warn_Suceeds()
+        public void PackCommand_PackIconUrl_Warn_Succeeds()
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5695,7 +5693,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     waitForExit: true);
 
                 Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
-                Util.VerifyResultSuccess(r, expectedOutputMessage: AnalysisResources.IconUrlDeprecationWarning);
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
             }
         }
 
@@ -5753,7 +5751,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         [Theory]
         [InlineData(SymbolPackageFormat.Snupkg)]
         [InlineData(SymbolPackageFormat.SymbolsNupkg)]
-        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Suceed(SymbolPackageFormat symbolPackageFormat)
+        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Succeed(SymbolPackageFormat symbolPackageFormat)
         {
             var nuspecBuilder = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
@@ -5821,6 +5819,58 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 }
             }
         }
+
+        [Fact]
+        public void PackCommand_ProjectFile_PackageIconUrl_WithNuspec_WithPackTask_Warns_Succeeds()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            // Prepare
+            var projectFileContent =
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
+    <PackageOutputPath>bin\Debug\</PackageOutputPath>
+    <Authors>Alice</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include='NuGet.Build.Tasks.Pack' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
+
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithIconUrl("http://another/icon.jpg");
+
+            testDirBuilder
+                .WithFile("A.csproj", projectFileContent)
+                .WithFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, "A.nuspec");
+
+            using (testDirBuilder.Build())
+            {
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack A.csproj -Build",
+                    waitForExit: true);
+
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+            }
+        }
+
 
         /// <summary>
         /// Tests successful nuget.exe icon pack functionality with nuspec
