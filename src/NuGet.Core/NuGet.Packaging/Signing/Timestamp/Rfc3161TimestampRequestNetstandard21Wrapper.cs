@@ -19,18 +19,18 @@ namespace NuGet.Packaging.Signing
         public Rfc3161TimestampRequestNetstandard21Wrapper(
                 byte[] messageHash,
                 HashAlgorithmName hashAlgorithm,
-                Oid requestedPolicyId = null,
-                byte[] nonce = null,
-                bool requestSignerCertificates = false,
-                X509ExtensionCollection extensions = null)
+                Oid requestedPolicyId,
+                byte[] nonce,
+                bool requestSignerCertificates,
+                X509ExtensionCollection extensions)
         {
             _rfc3161TimestampRequest = System.Security.Cryptography.Pkcs.Rfc3161TimestampRequest.CreateFromHash(
                 new ReadOnlyMemory<byte>(messageHash),
                 hashAlgorithm,
-                requestedPolicyId = null,
-                nonce = null,
-                requestSignerCertificates = false,
-                extensions = null);
+                requestedPolicyId,
+                nonce,
+                requestSignerCertificates,
+                extensions);
         }
 
         public async Task<IRfc3161TimestampToken> SubmitRequestAsync(Uri timestampUri, TimeSpan timeout)

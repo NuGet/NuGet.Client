@@ -14,29 +14,29 @@ namespace NuGet.Packaging.Signing
             byte[] messageHash,
             HashAlgorithmName hashAlgorithm,
             Oid requestedPolicyId = null,
-            byte[] nonce = null,
-            bool requestSignerCertificates = false,
-            X509ExtensionCollection extensions = null)
+            byte[] nonce,
+            bool requestSignerCertificates,
+            X509ExtensionCollection extensions)
         {
             IRfc3161TimestampRequest iRfc3161TimestampRequest = null;
 #if IS_DESKTOP
             iRfc3161TimestampRequest = new Rfc3161TimestampRequestNet472Wrapper(
                 messageHash,
                 hashAlgorithm,
-                requestedPolicyId = null,
-                nonce = null,
-                requestSignerCertificates = false,
-                extensions = null);
+                requestedPolicyId,
+                nonce,
+                requestSignerCertificates,
+                extensions);
 #endif
 
 #if NETSTANDARD2_1
             iRfc3161TimestampRequest = new Rfc3161TimestampRequestNetstandard21Wrapper(
                 messageHash,
                 hashAlgorithm,
-                requestedPolicyId = null,
-                nonce = null,
-                requestSignerCertificates = false,
-                extensions = null);
+                requestedPolicyId,
+                nonce,
+                requestSignerCertificates,
+                extensions);
 #endif
             return iRfc3161TimestampRequest;
         }

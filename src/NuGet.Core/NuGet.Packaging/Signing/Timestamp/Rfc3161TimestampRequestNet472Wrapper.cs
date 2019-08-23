@@ -17,18 +17,18 @@ namespace NuGet.Packaging.Signing
         public Rfc3161TimestampRequestNet472Wrapper(
             byte[] messageHash,
             HashAlgorithmName hashAlgorithm,
-            Oid requestedPolicyId = null,
-            byte[] nonce = null,
-            bool requestSignerCertificates = false,
-            X509ExtensionCollection extensions = null)
+            Oid requestedPolicyId,
+            byte[] nonce,
+            bool requestSignerCertificates,
+            X509ExtensionCollection extensions)
         {
             _rfc3161TimestampRequest = new Rfc3161TimestampRequest(
                 messageHash,
                 hashAlgorithm,
-                requestedPolicyId = null,
-                nonce = null,
-                requestSignerCertificates = false,
-                extensions = null);
+                requestedPolicyId,
+                nonce,
+                requestSignerCertificates,
+                extensions);
         }
 
         public Task<IRfc3161TimestampToken> SubmitRequestAsync(Uri timestampUri, TimeSpan timeout)

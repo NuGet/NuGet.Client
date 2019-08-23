@@ -90,8 +90,10 @@ namespace NuGet.Packaging.Signing
             var rfc3161TimestampRequest = IRfc3161TimestampRequestFactory.CreateIRfc3161TimestampRequest(
                 request.HashedMessage,
                 request.HashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(),
+                requestedPolicyId: null,
                 nonce: nonce,
-                requestSignerCertificates: true);
+                requestSignerCertificates: true,
+                extensions: null);
 
             // Request a timestamp
             // The response status need not be checked here as lower level api will throw if the response is invalid
