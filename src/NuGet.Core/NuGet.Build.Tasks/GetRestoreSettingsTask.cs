@@ -133,7 +133,7 @@ namespace NuGet.Build.Tasks
                     () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => GetGlobalAbsolutePath(e)).ToArray(),
                     () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? Array.Empty<string>() : null,
                     () => RestoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
-                    () => (new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)).LoadPackageSources().Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
+                    () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
 
                 // Append additional sources
                 // Escape strings to avoid xplat path issues with msbuild.

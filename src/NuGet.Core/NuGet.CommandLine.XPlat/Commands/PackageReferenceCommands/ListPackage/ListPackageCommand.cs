@@ -152,8 +152,7 @@ namespace NuGet.CommandLine.XPlat
 
         private static IEnumerable<PackageSource> GetPackageSources(ISettings settings, IEnumerable<string> sources, CommandOption config)
         {
-            var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
-            var availableSources = sourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+            var availableSources = PackageSourceProvider.LoadPackageSources(settings).Where(source => source.IsEnabled);
             var uniqueSources = new HashSet<string>();
 
             var packageSources = new List<PackageSource>();

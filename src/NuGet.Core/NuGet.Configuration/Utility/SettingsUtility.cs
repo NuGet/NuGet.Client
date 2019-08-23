@@ -355,8 +355,7 @@ namespace NuGet.Configuration
                 throw new ArgumentNullException(nameof(settings));
             }
 
-            var provider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
-            return provider.LoadPackageSources().Where(e => e.IsEnabled == true).ToList();
+            return PackageSourceProvider.LoadPackageSources(settings).Where(e => e.IsEnabled == true).ToList();
         }
 
         /// <summary>
@@ -382,8 +381,7 @@ namespace NuGet.Configuration
             if (sourceUri != null && !sourceUri.IsAbsoluteUri)
             {
                 // For non-absolute sources, it could be the name of a config source, or a relative file path.
-                IPackageSourceProvider sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
-                var allSources = sourceProvider.LoadPackageSources();
+                var allSources = PackageSourceProvider.LoadPackageSources(settings);
 
                 if (!allSources.Any(s => s.IsEnabled && s.Name.Equals(source, StringComparison.OrdinalIgnoreCase)))
                 {
