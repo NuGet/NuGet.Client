@@ -18,10 +18,13 @@ namespace NuGet.Configuration
 
         public PackageSourceProvider(
           ISettings settings)
+#pragma warning disable CS0618 // Type or member is obsolete
             : this(settings, ConfigurationDefaults.Instance.DefaultPackageSources, enablePackageSourcesChangedEvent: true)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
         }
 
+        [Obsolete("Constructor with enablePackageSourcesChangedEvent will go away: https://github.com/NuGet/Home/issues/8479")]
         public PackageSourceProvider(
           ISettings settings,
           bool enablePackageSourcesChangedEvent)
@@ -32,10 +35,13 @@ namespace NuGet.Configuration
         public PackageSourceProvider(
             ISettings settings,
             IEnumerable<PackageSource> configurationDefaultSources)
+#pragma warning disable CS0618 // Type or member is obsolete
             : this (settings, configurationDefaultSources, enablePackageSourcesChangedEvent: true)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
         }
 
+        [Obsolete("Constructor with enablePackageSourcesChangedEvent will go away: https://github.com/NuGet/Home/issues/8479")]
         public PackageSourceProvider(
             ISettings settings,
             IEnumerable<PackageSource> configurationDefaultSources,

@@ -18,7 +18,9 @@ namespace NuGet.Protocol.Core.Types
         private List<SourceRepository> _repositories;
 
         public SourceRepositoryProvider(ISettings settings, IEnumerable<Lazy<INuGetResourceProvider>> resourceProviders)
+#pragma warning disable CS0618 // Type or member is obsolete
             : this(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false), resourceProviders)
+#pragma warning restore CS0618 // Type or member is obsolete
         {
         }
 

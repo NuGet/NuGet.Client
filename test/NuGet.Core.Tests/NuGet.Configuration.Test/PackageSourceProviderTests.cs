@@ -2107,7 +2107,9 @@ namespace NuGet.Configuration.Test
         {
             // Arrange
             var setting = new Mock<ISettings>();
+#pragma warning disable CS0618 // Type or member is obsolete
             var target = new PackageSourceProvider(setting.Object, subscribeToEvent);
+#pragma warning restore CS0618 // Type or member is obsolete
             bool eventRun = false;
             target.PackageSourcesChanged += (s, e) => { eventRun = true; };
 

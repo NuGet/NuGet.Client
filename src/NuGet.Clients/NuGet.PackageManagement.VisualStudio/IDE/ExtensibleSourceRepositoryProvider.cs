@@ -59,7 +59,9 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     _initialized = true;
 
+#pragma warning disable CS0618 // Type or member is obsolete
                     _packageSourceProvider = new PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     // Hook up event to refresh package sources when the package sources changed
                     _packageSourceProvider.PackageSourcesChanged += ResetRepositories;
