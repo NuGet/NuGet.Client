@@ -471,6 +471,19 @@ namespace NuGet.Packaging.Test
                   </metadata>
                 </package>";
 
+        private const string EmbeddedIconTestTemplate = @"<?xml version=""1.0""?>
+                <package xmlns=""http://schemas.microsoft.com/packaging/2016/06/nuspec.xsd"">
+                  <metadata>
+                    <id>trumpet</id>
+                    <version>0.0.1</version>
+                    <title>trumpet package</title>
+                    <authors>alice, bob</authors>
+                    <owners>alice, bob</owners>
+                    <description>This is a package icon test</description>
+                    {0}
+                  </metadata>
+                </package>";
+
         public static IEnumerable<object[]> GetValidVersions()
         {
             return GetVersionRange(validVersions: true);
@@ -1106,6 +1119,27 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Null(licenseMetadata);
+        }
+
+        [Theory]
+        [InlineData("<icon>icon.jpg</icon>", "icon.jpg")]
+        [InlineData("<icon></icon>", "")]
+        [InlineData("<icon/>", "")]
+        [InlineData("", null)]
+        [InlineData("<icon>path/icon.jpg</icon>", "path/icon.jpg")]
+        [InlineData("<icon>content\\icon.jpg</icon>", "content\\icon.jpg")]
+        public void NuspecReaderTests_EmbeddedIcon(string icon, string expectedRead)
+        {
+            string nuspec = string.Format(EmbeddedIconTestTemplate, icon);
+
+            // Arrange
+            var reader = GetReader(nuspec);
+
+            // Act
+            var iconPath = reader.GetIcon();
+
+            // Assert
+            Assert.Equal(iconPath, expectedRead);
         }
 
         private static NuspecReader GetReader(string nuspec)

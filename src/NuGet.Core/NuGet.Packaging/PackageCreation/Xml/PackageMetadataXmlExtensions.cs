@@ -58,6 +58,8 @@ namespace NuGet.Packaging.Xml
                     licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl.OriginalString;
                 }
                 AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
+
+                AddElementIfNotNull(elem, ns, "icon", metadata.Icon);
             }
             AddElementIfNotNull(elem, ns, "projectUrl", metadata.ProjectUrl);
             AddElementIfNotNull(elem, ns, "iconUrl", metadata.IconUrl);

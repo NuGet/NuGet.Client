@@ -2486,6 +2486,109 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
             }
         }
 
+        [Fact]
+        public void Icon_IconMaxFileSizeExceeded_ThrowsException()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+
+            nuspecBuilder
+                .WithIcon("icon.jpg")
+                .WithFile("icon.jpg");
+
+            testDirBuilder
+                .WithFile("icon.jpg", PackageBuilder.MaxIconFileSize + 1)
+                .WithNuspec(nuspecBuilder);
+
+            TestIconPackaging(
+                testDirBuilder: testDirBuilder,
+                exceptionMessage: "The icon file size must not exceed 1 megabyte.");
+        }
+
+        [Fact]
+        public void Icon_IconFileEntryNotFound_ThrowsException()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+
+            nuspecBuilder
+                .WithIcon("icon.jpg")
+                .WithFile("icono.jpg");
+
+            testDirBuilder
+                .WithFile("icono.jpg", 100)
+                .WithNuspec(nuspecBuilder);
+
+            TestIconPackaging(
+                testDirBuilder: testDirBuilder,
+                exceptionMessage: "The icon file 'icon.jpg' does not exist in the package.");
+        }
+
+        [Fact]
+        public void Icon_HappyPath_Suceed()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+
+            nuspecBuilder
+                .WithIcon("icon.jpg")
+                .WithFile("icon.jpg");
+
+            testDirBuilder
+                .WithFile("icon.jpg", 400)
+                .WithNuspec(nuspecBuilder);
+
+            TestIconPackaging(
+                testDirBuilder: testDirBuilder,
+                exceptionMessage: null);
+        }
+
+        [Fact(Skip="Need to solve https://github.com/NuGet/Home/issues/6941 to run this test case")]
+        public void Icon_MultipleIconFilesResolved_ThrowsException()
+        {
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var nuspecBuilder = NuspecBuilder.Create();
+            var dirSep = Path.DirectorySeparatorChar;
+
+            nuspecBuilder
+                .WithIcon("icon.jpg")
+                .WithFile("folder1\\*")
+                .WithFile("folder2\\*");
+
+            testDirBuilder
+                .WithFile("icon.jpg", 400)
+                .WithFile($"folder1{dirSep}icon.jpg", 2)
+                .WithFile($"folder1{dirSep}dummy.txt", 2)
+                .WithFile($"folder2{dirSep}icon.jpg", 2)
+                .WithFile($"folder2{dirSep}file.txt", 2)
+                .WithNuspec(nuspecBuilder);
+            
+            TestIconPackaging(
+                testDirBuilder: testDirBuilder,
+                exceptionMessage: "Multiple files resolved as the embedded icon.");
+        }
+
+        private void TestIconPackaging(TestDirectoryBuilder testDirBuilder, string exceptionMessage)
+        {
+            using (var sourceDir = testDirBuilder.Build())
+            using (var nuspecStream = File.OpenRead(testDirBuilder.NuspecPath)) //sourceDir.NuspecPath
+            using (var outputNuPkgStream = new MemoryStream())
+            {
+                PackageBuilder pkgBuilder = new PackageBuilder(nuspecStream, testDirBuilder.BaseDir); //sourceDir.BaseDir
+
+                if (exceptionMessage != null)
+                {
+                    ExceptionAssert.Throws<PackagingException>(
+                        () => pkgBuilder.Save(outputNuPkgStream),
+                        exceptionMessage);
+                }
+                else
+                {
+                    pkgBuilder.Save(outputNuPkgStream);
+                }
+            }
+        }
+
         [Theory]
         [InlineData(@".\test1.txt", "test1.txt")]
         [InlineData(@".\test\..\test1.txt", "test1.txt")]

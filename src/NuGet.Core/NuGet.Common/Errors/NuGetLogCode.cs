@@ -5,7 +5,7 @@ namespace NuGet.Common
 {
     /// <summary>
     /// This enum is used to quantify NuGet error and warning codes. 
-    /// Format - NUxyzw where NU is the profix indicating NuGet and xyzw is a 4 digit code
+    /// Format - NUxyzw where NU is the prefix indicating NuGet and xyzw is a 4 digit code
     ///
     /// Numbers - xyzw
     ///     x - 'x' is the largest digit and should be used to quantify a set of errors.
@@ -649,6 +649,26 @@ namespace NuGet.Common
         /// Error_MissingNuspecFile
         /// </summary>
         NU5037 = 5037,
+
+        /// <summary>
+        /// Error_Manifest_IconCannotOpenFile
+        /// </summary>
+        NU5046 = 5046,
+
+        /// <summary>
+        /// Error_Icon_InvalidSize
+        /// </summary>
+        NU5047 = 5047,
+
+        /// <summary>
+        /// IconUrlDeprecationWarning
+        /// </summary>
+        NU5048 = 5048,
+
+        /// <summary>
+        /// IconUrlAndIconWarning
+        /// </summary>
+        NU5049 = 5049,
 
         /// <summary>
         /// AssemblyOutsideLibWarning

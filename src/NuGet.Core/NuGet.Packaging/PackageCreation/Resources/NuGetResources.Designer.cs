@@ -10,7 +10,6 @@
 
 namespace NuGet.Packaging.PackageCreation.Resources {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class NuGetResources {
@@ -40,7 +39,7 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.PackageCreation.Resources.NuGetResources", typeof(NuGetResources).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Packaging.PackageCreation.Resources.NuGetResources", typeof(NuGetResources).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -85,6 +84,51 @@ namespace NuGet.Packaging.PackageCreation.Resources {
         internal static string DuplicateDependenciesDefined {
             get {
                 return ResourceManager.GetString("DuplicateDependenciesDefined", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Cannot open the icon file &apos;{0}&apos;: {1}..
+        /// </summary>
+        internal static string IconCannotOpenFile {
+            get {
+                return ResourceManager.GetString("IconCannotOpenFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The icon file is empty..
+        /// </summary>
+        internal static string IconErrorEmpty {
+            get {
+                return ResourceManager.GetString("IconErrorEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The icon file size must not exceed 1 megabyte..
+        /// </summary>
+        internal static string IconMaxFileSizeExceeded {
+            get {
+                return ResourceManager.GetString("IconMaxFileSizeExceeded", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The element &apos;icon&apos; cannot be empty..
+        /// </summary>
+        internal static string IconMissingRequiredValue {
+            get {
+                return ResourceManager.GetString("IconMissingRequiredValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The icon file &apos;{0}&apos; does not exist in the package..
+        /// </summary>
+        internal static string IconNoFileElement {
+            get {
+                return ResourceManager.GetString("IconNoFileElement", resourceCulture);
             }
         }
         

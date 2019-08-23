@@ -175,6 +175,8 @@ namespace NuGet.Build.Tasks.Pack
 
             builder.LicenseMetadata = BuildLicenseMetadata(request);
 
+            builder.Icon = request.PackageIcon;
+
             if (request.MinClientVersion != null)
             {
                 Version version;

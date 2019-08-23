@@ -5577,6 +5577,372 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 }
             }
         }
+        
+        [Fact]
+        public void PackCommand_PackIcon_HappyPath_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+
+            nuspec
+                .WithIcon("icon.jpg")
+                .WithFile("icon.jpg");
+
+            testDir
+                .WithFile("icon.jpg", 6)
+                .WithNuspec(nuspec);
+
+            TestPackIconSuccess(testDir);
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_ImplicitFile_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithIcon("icon.jpg")
+                .WithFile(@"content\*");
+
+            testDir
+                .WithFile($"content{s}icon.jpg", 6)
+                .WithNuspec(nuspec);
+
+            TestPackIconSuccess(testDir);
+        }
+                
+        [Fact]
+        public void PackCommand_PackIcon_Folder_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDir = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithIcon("utils/icon.jpg")
+                .WithFile($"content{s}*", "utils");
+
+            testDir
+                .WithFile($"content{s}icon.jpg", 6)
+                .WithNuspec(nuspec);
+
+            TestPackIconSuccess(testDir, "utils/icon.jpg");
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_FolderNested_Succeeds()
+        {
+            var nuspec = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+            var s = Path.DirectorySeparatorChar;
+
+            nuspec
+                .WithFile($"content{s}**", "utils")
+                .WithIcon($"utils/nested/icon.jpg");
+
+            testDirBuilder
+                .WithFile($"content{s}nested{s}icon.jpg", 6)
+                .WithFile($"content{s}dummy.txt", 6)
+                .WithFile($"content{s}data.txt", 6)
+                .WithNuspec(nuspec);
+
+            TestPackIconSuccess(testDirBuilder, $"utils/nested/icon.jpg");
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_IconAndIconUrl_Succeeds()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithFile($"icon.jpg")
+                .WithIcon($"icon.jpg")
+                .WithIconUrl("http://test/");
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackIconSuccess(testDirBuilder);
+        }
+
+        [Fact]
+        public void PackCommand_PackIconUrl_Warn_Succeeds()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithIconUrl("http://test/")
+                .WithFile("list.txt");
+
+            testDirBuilder
+                .WithFile("list.txt", 20)
+                .WithNuspec(nuspecBuilder);
+
+            using (testDirBuilder.Build())
+            {
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack {testDirBuilder.NuspecPath}",
+                    waitForExit: true);
+
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+            }
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_EmptyIconEntry_Fails()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithFile($"icon.jpg")
+                .WithIcon(string.Empty);
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackIconFailure(testDirBuilder, "The element 'icon' cannot be empty.");
+        }
+
+        [Fact]
+        public void PackCommand_EmptyPackIconAndIconUrl_Fails()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithIcon(string.Empty)
+                .WithIconUrl(string.Empty);
+
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithNuspec(nuspecBuilder);
+
+            TestPackIconFailure(testDirBuilder, "The element 'icon' cannot be empty.");
+        }
+
+        [Fact]
+        public void PackCommand_PackIcon_MissingIconFile_Fails()
+        {
+            NuspecBuilder nuspecBuilder = NuspecBuilder.Create();
+            TestDirectoryBuilder testDirBuilder = TestDirectoryBuilder.Create();
+
+            nuspecBuilder
+                .WithFile($"icon.jpg")
+                .WithIcon("icon.jpg");
+
+            testDirBuilder
+                .WithNuspec(nuspecBuilder);
+
+            TestPackIconFailure(testDirBuilder, NuGetLogCode.NU5019.ToString());
+        }
+
+        [Theory]
+        [InlineData(SymbolPackageFormat.Snupkg)]
+        [InlineData(SymbolPackageFormat.SymbolsNupkg)]
+        public void PackCommand_PackIcon_SymbolsPackage_MustNotHaveIconInfo_Succeed(SymbolPackageFormat symbolPackageFormat)
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            var projectFileContent =
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
+
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithFile("icon.jpg")
+                .WithIcon("icon.jpg");
+
+            testDirBuilder
+                .WithFile("icon.jpg", 6)
+                .WithFile("A.csproj", projectFileContent)
+                .WithFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, filepath: "A.nuspec");
+
+            using (testDirBuilder.Build())
+            {
+                var packageFilenameBase = $"{nuspecBuilder.PackageIdEntry}.{nuspecBuilder.PackageVersionEntry}";
+                var symbolExtension = symbolPackageFormat == SymbolPackageFormat.Snupkg ? "snupkg" : "symbols.nupkg";
+                var nupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{packageFilenameBase}.nupkg");
+                var snupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{packageFilenameBase}.{symbolExtension}");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack A.csproj -Build -Symbols -SymbolPackageFormat {symbolExtension}",
+                    waitForExit: true);
+
+                // Verify
+                Util.VerifyResultSuccess(r);
+                
+                Assert.True(File.Exists(nupkgPath));
+                Assert.True(File.Exists(snupkgPath));
+
+                using (var nupkg = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkg.NuspecReader;
+                    Assert.NotEqual(string.Empty, nuspecReader.GetIcon());
+                    VerifyNuspecRoundTrips(nupkg, $"A.nuspec");
+                }
+
+                using (var snupkg = new PackageArchiveReader(snupkgPath))
+                {
+                    if (symbolPackageFormat == SymbolPackageFormat.Snupkg)
+                    {
+                        var nuspecReader = snupkg.NuspecReader;
+                        Assert.Equal(null, nuspecReader.GetIcon());
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_ProjectFile_PackageIconUrl_WithNuspec_WithPackTask_Warns_Succeeds()
+        {
+            var nuspecBuilder = NuspecBuilder.Create();
+            var testDirBuilder = TestDirectoryBuilder.Create();
+
+            // Prepare
+            var projectFileContent =
+@"<Project ToolsVersion='4.0' DefaultTargets='Build' xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <PackageIconUrl>https://test/icon.jpg</PackageIconUrl>
+    <PackageOutputPath>bin\Debug\</PackageOutputPath>
+    <Authors>Alice</Authors>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include='NuGet.Build.Tasks.Pack' />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='B.cs' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>";
+
+            var sourceFileContent = "namespace A { public class B { public int C { get; set; } } }";
+
+            nuspecBuilder
+                .WithPackageId("A")
+                .WithIconUrl("http://another/icon.jpg");
+
+            testDirBuilder
+                .WithFile("A.csproj", projectFileContent)
+                .WithFile("B.cs", sourceFileContent)
+                .WithNuspec(nuspecBuilder, "A.nuspec");
+
+            using (testDirBuilder.Build())
+            {
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack A.csproj -Build",
+                    waitForExit: true);
+
+                Util.VerifyResultSuccess(r, expectedOutputMessage: NuGetLogCode.NU5048.ToString());
+                Assert.Contains(AnalysisResources.IconUrlDeprecationWarning, r.Output);
+            }
+        }
+
+
+        /// <summary>
+        /// Tests successful nuget.exe icon pack functionality with nuspec
+        /// </summary>
+        /// <remarks>
+        /// Test that:
+        /// <list type="bullet">
+        /// <item>
+        ///     <description>The package is successfully created.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The icon file exists in the nupkg in the specified icon entry.</description>
+        /// </item>
+        /// <item>
+        ///     <description>The icon entry equals the &lt;icon /&gt; entry in the output nuspec</description>
+        /// </item>
+        /// <item>
+        ///     <description>(Optional) Check that the message is in the command output</description>
+        /// </item>
+        /// </list>
+        /// </remarks>
+        /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
+        /// <param name="iconEntry">Zip entry to validate</param>
+        /// <param name="message">If not nulll, check that the message is in the command output</param>
+        private void TestPackIconSuccess(TestDirectoryBuilder testDirBuilder, string iconEntry = "icon.jpg", string message = null)
+        {
+            using (testDirBuilder.Build())
+            {
+                var nupkgPath = Path.Combine(testDirBuilder.BaseDir, $"{testDirBuilder.NuspecBuilder.PackageIdEntry}.{testDirBuilder.NuspecBuilder.PackageVersionEntry}.nupkg");
+
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack {testDirBuilder.NuspecPath}",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultSuccess(r, message);
+                Assert.True(File.Exists(nupkgPath));
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.NotNull(nuspecReader.GetIcon());
+                    Assert.True(nupkgReader.GetEntry(iconEntry) != null);
+                    Assert.True(iconEntry.Equals(nuspecReader.GetIcon()));
+                }
+            }
+        }
+
+        /// <summary>
+        /// Test failed nuget.exe icon pack functionality with nuspec
+        /// </summary>
+        /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
+        /// <param name="message">Message to check in the command output</param>
+        private void TestPackIconFailure(TestDirectoryBuilder testDirBuilder, string message)
+        {
+            using (testDirBuilder.Build())
+            {
+                // Act
+                var r = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    testDirBuilder.BaseDir,
+                    $"pack {testDirBuilder.NuspecPath}",
+                    waitForExit: true);
+
+                // Assert
+                Util.VerifyResultFailure(r, message);
+            }
+        }
 
         private class PackageDepencyComparer : IEqualityComparer<PackageDependency>
         {
