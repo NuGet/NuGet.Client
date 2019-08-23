@@ -319,7 +319,7 @@ namespace NuGet.Packaging
                 throw new SignatureException(Strings.SignedPackageNotSignedOnVerify);
             }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
             using (var bufferedStream = new ReadOnlyBufferedStream(ZipReadStream, leaveOpen: true))
             using (var reader = new BinaryReader(bufferedStream, new UTF8Encoding(), leaveOpen: true))
             using (var hashAlgorithm = signatureContent.HashAlgorithm.GetHashProvider())
@@ -380,8 +380,9 @@ namespace NuGet.Packaging
 
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
-#if IS_DESKTOP
-            return RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono;
+#if IS_SIGNING_SUPPORTED
+            return true;
+            //return RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono;
 #else
             return false;
 #endif
