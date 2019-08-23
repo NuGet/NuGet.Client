@@ -4043,7 +4043,7 @@ namespace ClassLibrary
                 .WithItem("None", "icon.jpg", string.Empty)
                 .WithItem("None", "other\\files.txt", null)
                 .WithItem("None", "folder\\**", "media")
-                .WithItem("None", "utils\\*", "");
+                .WithItem("None", "utils\\*", "utils");
 
             using (var srcDir = testDirBuilder.Build())
             {
@@ -4052,11 +4052,6 @@ namespace ClassLibrary
 
                 // Validate embedded icon in package
                 ValidatePackIcon(projectBuilder);
-
-                // Validate icon URL deprecation warning
-                Assert.Contains(result.Output, NuGetLogCode.NU5048.ToString());
-                Assert.Contains(result.Output, "PackageIconUrl");
-                Assert.DoesNotContain(result.Output, "iconUrl");
 
                 // Validate that other content is also included
                 var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
@@ -4144,7 +4139,7 @@ namespace ClassLibrary
 
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
                 Assert.Contains("iconUrl", result.Output);
-                Assert.DoesNotContain("PackageIconUrl", result.Output);
+                Assert.Contains("PackageIconUrl", result.Output);
             }
         }
 
