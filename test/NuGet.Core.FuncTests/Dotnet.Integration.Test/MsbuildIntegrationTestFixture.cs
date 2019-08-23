@@ -29,9 +29,11 @@ namespace Dotnet.Integration.Test
         {
             _cliDirectory = CopyLatestCliForPack();
             TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
+
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(_cliDirectory, "sdk"))
                 .First(), "Sdks");
+
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -62,6 +64,7 @@ namespace Dotnet.Integration.Test
             {
                 Directory.CreateDirectory(workingDirectory);
             }
+ 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"new {args}",
@@ -80,6 +83,7 @@ namespace Dotnet.Integration.Test
             {
                 Directory.CreateDirectory(workingDirectory);
             }
+
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
@@ -125,6 +129,7 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
@@ -141,6 +146,7 @@ namespace Dotnet.Integration.Test
 
         private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args)
         {
+
             var envVar = new Dictionary<string, string>();
             envVar.Add("MSBuildSDKsPath", MsBuildSdksPath);
 
@@ -181,6 +187,7 @@ namespace Dotnet.Integration.Test
 
         private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
         {
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {file} {args} /p:NuspecOutputPath={nuspecOutputPath}",
@@ -196,6 +203,7 @@ namespace Dotnet.Integration.Test
 
         internal void BuildProject(string workingDirectory, string projectName, string args)
         {
+
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"msbuild {projectName}.csproj {args} /p:AppendRuntimeIdentifierToOutputPath=false",
@@ -241,6 +249,7 @@ namespace Dotnet.Integration.Test
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
             var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
+
             var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
 
             var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
@@ -248,6 +257,7 @@ namespace Dotnet.Integration.Test
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
+
             using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
             {
                 var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
@@ -265,7 +275,7 @@ namespace Dotnet.Integration.Test
             foreach (var nupkgName in nupkgsToCopy) {
                 using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
                 {
-                    var files = nupkg.GetFiles()
+                     var files = nupkg.GetFiles()
                     .Where(fileName => fileName.StartsWith("lib/netstandard")
                                     || fileName.StartsWith("lib/netcoreapp")
                                     || fileName.Contains("NuGet.targets"));
@@ -409,7 +419,21 @@ namespace Dotnet.Integration.Test
             }
             catch (UnauthorizedAccessException)
             {
-                Directory.Delete(path, true);
+                var MaxTries = 100;
+
+                for (var i = 0; i < MaxTries; i++)
+                {
+                    
+                    try
+                    {
+                        Directory.Delete(path, recursive: true);
+                        break;
+                    }
+                    catch (UnauthorizedAccessException) when (i < (MaxTries - 1))
+                    {
+                        Thread.Sleep(100);
+                    }
+                }
             }
             catch
             {

@@ -168,7 +168,6 @@ Function Install-DotnetCLI {
         [switch]$Force
     )
     $vsMajorVersion = Get-VSMajorVersion
-    Write-Host "vsmajor version is $vsMajorVersion"
     $MSBuildExe = Get-MSBuildExe $vsMajorVersion
     $CliBranchForTesting = & $msbuildExe $NuGetClientRoot\build\config.props /v:m /nologo /t:GetCliBranchForTesting
 
@@ -205,6 +204,8 @@ Function Install-DotnetCLI {
         Error-Log "Unable to find dotnet.exe. The CLI install may have failed." -Fatal
     }
 
+    # Install the 2.x runtime because our tests target netcoreapp2x
+    & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
     # Display build info
     & $DotNetExe --info
 }

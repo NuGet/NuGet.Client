@@ -37,7 +37,7 @@
 
     <!-- .NET Core SDK Insertion Logic -->    
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
-    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/2.2.3xx</CliBranchForTesting>
+    <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">release/3.0.1xx</CliBranchForTesting>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>

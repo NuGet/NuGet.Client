@@ -201,7 +201,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [Fact(Skip = "Requires a version of dotnet.exe that supports forwarding the --deprecated command argument. https://github.com/NuGet/Home/issues/8440")]
+        [PlatformFact(Platform.Windows)]
         public void DotnetListPackage_DeprecatedAndOutdated_Fail()
         {
             using (var pathContext = new SimpleTestPathContext())
@@ -275,7 +275,7 @@ namespace Dotnet.Integration.Test
         {
             using (var pathContext = new SimpleTestPathContext())
             {
-                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
+                var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net472");
                 var versions = new List<string> { "1.0.0-beta", "1.0.0", "1.0.9", "1.0.10-beta", "1.9.0", "1.10.0-beta", "2.1.0", "2.2.0-beta" };
                 foreach (var version in versions)
                 {
@@ -287,7 +287,6 @@ namespace Dotnet.Integration.Test
                         PackageSaveMode.Defaultv3,
                         packageX);
                 }
-
 
                 var addResult = _fixture.RunDotnet(Directory.GetParent(projectA.ProjectPath).FullName,
                     $"add {projectA.ProjectPath} package packageX --version {currentVersion} --no-restore");
