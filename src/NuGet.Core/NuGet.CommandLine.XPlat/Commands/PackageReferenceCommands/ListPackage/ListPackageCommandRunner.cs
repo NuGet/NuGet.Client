@@ -156,7 +156,7 @@ namespace NuGet.CommandLine.XPlat
         {
             ProjectInfo projectInfo = null;
             Project project = null;
-
+            Exception ex = null;
             if (File.Exists(projectPath))
             {
                 try
@@ -165,15 +165,15 @@ namespace NuGet.CommandLine.XPlat
                     //file and the name of the project
                     project = MSBuildAPIUtility.GetProject(projectPath);
                 }
-                catch (InvalidProjectFileException)
+                catch (InvalidProjectFileException ipfe)
                 {
+                    ex = ipfe;
                     var assetsPath = Path.Combine(Path.GetDirectoryName(projectPath), "obj", "project.assets.json");
 
                     if (File.Exists(assetsPath))
                     {
                         projectInfo = ProcessPRBasedProject(projectPath, solutionDirectoryPath, assetsPath, listPackageArgs, msBuildUtility);
                     }
-                    // Commenting out so that NuGet.RecommendPackages can get to the PC based processing for now
                     //else
                     //{
                     //    projectInfo = new ProjectInfo(Path.GetFileNameWithoutExtension(projectPath), projectPath, solutionDirectoryPath, ProjectStyle.Unknown);
@@ -212,6 +212,8 @@ namespace NuGet.CommandLine.XPlat
                 }
             }
 
+            projectInfo.Exception = ex;
+
             return projectInfo;
         }
 
@@ -223,7 +225,20 @@ namespace NuGet.CommandLine.XPlat
             if (!projectInfo.TargetFrameworkInfos.Any())
             {
                 // TODO: resx
-                Console.WriteLine("Project '" + projectInfo.ProjectPath + "' was not able to be loaded with .NET Core MsBuild - ******");
+                if (projectInfo.Exception != null)
+                {
+                    if (!projectInfo.Exception.Message.Contains("The imported project"))
+                    {
+                        Console.WriteLine("Project '" + projectInfo.ProjectPath + "' was not able to be loaded with .NET Core MsBuild - ******");
+                        Console.WriteLine(projectInfo.Exception.Message);
+                    }
+                    else
+                    {
+                        Console.WriteLine("Project '" + projectInfo.ProjectPath + "' was not able to be loaded with .NET Core MsBuild - ******");
+                        Console.WriteLine("NuGet restoring the solution may help us understand the project despite the fact that we couldn't load it.");
+                    }
+                }
+
                 Console.WriteLine();
             }
             else

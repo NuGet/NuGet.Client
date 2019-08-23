@@ -40,6 +40,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
         internal string SolutionDirectoryPath { get; }
+        public Exception Exception { get; internal set; }
 
 #if IS_CORECLR
         internal string ProjectDirectoryRelativePath
