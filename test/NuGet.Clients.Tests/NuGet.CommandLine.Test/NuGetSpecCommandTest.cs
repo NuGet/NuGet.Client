@@ -36,23 +36,25 @@ namespace NuGet.CommandLine.Test
                 Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
 
                 var nuspec = File.ReadAllText(Path.Combine(workingDirectory, "Package.nuspec"));
-                Assert.Equal($@"<?xml version=""1.0""?>
+                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <package >
   <metadata>
     <id>Package</id>
     <version>1.0.0</version>
     <authors>{Environment.UserName}</authors>
     <owners>{Environment.UserName}</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
+    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags>Tag1 Tag2</tags>
     <dependencies>
-      <dependency id=""SampleDependency"" version=""1.0"" />
+      <group targetFramework=""4720.0"">
+        <dependency id=""SampleDependency"" version=""1.0.0"" />
+      </group>
     </dependencies>
   </metadata>
 </package>", nuspec);
@@ -77,23 +79,25 @@ namespace NuGet.CommandLine.Test
                 var fileName = Path.Combine(workingDirectory, "Whatnot.nuspec");
                 Assert.True(File.Exists(fileName));
                 var nuspec = File.ReadAllText(fileName);
-                Assert.Equal($@"<?xml version=""1.0""?>
+                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <package >
   <metadata>
     <id>Whatnot</id>
     <version>1.0.0</version>
     <authors>{Environment.UserName}</authors>
     <owners>{Environment.UserName}</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
+    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright 2019</copyright>
     <tags>Tag1 Tag2</tags>
     <dependencies>
-      <dependency id=""SampleDependency"" version=""1.0"" />
+      <group targetFramework=""4720.0"">
+        <dependency id=""SampleDependency"" version=""1.0.0"" />
+      </group>
     </dependencies>
   </metadata>
 </package>", nuspec);
@@ -130,7 +134,7 @@ namespace NuGet.CommandLine.Test
                 var fileName = Path.Combine(workingDirectory, "Project.nuspec");
                 Assert.True(File.Exists(fileName));
                 var nuspec = File.ReadAllText(fileName);
-                Assert.Equal($@"<?xml version=""1.0""?>
+                Assert.Equal($@"<?xml version=""1.0"" encoding=""utf-8""?>
 <package >
   <metadata>
     <id>$id$</id>
@@ -138,10 +142,10 @@ namespace NuGet.CommandLine.Test
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
-    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
-    <projectUrl>http://PROJECT_URL_HERE_OR_DELETE_THIS_LINE</projectUrl>
-    <iconUrl>http://ICON_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
+    <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>$description$</description>
     <releaseNotes>Summary of changes made in this release of the package.</releaseNotes>
     <copyright>Copyright 2019</copyright>
