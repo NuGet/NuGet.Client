@@ -97,7 +97,7 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private static PrimarySignature CreatePrimarySignature(SignPackageRequest request, SignatureContent signatureContent, ILogger logger)
         {
             var cmsSigner = SigningUtility.CreateCmsSigner(request, logger);

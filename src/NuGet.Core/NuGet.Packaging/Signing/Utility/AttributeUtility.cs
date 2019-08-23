@@ -15,7 +15,7 @@ namespace NuGet.Packaging.Signing
 {
     public static class AttributeUtility
     {
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Create a CommitmentTypeIndication attribute.
         /// https://tools.ietf.org/html/rfc5126.html#section-5.11.1
@@ -33,9 +33,7 @@ namespace NuGet.Packaging.Signing
                 new Oid(Oids.CommitmentTypeIndication),
                 new AsnEncodedDataCollection(value));
         }
-#endif
 
-#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Gets the signature type from one or more commitment-type-indication attributes.
         /// </summary>
@@ -71,9 +69,7 @@ namespace NuGet.Packaging.Signing
 
             return knownValues[0];
         }
-#endif
 
-#if IS_DESKTOP
         /// <summary>
         /// Creates a nuget-v3-service-index-url attribute.
         /// </summary>
@@ -106,9 +102,7 @@ namespace NuGet.Packaging.Signing
                 new Oid(Oids.NuGetV3ServiceIndexUrl),
                 new AsnEncodedDataCollection(new AsnEncodedData(Oids.NuGetV3ServiceIndexUrl, bytes)));
         }
-#endif
 
-#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Gets the V3 service index HTTPS URL from the nuget-v3-service-index-url attribute.
         /// </summary>
@@ -231,9 +225,7 @@ namespace NuGet.Packaging.Signing
                     return SignatureType.Unknown;
             }
         }
-#endif
 
-#if IS_DESKTOP
         /// <summary>
         /// SignatureType -> Oid
         /// </summary>
@@ -274,9 +266,7 @@ namespace NuGet.Packaging.Signing
                 new Oid(Oids.SigningCertificateV2),
                 new AsnEncodedDataCollection(data));
         }
-#endif
 
-#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Returns the first attribute if the Oid is found.
         /// Returns null if the attribute is not found.
@@ -298,9 +288,7 @@ namespace NuGet.Packaging.Signing
 
             return null;
         }
-#endif
 
-#if IS_DESKTOP
         /// <summary>
         /// Throw a signature exception due to an invalid attribute. This is used for unusual situations
         /// where the format is corrupt.
@@ -324,9 +312,7 @@ namespace NuGet.Packaging.Signing
 
             return values;
         }
-#endif
 
-#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Attribute -> SignatureType values with no validation.
         /// </summary>
