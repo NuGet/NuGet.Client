@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -7,6 +10,8 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Packaging.Licenses;
+using NuGet.Versioning;
 
 namespace NuGet.CommandLine
 {
@@ -15,15 +20,6 @@ namespace NuGet.CommandLine
             UsageSummaryResourceName = "SpecCommandUsageSummary", UsageExampleResourceName = "SpecCommandUsageExamples")]
     public class SpecCommand : Command
     {
-        internal static readonly string SampleProjectUrl = "http://project_url_here_or_delete_this_line/";
-        internal static readonly string SampleLicenseUrl = "http://license_url_here_or_delete_this_line/";
-        internal static readonly string SampleIconUrl = "http://icon_url_here_or_delete_this_line/";
-        internal static readonly string SampleTags = "Tag1 Tag2";
-        internal static readonly string SampleReleaseNotes = "Summary of changes made in this release of the package.";
-        internal static readonly string SampleDescription = "Package description";
-        internal static readonly NuGetFramework SampleTfm = new NuGetFramework("472");
-        internal static readonly PackageDependency SampleManifestDependency = new PackageDependency("SampleDependency", new Versioning.VersionRange(new Versioning.NuGetVersion("1.0.0")));
-
         [Option(typeof(NuGetCommand), "SpecCommandAssemblyPathDescription")]
         public string AssemblyPath
         {
@@ -40,6 +36,14 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
+            string sampleProjectUrl = "http://project_url_here_or_delete_this_line/";
+            string sampleIconUrl = "http://icon_url_here_or_delete_this_line/";
+            string sampleTags = "Tag1 Tag2";
+            string sampleReleaseNotes = "Summary of changes made in this release of the package.";
+            string sampleDescription = "Package description";
+            NuGetFramework sampleTfm = NuGet.Frameworks.FrameworkConstants.CommonFrameworks.NetStandard21;
+            PackageDependency sampleManifestDependency = new PackageDependency("SampleDependency", new VersionRange(new NuGetVersion("1.0.0")));
+
             var manifest = new Manifest(new ManifestMetadata());
             string projectFile = null;
             string fileName = null;
@@ -81,22 +85,22 @@ namespace NuGet.CommandLine
             // If we're using a project file then we want the a minimal nuspec
             if (String.IsNullOrEmpty(projectFile))
             {
-                manifest.Metadata.Description = manifest.Metadata.Description ?? SampleDescription;
+                manifest.Metadata.Description = manifest.Metadata.Description ?? sampleDescription;
                 if (!manifest.Metadata.Authors.Any() || String.IsNullOrEmpty(manifest.Metadata.Authors.First()))
                 {
                     manifest.Metadata.Authors = new List<string>() { Environment.UserName };
                 }
                 manifest.Metadata.DependencyGroups = new List<PackageDependencyGroup>() {
-                    new PackageDependencyGroup(SampleTfm, new List<PackageDependency>() { SampleManifestDependency })
+                    new PackageDependencyGroup(sampleTfm, new List<PackageDependency>() { sampleManifestDependency })
                 };
             }
 
-            manifest.Metadata.SetProjectUrl(SampleProjectUrl);
-            manifest.Metadata.SetLicenseUrl(SampleLicenseUrl);
-            manifest.Metadata.SetIconUrl(SampleIconUrl);
-            manifest.Metadata.Tags = SampleTags;
+            manifest.Metadata.SetProjectUrl(sampleProjectUrl);
+            manifest.Metadata.LicenseMetadata = new LicenseMetadata(LicenseType.Expression, "MIT", NuGetLicenseExpression.Parse("MIT"), new string[] {}, LicenseMetadata.CurrentVersion);
+            manifest.Metadata.SetIconUrl(sampleIconUrl);
+            manifest.Metadata.Tags = sampleTags;
             manifest.Metadata.Copyright = "Copyright " + DateTime.Now.Year;
-            manifest.Metadata.ReleaseNotes = SampleReleaseNotes;
+            manifest.Metadata.ReleaseNotes = sampleReleaseNotes;
             string nuspecFile = fileName + PackagingConstants.ManifestExtension;
 
             // Skip the creation if the file exists and force wasn't specified
@@ -110,7 +114,7 @@ namespace NuGet.CommandLine
                 {
                     using (var stream = new MemoryStream())
                     {
-                        manifest.Save(stream);
+                        manifest.Save(stream, generateBackwardsCompatible: false);
                         stream.Seek(0, SeekOrigin.Begin);
                         string content = stream.ReadToEnd();
                         // We have to replace it here because we can't have

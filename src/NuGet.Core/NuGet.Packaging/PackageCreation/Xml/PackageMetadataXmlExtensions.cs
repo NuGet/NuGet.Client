@@ -26,6 +26,11 @@ namespace NuGet.Packaging.Xml
 
         public static XElement ToXElement(this ManifestMetadata metadata, XNamespace ns)
         {
+            return ToXElement(metadata, ns, generateBackwardsCompatible: true);
+        }
+
+        public static XElement ToXElement(this ManifestMetadata metadata, XNamespace ns, bool generateBackwardsCompatible = true)
+        {
             var elem = new XElement(ns + "metadata");
             if (metadata.MinClientVersionString != null)
             {
@@ -55,7 +60,10 @@ namespace NuGet.Packaging.Xml
                     {
                         elem.Add(licenseElement);
                     }
-                    licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl.OriginalString;
+                    if (generateBackwardsCompatible)
+                    {
+                        licenseUrlToWrite = metadata.LicenseMetadata.LicenseUrl.OriginalString;
+                    }
                 }
                 AddElementIfNotNull(elem, ns, "licenseUrl", licenseUrlToWrite);
 
@@ -91,7 +99,7 @@ namespace NuGet.Packaging.Xml
             elem.Add(GetXElementFromGroupableItemSets(
                 ns,
                 metadata.DependencyGroups,
-                set => set.TargetFramework.IsSpecificFramework || 
+                set => set.TargetFramework.IsSpecificFramework ||
                        set.Packages.Any(dependency => dependency.Exclude.Count > 0 || dependency.Include.Count > 0),
                 set => set.TargetFramework.IsSpecificFramework ? set.TargetFramework.GetFrameworkString() : null,
                 set => set.Packages,
@@ -115,9 +123,9 @@ namespace NuGet.Packaging.Xml
                 isGroupable: set => true, // the TFM is required for framework references
                 getGroupIdentifer: set => set.TargetFramework.GetFrameworkString(),
                 getItems: set => set.FrameworkReferences,
-                getXElementFromItem : GetXElementFromFrameworkReference,
+                getXElementFromItem: GetXElementFromFrameworkReference,
                 parentName: NuspecUtility.FrameworkReferences,
-                identifierAttributeName : TargetFramework));
+                identifierAttributeName: TargetFramework));
 
             elem.Add(GetXElementFromFrameworkAssemblies(ns, metadata.FrameworkReferences));
             elem.Add(GetXElementFromManifestContentFiles(ns, metadata.ContentFiles));
