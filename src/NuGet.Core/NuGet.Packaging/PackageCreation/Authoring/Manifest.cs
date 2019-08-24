@@ -63,8 +63,29 @@ namespace NuGet.Packaging
         /// Saves the current manifest to the specified stream.
         /// </summary>
         /// <param name="stream">The target stream.</param>
+        /// <param name="generateBackwardsCompatible">Write out a manifest that's consumable by legacy clients, by adding any necessary translations into legacy fields.</param>
+        public void Save(Stream stream, bool generateBackwardsCompatible)
+        {
+            Save(stream, minimumManifestVersion: 1, generateBackwardsCompatible);
+        }
+
+        /// <summary>
+        /// Saves the current manifest to the specified stream.
+        /// </summary>
+        /// <param name="stream">The target stream.</param>
         /// <param name="minimumManifestVersion">The minimum manifest version that this class must use when saving.</param>
         public void Save(Stream stream, int minimumManifestVersion)
+        {
+            Save(stream, minimumManifestVersion, generateBackwardsCompatible: true);
+        }
+
+        /// <summary>
+        /// Saves the current manifest to the specified stream.
+        /// </summary>
+        /// <param name="stream">The target stream.</param>
+        /// <param name="minimumManifestVersion">The minimum manifest version that this class must use when saving.</param>
+        /// <param name="generateBackwardsCompatible">Write out a manifest that's consumable by legacy clients, by adding any necessary translations into legacy fields.</param>
+        public void Save(Stream stream, int minimumManifestVersion, bool generateBackwardsCompatible)
         {
 
             Validate(this);
@@ -74,7 +95,7 @@ namespace NuGet.Packaging
 
             new XDocument(
                 new XElement(schemaNamespace + "package",
-                    Metadata.ToXElement(schemaNamespace),
+                    Metadata.ToXElement(schemaNamespace, generateBackwardsCompatible: generateBackwardsCompatible),
                     Files.Any() ?
                         new XElement(schemaNamespace + "files",
                             Files.Select(file => new XElement(schemaNamespace + "file",
@@ -231,7 +252,7 @@ namespace NuGet.Packaging
 
             // Run all validations
             results.AddRange(manifest.Metadata.Validate());
-            foreach(var manifestFile in manifest.Files)
+            foreach (var manifestFile in manifest.Files)
             {
                 results.AddRange(manifestFile.Validate());
             }

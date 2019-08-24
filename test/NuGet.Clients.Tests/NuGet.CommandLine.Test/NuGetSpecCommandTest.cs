@@ -1,9 +1,8 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -44,7 +43,7 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <owners>{Environment.UserName}</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
@@ -52,12 +51,12 @@ namespace NuGet.CommandLine.Test
     <copyright>Copyright 2019</copyright>
     <tags>Tag1 Tag2</tags>
     <dependencies>
-      <group targetFramework=""4720.0"">
+      <group targetFramework="".NETStandard2.1"">
         <dependency id=""SampleDependency"" version=""1.0.0"" />
       </group>
     </dependencies>
   </metadata>
-</package>", nuspec);
+</package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
 
@@ -87,7 +86,7 @@ namespace NuGet.CommandLine.Test
     <authors>{Environment.UserName}</authors>
     <owners>{Environment.UserName}</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>Package description</description>
@@ -95,12 +94,12 @@ namespace NuGet.CommandLine.Test
     <copyright>Copyright 2019</copyright>
     <tags>Tag1 Tag2</tags>
     <dependencies>
-      <group targetFramework=""4720.0"">
+      <group targetFramework="".NETStandard2.1"">
         <dependency id=""SampleDependency"" version=""1.0.0"" />
       </group>
     </dependencies>
   </metadata>
-</package>", nuspec);
+</package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
 
@@ -143,7 +142,7 @@ namespace NuGet.CommandLine.Test
     <authors>$author$</authors>
     <owners>$author$</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <licenseUrl>http://license_url_here_or_delete_this_line/</licenseUrl>
+    <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
     <iconUrl>http://icon_url_here_or_delete_this_line/</iconUrl>
     <description>$description$</description>
@@ -151,7 +150,7 @@ namespace NuGet.CommandLine.Test
     <copyright>Copyright 2019</copyright>
     <tags>Tag1 Tag2</tags>
   </metadata>
-</package>", nuspec);
+</package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
             }
         }
     }
