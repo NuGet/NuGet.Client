@@ -253,9 +253,9 @@ namespace NuGet.CommandLine.Test
                 var pathValue = envInstance.GetEnvironmentVariable("PATH");
 
                 var newPathValue = new StringBuilder();
-                newPathValue.Append('"');
+                newPathValue.Append('\"');
                 newPathValue.Append(msBuild160BinPath);
-                newPathValue.Append('"');
+                newPathValue.Append('\"');
                 newPathValue.Append(';');
                 newPathValue.Append(pathValue);              
 
