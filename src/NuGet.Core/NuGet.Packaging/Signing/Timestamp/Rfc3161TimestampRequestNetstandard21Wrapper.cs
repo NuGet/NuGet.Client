@@ -56,7 +56,7 @@ namespace NuGet.Packaging.Signing
 
             if (httpResponse.Content.Headers.ContentType.MediaType != "application/timestamp-reply")
             {
-                throw new CryptographicException("The reply from the time stamp server was in a invalid format.");
+                throw new CryptographicException("The reply from the time stamp server was in a invalid format. The httpResponse.Content.Headers.ContentType.MediaType is {httpResponse.Content.Headers.ContentType.MediaType}");
             }
 
             var data = await httpResponse.Content.ReadAsByteArrayAsync();   

@@ -3974,7 +3974,7 @@ namespace ClassLibrary
                 Assert.True(result.Success);
             }
         }
-
+#endif
         [PlatformFact(Platform.Windows)]
         public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
