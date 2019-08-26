@@ -999,7 +999,7 @@ namespace NuGet.CommandLine
             {
                 foreach (var exeName in exeNames)
                 {
-                    var exePath = pathDirs.Select(dir => Path.Combine(dir.Trim(Path.GetInvalidPathChars()), exeName)).FirstOrDefault(File.Exists);
+                    var exePath = pathDirs.Select(dir => Path.Combine(dir.Trim('"'), exeName)).FirstOrDefault(File.Exists);
                     if (exePath != null)
                     {
                         return exePath;

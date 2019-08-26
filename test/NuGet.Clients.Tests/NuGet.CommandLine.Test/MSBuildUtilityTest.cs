@@ -6,6 +6,8 @@ using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
 using System.Text;
+using System.Security.Permissions;
+using System.Security;
 
 namespace NuGet.CommandLine.Test
 {
@@ -232,12 +234,8 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
-        [InlineData('"')]
-        [InlineData('<')]
-        [InlineData('>')]
-        [InlineData('|')]
-        public void GetMsbuildDirectoryFromPath_PATHENVWithInvalidChars_Succeeds(char invalidChar)
+       [Fact]
+        public void GetMsbuildDirectoryFromPath_PATHENVWithQuotes_Succeeds()
         {
             if (RuntimeEnvironmentHelper.IsMono)
             { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
@@ -255,21 +253,36 @@ namespace NuGet.CommandLine.Test
                 var pathValue = envInstance.GetEnvironmentVariable("PATH");
 
                 var newPathValue = new StringBuilder();
-                newPathValue.Append(invalidChar);
-                newPathValue.Append(msBuild160ExePath);
-                newPathValue.Append(invalidChar);
+                newPathValue.Append('"');
+                newPathValue.Append(msBuild160BinPath);
+                newPathValue.Append('"');
                 newPathValue.Append(';');
-                newPathValue.Append(pathValue);
-                
-                Environment.SetEnvironmentVariable("PATH", newPathValue.ToString());
+                newPathValue.Append(pathValue);              
+
+                try
+                {
+                    Environment.SetEnvironmentVariable("PATH", newPathValue.ToString());
+                }
+                catch (SecurityException)
+                {
+                    // ignore if user doesn't have permission to add environment variable, which is very rare.
+                }
 
                 // Act;
                 var toolset = MsBuildUtility.GetMsBuildToolset(userVersion: null, console: null);
-                Environment.SetEnvironmentVariable("PATH", pathValue);
+
+                try
+                {
+                    Environment.SetEnvironmentVariable("PATH", pathValue.ToString());
+                }
+                catch (SecurityException)
+                {
+                    // ignore if user doesn't have permission to add environment variable, which is very rare.
+                }
 
                 // Assert
                 Assert.NotNull(toolset);
-                Assert.Equal(msBuild160ExePath, toolset.Path);
+                Assert.Equal(msBuild160BinPath, toolset.Path);
             }
         }
 
