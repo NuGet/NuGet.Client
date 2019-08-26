@@ -114,7 +114,6 @@
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
       <Name>NuGet.Common</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -122,7 +121,6 @@
       <Project>{e3ef26e1-80a7-4573-b3a4-1d4b0042616e}</Project>
       <Name>NuGet.Configuration</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -130,7 +128,6 @@
       <Project>{cf8e1753-ee98-410f-bb4b-6624b19c6b64}</Project>
       <Name>NuGet.DependencyResolver.Core</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -138,7 +135,6 @@
       <Project>{9a9a9f26-597a-4fa6-a4f1-415063484d9c}</Project>
       <Name>NuGet.Frameworks</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -146,7 +142,6 @@
       <Project>{13883e8e-7de1-4edd-8e4a-c5357ba8cd81}</Project>
       <Name>NuGet.LibraryModel</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -156,7 +151,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bBuiltProjectOutputGroupDependencies%3bGetCopyToOutputDirectoryItems%3bSatelliteDllsProjectOutputGroup%3b</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup%3b</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -164,7 +158,6 @@
       <Project>{bd6bbc90-60be-4e7d-8458-91e9cda66abe}</Project>
       <Name>NuGet.Packaging</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -172,7 +165,6 @@
       <Project>{f013e43f-b6d5-4f59-acf0-eecec2c794f5}</Project>
       <Name>NuGet.ProjectModel</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -180,7 +172,6 @@
       <Project>{020f4c88-3a5c-4b89-9868-089e867cc223}</Project>
       <Name>NuGet.Protocol</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -192,7 +183,6 @@
       <Project>{24e62ab7-64e4-4975-9417-883559d1bc19}</Project>
       <Name>NuGet.Versioning</Name>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -214,7 +204,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -230,7 +219,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup%3bPkgdefProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -240,7 +228,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -262,7 +249,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -278,7 +264,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -288,7 +273,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
@@ -298,7 +282,6 @@
       <IncludeOutputGroupsInVSIX>BuiltProjectOutputGroup</IncludeOutputGroupsInVSIX>
       <IncludeOutputGroupsInVSIXLocalOnly>DebugSymbolsProjectOutputGroup</IncludeOutputGroupsInVSIXLocalOnly>
       <Ngen>True</Ngen>
-      <NgenApplication>vsn.exe</NgenApplication>
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
