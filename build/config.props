@@ -34,7 +34,7 @@
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <!-- when LockSDKVersion is true,  it will use the specific version in CliVersionForBuilding for building, and specific version in OverrideCliBranchForTesting for testing,  -->
     <!-- when LockSDKVersion is not true, it will ignore the properties and just use the latest version for the channel specified in CliVersionForBuilding for building, CliBranchForTesting for testing -->
-    <LockSDKVersion></LockSDKVersion>
+    <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == ''"></OverrideCliBranchForTesting>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">release/3.0.1xx 3.0.100-preview7-012802</OverrideCliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
