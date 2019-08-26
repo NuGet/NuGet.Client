@@ -43,8 +43,8 @@ function Test-FindPackageByIdAndVersion {
     Assert-True $packages[0].Id -eq "EntityFramework"
 }
 
-# Currently failing due to bug https://github.com/NuGet/Home/issues/319
 function Test-FindPackageByIdAndPrereleaseVersion {
+    [SkipTest('https://github.com/NuGet/Home/issues/8496')]
     # Act 1
     $packages = Find-Package TestPackage.AlwaysPrerelease
     
@@ -81,6 +81,7 @@ function Test-FindPackageByIdWithAllVersions {
 }
 
 function Test-FindPackageByIdWithFirstAndSkip {
+    [SkipTest('https://github.com/NuGet/Home/issues/8496')]
     # Act 1
     $packages = Find-Package elmah -First 5
     
