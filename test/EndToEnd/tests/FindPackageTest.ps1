@@ -45,6 +45,8 @@ function Test-FindPackageByIdAndVersion {
 
 function Test-FindPackageByIdAndPrereleaseVersion {
     [SkipTest('https://github.com/NuGet/Home/issues/8496')]
+    param()
+
     # Act 1
     $packages = Find-Package TestPackage.AlwaysPrerelease
     
@@ -82,6 +84,8 @@ function Test-FindPackageByIdWithAllVersions {
 
 function Test-FindPackageByIdWithFirstAndSkip {
     [SkipTest('https://github.com/NuGet/Home/issues/8496')]
+    param()
+
     # Act 1
     $packages = Find-Package elmah -First 5
     
