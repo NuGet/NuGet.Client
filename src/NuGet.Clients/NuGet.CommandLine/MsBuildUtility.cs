@@ -28,6 +28,8 @@ namespace NuGet.CommandLine
 
         private readonly static string[] MSBuildVersions = new string[] { "14", "12", "4" };
 
+        private static readonly IEnvironmentVariableReader EnvVarReader = EnvironmentVariableWrapper.Instance;
+
         public static bool IsMsBuildBasedProject(string projectFullPath)
         {
             return projectFullPath.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
@@ -240,7 +242,7 @@ namespace NuGet.CommandLine
             };
 
             // Set the msbuild verbosity level if specified
-            var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
+            var msbuildVerbosity = EnvVarReader.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
 
             if (string.IsNullOrEmpty(msbuildVerbosity))
             {
@@ -276,7 +278,7 @@ namespace NuGet.CommandLine
             }
 
             // Add additional args to msbuild if needed
-            var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+            var msbuildAdditionalArgs = EnvVarReader.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
 
             if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
             {
@@ -983,6 +985,11 @@ namespace NuGet.CommandLine
             }
         }
 
+        /// <summary>
+        /// Gets the (first) path of MSBuild or xbuild to appear in environment variable PATH.
+        /// </summary>
+        /// <returns>The path of MSBuild or xbuild in PATH environment variable. Returns null if MSBuild or xbuild location does not exist
+        /// in the variable string.</returns>
         internal static string GetMSBuild()
         {
             var exeNames = new [] { "msbuild.exe" };
@@ -993,7 +1000,7 @@ namespace NuGet.CommandLine
             }
 
             // Try to find msbuild or xbuild in $Path.
-            var pathDirs = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            var pathDirs = EnvVarReader.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathDirs?.Length > 0)
             {

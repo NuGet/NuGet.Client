@@ -202,14 +202,13 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestGetMsbuildDirectoryFromPATHENV()
         {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
             using (var vsPath = TestDirectory.Create())
             {
-
-                if (RuntimeEnvironmentHelper.IsMono)
-                { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                    return;
-                }
-
                 var msBuild159BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.9", "Bin")).FullName;
 
                 var msBuild159ExePath = Path.Combine(msBuild159BinPath, "msbuild.exe").ToString();
@@ -237,6 +236,11 @@ namespace NuGet.CommandLine.Test
        [Fact]
         public void GetMsbuildDirectoryFromPath_PATHENVWithQuotes_Succeeds()
         {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
             using (var vsPath = TestDirectory.Create())
             {
                 var msBuild160BinDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "16.0", "Bin"));
