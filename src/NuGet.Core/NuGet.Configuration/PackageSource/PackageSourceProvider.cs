@@ -24,7 +24,7 @@ namespace NuGet.Configuration
         {
         }
 
-        [Obsolete("Constructor with enablePackageSourcesChangedEvent will go away: https://github.com/NuGet/Home/issues/8479")]
+        [Obsolete("https://github.com/NuGet/Home/issues/8479")]
         public PackageSourceProvider(
           ISettings settings,
           bool enablePackageSourcesChangedEvent)
@@ -41,7 +41,7 @@ namespace NuGet.Configuration
         {
         }
 
-        [Obsolete("Constructor with enablePackageSourcesChangedEvent will go away: https://github.com/NuGet/Home/issues/8479")]
+        [Obsolete("https://github.com/NuGet/Home/issues/8479")]
         public PackageSourceProvider(
             ISettings settings,
             IEnumerable<PackageSource> configurationDefaultSources,
