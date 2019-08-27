@@ -11,6 +11,12 @@ namespace NuGet.Protocol
 {
     public static class FactoryExtensionsV3
     {
+        public static Func<INuGetResourceProvider> CreateHttpHandlerResourceV3Provider
+        {
+            get;
+            set;
+        } = () => new HttpHandlerResourceV3Provider();
+
         public static SourceRepository GetCoreV3(this Repository.RepositoryFactory factory, string source, FeedType type)
         {
             return Repository.CreateSource(Repository.Provider.GetCoreV3(), source, type);
@@ -40,7 +46,7 @@ namespace NuGet.Protocol
             yield return new Lazy<INuGetResourceProvider>(() => new PackageDetailsUriResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ServiceIndexResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new ODataServiceDocumentResourceV2Provider());
-            yield return new Lazy<INuGetResourceProvider>(() => new HttpHandlerResourceV3Provider());
+            yield return new Lazy<INuGetResourceProvider>(() => CreateHttpHandlerResourceV3Provider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpSourceResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new PluginFindPackageByIdResourceProvider());
             yield return new Lazy<INuGetResourceProvider>(() => new HttpFileSystemBasedFindPackageByIdResourceProvider());
