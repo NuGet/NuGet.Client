@@ -237,10 +237,6 @@ namespace NuGet.CommandLine.Test
        [Fact]
         public void GetMsbuildDirectoryFromPath_PATHENVWithQuotes_Succeeds()
         {
-            if (RuntimeEnvironmentHelper.IsMono)
-            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                return;
-            }
             using (var vsPath = TestDirectory.Create())
             {
                 var msBuild160BinDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "16.0", "Bin"));
@@ -269,7 +265,7 @@ namespace NuGet.CommandLine.Test
                 }
 
                 // Act;
-                var toolset = MsBuildUtility.GetMsBuildToolset(userVersion: null, console: null);
+                var msBuildPath = MsBuildUtility.GetMSBuild();
 
                 try
                 {
@@ -277,12 +273,12 @@ namespace NuGet.CommandLine.Test
                 }
                 catch (SecurityException)
                 {
-                    // ignore if user doesn't have permission to add environment variable, which is very rare.
+                    // ignore if user doesn't have permission to read/add environment variable, which is very rare.
                 }
 
                 // Assert
-                Assert.NotNull(toolset);
-                Assert.Equal(msBuild160BinPath, toolset.Path);
+                Assert.NotNull(msBuildPath);
+                Assert.Equal(msBuild160ExePath, msBuildPath);
             }
         }
 

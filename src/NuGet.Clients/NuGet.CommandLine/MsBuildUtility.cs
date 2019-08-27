@@ -983,7 +983,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static string GetMSBuild()
+        internal static string GetMSBuild()
         {
             var exeNames = new [] { "msbuild.exe" };
 
@@ -993,7 +993,7 @@ namespace NuGet.CommandLine
             }
 
             // Try to find msbuild or xbuild in $Path.
-            var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            var pathDirs = EnvironmentVariableWrapper.Instance.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathDirs?.Length > 0)
             {
