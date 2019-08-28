@@ -14,6 +14,10 @@ using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
 using Xunit;
+using NuGet.Common;
+using Newtonsoft.Json.Linq;
+using System.Text;
+using System.IO.Enumeration;
 
 namespace Dotnet.Integration.Test
 {
@@ -31,6 +35,19 @@ namespace Dotnet.Integration.Test
             TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
 
             var sdkPaths = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk"));
+
+            //Temporary patching process for System.Security.Cryptography.Pkcs.dll and deps.json file
+            //Will be removed when shipping
+            var patchDir = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First();
+            TempPatching(patchDir);
+
+            var nupkgPath = DotnetCliUtil.GetNupkgDirectoryInRepo();
+            var artifacts = nupkgPath.Substring(0, nupkgPath.Length - "Nupkgs".Length - 1);
+            var pathCopyFrom = Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(artifacts, "NuGet.CommandLine.XPlat"),"16.0"),"bin"),"Debug"),"netcoreapp3.0");
+            var pathCopyTo = patchDir;
+            var dlls = new string[1] { "System.Security.Cryptography.Pkcs.dll" };
+            TempCopyNewlyAddedDlls(dlls, pathCopyFrom, pathCopyTo);
+            //end of Temporary patching
 
             MsBuildSdksPath = Path.Combine(
              sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
@@ -452,6 +469,93 @@ namespace Dotnet.Integration.Test
             {
 
             }
+        }
+
+        //temporary added methods for processing deps.json files for patching
+        private void TempPatching(string patchDir)
+        {
+            var prefix = patchDir;
+            string[] filenames = new string[3] { "dotnet.deps.json", "MSBuild.deps.json", "NuGet.CommandLine.XPlat.deps.json" };
+            string[] fullnames = new string[3];
+            for(int i = 0; i < filenames.Length; i++) 
+            {
+                fullnames[i] = prefix + Path.DirectorySeparatorChar + filenames[i];
+            }
+            TempPatchingDepsJsonForNewlyAddedDlls(fullnames);
+
+        }
+        private void TempCopyNewlyAddedDlls(string[] dlls, string pathCopyFrom, string PathCopyTo)
+        {
+            foreach (var dll in dlls) 
+            {
+                var copyFromFullName = Path.Combine(pathCopyFrom, dll);
+                var copyToFullName = Path.Combine(PathCopyTo, dll);
+                File.Copy(copyFromFullName, copyToFullName);
+            }
+        }
+        private void TempPatchingDepsJsonForNewlyAddedDlls(string[] filePaths)
+        {
+            string nugetBuildTasksName = "NuGet.Build.Tasks/5.2.0-rtm.6067";
+            foreach (string file in filePaths)
+            {
+                JObject JsonFile = GetJson(file);
+
+                JObject targets = null;
+                targets = JsonFile.GetJObjectProperty<JObject>("targets");
+
+                JObject netcoreapp30 = null;
+                netcoreapp30 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v3.0");
+
+                JObject NuGet_Build_Tasks = null;
+                NuGet_Build_Tasks = netcoreapp30.GetJObjectProperty<JObject>(nugetBuildTasksName);
+
+                JObject runtime = null;
+                runtime = NuGet_Build_Tasks.GetJObjectProperty<JObject>("runtime");
+
+                var jproperty = new JProperty("lib/netstandard2.1/System.Security.Cryptography.Pkcs.dll",
+                            new JObject
+                                {
+                                    new JProperty("assemblyVersion","4.0.4.0"),
+                                    new JProperty("fileVersion", "4.700.19.40503"),
+                                }
+                            );
+                runtime.Add(jproperty);
+                NuGet_Build_Tasks["runtime"] = runtime;
+                netcoreapp30[nugetBuildTasksName] = NuGet_Build_Tasks;
+                targets[".NETCoreApp,Version=v3.0"] = netcoreapp30;
+                JsonFile["targets"] = targets;
+                SaveJson(JsonFile, file);
+            }
+        }
+        private JObject GetJson(string jsonFilePath)
+        {
+            try
+            {
+                return FileUtility.SafeRead(jsonFilePath, (stream, filePath) =>
+                {
+                    using (var reader = new StreamReader(stream))
+                    {
+                        return JObject.Parse(reader.ReadToEnd());
+                    }
+                });
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException(
+                    string.Format(jsonFilePath, ex.Message), ex);
+            }
+        }
+
+        private void SaveJson(JObject json, string jsonFilePath)
+        {
+            FileUtility.Replace((outputPath) =>
+            {
+                using (var writer = new StreamWriter(outputPath, false, Encoding.UTF8))
+                {
+                    writer.Write(json.ToString());
+                }
+            },
+            jsonFilePath);
         }
     }
 }
