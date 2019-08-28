@@ -18,6 +18,7 @@ using NuGet.Common;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using System.IO.Enumeration;
+using System.Runtime.CompilerServices;
 
 namespace Dotnet.Integration.Test
 {
@@ -41,9 +42,17 @@ namespace Dotnet.Integration.Test
             var patchDir = sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First();
             TempPatching(patchDir);
 
-            var nupkgPath = DotnetCliUtil.GetNupkgDirectoryInRepo();
-            var artifacts = nupkgPath.Substring(0, nupkgPath.Length - "Nupkgs".Length - 1);
-            var pathCopyFrom = Path.Combine(Path.Combine(Path.Combine(Path.Combine(Path.Combine(artifacts, "NuGet.CommandLine.XPlat"),"16.0"),"bin"),"Debug"),"netcoreapp3.0");
+            string packagePath = null;
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                packagePath = Path.Combine(Environment.GetEnvironmentVariable("USERPROFILE"), ".nuget", "packages");
+            }
+            else
+            {
+                packagePath = Path.Combine(Environment.GetEnvironmentVariable("HOME"), ".local", "share", "NuGet", "v3-cache");
+            }
+
+            var pathCopyFrom = Path.Combine(packagePath, "system.security.cryptography.pkcs", "4.6.0-preview8.19405.3", "lib", "netstandard2.1");
             var pathCopyTo = patchDir;
             var dlls = new string[1] { "System.Security.Cryptography.Pkcs.dll" };
             TempCopyNewlyAddedDlls(dlls, pathCopyFrom, pathCopyTo);
