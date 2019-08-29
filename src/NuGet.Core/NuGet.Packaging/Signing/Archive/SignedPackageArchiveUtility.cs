@@ -443,7 +443,6 @@ namespace NuGet.Packaging.Signing
 
             try
             {
-                /*
                 // Read and hash from the start of the archive to the start of the file headers
                 reader.BaseStream.Seek(offset: 0, origin: SeekOrigin.Begin);
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(reader, hashAlgorithm, metadata.StartOfLocalFileHeaders);
@@ -496,9 +495,6 @@ namespace NuGet.Packaging.Signing
                 hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
 
                 return CompareHash(expectedHash, hashAlgorithm.Hash);
-                */
-                return CompareHash(expectedHash, Convert.FromBase64String(GetPackageContentHash(reader)));
-
             }
             // If exception is throw in means the archive was not a valid package. It has been tampered, return false.
             catch { }

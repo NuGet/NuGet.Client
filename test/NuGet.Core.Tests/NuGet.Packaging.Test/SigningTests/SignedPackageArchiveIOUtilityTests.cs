@@ -8,7 +8,6 @@ using System.Security.Cryptography;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
-using Org.BouncyCastle.Crypto.Tls;
 using Test.Utility.Signing;
 using Xunit;
 
@@ -125,7 +124,7 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<ArgumentNullException>(
                     () => SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                         reader: null,
-                        hashFunc: test.hashFunc,
+                        hashAlgorithm: test.HashAlgorithm,
                         position: 0));
 
                 Assert.Equal("reader", exception.ParamName);
@@ -140,7 +139,7 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<ArgumentOutOfRangeException>(
                     () => SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                         test.Reader,
-                        test.hashFunc,
+                        test.HashAlgorithm,
                         test.Reader.BaseStream.Length + 1));
 
                 Assert.Equal("position", exception.ParamName);
@@ -158,7 +157,7 @@ namespace NuGet.Packaging.Test
                 var exception = Assert.Throws<ArgumentOutOfRangeException>(
                     () => SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                         test.Reader,
-                        test.hashFunc,
+                        test.HashAlgorithm,
                         position: 0));
 
                 Assert.Equal("position", exception.ParamName);
@@ -166,6 +165,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
+#if !IS_CORECLR
         [Fact]
         public void ReadAndHashUntilPosition_WhenPositionAtStart_ReadsAndHashes()
         {
@@ -173,12 +173,12 @@ namespace NuGet.Packaging.Test
             {
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                     test.Reader,
-                    test.hashFunc,
+                    test.HashAlgorithm,
                     test.Reader.BaseStream.Length);
 
                 var actualHash = test.GetHash();
 
-                Assert.Equal("LzgxvMyUzwYbz6X4wjwUKdJuO8a3btrZPZAly5HJA69s+ck13DcZPATCxm59neF8NYKEQYIYr+ohYBR6qpEvTA==", actualHash);
+                Assert.Equal("F+iNsYev1iwW5d6/PmUnzQBrwBK8kLUagQzYDC1RH0M=", actualHash);
                 Assert.Equal(test.Reader.BaseStream.Length, test.Reader.BaseStream.Position);
             }
         }
@@ -192,12 +192,12 @@ namespace NuGet.Packaging.Test
 
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                     test.Reader,
-                    test.hashFunc,
+                    test.HashAlgorithm,
                     position: 5);
 
                 var actualHash = test.GetHash();
 
-                Assert.Equal("McXqbLUPbfPhEQ4IvD++P14C7pWeKqbSEGxrMEKd0Lbhg9tao1lzsZmKU0lWx4qLEXI5/Tn2PxJW2GfxHLmgcw==", actualHash);
+                Assert.Equal("H1KP/SiVY0wXZTfAVdqlwJcbeRVRmZkzeg41VBDY/Zg=", actualHash);
                 Assert.Equal(5, test.Reader.BaseStream.Position);
             }
         }
@@ -211,24 +211,25 @@ namespace NuGet.Packaging.Test
 
                 SignedPackageArchiveIOUtility.ReadAndHashUntilPosition(
                     test.Reader,
-                    test.hashFunc,
+                    test.HashAlgorithm,
                     test.Reader.BaseStream.Length);
 
                 var actualHash = test.GetHash();
 
-                Assert.Equal("z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==", actualHash);
+                Assert.Equal("47DEQpj8HBSa+/TImW+5JCeuQeRkm5NMpJWZG3hSuFU=", actualHash);
                 Assert.Equal(test.Reader.BaseStream.Length, test.Reader.BaseStream.Position);
             }
         }
+#endif
 
         [Fact]
         public void HashBytes_WhenHashAlgorithmNull_Throws()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => SignedPackageArchiveIOUtility.HashBytes(
-                    hashFunc: null, bytes: new byte[] { 0 }));
+                    hashAlgorithm: null, bytes: new byte[] { 0 }));
 
-            Assert.Equal("hashFunc", exception.ParamName);
+            Assert.Equal("hashAlgorithm", exception.ParamName);
         }
 
         [Theory]
@@ -236,33 +237,33 @@ namespace NuGet.Packaging.Test
         [InlineData(new byte[] { })]
         public void HashBytes_WhenBytesNullOrEmpty_Throws(byte[] bytes)
         {
-            using (var hashFunc = new Sha512HashFunction())
+            using (var hashAlgorithm = SHA256.Create())
             {
                 var exception = Assert.Throws<ArgumentException>(
                     () => SignedPackageArchiveIOUtility.HashBytes(
-                        hashFunc,
+                        hashAlgorithm,
                         bytes));
 
                 Assert.Equal("bytes", exception.ParamName);
             }
         }
 
-
+#if !IS_CORECLR
         [Fact]
         public void HashBytes_WithInputBytes_Hashes()
         {
-            using (var hashFunc = new Sha512HashFunction())
+            using (var hashAlgorithm = SHA256.Create())
             {
-                SignedPackageArchiveIOUtility.HashBytes(hashFunc, new byte[] { 0, 1, 2 });
+                SignedPackageArchiveIOUtility.HashBytes(hashAlgorithm, new byte[] { 0, 1, 2 });
 
-                hashFunc.Update(new byte[0], offset: 0, count: 0);
+                hashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
 
-                var actualHash = hashFunc.GetHash();
+                var actualHash = Convert.ToBase64String(hashAlgorithm.Hash);
 
-                Assert.Equal("gIHaX5wePQ4aoW9gTV5QZFQ8/117rOK7MSJSRh4VGz/g8DTqjcHaz/M2GoktYl++G2FM2iZfh6RzwksPodkd/Q==", actualHash);
+                Assert.Equal("rksygOVuL6+D9BSm49q+nV++GJdlRMBf7RIazLhbU/w=", actualHash);
             }
         }
-
+#endif
 
         [Fact]
         public void ReadSignedArchiveMetadata_WhenReaderNull_Throws()
@@ -466,18 +467,18 @@ namespace NuGet.Packaging.Test
 
         private sealed class ReadHashTest : ReadTest
         {
-            internal Sha512HashFunction  hashFunc { get; }
+            internal HashAlgorithm HashAlgorithm { get; }
 
             internal ReadHashTest()
             {
-                hashFunc = new Sha512HashFunction();
+                HashAlgorithm = SHA256.Create();
             }
 
             protected override void Dispose(bool disposing)
             {
                 if (!IsDisposed)
                 {
-                    hashFunc.Dispose();
+                    HashAlgorithm.Dispose();
                 }
 
                 base.Dispose(disposing);
@@ -485,19 +486,10 @@ namespace NuGet.Packaging.Test
 
             internal string GetHash()
             {
-                /*
-                #if !IS_CORECLR
-                                HashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
+#if !IS_CORECLR
+                HashAlgorithm.TransformFinalBlock(new byte[0], inputOffset: 0, inputCount: 0);
 
-                                return Convert.ToBase64String(HashAlgorithm.Hash);
-                #else
-                                throw new NotImplementedException();
-                #endif
-                */
-#if IS_SIGNING_SUPPORTED
-                hashFunc.Update(new byte[0], offset: 0, count: 0);
-
-                return hashFunc.GetHash();
+                return Convert.ToBase64String(HashAlgorithm.Hash);
 #else
                 throw new NotImplementedException();
 #endif
