@@ -65,7 +65,7 @@ namespace NuGet.Packaging.Signing
                 writer.Write(bytes);
             }
         }
-
+        /*
         /// <summary>
         /// Read bytes from a BinaryReader and hash them with a given HashAlgorithm and stop when the provided position
         /// is the current position of the BinaryReader's base stream. It does not hash the byte in the provided position.
@@ -76,6 +76,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="reader">Read bytes from this stream</param>
         /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
         /// <param name="position">Position to stop copying data</param>
+        
         public static void ReadAndHashUntilPosition(BinaryReader reader, HashAlgorithm hashAlgorithm, long position)
         {
             if (reader == null)
@@ -107,7 +108,9 @@ namespace NuGet.Packaging.Signing
                 HashBytes(hashAlgorithm, bytes);
             }
         }
+        */
 
+        /*
         /// <summary>
         /// Hashes given byte array with a specified HashAlgorithm
         ///
@@ -116,6 +119,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
         /// <param name="bytes">Content to hash</param>
+        
         public static void HashBytes(HashAlgorithm hashAlgorithm, byte[] bytes)
         {
             if (hashAlgorithm == null)
@@ -133,7 +137,7 @@ namespace NuGet.Packaging.Signing
             throw new NotImplementedException();
 #endif
         }
-
+        */
 
         /// <summary>
         /// Read bytes from a BinaryReader and hash them with a given HashAlgorithm wrapper and stop when the provided position
@@ -142,7 +146,7 @@ namespace NuGet.Packaging.Signing
         /// <param name="reader">Read bytes from this stream</param>
         /// <param name="hashFunc">HashAlgorithm wrapper used to hash contents cross platform</param>
         /// <param name="position">Position to stop copying data</param>
-        internal static void ReadAndHashUntilPosition(BinaryReader reader, Sha512HashFunction hashFunc, long position)
+        public static void ReadAndHashUntilPosition(BinaryReader reader, Sha512HashFunction hashFunc, long position)
         {
             if (reader == null)
             {
@@ -179,7 +183,7 @@ namespace NuGet.Packaging.Signing
         /// </summary>
         /// <param name="hashFunc">HashAlgorithm wrapper used to hash contents cross platform</param>
         /// <param name="bytes">Content to hash</param>
-        internal static void HashBytes(Sha512HashFunction hashFunc, byte[] bytes)
+        public static void HashBytes(Sha512HashFunction hashFunc, byte[] bytes)
         {
             if (hashFunc == null)
             {
