@@ -34,7 +34,7 @@ namespace NuGet.VisualStudio.Common.Test
         {
             string actualResult = TelemetryUtility.CreateFileAndForgetEventName("a", "b");
 
-            Assert.Equal("VS/NuGet/a/b", actualResult);
+            Assert.Equal("VS/NuGet/fileandforget/a/b", actualResult);
         }
     }
 }
