@@ -54,9 +54,9 @@ namespace NuGet.Packaging.Signing
                     $"There was a error from the timestamp authority. It responded with {httpResponse.StatusCode} {(int)httpResponse.StatusCode}: {httpResponse.Content}");
             }
 
-            if (httpResponse.Content.Headers.ContentType.MediaType != "application/timestamp-reply")
+            if (httpResponse.Content.Headers.ContentType.MediaType != "application/timestamp-response")
             {
-                throw new CryptographicException("The reply from the time stamp server was in a invalid format. The httpResponse.Content.Headers.ContentType.MediaType is {httpResponse.Content.Headers.ContentType.MediaType}");
+                throw new CryptographicException("The reply from the time stamp server was in a invalid format.");
             }
 
             var data = await httpResponse.Content.ReadAsByteArrayAsync();   
