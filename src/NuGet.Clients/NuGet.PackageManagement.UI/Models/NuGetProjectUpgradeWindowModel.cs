@@ -6,11 +6,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Rules;
@@ -94,11 +92,12 @@ namespace NuGet.PackageManagement.UI
             => _upgradeDependencyItems ?? (_upgradeDependencyItems = GetUpgradeDependencyItems());
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> DirectDependencies => UpgradeDependencyItems
-                .Where(upgradeDependencyItem => !upgradeDependencyItem.DependingPackages.Any());
+                .Where(upgradeDependencyItem => ProjectClosureUtilities.DirectDependenciesPredicate(upgradeDependencyItem));
 
-        public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems.Where(d => d.DependingPackages.Any());
+        public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems
+                .Where(upgradeDependencyItem => ProjectClosureUtilities.TransitiveDependenciesPredicate(upgradeDependencyItem));
 
-        private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package, NuGetFramework framework)
+        private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package)
         {
             _notFoundPackages = new HashSet<PackageIdentity>();
             var packageIdentity = new PackageIdentity(package.Id, NuGetVersion.Parse(package.Version));
@@ -158,29 +157,13 @@ namespace NuGet.PackageManagement.UI
         private ObservableCollection<NuGetProjectUpgradeDependencyItem> GetUpgradeDependencyItems()
         {
             var upgradeDependencyItems = PackageDependencyInfos
-                .Select(p => new NuGetProjectUpgradeDependencyItem(new PackageIdentity(p.Id, p.Version))).ToList();
+                .Select(p => new NuGetProjectUpgradeDependencyItem(new PackageIdentity(p.Id, p.Version)));
 
-            foreach (var packageDependencyInfo in PackageDependencyInfos)
-            {
-                foreach (var dependency in packageDependencyInfo.Dependencies)
-                {
-                    var matchingDependencyItem = upgradeDependencyItems
-                        .FirstOrDefault(d => (d.Package.Id == dependency.Id) && (d.Package.Version == dependency.VersionRange.MinVersion));
-                    if(matchingDependencyItem != null)
-                    {
-                        matchingDependencyItem.DependingPackages.Add(new PackageIdentity(packageDependencyInfo.Id, packageDependencyInfo.Version));
-                        matchingDependencyItem.InstallAsTopLevel = false;
-                    }
-                }
-            }
-
-            var msBuildNuGetProject = (MSBuildNuGetProject)Project;
-            var framework = msBuildNuGetProject.ProjectSystem.TargetFramework;
-            var folderNuGetProject = msBuildNuGetProject.FolderNuGetProject;
+            ProjectClosureUtilities.PopulateDependingPackages(upgradeDependencyItems, PackageDependencyInfos);
 
             foreach (var package in upgradeDependencyItems)
             {
-                InitPackageUpgradeIssues(folderNuGetProject, package, framework);
+                InitPackageUpgradeIssues(((MSBuildNuGetProject)Project).FolderNuGetProject, package);
             }
 
             return new ObservableCollection<NuGetProjectUpgradeDependencyItem>(upgradeDependencyItems);

@@ -1296,11 +1296,25 @@ namespace NuGet.PackageManagement
             return nuGetProjectActions;
         }
 
+        /// <summary>
+        /// The package dependency info for the given project. The project needs to be packages.config, otherwise returns an empty list.
+        /// </summary>
+        /// <param name="nuGetProject">The project is question</param>
+        /// <param name="token">cancellation token</param>
+        /// <param name="includeUnresolved">Whether to include the unresolved packages. The unresolved packages include packages that are not restored and cannot be found on disk.</param>
+        /// <returns></returns>
         public async Task<IEnumerable<PackageDependencyInfo>> GetInstalledPackagesDependencyInfo(NuGetProject nuGetProject, CancellationToken token, bool includeUnresolved = false)
         {
-            var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
-            var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
-            return await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities, targetFramework, includeUnresolved);
+            if (nuGetProject is MSBuildNuGetProject)
+            {
+                var targetFramework = nuGetProject.GetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework);
+                var installedPackageIdentities = (await nuGetProject.GetInstalledPackagesAsync(token)).Select(pr => pr.PackageIdentity);
+                return await GetDependencyInfoFromPackagesFolderAsync(installedPackageIdentities, targetFramework, includeUnresolved);
+            }
+            else
+            {
+                return Enumerable.Empty<PackageDependencyInfo>();
+            }
         }
 
         /// <summary>
@@ -2010,40 +2024,16 @@ namespace NuGet.PackageManagement
                 packagesToBeUninstalled.Select(
                     package => NuGetProjectAction.CreateUninstallProjectAction(package, nuGetProject));
 
-            nuGetProjectContext.Log(ProjectManagement.MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
+            nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
-        }
+        }        
 
         private async Task<IEnumerable<PackageDependencyInfo>> GetDependencyInfoFromPackagesFolderAsync(IEnumerable<PackageIdentity> packageIdentities,
             NuGetFramework nuGetFramework,
             bool includeUnresolved = false)
         {
-            try
-            {
-                var results = new HashSet<PackageDependencyInfo>(PackageIdentity.Comparer);
-
-                var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
-
-                foreach (var package in packageIdentities)
-                {
-                    var packageDependencyInfo = await dependencyInfoResource.ResolvePackage(package, nuGetFramework, NullSourceCacheContext.Instance,
-                        Common.NullLogger.Instance, CancellationToken.None);
-                    if (packageDependencyInfo != null)
-                    {
-                        results.Add(packageDependencyInfo);
-                    }
-                    else if (includeUnresolved)
-                    {
-                        results.Add(new PackageDependencyInfo(package, null));
-                    }
-                }
-
-                return results;
-            }
-            catch (NuGetProtocolException)
-            {
-                return null;
-            }
+            var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
+            return await ProjectClosureUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, NullLogger.Instance, includeUnresolved, CancellationToken.None);
         }
 
         /// <summary>
