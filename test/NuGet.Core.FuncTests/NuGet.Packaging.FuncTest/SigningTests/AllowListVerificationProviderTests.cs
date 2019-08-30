@@ -40,17 +40,6 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public void GetTrustResultAsync_AuthorSignedPackage_WithCertificateInAllowList_ShowRuntime()
-        {
-            String showRuntime = "@@@@   show runtime on this machine @@@@ \n" +
-                        "RuntimeEnvironmentHelper.IsWindows : " + RuntimeEnvironmentHelper.IsWindows + "\n" +
-                        "RuntimeEnvironmentHelper.IsLinux : " + RuntimeEnvironmentHelper.IsLinux + "\n" +
-                        "RuntimeEnvironmentHelper.IsMacOSX : " + RuntimeEnvironmentHelper.IsMacOSX + "\n" +
-                        "RuntimeEnvironmentHelper.IsMono : " + RuntimeEnvironmentHelper.IsMono + "\n";
-            throw new Exception(showRuntime);
-        }
-
-        [CIOnlyFact]
         public async Task GetTrustResultAsync_AuthorSignedPackage_WithCertificateInAllowList_SuccessAsync()
         {
             // Arrange
