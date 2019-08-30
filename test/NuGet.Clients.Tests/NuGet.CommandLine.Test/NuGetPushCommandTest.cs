@@ -1904,22 +1904,8 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                if (RuntimeEnvironmentHelper.IsMono)
-                {
-                    Assert.True(
-                   result.Item3.Contains(
-                       "NameResolutionFailure"),
-                   "Expected error message not found in " + result.Item3
-                   );
-                }
-                else
-                {
-                    Assert.True(
-                        result.Item3.Contains(
-                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
-                        "Expected error message not found in " + result.Item3
-                        );
-                }
+                Assert.Contains("The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'", result.Item3);
+
             }
         }
 
@@ -1953,12 +1939,8 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                //TODO: review with nuget team, that this new error is good
-                Assert.True(
-                    result.Item3.Contains(
-                        "Response status code does not indicate success: 404 (Not Found)"),
-                    "Expected error message not found in " + result.Item3
-                    );
+                Assert.Contains("Response status code does not indicate success: 404 (Not Found)", result.Item3);
+
             }
         }
 
@@ -1994,21 +1976,7 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                if (RuntimeEnvironmentHelper.IsMono)
-                {
-                    Assert.True(
-                   result.Item3.Contains(
-                       "NameResolutionFailure"),
-                   "Expected error message not found in " + result.Item3
-                   );
-                }
-                else
-                {
-                    Assert.True(
-                        result.Item3.Contains("An error occurred while sending the request."),
-                        "Expected error message not found in " + result.Item3
-                        );
-                }
+                Assert.Contains("An error occurred while sending the request.", result.Item3);
             }
         }
 

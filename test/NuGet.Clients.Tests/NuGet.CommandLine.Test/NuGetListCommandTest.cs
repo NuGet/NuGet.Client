@@ -50,10 +50,6 @@ namespace NuGet.CommandLine.Test
             var hostName = Guid.NewGuid().ToString();
             var expected = $"The remote name could not be resolved: '{hostName}'";
 
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                expected = "NameResolutionFailure";
-            }
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
@@ -848,22 +844,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                Assert.True(
-               result.Item3.Contains(
-                   "NameResolutionFailure"),
-               "Expected error message not found in " + result.Item3
-               );
-            }
-            else
-            {
-                Assert.True(
-                    result.Item3.Contains(
-                        $"Unable to load the service index for source {invalidInput}."),
-                    "Expected error message not found in " + result.Item3
-                    );
-            }
+                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
         }
 
         [Theory]
