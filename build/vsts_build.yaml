@@ -51,8 +51,9 @@ phases:
         Write-Host "##vso[task.setvariable variable=VsTargetChannel;isOutput=true]$targetChannel"
         Write-Host "##vso[task.setvariable variable=VsTargetMajorVersion;isOutput=true]$targetMajorVersion"
         Write-Host "##vso[build.updatebuildnumber]$FullBuildNumber"
-        Write-Host "##vso[task.setvariable variable=BuildNumber;isOutput=true]$newBuildCounter"
-        Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
+        Write-Host "##vso[task.setvariable variable=BuildRevision;isOutput=true]$newBuildCounter"
+        Write-Host "Build revision:  $newBuildCounter"
+        Write-Host "Build number:  $FullBuildNumber"
 
   - task: PowerShell@1
     displayName: "Add Build Tags"
@@ -65,8 +66,6 @@ phases:
 - phase: Build_and_UnitTest
   dependsOn: Initialize_Build
   variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     ShouldSkipOptimize: false
@@ -85,11 +84,11 @@ phases:
 
   steps:
   - task: PowerShell@1
-    displayName: "Update Build Number"
+    displayName: "Print Environment Variables"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
         gci env:* | sort-object name
 
   - task: PowerShell@1
@@ -163,7 +162,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=${Env:BUILDREVISION} /p:BuildRTM=$(BuildRTM) /v:m"
 
   - task: MSBuild@1
     displayName: "Build for VS2019"
@@ -171,7 +170,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=${Env:BUILDREVISION}"
 
   - task: MSBuild@1
     displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -189,7 +188,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=${Env:BUILDREVISION} /p:TestResultOutputFormat=xml"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -244,7 +243,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:Pack /p:BuildRTM=$(BuildRTM) /p:ExcludeTestProjects=$(BuildRTM) /p:BuildNumber=${Env:BUILDREVISION}"
 
   - task: MSBuild@1
     displayName: "Pack VSIX"
@@ -261,7 +260,7 @@ phases:
       solution: "setup/Microsoft.VisualStudio.NuGet.BuildTools.vsmanproj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/p:BuildNumber=$(BuildNumber) /p:IsVsixBuild=true"
+      msbuildArguments: "/p:BuildNumber=${Env:BUILDREVISION} /p:IsVsixBuild=true"
     condition: " and(succeeded(), eq(variables['BuildRTM'], 'false'))"
 
   - task: MSBuild@1
@@ -537,9 +536,6 @@ phases:
 
 - phase: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
-  variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   queue:
     name: VSEng-MicroBuildSxS
@@ -559,7 +555,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
         gci env:* | sort-object name
 
   - task: PowerShell@1
@@ -585,7 +581,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=${Env:BUILDREVISION} /p:BuildRTM=false /v:m"
 
   - task: MSBuild@1
     displayName: "Run Functional Tests"
@@ -594,7 +590,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+      msbuildArguments: "/t:CoreFuncTests /p:BuildRTM=false /p:BuildNumber=${Env:BUILDREVISION} /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
@@ -620,7 +616,6 @@ phases:
 - phase: Tests_On_Linux
   dependsOn: Initialize_Build
   variables:
-    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   queue:
@@ -630,13 +625,12 @@ phases:
 
   steps:
   - task: PowerShell@2
-    displayName: "Update Build Number"
+    displayName: "Print Environment Variables"
     inputs:
       targetType: "inline"
       script: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-      failOnStderr: "true"
-    condition: "always()"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
+        gci env:* | sort-object name
 
   - task: ShellScript@2
     displayName: "Run Tests"
@@ -670,8 +664,6 @@ phases:
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
-  variables:
-    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
     name: VSEng-MicroBuildMacSierra
@@ -680,13 +672,12 @@ phases:
 
   steps:
   - task: PowerShell@2
-    displayName: "Update Build Number"
+    displayName: "Print Environment Variables"
     inputs:
       targetType: "inline"
       script: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
-      failOnStderr: "true"
-    condition: "always()"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
+        gci env:* | sort-object name
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download NuGet.CommandLine.Test artifacts"
@@ -727,8 +718,6 @@ phases:
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
-  variables:
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   queue:
     timeoutInMinutes: 90
@@ -741,7 +730,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
         gci env:* | sort-object name
 
   - task: DownloadBuildArtifacts@0
@@ -823,9 +812,6 @@ phases:
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
-  variables:
-    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
-    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   queue:
     name: DDNuGet-Windows
@@ -841,7 +827,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        Write-Host "Build number:  ${Env:BUILD_BUILDNUMBER}"
         gci env:* | sort-object name
 
   - task: DownloadBuildArtifacts@0
@@ -901,7 +887,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:RestoreVS /p:BuildNumber=${Env:BUILDREVISION}"
 
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
@@ -915,7 +901,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreApex /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:RestoreApex /p:BuildNumber=${Env:BUILDREVISION}"
 
   - task: MSBuild@1
     displayName: "Run Apex Tests"
@@ -925,7 +911,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:ApexTestsStandalone /p:TestResultOutputFormat=xml /p:BuildNumber=${Env:BUILDREVISION}"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"
