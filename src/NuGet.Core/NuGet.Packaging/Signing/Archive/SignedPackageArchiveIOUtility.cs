@@ -70,8 +70,6 @@ namespace NuGet.Packaging.Signing
         /// Read bytes from a BinaryReader and hash them with a given HashAlgorithm and stop when the provided position
         /// is the current position of the BinaryReader's base stream. It does not hash the byte in the provided position.
         ///
-        /// TODO: Once we start supporting signing in Net core, then we should move to another ReadAndHashUntilPosition api which takes Sha512HashFunction which is wrapper
-        ///  over HashAlgorithm and works for desktop as well as net core. 
         /// </summary>
         /// <param name="reader">Read bytes from this stream</param>
         /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
@@ -111,8 +109,6 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Hashes given byte array with a specified HashAlgorithm
         ///
-        /// TODO: Once we start supporting signing in Net core, then we should move to another HashBytes api which takes Sha512HashFunction which is wrapper
-        ///  over HashAlgorithm and works for desktop as well as net core. 
         /// </summary>
         /// <param name="hashAlgorithm">HashAlgorithm used to hash contents</param>
         /// <param name="bytes">Content to hash</param>
@@ -127,11 +123,8 @@ namespace NuGet.Packaging.Signing
             {
                 throw new ArgumentException(Strings.ArgumentCannotBeNullOrEmpty, nameof(bytes));
             }
-#if IS_DESKTOP
+
             hashAlgorithm.TransformBlock(bytes, 0, bytes.Length, outputBuffer: null, outputOffset: 0);
-#else
-            throw new NotImplementedException();
-#endif
         }
 
 

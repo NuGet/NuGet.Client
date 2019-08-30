@@ -407,8 +407,6 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         ///
-        /// TODO: When we work to support signing for netcore then we should use GetPackageContentHash api to calculate package hash
-        /// which works for desktop as well as netcore.
         /// </summary>
         /// <param name="reader">Signed package to verify</param>
         /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
