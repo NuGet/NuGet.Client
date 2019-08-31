@@ -8,6 +8,7 @@ using Xunit;
 using System.Text;
 using System.Security.Permissions;
 using System.Security;
+using Moq;
 
 namespace NuGet.CommandLine.Test
 {
@@ -24,7 +25,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null).Path;
+                getMsBuildPathInPathVar: (reader) => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -41,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath).Path;
+                getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -58,7 +59,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath).Path;
+                getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -75,7 +76,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => @"c:\foo").Path;
+                getMsBuildPathInPathVar: (reader) => @"c:\foo").Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -96,7 +97,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: userVersion,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null).Path;
+                getMsBuildPathInPathVar: (reader) => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -117,7 +118,7 @@ namespace NuGet.CommandLine.Test
                         userVersion: userVersion,
                         console: null,
                         installedToolsets: toolsets.OrderByDescending(t => t),
-                        getMsBuildPathInPathVar: () => null);
+                        getMsBuildPathInPathVar: (reader) => null);
                 });
 
             // Assert
@@ -248,37 +249,18 @@ namespace NuGet.CommandLine.Test
                 var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
 
                 File.WriteAllText(msBuild160ExePath, "foo 16.0");
-
-                var envInstance = EnvironmentVariableWrapper.Instance;
-                var pathValue = envInstance.GetEnvironmentVariable("PATH");
-
+                
                 var newPathValue = new StringBuilder();
                 newPathValue.Append('\"');
                 newPathValue.Append(msBuild160BinPath);
                 newPathValue.Append('\"');
                 newPathValue.Append(';');
-                newPathValue.Append(pathValue);              
 
-                try
-                {
-                    Environment.SetEnvironmentVariable("PATH", newPathValue.ToString());
-                }
-                catch (SecurityException)
-                {
-                    // ignore if user doesn't have permission to add environment variable, which is very rare.
-                }
+                var environment = new Mock<NuGet.Common.IEnvironmentVariableReader>(MockBehavior.Strict);
+                environment.Setup(s => s.GetEnvironmentVariable("PATH")).Returns(newPathValue.ToString());
 
                 // Act;
-                var msBuildPath = MsBuildUtility.GetMSBuild();
-
-                try
-                {
-                    Environment.SetEnvironmentVariable("PATH", pathValue.ToString());
-                }
-                catch (SecurityException)
-                {
-                    // ignore if user doesn't have permission to read/add environment variable, which is very rare.
-                }
+                var msBuildPath = MsBuildUtility.GetMSBuild(environment.Object);
 
                 // Assert
                 Assert.NotNull(msBuildPath);
