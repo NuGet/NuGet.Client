@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -43,11 +43,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public string BuildCommand()
         {
-            var escapedScriptPath = PathUtility.EscapePSPath(ScriptPath);
             var command = new StringBuilder(
                 "$__pc_args=@(); " +
                 "$input|%{$__pc_args+=$_}; " +
-                "& " + escapedScriptPath + " $__pc_args[0] $__pc_args[1] $__pc_args[2]");
+                "& ");
+            command.Append(PathUtility.EscapePSPath(ScriptPath));
+            command.Append(" $__pc_args[0] $__pc_args[1] $__pc_args[2]");
             command.Append(Project != null ? " $__pc_args[3]; " : "; ");
             command.Append("Remove-Variable __pc_args -Scope 0");
 

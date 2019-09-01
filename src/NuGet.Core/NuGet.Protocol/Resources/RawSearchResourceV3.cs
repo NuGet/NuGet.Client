@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -38,44 +39,14 @@ namespace NuGet.Protocol
 
         public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
+            var queryString = GenerateQueryString(searchTerm, filters, skip, take);
+
             for (var i = 0; i < _searchEndpoints.Length; i++)
             {
                 var endpoint = _searchEndpoints[i];
 
                 // The search term comes in already encoded from VS
                 var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
-                var queryString =
-                    "q=" + searchTerm +
-                    "&skip=" + skip.ToString() +
-                    "&take=" + take.ToString() +
-                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
-
-                if (filters.IncludeDelisted)
-                {
-                    queryString += "&includeDelisted=true";
-                }
-
-                if (filters.SupportedFrameworks != null
-                    && filters.SupportedFrameworks.Any())
-                {
-                    var frameworks =
-                        string.Join("&",
-                            filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
-                    queryString += "&" + frameworks;
-                }
-
-                if (filters.PackageTypes != null
-                    && filters.PackageTypes.Any())
-                {
-                    var types = string.Join("&",
-                        filters.PackageTypes.Select(
-                            s => "packageTypeFilter=" + s));
-                    queryString += "&" + types;
-                }
-
-                queryString += "&semVerLevel=2.0.0";
-
                 queryUrl.Query = queryString;
 
                 JObject searchJson = null;
@@ -111,6 +82,68 @@ namespace NuGet.Protocol
 
             // TODO: get a better message for this
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+        }
+
+        private static StringBuilder LastStringBuilder;
+
+        private string GenerateQueryString(string searchTerm, SearchFilter filters, int skip, int take)
+        {
+            // Use a cached string builder, if available.
+            var queryStringBuilder = Interlocked.Exchange(ref LastStringBuilder, null);
+            if (queryStringBuilder == null)
+            {
+                queryStringBuilder = new StringBuilder(128);
+            }
+            else
+            {
+                queryStringBuilder.Clear();
+            }
+
+            queryStringBuilder.Append("q=");
+            queryStringBuilder.Append(searchTerm);
+            queryStringBuilder.Append("&skip=");
+            queryStringBuilder.Append(skip.ToString());
+            queryStringBuilder.Append("&take=");
+            queryStringBuilder.Append(take.ToString());
+            queryStringBuilder.Append("&prerelease=");
+            queryStringBuilder.Append(filters.IncludePrerelease ? "true" : "false");
+
+            if (filters.IncludeDelisted)
+            {
+                queryStringBuilder.Append("&includeDelisted=true");
+            }
+
+            if (filters.SupportedFrameworks != null
+                && filters.SupportedFrameworks.Any())
+            {
+                foreach (var framework in filters.SupportedFrameworks)
+                {
+                    queryStringBuilder.Append("&supportedFramework=");
+                    queryStringBuilder.Append(framework);
+                }
+            }
+
+            if (filters.PackageTypes != null
+                && filters.PackageTypes.Any())
+            {
+                foreach (var type in filters.PackageTypes)
+                {
+                    queryStringBuilder.Append("&packageTypeFilter=");
+                    queryStringBuilder.Append(type);
+                }
+            }
+
+            queryStringBuilder.Append("&semVerLevel=2.0.0");
+
+            var queryString = queryStringBuilder.ToString();
+
+            // Only cache the string builder if it doesn't use too much memory
+            if (queryStringBuilder.Capacity <= 1024)
+            {
+                Interlocked.Exchange(ref LastStringBuilder, queryStringBuilder);
+            }
+
+            return queryString;
         }
 
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)

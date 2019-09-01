@@ -17,6 +17,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Versioning;
+using System.Text;
 
 namespace NuGet.Commands
 {
@@ -506,24 +507,38 @@ namespace NuGet.Commands
 
         private static void CalculateExcludes(IncludeExcludeFiles files, out string fullExclude, out string filesExclude)
         {
-            fullExclude = string.Empty;
+            var fullExcludeBuilder = new StringBuilder();
             filesExclude = string.Empty;
             if (files.Exclude != null &&
                 files.Exclude.Any())
             {
-                fullExclude = string.Join(";", files.Exclude);
+                bool first = true;
+                foreach (var exclude in files.Exclude)
+                {
+                    if (first)
+                    {
+                        first = false;
+                    }
+                    else
+                    {
+                        fullExcludeBuilder.Append(';');
+                    }
+                    fullExcludeBuilder.Append(exclude);
+                }
             }
 
             if (files.ExcludeFiles != null &&
                 files.ExcludeFiles.Any())
             {
-                if (!string.IsNullOrEmpty(fullExclude))
+                if (fullExcludeBuilder.Length > 0)
                 {
-                    fullExclude += ";";
+                    fullExcludeBuilder.Append(';');
                 }
-                filesExclude += string.Join(";", files.ExcludeFiles);
-                fullExclude += filesExclude;
+                filesExclude = string.Join(";", files.ExcludeFiles);
+                fullExcludeBuilder.Append(filesExclude);
             }
+
+            fullExclude = fullExcludeBuilder.ToString();
         }
 
         public static void AddDependencyGroups(IEnumerable<LibraryDependency> dependencies, NuGetFramework framework, PackageBuilder builder)
@@ -1014,25 +1029,29 @@ namespace NuGet.Commands
         public static string GetOutputFileName(string packageId, NuGetVersion version, bool isNupkg, bool symbols, SymbolPackageFormat symbolPackageFormat, bool excludeVersion = false)
         {
             // Output file is {id}.{version}
-            var normalizedVersion = version.ToNormalizedString();
-            var outputFile = excludeVersion ? packageId : packageId + "." + normalizedVersion;
-
-            var extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
-            var symbolsExtension = isNupkg
-                ? (symbolPackageFormat == SymbolPackageFormat.Snupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension)
-                : NuGetConstants.ManifestSymbolsExtension;
+            var outputFile = new StringBuilder();
+            outputFile.Append(packageId);
+            if (!excludeVersion)
+            {
+                outputFile.Append('.');
+                outputFile.Append(version.ToNormalizedString());
+            }
 
             // If this is a source package then add .symbols.nupkg to the package file name
             if (symbols)
             {
-                outputFile += symbolsExtension;
+                var symbolsExtension = isNupkg
+                    ? (symbolPackageFormat == SymbolPackageFormat.Snupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension)
+                    : NuGetConstants.ManifestSymbolsExtension;
+                outputFile.Append(symbolsExtension);
             }
             else
             {
-                outputFile += extension;
+                var extension = isNupkg ? NuGetConstants.PackageExtension : NuGetConstants.ManifestExtension;
+                outputFile.Append(extension);
             }
 
-            return outputFile;
+            return outputFile.ToString();
         }
 
         public static void SetupCurrentDirectory(PackArgs packArgs)

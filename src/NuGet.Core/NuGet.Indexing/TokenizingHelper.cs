@@ -1,12 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-using System;
+
 using System.Collections.Generic;
+using System.Text;
+using System.Threading;
 
 namespace NuGet.Indexing
 {
     public static class TokenizingHelper
     {
+        private static StringBuilder _stringBuilder;
+
         public static IEnumerable<string> CamelCaseSplit(string term)
         {
             if (term.Length == 0)
@@ -20,29 +24,38 @@ namespace NuGet.Indexing
                 yield break;
             }
 
-            string word = term[0].ToString();
-            bool lastIsUpper = Char.IsUpper(term[0]);
-            bool lastIsLetter = Char.IsLetter(term[0]);
+            var word = Interlocked.Exchange(ref _stringBuilder, null);
+            if (word == null)
+            {
+                word = new StringBuilder(term[0]);
+            }
+            else
+            {
+                word.Clear();
+                word.Append(term[0]);
+            }
+
+            bool lastIsUpper = char.IsUpper(term[0]);
+            bool lastIsLetter = char.IsLetter(term[0]);
 
             for (int i = 1; i < term.Length; i++)
             {
-                bool currentIsUpper = Char.IsUpper(term[i]);
-                bool currentIsLetter = Char.IsLetter(term[i]);
+                bool currentIsUpper = char.IsUpper(term[i]);
+                bool currentIsLetter = char.IsLetter(term[i]);
 
                 if ((lastIsLetter && currentIsLetter) && (!lastIsUpper && currentIsUpper))
                 {
-                    yield return word;
-                    word = string.Empty;
+                    yield return word.ToString();
+                    word.Clear();
                 }
 
-                word += term[i];
+                word.Append(term[i]);
 
                 lastIsUpper = currentIsUpper;
                 lastIsLetter = currentIsLetter;
             }
 
-            yield return word;
-            yield break;
+            yield return word.ToString();
         }
 
         private static ISet<string> _stopWords = new HashSet<string> 

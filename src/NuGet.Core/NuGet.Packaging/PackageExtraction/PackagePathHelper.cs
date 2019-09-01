@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
@@ -139,15 +140,25 @@ namespace NuGet.Packaging
                 // * Foo.1.2.0.0.nupkg
                 // To achieve this, we would look for files named 1.2*.nupkg if both build and revision are 0 and
                 // 1.2.3*.nupkg if only the revision is set to 0.
-                var partialName = version.Version.Build < 1 ?
-                    String.Join(".", packageId, version.Version.Major, version.Version.Minor) :
-                    String.Join(".", packageId, version.Version.Major, version.Version.Minor, version.Version.Build);
-                var partialManifestName = partialName + "*" + PackagingCoreConstants.NuspecExtension;
-                partialName += "*" + PackagingCoreConstants.NupkgExtension;
+                var partialName = new StringBuilder();
+                partialName.Append(packageId);
+                partialName.Append('.');
+                partialName.Append(version.Version.Major);
+                partialName.Append('.');
+                partialName.Append(version.Version.Minor);
+                if (version.Version.Build > 0)
+                {
+                    partialName.Append('.');
+                    partialName.Append(version.Version.Build);
+                }
+
+                var partialManifestName = partialName.ToString() + "*" + PackagingCoreConstants.NuspecExtension;
+                partialName.Append('*');
+                partialName.Append(PackagingCoreConstants.NupkgExtension);
 
                 // Partial names would result is gathering package with matching major and minor but different build and revision. 
                 // Attempt to match the version in the path to the version we're interested in.
-                var partialNameMatches = GetPackageFiles(root, partialName).Where(path => FileNameMatchesPattern(packageIdentity, path));
+                var partialNameMatches = GetPackageFiles(root, partialName.ToString()).Where(path => FileNameMatchesPattern(packageIdentity, path));
                 var partialManifestNameMatches = GetPackageFiles(root, partialManifestName).Where(
                     path => FileNameMatchesPattern(packageIdentity, path));
                 return Enumerable.Concat(filesMatchingFullName, partialNameMatches).Concat(partialManifestNameMatches);

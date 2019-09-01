@@ -29,19 +29,28 @@ namespace NuGet.Packaging.Signing
         public static string X509Certificate2ToString(X509Certificate2 cert, HashAlgorithmName fingerprintAlgorithm)
         {
             var certStringBuilder = new StringBuilder();
-            X509Certificate2ToString(cert, certStringBuilder, fingerprintAlgorithm, indentation: "  ");
+            X509Certificate2ToString(cert, certStringBuilder, fingerprintAlgorithm, indentation: 1);
             return certStringBuilder.ToString();
         }
 
-        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, string indentation)
+        private static void X509Certificate2ToString(X509Certificate2 cert, StringBuilder certStringBuilder, HashAlgorithmName fingerprintAlgorithm, int indentation)
         {
+            void AppendLine(string str)
+            {
+                for (int level = 1; level <= indentation; level++)
+                {
+                    certStringBuilder.Append("  ");
+                }
+                certStringBuilder.AppendLine(str);
+            }
+
             var certificateFingerprint = GetHashString(cert, fingerprintAlgorithm);
 
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(),certificateFingerprint)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name)}");
-            certStringBuilder.AppendLine($"{indentation}{string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter)}");
+            AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateSubjectName, cert.Subject));
+            AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHashSha1, cert.Thumbprint));
+            AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateHash, fingerprintAlgorithm.ToString(),certificateFingerprint));
+            AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateIssuer, cert.IssuerName.Name));
+            AppendLine(string.Format(CultureInfo.CurrentCulture, Strings.CertUtilityCertificateValidity, cert.NotBefore, cert.NotAfter));
         }
 
         /// <summary>
@@ -70,7 +79,7 @@ namespace NuGet.Packaging.Signing
             for (var i = 0; i < Math.Min(_limit, certCollection.Count); i++)
             {
                 var cert = certCollection[i];
-                X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: "  ");
+                X509Certificate2ToString(cert, collectionStringBuilder, fingerprintAlgorithm, indentation: 1);
                 collectionStringBuilder.AppendLine();
             }
 
@@ -85,16 +94,13 @@ namespace NuGet.Packaging.Signing
         public static string X509ChainToString(X509Chain chain, HashAlgorithmName fingerprintAlgorithm)
         {
             var collectionStringBuilder = new StringBuilder();
-            var indentationLevel = "      ";
-            var indentation = indentationLevel;
 
             var chainElementsCount = chain.ChainElements.Count;
             // Start in 1 to omit main certificate (only build the chain)
             for (var i = 1; i < Math.Min(_limit, chainElementsCount); i++)
             {
-                X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation);
+                X509Certificate2ToString(chain.ChainElements[i].Certificate, collectionStringBuilder, fingerprintAlgorithm, indentation: i*3);
                 collectionStringBuilder.AppendLine();
-                indentation += indentationLevel;
             }
 
             if (chainElementsCount > _limit)

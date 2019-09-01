@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -157,31 +158,49 @@ namespace NuGet.CommandLine
             foreach (var target in targets)
             {
                 _log.LogMinimal($"Target: {target.TargetFramework} {target.RuntimeIdentifier}");
+                var sb = new StringBuilder();
                 foreach (var lib in target.Libraries)
                 {
-                    var provides = string.Empty;
+                    sb.Clear();
+
+                    sb.Append(" * [");
+
                     if (lib.NativeLibraries.Any())
                     {
-                        provides += Native + ",";
+                        sb.Append(Native);
+                        sb.Append(',');
                     }
                     if (lib.RuntimeAssemblies.Any())
                     {
-                        provides += Runtime + ",";
+                        sb.Append(Runtime);
+                        sb.Append(',');
                     }
                     if (lib.CompileTimeAssemblies.Any())
                     {
-                        provides += Compile + ",";
+                        sb.Append(Compile);
+                        sb.Append(',');
                     }
                     if (lib.FrameworkAssemblies.Any())
                     {
-                        provides += Framework + ",";
+                        sb.Append(Framework);
+                        sb.Append(',');
                     }
-                    provides = provides.TrimEnd(',');
-                    if (string.IsNullOrEmpty(provides))
+
+                    if (sb[sb.Length - 1] == ',')
                     {
-                        provides = Nothing;
+                        sb.Length--;
                     }
-                    _log.LogMinimal($" * [{provides}] {lib.Name} {lib.Version}");
+                    else
+                    {
+                        sb.Append(Nothing);
+                    }
+
+                    sb.Append("] ");
+                    sb.Append(lib.Name);
+                    sb.Append(' ');
+                    sb.Append(lib.Version);
+
+                    _log.LogMinimal(sb.ToString());
                 }
             }
             return 0;

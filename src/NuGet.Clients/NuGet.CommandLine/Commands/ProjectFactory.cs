@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Versioning;
+using System.Text;
 using System.Threading;
 using System.Xml.Linq;
 using NuGet.Commands;
@@ -439,14 +440,23 @@ namespace NuGet.CommandLine
 
         private void BuildProjectWithMsbuild()
         {
-            string properties = string.Empty;
+            var sb = new StringBuilder();
+            sb.Append('"');
+            sb.Append(_project.FullPath);
+            sb.Append('"');
+
             foreach (var property in ProjectProperties)
             {
-                string escapedValue = MsBuildUtility.Escape(property.Value);
-                properties += $" /p:{property.Key}={escapedValue}";
+                sb.Append(" /p:");
+                sb.Append(property.Key);
+                sb.Append('=');
+                sb.Append(MsBuildUtility.Escape(property.Value));
             }
 
-            int result = MsBuildUtility.Build(_msbuildDirectory, $"\"{_project.FullPath}\" {properties} /toolsversion:{_project.ToolsVersion}");
+            sb.Append(" /toolsversion:");
+            sb.Append(_project.ToolsVersion);
+
+            int result = MsBuildUtility.Build(_msbuildDirectory, sb.ToString());
 
             if (0 != result) // 0 is msbuild.exe success code
             {

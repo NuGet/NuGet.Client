@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text;
 
 namespace NuGet.Common
 {
@@ -229,30 +230,32 @@ namespace NuGet.Common
                 ++index;
             }
 
-            var path = "";
-
             // check if path2 ends with a non-directory separator and if path1 has the same non-directory at the end
             if (len1 + 1 == len2 && !string.IsNullOrEmpty(path1Segments[index]) &&
                 string.Equals(path1Segments[index], path2Segments[index], compare))
             {
-                return path;
+                return string.Empty;
             }
+
+            var path = new StringBuilder();
 
             for (var i = index; len1 > i; ++i)
             {
-                path += ".." + separator;
+                path.Append("..");
+                path.Append(separator);
             }
             for (var i = index; len2 - 1 > i; ++i)
             {
-                path += path2Segments[i] + separator;
+                path.Append(path2Segments[i]);
+                path.Append(separator);
             }
             // if path2 doesn't end with an empty string it means it ended with a non-directory name, so we add it back
             if (!string.IsNullOrEmpty(path2Segments[len2 - 1]))
             {
-                path += path2Segments[len2 - 1];
+                path.Append(path2Segments[len2 - 1]);
             }
 
-            return path;
+            return path.ToString();
         }
 
         public static string GetAbsolutePath(string basePath, string relativePath)

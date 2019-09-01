@@ -171,22 +171,30 @@ namespace NuGet.Credentials
         private PluginCredentialResponse GetPluginResponse(PluginCredentialRequest request,
             CancellationToken cancellationToken)
         {
-            var argumentString =
-                $"-uri {request.Uri}"
-                + (request.IsRetry ? " -isRetry" : string.Empty)
-                + (request.NonInteractive ? " -nonInteractive" : string.Empty);
+            var argumentString = new StringBuilder();
+            argumentString.Append("-uri ");
+            argumentString.Append(request.Uri);
+            if (request.IsRetry)
+            {
+                argumentString.Append(" -isRetry");
+            }
+            if (request.NonInteractive)
+            {
+                argumentString.Append(" -nonInteractive");
+            }
 
             // only apply -verbosity flag if set and != Normal
             // since normal is default
             if (PassVerbosityFlag(request))
             {
-                argumentString += $" -verbosity {request.Verbosity.ToLower()}";
+                argumentString.Append(" -verbosity ");
+                argumentString.Append(request.Verbosity.ToLower());
             }
 
             var startInfo = new ProcessStartInfo
             {
                 FileName = Path,
-                Arguments = argumentString,
+                Arguments = argumentString.ToString(),
 #if IS_DESKTOP                
                 WindowStyle = ProcessWindowStyle.Hidden,
                 ErrorDialog = false,

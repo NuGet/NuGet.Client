@@ -161,11 +161,10 @@ namespace NuGet.PackageManagement
             else if (packageTypes.Count == 1)
             {
                 var packageType = packageTypes[0];
-                var packageTypeString = packageType.Name;
-                if (packageType.Version != PackageType.EmptyVersion)
-                {
-                    packageTypeString += " " + packageType.Version;
-                }
+                var packageTypeString =
+                    packageType.Version != PackageType.EmptyVersion
+                    ? packageType.Name + " " + packageType.Version
+                    : packageType.Name;
 
                 var projectName = NuGetProject.GetUniqueNameOrName(nuGetProject);
 
