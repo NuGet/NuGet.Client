@@ -78,8 +78,11 @@ namespace NuGet.Packaging.Signing
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
 
+                string chainstatus = null;
+                int i = 0;
                 foreach (var chainStatus in chain.ChainStatus)
                 {
+                    chainstatus += "chain status[" + i + "]" + chainStatus + "\n";
                     if ((chainStatus.Status & errorStatusFlags) != 0)
                     {
                         fatalStatuses.Add(chainStatus);
@@ -95,10 +98,11 @@ namespace NuGet.Packaging.Signing
                 {
                     if (certificateType == CertificateType.Timestamp)
                     {
-                        throw new TimestampException(logCode, Strings.CertificateChainValidationFailed);
+                        throw new Exception("@@timestamp has someting wrong" + "\n" + chainstatus);
+                        //throw new TimestampException(logCode, Strings.CertificateChainValidationFailed);
                     }
-
-                    throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
+                    throw new Exception("@@signature has someting wrong" + "\n" + chainstatus);
+                    //throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
                 }
 
                 return GetCertificateChain(chain);
