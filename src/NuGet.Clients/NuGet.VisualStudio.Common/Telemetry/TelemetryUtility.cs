@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio.Telemetry
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(memberName));
             }
 
-            return $"{VSTelemetrySession.VSEventNamePrefix}{typeName}/{memberName}";
+            return $"{VSTelemetrySession.VSEventNamePrefix}fileandforget/{typeName}/{memberName}";
         }
     }
 }
