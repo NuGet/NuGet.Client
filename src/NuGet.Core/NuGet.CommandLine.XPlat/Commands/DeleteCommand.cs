@@ -72,7 +72,9 @@ namespace NuGet.CommandLine.XPlat
 
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
-                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
+#pragma warning disable CS0618 // Type or member is obsolete
+                    PackageSourceProvider sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     await DeleteRunner.Run(
                         sourceProvider.Settings,

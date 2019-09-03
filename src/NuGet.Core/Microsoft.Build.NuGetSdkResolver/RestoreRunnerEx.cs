@@ -100,7 +100,9 @@ namespace NuGet.Commands
                 {
                     AllowNoOp = true,
                     CacheContext = sourceCacheContext,
-                    CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings)),
+#pragma warning disable CS0618 // Type or member is obsolete
+                    CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)),
+#pragma warning restore CS0618 // Type or member is obsolete
                     Log = logger,
                 };
 

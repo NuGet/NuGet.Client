@@ -140,7 +140,9 @@ namespace NuGet.Commands
 
         private List<SourceRepository> GetEffectiveSourcesCore(ISettings settings, IList<PackageSource> dgSpecSources)
         {
-            var packageSourceProvider = new PackageSourceProvider(settings);
+#pragma warning disable CS0618 // Type or member is obsolete
+            var packageSourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
             var packageSourcesFromProvider = packageSourceProvider.LoadPackageSources();
             var sourceObjects = new Dictionary<string, PackageSource>();
             for(var i = 0; i < dgSpecSources.Count; i++)

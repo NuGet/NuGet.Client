@@ -284,8 +284,10 @@ namespace NuGet.PackageManagement
             bool isRestoreOriginalAction,
             bool restoreForceEvaluate)
         {
-            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings));
-            foreach( var source in sources)
+#pragma warning disable CS0618 // Type or member is obsolete
+            var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
+#pragma warning restore CS0618 // Type or member is obsolete
+            foreach ( var source in sources)
             {
                 caching.AddSourceRepository(source);
             }

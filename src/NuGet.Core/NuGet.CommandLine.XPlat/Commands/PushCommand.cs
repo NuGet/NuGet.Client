@@ -98,7 +98,9 @@ namespace NuGet.CommandLine.XPlat
                         throw new ArgumentException(Strings.Push_InvalidTimeout);
                     }
 
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings());
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     try
                     {
