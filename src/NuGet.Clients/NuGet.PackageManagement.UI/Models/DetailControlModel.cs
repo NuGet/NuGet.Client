@@ -507,7 +507,7 @@ namespace NuGet.PackageManagement.UI
                                 return new DetailedPackageMetadata(
                                     m.searchMetadata ?? versionInfo.PackageSearchMetadata,
                                     m.deprecationMetadata,
-                                    m.searchMetadata?.DownloadCount ?? versionInfo.DownloadCount);
+                                    m.searchMetadata?.DownloadCount ?? versionInfo?.DownloadCount);
                             })
                          .ToDictionary(m => m.Version);
                 }
