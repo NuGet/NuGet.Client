@@ -14,7 +14,7 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(ISettings))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    public class VSSettings : ISettings
+    public sealed class VSSettings : ISettings, IDisposable
     {
         private const string NuGetSolutionSettingsFolder = ".nuget";
 
@@ -144,6 +144,12 @@ namespace NuGet.PackageManagement.VisualStudio
         public IList<string> GetConfigFilePaths() => SolutionSettings.GetConfigFilePaths();
 
         public IList<string> GetConfigRoots() => SolutionSettings.GetConfigRoots();
+
+        public void Dispose()
+        {
+            SolutionManager.SolutionOpening -= OnSolutionOpenedOrClosed;
+            SolutionManager.SolutionClosed -= OnSolutionOpenedOrClosed;
+        }
 
         // The value for SolutionSettings can't possibly be null, but it could be a read-only instance
         private bool CanChangeSettings => !ReferenceEquals(SolutionSettings, NullSettings.Instance);

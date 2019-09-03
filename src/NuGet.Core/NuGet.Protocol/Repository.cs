@@ -95,6 +95,7 @@ namespace NuGet.Protocol.Core.Types
         /// <summary>
         /// Create the default source repository provider
         /// </summary>
+        [Obsolete("https://github.com/NuGet/Home/issues/8479")]
         public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders)
         {
             return new SourceRepositoryProvider(Settings.LoadDefaultSettings(null, null, null), CreateLazy(resourceProviders));
@@ -104,6 +105,7 @@ namespace NuGet.Protocol.Core.Types
         /// Find sources from nuget.config based on the root path
         /// </summary>
         /// <param name="rootPath">lowest folder path</param>
+        [Obsolete("https://github.com/NuGet/Home/issues/8479")]
         public static ISourceRepositoryProvider CreateProvider(IEnumerable<INuGetResourceProvider> resourceProviders, string rootPath)
         {
             return new SourceRepositoryProvider(Settings.LoadDefaultSettings(rootPath, null, null), CreateLazy(resourceProviders));
