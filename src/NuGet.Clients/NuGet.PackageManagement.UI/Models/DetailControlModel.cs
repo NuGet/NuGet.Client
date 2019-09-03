@@ -7,6 +7,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Controls;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
@@ -365,16 +366,21 @@ namespace NuGet.PackageManagement.UI
                 {
                     _packageMetadata = value;
 
+                    string newDeprecationReasons = null;
+                    string newAlternatePackageText = null;
                     if (_packageMetadata?.DeprecationMetadata != null)
                     {
-                        PackageDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
+                        newDeprecationReasons = ExplainPackageDeprecationReasons(_packageMetadata.DeprecationMetadata.Reasons?.ToList());
 
                         var alternatePackage = _packageMetadata.DeprecationMetadata.AlternatePackage;
                         if (alternatePackage != null)
                         {
-                            PackageDeprecationAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
+                            newAlternatePackageText = GetPackageDeprecationAlternatePackageText(alternatePackage);
                         }
                     }
+
+                    PackageDeprecationReasons = newDeprecationReasons;
+                    PackageDeprecationAlternatePackageText = newAlternatePackageText;
 
                     OnPropertyChanged(nameof(PackageMetadata));
                     OnPropertyChanged(nameof(IsPackageDeprecated));
