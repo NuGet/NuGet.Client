@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -21,8 +22,9 @@ namespace NuGet.PackageManagement.UI
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
             bool autoReferenced = false,
+            bool isDeprecated = false,
             string versionFormat = "N")
-            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, versionFormat)
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, versionFormat)
         {
         }
 
@@ -32,6 +34,7 @@ namespace NuGet.PackageManagement.UI
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
             bool autoReferenced = false,
+            bool isDeprecated = false,
             string versionFormat = "N")
         {
             if (versionFormat == null)
@@ -50,20 +53,25 @@ namespace NuGet.PackageManagement.UI
             AutoReferenced = autoReferenced;
 
             // Display a single version if the range is locked
-            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
-            {
-                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
+            // If range is unlocked, display it and use the original value for floating ranges
+            var versionString = range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion ?
+                Version.ToString(versionFormat, VersionFormatter.Instance)
+                : Range.OriginalString;
 
-                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
-                    formattedVersionString :
-                    AdditionalInfo + " " + formattedVersionString;
-            }
-            else
+            _toString = "";
+            if (!string.IsNullOrEmpty(AdditionalInfo))
             {
-                // Display the range, use the original value for floating ranges
-                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
-                    Range.OriginalString :
-                    AdditionalInfo + " " + Range.OriginalString;
+                _toString += AdditionalInfo + " ";
+            }
+
+            _toString += versionString;
+
+            if (isDeprecated)
+            {
+                _toString += string.Format(
+                    CultureInfo.CurrentCulture,
+                    "    ({0})",
+                    Resources.Label_Deprecated);
             }
         }
 

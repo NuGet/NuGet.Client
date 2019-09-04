@@ -117,27 +117,30 @@ namespace NuGet.PackageManagement.UI
 
             // null, if no version constraint defined in package.config
             var allowedVersions = _projectVersionConstraints.Select(e => e.VersionRange).FirstOrDefault() ?? VersionRange.All;
-            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v)).ToArray();
+            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
 
             // null, if all versions are allowed to be install or update
-            var blockedVersions = allVersions.Where(v => !allVersionsAllowed.Any(allowed => allowed.Version.Equals(v.Version))).ToArray();
+            var blockedVersions = allVersions
+                .Select(v => v.version)
+                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Equals(v)))
+                .ToArray();
 
-            var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.IsPrerelease);
-            var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.IsPrerelease);
+            var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
+            var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
-            // Add lastest prerelease if neeeded
-            if (latestPrerelease != null
-                && (latestStableVersion == null || latestPrerelease > latestStableVersion) &&
+            // Add latest prerelease if neeeded
+            if (latestPrerelease.version != null
+                && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
                 !latestPrerelease.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease, Resources.Version_LatestPrerelease));
+                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
             // Add latest stable if needed
-            if (latestStableVersion != null &&
+            if (latestStableVersion.version != null &&
                 !latestStableVersion.Equals(installedVersion))
             {
-                _versions.Add(new DisplayVersion(latestStableVersion, Resources.Version_LatestStable));
+                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
 
             // add a separator
@@ -152,13 +155,13 @@ namespace NuGet.PackageManagement.UI
                 var installed = version.Equals(installedVersion);
                 var autoReferenced = false;
 
-                if (installed && _projectVersionConstraints.Any(e => e.IsAutoReferenced && e.VersionRange?.Satisfies(version) == true))
+                if (installed && _projectVersionConstraints.Any(e => e.IsAutoReferenced && e.VersionRange?.Satisfies(version.version) == true))
                 {
                     // do not allow auto referenced packatges
                     autoReferenced = true;
                 }
 
-                _versions.Add(new DisplayVersion(version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced));
+                _versions.Add(new DisplayVersion(version.version, additionalInfo: string.Empty, isCurrentInstalled: installed, autoReferenced: autoReferenced, isDeprecated: version.isDeprecated));
             }
 
             // Disable controls if this is an auto referenced package.

@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<NuGetVersion> _allPackageVersions;
+        protected List<(NuGetVersion version, bool isDeprecated)> _allPackageVersions;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected PackageItemListViewModel _searchResultPackage;
@@ -143,7 +143,11 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Add Current package version to package versions list.
-            _allPackageVersions = new List<NuGetVersion>() { searchResultPackage.Version };
+            _allPackageVersions = new List<(NuGetVersion version, bool isDeprecated)>()
+            {
+                (searchResultPackage.Version, (await searchResultPackage.GetPackageDeprecationMetadataAsync()) != null)
+            };
+
             CreateVersions();
             OnCurrentPackageChanged();
 
@@ -157,9 +161,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            _allPackageVersions = versions
+            _allPackageVersions = (await Task.WhenAll(versions
                 .Where(v => v?.Version != null)
-                .Select(v => v.Version)
+                .Select(async v => (v.Version, (await (v.PackageSearchMetadata?.GetDeprecationMetadataAsync() ?? Task.FromResult((PackageDeprecationMetadata)null))) != null))))
                 .ToList();
 
             // hook event handler for dependency behavior changed
