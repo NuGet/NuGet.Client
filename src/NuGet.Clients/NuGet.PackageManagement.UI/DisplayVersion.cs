@@ -51,6 +51,7 @@ namespace NuGet.PackageManagement.UI
             Version = range.MinVersion;
             IsCurrentInstalled = isCurrentInstalled;
             AutoReferenced = autoReferenced;
+            IsDeprecated = isDeprecated;
 
             // Display a single version if the range is locked
             // If range is unlocked, display it and use the original value for floating ranges
@@ -66,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
             _toString += versionString;
 
-            if (isDeprecated)
+            if (IsDeprecated)
             {
                 _toString += string.Format(
                     CultureInfo.CurrentCulture,
@@ -85,6 +86,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool AutoReferenced { get; set; }
 
+        public bool IsDeprecated { get; set; }
+
         public override string ToString()
         {
             return _toString;
@@ -93,7 +96,10 @@ namespace NuGet.PackageManagement.UI
         public override bool Equals(object obj)
         {
             var other = obj as DisplayVersion;
-            return other != null && other.Version == Version && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal);
+            return other != null
+                && other.Version == Version
+                && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal)
+                && IsDeprecated == other.IsDeprecated;
         }
 
         public override int GetHashCode()
