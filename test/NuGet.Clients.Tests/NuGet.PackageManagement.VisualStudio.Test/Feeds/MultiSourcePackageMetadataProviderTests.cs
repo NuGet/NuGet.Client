@@ -22,15 +22,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class MultiSourcePackageMetadataProviderTests
     {
-        public class MultiSourcePackageMetadataProviderTestWithLocal : MultiSourcePackageMetadataProviderTest
+        public class LocalProviderTests : Tests
         {
             private readonly MultiSourcePackageMetadataProvider _target;
-            protected readonly SourceRepository _localSource;
-            protected readonly SourceRepository _globalSource;
-            protected readonly PackageMetadataResource _localMetadataResource;
-            protected readonly PackageMetadataResource _globalMetadataResource;
+            private readonly SourceRepository _localSource;
+            private readonly SourceRepository _globalSource;
+            private readonly PackageMetadataResource _localMetadataResource;
+            private readonly PackageMetadataResource _globalMetadataResource;
 
-            public MultiSourcePackageMetadataProviderTestWithLocal()
+            public LocalProviderTests()
             {
                 _localMetadataResource = Mock.Of<PackageMetadataResource>();
                 _localSource = SetupSourceRepository(_localMetadataResource);
@@ -49,31 +49,25 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public async Task GetLocalPackageMetadataAsync_WhenGlobalSourceHasPackage_WithoutDeprecationMetadata()
             {
                 // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
+                var emptyTestMetadata = PackageSearchMetadataBuilder.FromIdentity(TestPackageIdentity).Build();
 
                 Mock.Get(_globalMetadataResource)
-                    .Setup(x => x.GetMetadataAsync(testPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new[] { PackageSearchMetadataBuilder.FromIdentity(testPackageIdentity).Build() });
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { emptyTestMetadata });
 
                 Mock.Get(_metadataResource)
-                    .Setup(x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(
-                        new[]
-                        {
-                            PackageSearchMetadataBuilder
-                                .FromIdentity(testPackageIdentity)
-                                .Build()
-                        });
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync( new[] { emptyTestMetadata });
 
                 // Act
                 var metadata = await _target.GetLocalPackageMetadataAsync(
-                    testPackageIdentity,
+                    TestPackageIdentity,
                     includePrerelease: true,
                     cancellationToken: CancellationToken.None);
 
                 // Assert
                 Mock.Get(_metadataResource).Verify(
-                    x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
                     Times.Once);
 
                 Assert.Equal(new[] { "1.0.0" }, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
@@ -84,50 +78,48 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public async Task GetLocalPackageMetadataAsync_WhenLocalSourceHasPackage_CombinesMetadata()
             {
                 // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
                 Mock.Get(_localMetadataResource)
-                    .Setup(x => x.GetMetadataAsync(testPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(new[] { PackageSearchMetadataBuilder.FromIdentity(testPackageIdentity).Build() });
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, true, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new[] { PackageSearchMetadataBuilder.FromIdentity(TestPackageIdentity).Build() });
 
                 var expectedVersionStrings = new[] { "1.0.0", "2.0.0" };
                 var deprecationMetadata = new PackageDeprecationMetadata();
                 Mock.Get(_metadataResource)
-                    .Setup(x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
+                    .Setup(x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(
                         new[]
                         {
                             PackageSearchMetadataBuilder
-                                .FromIdentity(testPackageIdentity)
+                                .FromIdentity(TestPackageIdentity)
                                 .WithDeprecation(new AsyncLazy<PackageDeprecationMetadata>(() => Task.FromResult(deprecationMetadata)))
                                 .Build(),
 
                             PackageSearchMetadataBuilder
-                                .FromIdentity(new PackageIdentity(testPackageIdentity.Id, new NuGetVersion("2.0.0")))
+                                .FromIdentity(new PackageIdentity(TestPackageIdentity.Id, new NuGetVersion("2.0.0")))
                                 .Build()
                         });
 
                 // Act
                 var metadata = await _target.GetLocalPackageMetadataAsync(
-                    testPackageIdentity,
+                    TestPackageIdentity,
                     includePrerelease: true,
                     cancellationToken: CancellationToken.None);
 
                 // Assert
                 Mock.Get(_metadataResource).Verify(
-                    x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
                     Times.Once);
 
                 Assert.Equal(expectedVersionStrings, (await metadata.GetVersionsAsync()).Select(v => v.Version.ToString()).OrderBy(v => v));
-                Assert.Equal(deprecationMetadata, await metadata.GetDeprecationMetadataAsync());
+                Assert.Same(deprecationMetadata, await metadata.GetDeprecationMetadataAsync());
             }
         }
 
-        public class MultiSourcePackageMetadataProviderTestWithoutLocal : MultiSourcePackageMetadataProviderTest
+        public class NoLocalProviderTests : Tests
         {
             private readonly MultiSourcePackageMetadataProvider _target;
 
-            public MultiSourcePackageMetadataProviderTestWithoutLocal()
+            public NoLocalProviderTests()
             {
                 _target = new MultiSourcePackageMetadataProvider(
                     new[] { _source },
@@ -140,57 +132,49 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public async Task GetLatestPackageMetadataAsync_Always_SendsASingleRequestPerSource()
             {
                 // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
-                var testProject = SetupProject(testPackageIdentity, allowedVersions: null);
+                var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
 
                 // Act
                 await _target.GetLatestPackageMetadataAsync(
-                        testPackageIdentity,
+                        TestPackageIdentity,
                         testProject,
                         includePrerelease: true,
                         cancellationToken: CancellationToken.None);
 
                 // Assert
                 Mock.Get(_metadataResource).Verify(
-                    x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
                     Times.Once);
             }
 
             [Fact]
             public async Task GetPackageMetadataAsync_Always_SendsASingleRequestPerSource()
             {
-                // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
                 // Act
                 await _target.GetPackageMetadataAsync(
-                    testPackageIdentity,
+                    TestPackageIdentity,
                     includePrerelease: true,
                     cancellationToken: CancellationToken.None);
 
                 // Assert
                 Mock.Get(_metadataResource).Verify(
-                    x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
                     Times.Once);
             }
 
             [Fact]
             public async Task GetPackageMetadataListAsync_Always_SendsASingleRequestPerSource()
             {
-                // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
                 // Act
                 await _target.GetPackageMetadataListAsync(
-                    testPackageIdentity.Id,
+                    TestPackageIdentity.Id,
                     includePrerelease: true,
                     includeUnlisted: false,
                     cancellationToken: CancellationToken.None);
 
                 // Assert
                 Mock.Get(_metadataResource).Verify(
-                    x => x.GetMetadataAsync(testPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
+                    x => x.GetMetadataAsync(TestPackageIdentity.Id, true, false, It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()),
                     Times.Once);
             }
 
@@ -198,14 +182,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public async Task GetLatestPackageMetadataAsync_WithAllVersions_RetrievesLatestVersion()
             {
                 // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
-                var testProject = SetupProject(testPackageIdentity, allowedVersions: null);
-                SetupRemotePackageMetadata(testPackageIdentity.Id, "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
+                var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
+                SetupRemotePackageMetadata(TestPackageIdentity.Id, "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
                 // Act
                 var latest = await _target.GetLatestPackageMetadataAsync(
-                    testPackageIdentity,
+                    TestPackageIdentity,
                     testProject,
                     includePrerelease: true,
                     cancellationToken: CancellationToken.None);
@@ -225,14 +207,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             public async Task GetLatestPackageMetadataAsync_WithAllowedVersions_RetrievesLatestVersion()
             {
                 // Arrange
-                var testPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
-
-                var testProject = SetupProject(testPackageIdentity, "[1,2)");
-                SetupRemotePackageMetadata(testPackageIdentity.Id, "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
+                var testProject = SetupProject(TestPackageIdentity, "[1,2)");
+                SetupRemotePackageMetadata(TestPackageIdentity.Id, "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
 
                 // Act
                 var latest = await _target.GetLatestPackageMetadataAsync(
-                    testPackageIdentity,
+                    TestPackageIdentity,
                     testProject,
                     includePrerelease: true,
                     cancellationToken: CancellationToken.None);
@@ -272,13 +252,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
-        public class MultiSourcePackageMetadataProviderTest
+        public abstract class Tests
         {
+            protected PackageIdentity TestPackageIdentity = new PackageIdentity("FakePackage", new NuGetVersion("1.0.0"));
             protected readonly SourceRepository _source;
             protected readonly PackageMetadataResource _metadataResource;
             protected readonly TestLogger _logger = new TestLogger();
 
-            public MultiSourcePackageMetadataProviderTest()
+            public Tests()
             {
                 // dependencies and data
                 _metadataResource = Mock.Of<PackageMetadataResource>();
