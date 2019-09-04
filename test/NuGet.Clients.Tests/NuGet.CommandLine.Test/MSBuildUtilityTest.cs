@@ -234,7 +234,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-       [Fact]
+        [Fact]
         public void GetMsbuildDirectoryFromPath_PATHENVWithQuotes_Succeeds()
         {
             if (RuntimeEnvironmentHelper.IsMono)
