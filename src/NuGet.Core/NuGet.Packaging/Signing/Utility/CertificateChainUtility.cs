@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using NuGet.Common;
 
 namespace NuGet.Packaging.Signing
@@ -78,11 +79,11 @@ namespace NuGet.Packaging.Signing
                 var fatalStatuses = new List<X509ChainStatus>();
                 var logCode = certificateType == CertificateType.Timestamp ? NuGetLogCode.NU3028 : NuGetLogCode.NU3018;
 
-                string chainstatus = null;
-                int i = 0;
+                var status = new StringBuilder();
                 foreach (var chainStatus in chain.ChainStatus)
                 {
-                    chainstatus += "chain status[" + i + "]" + chainStatus + "\n";
+                    status.AppendLine($"({chainStatus.Status}):  {chainStatus.StatusInformation}");
+
                     if ((chainStatus.Status & errorStatusFlags) != 0)
                     {
                         fatalStatuses.Add(chainStatus);
@@ -98,10 +99,10 @@ namespace NuGet.Packaging.Signing
                 {
                     if (certificateType == CertificateType.Timestamp)
                     {
-                        throw new Exception("@@timestamp has someting wrong" + "\n" + chainstatus);
+                        throw new Exception("@@timestamp has someting wrong:\r\n" + status.ToString());
                         //throw new TimestampException(logCode, Strings.CertificateChainValidationFailed);
                     }
-                    throw new Exception("@@signature has someting wrong" + "\n" + chainstatus);
+                    throw new Exception("@@signature has someting wrong:\r\n" + status.ToString());
                     //throw new SignatureException(logCode, Strings.CertificateChainValidationFailed);
                 }
 
