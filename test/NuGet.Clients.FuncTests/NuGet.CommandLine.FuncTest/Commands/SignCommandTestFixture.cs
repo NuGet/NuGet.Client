@@ -369,7 +369,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
             _trustedTimestampRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
-                (RuntimeEnvironmentHelper.IsWindows) ? StoreLocation.LocalMachine : StoreLocation.CurrentUser);
+                StoreLocation.LocalMachine);
 
             var ca = intermediateCa;
 
