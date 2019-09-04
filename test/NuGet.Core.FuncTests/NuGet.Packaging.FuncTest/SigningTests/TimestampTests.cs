@@ -44,10 +44,11 @@ namespace NuGet.Packaging.FuncTest
                 responders.Add(testServer.RegisterResponder(intermediateCa));
                 responders.Add(testServer.RegisterResponder(rootCa));
 
+                //TODO: how about other runtime environment?
                 using (var trustedServerRoot = TrustedTestCert.Create(
                     new X509Certificate2(rootCa.Certificate.GetEncoded()),
                     StoreName.Root,
-                    StoreLocation.LocalMachine))
+                    (RuntimeEnvironmentHelper.IsWindows) ? StoreLocation.LocalMachine: StoreLocation.CurrentUser))
                 {
                     var timestampService = TimestampService.Create(intermediateCa);
 

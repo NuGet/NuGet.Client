@@ -51,10 +51,8 @@ namespace Test.Utility.Signing
             {
                 return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
             }
-            if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
-            }
+            //TODO: how about other enviroments? 
+           
             return new TrustedTestCert<TestCertificate>(this, e => PublicCert, StoreName.Root, StoreLocation.CurrentUser);
         }
 
@@ -62,9 +60,18 @@ namespace Test.Utility.Signing
         /// Trust the PublicCert cert for the life of the object.
         /// </summary>
         /// <remarks>Dispose of the object returned!</remarks>
-        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople, StoreLocation storeLocation = StoreLocation.CurrentUser)
+        public TrustedTestCert<TestCertificate> WithPrivateKeyAndTrust(StoreName storeName = StoreName.TrustedPeople)
         {
-            return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, storeLocation);
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, StoreLocation.LocalMachine);
+            }
+            else if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                return new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, StoreLocation.CurrentUser);
+            }
+            //TODO: how about other enviroments? mac,mono and so on
+            return  new TrustedTestCert<TestCertificate>(this, e => PublicCertWithPrivateKey, storeName, StoreLocation.CurrentUser);
         }
 
         public static string GenerateCertificateName()

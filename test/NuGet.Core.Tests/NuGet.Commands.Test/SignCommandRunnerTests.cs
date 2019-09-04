@@ -108,7 +108,16 @@ namespace NuGet.Commands.Test
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
-                test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
+                if (RuntimeEnvironmentHelper.IsWindows)
+                {
+                    test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
+                }
+                else if (RuntimeEnvironmentHelper.IsLinux)
+                {
+                    test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
+                }
+                //TODO: how about other runtime environment? 
+                
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(

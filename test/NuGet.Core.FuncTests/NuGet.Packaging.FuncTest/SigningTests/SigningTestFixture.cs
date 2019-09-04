@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Packaging.Signing;
 using Test.Utility.Signing;
 
@@ -198,10 +199,11 @@ namespace NuGet.Packaging.FuncTest
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
 
+            //TODO: how about other runtime environment?
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,
                 StoreName.Root,
-                StoreLocation.LocalMachine);
+                (RuntimeEnvironmentHelper.IsWindows)? StoreLocation.LocalMachine : StoreLocation.CurrentUser);
 
             var ca = intermediateCa;
 

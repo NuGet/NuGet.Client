@@ -2302,10 +2302,11 @@ namespace NuGet.Packaging.FuncTest
         {
             var rootCertificate = certificateChain.Last();
 
+            //TODO: how about other runtime environment?
             return TrustedTestCert.Create(
                 new X509Certificate2(rootCertificate),
                 StoreName.Root,
-                StoreLocation.LocalMachine,
+                (RuntimeEnvironmentHelper.IsWindows)? StoreLocation.LocalMachine : StoreLocation.CurrentUser,
                 maximumValidityPeriod: TimeSpan.MaxValue);
         }
     }

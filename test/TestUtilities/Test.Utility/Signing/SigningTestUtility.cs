@@ -146,7 +146,7 @@ namespace Test.Utility.Signing
                         IsCA = true
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root);
                     issuer = cert;
                 }
                 else if (i < length - 1) // intermediate CA cert
@@ -159,7 +159,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority);
                     issuer = cert;
                 }
                 else // leaf cert
@@ -173,7 +173,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My);
                 }
 
                 certChain.Add(cert);
