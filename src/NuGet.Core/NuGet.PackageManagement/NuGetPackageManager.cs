@@ -2026,14 +2026,14 @@ namespace NuGet.PackageManagement
 
             nuGetProjectContext.Log(MessageLevel.Info, Strings.ResolvedActionsToUninstallPackage, packageIdentity);
             return nuGetProjectActions;
-        }        
+        }
 
         private async Task<IEnumerable<PackageDependencyInfo>> GetDependencyInfoFromPackagesFolderAsync(IEnumerable<PackageIdentity> packageIdentities,
             NuGetFramework nuGetFramework,
             bool includeUnresolved = false)
         {
             var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
-            return await ProjectClosureUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, NullLogger.Instance, includeUnresolved, CancellationToken.None);
+            return await ProjectClosureUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, includeUnresolved, NullLogger.Instance, CancellationToken.None);
         }
 
         /// <summary>

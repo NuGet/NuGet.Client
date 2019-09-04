@@ -92,10 +92,10 @@ namespace NuGet.PackageManagement.UI
             => _upgradeDependencyItems ?? (_upgradeDependencyItems = GetUpgradeDependencyItems());
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> DirectDependencies => UpgradeDependencyItems
-                .Where(upgradeDependencyItem => ProjectClosureUtilities.DirectDependenciesPredicate(upgradeDependencyItem));
+                .Where(upgradeDependencyItem => ProjectClosureUtilities.TopLevelPackagesPredicate(upgradeDependencyItem));
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems
-                .Where(upgradeDependencyItem => ProjectClosureUtilities.TransitiveDependenciesPredicate(upgradeDependencyItem));
+                .Where(upgradeDependencyItem => ProjectClosureUtilities.TransitivePackagesPredicate(upgradeDependencyItem));
 
         private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package)
         {
@@ -159,7 +159,7 @@ namespace NuGet.PackageManagement.UI
             var upgradeDependencyItems = PackageDependencyInfos
                 .Select(p => new NuGetProjectUpgradeDependencyItem(new PackageIdentity(p.Id, p.Version)));
 
-            ProjectClosureUtilities.PopulateDependingPackages(upgradeDependencyItems, PackageDependencyInfos);
+            ProjectClosureUtilities.PopulateDependants(PackageDependencyInfos, upgradeDependencyItems);
 
             foreach (var package in upgradeDependencyItems)
             {
