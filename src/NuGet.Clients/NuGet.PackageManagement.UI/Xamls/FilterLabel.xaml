@@ -27,9 +27,10 @@
       AutomationProperties.AutomationId="{Binding ElementName=_labelText, Path=Text}"
       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
       <AutomationProperties.Name>
-        <MultiBinding StringFormat=" {0} {1}">
+        <MultiBinding StringFormat=" {0} {1} {2}">
           <Binding ElementName="_labelText" Path="Text" />
           <Binding ElementName="_textBlockCount" Path="Text" />
+          <Binding ElementName="_warningIcon" Path="ToolTip" />
         </MultiBinding>
       </AutomationProperties.Name>
       <nuget:TabItemButton.Template>
