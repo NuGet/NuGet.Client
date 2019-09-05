@@ -97,7 +97,7 @@ namespace NuGet.PackageManagement
         /// <returns>A collection of <see cref="IPackageWithDependants"/></returns>
         public static IEnumerable<IPackageWithDependants> GetPackagesWithDependants(IList<PackageDependencyInfo> packageDependencyInfos)
         {
-            var packageWithDependants = packageDependencyInfos.Select(e => new PackageWithDependants(e));
+            var packageWithDependants = packageDependencyInfos.Select(e => new PackageWithDependants(e)).ToList<IPackageWithDependants>();
             PopulateDependants(packageDependencyInfos, packageWithDependants);
             return packageWithDependants;
         }
