@@ -2033,7 +2033,7 @@ namespace NuGet.PackageManagement
             bool includeUnresolved = false)
         {
             var dependencyInfoResource = await PackagesFolderSourceRepository.GetResourceAsync<DependencyInfoResource>();
-            return await ProjectClosureUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, includeUnresolved, NullLogger.Instance, CancellationToken.None);
+            return await PackageGraphAnalysisUtilities.GetDependencyInfoForPackageIdentitiesAsync(packageIdentities, nuGetFramework, dependencyInfoResource, NullSourceCacheContext.Instance, includeUnresolved, NullLogger.Instance, CancellationToken.None);
         }
 
         /// <summary>

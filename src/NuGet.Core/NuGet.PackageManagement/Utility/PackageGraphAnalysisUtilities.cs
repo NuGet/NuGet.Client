@@ -14,7 +14,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.PackageManagement
 {
-    public static class ProjectClosureUtilities
+    public static class PackageGraphAnalysisUtilities
     {
         public static Func<IPackageWithDependants, bool> TopLevelPackagesPredicate = dependencyItem => !dependencyItem.DependingPackages.Any();
         public static Func<IPackageWithDependants, bool> TransitivePackagesPredicate = dependencyItem => dependencyItem.DependingPackages.Any();
