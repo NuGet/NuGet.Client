@@ -421,7 +421,7 @@
 
                 <!-- version to install is visible when
                      * Status is NotInstalled
-                     * Or IsSolution is true
+                     * Or IsSolution is true and IsPackageDeprecated is false
                 -->
                 <MultiDataTrigger>
                   <MultiDataTrigger.Conditions>
@@ -445,6 +445,9 @@
                     </Condition>
                     <Condition
                       Binding="{Binding LatestVersion,Converter={StaticResource NullToBooleanConverter}}"
+                      Value="False" />
+                    <Condition
+                      Binding="{Binding IsPackageDeprecated}"
                       Value="False" />
                   </MultiDataTrigger.Conditions>
                   <Setter
@@ -539,14 +542,7 @@
                   <Setter TargetName="_updateButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
 
-                <!-- The deprecation indicator becomes invisible when
-                   * IsSolution is true; or
-                   * IsPackageDeprecated is true
-                -->
-                <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
-                  <Setter TargetName="_deprecationIndicator" Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
+                <!-- The deprecation indicator becomes visible when IsPackageDeprecated is true -->
                 <DataTrigger
                   Binding="{Binding IsPackageDeprecated}" Value="false">
                   <Setter TargetName="_deprecationIndicator" Property="Visibility" Value="Collapsed" />
