@@ -5,6 +5,10 @@ using System.Collections.Generic;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
+using System.Text;
+using System.Security.Permissions;
+using System.Security;
+using Moq;
 
 namespace NuGet.CommandLine.Test
 {
@@ -21,7 +25,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null).Path;
+                getMsBuildPathInPathVar: (reader) => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -38,7 +42,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath).Path;
+                getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -55,7 +59,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => expectedPath).Path;
+                getMsBuildPathInPathVar: (reader) => expectedPath).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -72,7 +76,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: null,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => @"c:\foo").Path;
+                getMsBuildPathInPathVar: (reader) => @"c:\foo").Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -93,7 +97,7 @@ namespace NuGet.CommandLine.Test
                 userVersion: userVersion,
                 console: null,
                 installedToolsets: toolsets.OrderByDescending(t => t),
-                getMsBuildPathInPathVar: () => null).Path;
+                getMsBuildPathInPathVar: (reader) => null).Path;
 
             // Assert
             Assert.Equal(expectedPath, directory);
@@ -114,7 +118,7 @@ namespace NuGet.CommandLine.Test
                         userVersion: userVersion,
                         console: null,
                         installedToolsets: toolsets.OrderByDescending(t => t),
-                        getMsBuildPathInPathVar: () => null);
+                        getMsBuildPathInPathVar: (reader) => null);
                 });
 
             // Assert
@@ -199,14 +203,13 @@ namespace NuGet.CommandLine.Test
         [Fact]
         public void TestGetMsbuildDirectoryFromPATHENV()
         {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
             using (var vsPath = TestDirectory.Create())
             {
-
-                if (RuntimeEnvironmentHelper.IsMono)
-                { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
-                    return;
-                }
-
                 var msBuild159BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.9", "Bin")).FullName;
 
                 var msBuild159ExePath = Path.Combine(msBuild159BinPath, "msbuild.exe").ToString();
@@ -228,6 +231,40 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.NotNull(toolset);
                 Assert.Equal(msBuild159BinPath, toolset.Path);
+            }
+        }
+
+        [Fact]
+        public void GetMsbuildDirectoryFromPath_PATHENVWithQuotes_Succeeds()
+        {
+            if (RuntimeEnvironmentHelper.IsMono)
+            { // Mono does not have SxS installations so it's not relevant to get msbuild from the path.
+                return;
+            }
+
+            using (var vsPath = TestDirectory.Create())
+            {
+                var msBuild160BinDir = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "16.0", "Bin"));
+                var msBuild160BinPath = msBuild160BinDir.FullName;
+                var msBuild160ExePath = Path.Combine(msBuild160BinPath, "msbuild.exe").ToString();
+
+                File.WriteAllText(msBuild160ExePath, "foo 16.0");
+                
+                var newPathValue = new StringBuilder();
+                newPathValue.Append('\"');
+                newPathValue.Append(msBuild160BinPath);
+                newPathValue.Append('\"');
+                newPathValue.Append(';');
+
+                var environment = new Mock<NuGet.Common.IEnvironmentVariableReader>(MockBehavior.Strict);
+                environment.Setup(s => s.GetEnvironmentVariable("PATH")).Returns(newPathValue.ToString());
+
+                // Act;
+                var msBuildPath = MsBuildUtility.GetMSBuild(environment.Object);
+
+                // Assert
+                Assert.NotNull(msBuildPath);
+                Assert.Equal(msBuild160ExePath, msBuildPath);
             }
         }
 
