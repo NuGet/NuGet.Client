@@ -122,7 +122,7 @@ namespace NuGet.CommandLine
                 inputTargetXML.Save(inputTargetPath);
 
                 // Create msbuild parameters and include global properties that cannot be set in the input targets path
-                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset, restoreLockProperties);
+                var arguments = GetMSBuildArguments(entryPointTargetPath, inputTargetPath, nugetExePath, solutionDirectory, solutionName, restoreConfigFile, sources, packagesDirectory, msbuildToolset, restoreLockProperties,EnvironmentVariableWrapper.Instance);
 
                 var processStartInfo = new ProcessStartInfo
                 {
@@ -228,7 +228,8 @@ namespace NuGet.CommandLine
             string[] sources,
             string packagesDirectory,
             MsBuildToolset toolset,
-            RestoreLockProperties restoreLockProperties)
+            RestoreLockProperties restoreLockProperties,
+            IEnvironmentVariableReader reader)
         {
             // args for MSBuild.exe
             var args = new List<string>()
@@ -240,7 +241,7 @@ namespace NuGet.CommandLine
             };
 
             // Set the msbuild verbosity level if specified
-            var msbuildVerbosity = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
+            var msbuildVerbosity = reader.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_VERBOSITY");
 
             if (string.IsNullOrEmpty(msbuildVerbosity))
             {
@@ -276,7 +277,7 @@ namespace NuGet.CommandLine
             }
 
             // Add additional args to msbuild if needed
-            var msbuildAdditionalArgs = Environment.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
+            var msbuildAdditionalArgs = reader.GetEnvironmentVariable("NUGET_RESTORE_MSBUILD_ARGS");
 
             if (!string.IsNullOrEmpty(msbuildAdditionalArgs))
             {
@@ -494,7 +495,7 @@ namespace NuGet.CommandLine
                 // If the userVersion is not specified, favor the value in the $Path Env variable
                 if (string.IsNullOrEmpty(userVersion))
                 {
-                    var msbuildExe = GetMSBuild();
+                    var msbuildExe = GetMSBuild(EnvironmentVariableWrapper.Instance);
 
                     if (msbuildExe != null)
                     {
@@ -540,7 +541,7 @@ namespace NuGet.CommandLine
                 }
 
                 toolset = GetMsBuildDirectoryInternal(
-                    userVersion, console, installedToolsets.OrderByDescending(t => t), () => GetMsBuildPathInPathVar());
+                    userVersion, console, installedToolsets.OrderByDescending(t => t), (IEnvironmentVariableReader reader) => GetMSBuild(reader));
 
                 Directory.SetCurrentDirectory(currentDirectoryCache);
                 return toolset;
@@ -565,7 +566,7 @@ namespace NuGet.CommandLine
             string userVersion,
             IConsole console,
             IEnumerable<MsBuildToolset> installedToolsets,
-            Func<string> getMsBuildPathInPathVar)
+            Func<IEnvironmentVariableReader,string> getMsBuildPathInPathVar)
         {
             MsBuildToolset toolset;
 
@@ -573,7 +574,7 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(userVersion))
             {
-                var msbuildPathInPath = getMsBuildPathInPathVar();
+                var msbuildPathInPath = getMsBuildPathInPathVar(EnvironmentVariableWrapper.Instance);
                 toolset = GetToolsetFromPath(msbuildPathInPath, toolsetsContainingMSBuild);
             }
             else
@@ -654,9 +655,9 @@ namespace NuGet.CommandLine
         /// </summary>
         /// <returns>The path of MSBuild in PATH environment variable. Returns null if MSBuild location does not exist
         /// in the variable string.</returns>
-        private static string GetMsBuildPathInPathVar()
+        private static string GetMsBuildPathInPathVar(IEnvironmentVariableReader reader)
         {
-            var path = Environment.GetEnvironmentVariable("PATH");
+            var path = reader.GetEnvironmentVariable("PATH");
             var paths = path?.Split(new char[] { ';' });
             return paths?.Select(p =>
             {
@@ -958,7 +959,7 @@ namespace NuGet.CommandLine
         {
             if (RuntimeEnvironmentHelper.IsMono)
             {
-                var msbuildExe = GetMSBuild();
+                var msbuildExe = GetMSBuild(EnvironmentVariableWrapper.Instance);
 
                 if (msbuildExe != null)
                 {
@@ -983,7 +984,7 @@ namespace NuGet.CommandLine
             }
         }
 
-        private static string GetMSBuild()
+        internal static string GetMSBuild(IEnvironmentVariableReader reader)
         {
             var exeNames = new [] { "msbuild.exe" };
 
@@ -993,13 +994,13 @@ namespace NuGet.CommandLine
             }
 
             // Try to find msbuild or xbuild in $Path.
-            var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
+            var pathDirs = reader.GetEnvironmentVariable("PATH")?.Split(new[] { Path.PathSeparator }, StringSplitOptions.RemoveEmptyEntries);
 
             if (pathDirs?.Length > 0)
             {
                 foreach (var exeName in exeNames)
                 {
-                    var exePath = pathDirs.Select(dir => Path.Combine(dir, exeName)).FirstOrDefault(File.Exists);
+                    var exePath = pathDirs.Select(dir => Path.Combine(dir.Trim('\"'), exeName)).FirstOrDefault(File.Exists);
                     if (exePath != null)
                     {
                         return exePath;
