@@ -50,6 +50,11 @@ namespace NuGet.CommandLine.Test
             var hostName = Guid.NewGuid().ToString();
             var expected = $"The remote name could not be resolved: '{hostName}'";
 
+            if (RuntimeEnvironmentHelper.IsMono)
+            {
+                expected = "No such host is known";
+            }
+
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act

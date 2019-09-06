@@ -1904,7 +1904,22 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                Assert.Contains("The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'", result.Item3);
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                        result.Item3.Contains(
+                        "No such host is known"),
+                        "Expected error message not found in " + result.Item3
+                    );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains(
+                            "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
+                        "Expected error message not found in " + result.Item3
+                    );
+                }
 
             }
         }
@@ -1972,11 +1987,21 @@ namespace NuGet.CommandLine.Test
                                 true);
 
                 // Assert
-                Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
-
-                Assert.Contains("An error occurred while sending the request.", result.Item3);
+                if (RuntimeEnvironmentHelper.IsMono)
+                {
+                    Assert.True(
+                   result.Item3.Contains(
+                       "No such host is known"),
+                   "Expected error message not found in " + result.Item3
+                   );
+                }
+                else
+                {
+                    Assert.True(
+                        result.Item3.Contains("An error occurred while sending the request."),
+                        "Expected error message not found in " + result.Item3
+                        );
+                }
             }
         }
 
