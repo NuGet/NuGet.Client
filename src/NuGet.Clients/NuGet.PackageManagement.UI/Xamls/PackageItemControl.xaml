@@ -403,7 +403,7 @@
                   <Setter TargetName="_installButton" Property="Visibility" Value="Collapsed" />
                 </DataTrigger>
 
-                <!-- installed version is visible when  InstalledVersion is not null -->
+                <!-- installed version is visible when InstalledVersion is not null -->
                 <MultiDataTrigger>
                   <MultiDataTrigger.Conditions>
                     <Condition
