@@ -147,7 +147,7 @@ namespace NuGet.PackageManagement.UI
         protected override void CreateVersions()
         {
             _versions = new List<DisplayVersion>();
-            var allVersions = _allPackageVersions?.Where(v => v != null).OrderByDescending(v => v);
+            var allVersions = _allPackageVersions?.Where(v => v.version != null).OrderByDescending(v => v);
 
             // allVersions is null if server doesn't return any versions.
             if (allVersions == null || !allVersions.Any())
@@ -157,24 +157,27 @@ namespace NuGet.PackageManagement.UI
 
             // null, if no version constraint defined in package.config
             var allowedVersions = GetAllowedVersions();
-            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v)).ToArray();
+            var allVersionsAllowed = allVersions.Where(v => allowedVersions.Satisfies(v.version)).ToArray();
 
             // null, if all versions are allowed to install or update
-            var blockedVersions = allVersions.Where(v => !allVersionsAllowed.Any(allowed => allowed.Version.Equals(v.Version))).ToArray();
+            var blockedVersions = allVersions
+                .Select(v => v.version)
+                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Version.Equals(v)))
+                .ToArray();
 
             // get latest prerelease or stable based on allowed versions
-            var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.IsPrerelease);
-            var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.IsPrerelease);
+            var latestPrerelease = allVersionsAllowed.FirstOrDefault(v => v.version.IsPrerelease);
+            var latestStableVersion = allVersionsAllowed.FirstOrDefault(v => !v.version.IsPrerelease);
 
-            if (latestPrerelease != null
-                && (latestStableVersion == null || latestPrerelease > latestStableVersion))
+            if (latestPrerelease.version != null
+                && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version))
             {
-                _versions.Add(new DisplayVersion(latestPrerelease, Resources.Version_LatestPrerelease));
+                _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
-            if (latestStableVersion != null)
+            if (latestStableVersion.version != null)
             {
-                _versions.Add(new DisplayVersion(latestStableVersion, Resources.Version_LatestStable));
+                _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
 
             // add a separator
@@ -186,7 +189,7 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                _versions.Add(new DisplayVersion(version, string.Empty));
+                _versions.Add(new DisplayVersion(version.version, string.Empty, isDeprecated: version.isDeprecated));
             }
 
             var selectedProjects = GetConstraintsForSelectedProjects().ToArray();
