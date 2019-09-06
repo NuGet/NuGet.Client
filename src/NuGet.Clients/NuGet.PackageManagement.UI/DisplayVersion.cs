@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
@@ -21,8 +22,9 @@ namespace NuGet.PackageManagement.UI
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
             bool autoReferenced = false,
+            bool isDeprecated = false,
             string versionFormat = "N")
-            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, versionFormat)
+            : this(GetRange(version), additionalInfo, isValidVersion, isCurrentInstalled, autoReferenced, isDeprecated, versionFormat)
         {
         }
 
@@ -32,6 +34,7 @@ namespace NuGet.PackageManagement.UI
             bool isValidVersion = true,
             bool isCurrentInstalled = false,
             bool autoReferenced = false,
+            bool isDeprecated = false,
             string versionFormat = "N")
         {
             if (versionFormat == null)
@@ -48,6 +51,7 @@ namespace NuGet.PackageManagement.UI
             Version = range.MinVersion;
             IsCurrentInstalled = isCurrentInstalled;
             AutoReferenced = autoReferenced;
+            IsDeprecated = isDeprecated;
 
             // Display a single version if the range is locked
             if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
@@ -65,6 +69,14 @@ namespace NuGet.PackageManagement.UI
                     Range.OriginalString :
                     AdditionalInfo + " " + Range.OriginalString;
             }
+
+            if (IsDeprecated)
+            {
+                _toString += string.Format(
+                    CultureInfo.CurrentCulture,
+                    "    ({0})",
+                    Resources.Label_Deprecated);
+            }
         }
 
         public bool IsCurrentInstalled { get; set; }
@@ -77,6 +89,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool AutoReferenced { get; set; }
 
+        public bool IsDeprecated { get; set; }
+
         public override string ToString()
         {
             return _toString;
@@ -85,7 +99,10 @@ namespace NuGet.PackageManagement.UI
         public override bool Equals(object obj)
         {
             var other = obj as DisplayVersion;
-            return other != null && other.Version == Version && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal);
+            return other != null
+                && other.Version == Version
+                && string.Equals(other.AdditionalInfo, AdditionalInfo, StringComparison.Ordinal)
+                && IsDeprecated == other.IsDeprecated;
         }
 
         public override int GetHashCode()

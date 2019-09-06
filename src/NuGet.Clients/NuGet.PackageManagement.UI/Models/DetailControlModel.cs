@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
 
         // all versions of the _searchResultPackage
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
-        protected List<NuGetVersion> _allPackageVersions;
+        protected List<(NuGetVersion version, bool isDeprecated)> _allPackageVersions;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1051:DoNotDeclareVisibleInstanceFields")]
         protected PackageItemListViewModel _searchResultPackage;
@@ -142,8 +142,12 @@ namespace NuGet.PackageManagement.UI
                 }
             }
 
-            // Add Current package version to package versions list.
-            _allPackageVersions = new List<NuGetVersion>() { searchResultPackage.Version };
+            // Show the current package version as the only package in the list at first just in case fetching the versions takes a while.
+            _allPackageVersions = new List<(NuGetVersion version, bool isDeprecated)>()
+            {
+                (searchResultPackage.Version, false)
+            };
+
             CreateVersions();
             OnCurrentPackageChanged();
 
@@ -157,9 +161,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Get the list of available versions, ignoring null versions
-            _allPackageVersions = versions
+            _allPackageVersions = (await Task.WhenAll(versions
                 .Where(v => v?.Version != null)
-                .Select(v => v.Version)
+                .Select(GetVersion)))
                 .ToList();
 
             // hook event handler for dependency behavior changed
@@ -167,6 +171,17 @@ namespace NuGet.PackageManagement.UI
 
             CreateVersions();
             OnCurrentPackageChanged();
+        }
+
+        private async Task<(NuGetVersion version, bool isDeprecated)> GetVersion(VersionInfo versionInfo)
+        {
+            var isDeprecated = false;
+            if (versionInfo.PackageSearchMetadata != null)
+            {
+                isDeprecated = await versionInfo.PackageSearchMetadata.GetDeprecationMetadataAsync() != null;
+            }
+
+            return (versionInfo.Version, isDeprecated);
         }
 
         protected virtual void DependencyBehavior_SelectedChanged(object sender, EventArgs e)
