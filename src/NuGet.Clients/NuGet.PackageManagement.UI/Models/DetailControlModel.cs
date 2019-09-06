@@ -457,9 +457,10 @@ namespace NuGet.PackageManagement.UI
             {
                 // Select the installed version by default.
                 // Otherwise, select the first version in the version list.
+                var possibleVersions = _versions.Where(v => v != null);
                 SelectedVersion =
-                    _versions.FirstOrDefault(v => v != null && v.Version.Equals(_searchResultPackage.InstalledVersion))
-                    ?? _versions.FirstOrDefault(v => v != null && v.IsValidVersion);
+                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                    ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
             }
         }
 
