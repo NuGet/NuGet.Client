@@ -54,18 +54,21 @@ namespace NuGet.PackageManagement.UI
             IsDeprecated = isDeprecated;
 
             // Display a single version if the range is locked
-            // If range is unlocked, display it and use the original value for floating ranges
-            var versionString = range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion ?
-                Version.ToString(versionFormat, VersionFormatter.Instance)
-                : Range.OriginalString;
-
-            _toString = "";
-            if (!string.IsNullOrEmpty(AdditionalInfo))
+            if (range.HasLowerAndUpperBounds && range.MinVersion == range.MaxVersion)
             {
-                _toString += AdditionalInfo + " ";
-            }
+                var formattedVersionString = Version.ToString(versionFormat, VersionFormatter.Instance);
 
-            _toString += versionString;
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
+                    formattedVersionString :
+                    AdditionalInfo + " " + formattedVersionString;
+            }
+            else
+            {
+                // Display the range, use the original value for floating ranges
+                _toString = string.IsNullOrEmpty(AdditionalInfo) ?
+                    Range.OriginalString :
+                    AdditionalInfo + " " + Range.OriginalString;
+            }
 
             if (IsDeprecated)
             {
