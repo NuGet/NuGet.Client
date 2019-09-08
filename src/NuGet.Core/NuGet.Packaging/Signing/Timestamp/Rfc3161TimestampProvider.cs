@@ -26,7 +26,7 @@ namespace NuGet.Packaging.Signing
     {
         // Url to an RFC 3161 timestamp server
         private readonly Uri _timestamperUrl;
-        private const int _rfc3161RequestTimeoutSeconds = 10;
+        private const int RequestTimeoutSeconds = 10;
 
         public Rfc3161TimestampProvider(Uri timeStampServerUrl)
         {
@@ -99,7 +99,7 @@ namespace NuGet.Packaging.Signing
             // The response status need not be checked here as lower level api will throw if the response is invalid
             var timestampToken = await rfc3161TimestampRequest.SubmitRequestAsync(
                 _timestamperUrl,
-                TimeSpan.FromSeconds(_rfc3161RequestTimeoutSeconds));
+                TimeSpan.FromSeconds(RequestTimeoutSeconds));
 
             // quick check for response validity
             ValidateTimestampResponse(nonce, request.HashedMessage, timestampToken);
@@ -235,6 +235,17 @@ namespace NuGet.Packaging.Signing
                 rng.GetBytes(nonce);
             }
 
+            EnsureValidNonce(nonce);
+
+            return nonce;
+        }
+
+        /// <summary>
+        /// Non-private for testing purposes only.
+        /// </summary>
+        internal static void EnsureValidNonce(byte[] nonce)
+        {
+#if IS_DESKTOP
             // Eventually, CryptEncodeObjectEx(...) is called on a CRYPT_TIMESTAMP_REQUEST with this nonce,
             // and CryptEncodeObjectEx(...) interprets the nonce as a little endian, DER-encoded integer value
             // (without tag and length), and may even strip leading bytes from the big endian representation
@@ -249,8 +260,12 @@ namespace NuGet.Packaging.Signing
 
             nonce[nonce.Length - 1] &= 0x7f;
             nonce[nonce.Length - 1] |= 0x01;
-
-            return nonce;
+#else
+            // Per documentation on Rfc3161TimestampRequest.CreateFromHash(...) the nonce "value is interpreted
+            // as an unsigned big-endian integer and may be normalized to the encoding format."  Clear the sign bit on
+            // the most significant byte to ensure the nonce represents an unsigned big endian integer.
+            nonce[0] &= 0x7f;
+#endif
         }
 
 #else

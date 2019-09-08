@@ -236,7 +236,12 @@ namespace Test.Utility.Signing
 
             var keyUsage = X509KeyUsageFlags.DigitalSignature;
 
-            if (chainCertificateRequest != null)
+            if (chainCertificateRequest == null)
+            {
+                // Self-signed certificates should have this flag set.
+                keyUsage |= X509KeyUsageFlags.KeyCertSign;
+            }
+            else
             {
                 if (chainCertificateRequest.Issuer != null)
                 {
@@ -279,6 +284,7 @@ namespace Test.Utility.Signing
 
             var padding = paddingMode.ToPadding();
             var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+            bool isCa = isSelfSigned ? true : (chainCertificateRequest?.IsCA ?? false);
 
             certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
@@ -294,7 +300,7 @@ namespace Test.Utility.Signing
             certGen.Extensions.Add(
                 new X509KeyUsageExtension(keyUsage, critical: false));
             certGen.Extensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: isCa, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
 
             // Allow changes
             modifyGenerator?.Invoke(certGen);
