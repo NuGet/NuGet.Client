@@ -131,14 +131,14 @@ namespace NuGet.PackageManagement.UI
             // Add latest prerelease if neeeded
             if (latestPrerelease.version != null
                 && (latestStableVersion.version == null || latestPrerelease.version > latestStableVersion.version) &&
-                !latestPrerelease.Equals(installedVersion))
+                !latestPrerelease.version.Equals(installedVersion))
             {
                 _versions.Add(new DisplayVersion(latestPrerelease.version, Resources.Version_LatestPrerelease, isDeprecated: latestPrerelease.isDeprecated));
             }
 
             // Add latest stable if needed
             if (latestStableVersion.version != null &&
-                !latestStableVersion.Equals(installedVersion))
+                !latestStableVersion.version.Equals(installedVersion))
             {
                 _versions.Add(new DisplayVersion(latestStableVersion.version, Resources.Version_LatestStable, isDeprecated: latestStableVersion.isDeprecated));
             }
@@ -152,12 +152,12 @@ namespace NuGet.PackageManagement.UI
             // first add all the available versions to be updated
             foreach (var version in allVersionsAllowed)
             {
-                var installed = version.Equals(installedVersion);
+                var installed = version.version.Equals(installedVersion);
                 var autoReferenced = false;
 
                 if (installed && _projectVersionConstraints.Any(e => e.IsAutoReferenced && e.VersionRange?.Satisfies(version.version) == true))
                 {
-                    // do not allow auto referenced packatges
+                    // do not allow auto referenced packages
                     autoReferenced = true;
                 }
 
