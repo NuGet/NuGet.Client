@@ -24,7 +24,7 @@ namespace NuGet.PackageManagement.UI
         private string _projectName;
         private bool _hasNotFoundPackages;
 
-        public NuGetProjectUpgradeWindowModel(NuGetProject project, IList<PackageDependencyInfo> packageDependencyInfos)
+        public NuGetProjectUpgradeWindowModel(MSBuildNuGetProject project, IList<PackageDependencyInfo> packageDependencyInfos)
         {
             PackageDependencyInfos = packageDependencyInfos;
             Project = project;
@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI
 
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public NuGetProject Project { get; }
+        public MSBuildNuGetProject Project { get; }
 
         public bool HasIssues
         {
@@ -161,9 +161,10 @@ namespace NuGet.PackageManagement.UI
 
             PackageGraphAnalysisUtilities.PopulateDependants(PackageDependencyInfos, upgradeDependencyItems);
 
+            var folderNuGetProject = Project.FolderNuGetProject;
             foreach (var package in upgradeDependencyItems)
             {
-                InitPackageUpgradeIssues(((MSBuildNuGetProject)Project).FolderNuGetProject, package);
+                InitPackageUpgradeIssues(folderNuGetProject, package);
             }
 
             return new ObservableCollection<NuGetProjectUpgradeDependencyItem>(upgradeDependencyItems);

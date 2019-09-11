@@ -16,8 +16,8 @@ namespace NuGet.PackageManagement
 {
     public static class PackageGraphAnalysisUtilities
     {
-        public static Func<IPackageWithDependants, bool> TopLevelPackagesPredicate = dependencyItem => !dependencyItem.DependingPackages.Any();
-        public static Func<IPackageWithDependants, bool> TransitivePackagesPredicate = dependencyItem => dependencyItem.DependingPackages.Any();
+        public static Func<IPackageWithDependants, bool> TopLevelPackagesPredicate = dependencyItem => !dependencyItem.DependantPackages.Any();
+        public static Func<IPackageWithDependants, bool> TransitivePackagesPredicate = dependencyItem => dependencyItem.DependantPackages.Any();
 
         /// <summary>
         /// Returns package dependency info for the given package identities in the given resource. It returns null if any protocol errors occur.
@@ -26,7 +26,7 @@ namespace NuGet.PackageManagement
         /// <param name="packageIdentities">A collection of <see cref="PackageIdentity"/> to get info for.</param>
         /// <param name="nuGetFramework">framework for determining the dependency groups of packages</param>
         /// <param name="dependencyInfoResource">The resource to fetch dependency info from. Could be http/file feed/global packages folder/solution packages folder.</param>
-        /// <param name="sourceCacheContext">Caching context. Only reallly applicable when the dependency info resource is http based</param>
+        /// <param name="sourceCacheContext">Caching context. Only really applicable when the dependency info resource is http based</param>
         /// <param name="includeUnresolved">Whether to include unresolved packages in the list. If true, the unresolved packages will have an empty dependencies collection.</param>
         /// <param name="logger">logger</param>
         /// <param name="cancellationToken">cancellation token</param>
@@ -65,8 +65,9 @@ namespace NuGet.PackageManagement
 
                 return results;
             }
-            catch (NuGetProtocolException)
+            catch (NuGetProtocolException e)
             {
+                logger.LogWarning(e.ToString());
                 return null;
             }
         }
@@ -86,7 +87,7 @@ namespace NuGet.PackageManagement
                         .FirstOrDefault(d => (d.Identity.Id == dependency.Id) && (d.Identity.Version == dependency.VersionRange.MinVersion));
                     if (matchingDependencyItem != null)
                     {
-                        matchingDependencyItem.DependingPackages.Add(packageDependencyInfo);
+                        matchingDependencyItem.DependantPackages.Add(packageDependencyInfo);
                     }
                 }
             }
@@ -102,11 +103,11 @@ namespace NuGet.PackageManagement
             return packageWithDependants;
         }
 
-        private class PackageWithDependants : IPackageWithDependants
+        internal class PackageWithDependants : IPackageWithDependants
         {
             public PackageIdentity Identity { get; }
 
-            public IList<PackageIdentity> DependingPackages { get; }
+            public IList<PackageIdentity> DependantPackages { get; }
 
             public PackageWithDependants(PackageIdentity packageIdentity) :
                 this(packageIdentity, new List<PackageIdentity>())
@@ -116,7 +117,7 @@ namespace NuGet.PackageManagement
             public PackageWithDependants(PackageIdentity identity, IList<PackageIdentity> dependingPackages)
             {
                 Identity = identity ?? throw new ArgumentNullException(nameof(identity));
-                DependingPackages = dependingPackages ?? throw new ArgumentNullException(nameof(dependingPackages));
+                DependantPackages = dependingPackages ?? throw new ArgumentNullException(nameof(dependingPackages));
             }
         }
     }

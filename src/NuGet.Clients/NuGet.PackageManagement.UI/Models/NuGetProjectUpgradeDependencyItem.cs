@@ -16,7 +16,7 @@ namespace NuGet.PackageManagement.UI
     {
         private bool _installAsTopLevel;
         public PackageIdentity Identity { get; }
-        public IList<PackageIdentity> DependingPackages { get; }
+        public IList<PackageIdentity> DependantPackages { get; }
 
         public IList<PackagingLogMessage> Issues { get; }
 
@@ -49,15 +49,15 @@ namespace NuGet.PackageManagement.UI
             Identity = package;
             Id = package.Id;
             Version = package.Version.ToNormalizedString();
-            DependingPackages = dependingPackages ?? new List<PackageIdentity>();
+            DependantPackages = dependingPackages ?? new List<PackageIdentity>();
             Issues = new List<PackagingLogMessage>();
         }
 
         public override string ToString()
         {
-            return !DependingPackages.Any()
+            return !DependantPackages.Any()
                 ? Identity.ToString()
-                : $"{Identity} {string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependingPackages))}";
+                : $"{Identity} {string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependantPackages))}";
         }
     }
 }

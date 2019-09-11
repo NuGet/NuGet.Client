@@ -10,6 +10,6 @@ namespace NuGet.PackageManagement
     {
         PackageIdentity Identity { get; }
 
-        IList<PackageIdentity> DependingPackages { get; }
+        IList<PackageIdentity> DependantPackages { get; }
     }
 }
