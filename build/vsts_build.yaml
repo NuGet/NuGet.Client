@@ -378,8 +378,6 @@ phases:
       scriptType: 'inlineScript'
       inlineScript: |
         [string] $bootstrapperInfoFilePath = "$Env:BUILD_STAGINGDIRECTORY\MicroBuild\Output\BootstrapperInfo.json"
-        Write-Host "Path: $bootstrapperInfoFilePath"
-        Get-Content $bootstrapperInfoFilePath
         $json = Get-Content $bootstrapperInfoFilePath | ConvertFrom-Json
         [string] $buildDropPath = $json.BuildDrop
         Write-Host "Build drop:  $buildDropPath"
