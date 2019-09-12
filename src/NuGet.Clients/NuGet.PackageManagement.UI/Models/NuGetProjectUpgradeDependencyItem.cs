@@ -12,11 +12,15 @@ using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {
-    public class NuGetProjectUpgradeDependencyItem : IPackageWithDependants, INotifyPropertyChanged
+    public class NuGetProjectUpgradeDependencyItem : INotifyPropertyChanged
     {
         private bool _installAsTopLevel;
+
+        private PackageWithDependants _packageWithDependants;
+
         public PackageIdentity Identity { get; }
-        public IList<PackageIdentity> DependantPackages { get; }
+
+        public IList<PackageIdentity> DependantPackages => _packageWithDependants.DependantPackages;
 
         public IList<PackagingLogMessage> Issues { get; }
 
@@ -24,7 +28,8 @@ namespace NuGet.PackageManagement.UI
 
         public string Version { get; }
 
-        public bool InstallAsTopLevel {
+        public bool InstallAsTopLevel
+        {
             get
             {
                 return _installAsTopLevel;
@@ -36,6 +41,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsTopLevel => _packageWithDependants.IsTopLevelPackage;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -43,14 +50,14 @@ namespace NuGet.PackageManagement.UI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public NuGetProjectUpgradeDependencyItem(PackageIdentity package, IList<PackageIdentity> dependingPackages = null)
+        public NuGetProjectUpgradeDependencyItem(PackageIdentity package, PackageWithDependants packageWithDependants)
         {
-            _installAsTopLevel = true;
             Identity = package;
             Id = package.Id;
             Version = package.Version.ToNormalizedString();
-            DependantPackages = dependingPackages ?? new List<PackageIdentity>();
             Issues = new List<PackagingLogMessage>();
+            _packageWithDependants = packageWithDependants;
+            _installAsTopLevel = packageWithDependants.IsTopLevelPackage;
         }
 
         public override string ToString()

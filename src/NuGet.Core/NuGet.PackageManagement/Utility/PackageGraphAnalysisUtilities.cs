@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,16 +15,6 @@ namespace NuGet.PackageManagement
 {
     public static class PackageGraphAnalysisUtilities
     {
-        public static bool IsTopLevelPackage(IPackageWithDependants packageWithDependants)
-        {
-            return !packageWithDependants.DependantPackages.Any();
-        }
-
-        public static bool IsTransitivePackage(IPackageWithDependants packageWithDependants)
-        {
-            return packageWithDependants.DependantPackages.Any();
-        }
-
         /// <summary>
         /// Returns package dependency info for the given package identities in the given resource. It returns null if any protocol errors occur.
         /// For example, the feed is not accessible.
@@ -80,52 +69,35 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Given a list of <see cref="PackageDependencyInfo"/> and a collection of <see cref="IPackageWithDependants"/> populates the latter collection with dependency info based on the <paramref name="packageDependencyInfos"/>.
-        /// This method assumes that there is a 1-to-1 relationship between <paramref name="packageDependencyInfos"/> and <paramref name="packagesWithDependants"/>. 
+        /// Given a package(id and version) and a list of other package, it returns all the packages that have a reference to the exact ID and version.
         /// </summary>
-        /// <remarks>This method will not handle null <paramref name="packageDependencyInfos"/> and <paramref name="packagesWithDependants"/></remarks>
-        public static void PopulateDependants(IList<PackageDependencyInfo> packageDependencyInfos, IEnumerable<IPackageWithDependants> packagesWithDependants)
+        /// <param name="package"></param>
+        /// <param name="packageDependencyInfos"></param>
+        /// <returns></returns>
+        public static IEnumerable<PackageDependencyInfo> GetDependantPackages(PackageDependencyInfo package, IList<PackageDependencyInfo> packageDependencyInfos)
         {
             foreach (var packageDependencyInfo in packageDependencyInfos)
             {
-                foreach (var dependency in packageDependencyInfo.Dependencies)
+                if (packageDependencyInfo.Dependencies.Any(d => package.Id == d.Id && package.Version == d.VersionRange.MinVersion))
                 {
-                    var matchingDependencyItem = packagesWithDependants
-                        .FirstOrDefault(d => (d.Identity.Id == dependency.Id) && (d.Identity.Version == dependency.VersionRange.MinVersion));
-                    if (matchingDependencyItem != null)
-                    {
-                        matchingDependencyItem.DependantPackages.Add(packageDependencyInfo);
-                    }
+                    yield return packageDependencyInfo;
                 }
             }
         }
+
         /// <summary>
-        /// Given <paramref name="packageDependencyInfos"/> generates a collection of <see cref="IPackageWithDependants"/> with the dependants populated correctly.
+        /// Given <paramref name="packageDependencyInfos"/> generates a collection of <see cref="PackageWithDependants"/> with the dependants populated correctly.
         /// </summary>
-        /// <returns>A collection of <see cref="IPackageWithDependants"/></returns>
-        public static IEnumerable<IPackageWithDependants> GetPackagesWithDependants(IList<PackageDependencyInfo> packageDependencyInfos)
+        /// <returns>A collection of <see cref="PackageWithDependants"/></returns>
+        public static IList<PackageWithDependants> GetPackagesWithDependants(IList<PackageDependencyInfo> packageDependencyInfos)
         {
-            var packageWithDependants = packageDependencyInfos.Select(e => new PackageWithDependants(e)).ToList<IPackageWithDependants>();
-            PopulateDependants(packageDependencyInfos, packageWithDependants);
+            var packageWithDependants = new List<PackageWithDependants>();
+
+            foreach(var package in packageDependencyInfos)
+            {
+                packageWithDependants.Add(new PackageWithDependants(package, GetDependantPackages(package, packageDependencyInfos).ToArray()));
+            }
             return packageWithDependants;
-        }
-
-        internal class PackageWithDependants : IPackageWithDependants
-        {
-            public PackageIdentity Identity { get; }
-
-            public IList<PackageIdentity> DependantPackages { get; }
-
-            public PackageWithDependants(PackageIdentity packageIdentity) :
-                this(packageIdentity, new List<PackageIdentity>())
-            {
-            }
-
-            public PackageWithDependants(PackageIdentity identity, IList<PackageIdentity> dependingPackages)
-            {
-                Identity = identity ?? throw new ArgumentNullException(nameof(identity));
-                DependantPackages = dependingPackages ?? throw new ArgumentNullException(nameof(dependingPackages));
-            }
         }
     }
 }

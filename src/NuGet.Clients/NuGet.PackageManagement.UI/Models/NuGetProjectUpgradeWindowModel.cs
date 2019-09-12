@@ -92,10 +92,10 @@ namespace NuGet.PackageManagement.UI
             => _upgradeDependencyItems ?? (_upgradeDependencyItems = GetUpgradeDependencyItems());
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> DirectDependencies => UpgradeDependencyItems
-                .Where(PackageGraphAnalysisUtilities.IsTopLevelPackage);
+                .Where(e => e.IsTopLevel);
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems
-                .Where(PackageGraphAnalysisUtilities.IsTransitivePackage);
+                .Where(e => !e.IsTopLevel);
 
         private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package)
         {
@@ -156,11 +156,7 @@ namespace NuGet.PackageManagement.UI
 
         private ObservableCollection<NuGetProjectUpgradeDependencyItem> GetUpgradeDependencyItems()
         {
-            var upgradeDependencyItems = PackageDependencyInfos
-                .Select(p => new NuGetProjectUpgradeDependencyItem(new PackageIdentity(p.Id, p.Version)));
-
-            PackageGraphAnalysisUtilities.PopulateDependants(PackageDependencyInfos, upgradeDependencyItems);
-
+            var upgradeDependencyItems = PackageGraphAnalysisUtilities.GetPackagesWithDependants(PackageDependencyInfos).Select(e => new NuGetProjectUpgradeDependencyItem(e.Identity, e));
             var folderNuGetProject = Project.FolderNuGetProject;
             foreach (var package in upgradeDependencyItems)
             {
@@ -188,19 +184,19 @@ namespace NuGet.PackageManagement.UI
 
         public static readonly ObservableCollection<NuGetProjectUpgradeDependencyItem> DesignTimeUpgradeDependencyItems = new ObservableCollection<NuGetProjectUpgradeDependencyItem>( new List<NuGetProjectUpgradeDependencyItem>
         {
-            new NuGetProjectUpgradeDependencyItem(PackageOne),
-            new NuGetProjectUpgradeDependencyItem(PackageTwo, new List<PackageIdentity> {PackageOne}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}),
-            new NuGetProjectUpgradeDependencyItem(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})
+            new NuGetProjectUpgradeDependencyItem(PackageOne, new PackageWithDependants(PackageOne, Enumerable.Empty<PackageIdentity>().ToList())),
+            new NuGetProjectUpgradeDependencyItem(PackageTwo, new PackageWithDependants(PackageTwo, new List<PackageIdentity> {PackageOne})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo})),
+            new NuGetProjectUpgradeDependencyItem(PackageThree, new PackageWithDependants(PackageThree, new List<PackageIdentity> {PackageOne, PackageTwo}))
 
         });
 #endif

@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -16,92 +15,11 @@ using NuGet.Versioning;
 
 using static NuGet.Frameworks.FrameworkConstants;
 using static NuGet.Protocol.Core.Types.Repository;
-using static NuGet.PackageManagement.PackageGraphAnalysisUtilities;
 
 namespace NuGet.PackageManagement.Test
 {
     public class PackageGraphAnalysisUtilitiesTests
     {
-
-        // A 1.0.0 =>
-        //      B 1.0.0
-        //      C 1.0.0
-        // C 1.1.0
-        // B 1.0.0 =>
-        //      D 1.0.0
-        // Installed list: A 1.0.0, B 1.0.0, C 1.1.0, D 1.0.0
-        // The scenario is a bump in the version of C
-        [Fact]
-        public void PackageGraphAnalysisUtilities_PopulateDependants_Succeeds()
-        {
-            // Set up
-            var packageIdentityA100 = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
-            var packageIdentityB100 = new PackageIdentity("b", NuGetVersion.Parse("1.0.0"));
-            var packageIdentityC100 = new PackageIdentity("c", NuGetVersion.Parse("1.0.0"));
-            var packageIdentityC110 = new PackageIdentity("c", NuGetVersion.Parse("1.1.0"));
-            var packageIdentityD100 = new PackageIdentity("d", NuGetVersion.Parse("1.0.0"));
-
-            var packageDependencyInfos = new List<PackageDependencyInfo>();
-            var packageDependencyInfoA = new PackageDependencyInfo(packageIdentityA100,
-                new PackageDependency[] {
-                    new PackageDependency(packageIdentityB100.Id, VersionRange.Parse(packageIdentityB100.Version.OriginalVersion)),
-                    new PackageDependency(packageIdentityC100.Id, VersionRange.Parse(packageIdentityC100.Version.OriginalVersion)),
-                });
-            var packageDependencyInfoB = new PackageDependencyInfo(packageIdentityB100,
-                new PackageDependency[] {
-                    new PackageDependency(packageIdentityD100.Id, VersionRange.Parse(packageIdentityD100.Version.OriginalVersion)),
-                });
-            var packageDependencyInfoC = new PackageDependencyInfo(packageIdentityC110, Enumerable.Empty<PackageDependency>());
-            var packageDependencyInfoD = new PackageDependencyInfo(packageIdentityD100, Enumerable.Empty<PackageDependency>());
-
-            packageDependencyInfos.Add(packageDependencyInfoA);
-            packageDependencyInfos.Add(packageDependencyInfoB);
-            packageDependencyInfos.Add(packageDependencyInfoC);
-            packageDependencyInfos.Add(packageDependencyInfoD);
-
-            var packageWithDependants = packageDependencyInfos.Select(e => new PackageWithDependants(e)).ToList();
-
-            // Act
-
-            PackageGraphAnalysisUtilities.PopulateDependants(packageDependencyInfos, packageWithDependants);
-
-            // Assert
-
-            foreach (var package in packageWithDependants)
-            {
-                switch (package.Identity.Id)
-                {
-                    case "a":
-                        {
-                            Assert.Equal(0, package.DependantPackages.Count);
-                            break;
-                        }
-                    case "b":
-                        {
-                            Assert.Equal(1, package.DependantPackages.Count);
-                            Assert.Equal(packageIdentityA100.Id, package.DependantPackages.Single().Id);
-                            break;
-                        }
-                    case "c":
-                        {
-                            Assert.Equal(0, package.DependantPackages.Count);
-                            break;
-                        }
-                    case "d":
-                        {
-                            Assert.Equal(1, package.DependantPackages.Count);
-                            Assert.Equal(packageIdentityB100.Id, package.DependantPackages.Single().Id);
-                            break;
-                        }
-                    default:
-                        {
-                            Assert.True(false, $"Unexpected package {package.Identity}");
-                            break;
-                        }
-                }
-            }
-        }
-
         // A 1.0.0 =>
         //      B 1.0.0
         //      C 1.0.0
@@ -150,23 +68,27 @@ namespace NuGet.PackageManagement.Test
                     case "a":
                         {
                             Assert.Equal(0, package.DependantPackages.Count);
+                            Assert.True(package.IsTopLevelPackage);
                             break;
                         }
                     case "b":
                         {
                             Assert.Equal(1, package.DependantPackages.Count);
                             Assert.Equal(packageIdentityA100.Id, package.DependantPackages.Single().Id);
+                            Assert.False(package.IsTopLevelPackage);
                             break;
                         }
                     case "c":
                         {
                             Assert.Equal(0, package.DependantPackages.Count);
+                            Assert.True(package.IsTopLevelPackage);
                             break;
                         }
                     case "d":
                         {
                             Assert.Equal(1, package.DependantPackages.Count);
                             Assert.Equal(packageIdentityB100.Id, package.DependantPackages.Single().Id);
+                            Assert.False(package.IsTopLevelPackage);
                             break;
                         }
                     default:
