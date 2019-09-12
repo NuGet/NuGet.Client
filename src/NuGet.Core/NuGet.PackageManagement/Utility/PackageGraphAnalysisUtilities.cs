@@ -16,8 +16,15 @@ namespace NuGet.PackageManagement
 {
     public static class PackageGraphAnalysisUtilities
     {
-        public static Func<IPackageWithDependants, bool> TopLevelPackagesPredicate = dependencyItem => !dependencyItem.DependantPackages.Any();
-        public static Func<IPackageWithDependants, bool> TransitivePackagesPredicate = dependencyItem => dependencyItem.DependantPackages.Any();
+        public static bool IsTopLevelPackage(IPackageWithDependants packageWithDependants)
+        {
+            return !packageWithDependants.DependantPackages.Any();
+        }
+
+        public static bool IsTransitivePackage(IPackageWithDependants packageWithDependants)
+        {
+            return packageWithDependants.DependantPackages.Any();
+        }
 
         /// <summary>
         /// Returns package dependency info for the given package identities in the given resource. It returns null if any protocol errors occur.

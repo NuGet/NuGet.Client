@@ -92,10 +92,10 @@ namespace NuGet.PackageManagement.UI
             => _upgradeDependencyItems ?? (_upgradeDependencyItems = GetUpgradeDependencyItems());
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> DirectDependencies => UpgradeDependencyItems
-                .Where(upgradeDependencyItem => PackageGraphAnalysisUtilities.TopLevelPackagesPredicate(upgradeDependencyItem));
+                .Where(PackageGraphAnalysisUtilities.IsTopLevelPackage);
 
         public IEnumerable<NuGetProjectUpgradeDependencyItem> TransitiveDependencies => UpgradeDependencyItems
-                .Where(upgradeDependencyItem => PackageGraphAnalysisUtilities.TransitivePackagesPredicate(upgradeDependencyItem));
+                .Where(PackageGraphAnalysisUtilities.IsTransitivePackage);
 
         private void InitPackageUpgradeIssues(FolderNuGetProject folderNuGetProject, NuGetProjectUpgradeDependencyItem package)
         {
