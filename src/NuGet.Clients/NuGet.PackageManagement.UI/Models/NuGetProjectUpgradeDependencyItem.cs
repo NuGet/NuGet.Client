@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageIdentity Identity { get; }
 
-        public IList<PackageIdentity> DependantPackages => _packageWithDependants.DependantPackages;
+        public IReadOnlyList<PackageIdentity> DependantPackages => _packageWithDependants.DependantPackages;
 
         public IList<PackagingLogMessage> Issues { get; }
 
