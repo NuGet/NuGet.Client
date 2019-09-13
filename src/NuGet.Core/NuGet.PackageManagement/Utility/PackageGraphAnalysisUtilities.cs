@@ -74,15 +74,19 @@ namespace NuGet.PackageManagement
         /// <param name="package"></param>
         /// <param name="packageDependencyInfos"></param>
         /// <returns></returns>
-        public static IEnumerable<PackageDependencyInfo> GetDependantPackages(PackageDependencyInfo package, IList<PackageDependencyInfo> packageDependencyInfos)
+        public static IList<PackageDependencyInfo> GetDependantPackages(PackageDependencyInfo package, IList<PackageDependencyInfo> packageDependencyInfos)
         {
+            var dependantPackages = new List<PackageDependencyInfo>();
+
             foreach (var packageDependencyInfo in packageDependencyInfos)
             {
                 if (packageDependencyInfo.Dependencies.Any(d => package.Id == d.Id && package.Version == d.VersionRange.MinVersion))
                 {
-                    yield return packageDependencyInfo;
+                    dependantPackages.Add(packageDependencyInfo);
                 }
             }
+
+            return dependantPackages;
         }
 
         /// <summary>

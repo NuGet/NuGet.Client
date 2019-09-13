@@ -12,9 +12,9 @@ namespace NuGet.PackageManagement
     {
         public PackageIdentity Identity { get; }
 
-        public IList<PackageIdentity> DependantPackages { get; }
+        public IReadOnlyList<PackageIdentity> DependantPackages { get; }
 
-        public PackageWithDependants(PackageIdentity identity, IList<PackageIdentity> dependingPackages)
+        public PackageWithDependants(PackageIdentity identity, IReadOnlyList<PackageIdentity> dependingPackages)
         {
             Identity = identity ?? throw new ArgumentNullException(nameof(identity));
             DependantPackages = dependingPackages ?? throw new ArgumentNullException(nameof(dependingPackages));
