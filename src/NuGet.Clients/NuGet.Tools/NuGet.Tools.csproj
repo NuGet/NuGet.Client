@@ -44,6 +44,7 @@
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="NuGetFeedbackDiagnosticFileProvider.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
@@ -127,6 +128,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build">
+      <Version>16.3.28923.271</Version>
+    </PackageReference>
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +157,16 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
+  <Target Name="_linkVSEmbeddableAssembly" AfterTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
+    <!-- This target can be deprecated when this issue is fixed:
+       https://github.com/NuGet/Home/issues/2365
+       and when the Microsoft.Internal.VisualStudio.Shell.Embeddable package have been updated to leverage the new feature.  -->
+    <ItemGroup>
+      <ReferencePath Condition=" '%(FileName)' == 'Microsoft.Internal.VisualStudio.Shell.Embeddable' ">
+        <EmbedInteropTypes>true</EmbedInteropTypes>
+      </ReferencePath>
+    </ItemGroup>
+  </Target>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
