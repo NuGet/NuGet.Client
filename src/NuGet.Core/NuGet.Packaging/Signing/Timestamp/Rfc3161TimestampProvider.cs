@@ -54,7 +54,7 @@ namespace NuGet.Packaging.Signing
         public async Task<PrimarySignature> TimestampSignatureAsync(PrimarySignature primarySignature, TimestampRequest request, ILogger logger, CancellationToken token)
         {
             var timestampCms = await GetTimestampAsync(request, logger, token);
-            using (var signatureNativeCms = NativeCms.Decode(primarySignature.GetBytes()))
+            using (var signatureNativeCms = ICamFactory.CreateICms(primarySignature.GetBytes()))
             {
                 if (request.Target == SignaturePlacement.Countersignature)
                 {
@@ -129,7 +129,7 @@ namespace NuGet.Packaging.Signing
             SignedCms timestampCms,
             IReadOnlyList<X509Certificate2> chain)
         {
-            using (var timestampNativeCms = NativeCms.Decode(timestampCms.Encode()))
+            using (var timestampNativeCms = ICamFactory.CreateICms(timestampCms.Encode()))
             {
                 timestampNativeCms.AddCertificates(
                     chain.Where(certificate => !timestampCms.Certificates.Contains(certificate))
