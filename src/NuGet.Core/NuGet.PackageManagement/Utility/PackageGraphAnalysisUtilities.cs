@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Given a package(id and version) and a list of other package, it returns all the packages that have a reference to the exact ID and version.
+        /// Return the packages from a list that have a dependency on a specific package (id and version).
         /// </summary>
         /// <param name="package"></param>
         /// <param name="packageDependencyInfos"></param>
