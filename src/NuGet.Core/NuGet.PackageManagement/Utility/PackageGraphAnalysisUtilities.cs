@@ -20,9 +20,9 @@ namespace NuGet.PackageManagement
         /// For example, the feed is not accessible.
         /// </summary>
         /// <param name="packageIdentities">A collection of <see cref="PackageIdentity"/> to get info for.</param>
-        /// <param name="nuGetFramework">framework for determining the dependency groups of packages</param>
+        /// <param name="nuGetFramework">Framework for determining the dependency groups of packages</param>
         /// <param name="dependencyInfoResource">The resource to fetch dependency info from. Could be http/file feed/global packages folder/solution packages folder.</param>
-        /// <param name="sourceCacheContext">Caching context. Only really applicable when the dependency info resource is http based</param>
+        /// <param name="sourceCacheContext">Caching context. Only really applicable when the dependency info resource is http based.</param>
         /// <param name="includeUnresolved">Whether to include unresolved packages in the list. If true, the unresolved packages will have an empty dependencies collection.</param>
         /// <param name="logger">logger</param>
         /// <param name="cancellationToken">cancellation token</param>
@@ -69,7 +69,7 @@ namespace NuGet.PackageManagement
         }
 
         /// <summary>
-        /// Given a package(id and version) and a list of other package, it returns all the packages that have a reference to the exact ID and version.
+        /// Return the packages from a list that have a dependency on a specific package (id and version).
         /// </summary>
         /// <param name="package"></param>
         /// <param name="packageDependencyInfos"></param>
