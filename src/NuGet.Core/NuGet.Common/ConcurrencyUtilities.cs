@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Runtime.CompilerServices;
@@ -16,6 +18,8 @@ namespace NuGet.Common
     {
         private const int NumberOfRetries = 3000;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
+        private static Dictionary<string, SemaphoreSlim> PerFileLock = new Dictionary<string, SemaphoreSlim>();
+        private static SemaphoreSlim DictionaryLock = new SemaphoreSlim(1);
 
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
@@ -26,75 +30,114 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            // limit the number of unauthorized, this should be around 30 seconds.
-            var unauthorizedAttemptsLeft = NumberOfRetries;
+            SemaphoreSlim fileSemaphore = null;
 
-            while (true)
+            try
             {
-                FileStream fs = null;
-                var lockPath = string.Empty;
-
+                await DictionaryLock.WaitAsync();
                 try
                 {
-                    try
+                    if (!PerFileLock.TryGetValue(filePath, out fileSemaphore))
                     {
-                        lockPath = FileLockPath(filePath);
-
-                        fs = AcquireFileStream(lockPath);
+                        fileSemaphore = new SemaphoreSlim(1);
+                        PerFileLock.Add(filePath, fileSemaphore);
                     }
-                    catch (DirectoryNotFoundException)
-                    {
-                        throw;
-                    }
-                    catch(PathTooLongException)
-                    {
-                        throw;
-                    }
-                    catch(UnauthorizedAccessException)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        if (unauthorizedAttemptsLeft < 1)
-                        {
-                            if (string.IsNullOrEmpty(lockPath))
-                            {
-                                lockPath = BasePath;
-                            }
-
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.UnauthorizedLockFail,
-                                lockPath,
-                                filePath);
-
-                            throw new InvalidOperationException(message);
-                        }
-
-                        unauthorizedAttemptsLeft--;
-
-                        // This can occur when the file is being deleted
-                        // Or when an admin user has locked the file
-                        await Task.Delay(SleepDuration);
-                        continue;
-                    }
-                    catch (IOException)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        await Task.Delay(SleepDuration);
-                        continue;
-                    }
-
-                    // Run the action within the lock
-                    return await action(token);
                 }
                 finally
                 {
-                    if (fs != null)
+                    DictionaryLock.Release();
+                }
+
+                await fileSemaphore.WaitAsync();
+
+                // limit the number of unauthorized, this should be around 30 seconds.
+                var unauthorizedAttemptsLeft = NumberOfRetries;
+
+                while (true)
+                {
+                    FileStream fs = null;
+                    var lockPath = string.Empty;
+
+                    try
                     {
-                        // Dispose of the stream, this will cause a delete
-                        fs.Dispose();
+                        try
+                        {
+                            lockPath = FileLockPath(filePath);
+
+                            fs = AcquireFileStream(lockPath);
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            throw;
+                        }
+                        catch (PathTooLongException)
+                        {
+                            throw;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            if (unauthorizedAttemptsLeft < 1)
+                            {
+                                if (string.IsNullOrEmpty(lockPath))
+                                {
+                                    lockPath = BasePath;
+                                }
+
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.UnauthorizedLockFail,
+                                    lockPath,
+                                    filePath);
+
+                                throw new InvalidOperationException(message);
+                            }
+
+                            unauthorizedAttemptsLeft--;
+
+                            // This can occur when the file is being deleted
+                            // Or when an admin user has locked the file
+                            await Task.Delay(SleepDuration);
+                            continue;
+                        }
+                        catch (IOException)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            await Task.Delay(SleepDuration);
+                            continue;
+                        }
+
+                        // Run the action within the lock
+                        return await action(token);
                     }
+                    finally
+                    {
+                        if (fs != null)
+                        {
+                            // Dispose of the stream, this will cause a delete
+                            fs.Dispose();
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                await DictionaryLock.WaitAsync();
+                try
+                {
+                    fileSemaphore.Release();
+
+                    var count = fileSemaphore.CurrentCount;
+                    if (count > 0)
+                    {
+                        PerFileLock.Remove(filePath);
+                    }
+                }
+                finally
+                {
+                    DictionaryLock.Release();
                 }
             }
         }
