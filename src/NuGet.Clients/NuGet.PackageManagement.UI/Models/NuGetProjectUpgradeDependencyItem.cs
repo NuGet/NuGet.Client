@@ -2,20 +2,25 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using NuGet.Packaging.Core;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
-using NuGet.Common;
-using System.ComponentModel;
 using System.Runtime.CompilerServices;
+
+using NuGet.Common;
+using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
 {
     public class NuGetProjectUpgradeDependencyItem : INotifyPropertyChanged
     {
         private bool _installAsTopLevel;
-        public PackageIdentity Package { get; }
-        public IList<PackageIdentity> DependingPackages { get; }
+
+        private PackageWithDependants _packageWithDependants;
+
+        public PackageIdentity Identity { get; }
+
+        public IReadOnlyList<PackageIdentity> DependantPackages => _packageWithDependants.DependantPackages;
 
         public IList<PackagingLogMessage> Issues { get; }
 
@@ -23,7 +28,8 @@ namespace NuGet.PackageManagement.UI
 
         public string Version { get; }
 
-        public bool InstallAsTopLevel {
+        public bool InstallAsTopLevel
+        {
             get
             {
                 return _installAsTopLevel;
@@ -35,6 +41,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        public bool IsTopLevel => _packageWithDependants.IsTopLevelPackage;
+
         public event PropertyChangedEventHandler PropertyChanged;
 
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
@@ -42,21 +50,21 @@ namespace NuGet.PackageManagement.UI
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
-        public NuGetProjectUpgradeDependencyItem(PackageIdentity package, IList<PackageIdentity> dependingPackages = null)
+        public NuGetProjectUpgradeDependencyItem(PackageIdentity package, PackageWithDependants packageWithDependants)
         {
-            _installAsTopLevel = true;
-            Package = package;
+            Identity = package;
             Id = package.Id;
             Version = package.Version.ToNormalizedString();
-            DependingPackages = dependingPackages ?? new List<PackageIdentity>();
             Issues = new List<PackagingLogMessage>();
+            _packageWithDependants = packageWithDependants;
+            _installAsTopLevel = packageWithDependants.IsTopLevelPackage;
         }
 
         public override string ToString()
         {
-            return !DependingPackages.Any()
-                ? Package.ToString()
-                : $"{Package} {string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependingPackages))}";
+            return !DependantPackages.Any()
+                ? Identity.ToString()
+                : $"{Identity} {string.Format(CultureInfo.CurrentCulture, Resources.NuGetUpgrade_PackageDependencyOf, string.Join(", ", DependantPackages))}";
         }
     }
 }

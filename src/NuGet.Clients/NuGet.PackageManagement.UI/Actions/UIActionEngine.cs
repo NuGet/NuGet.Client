@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.UI
                 CancellationToken.None);
 
             var packagesDependencyInfo = await context.PackageManager.GetInstalledPackagesDependencyInfo(nuGetProject, CancellationToken.None, includeUnresolved: true);
-            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel(nuGetProject, packagesDependencyInfo.ToList());
+            var upgradeInformationWindowModel = new NuGetProjectUpgradeWindowModel((MSBuildNuGetProject)nuGetProject, packagesDependencyInfo.ToList());
 
             var result = uiService.ShowNuGetUpgradeWindow(upgradeInformationWindowModel);
             if (!result)

@@ -74,7 +74,7 @@ namespace NuGet.PackageManagement.UI
                     progress.Report(progressData);
 
                     // Don't uninstall packages we couldn't find - that will just fail
-                    var actions = upgradeDependencyItems.Select(d => d.Package)
+                    var actions = upgradeDependencyItems.Select(d => d.Identity)
                         .Where(p => !notFoundPackages.Contains(p))
                         .Select(t => NuGetProjectAction.CreateUninstallProjectAction(t, nuGetProject));
 
@@ -182,7 +182,7 @@ namespace NuGet.PackageManagement.UI
             return
                 upgradeDependencyItems.Where(
                     upgradeDependencyItem => upgradeDependencyItem.InstallAsTopLevel)
-                    .Select(upgradeDependencyItem => upgradeDependencyItem.Package);
+                    .Select(upgradeDependencyItem => upgradeDependencyItem.Identity);
         }
 
         private static string CreateBackup(MSBuildNuGetProject msBuildNuGetProject, string solutionDirectory)
