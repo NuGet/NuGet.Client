@@ -3967,7 +3967,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        //[PlatformFact(Platform.Windows)]
         public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
             using (var testDirectory = TestDirectory.Create())
