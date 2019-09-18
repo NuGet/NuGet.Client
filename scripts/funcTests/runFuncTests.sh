@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-env
+env | sort
 
 while true ; do
 	case "$1" in
