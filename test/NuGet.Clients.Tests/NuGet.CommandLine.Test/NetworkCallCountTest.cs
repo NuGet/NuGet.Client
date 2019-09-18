@@ -20,7 +20,7 @@ namespace NuGet.CommandLine.Test
 {
     public class NetworkCallCountTest
     {
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesWithAllMissingPackages()
         {
             // Arrange
@@ -262,7 +262,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreLargePackagesConfigWithMultipleSourcesMainlyV3()
         {
             // Arrange
@@ -610,7 +610,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_CancelPackageDownloadForV2()
         {
             // Arrange
@@ -702,7 +702,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3AndLocal()
         {
             // Arrange
@@ -1025,7 +1025,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreSolutionMultipleSourcesV2V3()
         {
             // Arrange
@@ -1084,7 +1084,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreSolutionMultipleSourcesTwoV2()
         {
             // Arrange
@@ -1150,7 +1150,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "Multiple Mock Servers")]
         public void NetworkCallCount_RestoreSolutionMultipleSourcesTwoV3()
         {
             // Arrange
