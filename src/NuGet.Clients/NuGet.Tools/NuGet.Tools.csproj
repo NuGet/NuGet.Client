@@ -157,16 +157,6 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <Target Name="_linkVSEmbeddableAssembly" AfterTargets="ResolveReferences" BeforeTargets="FindReferenceAssembliesForReferences">
-    <!-- This target can be deprecated when this issue is fixed:
-       https://github.com/NuGet/Home/issues/2365
-       and when the Microsoft.Internal.VisualStudio.Shell.Embeddable package have been updated to leverage the new feature.  -->
-    <ItemGroup>
-      <ReferencePath Condition=" '%(FileName)' == 'Microsoft.Internal.VisualStudio.Shell.Embeddable' ">
-        <EmbedInteropTypes>true</EmbedInteropTypes>
-      </ReferencePath>
-    </ItemGroup>
-  </Target>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

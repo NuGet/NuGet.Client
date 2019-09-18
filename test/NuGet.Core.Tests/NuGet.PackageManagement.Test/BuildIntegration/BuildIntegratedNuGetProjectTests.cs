@@ -118,10 +118,7 @@ namespace NuGet.PackageManagement.Test
                     Assert.False(restoreSummary.NoOpRestore);
                 }
 
-                var filePath = Path.Combine(
-                    NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                    "nuget-dg",
-                    "nugetSpec.dg");
+                var filePath = DependencyGraphRestoreUtility.GetDefaultDGSpecFileName();
 
                 Assert.True(File.Exists(filePath));
 
@@ -188,10 +185,7 @@ namespace NuGet.PackageManagement.Test
                         Assert.False(restoreSummary.Success);
                     }
 
-                    var filePath = Path.Combine(
-                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                        "nuget-dg",
-                        "nugetSpec.dg");
+                    var filePath = DependencyGraphRestoreUtility.GetDefaultDGSpecFileName();
 
                     Assert.True(File.Exists(filePath));
                 }

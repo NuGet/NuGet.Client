@@ -3,9 +3,8 @@
 
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
-using System.IO;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
-using NuGet.Common;
+using NuGet.PackageManagement;
 
 namespace NuGetVSExtension
 {
@@ -18,10 +17,7 @@ namespace NuGetVSExtension
 
             return new List<string>()
             {
-                Path.Combine(
-                    NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                    "nuget-dg",
-                    "nugetSpec.dg")
+                DependencyGraphRestoreUtility.GetDefaultDGSpecFileName()
             };
         }
     }

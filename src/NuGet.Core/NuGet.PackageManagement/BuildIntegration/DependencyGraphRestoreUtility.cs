@@ -80,10 +80,7 @@ namespace NuGet.PackageManagement
         {
             try
             {
-                var filePath = Path.Combine(
-                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
-                        "nuget-dg",
-                        "nugetSpec.dg");
+                var filePath = GetDefaultDGSpecFileName();
 
                 // create nuget temp folder if not exists
                 DirectoryUtility.CreateSharedDirectory(Path.GetDirectoryName(filePath));
@@ -96,6 +93,14 @@ namespace NuGet.PackageManagement
             {
                 //ignore any failure if it fails to write or replace dg spec file.
             }
+        }
+
+        public static string GetDefaultDGSpecFileName()
+        {
+            return Path.Combine(
+                        NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp),
+                        "nuget-dg",
+                        "nugetSpec.dg");
         }
 
         /// <summary>
