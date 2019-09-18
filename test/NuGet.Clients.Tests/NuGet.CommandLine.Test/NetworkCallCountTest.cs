@@ -513,7 +513,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [SkipMono(Skip = "https://github.com/NuGet/Home/issues/8594")]
         public void NetworkCallCount_CancelPackageDownloadForV3()
         {
             // Arrange
