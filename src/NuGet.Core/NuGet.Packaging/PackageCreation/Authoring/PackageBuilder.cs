@@ -91,7 +91,7 @@ namespace NuGet.Packaging
         private PackageBuilder(bool includeEmptyDirectories, bool deterministic)
         {
             _includeEmptyDirectories = includeEmptyDirectories;
-            _deterministic = false;
+            _deterministic = false; // fix in https://github.com/NuGet/Home/issues/8601
             Files = new Collection<IPackageFile>();
             DependencyGroups = new Collection<PackageDependencyGroup>();
             FrameworkReferences = new Collection<FrameworkAssemblyReference>();
