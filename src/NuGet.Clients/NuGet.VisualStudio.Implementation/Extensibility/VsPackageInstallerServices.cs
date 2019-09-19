@@ -22,6 +22,7 @@ using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.VisualStudio
 {
@@ -59,8 +60,11 @@ namespace NuGet.VisualStudio
                     if (_solutionManager != null
                         && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
                     {
-                        InitializePackageManagerAndPackageFolderPath();
+                        //switch to background thread
+                        await TaskScheduler.Default;
 
+                        InitializePackageManagerAndPackageFolderPath();
+                        
                         foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
                         {
                             FallbackPackagePathResolver pathResolver = null;
@@ -170,6 +174,9 @@ namespace NuGet.VisualStudio
                     if (_solutionManager != null
                         && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
                     {
+                        //switch to background thread
+                        await TaskScheduler.Default;
+
                         InitializePackageManagerAndPackageFolderPath();
 
                         var projectContext = new VSAPIProjectContext();
