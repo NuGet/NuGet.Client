@@ -98,9 +98,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "PackageCommandConfigFile")]
         public new string ConfigFile { get; set; }
 
-        [Option(typeof(NuGetCommand), "PackageCommandDeterministic")]
-        public bool Deterministic { get; set; }
-
         public override void ExecuteCommand()
         {
             var packArgs = new PackArgs();
@@ -140,7 +137,6 @@ namespace NuGet.CommandLine
             {
                 packArgs.SymbolPackageFormat = PackArgs.GetSymbolPackageFormat(SymbolPackageFormat);
             }
-            packArgs.Deterministic = Deterministic;
             packArgs.Build = Build;
             packArgs.Exclude = Exclude;
             packArgs.ExcludeEmptyDirectories = ExcludeEmptyDirectories;
