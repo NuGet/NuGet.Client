@@ -8,6 +8,7 @@ Microsoft.IdentityModel.Clients.ActiveDirectory.dll
 Microsoft.IdentityModel.Clients.ActiveDirectory.Platform.dll
 Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
+Microsoft.Internal.VisualStudio.Shell.Embeddable.dll
 Microsoft.TeamFoundation.Build.Client.dll
 Microsoft.TeamFoundation.Build.Client.resources.dll
 Microsoft.TeamFoundation.Build.Common.dll
