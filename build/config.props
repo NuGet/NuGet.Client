@@ -23,7 +23,7 @@
     
     <!-- ** Increment each insertion, set to zero after incrementing Major/Minor or Patch version -->
     <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
-    changes we might have made.-->
+    changes we might have made. -->
     <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
 
     <IsEscrowMode>false</IsEscrowMode>
