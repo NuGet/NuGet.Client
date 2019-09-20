@@ -634,6 +634,24 @@ phases:
       mergeTestResults: "true"
       testRunTitle: "NuGet.Client Functional Tests On Windows"
     condition: "succeededOrFailed()"
+  
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by windows_NetStandard2.1"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_NetStandard2.1"
+      artifactName: "PreGenPackages"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by windows_Net472"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_Net472"
+      artifactName: "PreGenPackages"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
 
   - task: PowerShell@1
     displayName: "Initialize Git Commit Status on GitHub"
@@ -682,6 +700,15 @@ phases:
       scriptPath: "scripts/funcTests/runFuncTests.sh"
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by Linux NetStandard2.1"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)/.test/work/PreGenPackages/Linux_NetStandard2.1"
+      artifactName: "PreGenPackages"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
 
   - task: PublishTestResults@2
     displayName: "Publish Test Results"

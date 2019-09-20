@@ -10,6 +10,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using NuGet.Packaging.FuncTest;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -19,7 +20,7 @@ using Xunit;
 using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
 
-namespace NuGet.Packaging.FuncTest
+namespace NuGet.Packaging.Post.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
     public class ValidatePreGeneratedSignedPackages

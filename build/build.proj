@@ -77,6 +77,30 @@
 
   <!--
     ============================================================
+    Run packaging post tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="PostPackagingTests">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>@(PostPackagingTestProjects)</TestProjectPaths>
+      <TestResultsFileName>PostPackagingTests</TestResultsFileName>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
     Run unit tests
     ============================================================
   -->
@@ -321,6 +345,28 @@
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
   </Target>
+
+  <!--
+    ============================================================
+    Restore post packaging test project 
+    ============================================================
+  -->
+  <Target Name="RestorePostPackagingTest">
+    <Message Text="Restoring Post Packaging Test projects" Importance="high" />
+
+    <PropertyGroup>
+      <ProjectListValue>@(PostPackagingTestProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
+    </MSBuild>
+  </Target>
+
 
   <!--
     ============================================================

@@ -239,7 +239,9 @@
     <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Clients.Tests\NuGet.CommandLine.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.PackageManagement.Test\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Clients.FuncTests\*\*.csproj" />
+                                   $(RepositoryRootDirectory)test\NuGet.Clients.FuncTests\*\*.csproj" 
+                          Exclude="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.Post.FuncTest\*.csproj" />
+    <PostPackagingTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.Post.FuncTest\*.csproj" />
   </ItemGroup>
 
   <!-- start with only nuget.versioning for xplat -->
@@ -251,7 +253,9 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*.Utility\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Credentials.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Indexing.Test\*.csproj" />
-    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
+    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" 
+                          Exclude="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.Post.FuncTest\*.csproj" />
+    <PostPackagingTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.Post.FuncTest\*.csproj" />
   </ItemGroup>
 
   <!-- All projects in the repository -->
