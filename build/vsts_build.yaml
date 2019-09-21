@@ -1030,3 +1030,304 @@ phases:
         . $(Build.Repository.LocalPath)\\scripts\\e2etests\\VSUtils.ps1
         KillRunningInstancesOfVS
     condition: "always()"
+
+- phase: CrossVerify_Generate_Packages_On_Windows
+  dependsOn: Initialize_Build
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+  queue:
+    name: VSEng-MicroBuildSxS
+    timeoutInMinutes: 30
+    demands: 
+        - DotNetFramework
+        - msbuild
+    matrix:
+      IsDesktop:
+        SkipCoreAssemblies: "true"
+      IsCore:
+        SkipDesktopAssemblies: "true"
+        
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        gci env:* | sort-object name
+
+  - task: PowerShell@1
+    displayName: "Run Configure.ps1"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CleanCache"
+
+  - task: MSBuild@1
+    displayName: "Restore Cross Verify projects"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreCrossVerifyTest /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+
+  - task: MSBuild@1
+    displayName: "Run Generating Signed Package Tests"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CrossVerifyGeneratePackageTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    continueOnError: "true"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+      mergeTestResults: "true"
+      testRunTitle: "NuGet Generate Signed Packages On Windows"
+    condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by Windows_NetCore"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_NetCore"
+      artifactName: "PreGenPackages_Windows_NetCore"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by Windows_NetFulFramework"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_NetFulFramework"
+      artifactName: "PreGenPackages_Windows_NetFulFramework"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
+
+- phase: CrossVerify_Verify_Packages_On_Windows
+  dependsOn:
+  - CrossVerify_Generate_Packages_On_Windows
+  - CrossVerify_Generate_Packages_On_Linux 
+  variables:
+    BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
+    FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
+  queue:
+    name: VSEng-MicroBuildSxS
+    timeoutInMinutes: 30
+    demands: 
+        - DotNetFramework
+        - msbuild
+    matrix:
+      IsDesktop:
+        SkipCoreAssemblies: "true"
+      IsCore:
+        SkipDesktopAssemblies: "true"
+        
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: PowerShell@1
+    displayName: "Print Environment Variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
+        gci env:* | sort-object name
+
+  - task: PowerShell@1
+    displayName: "Run Configure.ps1"
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\configure.ps1"
+      arguments: "-Force -CleanCache"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Windows_NetFulFramework artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Windows_NetFulFramework"
+      downloadPath: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_NetFulFramework"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Windows_NetCore artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Windows_NetCore"
+      downloadPath: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Windows_NetCore"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Linux_NetCore artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Linux_NetCore"
+      downloadPath: "$(Build.Repository.LocalPath)\\.test\\work\\PreGenPackages\\Linux_NetCore"
+  
+  - task: MSBuild@1
+    displayName: "Restore Cross Verify projects"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:RestoreCrossVerifyTest /p:BuildNumber=$(BuildNumber) /p:BuildRTM=false /v:m"
+
+  - task: MSBuild@1
+    displayName: "Run Verify Signed Package Tests"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CrossVerifyTests /p:BuildRTM=false /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipDesktopAssemblies=$(SkipDesktopAssemblies) /p:SkipCoreAssemblies=$(SkipCoreAssemblies)"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    continueOnError: "true"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+      mergeTestResults: "true"
+      testRunTitle: "NuGet Verify Signed Packages From All Platforms On Windows"
+    condition: "succeededOrFailed()"
+
+- phase: CrossVerify_Signing_Tests_On_Linux
+  dependsOn: Initialize_Build
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    MSBUILDDISABLENODEREUSE: 1
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
+  queue:
+    name: DDNuGet-Linux
+    timeoutInMinutes: 30
+    demands: sh
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+      
+  - task: PowerShell@2
+    displayName: "Update Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+      failOnStderr: "true"
+    condition: "always()"
+
+  - task: ShellScript@2
+    displayName: "Generate Signed Packages"
+    continueOnError: "true"
+    inputs:
+      scriptPath: "scripts/funcTests/runGenSignedPackages.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+  
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      testRunTitle: "NuGet.Client Tests On Linux"
+      searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+      mergeTestResults: "true"
+
+  - task: PublishBuildArtifacts@1
+    displayName: "Publish pre generated packages by Linux_NetCore"
+    continueOnError: "true"
+    inputs:
+      pathToPublish: "$(Build.Repository.LocalPath)/.test/work/PreGenPackages/Linux_NetCore"
+      artifactName: "PreGenPackages_Linux_NetCore"
+      publishLocation: "Container"
+    condition: "succeededOrFailed()"
+
+- phase: CrossVerify_Verify_Tests_On_Linux
+  dependsOn:
+  - CrossVerify_Generate_Packages_On_Windows
+  - CrossVerify_Generate_Packages_On_Linux 
+  variables:
+    FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
+    MSBUILDDISABLENODEREUSE: 1
+  condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
+  queue:
+    name: DDNuGet-Linux
+    timeoutInMinutes: 30
+    demands: sh
+
+  steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET Core sdk'
+    inputs:
+      packageType: sdk
+      version: $(SDKVersionForBuild)
+      includePreviewVersions: true
+      installationPath: $(Agent.TempDirectory)/dotnet
+      
+  - task: PowerShell@2
+    displayName: "Update Build Number"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
+      failOnStderr: "true"
+    condition: "always()"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Windows_NetFulFramework artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Windows_NetFulFramework"
+      downloadPath: "$(Build.Repository.LocalPath)/.test/work/PreGenPackages/Windows_NetFulFramework"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Windows_NetCore artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Windows_NetCore"
+      downloadPath: "$(Build.Repository.LocalPath)/.test/work/PreGenPackages/Windows_NetCore"
+
+  - task: DownloadBuildArtifacts@0
+    displayName: "Download Signed Packages from Linux_NetCore artifacts"
+    inputs:
+      artifactName: "PreGenPackages_Linux_NetCore"
+      downloadPath: "$(Build.Repository.LocalPath)/.test/work/PreGenPackages/Linux_NetCore"
+
+  - task: ShellScript@2
+    displayName: "Verify Signed Packages"
+    continueOnError: "true"
+    inputs:
+      scriptPath: "scripts/funcTests/runVerifySignedPackages.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+  
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      testRunTitle: "NuGet Verify Signed Packages From All Platforms On Linux"
+      searchFolder: "$(Build.Repository.LocalPath)/build/TestResults"
+      mergeTestResults: "true"

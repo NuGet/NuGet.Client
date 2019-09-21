@@ -75,16 +75,40 @@
     </MSBuild>
   </Target>
 
-  <!--
+<!--
     ============================================================
-    Run packaging post tests (non-VS specific)
+    Run generating signedpackage for cross verify tests (non-VS specific)
     ============================================================
   -->
-  <Target Name="PostPackagingTests">
+  <Target Name="CrossVerifyGeneratePackageTests">
     <!-- Test inputs -->
     <PropertyGroup>
-      <TestProjectPaths>@(PostPackagingTestProjects)</TestProjectPaths>
-      <TestResultsFileName>PostPackagingTests</TestResultsFileName>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.PackageSigning.CrossVerify.Tests\NuGet.PackageSigning.Generate.Test.csproj</TestProjectPaths>
+      <TestResultsFileName>CrossVerifyTests</TestResultsFileName>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run cross verify package signing tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="CrossVerifyTests">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.PackageSigning.CrossVerify.Tests\NuGet.PackageSigning.Verify.Test.csproj</TestProjectPaths>
+      <TestResultsFileName>CrossVerifyTests</TestResultsFileName>
     </PropertyGroup>
 
     <!-- Run tests as a batch -->
@@ -348,14 +372,14 @@
 
   <!--
     ============================================================
-    Restore post packaging test project 
+    Restore packagesigning cross verify test projects
     ============================================================
   -->
-  <Target Name="RestorePostPackagingTest">
-    <Message Text="Restoring Post Packaging Test projects" Importance="high" />
+  <Target Name="RestoreCrossVerifyTest">
+    <Message Text="Restoring packagesigning cross verify test projects" Importance="high" />
 
     <PropertyGroup>
-      <ProjectListValue>@(PostPackagingTestProjects)</ProjectListValue>
+      <ProjectListValue>@(CrossVerifySignedPackageProjects)</ProjectListValue>
     </PropertyGroup>
 
     <MSBuild
