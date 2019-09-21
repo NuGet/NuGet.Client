@@ -1209,7 +1209,7 @@ phases:
       testRunTitle: "NuGet Verify Signed Packages From All Platforms On Windows"
     condition: "succeededOrFailed()"
 
-- phase: CrossVerify_Signing_Tests_On_Linux
+- phase: CrossVerify_Generate_Packages_On_Linux 
   dependsOn: Initialize_Build
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
