@@ -147,7 +147,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
             if (frameworkMultiTargeting != null)
             {
-                // filter out assemblies that already exist in the target framework (CodePlex issue #3072)
                 var targetFrameworkName = await vsProjectAdapter.GetDotNetFrameworkNameAsync();
                 redirects = redirects.Where(p => !FrameworkAssemblyResolver.IsHigherAssemblyVersionInFramework(p.Name, p.AssemblyNewVersion, targetFrameworkName));
             }
