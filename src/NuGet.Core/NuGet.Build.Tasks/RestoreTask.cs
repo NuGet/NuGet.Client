@@ -243,7 +243,7 @@ namespace NuGet.Build.Tasks
                         DisableParallel = RestoreDisableParallel,
                         Log = log,
                         MachineWideSettings = new XPlatMachineWideSetting(),
-                        PreLoadedRequestProviders = providers,
+ s                      PreLoadedRequestProviders = providers,
                         AllowNoOp = !RestoreForce,
                         HideWarningsAndErrors = HideWarningsAndErrors,
                         RestoreForceEvaluate = RestoreForceEvaluate
@@ -316,6 +316,51 @@ namespace NuGet.Build.Tasks
         }
 
 #if IS_DESKTOP
+        internal PackageSaveMode EffectivePackageSaveMode { get; set; }
+
+        internal string PackageSaveMode { get; set; }
+
+        internal void CalculateEffectivePackageSaveMode(ISettings settings)
+        {
+            string packageSaveModeValue = PackageSaveMode;
+            if (string.IsNullOrEmpty(packageSaveModeValue))
+            {
+                packageSaveModeValue = SettingsUtility.GetConfigValue(settings, "PackageSaveMode");
+            }
+
+            if (!string.IsNullOrEmpty(packageSaveModeValue))
+            {
+                // The PackageSaveMode flag only determines if nuspec and nupkg are saved at the target location.
+                // For install \ restore, we always extract files.
+                EffectivePackageSaveMode = Packaging.PackageSaveMode.Files;
+                foreach (var v in packageSaveModeValue.Split(';'))
+                {
+                    if (v.Equals(Packaging.PackageSaveMode.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nupkg;
+                    }
+                    else if (v.Equals(Packaging.PackageSaveMode.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        EffectivePackageSaveMode |= Packaging.PackageSaveMode.Nuspec;
+                    }
+                    else
+                    {
+                        // TODO - where are these?
+                        // string message = String.Format(
+                        //     CultureInfo.CurrentCulture,
+                        //     LocalizedResourceManager.GetString("Warning_InvalidPackageSaveMode"),
+                        //     v);
+
+                        // throw new InvalidOperationException(message);
+                    }
+                }
+            }
+            else
+            {
+                EffectivePackageSaveMode = Packaging.PackageSaveMode.None;
+            }
+        }
+
         private async Task<RestoreSummary> PerformNuGetV2RestoreAsync(Common.ILogger log, DependencyGraphSpec dgFile)
         {
             string globalPackageFolder = null;
@@ -359,8 +404,11 @@ namespace NuGet.Build.Tasks
             var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(packageSourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, repositoryPath);
 
-            // TODO: different default?  Allow user to specify?
-            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+            CalculateEffectivePackageSaveMode(settings);
+
+            var packageSaveMode = EffectivePackageSaveMode == Packaging.PackageSaveMode.None ?
+                Packaging.PackageSaveMode.Defaultv2 :
+                EffectivePackageSaveMode;
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
                 !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
@@ -369,6 +417,7 @@ namespace NuGet.Build.Tasks
             {
                 return new RestoreSummary(true);
             }
+
             var packageRestoreData = missingPackageReferences.Select(reference =>
                 new PackageRestoreData(
                     reference,
@@ -440,10 +489,10 @@ namespace NuGet.Build.Tasks
                 return new RestoreSummary(
                     result.Restored,
                     "packages.config projects",
-                    settings.GetConfigFilePaths(),
-                    packageSources.Select(x => x.Source),
+                    (IReadOnlyList<string>)settings.GetConfigFilePaths(),
+                    (IReadOnlyList<string>)packageSources.Select(x => x.Source),
                     installCount,
-                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
+                    (IReadOnlyList<IRestoreLogMessage>)collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
             }
         }
 
@@ -525,6 +574,7 @@ namespace NuGet.Build.Tasks
                 .Select(CreateRepository)
                 .ToList();
         }
+
 
         /// <summary>
         /// Retrieve repositories that have been cached.
