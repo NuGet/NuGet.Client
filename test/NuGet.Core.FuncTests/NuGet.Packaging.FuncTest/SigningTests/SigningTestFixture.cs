@@ -23,6 +23,7 @@ namespace NuGet.Packaging.FuncTest
         private TrustedTestCert<TestCertificate> _trustedTestCertExpired;
         private TrustedTestCert<TestCertificate> _trustedTestCertNotYetValid;
         private TrustedTestCert<X509Certificate2> _trustedServerRoot;
+        private X509Certificate2 _trustedServerRootCertificate;
         private TestCertificate _untrustedTestCert;
         private IReadOnlyList<TrustedTestCert<TestCertificate>> _trustedTestCertificateWithReissuedCertificate;
         private IList<ISignatureVerificationProvider> _trustProviders;
@@ -38,6 +39,7 @@ namespace NuGet.Packaging.FuncTest
             _defaultTrustedCertificateAuthority = new Lazy<Task<CertificateAuthority>>(CreateDefaultTrustedCertificateAuthorityAsync);
             _defaultTrustedTimestampService = new Lazy<Task<TimestampService>>(CreateDefaultTrustedTimestampServiceAsync);
             _responders = new DisposableList<IDisposable>();
+            _trustedServerRootCertificate = new X509Certificate2(_defaultTrustedCertificateAuthority.Value.Result.Parent.Certificate.GetEncoded());
         }
 
         public TrustedTestCert<TestCertificate> TrustedTestCertificate
@@ -91,6 +93,14 @@ namespace NuGet.Packaging.FuncTest
                 }
 
                 return _trustedTestCertNotYetValid;
+            }
+        }
+
+        public X509Certificate2 TrustedServerRootCertificate
+        {
+            get
+            {
+                return _trustedServerRootCertificate; 
             }
         }
 
@@ -198,6 +208,7 @@ namespace NuGet.Packaging.FuncTest
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
             StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+            _trustedServerRootCertificate = rootCertificate;
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,

@@ -168,7 +168,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.VisualStudio.Interop", "src\NuGet.Clients\NuGet.VisualStudio.Interop\NuGet.VisualStudio.Interop.csproj", "{7DB43FE1-75E1-49F9-B2C8-06A552BA2144}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGetConsole.Host.PowerShell", "src\NuGet.Clients\NuGetConsole.Host.PowerShell\NuGetConsole.Host.PowerShell.csproj", "{5A79EEF3-51C0-4A14-8D37-50EF38AD835D}"
-	# Make NuGetConsole.Host.PowerShell depend on NuGet.PackageManagement.PowerShellCmdlets.  This is so NuGetConsole.Host.PowerShell's build can update NuGet.psd1 based on the strong name of NuGet.PackageManagement.PowerShellCmdlets.dll
 	ProjectSection(ProjectDependencies) = postProject
 		{26DC17AC-A390-4515-A2C0-07A0950036C5} = {26DC17AC-A390-4515-A2C0-07A0950036C5}
 	EndProjectSection
@@ -235,9 +234,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.Core", "src
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tools.Test", "test\NuGet.Clients.Tests\NuGet.Tools.Test\NuGet.Tools.Test.csproj", "{437C6B7E-B625-4AE5-A4CE-F2B3747FE1CE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Msbuild.Integration.Test", "test\NuGet.Core.FuncTests\Msbuild.Integration.Test\Msbuild.Integration.Test.csproj", "{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Msbuild.Integration.Test", "test\NuGet.Core.FuncTests\Msbuild.Integration.Test\Msbuild.Integration.Test.csproj", "{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Console", "src\NuGet.Core\NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj", "{3ED13630-90EB-420E-8083-0959B2955C6E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.CrossVerify.Generate.Test", "test\NuGet.Core.FuncTests\NuGet.Packaging.CrossVerify.Generate.Test\NuGet.Packaging.CrossVerify.Generate.Test.csproj", "{5F7B0AAE-4522-4D1F-B358-627041BF336D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Packaging.CrossVerify.Verify.Test", "test\NuGet.Core.FuncTests\NuGet.Packaging.CrossVerify.Verify.Test\NuGet.Packaging.CrossVerify.Verify.Test.csproj", "{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -577,6 +580,14 @@ Global
 		{3ED13630-90EB-420E-8083-0959B2955C6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3ED13630-90EB-420E-8083-0959B2955C6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3ED13630-90EB-420E-8083-0959B2955C6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5F7B0AAE-4522-4D1F-B358-627041BF336D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5F7B0AAE-4522-4D1F-B358-627041BF336D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5F7B0AAE-4522-4D1F-B358-627041BF336D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5F7B0AAE-4522-4D1F-B358-627041BF336D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -675,6 +686,8 @@ Global
 		{437C6B7E-B625-4AE5-A4CE-F2B3747FE1CE} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 		{3ED13630-90EB-420E-8083-0959B2955C6E} = {506AF844-92E0-4404-BBFC-0AB073890A72}
+		{5F7B0AAE-4522-4D1F-B358-627041BF336D} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{DBB6AA5C-C9F7-4F59-9A51-80B26EA1ABDD} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}
