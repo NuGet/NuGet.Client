@@ -737,20 +737,8 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
-      </_RestoreGraphEntry>
-    </ItemGroup>
-
-    <!-- Non-NuGet type -->
-    <ItemGroup Condition=" '$(RestoreProjectStyle)' == 'PackagesConfig' ">
-      <_RestoreGraphEntry Include="$([System.Guid]::NewGuid())">
-        <Type>ProjectSpec</Type>
-        <ProjectUniqueName>$(MSBuildProjectFullPath)</ProjectUniqueName>
-        <ProjectPath>$(MSBuildProjectFullPath)</ProjectPath>
-        <ProjectName>$(_RestoreProjectName)</ProjectName>
         <Sources>$(_OutputSources)</Sources>
-        <ProjectStyle>$(RestoreProjectStyle)</ProjectStyle>
         <RepositoryPath>$(_OutputRepositoryPath)</RepositoryPath>
-        <TargetFrameworks>@(_RestoreTargetFrameworksOutputFiltered)</TargetFrameworks>
         <ConfigFilePaths>$(_OutputConfigFilePaths)</ConfigFilePaths>
         <PackagesPath>$(_OutputPackagesPath)</PackagesPath>
       </_RestoreGraphEntry>
