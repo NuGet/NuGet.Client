@@ -380,7 +380,7 @@ Function Restore-SolutionPackages{
     )
     $opts = , 'restore'
     if (-not $SolutionPath) {
-        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot
+        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot, '-FallbackSource', 'https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json'
     }
     else {
         $opts += $SolutionPath
