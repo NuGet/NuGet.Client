@@ -10,11 +10,12 @@
 
   <!-- Common -->
   <PropertyGroup>
-    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
+    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
+    <RestoreAdditionalProjectSources Condition="'$(IsBuildOnlyXPLATProjects)' == ''">https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json</RestoreAdditionalProjectSources>
     <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksExe Condition="'$(IsBuildOnlyXPLATProjects)' == 'true'">$(NETCoreTargetFramework)</TargetFrameworksExe>
     <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>

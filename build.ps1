@@ -106,7 +106,7 @@ Invoke-BuildStep 'Running Restore' {
 
     # Restore
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1 /p:RestoreAdditionalProjectSources=https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json /bl:restore.binlog
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 
     if (-not $?)
     {
@@ -154,7 +154,7 @@ Invoke-BuildStep 'Running Restore RTM' {
 
     # Restore for VS
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 "
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1  /p:RestoreAdditionalProjectSources=https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json /bl:restoreVS.binlog 
+    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
 
     if (-not $?)
     {
