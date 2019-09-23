@@ -75,6 +75,54 @@
     </MSBuild>
   </Target>
 
+<!--
+    ============================================================
+    Run generating signedpackage for crossverify tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="CrossVerifyGeneratePackageTests">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.CrossVerify.Generate.Test\NuGet.Packaging.CrossVerify.Generate.Test.csproj</TestProjectPaths>
+      <TestResultsFileName>CrossVerifyGeneratePackageTests</TestResultsFileName>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
+  <!--
+    ============================================================
+    Run verifying packages for crossverify tests (non-VS specific)
+    ============================================================
+  -->
+  <Target Name="CrossVerifyVerifyPackageTests">
+    <!-- Test inputs -->
+    <PropertyGroup>
+      <TestProjectPaths>$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\NuGet.Packaging.CrossVerify.Verify.Test\NuGet.Packaging.CrossVerify.Verify.Test.csproj</TestProjectPaths>
+      <TestResultsFileName>CrossVerifyVerifyPackageTests</TestResultsFileName>
+    </PropertyGroup>
+
+    <!-- Run tests as a batch -->
+    <MSBuild
+        Projects="$(MSBuildThisFileFullPath)"
+        Targets="RunTestsOnProjects"
+        Properties="$(CommonMSBuildProperties);
+                    TestResultsFileName=$(TestResultsFileName);
+                    TestProjectPaths=$(TestProjectPaths)">
+      <Output TaskParameter="TargetOutputs"
+              ItemName="TestAssemblyPath" />
+    </MSBuild>
+  </Target>
+
   <!--
     ============================================================
     Run unit tests
@@ -321,6 +369,28 @@
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
   </Target>
+
+  <!--
+    ============================================================
+    Restore packagesigning cross verify test projects
+    ============================================================
+  -->
+  <Target Name="RestoreCrossVerifyTest">
+    <Message Text="Restoring cross verify test projects" Importance="high" />
+
+    <PropertyGroup>
+      <ProjectListValue>@(CrossVerifyProjects)</ProjectListValue>
+    </PropertyGroup>
+
+    <MSBuild
+      Projects="restorehelper.targets"
+      Targets="Restore"
+      Properties="RestoreGraphProjectInput=$(ProjectListValue);
+                  $(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)">
+    </MSBuild>
+  </Target>
+
 
   <!--
     ============================================================
