@@ -48,8 +48,7 @@
 
   <!-- Dependency versions -->
   <PropertyGroup>
-    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonVersionCore>
-    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) != ''">$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersionCore>
+    <NewtonsoftJsonVersionCore>9.0.1</NewtonsoftJsonVersionCore>
     <XunitVersion>2.4.1</XunitVersion>
     <TestSDKVersion>15.5.0</TestSDKVersion>
     <MoqVersion>4.12.0</MoqVersion>
