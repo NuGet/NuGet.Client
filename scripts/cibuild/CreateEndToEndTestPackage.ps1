@@ -54,13 +54,13 @@ else {
 
 Function Get-TestDataPackageDirectory()
 {
-    $packagesConfigFilePath = [System.IO.Path]::Combine($NuGetRoot, '.nuget', 'packages.config')
+    $packagesConfigFilePath = [System.IO.Path]::Combine($NuGetRoot, 'build', 'bootstrap.proj')
 
     [System.Xml.XmlDocument] $xml = Get-Content $packagesConfigFilePath
 
-    $package = $xml.SelectSingleNode('//packages/package[@id="NuGet.Client.EndToEnd.TestData"]')
+    $package = $xml.SelectSingleNode('//Project/ItemGroup/PackageDownload[@Include="NuGet.Client.EndToEnd.TestData"]')
 
-    $path = [System.IO.Path]::Combine($NuGetRoot, 'packages', "$($package.id).$($package.version)")
+    $path = [System.IO.Path]::Combine($NuGetRoot, 'packages', $package.id, $package.version)
 
     Return [System.IO.DirectoryInfo]::new($path)
 }
