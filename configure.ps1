@@ -49,8 +49,11 @@ Invoke-BuildStep 'Installing .NET CLI' {
 
 # Restoring tools required for build
 $AdditionalFeeds = .\cli\dotnet.exe msbuild .\build\config.props /v:m /nologo /t:GetAdditionalFeeds
+$AdditionalFeeds = $AdditionalFeeds.Trim()
+Trace-Log "DEEEEEEEEEEEEEEBUUUUUUG: AdditionalFeeds $AdditionalFeeds" 
+$PSVersionTable.PSVersion
 Invoke-BuildStep 'Restoring solution packages' {
-    Restore-SolutionPackages -ffeeds $AdditionalFeeds.Trim()
+    Restore-SolutionPackages -ffeeds:"$AdditionalFeeds"
 } -ev +BuildErrors
 
 Invoke-BuildStep 'Cleaning package cache' {
