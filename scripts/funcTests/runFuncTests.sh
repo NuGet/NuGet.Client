@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 env | sort
 
 while true ; do
@@ -39,9 +40,6 @@ if [ $? -ne 0 ]; then
 fi
 
 echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
-
-# run it twice so dotnet cli can expand and decompress without affecting the result of the target
-$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 
 echo $DOTNET_BRANCH
@@ -123,10 +121,10 @@ fi
 
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-XunitConsole="$DIR/packages/xunit.runner.console.2.4.1/tools/net452/xunit.console.exe"
+XunitConsole="$DIR/packages/xunit.runner.console/2.4.1/tools/net452/xunit.console.exe"
 
 #Clean System dll
-rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
+rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
 
 #Run xunit test
 

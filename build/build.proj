@@ -29,6 +29,21 @@
 
   <!--
     ============================================================
+    Bootstrap packages
+    ============================================================
+  -->
+  <Target Name="BootstrapPackages">
+    <Message Text="Bootstrap Packages" Importance="High" />
+    
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)\build.proj"
+      Targets="Restore"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion)" />
+  </Target>
+
+  <!--
+    ============================================================
     Run core functional tests (non-VS specific)
     ============================================================
   -->

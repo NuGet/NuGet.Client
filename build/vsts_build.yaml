@@ -854,13 +854,13 @@ phases:
     inputs:
       versionSpec: "4.5.0"
 
-  - task: NuGetCommand@2
-    displayName: "Download packages.config packages"
+  - task: MSBuild@1
+    displayName: "Bootstrap NuGet packages"
     inputs:
-      restoreSolution: ".nuget/packages.config"
-      feedsToUse: "config"
-      nugetConfigPath: "NuGet.Config"
-      restoreDirectory: "$(System.DefaultWorkingDirectory)/packages"
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:BootstrapPackages"
 
   - task: PowerShell@1
     displayName: "Bootstrap.ps1"
