@@ -59,8 +59,10 @@ Function Get-TestDataPackageDirectory()
     [System.Xml.XmlDocument] $xml = Get-Content $packagesConfigFilePath
 
     $package = $xml.SelectSingleNode('//Project/ItemGroup/PackageDownload[@Include="NuGet.Client.EndToEnd.TestData"]')
+    $pkgId = $package.Include
+    $pkgVersion = $package.Version.Trim('[', ']')
 
-    $path = [System.IO.Path]::Combine($NuGetRoot, 'packages', $package.id, $package.version)
+    $path = [System.IO.Path]::Combine($NuGetRoot, 'packages', $pkgId, $pkgVersion)
 
     Return [System.IO.DirectoryInfo]::new($path)
 }
