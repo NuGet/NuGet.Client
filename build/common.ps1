@@ -376,11 +376,13 @@ Function Restore-SolutionPackages{
         [Alias('path')]
         [string]$SolutionPath,
         [ValidateSet(15)]
-        [int]$MSBuildVersion
+        [int]$MSBuildVersion,
+        [Alias('ffeeds')]
+        [string]$FallbackFeeds = ""
     )
     $opts = , 'restore'
     if (-not $SolutionPath) {
-        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot, '-FallbackSource', 'https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json'
+        $opts += "${NuGetClientRoot}\.nuget\packages.config", '-SolutionDirectory', $NuGetClientRoot
     }
     else {
         $opts += $SolutionPath
@@ -388,6 +390,12 @@ Function Restore-SolutionPackages{
 
     if ($MSBuildVersion) {
         $opts += '-MSBuildVersion', $MSBuildVersion
+    }
+
+    if ($FallbackFeeds) {
+        foreach ($f in $FallbackFeeds.Split(';')) {
+            $opts += '-FallbackSource', $f
+        }
     }
 
     if (-not $VerbosePreference) {

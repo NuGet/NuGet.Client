@@ -81,6 +81,11 @@
     <MS_PFX_PATH>$(MSBuildThisFileDirectory)..\keys\35MSSharedLib1024.snk</MS_PFX_PATH>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
+    <RestoreAdditionalProjectSources Condition="'$(IsBuildOnlyXPLATProjects)' == ''">https://pkgs.dev.azure.com/azure-public/vside/_packaging/vs-impl/nuget/v3/index.json</RestoreAdditionalProjectSources>
+  </PropertyGroup>
+
   <Target Name="GetSemanticVersion">
     <Message Text="$(SemanticVersion)" Importance="High"/>
   </Target>
@@ -103,6 +108,9 @@
     <Message Text="$(ToolsetTargetBranches)" Importance="High"/>
   </Target>
   <Target Name="GetCliBranchForTesting">
-      <Message Text="$(CliBranchForTesting)" Importance="High"/>
+    <Message Text="$(CliBranchForTesting)" Importance="High"/>
+  </Target>
+  <Target Name="GetAdditionalFeeds">
+    <Message Text="$(RestoreAdditionalProjectSources)" Importance="High"/>
   </Target>
 </Project>
