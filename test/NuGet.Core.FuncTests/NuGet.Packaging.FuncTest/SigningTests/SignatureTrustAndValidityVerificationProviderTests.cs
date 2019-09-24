@@ -147,7 +147,9 @@ namespace NuGet.Packaging.FuncTest
             using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
             {
+#if IS_DESKTOP
                 certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
                 var notAfter = certificate.NotAfter.ToUniversalTime();
 
                 var packageContext = new SimpleTestPackageContext();
@@ -203,7 +205,9 @@ namespace NuGet.Packaging.FuncTest
             using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
             {
+#if IS_DESKTOP
                 certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
 
                 var packageContext = new SimpleTestPackageContext();
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
@@ -1379,7 +1383,9 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
+#if IS_DESKTOP
                     certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
 
                     using (var test = await Test.CreateAuthorSignedPackageAsync(
                         certificate,
@@ -1658,7 +1664,9 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
+#if IS_DESKTOP
                     certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+#endif
 
                     using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
                         certificate,
@@ -2019,8 +2027,9 @@ namespace NuGet.Packaging.FuncTest
 
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
+#if IS_DESKTOP
                     certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
-
+#endif
                     using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                         _fixture.TrustedTestCertificate.Source.Cert,
                         certificate,
