@@ -673,7 +673,7 @@ phases:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
-    name: VSEngMBValidation
+    name: VSEng-MicroBuildMacSierra
     timeoutInMinutes: 75
     demands: sh
 
@@ -732,9 +732,7 @@ phases:
   queue:
     timeoutInMinutes: 90
     name: DDNuGet-Windows
-    demands:
-      - DotNetFramework
-      - Agent.Name -equals DDNuGetW001
+    demands: DotNetFramework
 
   steps:
   - task: PowerShell@1
@@ -830,9 +828,7 @@ phases:
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   queue:
     name: DDNuGet-Windows
-    demands: 
-      - DotNetFramework
-      - Agent.Name -equals DDNuGetW004
+    demands: DotNetFramework
 
   steps:
   - checkout: self
