@@ -194,6 +194,8 @@ namespace NuGet.Protocol.Plugins
             JObject serviceIndex,
             CancellationToken cancellationToken)
         {
+            // This is a non cancellable task.
+            cancellationToken = CancellationToken.None;
             PluginCreationResult pluginCreationResult = null;
             var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectoryPath.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
