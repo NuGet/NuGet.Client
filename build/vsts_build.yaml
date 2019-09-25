@@ -732,7 +732,9 @@ phases:
   queue:
     timeoutInMinutes: 90
     name: DDNuGet-Windows
-    demands: DotNetFramework
+    demands:
+      - DotNetFramework
+      - Agent.Name -equals DDNuGetW001
 
   steps:
   - task: PowerShell@1
