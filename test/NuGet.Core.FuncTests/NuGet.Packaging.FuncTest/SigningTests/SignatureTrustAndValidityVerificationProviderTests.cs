@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -146,8 +147,17 @@ namespace NuGet.Packaging.FuncTest
 
             using (var directory = TestDirectory.Create())
             {
-
+#if IS_DESKTOP
                 var privateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#else
+                var rsaParameters = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
+
+                RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+
+                rsaCsp.ImportParameters(rsaParameters);
+
+                var privateKey = rsaCsp;
+#endif
 #if IS_DESKTOP
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
@@ -212,7 +222,18 @@ namespace NuGet.Packaging.FuncTest
             using (testServer.RegisterResponder(timestampService))
             using (var directory = TestDirectory.Create())
             {
+#if IS_DESKTOP
                 var privateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+#else
+                var rsaParameters = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
+
+                RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+
+                rsaCsp.ImportParameters(rsaParameters);
+
+                var privateKey = rsaCsp;
+#endif
+
 #if IS_DESKTOP
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
@@ -1394,14 +1415,24 @@ namespace NuGet.Packaging.FuncTest
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
+#if IS_DESKTOP
                 var privateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+#else
+                var rsaParameters = DotNetUtilities.ToRSAParameters(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+ 
+                RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+
+                rsaCsp.ImportParameters(rsaParameters);
+
+                var privateKey = rsaCsp;
+#endif
+
 #if IS_DESKTOP
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
                     certificate.PrivateKey = privateKey;
 #else
-                    using (var certificateTmp = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (var certificateTmp = new X509Certificate2(bcCertificate.GetEncoded()))
                     using (var certificate = RSACertificateExtensions.CopyWithPrivateKey(certificateTmp, privateKey))
                     {
 #endif
@@ -1679,8 +1710,17 @@ namespace NuGet.Packaging.FuncTest
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
+#if IS_DESKTOP
                 var privateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+#else
+                var rsaParameters = DotNetUtilities.ToRSAParameters(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+
+                RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+
+                rsaCsp.ImportParameters(rsaParameters);
+
+                var privateKey = rsaCsp;
+#endif
 #if IS_DESKTOP
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
@@ -2046,8 +2086,18 @@ namespace NuGet.Packaging.FuncTest
                 var issueCertificateOptions = IssueCertificateOptions.CreateDefaultForEndCertificate();
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
-
+#if IS_DESKTOP
                 var privateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+#else
+                var rsaParameters = DotNetUtilities.ToRSAParameters(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+
+                RSACryptoServiceProvider rsaCsp = new RSACryptoServiceProvider();
+
+                rsaCsp.ImportParameters(rsaParameters);
+
+                var privateKey = rsaCsp;
+#endif
+
 #if IS_DESKTOP
                 using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
                 {
