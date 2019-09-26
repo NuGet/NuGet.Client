@@ -331,7 +331,7 @@ Function Clear-PackageCache {
     param()
     Trace-Log 'Cleaning local caches'
 
-    & dotnet nuget locals all --clear --verbosity detailed
+    & dotnet nuget locals all --clear
 }
 
 Function Clear-Artifacts {

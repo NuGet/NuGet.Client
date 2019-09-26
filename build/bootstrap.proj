@@ -1,5 +1,4 @@
-<Project>
-
+<Project Sdk="Microsoft.Build.NoTargets/1.0.80">
     <PropertyGroup>
         <RestorePackagesPath>$(MSBuildThisFileDirectory)../packages/</RestorePackagesPath>
         <BaseIntermediateOutputPath>$(RestorePackagesPath)obj/</BaseIntermediateOutputPath>
@@ -7,8 +6,6 @@
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
-
-    <Import Project="Sdk.props" Sdk="Microsoft.Build.NoTargets" />
 
     <ItemGroup>
         <PackageDownload Include="ILMerge" version="[3.0.21]" />
@@ -31,7 +28,4 @@
         <PackageDownload Include="xunit.runner.console" version="[2.4.1]" />
         <PackageDownload Include="XunitXml.TestLogger" version="[2.0.0]" />
     </ItemGroup>
-
-    <Import Project="Sdk.targets" Sdk="Microsoft.Build.NoTargets" />
-
 </Project>
