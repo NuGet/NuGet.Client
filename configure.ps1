@@ -48,10 +48,10 @@ Invoke-BuildStep 'Installing .NET CLI' {
 } -ev +BuildErrors
 
 # Restoring tools required for build
+.\cli\dotnet.exe msbuild .\build\config.props /v:m /nologo /t:GetAdditionalFeeds
+# Workaround: Execute dotnet.exe command twice to avoid first time startup message
 $AdditionalFeeds = .\cli\dotnet.exe msbuild .\build\config.props /v:m /nologo /t:GetAdditionalFeeds
 $AdditionalFeeds = $AdditionalFeeds.Trim()
-Trace-Log "DEEEEEEEEEEEEEEBUUUUUUG: AdditionalFeeds $AdditionalFeeds" 
-$PSVersionTable.PSVersion
 Invoke-BuildStep 'Restoring solution packages' {
     Restore-SolutionPackages -ffeeds:"$AdditionalFeeds"
 } -ev +BuildErrors
