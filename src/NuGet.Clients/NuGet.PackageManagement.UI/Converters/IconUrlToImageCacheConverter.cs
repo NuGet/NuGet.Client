@@ -80,7 +80,6 @@ namespace NuGet.PackageManagement.UI
                 iconBitmapImage.UriSource = iconUrl;
             }
 
-
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
             // This is the cache level that should be used by most applications.
