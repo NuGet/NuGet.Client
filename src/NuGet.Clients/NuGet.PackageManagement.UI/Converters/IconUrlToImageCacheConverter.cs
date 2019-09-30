@@ -1,10 +1,15 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Caching;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -52,9 +57,29 @@ namespace NuGet.PackageManagement.UI
                 return defaultPackageIcon;
             }
 
+
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
-            iconBitmapImage.UriSource = iconUrl;
+
+            var markIdx = iconUrl.AbsolutePath.IndexOf('!');
+
+            if (markIdx >= 0)
+            {
+                using (var fs = new FileStream(iconUrl.AbsolutePath, FileMode.Open))
+                {
+                    using (var ar = new PackageArchiveReader(fs))
+                    {
+                        var iconEntry = iconUrl.AbsolutePath.Substring(markIdx + 1);
+                        // TODO: Is this the correct place ?
+                        iconBitmapImage.StreamSource = ar.GetEntry(iconEntry).Open();
+                    }
+                }                
+            }
+            else
+            {
+                iconBitmapImage.UriSource = iconUrl;
+            }
+
 
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
