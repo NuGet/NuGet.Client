@@ -194,6 +194,14 @@ namespace NuGet.Protocol.Plugins
             JObject serviceIndex,
             CancellationToken cancellationToken)
         {
+            // This is a non cancellable task.
+            // We should only honor cancellation requests we can recover from. 
+            // Once we have reached this part of the code, we do the plugin initialization
+            // handshake, operation claims, and shut down set up. 
+            // If either one of these tasks fails then the plugin itself is not usable for the rest of the process. 
+            // We could consider handling each of this operations more cleverly, 
+            // but simplicity and readability is prioritized           
+            cancellationToken = CancellationToken.None;
             PluginCreationResult pluginCreationResult = null;
             var cacheEntry = new PluginCacheEntry(_pluginsCacheDirectoryPath.Value, result.PluginFile.Path, requestKey.PackageSourceRepository);
 
