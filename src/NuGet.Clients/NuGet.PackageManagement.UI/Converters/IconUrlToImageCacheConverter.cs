@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Runtime.Caching;
+using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -61,16 +62,20 @@ namespace NuGet.PackageManagement.UI
 
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
-            
-            var markIdx = iconUrl.ToString().IndexOf('!');
+
+            var url = iconUrl.ToString();
+            var markIdx = url.IndexOf('!');
 
             if (iconUrl.IsAbsoluteUri && iconUrl.IsFile && markIdx >= 0)
             {
-                using (var fs = new FileStream(iconUrl.AbsolutePath, FileMode.Open))
+                var schemeLength = "file:///".Length;
+                var zipFile = url.Substring(schemeLength, markIdx - schemeLength);
+
+                using (var fs = new FileStream(zipFile, FileMode.Open))
                 {
                     using (var ar = new PackageArchiveReader(fs))
                     {
-                        var iconEntry = iconUrl.AbsolutePath.Substring(markIdx + 1);
+                        var iconEntry = url.Substring(markIdx + 1);
                         // TODO: Is this the correct place ?
                         iconBitmapImage.StreamSource = ar.GetEntry(iconEntry).Open();
                     }
@@ -149,16 +154,22 @@ namespace NuGet.PackageManagement.UI
         {
             var bitmapImage = sender as BitmapImage;
 
-            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.
-            var cachedBitmapImage = _bitmapImageCache.Get(bitmapImage.UriSource.ToString()) as BitmapSource;
-            if (cachedBitmapImage != Images.DefaultPackageIcon)
-            {
-                AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
+            // embedded icon
+            var uri = bitmapImage.UriSource;
 
-                var webex = e.ErrorException as WebException;
-                if (webex != null && FatalErrors.Any(c => webex.Status == c))
+            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.
+            if (uri != null)
+            {
+                var cachedBitmapImage = _bitmapImageCache.Get(uri.ToString()) as BitmapSource;
+                if (cachedBitmapImage != Images.DefaultPackageIcon)
                 {
-                    _errorFloodGate.ReportError();
+                    AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
+
+                    var webex = e.ErrorException as WebException;
+                    if (webex != null && FatalErrors.Any(c => webex.Status == c))
+                    {
+                        _errorFloodGate.ReportError();
+                    }
                 }
             }
         }

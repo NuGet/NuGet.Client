@@ -1,7 +1,14 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.IO;
+using System.IO.Compression;
 using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using Lucene.Net.Util;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
@@ -82,6 +89,63 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotNull(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
+        }
+
+        [Fact]
+        public void Convert_EmbeddedIcon_LoadsImage()
+        {
+            // Create PNG image with noise
+            var fmt = PixelFormats.Bgr32;
+            int w = 128, h = 128;
+            int dpiX = 96, dpiY = 96;
+
+            // a row of pixels
+            int stride = (w * fmt.BitsPerPixel );
+            var data = new byte[ stride * h ];
+
+            // Random pixels
+            Random rnd = new Random();
+            rnd.NextBytes(data);
+
+            BitmapSource bitmap = BitmapSource.Create(w, h,
+                dpiX, dpiY,
+                fmt,
+                null, data, stride);
+
+            BitmapEncoder enconder = new PngBitmapEncoder();
+
+            using (var testDir = TestDirectory.Create())
+            {
+                enconder.Frames.Add(BitmapFrame.Create(bitmap));
+
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                var iconName = "icon.png";
+
+                // zip
+                using (var zipStream = new FileStream(zipPath, FileMode.Open))
+                {
+                    using (var zip = new ZipArchive(zipStream, ZipArchiveMode.Create))
+                    {
+                        var entry = zip.CreateEntry(iconName);
+                        using (var fs = entry.Open())
+                        {
+                            enconder.Save(fs);
+                        }
+                    }
+                }
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+                var uri = new Uri(string.Format("{0}!{1}", zipPath, iconName), UriKind.Absolute);
+
+                var result = converter.Convert(
+                    uri,
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture) as BitmapImage;
+
+                Assert.Equal(w, result.PixelWidth);
+            }
         }
     }
 }
