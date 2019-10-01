@@ -9008,6 +9008,7 @@ namespace NuGet.CommandLine.Test
                 var packagesLockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
                 //Modify the list of target/runtimes so they are reordered in the lock file.
+                Assert.True(packagesLockFile.Targets.Count >=3); //Since we are removing the second one and adding to the end.
                 var oneOfTargets = packagesLockFile.Targets[1];
                 packagesLockFile.Targets.RemoveAt(1);
                 packagesLockFile.Targets.Insert(packagesLockFile.Targets.Count - 1, oneOfTargets);
