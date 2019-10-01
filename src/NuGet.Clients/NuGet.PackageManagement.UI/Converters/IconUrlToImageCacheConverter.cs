@@ -2,14 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Drawing;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
-using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -163,22 +161,19 @@ namespace NuGet.PackageManagement.UI
         {
             var bitmapImage = sender as BitmapImage;
 
-            // embedded icon
             var uri = bitmapImage.UriSource;
 
-            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.
-            if (uri != null)
+            string cacheKey = uri != null ? uri.ToString() : string.Empty;
+            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
+            var cachedBitmapImage = _bitmapImageCache.Get(cacheKey) as BitmapSource;
+            if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
-                var cachedBitmapImage = _bitmapImageCache.Get(uri.ToString()) as BitmapSource;
-                if (cachedBitmapImage != Images.DefaultPackageIcon)
-                {
-                    AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
+                AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
 
-                    var webex = e.ErrorException as WebException;
-                    if (webex != null && FatalErrors.Any(c => webex.Status == c))
-                    {
-                        _errorFloodGate.ReportError();
-                    }
+                var webex = e.ErrorException as WebException;
+                if (webex != null && FatalErrors.Any(c => webex.Status == c))
+                {
+                    _errorFloodGate.ReportError();
                 }
             }
         }
