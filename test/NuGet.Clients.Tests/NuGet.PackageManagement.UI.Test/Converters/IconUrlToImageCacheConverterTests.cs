@@ -7,8 +7,6 @@ using System.IO.Compression;
 using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using Lucene.Net.Util;
-using Microsoft.TeamFoundation.Build.WebApi;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -92,36 +90,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        private void CreatePngImage(string path)
-        {
-            // Create PNG image with noise
-            var fmt = PixelFormats.Bgr32;
-            int w = 128, h = 128;
-            int dpiX = 96, dpiY = 96;
-
-            // a row of pixels
-            int stride = (w * fmt.BitsPerPixel);
-            var data = new byte[stride * h];
-
-            // Random pixels
-            Random rnd = new Random();
-            rnd.NextBytes(data);
-
-            BitmapSource bitmap = BitmapSource.Create(w, h,
-                dpiX, dpiY,
-                fmt,
-                null, data, stride);
-
-            BitmapEncoder enconder = new PngBitmapEncoder();
-
-            enconder.Frames.Add(BitmapFrame.Create(bitmap));
-
-            using(var fs = File.OpenWrite(path))
-            {
-                enconder.Save(fs);
-            }
-        }
-
         [Fact]
         public void Convert_EmbeddedIcon_LoadsImage()
         {
@@ -154,6 +122,36 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.NotNull(result);
                 Assert.NotSame(DefaultPackageIcon, result);
                 Assert.Equal(32, result.PixelWidth);
+            }
+        }
+
+        private void CreatePngImage(string path)
+        {
+            // Create PNG image with noise
+            var fmt = PixelFormats.Bgr32;
+            int w = 128, h = 128;
+            int dpiX = 96, dpiY = 96;
+
+            // a row of pixels
+            int stride = (w * fmt.BitsPerPixel);
+            var data = new byte[stride * h];
+
+            // Random pixels
+            Random rnd = new Random();
+            rnd.NextBytes(data);
+
+            BitmapSource bitmap = BitmapSource.Create(w, h,
+                dpiX, dpiY,
+                fmt,
+                null, data, stride);
+
+            BitmapEncoder enconder = new PngBitmapEncoder();
+
+            enconder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using(var fs = File.OpenWrite(path))
+            {
+                enconder.Save(fs);
             }
         }
     }
