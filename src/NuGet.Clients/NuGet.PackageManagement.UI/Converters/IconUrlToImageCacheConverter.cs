@@ -7,6 +7,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Windows;
 using System.Windows.Data;
@@ -20,7 +21,7 @@ namespace NuGet.PackageManagement.UI
         private const int DecodePixelWidth = 32;
 
         // same URIs can reuse the bitmapImage that we've already used.
-        private static readonly ObjectCache _bitmapImageCache = System.Runtime.Caching.MemoryCache.Default;
+        private static readonly ObjectCache _bitmapImageCache = MemoryCache.Default;
 
         private static readonly WebExceptionStatus[] FatalErrors = new[]
         {
@@ -31,7 +32,7 @@ namespace NuGet.PackageManagement.UI
             WebExceptionStatus.UnknownError
         };
 
-        private static readonly System.Net.Cache.RequestCachePolicy RequestCacheIfAvailable = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.CacheIfAvailable);
+        private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
 
         private static readonly ErrorFloodGate _errorFloodGate = new ErrorFloodGate();
 
@@ -76,16 +77,20 @@ namespace NuGet.PackageManagement.UI
                     using (var ar = new PackageArchiveReader(fs))
                     {
                         var iconEntry = url.Substring(markIdx + 1);
-                        // TODO: Is this the correct place ?
                         iconBitmapImage.StreamSource = ar.GetEntry(iconEntry).Open();
+                        return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
                 }                
             }
             else
             {
                 iconBitmapImage.UriSource = iconUrl;
+                return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
             }
+        }
 
+        public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
+        {
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
             // This is the cache level that should be used by most applications.
@@ -99,6 +104,7 @@ namespace NuGet.PackageManagement.UI
             iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
             iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
 
+            BitmapSource image = null;
             try
             {
                 iconBitmapImage.EndInit();
@@ -112,14 +118,17 @@ namespace NuGet.PackageManagement.UI
             finally
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
-                cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
+                var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
                 AddToCache(iconUrl, cachedBitmapImage);
 
                 _errorFloodGate.ReportAttempt();
+
+                image = cachedBitmapImage;
             }
 
-            return cachedBitmapImage;
+            return image;
         }
+
 
         private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
         {

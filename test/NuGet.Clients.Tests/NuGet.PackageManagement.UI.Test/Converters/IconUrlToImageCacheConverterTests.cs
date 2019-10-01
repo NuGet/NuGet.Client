@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Lucene.Net.Util;
+using Microsoft.TeamFoundation.Build.WebApi;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -91,8 +92,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact]
-        public void Convert_EmbeddedIcon_LoadsImage()
+        private void CreatePngImage(string path)
         {
             // Create PNG image with noise
             var fmt = PixelFormats.Bgr32;
@@ -100,8 +100,8 @@ namespace NuGet.PackageManagement.UI.Test
             int dpiX = 96, dpiY = 96;
 
             // a row of pixels
-            int stride = (w * fmt.BitsPerPixel );
-            var data = new byte[ stride * h ];
+            int stride = (w * fmt.BitsPerPixel);
+            var data = new byte[stride * h];
 
             // Random pixels
             Random rnd = new Random();
@@ -114,37 +114,46 @@ namespace NuGet.PackageManagement.UI.Test
 
             BitmapEncoder enconder = new PngBitmapEncoder();
 
+            enconder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using(var fs = File.OpenWrite(path))
+            {
+                enconder.Save(fs);
+            }
+        }
+
+        [Fact]
+        public void Convert_EmbeddedIcon_LoadsImage()
+        {
             using (var testDir = TestDirectory.Create())
             {
-                enconder.Frames.Add(BitmapFrame.Create(bitmap));
+                // Prepare
+                var folderPath = Path.Combine(testDir.Path, "pkg");
+                Directory.CreateDirectory(folderPath);
 
-                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
                 var iconName = "icon.png";
+                var iconPath = Path.Combine(testDir.Path, "pkg", iconName);
+                CreatePngImage(iconPath);
 
-                // zip
-                using (var zipStream = new FileStream(zipPath, FileMode.Open))
-                {
-                    using (var zip = new ZipArchive(zipStream, ZipArchiveMode.Create))
-                    {
-                        var entry = zip.CreateEntry(iconName);
-                        using (var fs = entry.Open())
-                        {
-                            enconder.Save(fs);
-                        }
-                    }
-                }
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                ZipFile.CreateFromDirectory(folderPath, zipPath);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
                 var uri = new Uri(string.Format("{0}!{1}", zipPath, iconName), UriKind.Absolute);
 
+                // Act
                 var result = converter.Convert(
                     uri,
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture) as BitmapImage;
 
-                Assert.Equal(w, result.PixelWidth);
+                // Assert
+                Assert.NotNull(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+                Assert.Equal(32, result.PixelWidth);
             }
         }
     }
