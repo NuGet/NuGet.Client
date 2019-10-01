@@ -8958,6 +8958,77 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
+
+        [Fact]
+        public async void RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore() { 
+            // A project with RestoreLockedMode should pass restore if the runtimes in the lock file have been reordered
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projFramework = Frameworks.FrameworkConstants.CommonFrameworks.Net461.GetShortFolderName();
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(projFramework));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                // Set up the package and source
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.AddFile("ref/net461/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var packagesLockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                //Modify the list of target/runtimes so they are reordered in the lock file.
+                var oneOfTargets = packagesLockFile.Targets[1];
+                packagesLockFile.Targets.RemoveAt(1);
+                packagesLockFile.Targets.Insert(packagesLockFile.Targets.Count - 1, oneOfTargets);
+
+                PackagesLockFileFormat.Write(projectA.NuGetLockFileOutputPath, packagesLockFile);
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+
+
+                //Run the restore and it should still properly restore.
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                
+            }
+        }
+
+        
+
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

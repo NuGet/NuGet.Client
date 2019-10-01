@@ -105,7 +105,16 @@ namespace NuGet.ProjectModel
             var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
             var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
 
-            if (!projectRuntimesKeys.SequenceEqual(lockFileRuntimes))
+            ;
+
+            //JsonRuntimeFormat.WriteRuntimeGraph is doing a sort based on runtimeIdentifier
+            //Based on the above code, we want to order the reading side.
+            //Making it order both lists so we dont have this bug again with SequenceEquals
+            if (!projectRuntimesKeys.OrderedEquals(
+                                                    lockFileRuntimes,
+                                                    x => x,
+                                                    Comparer<string>.Default,
+                                                    EqualityComparer<string>.Default))
             {
                 return false;
             }
