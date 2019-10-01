@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -18,7 +17,7 @@ namespace NuGet.Common
     {
         private const int NumberOfRetries = 3000;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
-        private static Dictionary<string, SemaphoreSlim> PerFileLock = new Dictionary<string, SemaphoreSlim>();
+        private static Dictionary<string, LockState> PerFileLock = new Dictionary<string, LockState>();
         private static SemaphoreSlim DictionaryLock = new SemaphoreSlim(1);
 
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
@@ -30,17 +29,23 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            SemaphoreSlim fileSemaphore = null;
+            LockState lockState = null;
 
             try
             {
                 await DictionaryLock.WaitAsync();
                 try
                 {
-                    if (!PerFileLock.TryGetValue(filePath, out fileSemaphore))
+                    if (!PerFileLock.TryGetValue(filePath, out lockState))
                     {
-                        fileSemaphore = new SemaphoreSlim(1);
-                        PerFileLock.Add(filePath, fileSemaphore);
+                        lockState = new LockState();
+                        lockState.Semaphore = new SemaphoreSlim(1);
+                        lockState.Count = 1;
+                        PerFileLock.Add(filePath, lockState);
+                    }
+                    else
+                    {
+                        Interlocked.Increment(ref lockState.Count);
                     }
                 }
                 finally
@@ -48,7 +53,7 @@ namespace NuGet.Common
                     DictionaryLock.Release();
                 }
 
-                await fileSemaphore.WaitAsync();
+                await lockState.Semaphore.WaitAsync();
 
                 // limit the number of unauthorized, this should be around 30 seconds.
                 var unauthorizedAttemptsLeft = NumberOfRetries;
@@ -124,13 +129,13 @@ namespace NuGet.Common
             }
             finally
             {
+                lockState.Semaphore.Release();
+
                 await DictionaryLock.WaitAsync();
                 try
                 {
-                    fileSemaphore.Release();
-
-                    var count = fileSemaphore.CurrentCount;
-                    if (count > 0)
+                    var count = Interlocked.Decrement(ref lockState.Count);
+                    if (count == 0)
                     {
                         PerFileLock.Remove(filePath);
                     }
@@ -313,6 +318,12 @@ namespace NuGet.Common
             {
                 return (char)(input + 0x30);
             }
+        }
+
+        private class LockState
+        {
+            public SemaphoreSlim Semaphore;
+            public int Count;
         }
     }
 }
