@@ -27,7 +27,7 @@ namespace NuGet.Packaging.FuncTest
         private readonly UTF8Encoding _readerEncoding = new UTF8Encoding();
         private readonly UTF8Encoding _writerEncoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: true);
 
-        private SigningSpecifications _specification => SigningSpecifications.V1;
+        private readonly SigningSpecifications _specification = SigningSpecifications.V1;
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -233,7 +233,8 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
@@ -271,7 +272,8 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath);
@@ -297,7 +299,8 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
@@ -335,7 +338,8 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);
@@ -989,7 +993,8 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(_specification.SignaturePath, CompressionLevel.Optimal);

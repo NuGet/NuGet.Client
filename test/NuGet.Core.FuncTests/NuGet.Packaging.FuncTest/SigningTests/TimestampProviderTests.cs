@@ -24,8 +24,8 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
-        private const string _argumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
-        private const string _operationCancelledExceptionMessage = "The operation was canceled.";
+        private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
+        private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -80,7 +80,7 @@ namespace NuGet.Packaging.FuncTest
             using (var packageStream = await nupkg.CreateAsStreamAsync())
             {
                 // Act
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(authorCert, packageStream, timestampProvider);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(authorCert, packageStream, timestampProvider);
                 var authorSignedCms = signature.SignedCms;
                 var timestamp = signature.Timestamps.First();
                 var timestampCms = timestamp.SignedCms;
@@ -162,7 +162,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(_argumentNullExceptionMessage, nameof(request)));
+                    .WithMessage(string.Format(ArgumentNullExceptionMessage, nameof(request)));
             }
         }
 
@@ -193,7 +193,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(_argumentNullExceptionMessage, "logger"));
+                    .WithMessage(string.Format(ArgumentNullExceptionMessage, "logger"));
             }
         }
 
@@ -225,7 +225,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 timestampAction.ShouldThrow<OperationCanceledException>()
-                    .WithMessage(_operationCancelledExceptionMessage);
+                    .WithMessage(OperationCancelledExceptionMessage);
             }
         }
 

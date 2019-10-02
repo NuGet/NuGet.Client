@@ -7,29 +7,33 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Org.BouncyCastle.Asn1;
+using Org.BouncyCastle.Asn1.Cms;
+using Org.BouncyCastle.Asn1.Pkcs;
+using Org.BouncyCastle.Cms;
 using Test.Utility.Signing;
 using Xunit;
+using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
+using CryptographicAttributeObject = System.Security.Cryptography.CryptographicAttributeObject;
 
 namespace NuGet.Packaging.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
     public class SignatureTests
     {
-        private readonly SigningSpecifications _specification = SigningSpecifications.V1;
         private readonly SigningTestFixture _testFixture;
-        private readonly TrustedTestCert<TestCertificate> _trustedTestCert;
         private readonly TestCertificate _untrustedTestCertificate;
 
         public SignatureTests(SigningTestFixture fixture)
         {
             _testFixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
-            _trustedTestCert = _testFixture.TrustedTestCertificate;
             _untrustedTestCertificate = _testFixture.UntrustedTestCertificate;
         }
 
@@ -116,7 +120,7 @@ namespace NuGet.Packaging.FuncTest
             {
                 Assert.Throws(typeof(ArgumentException),
                     () => test.PrimarySignature.GetSigningCertificateFingerprint((HashAlgorithmName)99));
-            }   
+            }
         }
 
         [CIOnlyFact]
@@ -138,12 +142,135 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
+        [Fact]
+        public async Task Timestamps_WithTwoAttributesAndOneValueEach_ReturnsTwoTimestamps()
+        {
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                AuthorPrimarySignature authorSignature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                    testCertificate,
+                    packageStream,
+                    timestampProvider);
+
+                SignedCms updatedSignedCms = ModifyUnsignedAttributes(authorSignature.SignedCms, attributeTable =>
+                {
+                    BcAttribute attribute = attributeTable[PkcsObjectIdentifiers.IdAASignatureTimeStampToken];
+                    Asn1Encodable value = attribute.AttrValues.ToArray().Single();
+                    AttributeTable updatedAttributes = attributeTable.Add(PkcsObjectIdentifiers.IdAASignatureTimeStampToken, value);
+
+                    return updatedAttributes;
+                });
+
+                AssertTimestampAttributeAndValueCounts(updatedSignedCms, expectedAttributesCount: 2, expectedValuesCount: 2);
+
+                var updatedAuthorSignature = new AuthorPrimarySignature(updatedSignedCms);
+
+                Assert.Equal(2, updatedAuthorSignature.Timestamps.Count);
+            }
+        }
+
+        [Fact]
+        public async Task Timestamps_WithOneAttributeAndTwoValues_ReturnsTwoTimestamps()
+        {
+            var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
+            var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
+            var nupkg = new SimpleTestPackageContext();
+
+            using (var packageStream = await nupkg.CreateAsStreamAsync())
+            using (var testCertificate = new X509Certificate2(_testFixture.TrustedTestCertificate.Source.Cert))
+            {
+                AuthorPrimarySignature authorSignature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                    testCertificate,
+                    packageStream,
+                    timestampProvider);
+
+                SignedCms updatedSignedCms = ModifyUnsignedAttributes(authorSignature.SignedCms, attributeTable =>
+                {
+                    BcAttribute attribute = attributeTable[PkcsObjectIdentifiers.IdAASignatureTimeStampToken];
+                    Asn1Encodable value = attribute.AttrValues.ToArray().Single();
+
+                    attribute = new BcAttribute(
+                        PkcsObjectIdentifiers.IdAASignatureTimeStampToken,
+                        new DerSet(value, value));
+
+                    var updatedAttributes = new AttributeTable(new Asn1EncodableVector(attribute));
+
+                    return updatedAttributes;
+                });
+
+                AssertTimestampAttributeAndValueCounts(updatedSignedCms, expectedAttributesCount: 1, expectedValuesCount: 2);
+
+                var updatedAuthorSignature = new AuthorPrimarySignature(updatedSignedCms);
+
+                Assert.Equal(2, updatedAuthorSignature.Timestamps.Count);
+            }
+        }
+
+        private static void AssertTimestampAttributeAndValueCounts(
+            SignedCms updatedSignedCms,
+            int expectedAttributesCount,
+            int expectedValuesCount)
+        {
+            int attributesCount = 0;
+            int valuesCount = 0;
+
+            foreach (CryptographicAttributeObject attribute in updatedSignedCms.SignerInfos[0].UnsignedAttributes)
+            {
+                if (attribute.Oid.Value == Oids.SignatureTimeStampTokenAttribute)
+                {
+                    ++attributesCount;
+
+                    valuesCount += attribute.Values.Count;
+                }
+            }
+
+            Assert.Equal(expectedAttributesCount, attributesCount);
+            Assert.Equal(expectedValuesCount, valuesCount);
+        }
+
         private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
                 issue.Message.Contains("The primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+        }
+
+        private static SignerInformation GetFirstSignerInfo(SignerInformationStore store)
+        {
+            var signers = store.GetSigners();
+            var enumerator = signers.GetEnumerator();
+
+            enumerator.MoveNext();
+
+            return (SignerInformation)enumerator.Current;
+        }
+
+        private static SignedCms ModifyUnsignedAttributes(SignedCms signedCms, Func<AttributeTable, AttributeTable> modify)
+        {
+            byte[] bytes = signedCms.Encode();
+
+            var bcSignedCms = new CmsSignedData(bytes);
+            SignerInformationStore signerInfos = bcSignedCms.GetSignerInfos();
+            SignerInformation signerInfo = GetFirstSignerInfo(signerInfos);
+
+            AttributeTable updatedAttributes = modify(signerInfo.UnsignedAttributes);
+
+            SignerInformation updatedSignerInfo = SignerInformation.ReplaceUnsignedAttributes(signerInfo, updatedAttributes);
+            var updatedSignerInfos = new SignerInformationStore(updatedSignerInfo);
+
+            CmsSignedData updatedBcSignedCms = CmsSignedData.ReplaceSigners(bcSignedCms, updatedSignerInfos);
+
+            var updatedSignedCms = new SignedCms();
+
+            updatedSignedCms.Decode(updatedBcSignedCms.GetEncoded());
+
+            return updatedSignedCms;
         }
 
         private sealed class VerifyTest : IDisposable

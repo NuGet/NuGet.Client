@@ -212,7 +212,7 @@ namespace NuGet.Packaging.Test
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageStream = await packageContext.CreateAsStreamAsync();
 
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,
                     unsignedPackageStream);
 
@@ -231,7 +231,7 @@ namespace NuGet.Packaging.Test
                 var packageContext = new SimpleTestPackageContext();
                 var unsignedPackageStream = await packageContext.CreateAsStreamAsync();
 
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(
                     certificate,
                     unsignedPackageStream);
 

@@ -6,10 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 #if IS_DESKTOP
+using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 #endif
 using NuGet.Common;
+using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.Signing
 {
@@ -152,7 +154,7 @@ namespace NuGet.Packaging.Signing
                 issues.Add(SignatureLog.Issue(!settings.AllowIllegal, NuGetLogCode.NU3010, string.Format(CultureInfo.CurrentCulture, Strings.Verify_ErrorNoCertificate, FriendlyName)));
 
                 flags |= SignatureVerificationStatusFlags.NoCertificate;
-                status = settings.AllowIllegal? SignatureVerificationStatus.Valid: SignatureVerificationStatus.Disallowed;
+                status = settings.AllowIllegal ? SignatureVerificationStatus.Valid : SignatureVerificationStatus.Disallowed;
 
                 return new SignatureVerificationSummary(Type, status, flags, issues);
             }
@@ -382,36 +384,35 @@ namespace NuGet.Packaging.Signing
             }
         }
 
-        /// <summary>
-        /// Get timestamps from the signer info
-        /// </summary>
-        /// <param name="signer"></param>
-        /// <returns></returns>
         private static IReadOnlyList<Timestamp> GetTimestamps(SignerInfo signer, string signatureFriendlyName)
         {
-            var unsignedAttributes = signer.UnsignedAttributes;
+            CryptographicAttributeObjectCollection unsignedAttributes = signer.UnsignedAttributes;
 
             var timestampList = new List<Timestamp>();
 
-            foreach (var attribute in unsignedAttributes)
+            foreach (CryptographicAttributeObject attribute in unsignedAttributes)
             {
                 if (string.Equals(attribute.Oid.Value, Oids.SignatureTimeStampTokenAttribute, StringComparison.Ordinal))
                 {
-                    var timestampCms = new SignedCms();
-                    timestampCms.Decode(attribute.Values[0].RawData);
-
-                    using (var certificates = SignatureUtility.GetTimestampCertificates(
-                        timestampCms,
-                        SigningSpecifications.V1,
-                        signatureFriendlyName))
+                    foreach (AsnEncodedData value in attribute.Values)
                     {
-                        if (certificates == null || certificates.Count == 0)
-                        {
-                            throw new SignatureException(NuGetLogCode.NU3029, Strings.InvalidTimestampSignature);
-                        }
-                    }
+                        var timestampCms = new SignedCms();
 
-                    timestampList.Add(new Timestamp(timestampCms));
+                        timestampCms.Decode(value.RawData);
+
+                        using (var certificates = SignatureUtility.GetTimestampCertificates(
+                            timestampCms,
+                            SigningSpecifications.V1,
+                            signatureFriendlyName))
+                        {
+                            if (certificates == null || certificates.Count == 0)
+                            {
+                                throw new SignatureException(NuGetLogCode.NU3029, Strings.InvalidTimestampSignature);
+                            }
+                        }
+
+                        timestampList.Add(new Timestamp(timestampCms));
+                    }
                 }
             }
 
