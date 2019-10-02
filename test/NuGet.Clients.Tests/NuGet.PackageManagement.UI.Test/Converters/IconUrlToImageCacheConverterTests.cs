@@ -91,25 +91,17 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public void Convert_EmbeddedIcon_LoadsImage()
+        public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
         {
             using (var testDir = TestDirectory.Create())
             {
-                // Prepare
-                var folderPath = Path.Combine(testDir.Path, "pkg");
-                Directory.CreateDirectory(folderPath);
-
-                var iconName = "icon.png";
-                var iconPath = Path.Combine(testDir.Path, "pkg", iconName);
-                CreatePngImage(iconPath);
-
                 // Create decoy nuget package
                 var zipPath = Path.Combine(testDir.Path, "file.nupkg");
-                ZipFile.CreateFromDirectory(folderPath, zipPath);
+                CreateDummyPackage(zipPath);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
-                var uri = new Uri(string.Format("{0}!{1}", zipPath, iconName), UriKind.Absolute);
+                var uri = new Uri(string.Format("{0}!{1}", zipPath, "icon.png"), UriKind.Absolute);
 
                 // Act
                 var result = converter.Convert(
@@ -125,12 +117,64 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        private void CreatePngImage(string path)
+        [Fact]
+        public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault()
+        {
+            using (var testDir = TestDirectory.Create())
+            {
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(zipPath);
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+                var uri = new Uri(string.Format("{0}!{1}", zipPath, "..\\icon.png"), UriKind.Absolute);
+
+                // Act
+                var result = converter.Convert(
+                    uri,
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture) as BitmapImage;
+
+                // Assert
+                Assert.Null(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+            }
+        }
+
+        /// <summary>
+        /// Creates a dummy zip file with .nupkg extension and with a PNG image named "icon.png"
+        /// </summary>
+        /// <param name="path">Final path to the dummy .nupkg</param>
+        /// <param name="iconName">Icon filename with .png extension</param>
+        private void CreateDummyPackage(string zipPath, string iconName = "icon.png")
+        {
+            var dir =  Path.GetDirectoryName(zipPath);
+            var holdDir = Path.GetRandomFileName();
+            var folderPath = Path.Combine(dir, holdDir);
+
+            Directory.CreateDirectory(folderPath);
+
+            var iconPath = Path.Combine(folderPath, iconName);
+            CreateNoisePngImage(iconPath);
+
+            // Create decoy nuget package
+            ZipFile.CreateFromDirectory(folderPath, zipPath);
+        }
+
+        /// <summary>
+        /// Creates a PNG image with random pixels
+        /// </summary>
+        /// <param name="path">Filename in which the image is created</param>
+        /// <param name="w">Image width in pixels</param>
+        /// <param name="h">Image height in pixels</param>
+        /// <param name="dpiX">Horizontal Dots (pixels) Per Inch in the image</param>
+        /// /// <param name="dpiX">Vertical Dots (pixels) Per Inch in the image</param>
+        private void CreateNoisePngImage(string path, int w = 128, int h = 128, int dpiX = 96, int dpiY = 96)
         {
             // Create PNG image with noise
             var fmt = PixelFormats.Bgr32;
-            int w = 128, h = 128;
-            int dpiX = 96, dpiY = 96;
 
             // a row of pixels
             int stride = (w * fmt.BitsPerPixel);
