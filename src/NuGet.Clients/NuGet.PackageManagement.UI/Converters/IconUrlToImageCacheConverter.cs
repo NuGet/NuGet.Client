@@ -75,7 +75,17 @@ namespace NuGet.PackageManagement.UI
                     using (var ar = new PackageArchiveReader(fs))
                     {
                         var iconEntry = url.Substring(markIdx + 1);
-                        iconBitmapImage.StreamSource = ar.GetEntry(iconEntry).Open();
+                        try
+                        {
+                            var zipEntry = ar.GetEntry(iconEntry);
+                            iconBitmapImage.StreamSource = zipEntry.Open();
+                        }
+                        catch(FileNotFoundException)
+                        {
+                            AddToCache(iconUrl, defaultPackageIcon);
+                            return defaultPackageIcon;
+                        }
+                        
                         return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
                 }                
