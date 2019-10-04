@@ -1,10 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -220,6 +221,42 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()),
                     Times.Once());
+        }
+
+        [Fact]
+        public async Task SendAsync_RetryWithClonedRequest()
+        {
+            var defaultClientHandler = GetDefaultClientHandler();
+
+            var service = Mock.Of<ICredentialService>();
+            Mock.Get(service)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        ProxyAddress,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Proxy,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var requests = 0;
+            var handler = new ProxyAuthenticationHandler(defaultClientHandler, service, ProxyCache.Instance)
+            {
+                InnerHandler = new LambdaMessageHandler(
+                    request =>
+                    {
+                        Assert.Null(request.Headers.Authorization);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "TEST");
+                        requests++;
+                        return new HttpResponseMessage(HttpStatusCode.ProxyAuthenticationRequired);
+                    })
+            };
+
+            var response = await SendAsync(handler);
+
+            Assert.True(requests > 1, "No retries");
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.ProxyAuthenticationRequired, response.StatusCode);
         }
 
         private static HttpClientHandler GetDefaultClientHandler()
