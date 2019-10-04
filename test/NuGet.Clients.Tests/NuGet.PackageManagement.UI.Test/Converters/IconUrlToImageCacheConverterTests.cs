@@ -101,11 +101,14 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
-                var uri = new Uri(string.Format("{0}!{1}", zipPath, "icon.png"), UriKind.Absolute);
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = "icon.png"
+                };
 
                 // Act
                 var result = converter.Convert(
-                    uri,
+                    builder.Uri,
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -128,11 +131,14 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
-                var uri = new Uri(string.Format("{0}!{1}", zipPath, "..\\icon.png"), UriKind.Absolute);
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = @"..\icon.png"
+                };
 
                 // Act
                 var result = converter.Convert(
-                    uri,
+                    builder.Uri,
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture) as BitmapImage;
