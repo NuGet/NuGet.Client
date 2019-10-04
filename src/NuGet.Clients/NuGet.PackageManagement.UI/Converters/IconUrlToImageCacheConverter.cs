@@ -58,37 +58,35 @@ namespace NuGet.PackageManagement.UI
                 return defaultPackageIcon;
             }
 
-
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
 
             var url = iconUrl.ToString();
-            var markIdx = url.IndexOf('!');
+            var markIdx = iconUrl.OriginalString.LastIndexOf("#");
 
             if (iconUrl.IsAbsoluteUri && iconUrl.IsFile && markIdx >= 0)
             {
-                var schemeLength = "file:///".Length;
-                var zipFile = url.Substring(schemeLength, markIdx - schemeLength);
-
-                using (var fs = new FileStream(zipFile, FileMode.Open))
+                using (var ar = new PackageArchiveReader(iconUrl.LocalPath))
                 {
-                    using (var ar = new PackageArchiveReader(fs))
+                    try
                     {
-                        var iconEntry = url.Substring(markIdx + 1);
-                        try
-                        {
-                            var zipEntry = ar.GetEntry(iconEntry);
-                            iconBitmapImage.StreamSource = zipEntry.Open();
-                        }
-                        catch(FileNotFoundException)
-                        {
-                            AddToCache(iconUrl, defaultPackageIcon);
-                            return defaultPackageIcon;
-                        }
-                        
-                        return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                        var iconEntry = iconUrl.Fragment.Substring(1);
+                        var zipEntry = ar.GetEntry(iconEntry);
+                        iconBitmapImage.StreamSource = zipEntry.Open();
                     }
-                }                
+                    catch (FileNotFoundException)
+                    {
+                        AddToCache(iconUrl, defaultPackageIcon);
+                        return defaultPackageIcon;
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        AddToCache(iconUrl, defaultPackageIcon);
+                        return defaultPackageIcon;
+                    }
+                        
+                    return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                }
             }
             else
             {
