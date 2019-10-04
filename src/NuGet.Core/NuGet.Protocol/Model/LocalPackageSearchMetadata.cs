@@ -151,15 +151,18 @@ namespace NuGet.Protocol
 
         public Uri GetIcon()
         {
-            string embeddedIcon = _nuspec.GetIcon();
+            string embeddedIconPath = _nuspec.GetIcon();
 
-            if (embeddedIcon == null)
+            if (embeddedIconPath == null)
                 return Convert(_nuspec.GetIconUrl());
 
-            var embeddedUri = string.Format("{0}!{1}", _package.Path, embeddedIcon);
+            var tempUri = Convert(_package.Path);
+
+            UriBuilder builder = new UriBuilder(tempUri);
+            builder.Fragment = embeddedIconPath;
 
             // get the special icon url
-            return Convert(embeddedUri);
+            return builder.Uri;
         }
     }
 }
