@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -28,12 +27,12 @@ namespace NuGet.CommandLine.FuncTest.Commands
     [Collection(SignCommandTestCollection.Name)]
     public class RestoreCommandSignPackagesTests
     {
-        private static readonly string _NU3008Message = "The package integrity check failed.";
-        private static readonly string _NU3008 = "NU3008: {0}";
-        private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
-        private static readonly string _NU3027 = "NU3027: {0}";
-        private static readonly string _NU3005CompressedMessage = "The package signature file entry is invalid. The central directory header field 'compression method' has an invalid value (8).";
-        private static readonly string _NU3005 = "NU3005: {0}";
+        private static readonly string NU3008Message = "The package integrity check failed.";
+        private static readonly string NU3008 = "NU3008: {0}";
+        private static readonly string NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
+        private static readonly string NU3027 = "NU3027: {0}";
+        private static readonly string NU3005CompressedMessage = "The package signature file entry is invalid. The central directory header field 'compression method' has an invalid value (8).";
+        private static readonly string NU3005 = "NU3005: {0}";
 
         private SignCommandTestFixture _testFixture;
         private TrustedTestCert<TestCertificate> _trustedTestCert;
@@ -92,8 +91,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
-                result.AllOutput.Should().Contain(string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource)));
+                result.Errors.Should().Contain(string.Format(NU3008, SigningTestUtility.AddSignatureLogPrefix(NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain(string.Format(NU3027, SigningTestUtility.AddSignatureLogPrefix(NU3027Message, packageX.Identity, pathContext.PackageSource)));
             }
         }
 
@@ -136,17 +135,17 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(_NU3008, SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource)));
-                result.AllOutput.Should().Contain($"WARNING: {string.Format(_NU3027, SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource))}");
+                result.Errors.Should().Contain(string.Format(NU3008, SigningTestUtility.AddSignatureLogPrefix(NU3008Message, packageX.Identity, pathContext.PackageSource)));
+                result.AllOutput.Should().Contain($"WARNING: {string.Format(NU3027, SigningTestUtility.AddSignatureLogPrefix(NU3027Message, packageX.Identity, pathContext.PackageSource))}");
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3008);
-                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3008Message, packageX.Identity, pathContext.PackageSource));
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3008Message, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(1);
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3027);
-                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3027Message, packageX.Identity, pathContext.PackageSource));
+                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3027Message, packageX.Identity, pathContext.PackageSource));
                 warnings.First().LibraryId.Should().Be(packageX.Id);
             }
         }
@@ -161,7 +160,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (var packageStream = await packageX.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
@@ -206,13 +206,13 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(0);
-                result.AllOutput.Should().Contain($"WARNING: {string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource))}");
+                result.AllOutput.Should().Contain($"WARNING: {string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource))}");
 
                 errors.Count().Should().Be(0);
 
                 warnings.Count().Should().Be(1);
                 warnings.First().Code.Should().Be(NuGetLogCode.NU3005);
-                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                warnings.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 warnings.First().LibraryId.Should().Be(packageX.Id);
             }
         }
@@ -227,7 +227,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (var packageStream = await packageX.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
@@ -280,11 +281,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+                result.Errors.Should().Contain(string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
-                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Id);
 
                 warnings.Count().Should().Be(0);
@@ -305,7 +306,8 @@ namespace NuGet.CommandLine.FuncTest.Commands
             using (var packageStream = await packageX.CreateAsStreamAsync())
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
             {
-                var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+                AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream);
+
                 using (var package = new ZipArchive(packageStream, ZipArchiveMode.Update, leaveOpen: true))
                 {
                     var signatureEntry = package.CreateEntry(SigningSpecifications.V1.SignaturePath);
@@ -358,11 +360,11 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 result.ExitCode.Should().Be(1);
-                result.Errors.Should().Contain(string.Format(_NU3005, SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
+                result.Errors.Should().Contain(string.Format(NU3005, SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource)));
 
                 errors.Count().Should().Be(1);
                 errors.First().Code.Should().Be(NuGetLogCode.NU3005);
-                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(_NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
+                errors.First().Message.Should().Be(SigningTestUtility.AddSignatureLogPrefix(NU3005CompressedMessage, packageX.Identity, pathContext.PackageSource));
                 errors.First().LibraryId.Should().Be(packageX.Identity.Id.ToString());
 
                 warnings.Count().Should().Be(0);

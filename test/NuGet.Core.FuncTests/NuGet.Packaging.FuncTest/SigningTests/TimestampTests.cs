@@ -55,7 +55,7 @@ namespace NuGet.Packaging.FuncTest
 
                     var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
 
-                    var signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream, timestampProvider);
+                    AuthorPrimarySignature signature = await SignedArchiveTestUtility.CreateAuthorSignatureForPackageAsync(testCertificate, packageStream, timestampProvider);
                     var timestamp = signature.Timestamps.First();
 
                     var settings = new SignedPackageVerifierSettings(

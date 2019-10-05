@@ -235,7 +235,7 @@ namespace Test.Utility.Signing
         /// <param name="packageStream">Package stream for which the signature has to be generated.</param>
         /// <param name="timestampProvider">An optional timestamp provider.</param>
         /// <returns>Signature for the package.</returns>
-        public static async Task<PrimarySignature> CreateAuthorSignatureForPackageAsync(
+        public static async Task<AuthorPrimarySignature> CreateAuthorSignatureForPackageAsync(
             X509Certificate2 testCert,
             Stream packageStream,
             ITimestampProvider timestampProvider = null)
@@ -244,7 +244,7 @@ namespace Test.Utility.Signing
             using (var request = new AuthorSignPackageRequest(testCert, hashAlgorithm))
             using (var package = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
             {
-                return await CreatePrimarySignatureForPackageAsync(package, request, timestampProvider);
+                return (AuthorPrimarySignature)await CreatePrimarySignatureForPackageAsync(package, request, timestampProvider);
             }
         }
 
