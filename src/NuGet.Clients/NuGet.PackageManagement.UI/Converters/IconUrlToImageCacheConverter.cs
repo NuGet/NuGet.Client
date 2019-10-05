@@ -61,38 +61,40 @@ namespace NuGet.PackageManagement.UI
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
 
-            var url = iconUrl.ToString();
             var markIdx = iconUrl.OriginalString.LastIndexOf("#");
+
+            BitmapSource imageResult = null;
 
             if (iconUrl.IsAbsoluteUri && iconUrl.IsFile && markIdx >= 0)
             {
-                using (var ar = new PackageArchiveReader(iconUrl.LocalPath))
+                using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
                 {
                     try
                     {
-                        var iconEntry = iconUrl.Fragment.Substring(1);
-                        var zipEntry = ar.GetEntry(iconEntry);
+                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
+                        var zipEntry = par.GetEntry(iconEntry);
                         iconBitmapImage.StreamSource = zipEntry.Open();
+                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
                     catch (FileNotFoundException)
                     {
                         AddToCache(iconUrl, defaultPackageIcon);
-                        return defaultPackageIcon;
+                        imageResult = defaultPackageIcon;
                     }
                     catch (ArgumentOutOfRangeException)
                     {
                         AddToCache(iconUrl, defaultPackageIcon);
-                        return defaultPackageIcon;
+                        imageResult = defaultPackageIcon;
                     }
-                        
-                    return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                 }
             }
             else
             {
                 iconBitmapImage.UriSource = iconUrl;
-                return FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
             }
+
+            return imageResult;
         }
 
         public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
