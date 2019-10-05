@@ -105,6 +105,7 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     Fragment = "icon.png"
                 };
+                Console.WriteLine(builder.Uri.ToString());
 
                 // Act
                 var result = converter.Convert(
@@ -120,8 +121,10 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [Fact]
-        public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault()
+        [InlineData(@"/")]
+        [InlineData(@"\")]
+        [Theory]
+        public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault(string separator)
         {
             using (var testDir = TestDirectory.Create())
             {
@@ -133,7 +136,7 @@ namespace NuGet.PackageManagement.UI.Test
                 var converter = new IconUrlToImageCacheConverter();
                 UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
                 {
-                    Fragment = @"..\icon.png"
+                    Fragment = $@"..{separator}icon.png"
                 };
 
                 // Act
@@ -144,8 +147,8 @@ namespace NuGet.PackageManagement.UI.Test
                     Thread.CurrentThread.CurrentCulture) as BitmapImage;
 
                 // Assert
-                Assert.Null(result);
-                Assert.NotSame(DefaultPackageIcon, result);
+                Assert.NotNull(result);
+                Assert.Same(DefaultPackageIcon, result);
             }
         }
 
