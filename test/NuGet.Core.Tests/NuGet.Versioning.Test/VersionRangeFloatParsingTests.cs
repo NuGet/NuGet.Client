@@ -222,6 +222,9 @@ namespace NuGet.Versioning.Test
         [Theory]
         [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
         [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
+        [InlineData("1.0.0;2.0.0", "[*, )", "2.0.0")]
+        [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, )", "2.0.0")]
+        [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, 2.0.0)", null)]
         public void VersionRangeFloatParsing_FindsBestMatch(string availableVersions, string declaredRange, string expectedVersion)
         {
             var range = VersionRange.Parse(declaredRange);
@@ -232,7 +235,7 @@ namespace NuGet.Versioning.Test
                 versions.Add(NuGetVersion.Parse(version));
             }
 
-            Assert.Equal(expectedVersion, range.FindBestMatch(versions).ToNormalizedString());
+            Assert.Equal(expectedVersion, range.FindBestMatch(versions)?.ToNormalizedString());
         }
     }
 }

@@ -281,7 +281,8 @@ namespace NuGet.Commands.Test
                                                                // if it has a lower bound, it's always the one under
         [InlineData("[1.0.0,)", "0.9", "0.0.1,0.0.5,0.1,0.9")] // lower bound, no upper bound, no floating
         [InlineData("[1.*,)", "0.9", "0.0.1,0.0.5,0.1,0.9")] // lower bound, no upper bound, floating
-        [InlineData("*", "0.0.1-alpha", "0.0.1-alpha,2.1.0-preview1-final")] // lower bound, no upper bound, floating
+        [InlineData("*", "2.1.0-preview1-final", "0.0.1-alpha,2.1.0-preview1-final")] // lower bound, no upper bound, floating, https://github.com/NuGet/Home/issues/6658, inclusivity doesn't matter as it's not selecting assets
+        [InlineData("[1.*, 2.0.0]", "3.0.0", "0.1.0,0.3.0,3.0.0,4.0.0")] // lower bound, upper bound, floating - Version immediately above upper bound chosen
         public void GivenVersionRangeVerifyBestMatch(string versionRange, string expectedVersion, string versionStrings)
         {
             var range = VersionRange.Parse(versionRange);

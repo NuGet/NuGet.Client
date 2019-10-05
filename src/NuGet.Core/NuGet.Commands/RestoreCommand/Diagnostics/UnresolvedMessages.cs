@@ -264,9 +264,12 @@ namespace NuGet.Commands
                 }
             }
 
-            if (!range.IsFloating || range.HasLowerBound || range.HasUpperBound)
+            // Take the lowest version higher than the pivot if one exists,
+            // unless the version range is floating without an upper bound
+            if ((!range.IsFloating || range.IsFloating && range.HasUpperBound)
+                && (range.HasLowerBound || range.HasUpperBound))
             {
-                // Take the lowest version higher than the pivot if one exists.
+                
                 bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
             }
 
