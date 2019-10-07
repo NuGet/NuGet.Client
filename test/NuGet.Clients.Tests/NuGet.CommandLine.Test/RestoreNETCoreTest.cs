@@ -9054,12 +9054,12 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var netcoreapp20 = "net472";
+                var framework = "net472";
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "a",
                    pathContext.SolutionRoot,
-                   NuGetFramework.Parse(netcoreapp20));
+                   NuGetFramework.Parse(framework));
 
                 foreach (string version in availableVersions.Split(';'))
                 {
@@ -9103,12 +9103,12 @@ namespace NuGet.CommandLine.Test
             {
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var netcoreapp20 = "net472";
+                var framework = "net472";
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "a",
                    pathContext.SolutionRoot,
-                   NuGetFramework.Parse(netcoreapp20));
+                   NuGetFramework.Parse(framework));
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
                 foreach (string version in availableVersions.Split(';'))
