@@ -76,12 +76,7 @@ namespace NuGet.PackageManagement.UI
                         iconBitmapImage.StreamSource = zipEntry.Open();
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
-                    catch (FileNotFoundException)
-                    {
-                        AddToCache(iconUrl, defaultPackageIcon);
-                        imageResult = defaultPackageIcon;
-                    }
-                    catch (ArgumentOutOfRangeException)
+                    catch (Exception)
                     {
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
@@ -136,7 +131,6 @@ namespace NuGet.PackageManagement.UI
 
             return image;
         }
-
 
         private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
         {
