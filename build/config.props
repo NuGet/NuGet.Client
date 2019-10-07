@@ -33,7 +33,7 @@
     <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
-    <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">Preview</VsTargetChannel>
+    <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
     <!-- .NET Core SDK Insertion Logic -->    
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
