@@ -269,7 +269,6 @@ namespace NuGet.Commands
             if ((!range.IsFloating || range.IsFloating && range.HasUpperBound)
                 && (range.HasLowerBound || range.HasUpperBound))
             {
-                
                 bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
             }
 
