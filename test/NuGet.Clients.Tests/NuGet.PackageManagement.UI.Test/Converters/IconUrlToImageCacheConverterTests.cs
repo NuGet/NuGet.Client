@@ -112,12 +112,15 @@ namespace NuGet.PackageManagement.UI.Test
                     builder.Uri,
                     typeof(ImageSource),
                     DefaultPackageIcon,
-                    Thread.CurrentThread.CurrentCulture) as BitmapImage;
+                    Thread.CurrentThread.CurrentCulture);
+
+                var image = result as BitmapImage;
 
                 // Assert
                 Assert.NotNull(result);
+                Assert.NotNull(image);
                 Assert.NotSame(DefaultPackageIcon, result);
-                Assert.Equal(32, result.PixelWidth);
+                Assert.Equal(32, image.PixelWidth);
             }
         }
 
@@ -144,7 +147,7 @@ namespace NuGet.PackageManagement.UI.Test
                     builder.Uri,
                     typeof(ImageSource),
                     DefaultPackageIcon,
-                    Thread.CurrentThread.CurrentCulture) as BitmapImage;
+                    Thread.CurrentThread.CurrentCulture);
 
                 // Assert
                 Assert.NotNull(result);
