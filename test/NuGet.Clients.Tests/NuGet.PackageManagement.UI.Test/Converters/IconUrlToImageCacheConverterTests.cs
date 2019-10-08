@@ -9,17 +9,24 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
     public class IconUrlToImageCacheConverterTests
     {
         private static readonly ImageSource DefaultPackageIcon;
+        private readonly ITestOutputHelper output;
 
         static IconUrlToImageCacheConverterTests()
         {
             DefaultPackageIcon = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgr24, null, new byte[3] { 0, 0, 0 }, 3);
             DefaultPackageIcon.Freeze();
+        }
+
+        public IconUrlToImageCacheConverterTests(ITestOutputHelper output)
+        {
+            this.output = output;
         }
 
         [Fact]
@@ -106,6 +113,10 @@ namespace NuGet.PackageManagement.UI.Test
                     Fragment = "icon.png"
                 };
                 Console.WriteLine(builder.Uri.ToString());
+
+                output.WriteLine($"ZipPath {zipPath}");
+                output.WriteLine($"File Exists {File.Exists(zipPath)}");
+                output.WriteLine($"Url {builder.Uri.ToString()}");
 
                 // Act
                 var result = converter.Convert(
