@@ -112,7 +112,6 @@ namespace NuGet.PackageManagement.UI.Test
                 {
                     Fragment = "icon.png"
                 };
-                Console.WriteLine(builder.Uri.ToString());
 
                 output.WriteLine($"ZipPath {zipPath}");
                 output.WriteLine($"File Exists {File.Exists(zipPath)}");
@@ -127,9 +126,10 @@ namespace NuGet.PackageManagement.UI.Test
 
                 var image = result as BitmapImage;
 
+                output.WriteLine($"Url {result.ToString()}");
+
                 // Assert
                 Assert.NotNull(result);
-                Assert.NotNull(image);
                 Assert.NotSame(DefaultPackageIcon, result);
                 Assert.Equal(32, image.PixelWidth);
             }
