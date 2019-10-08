@@ -76,10 +76,11 @@ namespace NuGet.PackageManagement.UI
                         iconBitmapImage.StreamSource = zipEntry.Open();
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
+                        throw e;
                     }
                 }
             }
