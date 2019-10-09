@@ -3,7 +3,6 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
@@ -76,11 +75,10 @@ namespace NuGet.PackageManagement.UI
                         iconBitmapImage.StreamSource = zipEntry.Open();
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
-                        throw e;
                     }
                 }
             }
@@ -115,9 +113,10 @@ namespace NuGet.PackageManagement.UI
             }
             // if the URL is a file: URI (which actually happened!), we'll get an exception.
             // if the URL is a file: URI which is in an existing directory, but the file doesn't exist, we'll fail silently.
-            catch (Exception)
+            catch (Exception ex)
             {
                 iconBitmapImage = null;
+                throw ex;
             }
             finally
             {
