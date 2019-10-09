@@ -135,6 +135,35 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Fact]
+        public void Convert_FileUri_LoadsImage()
+        {
+            // Prepare
+            var converter = new IconUrlToImageCacheConverter();
+
+            using (var testDir = TestDirectory.Create())
+            {
+                var imagePath = Path.Combine(testDir, "image.png");
+                CreateNoisePngImage(path: imagePath);
+
+                var uri = new Uri(imagePath, UriKind.Absolute);
+
+                // Act
+                var result = converter.Convert(
+                    uri,
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture);
+
+                var image = result as BitmapImage;
+                
+                // Assert
+                Assert.NotNull(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+                Assert.Equal(32, image.PixelWidth);
+            }
+        }
+
         [InlineData(@"/")]
         [InlineData(@"\")]
         [Theory]
