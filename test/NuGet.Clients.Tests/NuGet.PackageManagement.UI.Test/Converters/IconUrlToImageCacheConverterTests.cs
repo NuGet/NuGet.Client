@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Text;
 using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -108,6 +109,8 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
+                converter.Messages = new StringBuilder();
+
                 UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
                 {
                     Fragment = "icon.png"
@@ -126,7 +129,8 @@ namespace NuGet.PackageManagement.UI.Test
 
                 var image = result as BitmapImage;
 
-                output.WriteLine($"Url {result.ToString()}");
+                output.WriteLine($"result {result.ToString()}");
+                output.WriteLine(converter.Messages.ToString());
 
                 // Assert
                 Assert.NotNull(result);
