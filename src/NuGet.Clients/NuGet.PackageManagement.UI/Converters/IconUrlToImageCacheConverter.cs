@@ -136,7 +136,7 @@ namespace NuGet.PackageManagement.UI
             {
                 iconBitmapImage = null;
                 LogMessage("Finish: Image set to null");
-                LogMessage($"Finish: exception: {ex.Message}");
+                LogMessage($"Finish: exception: {ex.Message} ; StackTrace: {ex.StackTrace}");
             }
             finally
             {
