@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
+using System.Text;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -33,20 +34,30 @@ namespace NuGet.PackageManagement.UI
 
         private static readonly ErrorFloodGate _errorFloodGate = new ErrorFloodGate();
 
+        public StringBuilder Messages { get; set; }
+
+        private void LogMessage(string message)
+        {
+            Messages?.AppendFormat("IconUrlToImageCacheConverter: {0}{1}", message, Environment.NewLine);
+        }
+
         // We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
         // This leads to a memory savings.
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
+            LogMessage($"Convert Params: {value.ToString()}, {targetType.ToString()}, {parameter.ToString()}, {culture.ToString()}");
             var iconUrl = value as Uri;
             var defaultPackageIcon = parameter as BitmapSource;
             if (iconUrl == null)
             {
+                LogMessage($"Convert iconUrl is null");
                 return null;
             }
 
             var cachedBitmapImage = _bitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
             if (cachedBitmapImage != null)
             {
+                LogMessage($"Convert Cache Hit: {cachedBitmapImage.ToString()}");
                 return cachedBitmapImage;
             }
 
@@ -54,6 +65,7 @@ namespace NuGet.PackageManagement.UI
             // This is meant to detect that kind of case, and stop spamming the network, so the app remains responsive.
             if (_errorFloodGate.IsOpen)
             {
+                LogMessage($"Convert errorFloodGate open");
                 return defaultPackageIcon;
             }
 
@@ -66,33 +78,39 @@ namespace NuGet.PackageManagement.UI
 
             if (iconUrl.IsAbsoluteUri && iconUrl.IsFile && markIdx >= 0)
             {
-                using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
+                LogMessage("Convert EmbeddedIcon");
+                try
                 {
-                    try
+                    using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
                     {
                         var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
                         var zipEntry = par.GetEntry(iconEntry);
                         iconBitmapImage.StreamSource = zipEntry.Open();
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                        LogMessage($"Converd EmbeddedIcon PAR: {par}");
                     }
-                    catch (Exception)
-                    {
-                        AddToCache(iconUrl, defaultPackageIcon);
-                        imageResult = defaultPackageIcon;
-                    }
+                }
+                catch (Exception ex)
+                {
+                    LogMessage($"Convert EmbeddedIcon Exception {ex.Message}");
+                    AddToCache(iconUrl, defaultPackageIcon);
+                    imageResult = defaultPackageIcon;
                 }
             }
             else
             {
+                LogMessage("Convert NormalIcon");
                 iconBitmapImage.UriSource = iconUrl;
                 imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
             }
 
+            LogMessage($"Convert result: {imageResult}");
             return imageResult;
         }
 
         public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
         {
+            LogMessage("Finish: Entering");
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
             // This is the cache level that should be used by most applications.
@@ -110,19 +128,23 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 iconBitmapImage.EndInit();
+                LogMessage("Finish: After EndInit");
             }
             // if the URL is a file: URI (which actually happened!), we'll get an exception.
             // if the URL is a file: URI which is in an existing directory, but the file doesn't exist, we'll fail silently.
             catch (Exception ex)
             {
                 iconBitmapImage = null;
-                throw ex;
+                LogMessage("Finish: Image set to null");
+                LogMessage($"Finish: exception: {ex.Message}");
             }
             finally
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
+                LogMessage($"Finish: Pre final image {iconBitmapImage}");
                 var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
                 AddToCache(iconUrl, cachedBitmapImage);
+                LogMessage($"Finish: Added to cache {iconUrl.ToString()} {cachedBitmapImage.ToString()}");
 
                 _errorFloodGate.ReportAttempt();
 
@@ -154,6 +176,7 @@ namespace NuGet.PackageManagement.UI
 
         private void IconBitmapImage_DownloadCompleted(object sender, EventArgs e)
         {
+            LogMessage("Raising IconBitmapImage_DownloadCompleted");
             var bitmapImage = sender as BitmapImage;
             if (!bitmapImage.IsFrozen)
             {
@@ -163,6 +186,8 @@ namespace NuGet.PackageManagement.UI
 
         private void IconBitmapImage_DownloadOrDecodeFailed(object sender, System.Windows.Media.ExceptionEventArgs e)
         {
+            LogMessage("Raising IconBitmapImage_DownloadOrDecodeFailed");
+            LogMessage($"IconBitmapImage_DownloadOrDecodeFailed: {e.ErrorException.Message}");
             var bitmapImage = sender as BitmapImage;
 
             var uri = bitmapImage.UriSource;
