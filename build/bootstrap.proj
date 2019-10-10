@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.Build.NoTargets/1.0.80">
+    
     <PropertyGroup>
         <RestorePackagesPath>$(MSBuildThisFileDirectory)../packages/</RestorePackagesPath>
-        <BaseIntermediateOutputPath>$(RestorePackagesPath)obj/</BaseIntermediateOutputPath>
-        <IntermediateOutputPath>$(BaseIntermediateOutputPath)$(Configuration)/</IntermediateOutputPath>
+        <MSBuildProjectExtensionsPath>$(RestorePackagesPath)obj/</MSBuildProjectExtensionsPath>
         <TargetFramework>netstandard2.0</TargetFramework>
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
@@ -28,4 +28,5 @@
         <PackageDownload Include="xunit.runner.console" version="[2.4.1]" />
         <PackageDownload Include="XunitXml.TestLogger" version="[2.0.0]" />
     </ItemGroup>
+
 </Project>
