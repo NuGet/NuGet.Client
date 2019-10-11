@@ -83,11 +83,11 @@ namespace NuGet.PackageManagement.UI
                 {
                     using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
                     {
+                        LogMessage($"Opened PAR: {par}");
                         var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
                         var zipEntry = par.GetEntry(iconEntry);
                         iconBitmapImage.StreamSource = zipEntry.Open();
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
-                        LogMessage($"Converd EmbeddedIcon PAR: {par}");
                     }
                 }
                 catch (Exception ex)
