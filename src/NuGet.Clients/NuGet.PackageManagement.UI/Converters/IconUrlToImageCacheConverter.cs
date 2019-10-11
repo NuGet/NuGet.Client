@@ -106,14 +106,16 @@ namespace NuGet.PackageManagement.UI
                 }
 #if DEBUG
                 catch (Exception ex)
-                {
-                    LogMessage($"Convert EmbeddedIcon Exception {ex.Message}");
 #else
                 catch (Exception)
-                {
 #endif
+                {
+
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
+#if DEBUG
+                    LogMessage($"Convert EmbeddedIcon Exception {ex.Message}");
+#endif
                 }
             }
             else
@@ -153,19 +155,23 @@ namespace NuGet.PackageManagement.UI
             try
             {
                 iconBitmapImage.EndInit();
-#if DEBUG                
+#if DEBUG
                 LogMessage("Finish: After EndInit");
 #endif
             }
             // if the URL is a file: URI (which actually happened!), we'll get an exception.
             // if the URL is a file: URI which is in an existing directory, but the file doesn't exist, we'll fail silently.
+#if DEBUG
             catch (Exception ex)
+#else
+            catch (Exception)
+#endif
             {
                 iconBitmapImage = null;
-#if DEBUG                
+#if DEBUG
                 LogMessage("Finish: Image set to null");
                 LogMessage($"Finish: exception: {ex.Message} ; StackTrace: {ex.StackTrace}");
-#endif                
+#endif
             }
             finally
             {
