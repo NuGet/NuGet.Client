@@ -114,7 +114,9 @@ namespace NuGet.Build.Tasks
 
             try
             {
-                return ExecuteAsync(log).Result;
+                UpdateDelegatingLogger(log);
+
+                return ExecuteAsync(DelegatingLogger).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
             {
@@ -127,7 +129,28 @@ namespace NuGet.Build.Tasks
                 ExceptionUtilities.LogException(e, log);
                 return false;
             }
+            finally
+            {
+                // We need to update the delegating logger with a null instance
+                // because the tear downs of the plugins and similar rely on idleness and process exit.
+                DelegatingLogger?.UpdateDelegate(NullLogger.Instance);
+            }
         }
+
+        private static DelegatingLogger DelegatingLogger;
+
+        private void UpdateDelegatingLogger(MSBuildLogger log)
+        {
+            if (DelegatingLogger == null)
+            {
+                DelegatingLogger = new DelegatingLogger(log);
+            }
+            else
+            {
+                DelegatingLogger.UpdateDelegate(log);
+            }
+        }
+
 
         private async Task<bool> ExecuteAsync(Common.ILogger log)
         {
@@ -210,6 +233,7 @@ namespace NuGet.Build.Tasks
                 return restoreSummaries.All(x => x.Success);
             }
         }
+
         private static void ConfigureProtocol()
         {
             // Set connection limit
