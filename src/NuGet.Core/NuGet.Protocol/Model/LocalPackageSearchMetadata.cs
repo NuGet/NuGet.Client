@@ -36,9 +36,6 @@ namespace NuGet.Protocol
         /// </remarks>
         public long? DownloadCount => 0;
 
-        /// <summary>
-        /// Points to an icon
-        /// </summary>
         public Uri IconUrl =>  GetIcon();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
@@ -149,6 +146,9 @@ namespace NuGet.Protocol
             return fileContent;
         }
 
+        /// <summary>
+        /// Points to an Icon, either Embedded Icon or IconUrl
+        /// </summary>
         public Uri GetIcon()
         {
             string embeddedIconPath = _nuspec.GetIcon();
