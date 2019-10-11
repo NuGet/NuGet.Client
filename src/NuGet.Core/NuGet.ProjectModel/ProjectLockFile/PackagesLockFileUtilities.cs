@@ -111,10 +111,11 @@ namespace NuGet.ProjectModel
             //Based on the above code, we want to order the reading side.
             //Making it order both lists so we dont have this bug again with SequenceEquals
             if (!projectRuntimesKeys.OrderedEquals(
-                                                    lockFileRuntimes,
-                                                    x => x,
-                                                    Comparer<string>.Default,
-                                                    EqualityComparer<string>.Default))
+                            lockFileRuntimes,
+                            x => x,
+                            StringComparer.InvariantCultureIgnoreCase,
+                            StringComparer.InvariantCultureIgnoreCase))
+
             {
                 return false;
             }

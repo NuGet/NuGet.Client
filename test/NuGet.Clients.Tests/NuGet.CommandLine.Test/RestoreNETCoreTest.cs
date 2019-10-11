@@ -8968,12 +8968,19 @@ namespace NuGet.CommandLine.Test
 
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-                var projFramework = Frameworks.FrameworkConstants.CommonFrameworks.Net461.GetShortFolderName();
+               
+
+                var projFramework = Frameworks.FrameworkConstants.CommonFrameworks.NetCoreApp21.GetShortFolderName();
 
                 var projectA = SimpleTestProjectContext.CreateNETCore(
                    "a",
                    pathContext.SolutionRoot,
                    NuGetFramework.Parse(projFramework));
+
+                var runtimeidentifiers = new List<string>(){ "win7-x64", "win-x86", "win", "z", "a" };
+                var ascending = runtimeidentifiers.OrderBy(i => i);
+                
+                projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", ascending));
 
                 projectA.Properties.Add("RestorePackagesWithLockFile", "true");
 
@@ -9007,11 +9014,22 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 var packagesLockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
 
-                //Modify the list of target/runtimes so they are reordered in the lock file.
-                var oneOfTargets = packagesLockFile.Targets[1];
-                packagesLockFile.Targets.RemoveAt(1);
-                packagesLockFile.Targets.Insert(packagesLockFile.Targets.Count - 1, oneOfTargets);
+                //Modify the list of target/runtimes so they are reordered in the lock file
+                //Verify the passed in RIDs are within the lock file
+                //Verify the RIDS are not the same after reordering.
+                //Lock file is not ordered based on input RIDs so Validating the reorder here.
+                var originalTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
+                runtimeidentifiers.ShouldBeEquivalentTo(originalTargets);
 
+                packagesLockFile.Targets = packagesLockFile.Targets.
+                    OrderByDescending(t => t.RuntimeIdentifier==null).
+                    ThenByDescending( i => i.RuntimeIdentifier).ToList();
+                var reorderedTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
+
+                //The orders are not equal.  Then resave the lock file and project.
+                //The null RID must be the first one otherwise this fails
+                Assert.False(originalTargets.SequenceEqual(reorderedTargets));                
+                Assert.True(packagesLockFile.Targets[0].RuntimeIdentifier == null);
                 PackagesLockFileFormat.Write(projectA.NuGetLockFileOutputPath, packagesLockFile);
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
