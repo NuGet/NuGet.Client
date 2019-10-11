@@ -104,10 +104,13 @@ namespace NuGet.PackageManagement.UI
                         imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                     }
                 }
+#if DEBUG
                 catch (Exception ex)
                 {
-#if DEBUG
                     LogMessage($"Convert EmbeddedIcon Exception {ex.Message}");
+#else
+                catch (Exception)
+                {
 #endif
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
