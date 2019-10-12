@@ -783,14 +783,6 @@ phases:
         Invoke-WebRequest -Uri $(CollectExeUrl) -OutFile $(System.DefaultWorkingDirectory)\\VSCollect.exe
         $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
     condition: "failed()"
-
-  - task: PublishBuildArtifacts@1
-    displayName: "Publish e2e-collectlogs.zip"
-    inputs:
-      pathtoPublish: $(System.DefaultWorkingDirectory)\\artifacts\\EndToEnd\\e2e-collectlogs.zip
-      artifactName: 'e2e-collectlogs'
-      ArtifactType: "Container"
-    condition: "failed()"
     
   - task: PowerShell@1
     displayName: "RunFunctionalTests.ps1"
