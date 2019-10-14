@@ -9,6 +9,7 @@ using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -284,7 +285,75 @@ EndGlobal";
             }
         }
 
-        private static byte[] GetResource(string name)
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_LockedMode_NewProjectOutOfBox()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, and project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462.GetShortFolderName();
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(projFramework));
+
+                var runtimeidentifiers = new List<string>() { "win7-x64", "win-x86", "win" };
+                projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", runtimeidentifiers));
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                //Setup packages and feed
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.AddFile("ref/net461/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+
+                //add the packe to the project
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                solution.Save();
+                projectA.Save();
+
+
+                // Act
+                var args = $" --source \"{pathContext.PackageSource}\" ";
+                var projdir = Path.GetDirectoryName(projectA.ProjectPath);
+                var projfilename = Path.GetFileNameWithoutExtension(projectA.ProjectName);
+
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                //Now set it to locked mode
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+
+                //Act
+                //Run the restore and it should still properly restore.
+                //Assert within RestoreProject piece
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+            }
+        }
+
+
+            private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
                 $"Dotnet.Integration.Test.compiler.resources.{name}",

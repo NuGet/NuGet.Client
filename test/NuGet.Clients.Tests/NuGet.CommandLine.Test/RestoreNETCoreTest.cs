@@ -9021,6 +9021,7 @@ namespace NuGet.CommandLine.Test
                 var originalTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
                 runtimeidentifiers.ShouldBeEquivalentTo(originalTargets);
 
+                //Nuget.exe test so reordering to make it not match.  It should still restore correctly
                 packagesLockFile.Targets = packagesLockFile.Targets.
                     OrderByDescending(t => t.RuntimeIdentifier==null).
                     ThenByDescending( i => i.RuntimeIdentifier).ToList();
