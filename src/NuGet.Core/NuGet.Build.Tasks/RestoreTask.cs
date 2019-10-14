@@ -114,6 +114,7 @@ namespace NuGet.Build.Tasks
 
             try
             {
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
                 return ExecuteAsync(log).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
@@ -204,9 +205,6 @@ namespace NuGet.Build.Tasks
                 {
                     HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
                 }
-
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
-                DefaultCredentialServiceUtility.OldLogger.LogMinimal("yay, nice, crash the logger");
 
                 _cts.Token.ThrowIfCancellationRequested();
 
