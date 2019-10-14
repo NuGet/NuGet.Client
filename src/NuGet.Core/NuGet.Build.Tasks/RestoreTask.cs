@@ -114,9 +114,7 @@ namespace NuGet.Build.Tasks
 
             try
             {
-                UpdateDelegatingLogger(log);
-
-                return ExecuteAsync(DelegatingLogger).Result;
+                return ExecuteAsync(log).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
             {
@@ -131,27 +129,13 @@ namespace NuGet.Build.Tasks
             }
             finally
             {
+                // The CredentialService lifetime is for the duration of the process. We should not leave a potentially unavailable logger. 
                 // We need to update the delegating logger with a null instance
                 // because the tear downs of the plugins and similar rely on idleness and process exit.
-                DelegatingLogger?.UpdateDelegate(NullLogger.Instance);
+                DefaultCredentialServiceUtility.UpdateCredentialServiceDelegatingLogger(NullLogger.Instance);
             }
         }
-
-        private static DelegatingLogger DelegatingLogger;
-
-        private void UpdateDelegatingLogger(MSBuildLogger log)
-        {
-            if (DelegatingLogger == null)
-            {
-                DelegatingLogger = new DelegatingLogger(log);
-            }
-            else
-            {
-                DelegatingLogger.UpdateDelegate(log);
-            }
-        }
-
-
+ 
         private async Task<bool> ExecuteAsync(Common.ILogger log)
         {
             if (RestoreGraphItems.Length < 1 && !HideWarningsAndErrors)
@@ -222,6 +206,7 @@ namespace NuGet.Build.Tasks
                 }
 
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
+                DefaultCredentialServiceUtility.OldLogger.LogMinimal("yay, nice, crash the logger");
 
                 _cts.Token.ThrowIfCancellationRequested();
 

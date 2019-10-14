@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 
-namespace NuGet.Build
+namespace NuGet.Credentials
 {
     /// <summary>
     ///  A delegating logger.
@@ -34,7 +34,6 @@ namespace NuGet.Build
         {
             if (Interlocked.CompareExchange(ref _lock, 1, 0) == 0)
             {
-
                 _delegateLogger?.Log(message);
             }
         }

@@ -9,6 +9,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.LibraryModel;
@@ -173,6 +174,11 @@ namespace Microsoft.Build.NuGetSdkResolver
                     catch (Exception e)
                     {
                         errors.Add(e.Message);
+                    }
+                    finally
+                    {
+                        // The CredentialService lifetime is for the duration of the process. We should not leave a potentially unavailable logger. 
+                        DefaultCredentialServiceUtility.UpdateCredentialServiceDelegatingLogger(NullLogger.Instance);
                     }
                 }
 
