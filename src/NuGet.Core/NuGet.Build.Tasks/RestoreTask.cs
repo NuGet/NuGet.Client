@@ -83,8 +83,8 @@ namespace NuGet.Build.Tasks
         public override bool Execute()
         {
 #if DEBUG
-            var debugPackTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
-            if (!string.IsNullOrEmpty(debugPackTask) && debugPackTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
+            var debugRestoreTask = Environment.GetEnvironmentVariable("DEBUG_RESTORE_TASK");
+            if (!string.IsNullOrEmpty(debugRestoreTask) && debugRestoreTask.Equals(bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
 #if IS_CORECLR
                 Console.WriteLine("Waiting for debugger to attach.");
