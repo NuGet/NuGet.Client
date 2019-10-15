@@ -24,9 +24,9 @@ namespace NuGet.Credentials
 
         internal void UpdateDelegate(ILogger logger)
         {
+            _semaphore.Wait();
             try
             {
-                _semaphore.Wait();
                 _delegateLogger = logger ?? throw new ArgumentNullException(nameof(logger));
             }
             finally
@@ -37,9 +37,9 @@ namespace NuGet.Credentials
 
         public override void Log(ILogMessage message)
         {
+            _semaphore.Wait();
             try
             {
-                _semaphore.Wait();
                 _delegateLogger?.Log(message);
             }
             finally
@@ -50,9 +50,9 @@ namespace NuGet.Credentials
 
         public override async Task LogAsync(ILogMessage message)
         {
+            await _semaphore.WaitAsync();
             try
             {
-                await _semaphore.WaitAsync();
                 await _delegateLogger?.LogAsync(message);
             }
             finally
