@@ -91,13 +91,6 @@ namespace NuGet.XPlat.FuncTest
                 var exitCodeSecondPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), logSecondPush);
 
                 // Assert First Push - it should happen without error.
-                Console.WriteLine("Waiting for debugger to attach.");
-                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-                while (!Debugger.IsAttached)
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-                Debugger.Break();
                 var outputMessagesFirstPush = logFirstPush.ShowMessages();
                 Assert.Equal(string.Empty, logFirstPush.ShowErrors());
                 Assert.Equal(0, exitCodeFirstPush);

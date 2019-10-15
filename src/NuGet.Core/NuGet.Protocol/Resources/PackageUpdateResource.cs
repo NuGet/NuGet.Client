@@ -463,11 +463,11 @@ namespace NuGet.Protocol.Core.Types
             {
                 case HttpStatusCode.Conflict:
 
-                #if IS_DESKTOP
+#if IS_DESKTOP
                     advertiseDescription = Strings.PushCommandSkipDuplicateAdvertiseNuGetExe;
-                #else
+#else
                     advertiseDescription = Strings.PushCommandSkipDuplicateAdvertiseDotnetExe;
-                #endif
+#endif
                     break;
 
                 default: break; //Not a supported response code.
