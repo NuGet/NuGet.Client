@@ -1024,11 +1024,20 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to See help for push option to automatically skip duplicates..
+        ///   Looks up a localized string similar to To skip already published packages, use &lt;command&gt; --skip-duplicate.
         /// </summary>
-        internal static string PushCommandSkipDuplicateAdvertise {
+        internal static string PushCommandSkipDuplicateAdvertiseDotnetExe {
             get {
-                return ResourceManager.GetString("PushCommandSkipDuplicateAdvertise", resourceCulture);
+                return ResourceManager.GetString("PushCommandSkipDuplicateAdvertiseDotnetExe", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to To skip already published packages, use &lt;command&gt; -skipduplicate.
+        /// </summary>
+        internal static string PushCommandSkipDuplicateAdvertiseNuGetExe {
+            get {
+                return ResourceManager.GetString("PushCommandSkipDuplicateAdvertiseNuGetExe", resourceCulture);
             }
         }
         

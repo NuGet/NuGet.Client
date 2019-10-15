@@ -28,7 +28,7 @@ namespace NuGet.Test.Utility
         public override string Skip
         {
             get
-            {
+            {   
                 var skip = _skip;
 
                 if (string.IsNullOrEmpty(skip))

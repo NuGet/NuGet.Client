@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
@@ -13,9 +15,9 @@ namespace NuGet.XPlat.FuncTest
     {
         [PackageSourceTheory]
         [PackageSourceData(TestSources.MyGet)]
-        [PackageSourceData(TestSources.ProGet)]
-        [PackageSourceData(TestSources.Klondike, Skip = "500 Internal Server Error pushing")]
-        [PackageSourceData(TestSources.NuGetServer, Skip = "500 - missing manifest?")]
+        [PackageSourceData(TestSources.ProGet, Skip = "No such host is known")]
+        [PackageSourceData(TestSources.Klondike, Skip = "401 (Invalid API key)")]
+        [PackageSourceData(TestSources.NuGetServer, Skip = "No such host is known")]
         public async Task PushToServerSucceeds(PackageSource packageSource)
         {
             // Arrange
@@ -54,11 +56,11 @@ namespace NuGet.XPlat.FuncTest
         }
 
         [PackageSourceTheory]
-        [PackageSourceData(TestSources.MyGet)]
-        [PackageSourceData(TestSources.ProGet)]
-        [PackageSourceData(TestSources.Klondike, Skip = "500 Internal Server Error pushing")]
-        [PackageSourceData(TestSources.NuGetServer, Skip = "500 - missing manifest?")]
-        public async Task PushToServerSkipDuplicateSucceeds(PackageSource packageSource)
+        [PackageSourceData(TestSources.MyGet, Skip = "MyGet is configured to always override duplicates")]
+        [PackageSourceData(TestSources.ProGet, Skip = "No such host is known")]
+        [PackageSourceData(TestSources.Klondike, Skip = "401 (Invalid API key)")]
+        [PackageSourceData(TestSources.NuGetServer, Skip = "No such host is known")]
+        public async Task PushToServerWhichRejectsDuplicates_SkipDuplicate_Succeeds(PackageSource packageSource)
         {
             // Arrange
             using (var packageDir = TestDirectory.Create())
@@ -68,11 +70,11 @@ namespace NuGet.XPlat.FuncTest
                 var packageVersion = "1.0.0";
                 var packageFile = await TestPackagesCore.GetRuntimePackageAsync(packageDir, packageId, packageVersion);
                 var configFile = XPlatTestUtils.CopyFuncTestConfig(packageDir);
-                var log = new TestCommandOutputLogger();
+                var logFirstPush = new TestCommandOutputLogger();
+                var logSecondPush = new TestCommandOutputLogger();
 
                 var apiKey = XPlatTestUtils.ReadApiKey(packageSource.Name);
                 Assert.False(string.IsNullOrEmpty(apiKey));
-
                 var pushArgs = new List<string>
                 {
                     "push",
@@ -85,26 +87,35 @@ namespace NuGet.XPlat.FuncTest
                 };
 
                 // Act
-                var exitCode = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), log);
+                var exitCodeFirstPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), logFirstPush);
+                var exitCodeSecondPush = NuGet.CommandLine.XPlat.Program.MainInternal(pushArgs.ToArray(), logSecondPush);
 
-                // Assert
-                var outputMessages = log.ShowMessages();
+                // Assert First Push - it should happen without error.
+                Console.WriteLine("Waiting for debugger to attach.");
+                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
+                while (!Debugger.IsAttached)
+                {
+                    System.Threading.Thread.Sleep(100);
+                }
+                Debugger.Break();
+                var outputMessagesFirstPush = logFirstPush.ShowMessages();
+                Assert.Equal(string.Empty, logFirstPush.ShowErrors());
+                Assert.Equal(0, exitCodeFirstPush);
 
-                Assert.Equal(string.Empty, log.ShowErrors());
-                Assert.Equal(0, exitCode);
-                Assert.Contains($"PUT {packageSource.Source}", outputMessages);
-                
+                // Assert Second Push - it should happen without error, even though a duplicate is present.
+                var outputMessagesSecondPush = logSecondPush.ShowMessages();
 
-                //info: PUT http://localhost:5000/api/v2/package/
-                //info: Conflict http://localhost:5000/api/v2/package/ 127ms
-                 Assert.Contains("already exists at feed", outputMessages);
-                Assert.Contains("Your package was pushed.", outputMessages);
-
+                Assert.Equal(string.Empty, logSecondPush.ShowErrors());
+                Assert.Equal(0, exitCodeSecondPush);
+                Assert.Contains($"PUT {packageSource.Source}", outputMessagesSecondPush);
+                Assert.DoesNotContain("already exists at feed", outputMessagesSecondPush);
+                Assert.Contains("Your package was pushed.", outputMessagesSecondPush);
             }
         }
 
         [PackageSourceTheory]
-        [PackageSourceData(TestSources.Nexus)]
+        [PackageSourceData(TestSources.MyGet)]
+        [PackageSourceData(TestSources.Nexus, Skip = "No such host is known")]
         public async Task PushToServerSucceeds_DeleteFirst(PackageSource packageSource)
         {
             // Arrange
