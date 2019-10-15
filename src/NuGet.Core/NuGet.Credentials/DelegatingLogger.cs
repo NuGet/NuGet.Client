@@ -9,7 +9,7 @@ using NuGet.Common;
 namespace NuGet.Credentials
 {
     /// <summary>
-    ///  A delegating logger. This 
+    ///  A delegating logger.
     /// </summary>
     internal class DelegatingLogger : LoggerBase, ILogger
     {
