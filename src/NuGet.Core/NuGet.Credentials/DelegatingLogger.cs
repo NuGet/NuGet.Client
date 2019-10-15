@@ -9,40 +9,55 @@ using NuGet.Common;
 namespace NuGet.Credentials
 {
     /// <summary>
-    ///  A delegating logger.
+    ///  A delegating logger. This 
     /// </summary>
     internal class DelegatingLogger : LoggerBase, ILogger
     {
-        private int _lock;
-
+        private SemaphoreSlim _semaphore;
         private ILogger _delegateLogger;
 
-        internal DelegatingLogger(ILogger delegateLogger)
+        internal DelegatingLogger(ILogger delegateLogger) : base()
         {
             _delegateLogger = delegateLogger ?? throw new ArgumentNullException(nameof(delegateLogger));
+            _semaphore = new SemaphoreSlim(1, 1);
         }
 
         internal void UpdateDelegate(ILogger logger)
         {
-            if (Interlocked.CompareExchange(ref _lock, 1, 0) == 0)
+            try
             {
+                _semaphore.Wait();
                 _delegateLogger = logger ?? throw new ArgumentNullException(nameof(logger));
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
         public override void Log(ILogMessage message)
         {
-            if (Interlocked.CompareExchange(ref _lock, 1, 0) == 0)
+            try
             {
+                _semaphore.Wait();
                 _delegateLogger?.Log(message);
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
 
         public override async Task LogAsync(ILogMessage message)
         {
-            if (Interlocked.CompareExchange(ref _lock, 1, 0) == 0)
+            try
             {
+                await _semaphore.WaitAsync();
                 await _delegateLogger?.LogAsync(message);
+            }
+            finally
+            {
+                _semaphore.Release();
             }
         }
     }
