@@ -15,7 +15,7 @@ namespace NuGet.Credentials
     public class DefaultCredentialServiceUtility
     {
         /// <summary>
-        /// Set-ups the CredentialService and all of it's providers.
+        /// Sets-up the CredentialService and all of its providers.
         /// It always updates the logger the CredentialService and its children own,
         /// because the lifetime of the logging infrastructure is not guaranteed. 
         /// </summary>
@@ -53,7 +53,7 @@ namespace NuGet.Credentials
             }
         }
 
-        private static DelegatingLogger DelegatingLogger { get; set; }
+        private static DelegatingLogger DelegatingLogger;
 
         // Add only the secure plugin. This will be done when there's nothing set
         // By default the plugins cannot prompt. Currently this is only used to setup from MSBuild/dotnet.exe code paths

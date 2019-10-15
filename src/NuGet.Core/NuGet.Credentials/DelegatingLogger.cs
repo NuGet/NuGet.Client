@@ -13,7 +13,7 @@ namespace NuGet.Credentials
     /// </summary>
     internal class DelegatingLogger : LoggerBase, ILogger
     {
-        private SemaphoreSlim _semaphore;
+        private readonly SemaphoreSlim _semaphore;
         private ILogger _delegateLogger;
 
         internal DelegatingLogger(ILogger delegateLogger) : base()
