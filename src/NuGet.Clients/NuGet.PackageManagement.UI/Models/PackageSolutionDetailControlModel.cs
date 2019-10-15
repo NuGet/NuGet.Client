@@ -162,7 +162,7 @@ namespace NuGet.PackageManagement.UI
             // null, if all versions are allowed to install or update
             var blockedVersions = allVersions
                 .Select(v => v.version)
-                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Version.Equals(v)))
+                .Where(v => !allVersionsAllowed.Any(allowed => allowed.version.Equals(v)))
                 .ToArray();
 
             // get latest prerelease or stable based on allowed versions
