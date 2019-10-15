@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Test
             Assert.Equal("certificateType", exception.ParamName);
         }
 
-        [PlatformFact(SkipPlatform = Platform.Darwin)]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void GetCertificateChain_WithUntrustedRoot_Throws()
         {
             using (var chainHolder = new X509ChainHolder())
@@ -112,7 +112,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(SkipPlatform =Platform.Darwin)]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void GetCertificateChain_WithUntrustedSelfIssuedCertificate_ReturnsChain()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

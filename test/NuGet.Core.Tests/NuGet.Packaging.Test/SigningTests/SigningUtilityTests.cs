@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(SkipPlatform = Platform.Darwin)]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [PlatformFact(SkipPlatform = Platform.Darwin)]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())
