@@ -1024,7 +1024,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To skip already published packages, use &lt;command&gt; --skip-duplicate.
+        ///   Looks up a localized string similar to To skip already published packages, use the option --skip-duplicate.
         /// </summary>
         internal static string PushCommandSkipDuplicateAdvertiseDotnetExe {
             get {
@@ -1033,7 +1033,7 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to To skip already published packages, use &lt;command&gt; -SkipDuplicate.
+        ///   Looks up a localized string similar to To skip already published packages, use the option -SkipDuplicate.
         /// </summary>
         internal static string PushCommandSkipDuplicateAdvertiseNuGetExe {
             get {
