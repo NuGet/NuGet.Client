@@ -13,7 +13,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\NuGet.Core\NuGet.Frameworks\NuGet.Frameworks.csproj" />
     <ProjectReference Include="..\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
   </ItemGroup>
