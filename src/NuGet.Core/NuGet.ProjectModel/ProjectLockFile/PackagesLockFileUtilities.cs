@@ -105,8 +105,6 @@ namespace NuGet.ProjectModel
             var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
             var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
 
-
-            //BUG: 8661 - Making it order both lists so we dont have this bug again with SequenceEquals
             if (!projectRuntimesKeys.OrderedEquals(
                             lockFileRuntimes,
                             x => x,
