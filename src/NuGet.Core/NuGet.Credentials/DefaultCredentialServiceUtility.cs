@@ -14,11 +14,21 @@ namespace NuGet.Credentials
 {
     public class DefaultCredentialServiceUtility
     {
+        /// <summary>
+        /// Sets-up the CredentialService and all of its providers.
+        /// It always updates the logger the CredentialService and its children own,
+        /// because the lifetime of the logging infrastructure is not guaranteed. 
+        /// </summary>
+        /// <param name="logger"></param>
+        /// <param name="nonInteractive"></param>
         public static void SetupDefaultCredentialService(ILogger logger, bool nonInteractive)
         {
+            // Always update the delegating logger.
+            UpdateCredentialServiceDelegatingLogger(logger);
+
             if (HttpHandlerResourceV3.CredentialService == null)
             {
-                var providers = new AsyncLazy<IEnumerable<ICredentialProvider>>(async () => await GetCredentialProvidersAsync(logger));
+                var providers = new AsyncLazy<IEnumerable<ICredentialProvider>>(async () => await GetCredentialProvidersAsync(DelegatingLogger));
                 HttpHandlerResourceV3.CredentialService = new Lazy<ICredentialService>(
                     () => new CredentialService(
                         providers: providers,
@@ -26,6 +36,24 @@ namespace NuGet.Credentials
                         handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders));
             }
         }
+
+        /// <summary>
+        /// Update the delegating logger for the credential service.
+        /// </summary>
+        /// <param name="log"></param>
+        public static void UpdateCredentialServiceDelegatingLogger(ILogger log)
+        {
+            if (DelegatingLogger == null)
+            {
+                DelegatingLogger = new DelegatingLogger(log);
+            }
+            else
+            {
+                DelegatingLogger.UpdateDelegate(log);
+            }
+        }
+
+        private static DelegatingLogger DelegatingLogger;
 
         // Add only the secure plugin. This will be done when there's nothing set
         // By default the plugins cannot prompt. Currently this is only used to setup from MSBuild/dotnet.exe code paths
