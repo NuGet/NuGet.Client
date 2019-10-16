@@ -8958,6 +8958,96 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+
+
+        [Fact]
+        public async void RestoreNetCore_PackagesLockFile_WithReorderedRuntimesInLockFile_PassRestore() { 
+            // A project with RestoreLockedMode should pass restore if the runtimes in the lock file have been reordered
+            using (var pathContext = new SimpleTestPathContext())
+            {
+
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+               
+
+                var projFramework = Frameworks.FrameworkConstants.CommonFrameworks.NetCoreApp21.GetShortFolderName();
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(projFramework));
+
+                var runtimeidentifiers = new List<string>(){ "win7-x64", "win-x86", "win", "z", "a" };
+                var ascending = runtimeidentifiers.OrderBy(i => i);
+                
+                projectA.Properties.Add("RuntimeIdentifiers", string.Join(";", ascending));
+
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                // Set up the package and source
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("lib/net461/x.dll");
+                packageX.AddFile("ref/net461/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                var packagesLockFile = PackagesLockFileFormat.Read(projectA.NuGetLockFileOutputPath);
+
+                //Modify the list of target/runtimes so they are reordered in the lock file
+                //Verify the passed in RIDs are within the lock file
+                //Verify the RIDS are not the same after reordering.
+                //Lock file is not ordered based on input RIDs so Validating the reorder here.
+                var originalTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
+                runtimeidentifiers.ShouldBeEquivalentTo(originalTargets);
+
+                //Nuget.exe test so reordering to make it not match.  It should still restore correctly
+                packagesLockFile.Targets = packagesLockFile.Targets.
+                    OrderByDescending(t => t.RuntimeIdentifier==null).
+                    ThenByDescending( i => i.RuntimeIdentifier).ToList();
+                var reorderedTargets = packagesLockFile.Targets.Where(t => t.RuntimeIdentifier != null).Select(t => t.RuntimeIdentifier).ToList();
+
+                //The orders are not equal.  Then resave the lock file and project.
+                //The null RID must be the first one otherwise this fails
+                Assert.False(originalTargets.SequenceEqual(reorderedTargets));                
+                Assert.True(packagesLockFile.Targets[0].RuntimeIdentifier == null);
+                PackagesLockFileFormat.Write(projectA.NuGetLockFileOutputPath, packagesLockFile);
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+
+
+                //Run the restore and it should still properly restore.
+                var r2 = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                
+            }
+        }
+
+        
+
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

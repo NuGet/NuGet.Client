@@ -105,7 +105,11 @@ namespace NuGet.ProjectModel
             var projectRuntimesKeys = project.RuntimeGraph.Runtimes.Select(r => r.Key).Where(k => k != null);
             var lockFileRuntimes = nuGetLockFile.Targets.Select(t => t.RuntimeIdentifier).Where(r => r != null).Distinct();
 
-            if (!projectRuntimesKeys.SequenceEqual(lockFileRuntimes))
+            if (!projectRuntimesKeys.OrderedEquals(
+                            lockFileRuntimes,
+                            x => x,
+                            StringComparer.InvariantCultureIgnoreCase,
+                            StringComparer.InvariantCultureIgnoreCase))
             {
                 return false;
             }
