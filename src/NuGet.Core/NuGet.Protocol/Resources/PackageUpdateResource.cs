@@ -401,9 +401,7 @@ namespace NuGet.Protocol.Core.Types
             }
             else
             {
-#if IS_DESKTOP
                  AdvertiseAvailableOptionToIgnore(response.StatusCode, logger);
-#endif
             }
 
             //No exception to the rule specified.
@@ -452,7 +450,6 @@ namespace NuGet.Protocol.Core.Types
             return skippedErrorOccurred;
         }
 
-       
         /// <summary>
         /// If we provide such option, output a help message that explains that the error that occurred can be ignored by using it.
         /// </summary>
@@ -460,13 +457,17 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="logger"></param>
         private static void AdvertiseAvailableOptionToIgnore(HttpStatusCode errorCodeThatOccurred, ILogger logger)
         {
-            
             string advertiseDescription = null;
 
             switch (errorCodeThatOccurred)
             {
                 case HttpStatusCode.Conflict:
-                    advertiseDescription = Strings.PushCommandSkipDuplicateAdvertise;
+
+#if IS_DESKTOP
+                    advertiseDescription = Strings.PushCommandSkipDuplicateAdvertiseNuGetExe;
+#else
+                    advertiseDescription = Strings.PushCommandSkipDuplicateAdvertiseDotnetExe;
+#endif
                     break;
 
                 default: break; //Not a supported response code.

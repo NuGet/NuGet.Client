@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
@@ -76,6 +75,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NuGetXplatCommand_Interactive,
                     CommandOptionType.NoValue);
 
+                var skipDuplicate = push.Option(
+                    "--skip-duplicate",
+                    Strings.PushCommandSkipDuplicateDescription,
+                    CommandOptionType.NoValue);
+
                 push.OnExecute(async () =>
                 {
                     if (arguments.Values.Count < 1)
@@ -91,6 +95,7 @@ namespace NuGet.CommandLine.XPlat
                     bool disableBufferingValue = disableBuffering.HasValue();
                     bool noSymbolsValue = noSymbols.HasValue();
                     bool noServiceEndpoint = noServiceEndpointDescription.HasValue();
+                    bool skipDuplicateValue = skipDuplicate.HasValue();
                     int timeoutSeconds = 0;
 
                     if (timeout.HasValue() && !int.TryParse(timeout.Value(), out timeoutSeconds))
@@ -105,7 +110,6 @@ namespace NuGet.CommandLine.XPlat
                     try
                     {
                         DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
-                        var skipDuplicate = false;
                         await PushRunner.Run(
                             sourceProvider.Settings,
                             sourceProvider,
@@ -118,7 +122,7 @@ namespace NuGet.CommandLine.XPlat
                             disableBufferingValue,
                             noSymbolsValue,
                             noServiceEndpoint,
-                            skipDuplicate,
+                            skipDuplicateValue,
                             getLogger());
                     }
                     catch (TaskCanceledException ex)

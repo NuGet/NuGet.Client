@@ -1140,6 +1140,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to If a package and version already exists, skip it and continue with the next package in the push, if any..
+        /// </summary>
+        internal static string PushCommandSkipDuplicateDescription {
+            get {
+                return ResourceManager.GetString("PushCommandSkipDuplicateDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removes a package reference from a project..
         /// </summary>
         internal static string RemovePkg_Description {
