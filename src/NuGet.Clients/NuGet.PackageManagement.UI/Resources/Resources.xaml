@@ -691,6 +691,7 @@
       <Setter.Value>
         <Binding
           Path="DataContext.IconUrl"
+          IsAsync="True"
           RelativeSource="{RelativeSource Self}"
           Converter="{StaticResource IconUrlToImageCacheConverter}"
           ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"

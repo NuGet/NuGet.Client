@@ -86,19 +86,12 @@ namespace NuGet.PackageManagement.UI.Test
             var iconUrl = new Uri("http://fake.com/image.png");
 
             var converter = new IconUrlToImageCacheConverter();
-#if DEBUG            
-            converter.Messages = new StringBuilder();
-#endif
 
             var image = converter.Convert(
                 iconUrl,
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
-
-#if DEBUG
-            output.WriteLine(converter.Messages.ToString());
-#endif
 
             Assert.NotNull(image);
             Assert.NotSame(DefaultPackageIcon, image);
@@ -116,9 +109,6 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
-#if DEBUG
-                converter.Messages = new StringBuilder();
-#endif
 
                 UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
                 {
@@ -139,9 +129,6 @@ namespace NuGet.PackageManagement.UI.Test
                 var image = result as BitmapImage;
 
                 output.WriteLine($"result {result.ToString()}");
-#if DEBUG
-                output.WriteLine(converter.Messages.ToString());
-#endif
 
                 // Assert
                 Assert.NotNull(result);
