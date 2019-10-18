@@ -46,6 +46,35 @@ namespace NuGet.Versioning.Test
             Assert.Equal(expected, s3);
         }
 
+        [Theory]
+        [InlineData("1.0.0", false)]
+        [InlineData("1.*", false)]
+        [InlineData("*", false)]
+        [InlineData("[*, )", true)]
+        [InlineData("[1.*, ]", false)]
+        [InlineData("[1.*, 2.0.0)", true)]
+        [InlineData("(, )", true)]
+        public void VersionRange_NormalizationRoundTripsTest(string versionString, bool isOriginalStringNormalized)
+        {
+            // Arrange
+            var originalParsedRange = VersionRange.Parse(versionString);
+            // Act
+            var normalizedRangeRepresentation = originalParsedRange.ToNormalizedString();
+
+            var roundTrippedRange = VersionRange.Parse(normalizedRangeRepresentation);
+            // Assert
+            Assert.Equal(originalParsedRange, roundTrippedRange);
+            Assert.Equal(originalParsedRange.ToNormalizedString(), roundTrippedRange.ToNormalizedString());
+            if (isOriginalStringNormalized)
+            {
+                Assert.Equal(originalParsedRange.ToNormalizedString(), versionString);
+            }
+            else
+            {
+                Assert.NotEqual(originalParsedRange.ToNormalizedString(), versionString);
+            }
+        }
+
         [Fact]
         public void VersionRange_PrettyPrintAllRange()
         {

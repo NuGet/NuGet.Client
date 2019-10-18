@@ -264,10 +264,12 @@ namespace NuGet.Commands
                 }
             }
 
-            // Take the lowest version higher than the pivot if one exists,
-            // unless the version range is floating without an upper bound
-            if ((!range.IsFloating || range.IsFloating && range.HasUpperBound)
-                && (range.HasLowerBound || range.HasUpperBound))
+            //Floatless ranges - If there's a pivot/lower or higher bound, take the first above that pivot.
+            bool floatlessRangeHasBounds = !range.IsFloating && (range.HasLowerBound || range.HasUpperBound);
+            //Floating ranges - by definition they need the latest version, so unless there's an upper bound always show the highest version possible.
+            bool floatingRangeHasUpperBound = range.IsFloating && range.HasUpperBound;
+
+            if (floatlessRangeHasBounds || floatingRangeHasUpperBound)
             {
                 bestMatch = versions.Where(e => e >= ideal).FirstOrDefault();
             }

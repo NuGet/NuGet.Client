@@ -106,7 +106,8 @@ namespace NuGet.Versioning
                 && charArray.Length == 1
                 && charArray[0] == '*')
             {
-                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
+                var stableFloatingMin = new NuGetVersion(0, 0, 0);
+                versionRange = new VersionRange(stableFloatingMin, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major, stableFloatingMin), originalString: value);
                 return true;
             }
 
