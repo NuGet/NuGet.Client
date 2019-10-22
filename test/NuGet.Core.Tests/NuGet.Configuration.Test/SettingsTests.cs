@@ -2367,6 +2367,51 @@ namespace NuGet.Configuration.Test
             Assert.Equal(Path.Combine(originDirectoryPath, path), resolvedPath);
         }
 
+        [Fact]
+        public void GetImmutableSettings()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""a"" />
+    </SectionName>
+</configuration>";
+                var subDir = Path.Combine(mockBaseDirectory, "a");
+                var configAPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""b"" />
+    </SectionName>
+</configuration>";
+                subDir = Path.Combine(mockBaseDirectory, "b");
+                var configBPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""c"" />
+    </SectionName>
+</configuration>";
+                subDir = Path.Combine(mockBaseDirectory, "c");
+                var configCPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                // Act
+                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath}, new SettingsLoadingContext() );
+                var section = settings.GetSection("SectionName");
+                Assert.Equal(1, section.Items.Count);
+                Assert.Equal("a", section.Items.First().ElementName);
+            }
+        }
+
         private static string GetOriginDirectoryPath()
         {
             if (RuntimeEnvironmentHelper.IsWindows)
