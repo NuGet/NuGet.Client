@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -25,8 +26,25 @@ namespace NuGet.Protocol
         /// requests cannot always be used. For example, suppose the request is a POST and contains content
         /// of a stream that can only be consumed once.
         /// </remarks>
+        public Task<HttpResponseMessage> SendAsync(
+            HttpRetryHandlerRequest request,
+            ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return SendAsync(request, source: null, log, cancellationToken);
+        }
+
+        /// <summary>
+        /// Make an HTTP request while retrying after failed attempts or timeouts.
+        /// </summary>
+        /// <remarks>
+        /// This method accepts a factory to create instances of the <see cref="HttpRequestMessage"/> because
+        /// requests cannot always be used. For example, suppose the request is a POST and contains content
+        /// of a stream that can only be consumed once.
+        /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
+            string source,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -46,7 +64,8 @@ namespace NuGet.Protocol
 
                 using (var requestMessage = request.RequestFactory())
                 {
-                    var stopwatch = Stopwatch.StartNew();
+                    var stopwatch = new Stopwatch();
+                    var headerStopwatch = new Stopwatch();
                     var requestUri = requestMessage.RequestUri.ToString();
                     
                     try
@@ -87,7 +106,14 @@ namespace NuGet.Protocol
                             requestUri,
                             (int)request.RequestTimeout.TotalMilliseconds);
                         response = await TimeoutUtility.StartWithTimeout(
-                            timeoutToken => request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken),
+                            async timeoutToken =>
+                            {
+                                stopwatch.Start();
+                                headerStopwatch.Start();
+                                var responseMessage = await request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken);
+                                headerStopwatch.Stop();
+                                return responseMessage;
+                            },
                             request.RequestTimeout,
                             timeoutMessage,
                             cancellationToken);
@@ -96,10 +122,20 @@ namespace NuGet.Protocol
                         if (response.Content != null)
                         {
                             var networkStream = await response.Content.ReadAsStreamAsync();
-                            var newContent = new DownloadTimeoutStreamContent(
+                            var timeoutStream = new DownloadTimeoutStream(requestUri, networkStream, request.DownloadTimeout);
+                            var diagnosticsInfo = new ProtocolDiagnosticEvent(DateTime.MinValue,
+                                source,
                                 requestUri,
-                                networkStream,
-                                request.DownloadTimeout);
+                                headerStopwatch.Elapsed,
+                                TimeSpan.MinValue,
+                                (int)response.StatusCode,
+                                bytes: 0,
+                                isSuccess: true,
+                                isRetry: request.IsRetry || tries > 1,
+                                isCancelled: false);
+                            var diagnosticsStream = new ProtocolDiagnosticsStream(timeoutStream, diagnosticsInfo, stopwatch);
+
+                            var newContent = new StreamContent(diagnosticsStream);
 
                             // Copy over the content headers since we are replacing the HttpContent instance associated
                             // with the response message.
@@ -127,6 +163,18 @@ namespace NuGet.Protocol
                     {
                         response?.Dispose();
 
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                            timestamp: DateTime.UtcNow,
+                            source,
+                            requestUri,
+                            headerDuration: null,
+                            eventDuration: stopwatch.Elapsed,
+                            httpStatusCode: null,
+                            bytes: 0,
+                            isSuccess: false,
+                            isRetry: request.IsRetry || tries > 1,
+                            isCancelled: true));
+
                         throw;
                     }
                     catch (Exception e)
@@ -134,6 +182,18 @@ namespace NuGet.Protocol
                         success = false;
 
                         response?.Dispose();
+
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                            timestamp: DateTime.UtcNow,
+                            source,
+                            requestUri,
+                            headerDuration: null,
+                            eventDuration: stopwatch.Elapsed,
+                            httpStatusCode: null,
+                            bytes: 0,
+                            isSuccess: false,
+                            isRetry: request.IsRetry || tries > 1,
+                            isCancelled: false));
 
                         if (tries >= request.MaxTries)
                         {

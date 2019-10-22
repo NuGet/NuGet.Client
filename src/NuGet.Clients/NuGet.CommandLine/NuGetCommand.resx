@@ -5550,4 +5550,7 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   <data name="PackageCommandDeterministic" xml:space="preserve">
     <value>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package.</value>
   </data>
+  <data name="CommandProtocolDiagnostics" xml:space="preserve">
+    <value>Protocol diagnostics log file name</value>
+  </data>
 </root>

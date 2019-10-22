@@ -55,5 +55,8 @@ namespace NuGet.Protocol
         /// Additional headers to add to the request.
         /// </summary>
         public IList<KeyValuePair<string, IEnumerable<string>>> AddHeaders { get; set; } = new List<KeyValuePair<string, IEnumerable<string>>>();
+
+        /// <summary>Boolean representing whether the first attempt of this request is already a retry.</summary>
+        public bool IsRetry { get; set; }
     }
 }

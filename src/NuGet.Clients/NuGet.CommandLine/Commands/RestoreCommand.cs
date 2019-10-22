@@ -25,6 +25,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Shared;
 
 namespace NuGet.CommandLine
@@ -70,6 +71,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "RestoreCommandForceEvaluate")]
         public bool ForceEvaluate { get; set; }
+
+        [Option(typeof(NuGetCommand), "CommandProtocolDiagnostics")]
+        public string ProtocolDiagnosticsLog { get; set; }
 
         [ImportingConstructor]
         public RestoreCommand()
@@ -120,74 +124,92 @@ namespace NuGet.CommandLine
                 return;
             }
 
-            // packages.config
-            if (hasPackagesConfigFiles)
+            ProtocolDiagnosticsJsonLogger protocolDiagnosticsLogger = null;
+            if (!string.IsNullOrWhiteSpace(ProtocolDiagnosticsLog))
             {
-                var v2RestoreResults = await PerformNuGetV2RestoreAsync(restoreInputs);
-                restoreSummaries.AddRange(v2RestoreResults);
-
-                foreach (var restoreResult in v2RestoreResults.Where(r => !r.Success))
-                {
-                    restoreResult
-                        .Errors
-                        .Where(l => l.Level == LogLevel.Warning)
-                        .ForEach(l => Console.LogWarning(l.FormatWithCode()));
-                }
+                protocolDiagnosticsLogger = new ProtocolDiagnosticsJsonLogger(ProtocolDiagnosticsLog);
+                ProtocolDiagnostics.Event += protocolDiagnosticsLogger.OnEvent;
             }
 
-            // project.json and PackageReference
-            if (hasProjectJsonOrPackageReferences)
+            try
             {
-                // Read the settings outside of parallel loops.
-                ReadSettings(restoreInputs);
-
-                // Check if we can restore based on the nuget.config settings
-                CheckRequireConsent();
-
-                using (var cacheContext = new SourceCacheContext())
+                // packages.config
+                if (hasPackagesConfigFiles)
                 {
-                    cacheContext.NoCache = NoCache;
-                    cacheContext.DirectDownload = DirectDownload;
+                    var v2RestoreResults = await PerformNuGetV2RestoreAsync(restoreInputs);
+                    restoreSummaries.AddRange(v2RestoreResults);
 
-                    var restoreContext = restoreInputs.RestoreV3Context;
-                    var providerCache = new RestoreCommandProvidersCache();
-
-                    // Add restore args to the restore context
-                    restoreContext.CacheContext = cacheContext;
-                    restoreContext.DisableParallel = DisableParallelProcessing;
-                    restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
-                    restoreContext.ConfigFile = ConfigFile;
-                    restoreContext.MachineWideSettings = MachineWideSettings;
-                    restoreContext.Log = Console;
-                    restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
-                    restoreContext.RestoreForceEvaluate = ForceEvaluate;
-
-                    var packageSaveMode = EffectivePackageSaveMode;
-                    if (packageSaveMode != Packaging.PackageSaveMode.None)
+                    foreach (var restoreResult in v2RestoreResults.Where(r => !r.Success))
                     {
-                        restoreContext.PackageSaveMode = EffectivePackageSaveMode;
+                        restoreResult
+                            .Errors
+                            .Where(l => l.Level == LogLevel.Warning)
+                            .ForEach(l => Console.LogWarning(l.FormatWithCode()));
                     }
+                }
 
-                    // Providers
-                    // Use the settings loaded above in ReadSettings(restoreInputs)
-                    if (restoreInputs.ProjectReferenceLookup.Restore.Count > 0)
+                // project.json and PackageReference
+                if (hasProjectJsonOrPackageReferences)
+                {
+                    // Read the settings outside of parallel loops.
+                    ReadSettings(restoreInputs);
+
+                    // Check if we can restore based on the nuget.config settings
+                    CheckRequireConsent();
+
+                    using (var cacheContext = new SourceCacheContext())
                     {
-                        // Remove input list, everything has been loaded already
-                        restoreContext.Inputs.Clear();
+                        cacheContext.NoCache = NoCache;
+                        cacheContext.DirectDownload = DirectDownload;
 
-                        restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
-                            providerCache,
-                            restoreInputs.ProjectReferenceLookup));
-                    }
-                    else
-                    {
-                        // Allow an external .dg file
-                        restoreContext.RequestProviders.Add(new DependencyGraphFileRequestProvider(providerCache));
-                    }
+                        var restoreContext = restoreInputs.RestoreV3Context;
+                        var providerCache = new RestoreCommandProvidersCache();
 
-                    // Run restore
-                    var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
-                    restoreSummaries.AddRange(v3Summaries);
+                        // Add restore args to the restore context
+                        restoreContext.CacheContext = cacheContext;
+                        restoreContext.DisableParallel = DisableParallelProcessing;
+                        restoreContext.AllowNoOp = !Force; // if force, no-op is not allowed
+                        restoreContext.ConfigFile = ConfigFile;
+                        restoreContext.MachineWideSettings = MachineWideSettings;
+                        restoreContext.Log = Console;
+                        restoreContext.CachingSourceProvider = GetSourceRepositoryProvider();
+                        restoreContext.RestoreForceEvaluate = ForceEvaluate;
+
+                        var packageSaveMode = EffectivePackageSaveMode;
+                        if (packageSaveMode != Packaging.PackageSaveMode.None)
+                        {
+                            restoreContext.PackageSaveMode = EffectivePackageSaveMode;
+                        }
+
+                        // Providers
+                        // Use the settings loaded above in ReadSettings(restoreInputs)
+                        if (restoreInputs.ProjectReferenceLookup.Restore.Count > 0)
+                        {
+                            // Remove input list, everything has been loaded already
+                            restoreContext.Inputs.Clear();
+
+                            restoreContext.PreLoadedRequestProviders.Add(new DependencyGraphSpecRequestProvider(
+                                providerCache,
+                                restoreInputs.ProjectReferenceLookup));
+                        }
+                        else
+                        {
+                            // Allow an external .dg file
+                            restoreContext.RequestProviders.Add(new DependencyGraphFileRequestProvider(providerCache));
+                        }
+
+                        // Run restore
+                        var v3Summaries = await RestoreRunner.RunAsync(restoreContext);
+                        restoreSummaries.AddRange(v3Summaries);
+                    }
+                }
+            }
+            finally
+            {
+                if (protocolDiagnosticsLogger != null)
+                {
+                    ProtocolDiagnostics.Event -= protocolDiagnosticsLogger.OnEvent;
+                    protocolDiagnosticsLogger.Dispose();
                 }
             }
 

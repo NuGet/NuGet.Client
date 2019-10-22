@@ -666,6 +666,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Protocol diagnostics log file name.
+        /// </summary>
+        internal static string CommandProtocolDiagnostics {
+            get {
+                return ResourceManager.GetString("CommandProtocolDiagnostics", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A list of packages sources to use for this command..
         /// </summary>
         internal static string CommandSourceDescription {

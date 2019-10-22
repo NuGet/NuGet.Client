@@ -128,6 +128,7 @@ namespace NuGet.Protocol
                         request.RequestTimeout,
                         request.DownloadTimeout,
                         request.MaxTries,
+                        request.IsRetry,
                         request.CacheContext.SourceCacheContext.SessionId,
                         log,
                         lockedToken);
@@ -247,6 +248,7 @@ namespace NuGet.Protocol
                 request.RequestTimeout,
                 request.DownloadTimeout,
                 request.MaxTries,
+                request.IsRetry,
                 sessionId,
                 log,
                 token);
@@ -279,6 +281,7 @@ namespace NuGet.Protocol
             TimeSpan requestTimeout,
             TimeSpan downloadTimeout,
             int maxTries,
+            bool isRetry,
             Guid sessionId,
             ILogger log,
             CancellationToken cancellationToken)
@@ -290,7 +293,8 @@ namespace NuGet.Protocol
             {
                 RequestTimeout = requestTimeout,
                 DownloadTimeout = downloadTimeout,
-                MaxTries = maxTries
+                MaxTries = maxTries,
+                IsRetry = isRetry
             };
 
             // Add X-NuGet-Session-Id to all outgoing requests. This allows feeds to track nuget operations.
@@ -302,7 +306,7 @@ namespace NuGet.Protocol
             HttpResponseMessage response;
             try
             {
-                response = await RetryHandler.SendAsync(request, log, cancellationToken);
+                response = await RetryHandler.SendAsync(request, _packageSource.Name, log, cancellationToken);
             }
             catch
             {

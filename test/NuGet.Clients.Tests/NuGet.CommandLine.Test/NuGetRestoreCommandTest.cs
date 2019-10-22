@@ -191,6 +191,36 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void RestoreCommand_ProtocolDiagnosticsLogFileWritten()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<packages>
+</packages>");
+                var protocolLogFileName = Path.Combine(workingPath, "protocol.json");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath, "-ProtocolDiagnosticsLog", protocolLogFileName };
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.Equal(_successCode, r.Item1);
+                Assert.True(File.Exists(protocolLogFileName));
+            }
+        }
+
+        [Fact]
         public async void RestoreCommand_MissingNuspecFileInPackage_FailsWithNU5037()
         {
             // Arrange

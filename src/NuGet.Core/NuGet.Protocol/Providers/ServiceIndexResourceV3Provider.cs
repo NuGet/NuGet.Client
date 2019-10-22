@@ -127,7 +127,8 @@ namespace NuGet.Protocol
                                 cacheContext)
                             {
                                 EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
-                                MaxTries = 1
+                                MaxTries = 1,
+                                IsRetry = retry > 0
                             },
                             async httpSourceResult =>
                             {
