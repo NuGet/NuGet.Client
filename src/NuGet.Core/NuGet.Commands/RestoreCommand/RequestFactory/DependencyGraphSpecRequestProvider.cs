@@ -70,25 +70,28 @@ namespace NuGet.Commands
             // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
             Parallel.ForEach(dgFile.Restore.ToArray(), parallelOptions, projectNameToRestore =>
             {
-                var closure = dgFile.GetClosure(projectNameToRestore);
-
-                var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
-
-                var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
-
-                var rootProject = externalClosure.Single(p =>
-                    StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
-
-                var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec);
-
-                if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                foreach (var projectNameToRestore in dgFile.Restore)
                 {
-                    // Store tool requests to be filtered later
-                    toolRequests.Add(request);
-                }
-                else
-                {
-                    requests.Add(request);
+                    var closure = dgFile.GetClosure(projectNameToRestore);
+
+                    var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
+
+                    var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
+
+                    var rootProject = externalClosure.Single(p =>
+                        StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
+
+                    var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec, settingsLoadingContext: settingsLoadingContext);
+
+                    if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
+                    {
+                        // Store tool requests to be filtered later
+                        toolRequests.Add(request);
+                    }
+                    else
+                    {
+                        requests.Add(request);
+                    }
                 }
             });
 
@@ -133,13 +136,14 @@ namespace NuGet.Commands
             ExternalProjectReference project,
             HashSet<ExternalProjectReference> projectReferenceClosure,
             RestoreArgs restoreArgs,
-            DependencyGraphSpec projectDgSpec)
+            DependencyGraphSpec projectDgSpec,
+            SettingsLoadingContext settingsLoadingContext)
         {
             var projectPackageSpec = projectDgSpec.GetProjectSpec(projectNameToRestore);
             //fallback paths, global packages path and sources need to all be passed in the dg spec
             var fallbackPaths = projectPackageSpec.RestoreMetadata.FallbackFolders;
             var globalPath = GetPackagesPath(restoreArgs, projectPackageSpec);
-            var settings = Settings.LoadSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths);
+            var settings = Settings.LoadImmutableSettingsGivenConfigPaths(projectPackageSpec.RestoreMetadata.ConfigFilePaths, settingsLoadingContext);
             var sources = restoreArgs.GetEffectiveSources(settings, projectPackageSpec.RestoreMetadata.Sources);
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, restoreArgs.Log);
 
