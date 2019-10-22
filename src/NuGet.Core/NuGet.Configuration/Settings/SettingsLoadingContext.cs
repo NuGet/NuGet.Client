@@ -1,47 +1,56 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Threading;
+using NuGet.Common;
 
 namespace NuGet.Configuration
 {
-    public class SettingsLoadingContext : IDisposable
+    public sealed class SettingsLoadingContext : IDisposable
     {
-        private IList<SettingsFile> _settingsFiles = new List<SettingsFile>();
+        private readonly IList<Lazy<SettingsFile>> _settingsFiles = new List<Lazy<SettingsFile>>();
         private readonly SemaphoreSlim _semaphore;
         private bool _isDisposed;
 
         public SettingsLoadingContext()
         {
-            _semaphore = new SemaphoreSlim(1, 1);
+            _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
 
         internal SettingsFile GetOrCreateSettingsFile(string filePath)
         {
             if (filePath == null)
             {
-                throw new ArgumentNullException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath)));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath)));
             }
+
             _semaphore.Wait();
+            Lazy<SettingsFile> settingsFile = null;
+
             try
             {
                 for (int i = 0; i < _settingsFiles.Count; i++)
                 {
-                    if (_settingsFiles[i].ConfigFilePath.Equals(filePath))
+                    if (PathUtility.GetStringComparerBasedOnOS().Equals(_settingsFiles[i].Value.ConfigFilePath, filePath))
                     {
-                        return _settingsFiles[i];
+                        return _settingsFiles[i].Value;
                     }
                 }
+
                 var file = new FileInfo(filePath);
-                var settingsFile = new SettingsFile(file.DirectoryName, file.Name);
+                settingsFile = new Lazy<SettingsFile>(() => new SettingsFile(file.DirectoryName, file.Name));
                 _settingsFiles.Add(settingsFile);
-                return settingsFile;
             }
             finally
             {
                 _semaphore.Release();
             }
+
+            return settingsFile?.Value;
         }
 
         public void Dispose()

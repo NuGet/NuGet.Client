@@ -15,7 +15,7 @@ namespace NuGet.Configuration
 
         internal ImmutableSettings(ISettings settings)
         {
-            _settings = settings ?? throw new ArgumentNullException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(settings)));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings)));
         }
 
         public event EventHandler SettingsChanged
@@ -31,7 +31,7 @@ namespace NuGet.Configuration
         }
         public void AddOrUpdate(string sectionName, SettingItem item)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public IList<string> GetConfigFilePaths()
@@ -51,12 +51,12 @@ namespace NuGet.Configuration
 
         public void Remove(string sectionName, SettingItem item)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void SaveToDisk()
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
     }
 }

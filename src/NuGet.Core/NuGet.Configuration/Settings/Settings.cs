@@ -317,15 +317,15 @@ namespace NuGet.Configuration
 
         public static ISettings LoadImmutableSettingsGivenConfigPaths(IList<string> configFilePaths, SettingsLoadingContext settingsLoadingContext)
         {
-            var settings = new List<SettingsFile>();
             if (configFilePaths == null || configFilePaths.Count == 0)
             {
                 return NullSettings.Instance;
             }
+            var settings = new List<SettingsFile>();
 
-            foreach (var configFile in configFilePaths)
+            foreach (var configFilePath in configFilePaths)
             {
-                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(filePath: configFile));
+                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath));
             }
 
             return new ImmutableSettings(LoadSettingsGivenSettingsFiles(settings));
