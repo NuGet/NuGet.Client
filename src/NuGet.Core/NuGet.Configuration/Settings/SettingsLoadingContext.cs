@@ -23,6 +23,11 @@ namespace NuGet.Configuration
 
         internal SettingsFile GetOrCreateSettingsFile(string filePath)
         {
+            if (_isDisposed)
+            {
+                throw new ObjectDisposedException(nameof(SettingsLoadingContext));
+            }
+
             if (filePath == null)
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath)));
@@ -60,6 +65,7 @@ namespace NuGet.Configuration
                 return;
             }
             _semaphore.Dispose();
+            _settingsFiles.Clear();
 
             GC.SuppressFinalize(this);
 
