@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
 using NuGet.Common;
@@ -282,6 +283,87 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("Newtonsoft.Json", packagesB[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("10.0.3"), false, new NuGetVersion("11.0.1"), true), packagesB[0].VersionRange);
+                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesB[0].Exclude);
+                    Assert.Empty(packagesB[0].Include);
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task PackCommand_PackProject_PackageReferenceAllStableFloatingVersionRange_UsesRestoredVersionInNuspecAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projectName = "ClassLibrary1";
+                var availableVersions = "1.0.0;2.0.0";
+                var workingDirectory = Path.Combine(pathContext.WorkingDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName);
+
+                foreach (string version in availableVersions.Split(';'))
+                {
+                    // Set up the package and source
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = "x",
+                        Version = version
+                    };
+
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                         pathContext.PackageSource,
+                         PackageSaveMode.Defaultv3,
+                         package);
+                }
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "net45");
+
+                    var attributes = new Dictionary<string, string>();
+
+                    attributes["Version"] = "*";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "x",
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(1,
+                        dependencyGroups.Count);
+
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[0].TargetFramework);
+                    var packagesB = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(1, packagesB.Count);
+                    Assert.Equal("x", packagesB[0].Id);
+                    Assert.Equal(new VersionRange(new NuGetVersion("2.0.0"), true, null, false), packagesB[0].VersionRange);
                     Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesB[0].Exclude);
                     Assert.Empty(packagesB[0].Include);
                 }

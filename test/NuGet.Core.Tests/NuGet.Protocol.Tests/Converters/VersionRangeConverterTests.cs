@@ -45,7 +45,8 @@ namespace NuGet.Protocol.Tests
         public void ReadJson_ReadsWildCardVersionRange()
         {
             const string wildcard = "*";
-            var expectedVersionRange = new VersionRange(new NuGetVersion(0,0,0), true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: wildcard);
+            var v000 = new NuGetVersion(0, 0, 0);
+            var expectedVersionRange = new VersionRange(v000, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major, v000), originalString: wildcard);
             using (var stringReader = new StringReader($"\"{wildcard}\""))
             using (var jsonReader = new JsonTextReader(stringReader))
             {

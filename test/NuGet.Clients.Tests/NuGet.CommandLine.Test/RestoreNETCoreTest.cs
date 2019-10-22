@@ -9045,8 +9045,117 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        
+                [Theory]
+        [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
+        [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
+        public async Task RestoreNetCore_WithFloatingVersion_SelectsCorrectVersion(string availableVersions, string declaredProjectVersion, string expectedVersion)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "net472";
 
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(netcoreapp20));
+
+                foreach (string version in availableVersions.Split(';'))
+                {
+                    // Set up the package and source
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = "x",
+                        Version = version
+                    };
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                         pathContext.PackageSource,
+                         PackageSaveMode.Defaultv3,
+                         package);
+                }
+
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = declaredProjectVersion
+                });
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.Equal(expectedVersion, projectA.AssetsFile.Libraries.Single().Version.ToString());
+            }
+        }
+
+        [Theory]
+        [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
+        [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
+        public async Task RestoreNetCore_PackagesLockFileWithFloatingVersion_LockedModeIsRespected(string availableVersions, string declaredProjectVersion, string expectedVersion)
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp20 = "net472";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(netcoreapp20));
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                foreach (string version in availableVersions.Split(';'))
+                {
+                    // Set up the package and source
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = "x",
+                        Version = version
+                    };
+                    await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                         pathContext.PackageSource,
+                         PackageSaveMode.Defaultv3,
+                         package);
+                }
+
+                projectA.AddPackageToAllFrameworks(new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = declaredProjectVersion
+                });
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+                Assert.Equal(expectedVersion, projectA.AssetsFile.Libraries.Single().Version.ToString());
+                // Set-up again. 
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Save();
+
+                // Act
+                result = Util.RestoreSolution(pathContext);
+
+                // Assert 
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+            }
+        }
 
         private static byte[] GetTestUtilityResource(string name)
         {
