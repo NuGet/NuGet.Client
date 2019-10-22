@@ -15,7 +15,7 @@ namespace NuGet.Configuration
 
         internal ImmutableSettings(ISettings settings)
         {
-            _settings = settings ?? throw new ArgumentNullException(nameof(settings)));
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public event EventHandler SettingsChanged
