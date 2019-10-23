@@ -65,7 +65,7 @@ namespace NuGet.Protocol
                 using (var requestMessage = request.RequestFactory())
                 {
                     var stopwatch = new Stopwatch();
-                    var headerStopwatch = new Stopwatch();
+                    Stopwatch headerStopwatch = request.CompletionOption == HttpCompletionOption.ResponseHeadersRead ? new Stopwatch() : null;
                     var requestUri = requestMessage.RequestUri.ToString();
                     
                     try
@@ -109,9 +109,9 @@ namespace NuGet.Protocol
                             async timeoutToken =>
                             {
                                 stopwatch.Start();
-                                headerStopwatch.Start();
+                                headerStopwatch?.Start();
                                 var responseMessage = await request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken);
-                                headerStopwatch.Stop();
+                                headerStopwatch?.Stop();
                                 return responseMessage;
                             },
                             request.RequestTimeout,
@@ -126,7 +126,7 @@ namespace NuGet.Protocol
                             var diagnosticsInfo = new ProtocolDiagnosticEvent(DateTime.MinValue,
                                 source,
                                 requestUri,
-                                headerStopwatch.Elapsed,
+                                headerStopwatch?.Elapsed,
                                 TimeSpan.MinValue,
                                 (int)response.StatusCode,
                                 bytes: 0,
