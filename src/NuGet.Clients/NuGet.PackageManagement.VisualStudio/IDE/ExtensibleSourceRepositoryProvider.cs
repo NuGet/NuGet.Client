@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -28,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private bool _initialized;
 
-        private readonly object _lockObj = new object();
+        private object _lockObj = new object();
 
         /// <summary>
         /// Public parameter-less constructor for SourceRepositoryProvider
@@ -53,20 +54,17 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private void EnsureInitialized()
         {
-            lock (_lockObj)
-            {
-                if (!_initialized)
-                {
-                    _initialized = true;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                    _packageSourceProvider = new PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-                    // Hook up event to refresh package sources when the package sources changed
-                    _packageSourceProvider.PackageSourcesChanged += ResetRepositories;
-                }
-            }
+            LazyInitializer.EnsureInitialized(ref _packageSourceProvider,
+                ref _initialized,
+                ref _lockObj,
+                () =>
+                    {
+                        #pragma warning disable CS0618 // Type or member is obsolete
+                        IPackageSourceProvider packageSourceProvider = new PackageSourceProvider(_settings.Value, enablePackageSourcesChangedEvent: true);
+                        #pragma warning restore CS0618 // Type or member is obsolete
+                        packageSourceProvider.PackageSourcesChanged += ResetRepositories;
+                        return packageSourceProvider;
+                    });
         }
 
         /// <summary>
