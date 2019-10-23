@@ -9045,7 +9045,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-                [Theory]
+        [Theory]
         [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
         [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
         public async Task RestoreNetCore_WithFloatingVersion_SelectsCorrectVersion(string availableVersions, string declaredProjectVersion, string expectedVersion)

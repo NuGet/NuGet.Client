@@ -263,12 +263,12 @@ namespace NuGet.Commands
                     ideal = range.MinVersion;
                 }
             }
-            //| Range          | Available    | Closest |
+            //|      Range     |          Available         | Closest  |
             //| [1.0.0, )      | 0.7.0, 0.9.0               | 0.7.0    |
             //| (0.5.0, 1.0.0) | 0.1.0, 1.0.0               | 1.0.0    |
             //| (, 1.0.0)      | 2.0.0, 3.0.0               | 2.0.0    |
             //| [1.*,)         | 0.0.1, 0.0.5, 0.1.0, 0.9.0 | 0.9.0    |
-            //| [1.*, 2.0.0]   | 0.1.0,0.3.0,3.0.0,4.0.0    | 3.0.0    |
+            //| [1.*, 2.0.0]   | 0.1.0, 0.3.0, 3.0.0, 4.0.0 | 3.0.0    |
             //| *              | 0.0.1-alpha, 2.1.0-p1      | 2.1.0-p1 |
             //Floatless ranges - If there's a pivot/lower or higher bound, take the first above that pivot.
             bool floatlessRangeHasBounds = !range.IsFloating && (range.HasLowerBound || range.HasUpperBound);
