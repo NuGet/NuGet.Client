@@ -2368,7 +2368,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void GetImmutableSettings()
+        public void LoadImmutableSettingsGivenConfigPaths_MergesConfigsInCorrectOrder()
         {
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
@@ -2404,11 +2404,119 @@ namespace NuGet.Configuration.Test
                 var configCPath = Path.Combine(subDir, nugetConfigPath);
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
 
+                var settingsLoadContext = new SettingsLoadingContext();
+
                 // Act
-                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath}, new SettingsLoadingContext() );
+                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath}, settingsLoadContext);
+                // Assert
                 var section = settings.GetSection("SectionName");
                 Assert.Equal(1, section.Items.Count);
-                Assert.Equal("a", section.Items.First().ElementName);
+                Assert.Equal("a", ((AddItem)section.Items.First()).Value);
+
+                // Act
+                settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configCPath, configBPath }, settingsLoadContext);
+                // Assert
+                section = settings.GetSection("SectionName");
+                Assert.Equal(1, section.Items.Count);
+                Assert.Equal("c", ((AddItem)section.Items.First()).Value);
+
+                // Act
+                settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configBPath, configCPath }, settingsLoadContext);
+                // Assert
+                section = settings.GetSection("SectionName");
+                Assert.Equal(1, section.Items.Count);
+                Assert.Equal("b", ((AddItem)section.Items.First()).Value);
+            }
+        }
+
+        [Fact]
+        public void LoadImmutableSettingsGivenConfigPaths_CachesConfigs()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""a"" />
+    </SectionName>
+</configuration>";
+                var subDir = Path.Combine(mockBaseDirectory, "a");
+                var configAPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""b"" />
+    </SectionName>
+</configuration>";
+                subDir = Path.Combine(mockBaseDirectory, "b");
+                var configBPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                // Act
+                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath }, new SettingsLoadingContext());
+                // Assert
+                var section = settings.GetSection("SectionName");
+                Assert.Equal(1, section.Items.Count);
+                Assert.Equal("a", ((AddItem)section.Items.First()).Value);
+
+                // Change the value of config A...basically this ensures we get the cached version, since there's no way to ensure that the same SettingsFile was returned.
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""new"" />
+    </SectionName>
+</configuration>";
+                subDir = Path.Combine(mockBaseDirectory, "a");
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath }, new SettingsLoadingContext());
+                section = settings.GetSection("SectionName");
+                Assert.Equal(1, section.Items.Count);
+                Assert.Equal("new", ((AddItem)section.Items.First()).Value);
+            }
+        }
+
+        [Fact]
+        public void LoadImmutableSettingsGivenConfigPaths_ImmutableSettigns_ThrowForNotSupportedOperations()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var nugetConfigPath = "NuGet.Config";
+                var config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""a"" />
+    </SectionName>
+</configuration>";
+                var subDir = Path.Combine(mockBaseDirectory, "a");
+                var configAPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+
+                config = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""b"" />
+    </SectionName>
+</configuration>";
+                subDir = Path.Combine(mockBaseDirectory, "b");
+                var configBPath = Path.Combine(subDir, nugetConfigPath);
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, subDir, config);
+
+                // Act
+                var settings = Settings.LoadImmutableSettingsGivenConfigPaths(new string[] { configAPath, configBPath }, new SettingsLoadingContext());
+
+                // Assert
+                Assert.Throws<NotSupportedException>(() => settings.AddOrUpdate("name", new AddItem("key", "value")));
+                Assert.Throws<NotSupportedException>(() => settings.Remove("name", new AddItem("key", "value")));
+                Assert.Throws<NotSupportedException>(() => settings.SaveToDisk());
             }
         }
 
