@@ -21,6 +21,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
     - .NET desktop development
     - Visual Studio extension development.
     - .NET Core Cross Platform Development
+    - C++ development
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
