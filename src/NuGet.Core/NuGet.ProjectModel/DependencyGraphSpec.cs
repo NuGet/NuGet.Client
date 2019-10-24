@@ -66,6 +66,11 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
+        /// Gets or sets a value indicating if this instance can be treated as read-only and no other threads will update it.
+        /// </summary>
+        public bool IsReadOnly { get; set; }
+
+        /// <summary>
         /// File json.
         /// </summary>
         public JObject Json { get; }
@@ -116,12 +121,11 @@ namespace NuGet.ProjectModel
         /// <returns></returns>
         public DependencyGraphSpec WithProjectClosure(string projectUniqueName)
         {
-
             var projectDependencyGraphSpec = new DependencyGraphSpec();
             projectDependencyGraphSpec.AddRestore(projectUniqueName);
             foreach (var spec in GetClosure(projectUniqueName))
             {
-                projectDependencyGraphSpec.AddProject(spec.Clone());
+                projectDependencyGraphSpec.AddProject(!IsReadOnly ? spec.Clone() : spec);
             }
 
             return projectDependencyGraphSpec;
