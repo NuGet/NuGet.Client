@@ -51,8 +51,15 @@ namespace NuGet.Protocol.Plugins
             }
 
             Close();
-
-            _textWriter.Dispose();
+            try
+            {
+                _textWriter.Dispose();
+            }
+            catch (IOException)
+            {
+                // can throw a named pipe exception
+                // we don't care since we are disposing. 
+            }
 
             GC.SuppressFinalize(this);
 
