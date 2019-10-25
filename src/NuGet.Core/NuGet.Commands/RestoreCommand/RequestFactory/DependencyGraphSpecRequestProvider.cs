@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -56,10 +57,18 @@ namespace NuGet.Commands
             SpecValidationUtility.ValidateDependencySpec(dgFile);
 
             // Create requests
-            var requests = new List<RestoreSummaryRequest>();
-            var toolRequests = new List<RestoreSummaryRequest>();
+            var requests = new ConcurrentBag<RestoreSummaryRequest>();
+            var toolRequests = new ConcurrentBag<RestoreSummaryRequest>();
 
-            foreach (var projectNameToRestore in dgFile.Restore)
+            var parallelOptions = new ParallelOptions
+            {
+                // By default, max degree of parallelism is -1 which means no upper bound.
+                // Limiting to processor count reduces task context switching which is better
+                MaxDegreeOfParallelism = Environment.ProcessorCount
+            };
+
+            // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
+            Parallel.ForEach(dgFile.Restore.ToArray(), parallelOptions, projectNameToRestore =>
             {
                 var closure = dgFile.GetClosure(projectNameToRestore);
 
@@ -81,12 +90,15 @@ namespace NuGet.Commands
                 {
                     requests.Add(request);
                 }
-            }
+            });
 
             // Filter out duplicate tool restore requests
-            requests.AddRange(ToolRestoreUtility.GetSubSetRequests(toolRequests));
+            foreach (var subSetRequest in ToolRestoreUtility.GetSubSetRequests(toolRequests))
+            {
+                requests.Add(subSetRequest);
+            }
 
-            return requests;
+            return requests.ToArray();
         }
 
         public static IEnumerable<ExternalProjectReference> GetExternalClosure(DependencyGraphSpec dgFile, string projectNameToRestore)
