@@ -444,6 +444,8 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
+                    actionTelemetryEvent.AddPiiData("internal.test.key.mattev", "internal.test.value.mattev");
+
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
             }, token);
