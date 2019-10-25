@@ -314,6 +314,8 @@ namespace NuGet.PackageManagement.UI
             var startTime = DateTimeOffset.Now;
             var packageCount = 0;
 
+            IDictionary<string, object> additionalTelemetryProperties = new Dictionary<string, object>();
+
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
 
@@ -345,6 +347,9 @@ namespace NuGet.PackageManagement.UI
                         {
                             var addCount = results.SelectMany(result => result.Added).
                                 Select(package => package.Id).Distinct().Count();
+
+                            var packageIds = results.SelectMany(result => result.Added).Select(package => package.Id).Distinct().OrderBy(x => x);
+                            additionalTelemetryProperties.Add("internal.test.mattev.addedPackages", string.Join(", ", packageIds));
 
                             var updateCount = results.SelectMany(result => result.Updated).
                                 Select(result => result.New.Id).Distinct().Count();
@@ -444,7 +449,20 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    actionTelemetryEvent.AddPiiData("internal.test.key.mattev", "internal.test.value.mattev");
+                    //actionTelemetryEvent.AddPiiData("internal.test.key.mattev.AddPiiData", "internal.test.value.mattev");
+                    //actionTelemetryEvent["internal.test.key2.mattev.int"] = (int)127;
+                    //actionTelemetryEvent["internal.test.key2.mattev.double"] = (double)127.5;
+                    actionTelemetryEvent["internal.test.key2.mattev.string"] = (string)"hello world";
+
+                    // we exposed some helpful telemetry properties during processing
+                    if (additionalTelemetryProperties != null && additionalTelemetryProperties.Count > 0)
+                    {
+                        foreach (var property in additionalTelemetryProperties)
+                        {
+                            actionTelemetryEvent[property.Key] = property.Value;
+                        }
+                    }
+
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
