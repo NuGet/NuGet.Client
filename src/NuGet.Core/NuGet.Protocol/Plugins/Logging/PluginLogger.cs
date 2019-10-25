@@ -20,8 +20,8 @@ namespace NuGet.Protocol.Plugins
         internal static PluginLogger DefaultInstance { get; } = new PluginLogger(EnvironmentVariableWrapper.Instance);
 
         public bool IsEnabled { get; }
-
-        public DateTimeOffset Now => _startTime.AddTicks(_stopwatch.ElapsedTicks);
+        // The DateTimeOffset and Stopwatch ticks are not equivalent. Convert them. 1/10000000 is 1 DateTime tick.
+        public DateTimeOffset Now => _startTime.AddTicks(_stopwatch.ElapsedTicks * 10000000 / Stopwatch.Frequency);
 
         internal PluginLogger(IEnvironmentVariableReader environmentVariableReader)
         {
