@@ -27,6 +27,8 @@ namespace NuGet.Configuration
 
         public static readonly string ClearTextPasswordToken = "ClearTextPassword";
 
+        public static readonly string ClientCertificates = "clientCertificates";
+
         public static readonly string Config = "config";
 
         public static readonly string Configuration = "configuration";
@@ -53,9 +55,17 @@ namespace NuGet.Configuration
 
         public static readonly string FallbackPackageFolders = "fallbackPackageFolders";
 
+        public static readonly string FindTypeToken = "FindType";
+
+        public static readonly string FindValueToken = "FindValue";
+
         public static readonly string Fingerprint = "fingerprint";
 
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
+
+        public static readonly string FromCert = "fromCert";
+
+        public static readonly string FromStorage = "fromStorage";
 
         public static readonly string GlobalPackagesFolder = "globalPackagesFolder";
 
@@ -79,6 +89,8 @@ namespace NuGet.Configuration
 
         public static readonly string PackageRestore = "packageRestore";
 
+        public static readonly string PathToken = "Path";
+
         public static readonly string PasswordKey = "http_proxy.password";
 
         public static readonly string PasswordToken = "Password";
@@ -94,6 +106,10 @@ namespace NuGet.Configuration
         public static readonly string SignatureValidationMode = "signatureValidationMode";
 
         public static readonly string SkipBindingRedirectsKey = "skip";
+
+        public static readonly string StoreLocationToken = "StoreLocation";
+
+        public static readonly string StoreNameToken = "StoreName";
 
         public static readonly string TrustedSigners = "trustedSigners";
 

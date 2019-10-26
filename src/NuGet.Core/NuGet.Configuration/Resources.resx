@@ -149,6 +149,12 @@
   <data name="Error_EncryptionUnsupported" xml:space="preserve">
     <value>Encryption is not supported on non-Windows platforms.</value>
   </data>
+  <data name="Error_FromStorageCertificateNotFound" xml:space="preserve">
+    <value>Certificate was not found in {0}.{1} storage by {2} criteria with {3} value</value>
+  </data>
+  <data name="Error_FromStorageSeveralCertificatesFound" xml:space="preserve">
+    <value>{0} certificates were found in {1}.{2} storage by {3} criteria with {4} value</value>
+  </data>
   <data name="Error_InvalidAttribute" xml:space="preserve">
     <value>The attribute {0}-{1} is not valid.</value>
     <comment>0 - attribute name
@@ -157,8 +163,26 @@
   <data name="Error_MergeTwoDifferentSections" xml:space="preserve">
     <value>Cannot merge two different sections.</value>
   </data>
+  <data name="Error_MoreThanOneCertificatePassword" xml:space="preserve">
+    <value>A fromCert item must have only one Password entry.</value>
+  </data>
+  <data name="Error_MoreThanOneFindType" xml:space="preserve">
+    <value>A fromStorage item must have only one FindType entry.</value>
+  </data>
+  <data name="Error_MoreThanOneFindValue" xml:space="preserve">
+    <value>A fromStorage item must have only one FindValue entry.</value>
+  </data>
   <data name="Error_MoreThanOnePassword" xml:space="preserve">
     <value>A credentials item must have only one Password or ClearTextPassword entry.</value>
+  </data>
+  <data name="Error_MoreThanOnePath" xml:space="preserve">
+    <value>A fromCert item must have only one Path entry.</value>
+  </data>
+  <data name="Error_MoreThanOneStoreLocation" xml:space="preserve">
+    <value>A fromStorage item must have only one StoreLocation entry.</value>
+  </data>
+  <data name="Error_MoreThanOneStoreName" xml:space="preserve">
+    <value>A fromStorage item must have only one StoreName entry.</value>
   </data>
   <data name="Error_MoreThanOneUsername" xml:space="preserve">
     <value>A credentials item must have only one Username entry.</value>
@@ -171,6 +195,30 @@
   </data>
   <data name="FileDoesNotExist" xml:space="preserve">
     <value>File '{0}' does not exist.</value>
+  </data>
+  <data name="FromCertItemMustHavePath" xml:space="preserve">
+    <value>A fromCert item must have Path entry.</value>
+  </data>
+  <data name="FromCertItemPathFileNotExist" xml:space="preserve">
+    <value>A fromCert item Path value points on non existing file.</value>
+  </data>
+  <data name="FromCertItemPathFileAndBase64NotSet" xml:space="preserve">
+    <value>A fromCert item Path value and Base-64 encoded points X.509 certificate not set.</value>
+  </data>
+  <data name="FromCertItemPathFileAndBase64Set" xml:space="preserve">
+    <value>A fromCert item must have only one Path value or Base-64 encoded X.509 certificate.</value>
+  </data>
+  <data name="FromStorageItemFindTypeNotSupported" xml:space="preserve">
+    <value>A fromStorage item FindType entry is not supported.</value>
+  </data>
+  <data name="FromStorageItemMustHaveFindValue" xml:space="preserve">
+    <value>A fromStorage item must have FindValue entry.</value>
+  </data>
+  <data name="FromStorageItemStoreLocationNotSupported" xml:space="preserve">
+    <value>A fromStorage item StoreLocation entry is not supported.</value>
+  </data>
+  <data name="FromStorageItemStoreNameNotSupported" xml:space="preserve">
+    <value>A fromStorage item StoreName entry is not supported.</value>
   </data>
   <data name="InvalidNullSettingsOperation" xml:space="preserve">
     <value>"{0}" cannot be called on a NullSettings. This may be caused on account of insufficient permissions to read or write to "%AppData%\NuGet\NuGet.config".</value>

@@ -12,6 +12,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Credentials;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -149,6 +150,8 @@ namespace NuGet.CommandLine
 
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
+
+                ClientCertificates.Store(ClientCertificateProvider.Provide(Settings));
 
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 

@@ -142,6 +142,24 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Certificate was not found in {0}.{1} storage by {2} criteria with {3} value.
+        /// </summary>
+        internal static string Error_FromStorageCertificateNotFound {
+            get {
+                return ResourceManager.GetString("Error_FromStorageCertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} certificates were found in {1}.{2} storage by {3} criteria with {4} value.
+        /// </summary>
+        internal static string Error_FromStorageSeveralCertificatesFound {
+            get {
+                return ResourceManager.GetString("Error_FromStorageSeveralCertificatesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The attribute {0}-{1} is not valid..
         /// </summary>
         internal static string Error_InvalidAttribute {
@@ -160,11 +178,65 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to A fromCert item must have only one Password entry..
+        /// </summary>
+        internal static string Error_MoreThanOneCertificatePassword {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneCertificatePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item must have only one FindType entry..
+        /// </summary>
+        internal static string Error_MoreThanOneFindType {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneFindType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item must have only one FindValue entry..
+        /// </summary>
+        internal static string Error_MoreThanOneFindValue {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneFindValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to A credentials item must have only one Password or ClearTextPassword entry..
         /// </summary>
         internal static string Error_MoreThanOnePassword {
             get {
                 return ResourceManager.GetString("Error_MoreThanOnePassword", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromCert item must have only one Path entry..
+        /// </summary>
+        internal static string Error_MoreThanOnePath {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOnePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item must have only one StoreLocation entry..
+        /// </summary>
+        internal static string Error_MoreThanOneStoreLocation {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneStoreLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item must have only one StoreName entry..
+        /// </summary>
+        internal static string Error_MoreThanOneStoreName {
+            get {
+                return ResourceManager.GetString("Error_MoreThanOneStoreName", resourceCulture);
             }
         }
         
@@ -201,6 +273,78 @@ namespace NuGet.Configuration {
         internal static string FileDoesNotExist {
             get {
                 return ResourceManager.GetString("FileDoesNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromCert item must have Path entry..
+        /// </summary>
+        internal static string FromCertItemMustHavePath {
+            get {
+                return ResourceManager.GetString("FromCertItemMustHavePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromCert item Path value and Base-64 encoded points X.509 certificate not set..
+        /// </summary>
+        internal static string FromCertItemPathFileAndBase64NotSet {
+            get {
+                return ResourceManager.GetString("FromCertItemPathFileAndBase64NotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromCert item must have only one Path value or Base-64 encoded X.509 certificate..
+        /// </summary>
+        internal static string FromCertItemPathFileAndBase64Set {
+            get {
+                return ResourceManager.GetString("FromCertItemPathFileAndBase64Set", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromCert item Path value points on non existing file..
+        /// </summary>
+        internal static string FromCertItemPathFileNotExist {
+            get {
+                return ResourceManager.GetString("FromCertItemPathFileNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item FindType entry is not supported..
+        /// </summary>
+        internal static string FromStorageItemFindTypeNotSupported {
+            get {
+                return ResourceManager.GetString("FromStorageItemFindTypeNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item must have FindValue entry..
+        /// </summary>
+        internal static string FromStorageItemMustHaveFindValue {
+            get {
+                return ResourceManager.GetString("FromStorageItemMustHaveFindValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item StoreLocation entry is not supported..
+        /// </summary>
+        internal static string FromStorageItemStoreLocationNotSupported {
+            get {
+                return ResourceManager.GetString("FromStorageItemStoreLocationNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fromStorage item StoreName entry is not supported..
+        /// </summary>
+        internal static string FromStorageItemStoreNameNotSupported {
+            get {
+                return ResourceManager.GetString("FromStorageItemStoreNameNotSupported", resourceCulture);
             }
         }
         

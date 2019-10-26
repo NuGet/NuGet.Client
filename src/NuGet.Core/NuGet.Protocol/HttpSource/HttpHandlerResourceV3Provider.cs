@@ -47,6 +47,9 @@ namespace NuGet.Protocol
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
 
+            // Setup http client handler client certificates
+            ClientCertificates.SetupClientHandler(clientHandler);
+
             // HTTP handler pipeline can be injected here, around the client handler
             HttpMessageHandler messageHandler = new ServerWarningLogHandler(clientHandler);
 
