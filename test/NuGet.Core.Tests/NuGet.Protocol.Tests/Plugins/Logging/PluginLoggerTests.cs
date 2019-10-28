@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
 using Moq;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
@@ -84,13 +85,18 @@ namespace NuGet.Protocol.Plugins.Tests
                 var environmentVariableReader = CreateEnvironmentVariableReaderMock(
                     isLoggingEnabled: true,
                     testDirectory: testDirectory);
-                var logMessage = new RandomLogMessage();
-
+                RandomLogMessageWithTime logMessage;
+                DateTimeOffset loggerInitLoggedAt;
+                DateTimeOffset randomMessageLoggedAt;
                 using (var logger = new PluginLogger(environmentVariableReader.Object))
                 {
+                    loggerInitLoggedAt = DateTimeOffset.UtcNow;
+                    Thread.Sleep(10000); // Enough for potential accuracy issues to arise.
+                    logMessage = new RandomLogMessageWithTime(logger.Now);
+                    randomMessageLoggedAt = DateTimeOffset.UtcNow;
                     logger.Write(logMessage);
                 }
-
+               
                 var logFile = GetLogFile(testDirectory);
 
                 Assert.NotNull(logFile);
@@ -101,14 +107,18 @@ namespace NuGet.Protocol.Plugins.Tests
                 Assert.Collection(actualLines,
                     actualLine =>
                     {
-                        var now = DateTimeOffset.UtcNow;
-
-                        var message = VerifyOuterMessageAndReturnInnerMessage(actualLine, now.AddMinutes(-1), now.AddSeconds(1), "stopwatch");
+                        var message = VerifyOuterMessageAndReturnInnerMessage(actualLine, loggerInitLoggedAt.AddSeconds(-1), loggerInitLoggedAt.AddSeconds(1), "stopwatch");
 
                         Assert.Equal(1, message.Count);
                         Assert.Equal(Stopwatch.Frequency, message["frequency"].Value<long>());
                     },
-                    actualLine => Assert.Equal(logMessage.Message, actualLine));
+                    actualLine =>
+                    {
+                        var message = VerifyOuterMessageAndReturnInnerMessage(actualLine, randomMessageLoggedAt.AddSeconds(-1), randomMessageLoggedAt.AddSeconds(1), "random");
+
+                        Assert.Equal(1, message.Count);
+                        Assert.Equal(logMessage.Message, message["message"]);
+                    });
 
                 environmentVariableReader.VerifyAll();
             }
@@ -163,6 +173,23 @@ namespace NuGet.Protocol.Plugins.Tests
             public override string ToString()
             {
                 return Message;
+            }
+        }
+
+        private sealed class RandomLogMessageWithTime : PluginLogMessage
+        {
+            internal string Message { get; }
+
+            internal RandomLogMessageWithTime(DateTimeOffset now) : base(now)
+            {
+                Message = Guid.NewGuid().ToString();
+            }
+
+            public override string ToString()
+            {
+                var message = new JObject(new JProperty("message", Message));
+
+                return ToString("random", message);
             }
         }
     }
