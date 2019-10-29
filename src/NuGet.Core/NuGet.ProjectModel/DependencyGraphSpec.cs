@@ -128,7 +128,8 @@ namespace NuGet.ProjectModel
             projectDependencyGraphSpec.AddRestore(projectUniqueName);
             foreach (var spec in GetClosure(projectUniqueName))
             {
-                projectDependencyGraphSpec.AddProject(!_isReadOnly ? spec.Clone() : spec);
+                // Clone the PackageSpec unless the caller has indicated that the objects won't be modified
+                projectDependencyGraphSpec.AddProject(_isReadOnly ? spec : spec.Clone());
             }
 
             return projectDependencyGraphSpec;
