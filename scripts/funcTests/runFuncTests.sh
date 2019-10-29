@@ -18,7 +18,7 @@ pushd $DIR/
 
 NuGetExe="$DIR/.nuget/nuget.exe"
 #Get NuGet.exe
-curl -o $NuGetExe --retry 5 --retry-delay 10 https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+curl -o $NuGetExe --retry 5 --retry-delay 10 -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
 
 mono --version
 
@@ -32,7 +32,7 @@ fi
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-curl -o cli/dotnet-install.sh https://dot.net/v1/dotnet-install.sh
+curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 
 # Run install.sh
 chmod +x cli/dotnet-install.sh
