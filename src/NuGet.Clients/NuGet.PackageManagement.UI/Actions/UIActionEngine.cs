@@ -314,8 +314,6 @@ namespace NuGet.PackageManagement.UI
             var startTime = DateTimeOffset.Now;
             var packageCount = 0;
 
-            IDictionary<string, object> additionalTelemetryProperties = new Dictionary<string, object>();
-
             bool continueAfterPreview = true;
             bool acceptedLicense = true;
 
@@ -350,9 +348,6 @@ namespace NuGet.PackageManagement.UI
                         {
                             var addCount = results.SelectMany(result => result.Added).
                                 Select(package => package.Id).Distinct().Count();
-
-                            var packageIds = results.SelectMany(result => result.Added).Select(package => package.Id).Distinct().OrderBy(x => x);
-                            additionalTelemetryProperties.Add("AddedPackages", string.Join(", ", packageIds));
 
                             var updateCount = results.SelectMany(result => result.Updated).
                                 Select(result => result.New.Id).Distinct().Count();
@@ -477,16 +472,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         actionTelemetryEvent["AcceptedLicense"] = "False";
                     }
-
-                    // we exposed some helpful telemetry properties during processing
-                    if (additionalTelemetryProperties != null && additionalTelemetryProperties.Count > 0)
-                    {
-                        foreach (var property in additionalTelemetryProperties)
-                        {
-                            actionTelemetryEvent[property.Key] = property.Value;
-                        }
-                    }
-
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
