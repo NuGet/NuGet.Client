@@ -1715,7 +1715,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8766")]
         public async Task RestoreCommand_UnmatchedRefAndLibAssembliesAsync()
         {
             const string project = @"
@@ -1766,7 +1766,7 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8765")]
         public async Task RestoreCommand_LockedLockFileWithOutOfDateProjectAsync()
         {
             const string project = @"
