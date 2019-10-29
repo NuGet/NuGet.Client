@@ -1,10 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
-using NuGet.Common;
+using NuGet.Commands;
 using NuGet.Configuration;
+using NuGet.Credentials;
 
 namespace NuGet.CommandLine
 {
@@ -41,265 +41,33 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            if (SourceProvider == null)
-            {
-                throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
-            }
+            string action = Arguments.FirstOrDefault();
 
-            // Convert to update
-            var action = Arguments.FirstOrDefault();
+            //TODO: right way to get default settings in commandline???
 
+#pragma warning disable CS0618 // Type or member is obsolete
+            var sourceProvider = new PackageSourceProvider(NuGet.Configuration.Settings.LoadDefaultSettings(System.Environment.CurrentDirectory)  , enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
-            // TODO: Change these in to switches so we don't have to parse them here.
-            if (string.IsNullOrEmpty(action) || action.Equals("List", StringComparison.OrdinalIgnoreCase))
-            {
-                switch (Format)
-                {
-                    case SourcesListFormat.Short:
-                        PrintRegisteredSourcesShort();
-                        break;
-                    default:
-                        PrintRegisteredSourcesDetailed();
-                        break;
-                }
-            }
-            else if (action.Equals("Add", StringComparison.OrdinalIgnoreCase))
-            {
-                AddNewSource();
-            }
-            else if (action.Equals("Remove", StringComparison.OrdinalIgnoreCase))
-            {
-                RemoveSource();
-            }
-            else if (action.Equals("Enable", StringComparison.OrdinalIgnoreCase))
-            {
-                EnableOrDisableSource(enabled: true);
-            }
-            else if (action.Equals("Disable", StringComparison.OrdinalIgnoreCase))
-            {
-                EnableOrDisableSource(enabled: false);
-            }
-            else if (action.Equals("Update", StringComparison.OrdinalIgnoreCase))
-            {
-                UpdatePackageSource();
-            }
-        }
+            var interactive = !NonInteractive;
 
-        private void EnableOrDisableSource(bool enabled)
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
-            }
+            var sourcesArgs = new SourcesArgs(
+                sourceProvider.Settings,
+                sourceProvider,
+                action,
+                Name,
+                Source,
+                Username,
+                Password,
+                StorePasswordInClearText,
+                ValidAuthenticationTypes,
+                Format.ToString(),
+                interactive,
+                Console.LogError,
+                Console.LogInformation
+                );
 
-            var packageSource = SourceProvider.GetPackageSourceByName(Name);
-            if (packageSource == null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
-            }
-
-            if (enabled && !packageSource.IsEnabled)
-            {
-                SourceProvider.EnablePackageSource(Name);
-            }
-            else if (!enabled && packageSource.IsEnabled)
-            {
-                SourceProvider.DisablePackageSource(Name);
-            }
-
-            Console.WriteLine(
-                enabled ? LocalizedResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully") : LocalizedResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully"),
-                Name);
-        }
-
-        private void RemoveSource()
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
-            }
-
-            // Check to see if we already have a registered source with the same name or source
-            var sourceList = SourceProvider.LoadPackageSources().ToList();
-
-            var source = SourceProvider.GetPackageSourceByName(Name);
-            if (source == null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
-            }
-
-            SourceProvider.RemovePackageSource(Name);
-            Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully"), Name);
-        }
-
-        private void AddNewSource()
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
-            }
-            if (string.Equals(Name, LocalizedResourceManager.GetString("ReservedPackageNameAll")))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandAllNameIsReserved"));
-            }
-            if (string.IsNullOrEmpty(Source))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandSourceRequired"));
-            }
-
-            // Make sure that the Source given is a valid one.
-            if (!PathValidator.IsValidSource(Source))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandInvalidSource"));
-            }
-
-            ValidateCredentials();
-
-            // Check to see if we already have a registered source with the same name or source
-            var existingSourceWithName = SourceProvider.GetPackageSourceByName(Name);
-            if (existingSourceWithName != null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueName"));
-            }
-            var existingSourceWithSource = SourceProvider.GetPackageSourceBySource(Source);
-            if (existingSourceWithSource != null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
-            }
-
-            var newPackageSource = new Configuration.PackageSource(Source, Name);
-
-            if (!string.IsNullOrEmpty(Username))
-            {
-                var credentials = Configuration.PackageSourceCredential.FromUserInput(
-                    Name,
-                    Username,
-                    Password,
-                    StorePasswordInClearText,
-                    ValidAuthenticationTypes);
-                newPackageSource.Credentials = credentials;
-            }
-
-            SourceProvider.AddPackageSource(newPackageSource);
-            Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandSourceAddedSuccessfully"), Name);
-        }
-
-        private void UpdatePackageSource()
-        {
-            if (string.IsNullOrEmpty(Name))
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNameRequired"));
-            }
-
-            var existingSource = SourceProvider.GetPackageSourceByName(Name);
-            if (existingSource == null)
-            {
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandNoMatchingSourcesFound"), Name);
-            }
-
-            if (!string.IsNullOrEmpty(Source) && !existingSource.Source.Equals(Source, StringComparison.OrdinalIgnoreCase))
-            {
-                if (!PathValidator.IsValidSource(Source))
-                {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandInvalidSource"));
-                }
-
-                // If the user is updating the source, verify we don't have a duplicate.
-                var duplicateSource = SourceProvider.GetPackageSourceBySource(Source);
-                if (duplicateSource != null)
-                {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandUniqueSource"));
-                }
-                existingSource = new Configuration.PackageSource(Source, existingSource.Name);
-            }
-
-            ValidateCredentials();
-
-            if (!string.IsNullOrEmpty(Username))
-            {
-                var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
-                if (hasExistingAuthTypes && string.IsNullOrEmpty(ValidAuthenticationTypes))
-                {
-                    Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandClearingExistingAuthTypes"), Name);
-                }
-
-                var credentials = Configuration.PackageSourceCredential.FromUserInput(
-                    Name,
-                    Username,
-                    Password,
-                    StorePasswordInClearText,
-                    ValidAuthenticationTypes);
-                existingSource.Credentials = credentials;
-            }
-
-            SourceProvider.UpdatePackageSource(existingSource, updateCredentials: existingSource.Credentials != null, updateEnabled: false);
-
-            Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandUpdateSuccessful"), Name);
-        }
-
-        private void ValidateCredentials()
-        {
-            var isUsernameEmpty = string.IsNullOrEmpty(Username);
-            var isPasswordEmpty = string.IsNullOrEmpty(Password);
-            var isAuthTypesEmpty = string.IsNullOrEmpty(ValidAuthenticationTypes);
-
-            if (isUsernameEmpty ^ isPasswordEmpty)
-            {
-                // If only one of them is set, throw.
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequired"));
-            }
-
-            if (isPasswordEmpty && !isAuthTypesEmpty)
-            {
-                // can't specify auth types without credentials
-                throw new CommandLineException(LocalizedResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes"));
-            }
-
-
-        }
-
-        private void PrintRegisteredSourcesShort()
-        {
-            foreach (var source in SourceProvider.LoadPackageSources())
-            {
-                Console.Write(source.IsEnabled ? 'E' : 'D');
-                if (source.IsMachineWide)
-                {
-                    Console.Write('M');
-                }
-                if (source.IsOfficial)
-                {
-                    Console.Write('O');
-                }
-                Console.Write(' ');
-                Console.WriteLine(source.Source);
-            }
-        }
-
-        private void PrintRegisteredSourcesDetailed()
-        {
-            var sourcesList = SourceProvider.LoadPackageSources().ToList();
-            if (!sourcesList.Any())
-            {
-                Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandNoSources"));
-                return;
-            }
-            Console.PrintJustified(0, LocalizedResourceManager.GetString("SourcesCommandRegisteredSources"));
-            Console.WriteLine();
-            var sourcePadding = new string(' ', 6);
-            for (var i = 0; i < sourcesList.Count; i++)
-            {
-                var source = sourcesList[i];
-                var indexNumber = i + 1;
-                var namePadding = new string(' ', i >= 9 ? 1 : 2);
-                Console.WriteLine(
-                    "  {0}.{1}{2} [{3}]",
-                    indexNumber,
-                    namePadding,
-                    source.Name,
-                    source.IsEnabled ? LocalizedResourceManager.GetString("SourcesCommandEnabled") : LocalizedResourceManager.GetString("SourcesCommandDisabled"));
-                Console.WriteLine("{0}{1}", sourcePadding, source.Source);
-            }
+            SourcesRunner.Run(sourcesArgs);
         }
     }
 }
