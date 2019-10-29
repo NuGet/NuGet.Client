@@ -316,6 +316,9 @@ namespace NuGet.PackageManagement.UI
 
             IDictionary<string, object> additionalTelemetryProperties = new Dictionary<string, object>();
 
+            bool continueAfterPreview = true;
+            bool acceptedLicense = true;
+
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
 
@@ -349,7 +352,7 @@ namespace NuGet.PackageManagement.UI
                                 Select(package => package.Id).Distinct().Count();
 
                             var packageIds = results.SelectMany(result => result.Added).Select(package => package.Id).Distinct().OrderBy(x => x);
-                            additionalTelemetryProperties.Add("internal.test.mattev.addedPackages", string.Join(", ", packageIds));
+                            additionalTelemetryProperties.Add("AddedPackages", string.Join(", ", packageIds));
 
                             var updateCount = results.SelectMany(result => result.Updated).
                                 Select(result => result.New.Id).Distinct().Count();
@@ -372,6 +375,7 @@ namespace NuGet.PackageManagement.UI
                             var shouldContinue = uiService.PromptForPreviewAcceptance(results);
                             if (!shouldContinue)
                             {
+                                continueAfterPreview = false;
                                 return;
                             }
                         }
@@ -385,6 +389,7 @@ namespace NuGet.PackageManagement.UI
 
                         if (!accepted)
                         {
+                            acceptedLicense = false;
                             return;
                         }
 
@@ -408,6 +413,10 @@ namespace NuGet.PackageManagement.UI
 
                             // fires ActionsExecuted event to update the UI
                             uiService.OnActionsExecuted(actions);
+                        }
+                        else
+                        {
+                            status = NuGetOperationStatus.Cancelled;
                         }
                     }
                 }
@@ -439,6 +448,15 @@ namespace NuGet.PackageManagement.UI
 
                     uiService.EndOperation();
 
+                    // don't show "Succeeded" if we actually cancelled...
+                    if ((!continueAfterPreview) || (!acceptedLicense))
+                    {
+                        if (status == NuGetOperationStatus.Succeeded)
+                        {
+                            status = NuGetOperationStatus.Cancelled;
+                        }
+                    }
+
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         uiService.Projects,
@@ -449,10 +467,16 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    //actionTelemetryEvent.AddPiiData("internal.test.key.mattev.AddPiiData", "internal.test.value.mattev");
-                    //actionTelemetryEvent["internal.test.key2.mattev.int"] = (int)127;
-                    //actionTelemetryEvent["internal.test.key2.mattev.double"] = (double)127.5;
-                    actionTelemetryEvent["internal.test.key2.mattev.string"] = (string)"hello world";
+                    // log possible cancel reasons...
+                    if (!continueAfterPreview)
+                    {
+                        actionTelemetryEvent["CancelAfterPreview"] = "True";
+                    }
+
+                    if (!acceptedLicense)
+                    {
+                        actionTelemetryEvent["AcceptedLicense"] = "False";
+                    }
 
                     // we exposed some helpful telemetry properties during processing
                     if (additionalTelemetryProperties != null && additionalTelemetryProperties.Count > 0)
