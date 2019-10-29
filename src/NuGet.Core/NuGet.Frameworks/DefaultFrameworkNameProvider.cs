@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+
 namespace NuGet.Frameworks
 {
 #if NUGET_FRAMEWORKS_INTERNAL
@@ -16,19 +18,11 @@ namespace NuGet.Frameworks
         {
         }
 
-        private static IFrameworkNameProvider _instance;
+        private static readonly Lazy<IFrameworkNameProvider> InstanceLazy = new Lazy<IFrameworkNameProvider>(() => new DefaultFrameworkNameProvider());
 
         public static IFrameworkNameProvider Instance
         {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new DefaultFrameworkNameProvider();
-                }
-
-                return _instance;
-            }
+            get { return InstanceLazy.Value; }
         }
     }
 }
