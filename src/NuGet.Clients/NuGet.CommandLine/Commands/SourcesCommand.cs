@@ -43,17 +43,16 @@ namespace NuGet.CommandLine
         {
             string action = Arguments.FirstOrDefault();
 
-            //TODO: right way to get default settings in commandline???
-
-#pragma warning disable CS0618 // Type or member is obsolete
-            var sourceProvider = new PackageSourceProvider(NuGet.Configuration.Settings.LoadDefaultSettings(System.Environment.CurrentDirectory)  , enablePackageSourcesChangedEvent: false);
-#pragma warning restore CS0618 // Type or member is obsolete
+//TODO: base class has SourceProvider & Settings props.                   
+//#pragma warning disable CS0618 // Type or member is obsolete
+//            var sourceProvider = new PackageSourceProvider(NuGet.Configuration.Settings.LoadDefaultSettings(System.Environment.CurrentDirectory)  , enablePackageSourcesChangedEvent: false);
+//#pragma warning restore CS0618 // Type or member is obsolete
 
             var interactive = !NonInteractive;
 
             var sourcesArgs = new SourcesArgs(
-                sourceProvider.Settings,
-                sourceProvider,
+                Settings,
+                SourceProvider,
                 action,
                 Name,
                 Source,
