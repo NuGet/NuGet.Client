@@ -33,7 +33,6 @@
     <VsTargetBranch>master</VsTargetBranch>
     <VsTargetChannel>int.$(VsTargetBranch)</VsTargetChannel>
     <VsTargetBranch Condition="'$(IsEscrowMode)' == 'true'">rel/d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetBranch>
-    <!-- VS short branch name. See https://github.com/dotnet/arcade/blob/master/Documentation/ArcadeSdk.md#visual-studio-training-inputs-generation -->
     <VsTargetChannel Condition="'$(IsEscrowMode)' == 'true'">int.d$(VsTargetMajorVersion).$(MinorNuGetVersion)</VsTargetChannel>
 
     <!-- .NET Core SDK Insertion Logic -->    
