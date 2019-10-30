@@ -108,43 +108,49 @@ namespace NuGet.VisualStudio.Telemetry
                     }
 
                     // metadata
-                    @event["metadata.requests"] = data.Metadata.EventTiming.Requests;
-                    @event["metadata.success"] = data.Metadata.Successful;
-                    @event["metadata.retries"] = data.Metadata.Retries;
-                    @event["metadata.cancelled"] = data.Metadata.Cancelled;
-
-                    if (data.Metadata.EventTiming.Requests > 0)
+                    lock (data.Metadata.Lock)
                     {
-                        @event["metadata.timing.min"] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
-                        @event["metadata.timing.mean"] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
-                        @event["metadata.timing.max"] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
-                    }
+                        @event["metadata.requests"] = data.Metadata.EventTiming.Requests;
+                        @event["metadata.success"] = data.Metadata.Successful;
+                        @event["metadata.retries"] = data.Metadata.Retries;
+                        @event["metadata.cancelled"] = data.Metadata.Cancelled;
 
-                    if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
-                    {
-                        @event["metadata.header.timing.min"] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
-                        @event["metadata.header.timing.mean"] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
-                        @event["metadata.header.timing.max"] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
+                        if (data.Metadata.EventTiming.Requests > 0)
+                        {
+                            @event["metadata.timing.min"] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
+                            @event["metadata.timing.mean"] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
+                            @event["metadata.timing.max"] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
+                        }
+
+                        if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
+                        {
+                            @event["metadata.header.timing.min"] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
+                            @event["metadata.header.timing.mean"] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
+                            @event["metadata.header.timing.max"] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
+                        }
                     }
 
                     // nupkgs
-                    @event["nupkg.requests"] = data.Nupkg.EventTiming.Requests;
-                    @event["nupkg.success"] = data.Nupkg.Successful;
-                    @event["nupkg.retries"] = data.Nupkg.Retries;
-                    @event["nupkg.cancelled"] = data.Nupkg.Cancelled;
-
-                    if (data.Nupkg.EventTiming.Requests > 0)
+                    lock (data.Nupkg.Lock)
                     {
-                        @event["nupkg.timing.min"] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
-                        @event["nupkg.timing.mean"] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
-                        @event["nupkg.timing.max"] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
-                    }
+                        @event["nupkg.requests"] = data.Nupkg.EventTiming.Requests;
+                        @event["nupkg.success"] = data.Nupkg.Successful;
+                        @event["nupkg.retries"] = data.Nupkg.Retries;
+                        @event["nupkg.cancelled"] = data.Nupkg.Cancelled;
 
-                    if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
-                    {
-                        @event["nupkg.header.timing.min"] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
-                        @event["nupkg.header.timing.mean"] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
-                        @event["nupkg.header.timing.max"] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
+                        if (data.Nupkg.EventTiming.Requests > 0)
+                        {
+                            @event["nupkg.timing.min"] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
+                            @event["nupkg.timing.mean"] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
+                            @event["nupkg.timing.max"] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
+                        }
+
+                        if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
+                        {
+                            @event["nupkg.header.timing.min"] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
+                            @event["nupkg.header.timing.mean"] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
+                            @event["nupkg.header.timing.max"] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
+                        }
                     }
 
                     TelemetryActivity.EmitTelemetryEvent(@event);
