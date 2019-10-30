@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json.Linq;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -153,7 +154,7 @@ namespace NuGet.Test.Utility
                 switch (Type)
                 {
                     case ProjectStyle.PackageReference:
-                        return Path.Combine(OutputPath, $"{ProjectName}{ProjectExt}.nuget.cache");
+                        return Path.Combine(OutputPath, NoOpRestoreUtilities.NoOpCacheFileName);
 
                     default:
                         return null;

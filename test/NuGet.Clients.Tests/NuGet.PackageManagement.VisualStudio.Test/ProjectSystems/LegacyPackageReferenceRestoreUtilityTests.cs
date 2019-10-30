@@ -355,7 +355,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // delete existing restore output files
                     File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project1.csproj.nuget.cache"));
+                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     // add a new package
                     var newPackageContext = new SimpleTestPackageContext("packageA", "1.0.1");
@@ -857,7 +857,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // delete existing restore output files
                     File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project1.csproj.nuget.cache"));
+                    File.Delete(Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     // clean packages folder
                     Directory.Delete(testSolutionManager.GlobalPackagesFolder, true);
@@ -1625,7 +1625,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // delete existing restore output files
                     File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project.assets.json"));
-                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project1.csproj.nuget.cache"));
+                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     //clear packageA 1.0.0 from global packages folder
                     var packageAPath = Path.Combine(testSolutionManager.GlobalPackagesFolder, "packagea", "1.0.0");
@@ -1795,8 +1795,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     Assert.Equal(PackageDependencyType.Project, lockFile.Targets[0].Dependencies[1].Type);
 
                     // Act
-                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, "project1.csproj.nuget.cache"));
-                    File.Delete(Path.Combine(vsProjectAdapterB.MSBuildProjectExtensionsPath, "project2.csproj.nuget.cache"));
+                    File.Delete(Path.Combine(vsProjectAdapterA.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
+                    File.Delete(Path.Combine(vsProjectAdapterB.MSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName));
 
                     restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
                         testSolutionManager,
