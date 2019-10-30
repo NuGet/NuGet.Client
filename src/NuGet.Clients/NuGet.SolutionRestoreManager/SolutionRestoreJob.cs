@@ -26,6 +26,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -160,6 +161,9 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
+            var sources = _sourceRepositoryProvider.GetRepositories().ToList();
+            PackageSourceTelemetry packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId);
+
             try
             {
                 var solutionDirectory = _solutionManager.SolutionDirectory;
@@ -218,6 +222,8 @@ namespace NuGet.SolutionRestoreManager
             {
                 _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
+
+                packageSourceTelemetry?.Dispose();
 
                 stopWatch.Stop();
                 var duration = stopWatch.Elapsed;
