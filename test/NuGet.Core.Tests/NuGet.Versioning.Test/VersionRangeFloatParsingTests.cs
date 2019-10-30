@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -197,7 +197,7 @@ namespace NuGet.Versioning.Test
         [InlineData("[1.0.*, )", "[1.0.0, )")]
         [InlineData("[1.*, )", "[1.0.0, )")]
         [InlineData("[1.*, 2.0)", "[1.0.0, 2.0.0)")]
-        [InlineData("*", "(, )")]
+        [InlineData("*", "[0.0.0, )")]
         public void VersionRangeFloatParsing_LegacyEquivalent(string rangeString, string legacyString)
         {
             VersionRange range = null;
@@ -216,6 +216,26 @@ namespace NuGet.Versioning.Test
             Assert.True(VersionRange.TryParse(rangeString, out range));
 
             Assert.Equal(rangeString, range.Float.ToString());
+        }
+
+
+        [Theory]
+        [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
+        [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
+        [InlineData("1.0.0;2.0.0", "[*, )", "2.0.0")]
+        [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, )", "2.0.0")]
+        [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, 2.0.0)", null)]
+        public void VersionRangeFloatParsing_FindsBestMatch(string availableVersions, string declaredRange, string expectedVersion)
+        {
+            var range = VersionRange.Parse(declaredRange);
+
+            var versions = new List<NuGetVersion>();
+            foreach(var version in availableVersions.Split(';'))
+            {
+                versions.Add(NuGetVersion.Parse(version));
+            }
+
+            Assert.Equal(expectedVersion, range.FindBestMatch(versions)?.ToNormalizedString());
         }
     }
 }

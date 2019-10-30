@@ -21,6 +21,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
+        [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
         public static readonly VersionRange AllFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
 
         /// <summary>
@@ -31,6 +32,7 @@ namespace NuGet.Versioning
         /// <summary>
         /// A range that accepts all versions, prerelease and stable, and floats to the highest.
         /// </summary>
+        [Obsolete("Consider not using this VersionRange. The lack of a proper normalized version means that it is not round trippable in an assets file.")]
         public static readonly VersionRange AllStableFloating = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major));
 
         /// <summary>
@@ -104,7 +106,7 @@ namespace NuGet.Versioning
                 && charArray.Length == 1
                 && charArray[0] == '*')
             {
-                versionRange = new VersionRange(null, true, null, true, new FloatRange(NuGetVersionFloatBehavior.Major), originalString: value);
+                versionRange = new VersionRange(new NuGetVersion(0, 0, 0), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
                 return true;
             }
 

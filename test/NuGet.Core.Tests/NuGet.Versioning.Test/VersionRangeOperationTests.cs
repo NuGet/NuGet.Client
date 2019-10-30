@@ -173,8 +173,11 @@ namespace NuGet.Versioning.Test
             // Arrange
             var ranges = new List<VersionRange>()
                 {
-                    VersionRange.AllStable, VersionRange.All,
-                    VersionRange.AllFloating, VersionRange.AllStableFloating, VersionRange.None
+#pragma warning disable CS0618 // Type or member is obsolete
+                VersionRange.AllStable, VersionRange.All,
+                VersionRange.AllFloating, VersionRange.AllStableFloating, VersionRange.None
+#pragma warning restore CS0618 // Type or member is obsolete
+
                 };
 
             // Act
@@ -229,7 +232,6 @@ namespace NuGet.Versioning.Test
             var combined = VersionRange.Combine(ranges);
 
             ranges.Reverse();
-            var combinedRev = VersionRange.Combine(ranges);
 
             // Assert
             Assert.Equal("[1.0.0, 5.0.1-rc4]", combined.ToNormalizedString());

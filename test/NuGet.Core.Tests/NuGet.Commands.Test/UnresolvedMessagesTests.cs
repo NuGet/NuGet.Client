@@ -274,14 +274,15 @@ namespace NuGet.Commands.Test
         }
 
         [Theory]
-        // Any time there is a upper bound, we go to the first version above the upper bound
+        //Any time there is a upper bound, we go to the first version above the upper bound
         [InlineData("[1.*,2.0.0]", "3.0.0", "0.1.0,0.3.0,0.9.9,3.0.0")] // has LowerBound, has UpperBound, floating - inclusivity doesn't matter for this command as it's not selecting assets.
         [InlineData("(1.0.1,2.0.0]", "3.0.0", "0.1.0,0.3.0,0.9.9,3.0.0")] // has LowerBound, has UpperBound, not floating
         [InlineData("(,2.0.0]", "2.0.1", "2.0.1,2.5.0,3.0.0")] // no LowerBound, has UpperBound, not floating => no LowerBound, has UpperBound, floating is not a valid scenario
-         // if it has a lower bound, it's always the one under
+                                                               // if it has a lower bound, it's always the one under
         [InlineData("[1.0.0,)", "0.9", "0.0.1,0.0.5,0.1,0.9")] // lower bound, no upper bound, no floating
         [InlineData("[1.*,)", "0.9", "0.0.1,0.0.5,0.1,0.9")] // lower bound, no upper bound, floating
-        [InlineData("*", "2.1.0-preview1-final", "0.0.1-alpha,2.1.0-preview1-final")] // lower bound, no upper bound, floating
+        [InlineData("*", "2.1.0-preview1-final", "0.0.1-alpha,2.1.0-preview1-final")] // lower bound, no upper bound, floating, https://github.com/NuGet/Home/issues/6658, inclusivity doesn't matter as it's not selecting assets
+        [InlineData("[1.*, 2.0.0]", "3.0.0", "0.1.0,0.3.0,3.0.0,4.0.0")] // lower bound, upper bound, floating - Version immediately above upper bound chosen
         public void GivenVersionRangeVerifyBestMatch(string versionRange, string expectedVersion, string versionStrings)
         {
             var range = VersionRange.Parse(versionRange);
