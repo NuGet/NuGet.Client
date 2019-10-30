@@ -21,6 +21,8 @@ namespace NuGet.ProjectModel
 
         private const int _version = 1;
 
+        private readonly bool _isReadOnly;
+
         public static string GetDGSpecFileName(string projectName)
         {
             return string.Format(DGSpecFileNameExtension, projectName);
@@ -39,8 +41,14 @@ namespace NuGet.ProjectModel
         }
 
         public DependencyGraphSpec()
+            : this(isReadOnly: false)
+        {
+        }
+
+        public DependencyGraphSpec(bool isReadOnly)
         {
             Json = new JObject();
+            _isReadOnly = isReadOnly;
         }
 
         /// <summary>
@@ -116,12 +124,12 @@ namespace NuGet.ProjectModel
         /// <returns></returns>
         public DependencyGraphSpec WithProjectClosure(string projectUniqueName)
         {
-
             var projectDependencyGraphSpec = new DependencyGraphSpec();
             projectDependencyGraphSpec.AddRestore(projectUniqueName);
             foreach (var spec in GetClosure(projectUniqueName))
             {
-                projectDependencyGraphSpec.AddProject(spec.Clone());
+                // Clone the PackageSpec unless the caller has indicated that the objects won't be modified
+                projectDependencyGraphSpec.AddProject(_isReadOnly ? spec : spec.Clone());
             }
 
             return projectDependencyGraphSpec;
