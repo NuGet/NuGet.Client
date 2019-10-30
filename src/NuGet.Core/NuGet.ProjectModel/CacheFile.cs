@@ -1,22 +1,30 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Collections.Generic;
-using System.Text;
+using NuGet.Common;
 using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
     public class CacheFile : IEquatable<CacheFile>
     {
-        private static int LATEST_VERSION = 1;
+        private static int LATEST_VERSION = 2;
 
         public string DgSpecHash { get;}
 
         public int Version { get; set; }
 
         public bool Success { get; set; }
+
+        public List<string> ExpectedFiles { get; set; }
+
+        public bool AnyPackagesMissing { get; set; }
+
+        public string ProjectFullPath { get; set; }
+
+        public IList<IAssetsLogMessage> LogMessages { get; set; }
 
         public bool IsValid { get { return Version == LATEST_VERSION && Success && DgSpecHash != null;  } }
 
@@ -38,7 +46,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return Version == other.Version && Success == other.Success && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash);
+            return Version == other.Version && Success == other.Success && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash) && PathUtility.GetStringComparerBasedOnOS().Equals(ProjectFullPath, other.ProjectFullPath);
         }
 
         public override bool Equals(object obj)
@@ -51,9 +59,8 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
             combiner.AddObject(DgSpecHash);
             combiner.AddObject(Version);
+            combiner.AddObject(ProjectFullPath);
             return combiner.CombinedHash;
         }
-
     }
-
 }

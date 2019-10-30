@@ -18,6 +18,10 @@ namespace NuGet.Commands
     {
         public static readonly int DefaultDegreeOfConcurrency = 16;
 
+        private string _lockFilePath;
+
+        private Lazy<LockFile> _lockFileLazy;
+
         public RestoreRequest(
             PackageSpec project,
             RestoreCommandProviders dependencyProviders,
@@ -74,14 +78,29 @@ namespace NuGet.Commands
         /// The path to the lock file to read/write. If not specified, uses the file 'project.lock.json' in the same
         /// directory as the provided PackageSpec.
         /// </summary>
-        public string LockFilePath { get; set; }
+        public string LockFilePath
+        {
+            get => _lockFilePath;
+            set
+            {
+                _lockFilePath = value;
+                _lockFileLazy = string.IsNullOrWhiteSpace(value) ? null : new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_lockFilePath, Log));
+            }
+        }
 
         /// <summary>
         /// The existing lock file to use. If not specified, the lock file will be read from the <see cref="LockFilePath"/>
         /// (or, if that property is not specified, from the default location of the lock file, as specified in the
         /// description for <see cref="LockFilePath"/>)
         /// </summary>
-        public LockFile ExistingLockFile { get; set; }
+        public LockFile ExistingLockFile
+        {
+            get { return _lockFileLazy?.Value; }
+            set
+            {
+                _lockFileLazy = value == null ? null : new Lazy<LockFile>(() => value);
+            }
+        }
 
         /// <summary>
         /// The number of concurrent tasks to run during installs. Defaults to

@@ -11,11 +11,13 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Protocol;
+using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
     public class NoOpRestoreUtilities
     {
+        public const string NoOpCacheFileName = "project.assets.nuget.cache";
 
         /// <summary>
         /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
@@ -36,16 +38,15 @@ namespace NuGet.Commands
                 || request.ProjectStyle == ProjectStyle.Standalone)
             {
                 var cacheRoot = request.MSBuildProjectExtensionsPath ?? request.RestoreOutputPath;
-                return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot, request.Project.RestoreMetadata.ProjectPath);
+                return request.Project.RestoreMetadata.CacheFilePath = GetProjectCacheFilePath(cacheRoot);
             }
 
             return null;
         }
 
-        public static string GetProjectCacheFilePath(string cacheRoot, string projectPath)
+        public static string GetProjectCacheFilePath(string cacheRoot)
         {
-            var projFileName = Path.GetFileName(projectPath);
-            return Path.Combine(cacheRoot, $"{projFileName}.nuget.cache");
+            return Path.Combine(cacheRoot, NoOpCacheFileName);
         }
 
         internal static string GetToolCacheFilePath(RestoreRequest request, LockFile lockFile)
@@ -112,10 +113,10 @@ namespace NuGet.Commands
         /// When the project has opted into packages lock file, it also verified that the lock file is present on disk.
         /// This does not account if the files were manually modified since the last restore
         /// </summary>
-        internal static bool VerifyRestoreOutput(RestoreRequest request)
+        internal static bool VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
         {
 
-            if (!File.Exists(request.ExistingLockFile?.Path))
+            if (!File.Exists(request.LockFilePath))
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, request.Project.Name));
                 return false;
@@ -147,48 +148,10 @@ namespace NuGet.Commands
                 
             }
 
-            if (!VerifyPackagesOnDisk(request))
+            if (cacheFile.AnyPackagesMissing)
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
                 return false;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Read out all the packages specified in the existing lock file and verify that they are in the cache
-        /// </summary>
-        internal static bool VerifyPackagesOnDisk(RestoreRequest request)
-        {
-            var packageFolderPaths = new List<string>();
-            packageFolderPaths.Add(request.Project.RestoreMetadata.PackagesPath);
-            packageFolderPaths.AddRange(request.Project.RestoreMetadata.FallbackFolders);
-            var pathResolvers = packageFolderPaths.Select(path => new VersionFolderPathResolver(path));
-
-            var packagesChecked = new HashSet<PackageIdentity>();
-
-            var packages = request.ExistingLockFile.Libraries.Where(library => library.Type == LibraryType.Package);
-
-            foreach (var library in packages)
-            {
-                var identity = new PackageIdentity(library.Name, library.Version);
-
-                if(!IsPackageOnDisk(packagesChecked, pathResolvers, request.DependencyProviders.PackageFileCache, identity))
-                {
-                    return false;
-                }
-            }
-
-            foreach (var downloadDependency in request.Project.TargetFrameworks.SelectMany(e => e.DownloadDependencies))
-            {
-                //TODO: https://github.com/NuGet/Home/issues/7709 - only exact versions are currently supported. The check needs to be updated when version ranges are implemented. 
-                var identity = new PackageIdentity(downloadDependency.Name, downloadDependency.VersionRange.MinVersion);
-
-                if (!IsPackageOnDisk(packagesChecked, pathResolvers, request.DependencyProviders.PackageFileCache, identity))
-                {
-                    return false;
-                }
             }
 
             return true;
@@ -312,6 +275,60 @@ namespace NuGet.Commands
                     request.LockFilePath = toolPathResolver.GetLockFilePath(toolDirectory);
                 }
             }
+        }
+
+        internal static List<string> GetRestoreOutput(RestoreRequest request, LockFile lockFile)
+        {
+            IEnumerable<string> GetFiles(string packageId, NuGetVersion version, IEnumerable<VersionFolderPathResolver> resolvers)
+            {
+                foreach (var resolver in resolvers)
+                {
+                    // Verify the SHA for each package
+                    var hashPath = resolver.GetHashPath(packageId, version);
+
+                    if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath))
+                    {
+                        yield return hashPath;
+                        break;
+                    }
+
+                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(packageId, version);
+
+                    if (request.DependencyProviders.PackageFileCache.Sha512Exists(nupkgMetadataPath))
+                    {
+                        yield return nupkgMetadataPath;
+                        break;
+                    }
+                }
+            }
+
+            var pathResolvers = new List<VersionFolderPathResolver>(request.Project.RestoreMetadata.FallbackFolders.Count + 1)
+            {
+                new VersionFolderPathResolver(request.PackagesDirectory)
+            };
+
+            foreach (string restoreMetadataFallbackFolder in request.Project.RestoreMetadata.FallbackFolders)
+            {
+                pathResolvers.Add(new VersionFolderPathResolver(restoreMetadataFallbackFolder));
+            }
+
+            var packageFiles = new List<string>(lockFile.Libraries.Count + request.Project.TargetFrameworks.Sum(i => i.DownloadDependencies.Count));
+
+            foreach (var library in lockFile.Libraries)
+            {
+                packageFiles.AddRange(GetFiles(library.Name, library.Version, pathResolvers));
+            }
+
+            foreach (var targetFrameworkInformation in request.Project.TargetFrameworks)
+            {
+                foreach (var downloadDependency in targetFrameworkInformation.DownloadDependencies)
+                {
+                    //TODO: https://github.com/NuGet/Home/issues/7709 - only exact versions are currently supported. The check needs to be updated when version ranges are implemented. 
+                    packageFiles.AddRange(GetFiles(downloadDependency.Name, downloadDependency.VersionRange.MinVersion, pathResolvers));
+                }
+            }
+
+            return packageFiles;
         }
     }
 }

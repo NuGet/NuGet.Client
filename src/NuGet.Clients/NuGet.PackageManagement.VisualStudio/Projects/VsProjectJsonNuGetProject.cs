@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override async Task<string> GetCacheFilePathAsync()
         {
-            return NoOpRestoreUtilities.GetProjectCacheFilePath(await GetMSBuildProjectExtensionsPathAsync(), MSBuildProjectPath);
+            return NoOpRestoreUtilities.GetProjectCacheFilePath(await GetMSBuildProjectExtensionsPathAsync());
         }
 
         protected override async Task UpdateInternalTargetFrameworkAsync()

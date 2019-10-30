@@ -15,6 +15,8 @@ namespace NuGet.ProjectModel
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
         private const string SuccessProperty = "success";
+        private const string ExpectedFilesProperty = "expectedFiles";
+        private const string ProjectFullPathProperty = "projectFullPath";
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
@@ -81,6 +83,25 @@ namespace NuGet.ProjectModel
             var cacheFile = new CacheFile(hash);
             cacheFile.Version = version;
             cacheFile.Success = success;
+
+            if (version >= 2)
+            {
+                cacheFile.ProjectFullPath = ReadString(cursor[ProjectFullPathProperty]);
+
+                foreach (JToken expectedFile in cursor[ExpectedFilesProperty])
+                {
+                    string path = ReadString(expectedFile);
+
+                    if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+                    {
+                        cacheFile.AnyPackagesMissing = true;
+                        break;
+                    }
+                }
+
+                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor[LockFileFormat.LogsProperty] as JArray, cacheFile.ProjectFullPath);
+            }
+
             return cacheFile;
         }
 
@@ -90,6 +111,14 @@ namespace NuGet.ProjectModel
             json[VersionProperty] = WriteInt(cacheFile.Version);
             json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
             json[SuccessProperty] = WriteBool(cacheFile.Success);
+
+            if (cacheFile.Version >= 2)
+            {
+                json[ProjectFullPathProperty] = cacheFile.ProjectFullPath;
+                json[ExpectedFilesProperty] = new JArray(cacheFile.ExpectedFiles);
+                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFullPath);
+            }
+
             return json;
         }
 

@@ -46,7 +46,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
-        private const string LogsProperty = "logs";
+        internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
 
@@ -370,7 +370,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
         /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
-        private static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
+        internal static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
         {
             AssetsLogMessage assetsLogMessage = null;
 
@@ -444,7 +444,7 @@ namespace NuGet.ProjectModel
             return assetsLogMessage;
         }
 
-        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
+        internal static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
         {
             var logMessageArray = new JArray();
             foreach(var logMessage in logMessages)
@@ -686,7 +686,7 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
+        internal static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
         {
             if (json == null)
             {

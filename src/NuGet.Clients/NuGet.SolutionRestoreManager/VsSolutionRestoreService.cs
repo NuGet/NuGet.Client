@@ -222,7 +222,7 @@ namespace NuGet.SolutionRestoreManager
                                     .Select(e => new PackageSource(e))
                                     .ToList(),
                     ProjectWideWarningProperties = VSNominationUtilities.GetProjectWideWarningProperties(TargetFrameworks),
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath, projectPath: projectFullPath),
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
                     RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks)
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(TargetFrameworks),
