@@ -365,7 +365,7 @@
       <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
       
       <!-- Build exe commands -->
-      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
+      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced) -verbose</DesktopTestCommand>
       <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
     </PropertyGroup>
 
@@ -378,6 +378,9 @@
     </PropertyGroup>
 
     <!-- Desktop -->
+    <Message Text="Running $(DesktopTestCommand)" 
+          Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' "/>
+
     <Exec Command="$(DesktopTestCommand)"
           ContinueOnError="true"
           Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopInputTestAssemblies)' != '' ">
@@ -385,6 +388,9 @@
     </Exec>
 
     <!-- VSTest/NETCore -->
+    <Message Text="Running $(VSTestCommand)" 
+          Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' "/>
+
     <Exec Command="$(VSTestCommand)"
           ContinueOnError="true"
           Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(CoreInputTestAssemblies)' != '' ">

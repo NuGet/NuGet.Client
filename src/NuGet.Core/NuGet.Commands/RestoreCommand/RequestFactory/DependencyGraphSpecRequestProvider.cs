@@ -67,10 +67,10 @@ namespace NuGet.Commands
                 MaxDegreeOfParallelism = Environment.ProcessorCount
             };
 
-            // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
-            Parallel.ForEach(dgFile.Restore.ToArray(), parallelOptions, projectNameToRestore =>
+            using (var settingsLoadingContext = new SettingsLoadingContext())
             {
-                foreach (var projectNameToRestore in dgFile.Restore)
+                // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
+                Parallel.ForEach(dgFile.Restore.ToArray(), parallelOptions, projectNameToRestore =>
                 {
                     var closure = dgFile.GetClosure(projectNameToRestore);
 
@@ -92,9 +92,8 @@ namespace NuGet.Commands
                     {
                         requests.Add(request);
                     }
-                }
-            });
-
+                });
+            }
             // Filter out duplicate tool restore requests
             foreach (var subSetRequest in ToolRestoreUtility.GetSubSetRequests(toolRequests))
             {
