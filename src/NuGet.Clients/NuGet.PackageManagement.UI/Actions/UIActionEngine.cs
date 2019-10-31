@@ -112,6 +112,7 @@ namespace NuGet.PackageManagement.UI
                     return ExecuteActionsAsync(actions, uiService.ProjectContext, uiService.CommonOperations, userAction, sourceCacheContext, token);
                 },
                 operationType,
+                userAction,
                 token);
         }
 
@@ -245,6 +246,7 @@ namespace NuGet.PackageManagement.UI
                         token);
                 },
                 NuGetOperationType.Update,
+                userAction: null,
                 token);
         }
 
@@ -308,6 +310,7 @@ namespace NuGet.PackageManagement.UI
             Func<SourceCacheContext, Task<IReadOnlyList<ResolvedAction>>> resolveActionsAsync,
             Func<IReadOnlyList<ResolvedAction>, SourceCacheContext, Task> executeActionsAsync,
             NuGetOperationType operationType,
+            UserAction userAction,
             CancellationToken token)
         {
             var status = NuGetOperationStatus.Succeeded;
@@ -316,6 +319,11 @@ namespace NuGet.PackageManagement.UI
 
             bool continueAfterPreview = true;
             bool acceptedLicense = true;
+
+            IEnumerable<string> removedPackages = null;
+            IEnumerable<Tuple<string,string>> addedPackages = null;
+            IEnumerable<Tuple<string,string>> updatedPackagesOld = null;
+            IEnumerable<Tuple<string,string>> updatedPackagesNew = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
@@ -341,16 +349,20 @@ namespace NuGet.PackageManagement.UI
 
                         if (operationType == NuGetOperationType.Uninstall)
                         {
-                            packageCount = results.SelectMany(result => result.Deleted).
-                                Select(package => package.Id).Distinct().Count();
+                            // removed packages don't have version info
+                            removedPackages = results.SelectMany(result => result.Deleted).Select(package => package.Id).Distinct();
+                            packageCount = removedPackages.Count();
                         }
                         else
                         {
-                            var addCount = results.SelectMany(result => result.Added).
-                                Select(package => package.Id).Distinct().Count();
+                            // log rich info about added packages
+                            addedPackages = results.SelectMany(result => result.Added).Select(package => new Tuple<string, string>(package.Id, (package.Version == null ? "" : package.Version.ToNormalizedString()))).Distinct();
+                            var addCount = addedPackages.Count();
 
-                            var updateCount = results.SelectMany(result => result.Updated).
-                                Select(result => result.New.Id).Distinct().Count();
+                            //updated packages can have an old and a new id.  
+                            updatedPackagesOld = results.SelectMany(result => result.Updated).Select(package => new Tuple<string, string>(package.Old.Id, (package.Old.Version == null ? "" : package.Old.Version.ToNormalizedString()))).Distinct();
+                            updatedPackagesNew = results.SelectMany(result => result.Updated).Select(package => new Tuple<string, string>(package.New.Id, (package.New.Version == null ? "" : package.New.Version.ToNormalizedString()))).Distinct();
+                            var updateCount = updatedPackagesNew.Count();
 
                             // update packages count
                             packageCount = addCount + updateCount;
@@ -471,6 +483,35 @@ namespace NuGet.PackageManagement.UI
                     if (!acceptedLicense)
                     {
                         actionTelemetryEvent["AcceptedLicense"] = "False";
+                    }
+
+                    // log the single top level package the user is installing or removing
+                    if (userAction != null)
+                    {
+                        // userAction.Version can be null for deleted packages.  
+                        actionTelemetryEvent.AddPiiPackage("SelectedPackage", new Tuple<string, string>(userAction.PackageId, (userAction.Version == null ? "" : userAction.Version.ToNormalizedString())));
+                    }
+
+                    // other packages can be added, removed, or upgraded as part of bulk upgrade or as part of satisfying package dependencies, so log that also
+                    if (addedPackages != null && addedPackages.Count() > 0)
+                    {
+                        actionTelemetryEvent.AddPiiPackageList("AddedPackages", addedPackages);
+                    }
+
+                    if (removedPackages != null && removedPackages.Count() > 0)
+                    {
+                        actionTelemetryEvent.AddListOfPiiValues("RemovedPackages", removedPackages);
+                    }
+
+                    // two collections for updated packages: pre and post upgrade
+                    if (updatedPackagesNew != null && updatedPackagesNew.Count() > 0)
+                    {
+                        actionTelemetryEvent.AddPiiPackageList("UpdatedPackagesNew", updatedPackagesNew);
+                    }
+
+                    if (updatedPackagesOld != null && updatedPackagesOld.Count() > 0)
+                    {
+                        actionTelemetryEvent.AddPiiPackageList("UpdatedPackagesOld", updatedPackagesOld);
                     }
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);

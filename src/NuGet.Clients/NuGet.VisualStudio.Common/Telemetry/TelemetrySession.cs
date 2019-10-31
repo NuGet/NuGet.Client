@@ -50,6 +50,39 @@ namespace NuGet.VisualStudio.Telemetry
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = ToComplexProperty(pair.Value);
             }
 
+            // serialize any PII packages
+            foreach (var namedTuple in telemetryEvent.GetPiiPackages())
+            {
+                var packageInfo = new TelemetryPiiPackageInfo() { Name = new VsTelemetryPiiProperty(namedTuple.Value.Item1), Version = namedTuple.Value.Item2 };
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + namedTuple.Key] = new VsTelemetryComplexProperty(packageInfo);
+            }
+
+            // serialize lists of PII values
+            foreach (var piiList in telemetryEvent.GetPiiLists())
+            {
+                // construct a list of PII props
+                System.Collections.Generic.List<VsTelemetryPiiProperty> piiProps = new System.Collections.Generic.List<VsTelemetryPiiProperty>();
+                foreach (var propertyValue in piiList.Value)
+                {
+                    piiProps.Add(new VsTelemetryPiiProperty(propertyValue));
+                }
+
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + piiList.Key] = new VsTelemetryComplexProperty(piiProps.ToArray());
+            }
+
+            // serialize lists of tuples of pkgname,pkgversion, where names are client side hashed
+            foreach ( var piiTupleList in telemetryEvent.GetPiiPackageList())
+            {
+                // construct a list of objects containing PII
+                System.Collections.Generic.List<TelemetryPiiPackageInfo> piiTuples = new System.Collections.Generic.List<TelemetryPiiPackageInfo>();
+                foreach(var tuple in piiTupleList.Value)
+                {
+                    piiTuples.Add(new TelemetryPiiPackageInfo() { Name = new VsTelemetryPiiProperty(tuple.Item1), Version = tuple.Item2 });
+                }
+
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + piiTupleList.Key] = new VsTelemetryComplexProperty(piiTuples.ToArray());
+            }
+
             return vsTelemetryEvent;
         }
 
