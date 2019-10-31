@@ -6,13 +6,21 @@ using System.Collections.Generic;
 using System.Net;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Asn1.Cmp;
+using Org.BouncyCastle.Asn1.Ess;
+using Org.BouncyCastle.Asn1.Pkcs;
+using Org.BouncyCastle.Asn1.Tsp;
 using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Cms;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Security;
 using Org.BouncyCastle.Tsp;
 using Org.BouncyCastle.X509;
 using Org.BouncyCastle.X509.Extension;
 using Org.BouncyCastle.X509.Store;
+using BcAttribute = Org.BouncyCastle.Asn1.Cms.Attribute;
+using BcAttributeTable = Org.BouncyCastle.Asn1.Cms.AttributeTable;
+using BcContentInfo = Org.BouncyCastle.Asn1.Cms.ContentInfo;
 
 namespace Test.Utility.Signing
 {
@@ -145,42 +153,30 @@ namespace Test.Utility.Signing
 
             var bytes = ReadRequestBody(context.Request);
             var request = new TimeStampRequest(bytes);
-            var tokenGenerator = new TimeStampTokenGenerator(
-                _keyPair.Private,
-                Certificate,
-                _options.SignatureHashAlgorithm.Value,
-                _options.Policy.Value);
-
-            if (_options.ReturnSigningCertificate)
-            {
-                var certificates = X509StoreFactory.Create(
-                    "Certificate/Collection",
-                    new X509CollectionStoreParameters(new[] { Certificate }));
-
-                tokenGenerator.SetCertificates(certificates);
-            }
-
-            SetAccuracy(tokenGenerator);
-
-            var responseGenerator = new TimeStampResponseGenerator(tokenGenerator, TspAlgorithms.Allowed);
-            TimeStampResponse response;
+            PkiStatusInfo statusInfo;
+            BcContentInfo timeStampToken = null;
 
             if (_options.ReturnFailure)
             {
-                response = responseGenerator.GenerateFailResponse(
-                    PkiStatus.Rejection,
-                    PkiFailureInfo.BadAlg,
-                    "Unsupported algorithm");
+                statusInfo = new PkiStatusInfo(
+                    (int)PkiStatus.Rejection,
+                    new PkiFreeText(new DerUtf8String("Unsupported algorithm")),
+                    new PkiFailureInfo(PkiFailureInfo.BadAlg));
             }
             else
             {
+                statusInfo = new PkiStatusInfo((int)PkiStatus.Granted);
+
                 var generalizedTime = DateTime.UtcNow;
 
                 if (_options.GeneralizedTime.HasValue)
                 {
                     generalizedTime = _options.GeneralizedTime.Value.UtcDateTime;
                 }
-                response = responseGenerator.Generate(request, _nextSerialNumber, generalizedTime);
+
+                CmsSignedData timestamp = GenerateTimestamp(request, _nextSerialNumber, generalizedTime);
+
+                timeStampToken = timestamp.ContentInfo;
             }
 
             _serialNumbers.Add(_nextSerialNumber);
@@ -188,28 +184,80 @@ namespace Test.Utility.Signing
 
             context.Response.ContentType = ResponseContentType;
 
+            var response = new TimeStampResp(statusInfo, timeStampToken);
+
             WriteResponseBody(context.Response, response.GetEncoded());
         }
 
-        private void SetAccuracy(TimeStampTokenGenerator tokenGenerator)
+        private CmsSignedData GenerateTimestamp(
+            TimeStampRequest request,
+            BigInteger serialNumber,
+            DateTime generalizedTime)
         {
-            if (_options.Accuracy != null)
+            var messageImprint = new MessageImprint(
+                new AlgorithmIdentifier(
+                    new DerObjectIdentifier(request.MessageImprintAlgOid)), request.GetMessageImprintDigest());
+            DerInteger nonce = request.Nonce == null ? null : new DerInteger(request.Nonce);
+
+            var tstInfo = new TstInfo(
+                new DerObjectIdentifier(_options.Policy.Value),
+                messageImprint,
+                new DerInteger(serialNumber),
+                new DerGeneralizedTime(generalizedTime),
+                _options.Accuracy,
+                DerBoolean.False,
+                nonce,
+                tsa: null,
+                extensions: null);
+
+            var content = new CmsProcessableByteArray(tstInfo.GetEncoded());
+            var signedAttributes = new Asn1EncodableVector();
+            var certificateBytes = new Lazy<byte[]>(() => Certificate.GetEncoded());
+
+            if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V1))
             {
-                if (_options.Accuracy.Seconds != null)
-                {
-                    tokenGenerator.SetAccuracySeconds(_options.Accuracy.Seconds.Value.IntValue);
-                }
+                byte[] hash = DigestUtilities.CalculateDigest("SHA-1", certificateBytes.Value);
+                var signingCertificate = new SigningCertificate(new EssCertID(hash));
+                var attributeValue = new DerSet(signingCertificate);
+                var attribute = new BcAttribute(PkcsObjectIdentifiers.IdAASigningCertificate, attributeValue);
 
-                if (_options.Accuracy.Millis != null)
-                {
-                    tokenGenerator.SetAccuracyMillis(_options.Accuracy.Millis.Value.IntValue);
-                }
-
-                if (_options.Accuracy.Micros != null)
-                {
-                    tokenGenerator.SetAccuracyMicros(_options.Accuracy.Micros.Value.IntValue);
-                }
+                signedAttributes.Add(attribute);
             }
+
+            if (_options.SigningCertificateUsage.HasFlag(SigningCertificateUsage.V2))
+            {
+                byte[] hash = DigestUtilities.CalculateDigest("SHA-256", certificateBytes.Value);
+                var signingCertificateV2 = new SigningCertificateV2(new EssCertIDv2(hash));
+                var attributeValue = new DerSet(signingCertificateV2);
+                var attribute = new BcAttribute(PkcsObjectIdentifiers.IdAASigningCertificateV2, attributeValue);
+
+                signedAttributes.Add(attribute);
+            }
+
+            var generator = new CmsSignedDataGenerator();
+
+            if (_options.ReturnSigningCertificate)
+            {
+                var certificates = X509StoreFactory.Create(
+                    "Certificate/Collection",
+                    new X509CollectionStoreParameters(new[] { Certificate }));
+
+                generator.AddCertificates(certificates);
+            }
+
+            generator.AddSigner(
+                _keyPair.Private,
+                Certificate,
+                _options.SignatureHashAlgorithm.Value,
+                new BcAttributeTable(signedAttributes),
+                new BcAttributeTable(DerSet.Empty));
+
+            CmsSignedData signedCms = generator.Generate(
+                PkcsObjectIdentifiers.IdCTTstInfo.Id,
+                content,
+                encapsulate: true);
+
+            return signedCms;
         }
 #endif
     }

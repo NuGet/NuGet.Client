@@ -19,6 +19,7 @@ namespace Test.Utility.Signing
         public DateTimeOffset? IssuedCertificateNotBefore { get; set; }
         public DateTimeOffset? IssuedCertificateNotAfter { get; set; }
         public DateTimeOffset? GeneralizedTime { get; set; }
+        public SigningCertificateUsage SigningCertificateUsage { get; set; }
 
         public TimestampServiceOptions()
         {
@@ -26,6 +27,7 @@ namespace Test.Utility.Signing
             Policy = new Oid("2.999");
             ReturnSigningCertificate = true;
             SignatureHashAlgorithm = new Oid(Oids.Sha256);
+            SigningCertificateUsage = SigningCertificateUsage.V2;
         }
     }
 }
