@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Utility;
@@ -62,6 +60,24 @@ namespace NuGet.VisualStudio.Telemetry
                 {
                     resourceData.Cancelled++;
                 }
+
+                if (pdEvent.Bytes > 0)
+                {
+                    resourceData.TotalBytes += pdEvent.Bytes;
+                    if (pdEvent.Bytes > resourceData.MaxBytes)
+                    {
+                        resourceData.MaxBytes = pdEvent.Bytes;
+                    }
+                }
+
+                if (pdEvent.HttpStatusCode.HasValue)
+                {
+                    if (!resourceData.StatusCodes.TryGetValue(pdEvent.HttpStatusCode.Value, out var count))
+                    {
+                        count = 0;
+                    }
+                    resourceData.StatusCodes[pdEvent.HttpStatusCode.Value] = count + 1;
+                }
             }
         }
 
@@ -114,6 +130,13 @@ namespace NuGet.VisualStudio.Telemetry
                         @event["metadata.success"] = data.Metadata.Successful;
                         @event["metadata.retries"] = data.Metadata.Retries;
                         @event["metadata.cancelled"] = data.Metadata.Cancelled;
+                        @event["metadata.bytes.total"] = data.Metadata.TotalBytes;
+                        @event["metadata.bytes.max"] = data.Metadata.MaxBytes;
+
+                        if (data.Metadata.StatusCodes.Count > 0)
+                        {
+                            @event.AddComplexData("metadata.http.statuscodes", ToStatusCodeTelemetry(data.Metadata.StatusCodes));
+                        }
 
                         if (data.Metadata.EventTiming.Requests > 0)
                         {
@@ -137,6 +160,13 @@ namespace NuGet.VisualStudio.Telemetry
                         @event["nupkg.success"] = data.Nupkg.Successful;
                         @event["nupkg.retries"] = data.Nupkg.Retries;
                         @event["nupkg.cancelled"] = data.Nupkg.Cancelled;
+                        @event["nupkg.bytes.total"] = data.Nupkg.TotalBytes;
+                        @event["nupkg.bytes.max"] = data.Nupkg.MaxBytes;
+
+                        if (data.Nupkg.StatusCodes.Count > 0)
+                        {
+                            @event.AddComplexData("nupkg.http.statuscodes", ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
+                        }
 
                         if (data.Nupkg.EventTiming.Requests > 0)
                         {
@@ -157,6 +187,18 @@ namespace NuGet.VisualStudio.Telemetry
                 }
             }
        }
+
+        private TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
+        {
+            var @event = new TelemetryEvent(null);
+
+            foreach (var pair in statusCodes)
+            {
+                @event[pair.Key.ToString()] = pair.Value;
+            }
+
+            return @event;
+        }
 
         private string GetMsFeed(Uri sourceUri)
         {
@@ -205,6 +247,9 @@ namespace NuGet.VisualStudio.Telemetry
             public object Lock = new object();
             public ResourceTimingData EventTiming = new ResourceTimingData();
             public ResourceTimingData HeaderTiming;
+            public long TotalBytes;
+            public long MaxBytes;
+            public Dictionary<int, int> StatusCodes = new Dictionary<int, int>();
             public int Successful;
             public int Retries;
             public int Cancelled;

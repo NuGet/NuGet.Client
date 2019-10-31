@@ -12,6 +12,7 @@ namespace NuGet.Common
     {
         private IDictionary<string, object> _properties;
         private IDictionary<string, object> _piiProperties;
+        private IDictionary<string, object> _complexProperties;
 
         public TelemetryEvent(string eventName) :
             this(eventName, new Dictionary<string, object>())
@@ -23,6 +24,7 @@ namespace NuGet.Common
             Name = eventName;
             _properties = properties;
             _piiProperties = new Dictionary<string, object>();
+            _complexProperties = new Dictionary<string, object>();
         }
 
         public string Name { get; }
@@ -62,6 +64,16 @@ namespace NuGet.Common
         public IEnumerable<KeyValuePair<string, object>> GetPiiData()
         {
             return _piiProperties;
+        }
+
+        public void AddComplexData(string key, object value)
+        {
+            _complexProperties[key] = value;
+        }
+
+        public IEnumerable<KeyValuePair<string, object>> GetComplexData()
+        {
+            return _complexProperties;
         }
     }
 }
