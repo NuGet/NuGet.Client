@@ -998,6 +998,43 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [PlatformFact(Platform.Windows, Platform.Darwin)]
+        public async Task CopyFilesAsync_PathWithDifferentCasingOnWindowsAndMac_Succeeds()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackageWithTildaInFileName()))
+            {
+                var files = await test.Reader.CopyFilesAsync(
+                    testDirectory.Path.ToLower(),
+                    new[] { "lib/net45/a~c.dll" },
+                    ExtractFile,
+                    NullLogger.Instance,
+                    CancellationToken.None);
+
+                var expectedFilePath = Path.Combine(testDirectory.Path, "lib/net45/a~c.dll");
+
+                Assert.Equal(1, files.Count());
+                Assert.Equal(expectedFilePath, files.Single());
+                Assert.True(File.Exists(expectedFilePath));
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public async Task CopyFilesAsync_PathWithDifferentCasingOnLinux_Fails()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            using (var test = PackageReaderTest.Create(TestPackagesCore.GetPackageCoreReaderTestPackageWithTildaInFileName()))
+            {
+                // Act & Assert
+                await Assert.ThrowsAsync<UnsafePackageEntryException>(async () => await test.Reader.CopyFilesAsync(
+                     testDirectory.Path.ToLower(),
+                     new[] { "lib/net45/a~c.dll" },
+                     ExtractFile,
+                     NullLogger.Instance,
+                     CancellationToken.None));
+            }
+        }
+
         [Fact]
         public void GetFrameworkItems_ReturnsEmptyEnumerableIfNoFrameworkItems()
         {

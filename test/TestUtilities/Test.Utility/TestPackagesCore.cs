@@ -240,6 +240,33 @@ namespace NuGet.Test.Utility
             return file;
         }
 
+        public static TempFile GetPackageCoreReaderTestPackageWithTildaInFileName()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/net45/a~c.dll", ZeroContent);
+                zip.AddEntry("lib/net45/b.dll", ZeroContent);
+
+                zip.AddEntry("Aa.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata minClientVersion=""1.2.3"">
+                                <id>Aa</id>
+                                <version>4.5.6</version>
+                                <authors>author</authors>
+                                <description>description</description>
+                                <packageTypes>
+                                  <packageType name=""Bb"" />
+                                  <packageType name=""Cc"" version=""7.8.9"" />
+                                </packageTypes>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
         public static TempFile GetPackageCoreReaderLongPathTestPackage()
         {
             var file = new TempFile();

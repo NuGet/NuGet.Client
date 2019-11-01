@@ -545,7 +545,7 @@ namespace NuGet.Packaging
             // Destination and filePath must be normalized.
             var fullPath = Path.GetFullPath(Path.Combine(normalizedDestination, normalizedFilePath));
 
-            if(!fullPath.StartsWith(normalizedDestination, StringComparison.Ordinal) || fullPath.Length == normalizedDestination.Length)
+            if(!fullPath.StartsWith(normalizedDestination,PathUtility.GetStringComparisonBasedOnOS()) || fullPath.Length == normalizedDestination.Length)
             {
                 throw new UnsafePackageEntryException(string.Format(
                     CultureInfo.CurrentCulture,
