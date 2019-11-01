@@ -94,13 +94,19 @@ phases:
       - msbuild
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: PowerShell@1
     inputs:
-      packageType: sdk
-      version: $(SDKVersionForBuild)
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
 
   - task: PowerShell@1
     displayName: "Update Build Number"
@@ -116,6 +122,24 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+  
+  - task: PowerShell@1
+    displayName: "add check step"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "=================================check env=================================="
+        gci env:* | format-table -Wrap -AutoSize
+        Write-Host "=================================check temp folder=================================="
+        cd ${env:AGENT_TEMPDIRECTORY}
+        ls
+        cd dotnet
+        ls
+        Write-Host "=================================check temp folder dotnet=================================="
+        .\dotnet.exe --info
+        Write-Host "=================================check dotnet=================================="
+        dotnet --info
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 5.0.0"
@@ -573,13 +597,43 @@ phases:
         SkipDesktopAssemblies: "true"
         
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: PowerShell@1
     inputs:
-      packageType: sdk
-      version: $(SDKVersionForBuild)
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+
+  - task: PowerShell@1
+    displayName: "add check step"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "=================================check env=================================="
+        gci env:* | format-table -Wrap -AutoSize
+        Write-Host "=================================check temp folder=================================="
+        cd ${env:AGENT_TEMPDIRECTORY}
+        ls
+        cd dotnet
+        ls
+        Write-Host "=================================check temp folder dotnet=================================="
+        .\dotnet.exe --info
+        Write-Host "=================================check dotnet=================================="
+        dotnet --info
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -657,14 +711,47 @@ phases:
     demands: sh
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: ShellScript@2
+    displayName: "Install .NET 5.0 for build"
+    continueOnError: "true"
     inputs:
-      packageType: sdk
-      version: $(SDKVersionForBuild)
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
-      
+      scriptPath: "scripts/utils/InstallCLIforBuild.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+      args: '$(SDKVersionForBuild)'
+ 
+  - task: PowerShell@2
+    displayName: "Define variables"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
+
+  - task: PowerShell@2
+    displayName: "add check step"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "=================================check env=================================="
+        gci env:* | format-table -Wrap -AutoSize
+        Write-Host "=================================check temp folder=================================="
+        cd ${env:AGENT_TEMPDIRECTORY}
+        ls
+        cd dotnet
+        ls
+        Write-Host "=================================check temp folder dotnet=================================="
+        ./dotnet --info
+        Write-Host "=================================check dotnet=================================="
+        dotnet --info
+
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -719,14 +806,23 @@ phases:
     - Mono -equals 6.4.0 
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
-    inputs:
-      packageType: sdk
-      version: $(SDKVersionForBuild)
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
       
+  - task: ShellScript@2
+    displayName: "Install .NET 5.0 for build"
+    continueOnError: "true"
+    inputs:
+      scriptPath: "scripts/utils/InstallCLIforBuild.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+      args: '$(SDKVersionForBuild)'
+
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -735,6 +831,30 @@ phases:
         Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
       failOnStderr: "true"
     condition: "always()"
+
+  - task: PowerShell@2
+    displayName: "Define variables"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
+
+  - task: PowerShell@2
+    displayName: "add check step"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "=================================check env=================================="
+        gci env:* | format-table -Wrap -AutoSize
+        Write-Host "=================================check temp folder=================================="
+        cd ${env:AGENT_TEMPDIRECTORY}
+        ls
+        cd dotnet
+        ls
+        Write-Host "=================================check temp folder dotnet=================================="
+        ./dotnet --info
+        Write-Host "=================================check dotnet=================================="
+        dotnet --info
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download NuGet.CommandLine.Test artifacts"
@@ -785,13 +905,26 @@ phases:
     demands: DotNetFramework
 
   steps:
-  - task: UseDotNet@2
-    displayName: 'Use .NET Core sdk'
+  # - task: UseDotNet@2
+  #   displayName: 'Use .NET Core sdk'
+  #   inputs:
+  #     packageType: sdk
+  #     version: $(SDKVersionForBuild)
+  #     includePreviewVersions: true
+  #     installationPath: $(Agent.TempDirectory)/dotnet
+
+  - task: PowerShell@1
     inputs:
-      packageType: sdk
-      version: $(SDKVersionForBuild)
-      includePreviewVersions: true
-      installationPath: $(Agent.TempDirectory)/dotnet
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -913,6 +1046,19 @@ phases:
     inputs:
       versionSpec: "4.5.0"
 
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+    
   - task: MSBuild@1
     displayName: "Bootstrap NuGet packages"
     inputs:

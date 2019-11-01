@@ -693,7 +693,7 @@ namespace Test.Utility.Signing
             {
                 revocationStatusUnknown = "unable to get certificate CRL";
             }
-
+            
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
@@ -710,7 +710,7 @@ namespace Test.Utility.Signing
             }
             else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                untrustedRoot = "The trust policy was not trusted.";
+                untrustedRoot = "The certificate was not trusted.";
             }
             else
             {
@@ -739,7 +739,7 @@ namespace Test.Utility.Signing
             {
                 notTimeValid = "certificate has expired";
             }
-
+            
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&

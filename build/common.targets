@@ -11,8 +11,8 @@
     <IsCore>true</IsCore>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp3.0' ">
-    <DefineConstants>$(DefineConstants);NETCORE3_0</DefineConstants>
+  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp5.0' ">
+    <DefineConstants>$(DefineConstants);NETCORE5_0</DefineConstants>
   </PropertyGroup>
 
   <!-- Include shared files for netcore projects -->
