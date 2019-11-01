@@ -1059,7 +1059,7 @@ namespace NuGet.Packaging.Test
                     using (var packageReader = new PackageArchiveReader(packageStream))
                     {
                         // Act & Assert
-                        await Assert.ThrowsAsync<UnsafePackageEntryException>(async () => await packageReader.CopyFilesAsync(
+                        await Assert.ThrowsAsync<DirectoryNotFoundException>(async () => await packageReader.CopyFilesAsync(
                              destination.Path.ToUpper(),
                              new[] { "readme~.txt" },
                              ExtractFile,
