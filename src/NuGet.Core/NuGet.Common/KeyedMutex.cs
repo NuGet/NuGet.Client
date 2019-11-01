@@ -8,15 +8,15 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    internal class InProcLock : IDisposable
+    internal sealed class KeyedMutex : IDisposable
     {
         private Dictionary<string, LockState> _locks;
         private SemaphoreSlim _dictionaryLock;
 
-        internal InProcLock()
+        internal KeyedMutex()
         {
             _locks = new Dictionary<string, LockState>();
-            _dictionaryLock = new SemaphoreSlim(1);
+            _dictionaryLock = new SemaphoreSlim(initialCount: 1);
         }
 
         internal async Task EnterAsync(string key, CancellationToken token)
@@ -43,11 +43,11 @@ namespace NuGet.Common
             }
         }
 
-        internal void Enter(string key, CancellationToken token)
+        internal void Enter(string key)
         {
             LockState lockState;
 
-            _dictionaryLock.Wait(token);
+            _dictionaryLock.Wait(CancellationToken.None);
             try
             {
                 lockState = GetOrCreate(key);
@@ -59,7 +59,7 @@ namespace NuGet.Common
 
             try
             {
-                lockState.Semaphore.Wait(token);
+                lockState.Semaphore.Wait(CancellationToken.None);
             }
             catch
             {
@@ -69,16 +69,16 @@ namespace NuGet.Common
 
         private LockState GetOrCreate(string key)
         {
-            if (!_locks.TryGetValue(key, out var lockState))
+            if (_locks.TryGetValue(key, out var lockState))
+            {
+                Interlocked.Increment(ref lockState.Count);
+            }
+            else
             {
                 lockState = new LockState();
                 lockState.Semaphore = new SemaphoreSlim(1);
                 lockState.Count = 1;
                 _locks[key] = lockState;
-            }
-            else
-            {
-                Interlocked.Increment(ref lockState.Count);
             }
 
             return lockState;
@@ -117,7 +117,7 @@ namespace NuGet.Common
             var count = Interlocked.Decrement(ref lockState.Count);
             if (count == 0)
             {
-                lockState.Semaphore.Release();
+                lockState.Semaphore.Dispose();
                 _locks.Remove(key);
             }
         }
@@ -128,29 +128,10 @@ namespace NuGet.Common
             public int Count;
         }
 
-        #region IDisposable Support
-        private bool _disposedValue = false; // To detect redundant calls
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!_disposedValue)
-            {
-                if (disposing)
-                {
-                    _dictionaryLock.Dispose();
-                    _locks.Clear();
-                }
-
-                _disposedValue = true;
-            }
-        }
-
-        // This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in Dispose(bool disposing) above.
-            Dispose(true);
+            _dictionaryLock.Dispose();
+            _locks.Clear();
         }
-        #endregion
     }
 }

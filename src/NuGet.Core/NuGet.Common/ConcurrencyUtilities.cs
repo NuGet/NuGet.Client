@@ -16,7 +16,7 @@ namespace NuGet.Common
     {
         private const int NumberOfRetries = 3000;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
-        private static InProcLock PerFileLock = new InProcLock();
+        private static readonly KeyedMutex PerFileLock = new KeyedMutex();
 
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
@@ -116,7 +116,7 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            PerFileLock.Enter(filePath, CancellationToken.None);
+            PerFileLock.Enter(filePath);
             try
             {
                 // limit the number of unauthorized, this should be around 30 seconds.
