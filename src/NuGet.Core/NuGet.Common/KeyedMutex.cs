@@ -10,8 +10,8 @@ namespace NuGet.Common
 {
     internal sealed class KeyedMutex : IDisposable
     {
-        private Dictionary<string, LockState> _locks;
-        private SemaphoreSlim _dictionaryLock;
+        private readonly Dictionary<string, LockState> _locks;
+        private readonly SemaphoreSlim _dictionaryLock;
 
         internal KeyedMutex()
         {
@@ -21,6 +21,11 @@ namespace NuGet.Common
 
         internal async Task EnterAsync(string key, CancellationToken token)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             LockState lockState;
 
             await _dictionaryLock.WaitAsync(token);
@@ -45,6 +50,11 @@ namespace NuGet.Common
 
         internal void Enter(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             LockState lockState;
 
             _dictionaryLock.Wait(CancellationToken.None);
@@ -76,7 +86,7 @@ namespace NuGet.Common
             else
             {
                 lockState = new LockState();
-                lockState.Semaphore = new SemaphoreSlim(1);
+                lockState.Semaphore = new SemaphoreSlim(initialCount: 1);
                 lockState.Count = 1;
                 _locks[key] = lockState;
             }
@@ -86,6 +96,11 @@ namespace NuGet.Common
 
         internal async Task ExitAsync(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             await _dictionaryLock.WaitAsync();
             try
             {
@@ -99,6 +114,11 @@ namespace NuGet.Common
 
         internal void Exit(string key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
             _dictionaryLock.Wait();
             try
             {
@@ -131,6 +151,11 @@ namespace NuGet.Common
         public void Dispose()
         {
             _dictionaryLock.Dispose();
+
+            foreach (var kvp in _locks)
+            {
+                kvp.Value.Semaphore.Dispose();
+            }
             _locks.Clear();
         }
     }
