@@ -45,6 +45,7 @@ namespace NuGet.Common
             catch
             {
                 Interlocked.Decrement(ref lockState.Count);
+                throw;
             }
         }
 
@@ -74,6 +75,7 @@ namespace NuGet.Common
             catch
             {
                 Interlocked.Decrement(ref lockState.Count);
+                throw;
             }
         }
 
