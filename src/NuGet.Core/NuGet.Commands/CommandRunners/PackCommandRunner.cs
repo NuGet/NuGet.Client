@@ -39,14 +39,6 @@ namespace NuGet.Commands
             ".json"
         };
 
-        private static readonly string[] DefaultExcludes = new[]
-        {
-            // Exclude previous package files
-            @"**\*".Replace('\\', Path.DirectorySeparatorChar) + NuGetConstants.PackageExtension,
-            // Exclude all files and directories that begin with "."
-            @"**\\.**".Replace('\\', Path.DirectorySeparatorChar), ".**"
-        };
-
         // Target file paths to exclude when building the lib package for symbol server scenario
         private static readonly string[] LibPackageExcludes = new[]
         {
@@ -862,10 +854,11 @@ namespace NuGet.Commands
             // Review: This exclusion should be done by the package builder because it knows which file would collide with the auto-generated
             // manifest file.
             IEnumerable<string> wildCards = _excludes.Concat(new[] { @"**\*" + NuGetConstants.ManifestExtension });
+
             if (!_packArgs.NoDefaultExcludes)
             {
                 // The user has not explicitly disabled default filtering.
-                IEnumerable<IPackageFile> excludedFiles = PathResolver.GetFilteredPackageFiles(packageFiles, ResolvePath, DefaultExcludes);
+                IEnumerable<IPackageFile> excludedFiles = RemoveDefaultExclusions(packageFiles);
                 if (excludedFiles != null)
                 {
                     foreach (IPackageFile file in excludedFiles)
@@ -888,6 +881,30 @@ namespace NuGet.Commands
             wildCards = wildCards.Concat(_packArgs.Exclude);
 
             PathResolver.FilterPackageFiles(packageFiles, ResolvePath, wildCards);
+        }
+
+        private IEnumerable<IPackageFile> RemoveDefaultExclusions(ICollection<IPackageFile> packageFiles)
+        {
+            string basePath = string.IsNullOrEmpty(_packArgs.BasePath) ? _packArgs.CurrentDirectory : _packArgs.BasePath;
+
+            var matches = packageFiles.Where(packageFile =>
+            {
+                var filePath = ResolvePath(packageFile, basePath);
+                var fileName = Path.GetFileName(filePath);
+
+                return fileName.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
+                    || (fileName.StartsWith(".") && fileName.IndexOf('.', startIndex: 1) == -1);
+            });
+
+            var matchedFiles = new HashSet<IPackageFile>(matches);
+            List<IPackageFile> toRemove = packageFiles.Where(matchedFiles.Contains).ToList();
+
+            foreach (IPackageFile item in toRemove)
+            {
+                packageFiles.Remove(item);
+            }
+
+            return toRemove;
         }
 
         private string ResolvePath(IPackageFile packageFile)
