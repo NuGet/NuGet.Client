@@ -70,7 +70,6 @@ namespace NuGet.CommandLine
                 Format.ToString()?.ToLower(),
                 interactive,
                 Console.LogError,
-                Console.LogWarning,
                 Console.LogInformation
                 );
 

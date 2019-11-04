@@ -56,37 +56,6 @@ namespace NuGet.Configuration
         /// </summary>
         public int ProtocolVersion { get; set; } = DefaultProtocolVersion;
 
-        private List<NuGetLogCode> _logCodes;
-        public List<NuGetLogCode> LogCodes
-        {
-            get
-            {
-                if (_logCodes == null)
-                {
-                    _logCodes = new List<NuGetLogCode>();
-                    if (IsEnabled)
-                    {
-                        if (ProtocolVersion == 2 && IsHttp && (Source.Contains("://www.nuget.org/api/v2")))
-                        {
-                            _logCodes.Add(NuGetLogCode.NU6500);
-                        }
-
-                        if (IsHttp && SourceUri.Scheme == "http")
-                        {
-                            _logCodes.Add(NuGetLogCode.NU6501);
-                        }
-
-                        if (IsLocal && !System.IO.Directory.Exists(Source))
-                        {
-                            _logCodes.Add(NuGetLogCode.NU6504);
-                        }
-                    }
-                }
-
-                return _logCodes;
-            }
-        }
-
         public bool IsHttp
         {
             get
@@ -191,11 +160,6 @@ namespace NuGet.Configuration
             return Name + " [" + Source + "]";
         }
 
-        public void ResetLogCode()
-        {
-            _logCodes = null;
-        }
-
         public override int GetHashCode()
         {
             return _hashCode;
@@ -210,7 +174,7 @@ namespace NuGet.Configuration
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
             };
-            clonedPackagedSource.LogCodes.AddRange(LogCodes);
+
             return clonedPackagedSource;
         }
     }

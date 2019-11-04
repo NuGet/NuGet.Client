@@ -90,7 +90,6 @@ namespace NuGet.CommandLine.XPlat
                         format.Value()?.ToLower(),
                         interactive.HasValue(),
                         getLogger().LogError,
-                        getLogger().LogWarning,
                         getLogger().LogInformation
                         );
                     

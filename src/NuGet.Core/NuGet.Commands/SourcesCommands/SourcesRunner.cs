@@ -268,7 +268,6 @@ namespace NuGet.Commands
         private static void PrintRegisteredSourcesShort(SourcesArgs args)
         {
             var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
-            ValidateSources(sourcesList);
 
             foreach (var source in sourcesList)
             {
@@ -284,7 +283,6 @@ namespace NuGet.Commands
                 }
                 legend += " ";
                 Console.WriteLine(legend + source.Source);
-                OutputWarningsForSource(args, source);
             }
         }
 
@@ -301,7 +299,6 @@ namespace NuGet.Commands
             // TODO: printjustified 0 ??? -- right translation?
             Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
             var sourcePadding = new string(' ', 6);
-            ValidateSources(sourcesList);
             for (var i = 0; i < sourcesList.Count; i++)
             {
                 var source = sourcesList[i];
@@ -314,62 +311,6 @@ namespace NuGet.Commands
                     source.Name,
                     source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
                 Console.WriteLine(string.Format("{0}{1}", sourcePadding, source.Source));
-                OutputWarningsForSource(args, source);
-            }
-        }
-
-        private static void OutputWarningsForSource(SourcesArgs args, PackageSource source)
-        {
-            foreach (var logCode in source.LogCodes)
-            {
-                switch (logCode)
-                {
-                    case NuGetLogCode.NU6500:
-                        args.LogWarning(logCode.ToString() + $" : nuget v2 feed is less secure than nuget v3 feed. Please change '{source.Source}' to '" + NuGetConstants.V3FeedUrl + "'");
-                        break;
-                    case NuGetLogCode.NU6501:
-                        args.LogWarning(logCode.ToString() + " : http feeds are not secure, change your '" + source.Source + "' feed to use https protocol");
-                        break;
-                    case NuGetLogCode.NU6502:
-                        args.LogInformation(logCode.ToString() + " : local v3 feeds are faster than v2 feeds");
-                        break;
-                    case NuGetLogCode.NU6503:
-                        args.LogWarning(logCode.ToString() + $" : '{source.Source}' was already defined with a previous entry");
-                        break;
-                    case NuGetLogCode.NU6504:
-                        args.LogWarning(logCode.ToString() + $" : Local feed '{source.Source}' does not exist or is not reachable");
-                        break;
-                }
-            }
-
-            if (source.LogCodes.Any())
-            {
-                Console.WriteLine();
-            }
-        }
-
-        private static void ValidateSources(List<PackageSource> sources)
-        {
-            HashSet<string> sourceStrings = new HashSet<string>();
-            foreach (var source in sources)
-            {
-                var logCodes = source.LogCodes;
-
-                if (source.IsEnabled)
-                {
-                    if (source.IsLocal && LocalFolderUtility.GetLocalFeedType(source.Source, NullLogger.Instance) == FeedType.FileSystemV2)
-                    {
-                        logCodes.Add(NuGetLogCode.NU6502);
-                    }
-
-                    if (source.IsHttp && HttpClient)
-
-                    // Check for NU6503 - duplicate Sources
-                    if (!sourceStrings.Add(source.Source))
-                    {
-                        logCodes.Add(NuGetLogCode.NU6503);
-                    }
-                }
             }
         }
     }

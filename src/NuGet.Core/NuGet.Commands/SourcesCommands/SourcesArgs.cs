@@ -21,7 +21,6 @@ namespace NuGet.Commands
         public string Format { get; }
         public bool Interactive { get; }
         public Log LogError { get; }
-        public Log LogWarning { get; }
         public Log LogInformation { get; }
 
         public SourcesArgs(
@@ -37,7 +36,6 @@ namespace NuGet.Commands
             string format,
             bool interactive,
             Log logError,
-            Log logWarning,
             Log logInformation
             )
         {
@@ -53,7 +51,6 @@ namespace NuGet.Commands
             Format = format;
             Interactive = interactive;
             LogError = logError;
-            LogWarning = logWarning;
             LogInformation = logInformation;
         }
     }

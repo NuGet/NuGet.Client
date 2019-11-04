@@ -101,16 +101,6 @@ namespace NuGet.Options
 
                         graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
 
-                        if (currentItem.LogCodes.Any())
-                        {
-                            var warningImageBounds = new Rectangle(
-                                nameBounds.Right -32-2, nameBounds.Y, 32, nameBounds.Height);
-                            // TODO: do image correclty.
-
-                            Image warningImage = new Bitmap("c:\\temp\\warning.jpg");
-                            graphics.DrawImage(warningImage, warningImageBounds);
-                        }
-
                         var sourceBounds = new Rectangle(
                             nameBounds.Left,
                             nameBounds.Bottom,
