@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Globalization;
 using System.Linq;
 using NuGet.Commands;
 using NuGet.Configuration;
@@ -41,6 +43,11 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
+            if (SourceProvider == null)
+            {
+                throw new InvalidOperationException(ResourceHelper.GetLocalizedString(typeof(string), "Error_SourceProviderIsNull"));
+            }
+
             string action = Arguments.FirstOrDefault();
 
 //TODO: base class has SourceProvider & Settings props.                   
@@ -60,9 +67,10 @@ namespace NuGet.CommandLine
                 Password,
                 StorePasswordInClearText,
                 ValidAuthenticationTypes,
-                Format.ToString(),
+                Format.ToString()?.ToLower(),
                 interactive,
                 Console.LogError,
+                Console.LogWarning,
                 Console.LogInformation
                 );
 

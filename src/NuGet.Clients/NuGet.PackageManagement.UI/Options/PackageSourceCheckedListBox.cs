@@ -3,6 +3,7 @@
 using System;
 using System.Drawing;
 using System.Drawing.Text;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Windows.Forms.VisualStyles;
@@ -99,6 +100,16 @@ namespace NuGet.Options
                             (int)nameSize.Height);
 
                         graphics.DrawString(currentItem.Name, e.Font, foreBrush, nameBounds, drawFormat);
+
+                        if (currentItem.LogCodes.Any())
+                        {
+                            var warningImageBounds = new Rectangle(
+                                nameBounds.Right -32-2, nameBounds.Y, 32, nameBounds.Height);
+                            // TODO: do image correclty.
+
+                            Image warningImage = new Bitmap("c:\\temp\\warning.jpg");
+                            graphics.DrawImage(warningImage, warningImageBounds);
+                        }
 
                         var sourceBounds = new Rectangle(
                             nameBounds.Left,

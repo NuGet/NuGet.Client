@@ -87,9 +87,10 @@ namespace NuGet.CommandLine.XPlat
                         password.Value(),
                         storePasswordInClearText.HasValue(),
                         validAuthenticationTypes.Value(),
-                        format.Value(),
+                        format.Value()?.ToLower(),
                         interactive.HasValue(),
                         getLogger().LogError,
+                        getLogger().LogWarning,
                         getLogger().LogInformation
                         );
                     

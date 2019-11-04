@@ -1,4 +1,4 @@
-﻿using System.Windows.Forms;
+using System.Windows.Forms;
 namespace NuGet.Options
 {
     partial class PackageSourcesOptionsControl
@@ -42,15 +42,17 @@ namespace NuGet.Options
             this.updateButton = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.NewPackageSourceLabel = new System.Windows.Forms.Label();
+            this.LogCodesLabel = new System.Windows.Forms.Label();
             this.NewPackageSource = new System.Windows.Forms.TextBox();
+            this.LogCodes = new System.Windows.Forms.TextBox();
             this.NewPackageNameLabel = new System.Windows.Forms.Label();
             this.NewPackageName = new System.Windows.Forms.TextBox();
-            this.PackageSourcesListBox = new PackageSourceCheckedListBox();
+            this.PackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
             this.addButton = new System.Windows.Forms.Button();
             this.MachineWideSourcesLabel = new System.Windows.Forms.Label();
-            this.MachineWidePackageSourcesListBox = new PackageSourceCheckedListBox();
+            this.MachineWidePackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
             this.images32px = new System.Windows.Forms.ImageList(this.components);
             this.images64px = new System.Windows.Forms.ImageList(this.components);
             this.PackageSourcesContextMenu.SuspendLayout();
@@ -65,6 +67,7 @@ namespace NuGet.Options
             // 
             // PackageSourcesContextMenu
             // 
+            this.PackageSourcesContextMenu.ImageScalingSize = new System.Drawing.Size(32, 32);
             this.PackageSourcesContextMenu.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.CopyPackageSourceStripMenuItem});
             this.PackageSourcesContextMenu.Name = "contextMenuStrip1";
@@ -126,10 +129,21 @@ namespace NuGet.Options
             resources.ApplyResources(this.NewPackageSourceLabel, "NewPackageSourceLabel");
             this.NewPackageSourceLabel.Name = "NewPackageSourceLabel";
             // 
+            // LogCodesLabel
+            // 
+            resources.ApplyResources(this.LogCodesLabel, "LogCodesLabel");
+            this.LogCodesLabel.Name = "LogCodesLabel";
+            // 
             // NewPackageSource
             // 
             resources.ApplyResources(this.NewPackageSource, "NewPackageSource");
             this.NewPackageSource.Name = "NewPackageSource";
+            // 
+            // LogCodes
+            // 
+            this.tableLayoutPanel1.SetColumnSpan(this.LogCodes, 3);
+            resources.ApplyResources(this.LogCodes, "LogCodes");
+            this.LogCodes.Name = "LogCodes";
             // 
             // NewPackageNameLabel
             // 
@@ -145,9 +159,9 @@ namespace NuGet.Options
             // 
             resources.ApplyResources(this.PackageSourcesListBox, "PackageSourcesListBox");
             this.PackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.PackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
             this.tableLayoutPanel1.SetColumnSpan(this.PackageSourcesListBox, 4);
             this.PackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
-            this.PackageSourcesListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.PackageSourcesListBox.FormattingEnabled = true;
             this.PackageSourcesListBox.Name = "PackageSourcesListBox";
             this.PackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
@@ -167,6 +181,8 @@ namespace NuGet.Options
             this.tableLayoutPanel1.Controls.Add(this.NewPackageSource, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.BrowseButton, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.updateButton, 3, 5);
+            this.tableLayoutPanel1.Controls.Add(this.LogCodesLabel, 0, 6);
+            this.tableLayoutPanel1.Controls.Add(this.LogCodes, 1, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // tableLayoutPanel2
@@ -191,18 +207,17 @@ namespace NuGet.Options
             // 
             // MachineWideSourcesLabel
             // 
-            this.tableLayoutPanel1.SetColumnSpan(this.MachineWideSourcesLabel, 4);
             resources.ApplyResources(this.MachineWideSourcesLabel, "MachineWideSourcesLabel");
+            this.tableLayoutPanel1.SetColumnSpan(this.MachineWideSourcesLabel, 4);
             this.MachineWideSourcesLabel.Name = "MachineWideSourcesLabel";
-            this.MachineWideSourcesLabel.AutoSize = true;
             // 
             // MachineWidePackageSourcesListBox
             // 
             resources.ApplyResources(this.MachineWidePackageSourcesListBox, "MachineWidePackageSourcesListBox");
             this.MachineWidePackageSourcesListBox.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.MachineWidePackageSourcesListBox.CheckBoxSize = new System.Drawing.Size(0, 0);
             this.tableLayoutPanel1.SetColumnSpan(this.MachineWidePackageSourcesListBox, 4);
             this.MachineWidePackageSourcesListBox.ContextMenuStrip = this.PackageSourcesContextMenu;
-            this.MachineWidePackageSourcesListBox.DrawMode = System.Windows.Forms.DrawMode.OwnerDrawVariable;
             this.MachineWidePackageSourcesListBox.FormattingEnabled = true;
             this.MachineWidePackageSourcesListBox.Name = "MachineWidePackageSourcesListBox";
             this.MachineWidePackageSourcesListBox.KeyUp += new System.Windows.Forms.KeyEventHandler(this.PackageSourcesListBox_KeyUp);
@@ -255,7 +270,9 @@ namespace NuGet.Options
         private Button updateButton;
         private Button BrowseButton;
         private Label NewPackageSourceLabel;
+        private Label LogCodesLabel;
         private TextBox NewPackageSource;
+        private TextBox LogCodes;
         private Label NewPackageNameLabel;
         private TextBox NewPackageName;
         private TableLayoutPanel tableLayoutPanel1;

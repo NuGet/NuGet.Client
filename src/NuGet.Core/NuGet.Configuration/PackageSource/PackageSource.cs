@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using NuGet.Common;
 
@@ -54,6 +55,37 @@ namespace NuGet.Configuration
         /// Gets or sets the protocol version of the source. Defaults to 2.
         /// </summary>
         public int ProtocolVersion { get; set; } = DefaultProtocolVersion;
+
+        private List<NuGetLogCode> _logCodes;
+        public List<NuGetLogCode> LogCodes
+        {
+            get
+            {
+                if (_logCodes == null)
+                {
+                    _logCodes = new List<NuGetLogCode>();
+                    if (IsEnabled)
+                    {
+                        if (ProtocolVersion == 2 && IsHttp && (Source.Contains("://www.nuget.org/api/v2")))
+                        {
+                            _logCodes.Add(NuGetLogCode.NU6500);
+                        }
+
+                        if (IsHttp && SourceUri.Scheme == "http")
+                        {
+                            _logCodes.Add(NuGetLogCode.NU6501);
+                        }
+
+                        if (IsLocal && !System.IO.Directory.Exists(Source))
+                        {
+                            _logCodes.Add(NuGetLogCode.NU6504);
+                        }
+                    }
+                }
+
+                return _logCodes;
+            }
+        }
 
         public bool IsHttp
         {
@@ -159,6 +191,11 @@ namespace NuGet.Configuration
             return Name + " [" + Source + "]";
         }
 
+        public void ResetLogCode()
+        {
+            _logCodes = null;
+        }
+
         public override int GetHashCode()
         {
             return _hashCode;
@@ -166,13 +203,15 @@ namespace NuGet.Configuration
 
         public PackageSource Clone()
         {
-            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
+            var clonedPackagedSource = new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
             {
                 Description = Description,
                 Credentials = Credentials?.Clone(),
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
             };
+            clonedPackagedSource.LogCodes.AddRange(LogCodes);
+            return clonedPackagedSource;
         }
     }
 }

@@ -2,9 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol;
 
 namespace NuGet.Commands
 {
@@ -34,17 +37,16 @@ namespace NuGet.Commands
                 case "list":
                     switch (args.Format)
                     {
-                        case "Short":
+                        case "short":
                             PrintRegisteredSourcesShort(args);
                             break;
-                        case "Detailed":
+                        case "detailed":
                         default:
                             PrintRegisteredSourcesDetailed(args);
                             break;
                     }
                     break;
                 case "add":
-
                     AddNewSource(args);
                     break;
                 case "remove":
@@ -86,14 +88,14 @@ namespace NuGet.Commands
                 args.SourceProvider.DisablePackageSource(args.Name);
             }
 
-            if (enabled) 
+            if (enabled)
             {
-                args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceEnabledSuccessfully, args.Name));
             }
             else
             {
-                args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceDisabledSuccessfully, args.Name));
             }
         }
@@ -117,7 +119,7 @@ namespace NuGet.Commands
             }
 
             args.SourceProvider.RemovePackageSource(args.Name);
-            args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                 Strings.SourcesCommandSourceRemovedSuccessfully, args.Name));
         }
 
@@ -176,7 +178,7 @@ namespace NuGet.Commands
             }
 
             args.SourceProvider.AddPackageSource(newPackageSource);
-            args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandSourceAddedSuccessfully, args.Name));
         }
 
@@ -221,7 +223,7 @@ namespace NuGet.Commands
                 var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
                 if (hasExistingAuthTypes && string.IsNullOrEmpty(args.ValidAuthenticationTypes))
                 {
-                    args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandClearingExistingAuthTypes, args.Name));
                 }
 
@@ -236,7 +238,7 @@ namespace NuGet.Commands
 
             args.SourceProvider.UpdatePackageSource(existingSource, updateCredentials: existingSource.Credentials != null, updateEnabled: false);
 
-            args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandUpdateSuccessful, args.Name));
         }
 
@@ -265,7 +267,10 @@ namespace NuGet.Commands
 
         private static void PrintRegisteredSourcesShort(SourcesArgs args)
         {
-            foreach (var source in args.SourceProvider.LoadPackageSources())
+            var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
+            ValidateSources(sourcesList);
+
+            foreach (var source in sourcesList)
             {
                 string legend = source.IsEnabled ? "E" : "D";
 
@@ -278,7 +283,8 @@ namespace NuGet.Commands
                     legend += "O";
                 }
                 legend += " ";
-                args.LogInfo(legend + source.Source);
+                Console.WriteLine(legend + source.Source);
+                OutputWarningsForSource(args, source);
             }
         }
 
@@ -287,26 +293,83 @@ namespace NuGet.Commands
             var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
             if (!sourcesList.Any())
             {
-                args.LogInfo(string.Format(CultureInfo.CurrentCulture,
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                                         Strings.SourcesCommandNoSources));
                 return;
             }
 
             // TODO: printjustified 0 ??? -- right translation?
-            args.LogInfo(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
+            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
             var sourcePadding = new string(' ', 6);
+            ValidateSources(sourcesList);
             for (var i = 0; i < sourcesList.Count; i++)
             {
                 var source = sourcesList[i];
                 var indexNumber = i + 1;
                 var namePadding = new string(' ', i >= 9 ? 1 : 2);
-                args.LogInfo(string.Format(
+                Console.WriteLine(string.Format(
                     "  {0}.{1}{2} [{3}]",
                     indexNumber,
                     namePadding,
                     source.Name,
                     source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
-                args.LogInfo(string.Format("{0}{1}", sourcePadding, source.Source));
+                Console.WriteLine(string.Format("{0}{1}", sourcePadding, source.Source));
+                OutputWarningsForSource(args, source);
+            }
+        }
+
+        private static void OutputWarningsForSource(SourcesArgs args, PackageSource source)
+        {
+            foreach (var logCode in source.LogCodes)
+            {
+                switch (logCode)
+                {
+                    case NuGetLogCode.NU6500:
+                        args.LogWarning(logCode.ToString() + $" : nuget v2 feed is less secure than nuget v3 feed. Please change '{source.Source}' to '" + NuGetConstants.V3FeedUrl + "'");
+                        break;
+                    case NuGetLogCode.NU6501:
+                        args.LogWarning(logCode.ToString() + " : http feeds are not secure, change your '" + source.Source + "' feed to use https protocol");
+                        break;
+                    case NuGetLogCode.NU6502:
+                        args.LogInformation(logCode.ToString() + " : local v3 feeds are faster than v2 feeds");
+                        break;
+                    case NuGetLogCode.NU6503:
+                        args.LogWarning(logCode.ToString() + $" : '{source.Source}' was already defined with a previous entry");
+                        break;
+                    case NuGetLogCode.NU6504:
+                        args.LogWarning(logCode.ToString() + $" : Local feed '{source.Source}' does not exist or is not reachable");
+                        break;
+                }
+            }
+
+            if (source.LogCodes.Any())
+            {
+                Console.WriteLine();
+            }
+        }
+
+        private static void ValidateSources(List<PackageSource> sources)
+        {
+            HashSet<string> sourceStrings = new HashSet<string>();
+            foreach (var source in sources)
+            {
+                var logCodes = source.LogCodes;
+
+                if (source.IsEnabled)
+                {
+                    if (source.IsLocal && LocalFolderUtility.GetLocalFeedType(source.Source, NullLogger.Instance) == FeedType.FileSystemV2)
+                    {
+                        logCodes.Add(NuGetLogCode.NU6502);
+                    }
+
+                    if (source.IsHttp && HttpClient)
+
+                    // Check for NU6503 - duplicate Sources
+                    if (!sourceStrings.Add(source.Source))
+                    {
+                        logCodes.Add(NuGetLogCode.NU6503);
+                    }
+                }
             }
         }
     }

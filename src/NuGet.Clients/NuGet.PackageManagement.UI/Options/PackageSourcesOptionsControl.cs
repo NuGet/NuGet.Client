@@ -12,8 +12,10 @@ using System.Windows.Forms;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
@@ -144,6 +146,30 @@ namespace NuGet.Options
             UpdateUI();
         }
 
+        private static void ValidateSources(List<PackageSource> sources)
+        {
+            HashSet<string> sourceStrings = new HashSet<string>();
+            foreach (var source in sources)
+            {
+                source.ResetLogCode();
+                var logCodes = source.LogCodes;
+
+                if (source.IsEnabled)
+                {
+                    if (source.IsLocal && LocalFolderUtility.GetLocalFeedType(source.Source, NullLogger.Instance) == FeedType.FileSystemV2)
+                    {
+                        logCodes.Add(NuGetLogCode.NU6502);
+                    }
+
+                    // Check for NU6503 - duplicate Sources
+                    if (!sourceStrings.Add(source.Source))
+                    {
+                        logCodes.Add(NuGetLogCode.NU6503);
+                    }
+                }
+            }
+        }
+
         internal void InitializeOnActivated()
         {
             try
@@ -157,9 +183,9 @@ namespace NuGet.Options
 
                 // get packages sources
                 var allPackageSources = _packageSourceProvider.LoadPackageSources().ToList();
+                ValidateSources(allPackageSources);
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
-                //_activeSource = _packageSourceProvider.ActivePackageSource;
 
                 // bind to the package sources, excluding Aggregate
                 _packageSources = new BindingSource(packageSources.Select(ps => ps.Clone()).ToList(), null);
@@ -322,7 +348,10 @@ namespace NuGet.Options
             {
                 return;
             }
+
             _packageSources.Remove(PackageSourcesListBox.SelectedItem);
+            //TODO: keep variable to point to this List
+            ValidateSources(_packageSources.DataSource as List<PackageSource>);
             UpdateUI();
         }
 
@@ -337,6 +366,8 @@ namespace NuGet.Options
 
             // auto-select the newly-added item
             PackageSourcesListBox.SelectedIndex = PackageSourcesListBox.Items.Count - 1;
+            //TODO: keep variable to point to this List
+            ValidateSources(_packageSources.DataSource as List<PackageSource>);
             UpdateUI();
         }
 
@@ -346,7 +377,7 @@ namespace NuGet.Options
             for (int i = 0; ; i++)
             {
                 var newName = i == 0 ? "Package source" : "Package source " + i;
-                var newSource = i == 0 ? "http://packagesource" : "http://packagesource" + i;
+                var newSource = i == 0 ? "https://packagesource" : "https://packagesource" + i;
                 var packageSource = new Configuration.PackageSource(newSource, newName);
                 if (sourcesList.All(ps => !ps.Equals(packageSource)))
                 {
@@ -436,6 +467,7 @@ namespace NuGet.Options
             }
 
             _packageSources[_packageSources.Position] = newPackageSource;
+            ValidateSources(_packageSources.DataSource as List<PackageSource>);
 
             return TryUpdateSourceResults.Successful;
         }
@@ -589,11 +621,19 @@ namespace NuGet.Options
             {
                 NewPackageName.Text = packageSource.Name;
                 NewPackageSource.Text = packageSource.Source;
+                string LogCodesString = null;
+                foreach (var logCode in packageSource.LogCodes)
+                {
+                    LogCodesString += (LogCodesString != null ? "; " : "") + logCode.ToString();
+                }
+
+                LogCodes.Text = LogCodesString;
             }
             else
             {
-                NewPackageName.Text = String.Empty;
-                NewPackageSource.Text = String.Empty;
+                NewPackageName.Text = string.Empty;
+                NewPackageSource.Text = string.Empty;
+                LogCodes.Text = string.Empty;
             }
         }
 
