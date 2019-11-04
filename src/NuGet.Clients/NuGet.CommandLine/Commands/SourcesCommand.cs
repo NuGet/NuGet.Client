@@ -49,12 +49,6 @@ namespace NuGet.CommandLine
             }
 
             string action = Arguments.FirstOrDefault();
-
-//TODO: base class has SourceProvider & Settings props.                   
-//#pragma warning disable CS0618 // Type or member is obsolete
-//            var sourceProvider = new PackageSourceProvider(NuGet.Configuration.Settings.LoadDefaultSettings(System.Environment.CurrentDirectory)  , enablePackageSourcesChangedEvent: false);
-//#pragma warning restore CS0618 // Type or member is obsolete
-
             var interactive = !NonInteractive;
 
             var sourcesArgs = new SourcesArgs(
@@ -69,6 +63,7 @@ namespace NuGet.CommandLine
                 ValidAuthenticationTypes,
                 Format.ToString()?.ToLower(),
                 interactive,
+                ConfigFile,
                 Console.LogError,
                 Console.LogInformation
                 );

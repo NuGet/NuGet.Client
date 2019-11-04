@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using NuGet.Configuration;
 
 namespace NuGet.Commands
@@ -20,6 +21,8 @@ namespace NuGet.Commands
         public string ValidAuthenticationTypes { get; }
         public string Format { get; }
         public bool Interactive { get; }
+        public string ConfigFile { get; }
+        public string CurrentDirectory { get; }
         public Log LogError { get; }
         public Log LogInformation { get; }
 
@@ -35,6 +38,7 @@ namespace NuGet.Commands
             string validAuthenticationTypes,
             string format,
             bool interactive,
+            string configFile,
             Log logError,
             Log logInformation
             )
@@ -50,6 +54,7 @@ namespace NuGet.Commands
             ValidAuthenticationTypes = validAuthenticationTypes;
             Format = format;
             Interactive = interactive;
+            ConfigFile = configFile;
             LogError = logError;
             LogInformation = logInformation;
         }

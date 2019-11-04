@@ -1293,6 +1293,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file to use..
+        /// </summary>
+        internal static string SourcesCommandConfigfileDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandConfigfileDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
         /// </summary>
         internal static string SourcesCommandDescription {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
@@ -64,6 +65,11 @@ namespace NuGet.CommandLine.XPlat
                     Strings.NuGetXplatCommand_Interactive,
                     CommandOptionType.NoValue);
 
+                var configfile = sources.Option(
+                    "-c|--configfile",
+                    Strings.SourcesCommandConfigfileDescription,
+                    CommandOptionType.SingleValue);
+
                 sources.OnExecute(() =>
                 {
                     string action = "";
@@ -72,27 +78,26 @@ namespace NuGet.CommandLine.XPlat
                         action = arguments.Values[0].ToLowerInvariant();
                     }
 
-
-#pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(XPlatUtility.CreateDefaultSettings(), enablePackageSourcesChangedEvent: false);
-#pragma warning restore CS0618 // Type or member is obsolete
+                    var settings = GetSettings(configfile.Value(), Directory.GetCurrentDirectory());
+                    var sourceProvider = new PackageSourceProvider(settings);
 
                     var sourcesArgs = new SourcesArgs(
-                        sourceProvider.Settings,
-                        sourceProvider,
-                        action,
-                        name.Value(),
-                        source.Value(),
-                        username.Value(),
-                        password.Value(),
-                        storePasswordInClearText.HasValue(),
-                        validAuthenticationTypes.Value(),
-                        format.Value()?.ToLower(),
-                        interactive.HasValue(),
-                        getLogger().LogError,
-                        getLogger().LogInformation
-                        );
-                    
+                            settings,
+                            sourceProvider,
+                            action,
+                            name.Value(),
+                            source.Value(),
+                            username.Value(),
+                            password.Value(),
+                            storePasswordInClearText.HasValue(),
+                            validAuthenticationTypes.Value(),
+                            format.Value()?.ToLower(),
+                            interactive.HasValue(),
+                            configfile.Value(),
+                            getLogger().LogError,
+                            getLogger().LogInformation
+                            );
+
                     DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
 
                     SourcesRunner.Run(sourcesArgs);
@@ -100,6 +105,25 @@ namespace NuGet.CommandLine.XPlat
                     return 0;
                 });
             });
+        }
+
+        private static ISettings GetSettings(string configfile, string currentDirectory)
+        {
+            if (string.IsNullOrEmpty(configfile))
+            {
+                return NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory,
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting());
+            }
+            else
+            {
+                var configFileFullPath = Path.GetFullPath(configfile);
+                var directory = Path.GetDirectoryName(configFileFullPath);
+                var configFileName = Path.GetFileName(configFileFullPath);
+
+                return NuGet.Configuration.Settings.LoadSpecificSettings(currentDirectory,
+                    configFileName: configFileName);
+            }
         }
     }
 }

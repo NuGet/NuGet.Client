@@ -610,6 +610,9 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="SourcesCommandFormatDescription" xml:space="preserve">
     <value>Applies to the list action. Accepts two values: Detailed (the default) and Short.</value>
   </data>
+  <data name="SourcesCommandConfigfileDescription" xml:space="preserve">
+    <value>The NuGet configuration file to use.</value>
+  </data>
   <data name="SourcesCommandUsageSummary" xml:space="preserve">
     <value>&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source]</value>
     <comment>Only localize "[name]" and "[source]"</comment>
