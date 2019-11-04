@@ -550,7 +550,8 @@ namespace NuGet.Packaging
                 throw new UnsafePackageEntryException(string.Format(
                     CultureInfo.CurrentCulture,
                     Strings.ErrorUnsafePackageEntry,
-                    packageIdentity));
+                    packageIdentity,
+                    normalizedFilePath));
             }
         }
 

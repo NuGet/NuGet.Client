@@ -1059,6 +1059,7 @@ namespace NuGet.Packaging.Test
                     using (var packageReader = new PackageArchiveReader(packageStream))
                     {
                         // Act & Assert
+                        //The return value of Path.GetFullPath() varies based on OS. Hence DirectoryNotFoundException is thrown instead of UnsafePackageEntryException
                         await Assert.ThrowsAsync<DirectoryNotFoundException>(async () => await packageReader.CopyFilesAsync(
                              destination.Path.ToUpper(),
                              new[] { "readme~.txt" },
