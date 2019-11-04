@@ -17,7 +17,7 @@ namespace NuGet.Commands
 {
     public class NoOpRestoreUtilities
     {
-        public static readonly string NoOpCacheFileName = "project.assets.nuget.cache";
+        internal static readonly string NoOpCacheFileName = "project.assets.nuget.cache";
 
         /// <summary>
         /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 

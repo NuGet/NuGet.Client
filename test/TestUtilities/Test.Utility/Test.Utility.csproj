@@ -9,6 +9,7 @@
     <PackProject>true</PackProject>
     <Shipping>true</Shipping>
     <IsPackable>true</IsPackable>
+    <SkipShared>true</SkipShared>
   </PropertyGroup>
 
   <ItemGroup>
