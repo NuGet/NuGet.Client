@@ -142,7 +142,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate was not found in {0}.{1} storage by {2} criteria with {3} value.
+        ///   Looks up a localized string similar to Certificate was not found in {0}.{1} storage by {2} criteria with {3} value..
         /// </summary>
         internal static string Error_FromStorageCertificateNotFound {
             get {
@@ -151,7 +151,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} certificates were found in {1}.{2} storage by {3} criteria with {4} value.
+        ///   Looks up a localized string similar to {0} certificates were found in {1}.{2} storage by {3} criteria with {4} value..
         /// </summary>
         internal static string Error_FromStorageSeveralCertificatesFound {
             get {
