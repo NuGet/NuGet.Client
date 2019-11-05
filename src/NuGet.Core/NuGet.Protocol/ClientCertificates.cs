@@ -16,7 +16,11 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="httpClientHandler">Http client handler</param>
         public static void SetupClientHandler(HttpClientHandler httpClientHandler)
         {
-            if (httpClientHandler == null) throw new ArgumentNullException(nameof(httpClientHandler));
+            if (httpClientHandler == null)
+            {
+                throw new ArgumentNullException(nameof(httpClientHandler));
+            }
+
             httpClientHandler.ClientCertificates.AddRange(Certificates);
         }
 
