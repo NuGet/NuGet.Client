@@ -711,7 +711,7 @@ phases:
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
-    name: VSEng-MicroBuildMacSierra
+    name: MicroBuildV2MacPool
     timeoutInMinutes: 75
     demands: sh
 
