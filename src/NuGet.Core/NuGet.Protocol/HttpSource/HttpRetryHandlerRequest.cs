@@ -58,5 +58,8 @@ namespace NuGet.Protocol
 
         /// <summary>Boolean representing whether the first attempt of this request is already a retry.</summary>
         public bool IsRetry { get; set; }
+
+        /// <summary>Boolean representing whether this retry request is the last for the URL.</summary>
+        public bool IsLastAttempt { get; set; } = true;
     }
 }

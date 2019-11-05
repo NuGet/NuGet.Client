@@ -129,6 +129,7 @@ namespace NuGet.Protocol
                         request.DownloadTimeout,
                         request.MaxTries,
                         request.IsRetry,
+                        request.IsLastAttempt,
                         request.CacheContext.SourceCacheContext.SessionId,
                         log,
                         lockedToken);
@@ -249,6 +250,7 @@ namespace NuGet.Protocol
                 request.DownloadTimeout,
                 request.MaxTries,
                 request.IsRetry,
+                request.IsLastAttempt,
                 sessionId,
                 log,
                 token);
@@ -282,6 +284,7 @@ namespace NuGet.Protocol
             TimeSpan downloadTimeout,
             int maxTries,
             bool isRetry,
+            bool isLastAttempt,
             Guid sessionId,
             ILogger log,
             CancellationToken cancellationToken)
@@ -294,7 +297,8 @@ namespace NuGet.Protocol
                 RequestTimeout = requestTimeout,
                 DownloadTimeout = downloadTimeout,
                 MaxTries = maxTries,
-                IsRetry = isRetry
+                IsRetry = isRetry,
+                IsLastAttempt = isLastAttempt
             };
 
             // Add X-NuGet-Session-Id to all outgoing requests. This allows feeds to track nuget operations.

@@ -17,6 +17,7 @@ namespace NuGet.Protocol.Utility
         public bool IsSuccess { get; }
         public bool IsRetry { get; }
         public bool IsCancelled { get; }
+        public bool IsLastAttempt { get; }
 
         internal ProtocolDiagnosticEvent(
             DateTime timestamp,
@@ -28,7 +29,8 @@ namespace NuGet.Protocol.Utility
             long bytes,
             bool isSuccess,
             bool isRetry,
-            bool isCancelled)
+            bool isCancelled,
+            bool isLastAttempt)
         {
             Timestamp = timestamp;
             Source = source;
@@ -40,6 +42,7 @@ namespace NuGet.Protocol.Utility
             IsSuccess = isSuccess;
             IsRetry = isRetry;
             IsCancelled = isCancelled;
+            IsLastAttempt = isLastAttempt;
         }
     }
 }

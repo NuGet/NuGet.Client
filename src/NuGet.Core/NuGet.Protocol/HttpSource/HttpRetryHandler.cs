@@ -132,7 +132,8 @@ namespace NuGet.Protocol
                                 bytes: 0,
                                 isSuccess: true,
                                 isRetry: request.IsRetry || tries > 1,
-                                isCancelled: false);
+                                isCancelled: false,
+                                isLastAttempt: tries == request.MaxTries && request.IsLastAttempt);
                             var diagnosticsStream = new ProtocolDiagnosticsStream(timeoutStream, diagnosticsInfo, stopwatch);
 
                             var newContent = new StreamContent(diagnosticsStream);
@@ -173,7 +174,8 @@ namespace NuGet.Protocol
                             bytes: 0,
                             isSuccess: false,
                             isRetry: request.IsRetry || tries > 1,
-                            isCancelled: true));
+                            isCancelled: true,
+                            isLastAttempt: tries == request.MaxTries && request.IsLastAttempt));
 
                         throw;
                     }
@@ -193,7 +195,8 @@ namespace NuGet.Protocol
                             bytes: 0,
                             isSuccess: false,
                             isRetry: request.IsRetry || tries > 1,
-                            isCancelled: false));
+                            isCancelled: false,
+                            isLastAttempt: tries == request.MaxTries && request.IsLastAttempt));
 
                         if (tries >= request.MaxTries)
                         {

@@ -97,7 +97,8 @@ namespace NuGet.Protocol.Utility
                     _bytes,
                     isSuccess,
                     _protocolDiagnosticEvent.IsRetry,
-                    _protocolDiagnosticEvent.IsCancelled);
+                    _protocolDiagnosticEvent.IsCancelled,
+                    _protocolDiagnosticEvent.IsLastAttempt);
                 ProtocolDiagnostics.RaiseEvent(pde);
 
                 _protocolDiagnosticEvent = null;

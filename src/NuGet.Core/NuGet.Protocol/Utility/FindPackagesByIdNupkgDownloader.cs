@@ -254,9 +254,10 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken token)
         {
-            for (var retry = 0; retry < 3; ++retry)
+            const int maxRetries = 3;
+            for (var retry = 1; retry <= maxRetries; ++retry)
             {
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, firstAttempt: retry == 1);
 
                 try
                 {
@@ -269,20 +270,21 @@ namespace NuGet.Protocol
                             EnsureValidContents = stream => HttpStreamValidation.ValidateNupkg(url, stream),
                             IgnoreNotFounds = true,
                             MaxTries = 1,
-                            IsRetry = retry > 0
+                            IsRetry = retry > 1,
+                            IsLastAttempt = retry == maxRetries
                         },
                         async httpSourceResult => await processAsync(httpSourceResult),
                         logger,
                         token);
                 }
-                catch (TaskCanceledException) when (retry < 2)
+                catch (TaskCanceledException) when (retry < maxRetries)
                 {
                     // Requests can get cancelled if we got the data from elsewhere, no reason to warn.
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_CanceledNupkgDownload, url);
 
                     logger.LogMinimal(message);
                 }
-                catch (Exception ex) when (retry < 2)
+                catch (Exception ex) when (retry < maxRetries)
                 {
                     var message = string.Format(
                             CultureInfo.CurrentCulture,
@@ -294,7 +296,7 @@ namespace NuGet.Protocol
 
                     logger.LogMinimal(message);
                 }
-                catch (Exception ex) when (retry == 2)
+                catch (Exception ex) when (retry == maxRetries)
                 {
                     var message = string.Format(
                             CultureInfo.CurrentCulture,

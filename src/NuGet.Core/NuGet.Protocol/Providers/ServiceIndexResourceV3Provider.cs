@@ -112,11 +112,12 @@ namespace NuGet.Protocol
             var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
             var client = httpSourceResource.HttpSource;
 
-            for (var retry = 0; retry < 3; retry++)
+            const int maxRetries = 3;
+            for (var retry = 1; retry <= maxRetries; retry++)
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, retry);
+                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, firstAttempt: retry == 1);
 
                     try
                     {
@@ -128,7 +129,8 @@ namespace NuGet.Protocol
                             {
                                 EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(url, stream),
                                 MaxTries = 1,
-                                IsRetry = retry > 0
+                                IsRetry = retry > 1,
+                                IsLastAttempt = retry == maxRetries
                             },
                             async httpSourceResult =>
                             {
@@ -139,14 +141,14 @@ namespace NuGet.Protocol
                             log,
                             token);
                     }
-                    catch (Exception ex) when (retry < 2)
+                    catch (Exception ex) when (retry < maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
                             + Environment.NewLine
                             + ExceptionUtilities.DisplayMessage(ex);
                         log.LogMinimal(message);
                     }
-                    catch (Exception ex) when (retry == 2)
+                    catch (Exception ex) when (retry == maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_FailedToReadServiceIndex, url);
 

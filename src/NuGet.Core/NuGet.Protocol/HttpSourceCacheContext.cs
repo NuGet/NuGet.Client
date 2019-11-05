@@ -47,12 +47,17 @@ namespace NuGet.Protocol.Core.Types
 
         public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, int retryCount)
         {
+            return Create(cacheContext, retryCount == 0);
+        }
+
+        public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, bool firstAttempt)
+        {
             if (cacheContext == null)
             {
                 throw new ArgumentNullException(nameof(cacheContext));
             }
 
-            if (retryCount == 0 && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
+            if (firstAttempt && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
             {
                 return new HttpSourceCacheContext(
                     rootTempFolder: null,

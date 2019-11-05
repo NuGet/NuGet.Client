@@ -393,11 +393,11 @@ namespace NuGet.Protocol
             var maxTries = 3 * _baseUris.Count;
             var packageIdLowerCase = id.ToLowerInvariant();
 
-            for (var retry = 0; retry < maxTries; ++retry)
+            for (var retry = 1; retry <= maxTries; ++retry)
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
                 var uri = baseUri + packageIdLowerCase + "/index.json";
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, firstAttempt: retry == 1);
 
                 try
                 {
@@ -410,7 +410,8 @@ namespace NuGet.Protocol
                             IgnoreNotFounds = true,
                             EnsureValidContents = stream => HttpStreamValidation.ValidateJObject(uri, stream),
                             MaxTries = 1,
-                            IsRetry = retry > 0
+                            IsRetry = retry > 1,
+                            IsLastAttempt = retry == maxTries
                         },
                         async httpSourceResult =>
                         {
@@ -439,14 +440,14 @@ namespace NuGet.Protocol
                         logger,
                         cancellationToken);
                 }
-                catch (Exception ex) when (retry < 2)
+                catch (Exception ex) when (retry < maxTries)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
                 }
-                catch (Exception ex) when (retry == 2)
+                catch (Exception ex) when (retry == maxTries)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
