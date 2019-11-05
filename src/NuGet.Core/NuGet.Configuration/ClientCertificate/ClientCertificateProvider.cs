@@ -6,8 +6,6 @@ namespace NuGet.Configuration
 {
     public static class ClientCertificateProvider
     {
-        #region Static members
-
         public static IEnumerable<X509Certificate> Provide(ISettings settings)
         {
             SettingSection clientCertificatesSection = settings.GetSection(ConfigurationConstants.ClientCertificates);
@@ -15,7 +13,5 @@ namespace NuGet.Configuration
                                             .OfType<CertificateSearchItem>()
                                             .Select(i => i.Search());
         }
-
-        #endregion
     }
 }

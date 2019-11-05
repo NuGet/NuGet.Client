@@ -16,20 +16,14 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class FromStorageItem : CertificateSearchItem
     {
-        #region Constants
-
         private const X509FindType DefaultFindType = X509FindType.FindByThumbprint;
         private const StoreLocation DefaultStoreLocation = StoreLocation.CurrentUser;
         private const StoreName DefaultStoreName = StoreName.My;
-
-        #endregion
 
         private readonly AddItem _findType;
         private readonly AddItem _findValue;
         private readonly AddItem _storeLocation;
         private readonly AddItem _storeName;
-
-        #region Constructors
 
         public FromStorageItem(string findValue,
                                StoreLocation storeLocation = DefaultStoreLocation,
@@ -136,10 +130,6 @@ namespace NuGet.Configuration
             ValidateItem();
         }
 
-        #endregion
-
-        #region Properties
-
         public X509FindType FindType
         {
             get
@@ -188,10 +178,6 @@ namespace NuGet.Configuration
             }
         }
 
-        #endregion
-
-        #region Override members
-
         public override SettingBase Clone()
         {
             return new FromStorageItem(FindValue, StoreLocation, StoreName, FindType);
@@ -235,10 +221,6 @@ namespace NuGet.Configuration
             }
         }
 
-        #endregion
-
-        #region Members
-
         private void ValidateItem()
         {
             if (!Enum.TryParse(_storeLocation?.Value, true, out StoreLocation _))
@@ -273,7 +255,5 @@ namespace NuGet.Configuration
                                                                     Origin.ConfigFilePath));
             }
         }
-
-        #endregion
     }
 }

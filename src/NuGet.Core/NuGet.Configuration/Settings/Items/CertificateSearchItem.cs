@@ -5,8 +5,6 @@ namespace NuGet.Configuration
 {
     public abstract class CertificateSearchItem : SettingItem
     {
-        #region Constructors
-
         protected CertificateSearchItem()
         {
         }
@@ -16,18 +14,8 @@ namespace NuGet.Configuration
         {
         }
 
-        #endregion
-
-        #region Properties
-
         protected override bool CanHaveChildren => true;
 
-        #endregion
-
-        #region Members
-
         public abstract X509Certificate Search();
-
-        #endregion
     }
 }

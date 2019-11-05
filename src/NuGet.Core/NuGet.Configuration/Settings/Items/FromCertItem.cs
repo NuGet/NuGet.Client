@@ -17,8 +17,6 @@ namespace NuGet.Configuration
     /// </summary>
     public sealed class FromCertItem : CertificateSearchItem
     {
-        #region Static members
-
         private static byte[] ReadStream(Stream input)
         {
             var buffer = new byte[16 * 1024];
@@ -34,12 +32,8 @@ namespace NuGet.Configuration
             }
         }
 
-        #endregion
-
         private readonly AddItem _password;
         private readonly AddItem _path;
-
-        #region Constructors
 
         internal FromCertItem(string filePath = null, string base64Certificate = null, string password = null, SettingsFile origin = null)
         {
@@ -98,10 +92,6 @@ namespace NuGet.Configuration
             ValidateItem();
         }
 
-        #endregion
-
-        #region Properties
-
         public string Base64Certificate { get; set; }
 
         public string Password
@@ -115,10 +105,6 @@ namespace NuGet.Configuration
             get => _path.Value;
             set => _path.Value = value;
         }
-
-        #endregion
-
-        #region Override members
 
         public override SettingBase Clone()
         {
@@ -150,10 +136,6 @@ namespace NuGet.Configuration
             return new X509Certificate2(certificateData, decryptedPassword);
 
         }
-
-        #endregion
-
-        #region Members
 
         private string FindAbsoluteFilePath()
         {
@@ -208,7 +190,5 @@ namespace NuGet.Configuration
                 }
             }
         }
-
-        #endregion
     }
 }
