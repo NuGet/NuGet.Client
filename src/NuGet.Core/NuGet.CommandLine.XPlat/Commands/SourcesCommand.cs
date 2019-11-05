@@ -79,7 +79,10 @@ namespace NuGet.CommandLine.XPlat
                     }
 
                     var settings = GetSettings(configfile.Value(), Directory.GetCurrentDirectory());
-                    var sourceProvider = new PackageSourceProvider(settings);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+                    var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
+#pragma warning restore CS0618 // Type or member is obsolete
 
                     var sourcesArgs = new SourcesArgs(
                             settings,

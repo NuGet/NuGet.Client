@@ -42,9 +42,7 @@ namespace NuGet.Options
             this.updateButton = new System.Windows.Forms.Button();
             this.BrowseButton = new System.Windows.Forms.Button();
             this.NewPackageSourceLabel = new System.Windows.Forms.Label();
-            this.LogCodesLabel = new System.Windows.Forms.Label();
             this.NewPackageSource = new System.Windows.Forms.TextBox();
-            this.LogCodes = new System.Windows.Forms.TextBox();
             this.NewPackageNameLabel = new System.Windows.Forms.Label();
             this.NewPackageName = new System.Windows.Forms.TextBox();
             this.PackageSourcesListBox = new NuGet.Options.PackageSourceCheckedListBox();
@@ -129,21 +127,10 @@ namespace NuGet.Options
             resources.ApplyResources(this.NewPackageSourceLabel, "NewPackageSourceLabel");
             this.NewPackageSourceLabel.Name = "NewPackageSourceLabel";
             // 
-            // LogCodesLabel
-            // 
-            resources.ApplyResources(this.LogCodesLabel, "LogCodesLabel");
-            this.LogCodesLabel.Name = "LogCodesLabel";
-            // 
             // NewPackageSource
             // 
             resources.ApplyResources(this.NewPackageSource, "NewPackageSource");
             this.NewPackageSource.Name = "NewPackageSource";
-            // 
-            // LogCodes
-            // 
-            this.tableLayoutPanel1.SetColumnSpan(this.LogCodes, 3);
-            resources.ApplyResources(this.LogCodes, "LogCodes");
-            this.LogCodes.Name = "LogCodes";
             // 
             // NewPackageNameLabel
             // 
@@ -181,8 +168,6 @@ namespace NuGet.Options
             this.tableLayoutPanel1.Controls.Add(this.NewPackageSource, 1, 5);
             this.tableLayoutPanel1.Controls.Add(this.BrowseButton, 2, 5);
             this.tableLayoutPanel1.Controls.Add(this.updateButton, 3, 5);
-            this.tableLayoutPanel1.Controls.Add(this.LogCodesLabel, 0, 6);
-            this.tableLayoutPanel1.Controls.Add(this.LogCodes, 1, 6);
             this.tableLayoutPanel1.Name = "tableLayoutPanel1";
             // 
             // tableLayoutPanel2
@@ -270,9 +255,7 @@ namespace NuGet.Options
         private Button updateButton;
         private Button BrowseButton;
         private Label NewPackageSourceLabel;
-        private Label LogCodesLabel;
         private TextBox NewPackageSource;
-        private TextBox LogCodes;
         private Label NewPackageNameLabel;
         private TextBox NewPackageName;
         private TableLayoutPanel tableLayoutPanel1;

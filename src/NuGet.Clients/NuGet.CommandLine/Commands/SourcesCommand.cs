@@ -45,10 +45,10 @@ namespace NuGet.CommandLine
         {
             if (SourceProvider == null)
             {
-                throw new InvalidOperationException(ResourceHelper.GetLocalizedString(typeof(string), "Error_SourceProviderIsNull"));
+                throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
             }
 
-            string action = Arguments.FirstOrDefault();
+            var action = Arguments.FirstOrDefault();
             var interactive = !NonInteractive;
 
             var sourcesArgs = new SourcesArgs(

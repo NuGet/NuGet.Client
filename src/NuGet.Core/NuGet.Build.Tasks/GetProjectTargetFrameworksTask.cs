@@ -14,7 +14,6 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class GetProjectTargetFrameworksTask : Task
     {
-
         /// <summary>
         /// Full path to the msbuild project.
         /// </summary>
