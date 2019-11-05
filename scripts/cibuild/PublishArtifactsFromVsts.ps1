@@ -44,14 +44,14 @@ function Push-ToMyGet {
                 "*.symbols.nupkg" { $SymbolSource }
                 Default { $BuildFeed }
             }
-            $opts = 'push', $_, $ApiKey, '-Source', $Feed
+            $opts = 'nuget', 'push', $_, '-k', $ApiKey, '-s', $Feed
             if ($VerbosePreference) {
                 $opts += '-verbosity', 'detailed'
             }
 
             if ($pscmdlet.ShouldProcess($_, "push to '${Feed}'")) {
-                Write-Output "$NuGetExe $opts"
-                & $NuGetExe $opts
+                Write-Output "dotnet $opts"
+                & dotnet $opts
                 if (-not $?) {
                     Write-Error "Failed to push a package '$_' to myget feed '${Feed}'. Exit code: ${LASTEXITCODE}"
                 }
@@ -61,7 +61,6 @@ function Push-ToMyGet {
 }
 
 $NupkgsDir = Join-Path $env:BUILD_REPOSITORY_LOCALPATH artifacts\nupkgs
-$NuGetExe = Join-Path $env:BUILD_REPOSITORY_LOCALPATH .nuget\nuget.exe
 
 if(Test-Path $NupkgsDir)
 {

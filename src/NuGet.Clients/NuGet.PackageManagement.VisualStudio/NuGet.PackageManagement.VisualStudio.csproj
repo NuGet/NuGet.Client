@@ -32,21 +32,21 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Composition">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.Composition.15.8.98\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.composition\15.8.98\lib\net45\Microsoft.VisualStudio.Composition.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.VisualStudio.ProjectSystem.16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="VSLangProj140">
-      <HintPath>$(SolutionPackagesFolder)VSLangProj140.14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)vslangproj140\14.0.25029\lib\net20\VSLangProj140.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="VSLangProj150">
-      <HintPath>$(SolutionPackagesFolder)VSLangProj150.1.0.0\lib\net46\VSLangProj150.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)vslangproj150\1.0.0\lib\net46\VSLangProj150.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
   </ItemGroup>
@@ -67,7 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Build">
-      <HintPath>$(SolutionPackagesFolder)Microsoft.Build.15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
   </ItemGroup>

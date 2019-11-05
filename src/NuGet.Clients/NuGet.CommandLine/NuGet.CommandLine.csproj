@@ -70,7 +70,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="NuGet.Core">
-      <HintPath>$(SolutionPackagesFolder)NuGet.Core.2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)nuget.core\2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>CoreV2</Aliases>
     </Reference>
   </ItemGroup>

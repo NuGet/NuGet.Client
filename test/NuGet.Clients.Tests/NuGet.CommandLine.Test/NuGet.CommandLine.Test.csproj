@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Reference Include="NuGet.Core">
-      <HintPath>..\..\..\packages\NuGet.Core.2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
+      <HintPath>..\..\..\packages\nuget.core\2.14.0-rtm-832\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Aliases>global</Aliases>
     </Reference>
     <Reference Include="System" />

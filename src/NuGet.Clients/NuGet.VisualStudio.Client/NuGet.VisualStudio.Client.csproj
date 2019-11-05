@@ -60,15 +60,15 @@
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll">
+    <Content Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
       <Link>Newtonsoft.Json.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Microsoft.Web.Xdt.2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll">
+    <Content Include="$(SolutionPackagesFolder)microsoft.web.xdt\2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll">
       <Link>Microsoft.Web.XmlTransform.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)Lucene.Net.3.0.3\lib\NET40\Lucene.Net.dll">
+    <Content Include="$(SolutionPackagesFolder)lucene.net\3.0.3\lib\NET40\Lucene.Net.dll">
       <Link>Lucene.Net.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
@@ -427,7 +427,7 @@
     </MSBuild>
     <ItemGroup>
       <VSIXSourceItem Include="@(LocalizedFilesForVsix)" />
-      <_LocalizedFiles Include="$(ArtifactsDirectory)Microsoft.Web.Xdt.2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
+      <_LocalizedFiles Include="$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)vsixlangpack\**\extension.vsixlangpack" />
       <_LocalizedFiles Include="$(ArtifactsDirectory)eulas\**\eula.rtf" />
       <_VsixLocFiles Include="@(_LocalizedFiles)">

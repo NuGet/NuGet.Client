@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 env | sort
 
 while true ; do
@@ -16,18 +17,7 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$SCRIPTDIR/../..
 pushd $DIR/
 
-NuGetExe="$DIR/.nuget/nuget.exe"
-#Get NuGet.exe
-curl -o $NuGetExe --retry 5 --retry-delay 10 -L https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
-
 mono --version
-
-#restore solution packages
-mono $NuGetExe restore  "$DIR/.nuget/packages.config" -SolutionDirectory "$DIR/"
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
 
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
@@ -42,10 +32,14 @@ cli/dotnet-install.sh -i cli
 
 DOTNET="$(pwd)/cli/dotnet"
 
-echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
+#restore solution packages
+$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
 
-# run it twice so dotnet cli can expand and decompress without affecting the result of the target
-$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
+echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 
 echo $DOTNET_BRANCH
@@ -127,10 +121,10 @@ fi
 
 #run mono test
 TestDir="$DIR/artifacts/NuGet.CommandLine.Test/"
-XunitConsole="$DIR/packages/xunit.runner.console.2.4.1/tools/net452/xunit.console.exe"
+XunitConsole="$DIR/packages/xunit.runner.console/2.4.1/tools/net452/xunit.console.exe"
 
 #Clean System dll
-rm -r -f "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
+rm -rf "$TestDir/System.*" "$TestDir/WindowsBase.dll" "$TestDir/Microsoft.CSharp.dll" "$TestDir/Microsoft.Build.Engine.dll"
 
 #Run xunit test
 
