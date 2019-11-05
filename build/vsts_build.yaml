@@ -673,7 +673,7 @@ phases:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
-    name: VSEng-MicroBuildMacSierra
+    name: MicroBuildV2MacPool
     timeoutInMinutes: 75
     demands: sh
 
