@@ -23,7 +23,6 @@ namespace NuGet.Common
     /// 1000-1999 - Restore
     /// 3000-3999 - Signing
     /// 5000-5999 - Packaging
-    /// 6000-6099 - Misc
     ///
     /// Sub groups for Restore:
     /// error/warning - Reason
@@ -32,10 +31,6 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
-    ///
-    /// Sub groups for Misc:
-    /// error/warning - Reason
-    /// 6000/6500     - Sources
     /// </summary>
     public enum NuGetLogCode
     {
@@ -834,30 +829,5 @@ namespace NuGet.Common
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,
-
-        /// <summary>
-        /// Security warning - NuGet v3 source provides important security protection
-        /// </summary>
-        NU6501 = 6500,
-
-        /// <summary>
-        /// Security warning - https protocol provides important security protection
-        /// </summary>
-        NU6500 = 6501,
-
-        /// <summary>
-        /// Source warning - NuGet v2 local feeds can be performance problems
-        /// </summary>
-        NU6502 = 6502,
-
-        /// <summary>
-        /// Source warning - Duplicate source defined
-        /// </summary>
-        NU6503 = 6503,
-
-        /// <summary>
-        /// Source warning - Local feed does not exist or is not reachable
-        /// </summary>
-        NU6504 = 6504,
     }
 }

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Globalization;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -167,15 +165,13 @@ namespace NuGet.Configuration
 
         public PackageSource Clone()
         {
-            var clonedPackagedSource = new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
+            return new PackageSource(Source, Name, IsEnabled, IsOfficial, IsPersistable)
             {
                 Description = Description,
                 Credentials = Credentials?.Clone(),
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
             };
-
-            return clonedPackagedSource;
         }
     }
 }
