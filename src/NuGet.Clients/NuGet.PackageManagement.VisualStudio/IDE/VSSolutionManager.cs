@@ -173,6 +173,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
             var dte = await _asyncServiceProvider.GetDTEAsync();
+
+            ClientCertificates.Store(ClientCertificateProvider.Provide(_settings.Value));
+
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));
 
