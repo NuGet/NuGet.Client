@@ -138,7 +138,9 @@ namespace NuGet.Protocol.Tests.Utility
         private void ReadStream(ProtocolDiagnosticsStream target)
         {
             var buffer = new byte[8 * 1024];
-            while (target.Read(buffer, 0, buffer.Length) > 0) ;
+            while (target.Read(buffer, 0, buffer.Length) > 0)
+            {
+            }
         }
     }
 }
