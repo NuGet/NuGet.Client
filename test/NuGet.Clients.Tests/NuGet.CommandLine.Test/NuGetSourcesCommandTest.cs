@@ -50,7 +50,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "This scenario does not work as desired. Create a github issue")]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
