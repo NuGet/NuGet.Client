@@ -923,8 +923,13 @@ namespace NuGet.Commands
         /// </summary>
         /// <param name="messages">Messages to log.</param>
         /// <param name="logger">Logger used to display warnings and errors.</param>
-        public static Task ReplayWarningsAndErrorsAsync(IList<IAssetsLogMessage> messages, ILogger logger)
+        public static Task ReplayWarningsAndErrorsAsync(IEnumerable<IAssetsLogMessage> messages, ILogger logger)
         {
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
             var logMessages = messages?.Select(m => m.AsRestoreLogMessage()) ??
                               Enumerable.Empty<RestoreLogMessage>();
 

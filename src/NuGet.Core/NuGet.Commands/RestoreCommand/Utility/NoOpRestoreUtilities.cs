@@ -17,7 +17,10 @@ namespace NuGet.Commands
 {
     public class NoOpRestoreUtilities
     {
-        internal static readonly string NoOpCacheFileName = "project.assets.nuget.cache";
+        /// <summary>
+        /// The name of the file to use.  When changing this, you should also change <see cref="LockFileFormat.AssetsFileName"/>.
+        /// </summary>
+        internal const string NoOpCacheFileName = "project.assets.nuget.cache";
 
         /// <summary>
         /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
@@ -120,7 +123,6 @@ namespace NuGet.Commands
         /// </summary>
         internal static bool VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
         {
-
             if (!File.Exists(request.LockFilePath))
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, request.Project.Name));
@@ -284,29 +286,6 @@ namespace NuGet.Commands
 
         internal static List<string> GetRestoreOutput(RestoreRequest request, LockFile lockFile)
         {
-            IEnumerable<string> GetFiles(string packageId, NuGetVersion version, IEnumerable<VersionFolderPathResolver> resolvers)
-            {
-                foreach (var resolver in resolvers)
-                {
-                    // Verify the SHA for each package
-                    var hashPath = resolver.GetHashPath(packageId, version);
-
-                    if (request.DependencyProviders.PackageFileCache.Sha512Exists(hashPath))
-                    {
-                        yield return hashPath;
-                        break;
-                    }
-
-                    var nupkgMetadataPath = resolver.GetNupkgMetadataPath(packageId, version);
-
-                    if (request.DependencyProviders.PackageFileCache.Sha512Exists(nupkgMetadataPath))
-                    {
-                        yield return nupkgMetadataPath;
-                        break;
-                    }
-                }
-            }
-
             var pathResolvers = new List<VersionFolderPathResolver>(request.Project.RestoreMetadata.FallbackFolders.Count + 1)
             {
                 new VersionFolderPathResolver(request.PackagesDirectory)
@@ -321,7 +300,7 @@ namespace NuGet.Commands
 
             foreach (var library in lockFile.Libraries)
             {
-                packageFiles.AddRange(GetFiles(library.Name, library.Version, pathResolvers));
+                packageFiles.AddRange(GetPackageFiles(request.DependencyProviders.PackageFileCache, library.Name, library.Version, pathResolvers));
             }
 
             foreach (var targetFrameworkInformation in request.Project.TargetFrameworks)
@@ -329,11 +308,34 @@ namespace NuGet.Commands
                 foreach (var downloadDependency in targetFrameworkInformation.DownloadDependencies)
                 {
                     //TODO: https://github.com/NuGet/Home/issues/7709 - only exact versions are currently supported. The check needs to be updated when version ranges are implemented. 
-                    packageFiles.AddRange(GetFiles(downloadDependency.Name, downloadDependency.VersionRange.MinVersion, pathResolvers));
+                    packageFiles.AddRange(GetPackageFiles(request.DependencyProviders.PackageFileCache, downloadDependency.Name, downloadDependency.VersionRange.MinVersion, pathResolvers));
                 }
             }
 
             return packageFiles;
+        }
+
+        private static IEnumerable<string> GetPackageFiles(LocalPackageFileCache packageFileCache, string packageId, NuGetVersion version, IEnumerable<VersionFolderPathResolver> resolvers)
+        {
+            foreach (var resolver in resolvers)
+            {
+                // Verify the SHA for each package
+                var hashPath = resolver.GetHashPath(packageId, version);
+
+                if (packageFileCache.Sha512Exists(hashPath))
+                {
+                    yield return hashPath;
+                    break;
+                }
+
+                var nupkgMetadataPath = resolver.GetNupkgMetadataPath(packageId, version);
+
+                if (packageFileCache.Sha512Exists(nupkgMetadataPath))
+                {
+                    yield return nupkgMetadataPath;
+                    break;
+                }
+            }
         }
     }
 }

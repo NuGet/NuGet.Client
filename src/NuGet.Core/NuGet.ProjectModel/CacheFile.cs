@@ -10,7 +10,7 @@ namespace NuGet.ProjectModel
 {
     public class CacheFile : IEquatable<CacheFile>
     {
-        private static int LATEST_VERSION = 2;
+        internal const int CurrentVersion = 2;
 
         public string DgSpecHash { get;}
 
@@ -18,7 +18,7 @@ namespace NuGet.ProjectModel
 
         public bool Success { get; set; }
 
-        public List<string> ExpectedFiles { get; set; }
+        public IList<string> ExpectedFiles { get; set; }
 
         public bool AnyPackagesMissing { get; set; }
 
@@ -26,12 +26,12 @@ namespace NuGet.ProjectModel
 
         public IList<IAssetsLogMessage> LogMessages { get; set; }
 
-        public bool IsValid { get { return Version == LATEST_VERSION && Success && DgSpecHash != null;  } }
+        public bool IsValid { get { return Version == CurrentVersion && Success && DgSpecHash != null;  } }
 
         public CacheFile(string dgSpecHash)
         {
             DgSpecHash = dgSpecHash;
-            Version = LATEST_VERSION;
+            Version = CurrentVersion;
         }
 
         public bool Equals(CacheFile other)

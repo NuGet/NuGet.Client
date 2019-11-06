@@ -398,7 +398,7 @@ namespace NuGet.Commands
                 return true;
             }
             var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-            return pathComparer.Equals(cacheFile?.ProjectFullPath, _request.Project.FilePath);
+            return pathComparer.Equals(cacheFile.ProjectFullPath, _request.Project.FilePath);
         }
 
         private bool ValidatePackagesSha512(PackagesLockFile lockFile, LockFile assetsFile)

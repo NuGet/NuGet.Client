@@ -84,7 +84,7 @@ namespace NuGet.ProjectModel
             cacheFile.Version = version;
             cacheFile.Success = success;
 
-            if (version >= 2)
+            if (version >= CacheFile.CurrentVersion)
             {
                 cacheFile.ProjectFullPath = ReadString(cursor[ProjectFullPathProperty]);
 
@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel
             json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
             json[SuccessProperty] = WriteBool(cacheFile.Success);
 
-            if (cacheFile.Version >= 2)
+            if (cacheFile.Version >= CacheFile.CurrentVersion)
             {
                 json[ProjectFullPathProperty] = cacheFile.ProjectFullPath;
                 json[ExpectedFilesProperty] = new JArray(cacheFile.ExpectedFiles);
