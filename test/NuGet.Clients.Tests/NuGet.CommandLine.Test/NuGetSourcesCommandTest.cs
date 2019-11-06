@@ -143,7 +143,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact(Skip = "This scenario does not work as desired. Created a github issue")]
+        [Fact]
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
