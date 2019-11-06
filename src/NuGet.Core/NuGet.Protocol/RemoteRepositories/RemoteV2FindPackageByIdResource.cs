@@ -399,7 +399,7 @@ namespace NuGet.Protocol
             {
                 var relativeUri = _queryBuilder.BuildFindPackagesByIdUri(id).TrimStart('/');
                 var uri = _baseUri + relativeUri;
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, firstAttempt: retry == 1);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
 
                 try
                 {

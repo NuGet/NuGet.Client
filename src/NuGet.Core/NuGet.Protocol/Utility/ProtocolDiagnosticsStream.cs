@@ -4,22 +4,26 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.Protocol.Utility
 {
-    internal class ProtocolDiagnosticsStream : Stream
+    internal sealed class ProtocolDiagnosticsStream : Stream
     {
-        private Stream _baseStream;
-        private ProtocolDiagnosticEvent _protocolDiagnosticEvent;
-        private Stopwatch _stopwatch;
+        private readonly Stream _baseStream;
+        private ProtocolDiagnosticInProgressEvent _inProgressEvent;
+        private readonly Stopwatch _stopwatch;
         private long _bytes;
+        private readonly Action<ProtocolDiagnosticEvent> _event;
 
-        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticEvent protocolDiagnosticEvent, Stopwatch stopwatch)
+        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticInProgressEvent inProgressEvent, Stopwatch stopwatch, Action<ProtocolDiagnosticEvent> @event)
         {
             _baseStream = baseStream;
-            _protocolDiagnosticEvent = protocolDiagnosticEvent;
+            _inProgressEvent = inProgressEvent;
             _stopwatch = stopwatch;
             _bytes = 0;
+            _event = @event;
         }
 
         public override bool CanRead => _baseStream.CanRead;
@@ -59,6 +63,12 @@ namespace NuGet.Protocol.Utility
             }
         }
 
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        {
+            // ReadAsync calls into Read, so don't double count.
+            return base.ReadAsync(buffer, offset, count, cancellationToken);
+        }
+
         public override long Seek(long offset, SeekOrigin origin)
         {
             return _baseStream.Seek(offset, origin);
@@ -85,23 +95,17 @@ namespace NuGet.Protocol.Utility
 
         private void RaiseDiagnosticEvent(bool isSuccess)
         {
-            if (_protocolDiagnosticEvent != null)
+            if (_inProgressEvent != null)
             {
                 var pde = new ProtocolDiagnosticEvent(
                     DateTime.UtcNow,
-                    _protocolDiagnosticEvent.Source,
-                    _protocolDiagnosticEvent.Url,
-                    _protocolDiagnosticEvent.HeaderDuration,
                     _stopwatch.Elapsed,
-                    _protocolDiagnosticEvent.HttpStatusCode,
                     _bytes,
                     isSuccess,
-                    _protocolDiagnosticEvent.IsRetry,
-                    _protocolDiagnosticEvent.IsCancelled,
-                    _protocolDiagnosticEvent.IsLastAttempt);
-                ProtocolDiagnostics.RaiseEvent(pde);
+                    _inProgressEvent);
+                _event(pde);
 
-                _protocolDiagnosticEvent = null;
+                _inProgressEvent = null;
             }
         }
     }

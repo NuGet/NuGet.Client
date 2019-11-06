@@ -117,7 +117,7 @@ namespace NuGet.Protocol
             {
                 using (var sourceCacheContext = new SourceCacheContext())
                 {
-                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, firstAttempt: retry == 1);
+                    var cacheContext = HttpSourceCacheContext.Create(sourceCacheContext, isFirstAttempt: retry == 1);
 
                     try
                     {

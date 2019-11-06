@@ -50,14 +50,14 @@ namespace NuGet.Protocol.Core.Types
             return Create(cacheContext, retryCount == 0);
         }
 
-        public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, bool firstAttempt)
+        public static HttpSourceCacheContext Create(SourceCacheContext cacheContext, bool isFirstAttempt)
         {
             if (cacheContext == null)
             {
                 throw new ArgumentNullException(nameof(cacheContext));
             }
 
-            if (firstAttempt && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
+            if (isFirstAttempt && cacheContext.MaxAgeTimeSpan > TimeSpan.Zero)
             {
                 return new HttpSourceCacheContext(
                     rootTempFolder: null,

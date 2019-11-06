@@ -68,8 +68,8 @@ namespace NuGet.Protocol
                 using (var requestMessage = request.RequestFactory())
                 {
                     var stopwatches = new List<Stopwatch>(2);
-                    var stopwatch = new Stopwatch();
-                    stopwatches.Add(stopwatch);
+                    var bodyStopwatch = new Stopwatch();
+                    stopwatches.Add(bodyStopwatch);
                     Stopwatch headerStopwatch = null;
                     if (request.CompletionOption == HttpCompletionOption.ResponseHeadersRead)
                     {
@@ -119,7 +119,7 @@ namespace NuGet.Protocol
                         response = await TimeoutUtility.StartWithTimeout(
                             async timeoutToken =>
                             {
-                                stopwatch.Start();
+                                bodyStopwatch.Start();
                                 headerStopwatch?.Start();
                                 var responseMessage = await request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken);
                                 headerStopwatch?.Stop();
@@ -134,18 +134,15 @@ namespace NuGet.Protocol
                         {
                             var networkStream = await response.Content.ReadAsStreamAsync();
                             var timeoutStream = new DownloadTimeoutStream(requestUri, networkStream, request.DownloadTimeout);
-                            var diagnosticsInfo = new ProtocolDiagnosticEvent(DateTime.MinValue,
+                            var inProgressEvent = new ProtocolDiagnosticInProgressEvent(
                                 source,
                                 requestUri,
                                 headerStopwatch?.Elapsed,
-                                TimeSpan.MinValue,
                                 (int)response.StatusCode,
-                                bytes: 0,
-                                isSuccess: true,
                                 isRetry: request.IsRetry || tries > 1,
                                 isCancelled: false,
                                 isLastAttempt: tries == request.MaxTries && request.IsLastAttempt);
-                            var diagnosticsStream = new ProtocolDiagnosticsStream(timeoutStream, diagnosticsInfo, stopwatch);
+                            var diagnosticsStream = new ProtocolDiagnosticsStream(timeoutStream, inProgressEvent, bodyStopwatch, ProtocolDiagnostics.RaiseEvent);
 
                             var newContent = new StreamContent(diagnosticsStream);
 
@@ -164,7 +161,7 @@ namespace NuGet.Protocol
                             Strings.Http_ResponseLog,
                             response.StatusCode,
                             requestUri,
-                            stopwatch.ElapsedMilliseconds));
+                            bodyStopwatch.ElapsedMilliseconds));
 
                         if ((int)response.StatusCode >= 500)
                         {
@@ -180,7 +177,7 @@ namespace NuGet.Protocol
                             source,
                             requestUri,
                             headerDuration: null,
-                            eventDuration: stopwatch.Elapsed,
+                            eventDuration: bodyStopwatch.Elapsed,
                             httpStatusCode: null,
                             bytes: 0,
                             isSuccess: false,
@@ -201,7 +198,7 @@ namespace NuGet.Protocol
                             source,
                             requestUri,
                             headerDuration: null,
-                            eventDuration: stopwatch.Elapsed,
+                            eventDuration: bodyStopwatch.Elapsed,
                             httpStatusCode: null,
                             bytes: 0,
                             isSuccess: false,

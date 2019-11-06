@@ -5,19 +5,12 @@ using System;
 
 namespace NuGet.Protocol.Utility
 {
-    public class ProtocolDiagnosticEvent
+    public sealed class ProtocolDiagnosticEvent : ProtocolDiagnosticEventBase
     {
         public DateTime Timestamp { get; }
-        public string Source { get; }
-        public string Url { get; }
-        public TimeSpan? HeaderDuration { get; }
         public TimeSpan EventDuration { get; }
-        public int? HttpStatusCode { get; }
         public long Bytes { get; }
         public bool IsSuccess { get; }
-        public bool IsRetry { get; }
-        public bool IsCancelled { get; }
-        public bool IsLastAttempt { get; }
 
         internal ProtocolDiagnosticEvent(
             DateTime timestamp,
@@ -25,24 +18,40 @@ namespace NuGet.Protocol.Utility
             string url,
             TimeSpan? headerDuration,
             TimeSpan eventDuration,
-            int? httpStatusCode,
             long bytes,
+            int? httpStatusCode,
             bool isSuccess,
             bool isRetry,
             bool isCancelled,
             bool isLastAttempt)
+            : this(
+                  timestamp,
+                  eventDuration,
+                  bytes,
+                  isSuccess,
+                  new ProtocolDiagnosticInProgressEvent(
+                      source,
+                      url,
+                      headerDuration,
+                       httpStatusCode,
+                       isRetry,
+                       isCancelled,
+                       isLastAttempt))
+        {
+        }
+
+        internal ProtocolDiagnosticEvent(
+            DateTime timestamp,
+            TimeSpan eventDuration,
+            long bytes,
+            bool isSuccess,
+            ProtocolDiagnosticEventBase eventBase)
+            : base(eventBase)
         {
             Timestamp = timestamp;
-            Source = source;
-            Url = url;
-            HeaderDuration = headerDuration;
             EventDuration = eventDuration;
-            HttpStatusCode = httpStatusCode;
             Bytes = bytes;
             IsSuccess = isSuccess;
-            IsRetry = isRetry;
-            IsCancelled = isCancelled;
-            IsLastAttempt = isLastAttempt;
         }
     }
 }

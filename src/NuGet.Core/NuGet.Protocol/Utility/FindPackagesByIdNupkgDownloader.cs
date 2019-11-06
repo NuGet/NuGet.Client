@@ -257,7 +257,7 @@ namespace NuGet.Protocol
             const int maxRetries = 3;
             for (var retry = 1; retry <= maxRetries; ++retry)
             {
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, firstAttempt: retry == 1);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
 
                 try
                 {

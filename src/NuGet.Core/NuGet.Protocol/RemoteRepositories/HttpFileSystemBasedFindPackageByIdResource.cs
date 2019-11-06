@@ -397,7 +397,7 @@ namespace NuGet.Protocol
             {
                 var baseUri = _baseUris[retry % _baseUris.Count].OriginalString;
                 var uri = baseUri + packageIdLowerCase + "/index.json";
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, firstAttempt: retry == 1);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
 
                 try
                 {
@@ -440,14 +440,14 @@ namespace NuGet.Protocol
                         logger,
                         cancellationToken);
                 }
-                catch (Exception ex) when (retry < maxTries)
+                catch (Exception ex) when (retry < 3)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsync), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
                 }
-                catch (Exception ex) when (retry == maxTries)
+                catch (Exception ex) when (retry == 3)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,
