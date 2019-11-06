@@ -86,7 +86,7 @@ namespace NuGet.ProjectModel
 
             if (version >= 2)
             {
-                cacheFile.ProjectFullPath = ReadString(cursor[ProjectFullPathProperty]);
+                cacheFile.ProjectFilePath = ReadString(cursor[ProjectFullPathProperty]);
 
                 foreach (JToken expectedFile in cursor[ExpectedFilesProperty])
                 {
@@ -94,12 +94,12 @@ namespace NuGet.ProjectModel
 
                     if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
                     {
-                        cacheFile.AnyPackagesMissing = true;
+                        cacheFile.HasAnyMissingFiles = true;
                         break;
                     }
                 }
 
-                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor[LockFileFormat.LogsProperty] as JArray, cacheFile.ProjectFullPath);
+                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor[LockFileFormat.LogsProperty] as JArray, cacheFile.ProjectFilePath);
             }
 
             return cacheFile;
@@ -114,9 +114,9 @@ namespace NuGet.ProjectModel
 
             if (cacheFile.Version >= 2)
             {
-                json[ProjectFullPathProperty] = cacheFile.ProjectFullPath;
-                json[ExpectedFilesProperty] = new JArray(cacheFile.ExpectedFiles);
-                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFullPath);
+                json[ProjectFullPathProperty] = cacheFile.ProjectFilePath;
+                json[ExpectedFilesProperty] = new JArray(cacheFile.ExpectedFilePaths);
+                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
             }
 
             return json;

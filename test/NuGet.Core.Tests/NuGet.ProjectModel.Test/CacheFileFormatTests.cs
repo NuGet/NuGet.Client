@@ -92,14 +92,14 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(int.Parse(version), cacheFile.Version);
                 if (haveMissingFile)
                 {
-                    Assert.True(cacheFile.AnyPackagesMissing);
+                    Assert.True(cacheFile.HasAnyMissingFiles);
                 }
                 else
                 {
-                    Assert.False(cacheFile.AnyPackagesMissing);
+                    Assert.False(cacheFile.HasAnyMissingFiles);
                 }
 
-                Assert.Equal(projectFullPath, cacheFile.ProjectFullPath);
+                Assert.Equal(projectFullPath, cacheFile.ProjectFilePath);
                 Assert.Equal(1, cacheFile.LogMessages.Count);
 
                 Assert.Equal(0, logger.Errors);
@@ -140,8 +140,8 @@ namespace NuGet.ProjectModel.Test
             var cacheFile = new CacheFile(dgSpecHash)
             {
                 Success = bool.Parse(success),
-                ProjectFullPath = projectFullPath,
-                ExpectedFiles = new List<string>
+                ProjectFilePath = projectFullPath,
+                ExpectedFilePaths = new List<string>
                 {
                     file1,
                     file2

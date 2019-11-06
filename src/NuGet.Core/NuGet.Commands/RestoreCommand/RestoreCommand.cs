@@ -328,9 +328,9 @@ namespace NuGet.Commands
                     if (cacheFile != null)
                     {
                         cacheFile.Success = _success;
-                        cacheFile.ProjectFullPath = _request.Project.FilePath;
+                        cacheFile.ProjectFilePath = _request.Project.FilePath;
                         cacheFile.LogMessages = assetsFile.LogMessages;
-                        cacheFile.ExpectedFiles = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
+                        cacheFile.ExpectedFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
                     }
 
                     var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
@@ -398,7 +398,7 @@ namespace NuGet.Commands
                 return true;
             }
             var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-            return pathComparer.Equals(cacheFile.ProjectFullPath, _request.Project.FilePath);
+            return pathComparer.Equals(cacheFile.ProjectFilePath, _request.Project.FilePath);
         }
 
         private bool ValidatePackagesSha512(PackagesLockFile lockFile, LockFile assetsFile)

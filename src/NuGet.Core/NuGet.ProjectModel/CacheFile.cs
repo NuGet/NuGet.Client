@@ -18,11 +18,20 @@ namespace NuGet.ProjectModel
 
         public bool Success { get; set; }
 
-        public IList<string> ExpectedFiles { get; set; }
+        /// <summary>
+        /// Gets or sets a list of paths that must exist in order for the project to be considered up-to-date.
+        /// </summary>
+        public IList<string> ExpectedFilePaths { get; set; }
 
-        public bool AnyPackagesMissing { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating if one or more of the expected files are missing.
+        /// </summary>
+        public bool HasAnyMissingFiles { get; set; }
 
-        public string ProjectFullPath { get; set; }
+        /// <summary>
+        /// Gets or sets the full path to the project file.
+        /// </summary>
+        public string ProjectFilePath { get; set; }
 
         public IList<IAssetsLogMessage> LogMessages { get; set; }
 
@@ -46,7 +55,7 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return Version == other.Version && Success == other.Success && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash) && PathUtility.GetStringComparerBasedOnOS().Equals(ProjectFullPath, other.ProjectFullPath);
+            return Version == other.Version && Success == other.Success && StringComparer.Ordinal.Equals(DgSpecHash, other.DgSpecHash) && PathUtility.GetStringComparerBasedOnOS().Equals(ProjectFilePath, other.ProjectFilePath);
         }
 
         public override bool Equals(object obj)
@@ -59,7 +68,7 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
             combiner.AddObject(DgSpecHash);
             combiner.AddObject(Version);
-            combiner.AddObject(ProjectFullPath);
+            combiner.AddObject(ProjectFilePath);
             return combiner.CombinedHash;
         }
     }
