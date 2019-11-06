@@ -700,8 +700,9 @@ Valid from:</comment>
     <value>An unexpected error occurred while checking package entries.</value>
   </data>
   <data name="ErrorUnsafePackageEntry" xml:space="preserve">
-    <value>The package '{0}' contains an entry which is unsafe for extraction.</value>
-    <comment>{0} is the package identity.</comment>
+    <value>The package '{0}' contains an entry '{1}' which is unsafe for extraction.</value>
+    <comment>{0} is the package identity.
+    {1} is the package entry</comment>
   </data>
   <data name="NoRepositoryCountersignature" xml:space="preserve">
     <value>Verification settings require a repository countersignature, but the package does not have a repository countersignature.</value>

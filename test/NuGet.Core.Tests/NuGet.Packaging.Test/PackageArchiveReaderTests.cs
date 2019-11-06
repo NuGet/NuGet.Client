@@ -998,6 +998,79 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [PlatformFact(Platform.Windows, Platform.Darwin)]
+        public async Task CopyFilesAsync_PathWithDifferentCasingOnWindowsAndMac_Succeeds()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                using(var destination = TestDirectory.Create())
+                {
+                    var resolver = new PackagePathResolver(root);
+                    var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+
+                    var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                       root,
+                       identity.Id,
+                       identity.Version.ToString(),
+                       DateTimeOffset.UtcNow.LocalDateTime,
+                       @"readme~.txt");
+
+                    using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                    using (var packageReader = new PackageArchiveReader(packageStream))
+                    {
+                        // Act & Assert                         
+                        var files = await packageReader.CopyFilesAsync(
+                            destination.Path.ToUpper(),
+                            new[] { @"readme~.txt" },
+                            ExtractFile,
+                            NullLogger.Instance,
+                            CancellationToken.None);
+
+                        var expectedFilePath = Path.Combine(destination.Path.ToUpper(), "readme~.txt");
+
+                        Assert.Equal(1, files.Count());
+                        Assert.Equal(expectedFilePath, files.Single());
+                        Assert.True(File.Exists(expectedFilePath));
+                    }
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Linux)]
+        public async Task CopyFilesAsync_PathWithDifferentCasingOnLinux_Fails()
+        {
+            // Arrange
+            using (var root = TestDirectory.Create())
+            {
+                using (var destination = TestDirectory.Create())
+                {
+                    var resolver = new PackagePathResolver(root);
+                    var identity = new PackageIdentity("A", new NuGetVersion("2.0.3"));
+
+                    var packageFileInfo = await TestPackagesCore.GeneratePackageAsync(
+                       root,
+                       identity.Id,
+                       identity.Version.ToString(),
+                       DateTimeOffset.UtcNow.LocalDateTime,
+                       @"readme~.txt");
+
+                    using (var packageStream = File.OpenRead(packageFileInfo.FullName))
+                    using (var packageReader = new PackageArchiveReader(packageStream))
+                    {
+                        // Act & Assert
+                        //The return value of Path.GetFullPath() varies based on OS. Hence DirectoryNotFoundException is thrown instead of UnsafePackageEntryException
+                        await Assert.ThrowsAsync<DirectoryNotFoundException>(async () => await packageReader.CopyFilesAsync(
+                             destination.Path.ToUpper(),
+                             new[] { "readme~.txt" },
+                             ExtractFile,
+                             NullLogger.Instance,
+                             CancellationToken.None));
+                    }
+                }
+            }
+        }
+
         [Fact]
         public void GetFrameworkItems_ReturnsEmptyEnumerableIfNoFrameworkItems()
         {
