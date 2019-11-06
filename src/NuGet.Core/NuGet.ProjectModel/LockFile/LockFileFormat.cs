@@ -371,7 +371,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         /// <param name="json"><code>JObject</code> containg the json representation of the log message.</param>
         /// <returns><code>IAssetsLogMessage</code> representing the log message.</returns>
-        internal static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
+        private static IAssetsLogMessage ReadLogMessage(JObject json, string projectPath)
         {
             AssetsLogMessage assetsLogMessage = null;
 
