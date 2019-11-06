@@ -10,6 +10,9 @@ using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.VisualStudio;
+using Microsoft.VisualStudio.Threading;
+using NuGet.VisualStudio;
+using System.Threading.Tasks;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
