@@ -20,7 +20,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Constructor_WithSourceCredentials_InitializesClientHandler()
         {
-            var packageSource = new PackageSource("http://package.source.net", "source")
+            var packageSource = new PackageSource("http://package.source.test", "source")
             {
                 Credentials = new PackageSourceCredential("source", "user", "password", isPasswordClearText: true, validAuthenticationTypesText: null)
             };
@@ -40,7 +40,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WithUnauthenticatedSource_PassesThru()
         {
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
@@ -60,7 +60,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WithAcquiredCredentialsOn401_RetriesRequest()
         {
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -100,7 +100,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WithAcquiredCredentialsOn403_RetriesRequest()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -142,7 +142,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_With403PromptDisabled_Returns403()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
@@ -168,7 +168,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WhenTaskCanceledExceptionThrownDuringAcquiringCredentials_Throws()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -214,7 +214,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WhenOperationCanceledExceptionThrownDuringAcquiringCredentials_Throws()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var cts = new CancellationTokenSource();
@@ -263,7 +263,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WithWrongCredentials_StopsRetryingAfter3Times()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -312,7 +312,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WithMissingCredentials_Returns401()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -352,7 +352,7 @@ namespace NuGet.Protocol.Tests
         public async Task SendAsync_WhenCredentialServiceThrows_Returns401()
         {
             // Arrange
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             var clientHandler = new HttpClientHandler();
 
             var credentialService = Mock.Of<ICredentialService>();
@@ -437,7 +437,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public async Task SendAsync_WithProtocolDiagnosticsStopwatches_PausesStopwatches()
         {
-            var packageSource = new PackageSource("http://package.source.net");
+            var packageSource = new PackageSource("http://package.source.test");
             Stopwatch stopwatch = Stopwatch.StartNew();
             var clientHandler = new HttpClientHandler();
 
