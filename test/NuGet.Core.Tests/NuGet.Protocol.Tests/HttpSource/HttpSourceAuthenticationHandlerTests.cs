@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -431,6 +432,49 @@ namespace NuGet.Protocol.Tests
             Assert.True(requests > 1, "No retries");
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SendAsync_WithProtocolDiagnosticsStopwatches_PausesStopwatches()
+        {
+            var packageSource = new PackageSource("http://package.source.net");
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            var clientHandler = new HttpClientHandler();
+
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Unauthorized,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()))
+                .Callback(() =>
+                {
+                    Assert.False(stopwatch.IsRunning, "Stopwatch should be stopped during " + nameof(credentialService.GetCredentialsAsync));
+                });
+
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = GetLambdaMessageHandler(
+                    HttpStatusCode.Unauthorized, HttpStatusCode.OK)
+            };
+
+            var response = await SendAsync(handler);
+
+            Assert.True(stopwatch.IsRunning, "Stopwatch should be running after SendAsync returns");
+
+            Mock.Get(credentialService)
+                .Verify(
+                    x => x.GetCredentialsAsync(
+                        It.IsAny<Uri>(),
+                        It.IsAny<IWebProxy>(),
+                        It.IsAny<CredentialRequestType>(),
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()),
+                    Times.Once());
         }
 
         private static LambdaMessageHandler GetLambdaMessageHandler(HttpStatusCode statusCode)

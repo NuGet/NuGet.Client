@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
@@ -18,6 +19,8 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
+        internal const string StopwatchPropertyName = "NuGet_ProtocolDiagnostics_Stopwatches";
+
         /// <summary>
         /// Make an HTTP request while retrying after failed attempts or timeouts.
         /// </summary>
@@ -64,8 +67,16 @@ namespace NuGet.Protocol
 
                 using (var requestMessage = request.RequestFactory())
                 {
+                    var stopwatches = new List<Stopwatch>(2);
                     var stopwatch = new Stopwatch();
-                    Stopwatch headerStopwatch = request.CompletionOption == HttpCompletionOption.ResponseHeadersRead ? new Stopwatch() : null;
+                    stopwatches.Add(stopwatch);
+                    Stopwatch headerStopwatch = null;
+                    if (request.CompletionOption == HttpCompletionOption.ResponseHeadersRead)
+                    {
+                        headerStopwatch = new Stopwatch();
+                        stopwatches.Add(headerStopwatch);
+                    }
+                    requestMessage.Properties[StopwatchPropertyName] = stopwatches;
                     var requestUri = requestMessage.RequestUri.ToString();
                     
                     try
