@@ -45,7 +45,7 @@ namespace NuGet.CommandLine
                 throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
             }
 
-            var action = Arguments.FirstOrDefault();
+            var action = Arguments.FirstOrDefault()?.ToLowerInvariant();
             var interactive = !NonInteractive;
 
             var sourcesArgs = new SourcesArgs(
@@ -61,6 +61,7 @@ namespace NuGet.CommandLine
                 Format.ToString()?.ToLower(),
                 interactive,
                 ConfigFile,
+                Verbosity,
                 Console.LogError,
                 Console.LogInformation
                 );

@@ -32,15 +32,18 @@ namespace NuGet.Commands
                 case "":
                 case null:
                 case "list":
-                    switch (args.Format)
+                    if (args.Verbosity != CommandLine.Verbosity.Quiet)
                     {
-                        case "short":
-                            PrintRegisteredSourcesShort(args);
-                            break;
-                        case "detailed":
-                        default:
-                            PrintRegisteredSourcesDetailed(args);
-                            break;
+                        switch (args.Format)
+                        {
+                            case "short":
+                                PrintRegisteredSourcesShort(args);
+                                break;
+                            case "detailed":
+                            default:
+                                PrintRegisteredSourcesDetailed(args);
+                                break;
+                        }
                     }
                     break;
                 case "add":
@@ -85,15 +88,18 @@ namespace NuGet.Commands
                 args.SourceProvider.DisablePackageSource(args.Name);
             }
 
-            if (enabled)
+            if (args.Verbosity != CommandLine.Verbosity.Quiet)
             {
-                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandSourceEnabledSuccessfully, args.Name));
-            }
-            else
-            {
-                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandSourceDisabledSuccessfully, args.Name));
+                if (enabled)
+                {
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        Strings.SourcesCommandSourceEnabledSuccessfully, args.Name));
+                }
+                else
+                {
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        Strings.SourcesCommandSourceDisabledSuccessfully, args.Name));
+                }
             }
         }
 
@@ -175,8 +181,11 @@ namespace NuGet.Commands
             }
 
             args.SourceProvider.AddPackageSource(newPackageSource);
-            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+            if (args.Verbosity != CommandLine.Verbosity.Quiet)
+            {
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandSourceAddedSuccessfully, args.Name));
+            }
         }
 
         private static void UpdatePackageSource(SourcesArgs args)
@@ -235,8 +244,11 @@ namespace NuGet.Commands
 
             args.SourceProvider.UpdatePackageSource(existingSource, updateCredentials: existingSource.Credentials != null, updateEnabled: false);
 
-            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+            if (args.Verbosity != CommandLine.Verbosity.Quiet)
+            {
+                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandUpdateSuccessful, args.Name));
+            }
         }
 
         private static void ValidateCredentials(SourcesArgs args)
@@ -288,8 +300,12 @@ namespace NuGet.Commands
             var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
             if (!sourcesList.Any())
             {
-                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                if (args.Verbosity != CommandLine.Verbosity.Quiet)
+                {
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                                         Strings.SourcesCommandNoSources));
+                }
+
                 return;
             }
 
@@ -300,6 +316,7 @@ namespace NuGet.Commands
                 var source = sourcesList[i];
                 var indexNumber = i + 1;
                 var namePadding = new string(' ', i >= 9 ? 1 : 2);
+
                 Console.WriteLine(string.Format(
                     "  {0}.{1}{2} [{3}]",
                     indexNumber,

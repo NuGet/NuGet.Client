@@ -22,6 +22,7 @@ namespace NuGet.Commands
         public string Format { get; }
         public bool Interactive { get; }
         public string ConfigFile { get; }
+        public NuGet.CommandLine.Verbosity Verbosity { get; }
         public Log LogError { get; }
         public Log LogInformation { get; }
 
@@ -38,6 +39,7 @@ namespace NuGet.Commands
             string format,
             bool interactive,
             string configFile,
+            NuGet.CommandLine.Verbosity verbosity,
             Log logError,
             Log logInformation
             )
@@ -54,6 +56,7 @@ namespace NuGet.Commands
             Format = format;
             Interactive = interactive;
             ConfigFile = configFile;
+            Verbosity = verbosity;
             LogError = logError;
             LogInformation = logInformation;
         }
