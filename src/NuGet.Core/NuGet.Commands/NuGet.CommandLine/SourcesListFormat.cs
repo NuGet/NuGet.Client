@@ -3,10 +3,9 @@
 
 namespace NuGet.CommandLine
 {
-    public enum Verbosity
+    public enum SourcesListFormat
     {
-        Normal,
-        Quiet,
-        Detailed
+        Detailed,
+        Short
     }
 }
