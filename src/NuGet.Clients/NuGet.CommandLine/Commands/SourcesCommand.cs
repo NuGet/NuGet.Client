@@ -2,17 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using NuGet.Commands;
+
+[assembly: TypeForwardedTo(typeof(NuGet.CommandLine.SourcesListFormat))]
 
 namespace NuGet.CommandLine
 {
-    public enum SourcesListFormat
-    {
-        Detailed,
-        Short
-    }
-
     [Command(typeof(NuGetCommand), "sources", "SourcesCommandDescription", UsageSummaryResourceName = "SourcesCommandUsageSummary",
         MinArgs = 0, MaxArgs = 1)]
     public class SourcesCommand : Command
@@ -45,7 +43,21 @@ namespace NuGet.CommandLine
                 throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
             }
 
-            var action = Arguments.FirstOrDefault()?.ToLowerInvariant();
+            SourcesAction action = SourcesAction.None;
+            var actionArg = Arguments.FirstOrDefault();
+            if (string.IsNullOrEmpty(actionArg))
+            {
+                action = SourcesAction.List;
+            }
+            else
+            {
+                if (!Enum.TryParse<SourcesAction>(actionArg, false, out action))
+                {
+                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                        NuGetCommand.SourcesCommandUsageSummary));
+                }
+            }
+
             var interactive = !NonInteractive;
 
             var sourcesArgs = new SourcesArgs(
@@ -58,7 +70,7 @@ namespace NuGet.CommandLine
                 Password,
                 StorePasswordInClearText,
                 ValidAuthenticationTypes,
-                Format.ToString()?.ToLower(),
+                Format,
                 interactive,
                 ConfigFile,
                 Verbosity,

@@ -11812,6 +11812,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to nuget sources.
+        /// </summary>
+        internal static string SourcesActionInvalid {
+            get {
+                return ResourceManager.GetString("SourcesActionInvalid", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
         /// </summary>
         internal static string SourcesCommandDescription {

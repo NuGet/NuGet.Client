@@ -23,33 +23,31 @@ namespace NuGet.Commands
         {
             switch (args.Action)
             {
-                case "":
-                case null:
-                case "list":
+                case SourcesAction.List:
                     switch (args.Format)
                     {
-                        case "short":
+                        case CommandLine.SourcesListFormat.Short:
                             PrintRegisteredSourcesShort(args);
                             break;
-                        case "detailed":
+                        case CommandLine.SourcesListFormat.Detailed:
                         default:
                             PrintRegisteredSourcesDetailed(args);
                             break;
                     }
                     break;
-                case "add":
+                case SourcesAction.Add:
                     AddNewSource(args);
                     break;
-                case "remove":
+                case SourcesAction.Remove:
                     RemoveSource(args);
                     break;
-                case "enable":
+                case SourcesAction.Enable:
                     EnableOrDisableSource(args, enabled: true);
                     break;
-                case "disable":
+                case SourcesAction.Disable:
                     EnableOrDisableSource(args, enabled: false);
                     break;
-                case "update":
+                case SourcesAction.Update:
                     UpdatePackageSource(args);
                     break;
             }

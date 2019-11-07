@@ -12,31 +12,31 @@ namespace NuGet.Commands
 
         public ISettings Settings { get; }
         public IPackageSourceProvider SourceProvider { get; }
-        public string Action { get; }
+        public SourcesAction Action { get; }
         public string Name { get; }
         public string Source { get; }
         public string Username { get; }
         public string Password { get; }
         public bool StorePasswordInClearText { get; }
         public string ValidAuthenticationTypes { get; }
-        public string Format { get; }
+        public CommandLine.SourcesListFormat Format { get; }
         public bool Interactive { get; }
         public string ConfigFile { get; }
-        public NuGet.CommandLine.Verbosity Verbosity { get; }
+        public CommandLine.Verbosity Verbosity { get; }
         public Log LogError { get; }
         public Log LogInformation { get; }
 
         public SourcesArgs(
             ISettings settings,
             IPackageSourceProvider sourceProvider,
-            string action,
+            SourcesAction action,
             string name,
             string source,
             string username,
             string password,
             bool storePasswordInClearText,
             string validAuthenticationTypes,
-            string format,
+            CommandLine.SourcesListFormat format,
             bool interactive,
             string configFile,
             CommandLine.Verbosity verbosity,
