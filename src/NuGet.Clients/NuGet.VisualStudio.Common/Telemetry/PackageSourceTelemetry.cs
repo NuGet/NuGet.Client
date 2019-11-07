@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using NuGet.Common;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Utility;
@@ -12,13 +13,13 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public sealed class PackageSourceTelemetry : IDisposable
     {
-        private ConcurrentDictionary<string, Data> _data;
+        private ConcurrentDictionary<Uri, Data> _data;
         private List<SourceRepository> _sources;
         private Guid _parentId;
 
         public PackageSourceTelemetry(List<SourceRepository> sources, Guid parentId)
         {
-            _data = new ConcurrentDictionary<string, Data>();
+            _data = new ConcurrentDictionary<Uri, Data>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
             _sources = sources;
             _parentId = parentId;
@@ -28,7 +29,7 @@ namespace NuGet.VisualStudio.Telemetry
         {
             var data = _data.GetOrAdd(pdEvent.Source, _ => new Data());
 
-            var resourceData = pdEvent.Url.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
+            var resourceData = pdEvent.Url.OriginalString.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
                 ? data.Nupkg
                 : data.Metadata;
 
@@ -107,10 +108,11 @@ namespace NuGet.VisualStudio.Telemetry
             ProtocolDiagnostics.Event -= ProtocolDiagnostics_Event;
 
             var parentId= _parentId.ToString();
-            foreach (var source in _sources)
+            foreach (var kvp in _data)
             {
-                Data data;
-                if (_data.TryGetValue(source.PackageSource.Name, out data) && (data.Metadata.EventTiming.Requests + data.Nupkg.EventTiming.Requests) > 0)
+                Data data = kvp.Value;
+                Uri sourceUri = kvp.Key;
+                if (data.Metadata.EventTiming.Requests != 0 || data.Nupkg.EventTiming.Requests != 0)
                 {
                     var @event = new TelemetryEvent("PackageSourceDiagnostics",
                         new Dictionary<string, object>()
@@ -119,13 +121,18 @@ namespace NuGet.VisualStudio.Telemetry
                         });
 
                     // source info
-                    @event.AddPiiData("source.url", source.PackageSource.Source);
-                    @event["source.type"] = source.PackageSource.IsHttp ? "http" : source.PackageSource.IsLocal ? "local" : "unknown";
-                    @event["source.protocol"] = source.PackageSource.ProtocolVersion;
-                    var msFeed = GetMsFeed(source.PackageSource.SourceUri);
+                    @event.AddPiiData("source.url", sourceUri);
+                    var msFeed = GetMsFeed(sourceUri);
                     if (msFeed != null)
                     {
                         @event["source.msfeed"] = msFeed;
+                    }
+
+                    SourceRepository source = _sources.FirstOrDefault(s => s.PackageSource.SourceUri == sourceUri);
+                    if (source != null)
+                    {
+                        @event["source.type"] = source.PackageSource.IsHttp ? "http" : source.PackageSource.IsLocal ? "local" : "unknown";
+                        @event["source.protocol"] = source.PackageSource.ProtocolVersion;
                     }
 
                     // metadata
