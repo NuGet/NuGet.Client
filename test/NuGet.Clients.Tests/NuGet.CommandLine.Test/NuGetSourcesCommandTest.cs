@@ -154,8 +154,7 @@ namespace NuGet.CommandLine.Test
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
-                    @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 

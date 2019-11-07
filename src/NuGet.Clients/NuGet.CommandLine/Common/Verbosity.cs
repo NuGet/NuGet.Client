@@ -1,10 +1,3 @@
-﻿
-namespace NuGet.CommandLine
-{
-    public enum Verbosity
-    {
-        Normal,
-        Quiet,
-        Detailed
-    }
-}
+using System.Runtime.CompilerServices;
+
+[assembly:TypeForwardedTo(typeof(NuGet.CommandLine.Verbosity))]
