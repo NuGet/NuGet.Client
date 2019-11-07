@@ -7,8 +7,8 @@ namespace NuGet.Protocol.Utility
 {
     public abstract class ProtocolDiagnosticEventBase
     {
-        public string Source { get; }
-        public string Url { get; }
+        public Uri Source { get; }
+        public Uri Url { get; }
         public TimeSpan? HeaderDuration { get; }
         public int? HttpStatusCode { get; }
         public bool IsRetry { get; }
@@ -27,8 +27,8 @@ namespace NuGet.Protocol.Utility
         }
 
         protected ProtocolDiagnosticEventBase(
-            string source,
-            string url,
+            Uri source,
+            Uri url,
             TimeSpan? headerDuration,
             int? httpStatusCode,
             bool isRetry,

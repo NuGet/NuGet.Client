@@ -15,15 +15,15 @@ namespace NuGet.Protocol.Utility
         private ProtocolDiagnosticInProgressEvent _inProgressEvent;
         private readonly Stopwatch _stopwatch;
         private long _bytes;
-        private readonly Action<ProtocolDiagnosticEvent> _event;
+        private readonly Action<ProtocolDiagnosticEvent> _diagnosticEvent;
 
-        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticInProgressEvent inProgressEvent, Stopwatch stopwatch, Action<ProtocolDiagnosticEvent> @event)
+        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticInProgressEvent inProgressEvent, Stopwatch stopwatch, Action<ProtocolDiagnosticEvent> diagnosticEvent)
         {
             _baseStream = baseStream;
             _inProgressEvent = inProgressEvent;
             _stopwatch = stopwatch;
             _bytes = 0;
-            _event = @event;
+            _diagnosticEvent = diagnosticEvent;
         }
 
         public override bool CanRead => _baseStream.CanRead;
@@ -103,7 +103,7 @@ namespace NuGet.Protocol.Utility
                     _bytes,
                     isSuccess,
                     _inProgressEvent);
-                _event(pde);
+                _diagnosticEvent(pde);
 
                 _inProgressEvent = null;
             }

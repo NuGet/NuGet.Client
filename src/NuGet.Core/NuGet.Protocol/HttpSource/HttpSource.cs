@@ -310,7 +310,7 @@ namespace NuGet.Protocol
             HttpResponseMessage response;
             try
             {
-                response = await RetryHandler.SendAsync(request, _packageSource.Name, log, cancellationToken);
+                response = await RetryHandler.SendAsync(request, _packageSource.SourceUri, log, cancellationToken);
             }
             catch
             {

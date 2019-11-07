@@ -34,7 +34,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            return SendAsync(request, source: null, log, cancellationToken);
+            return SendAsync(request, sourceUri: null, log, cancellationToken);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace NuGet.Protocol
         /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
-            string source,
+            Uri sourceUri,
             ILogger log,
             CancellationToken cancellationToken)
         {
@@ -77,7 +77,7 @@ namespace NuGet.Protocol
                         stopwatches.Add(headerStopwatch);
                     }
                     requestMessage.Properties[StopwatchPropertyName] = stopwatches;
-                    var requestUri = requestMessage.RequestUri.ToString();
+                    var requestUri = requestMessage.RequestUri;
                     
                     try
                     {
@@ -135,7 +135,7 @@ namespace NuGet.Protocol
                             var networkStream = await response.Content.ReadAsStreamAsync();
                             var timeoutStream = new DownloadTimeoutStream(requestUri, networkStream, request.DownloadTimeout);
                             var inProgressEvent = new ProtocolDiagnosticInProgressEvent(
-                                source,
+                                sourceUri,
                                 requestUri,
                                 headerStopwatch?.Elapsed,
                                 (int)response.StatusCode,
@@ -174,7 +174,7 @@ namespace NuGet.Protocol
 
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
                             timestamp: DateTime.UtcNow,
-                            source,
+                            sourceUri,
                             requestUri,
                             headerDuration: null,
                             eventDuration: bodyStopwatch.Elapsed,
@@ -195,7 +195,7 @@ namespace NuGet.Protocol
 
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
                             timestamp: DateTime.UtcNow,
-                            source,
+                            sourceUri,
                             requestUri,
                             headerDuration: null,
                             eventDuration: bodyStopwatch.Elapsed,
