@@ -61,6 +61,11 @@ namespace NuGet.VisualStudio.Telemetry
                     resourceData.Cancelled++;
                 }
 
+                if (pdEvent.IsLastAttempt && !pdEvent.IsSuccess)
+                {
+                    resourceData.Failed++;
+                }
+
                 if (pdEvent.Bytes > 0)
                 {
                     resourceData.TotalBytes += pdEvent.Bytes;
@@ -130,6 +135,7 @@ namespace NuGet.VisualStudio.Telemetry
                         @event["metadata.success"] = data.Metadata.Successful;
                         @event["metadata.retries"] = data.Metadata.Retries;
                         @event["metadata.cancelled"] = data.Metadata.Cancelled;
+                        @event["metadata.failed"] = data.Metadata.Failed;
                         @event["metadata.bytes.total"] = data.Metadata.TotalBytes;
                         @event["metadata.bytes.max"] = data.Metadata.MaxBytes;
 
@@ -160,6 +166,7 @@ namespace NuGet.VisualStudio.Telemetry
                         @event["nupkg.success"] = data.Nupkg.Successful;
                         @event["nupkg.retries"] = data.Nupkg.Retries;
                         @event["nupkg.cancelled"] = data.Nupkg.Cancelled;
+                        @event["nupkg.failed"] = data.Nupkg.Failed;
                         @event["nupkg.bytes.total"] = data.Nupkg.TotalBytes;
                         @event["nupkg.bytes.max"] = data.Nupkg.MaxBytes;
 
@@ -253,6 +260,7 @@ namespace NuGet.VisualStudio.Telemetry
             public int Successful;
             public int Retries;
             public int Cancelled;
+            public int Failed;
         }
 
         private class ResourceTimingData
