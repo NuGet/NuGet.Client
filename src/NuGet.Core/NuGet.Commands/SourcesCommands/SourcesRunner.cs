@@ -8,12 +8,6 @@ using NuGet.Common;
 
 namespace NuGet.Commands
 {
-    public enum SourcesListFormat
-    {
-        Detailed,
-        Short
-    }
-
     /// <summary>
     /// Shared code to run the "sources" command from the command line projects
     /// </summary>
