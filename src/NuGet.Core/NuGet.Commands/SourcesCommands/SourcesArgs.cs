@@ -39,7 +39,7 @@ namespace NuGet.Commands
             string format,
             bool interactive,
             string configFile,
-            NuGet.CommandLine.Verbosity verbosity,
+            CommandLine.Verbosity verbosity,
             Log logError,
             Log logInformation
             )
