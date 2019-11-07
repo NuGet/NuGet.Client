@@ -21,29 +21,20 @@ namespace NuGet.Commands
     {
         public static void Run(SourcesArgs args)
         {
-            if (args.SourceProvider == null)
-            {
-                throw new InvalidOperationException(string.Format(CultureInfo.CurrentCulture,
-                                                                    Strings.Error_SourceProviderIsNull));
-            }
-
             switch (args.Action)
             {
                 case "":
                 case null:
                 case "list":
-                    if (args.Verbosity != CommandLine.Verbosity.Quiet)
+                    switch (args.Format)
                     {
-                        switch (args.Format)
-                        {
-                            case "short":
-                                PrintRegisteredSourcesShort(args);
-                                break;
-                            case "detailed":
-                            default:
-                                PrintRegisteredSourcesDetailed(args);
-                                break;
-                        }
+                        case "short":
+                            PrintRegisteredSourcesShort(args);
+                            break;
+                        case "detailed":
+                        default:
+                            PrintRegisteredSourcesDetailed(args);
+                            break;
                     }
                     break;
                 case "add":
@@ -270,8 +261,6 @@ namespace NuGet.Commands
                 args.LogError(string.Format(CultureInfo.CurrentCulture,
                                 Strings.SourcesCommandCredentialsRequiredWithAuthTypes));
             }
-
-
         }
 
         private static void PrintRegisteredSourcesShort(SourcesArgs args)
