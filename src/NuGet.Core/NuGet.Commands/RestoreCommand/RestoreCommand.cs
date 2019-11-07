@@ -330,7 +330,7 @@ namespace NuGet.Commands
                         cacheFile.Success = _success;
                         cacheFile.ProjectFilePath = _request.Project.FilePath;
                         cacheFile.LogMessages = assetsFile.LogMessages;
-                        cacheFile.ExpectedFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
+                        cacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
                     }
 
                     var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));

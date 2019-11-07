@@ -1,12 +1,11 @@
-using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Text;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
-using NuGet.Frameworks;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -15,7 +14,7 @@ namespace NuGet.ProjectModel.Test
     public class CacheFileFormatTests
     {
         [Fact]
-        public void CacheFileFormat_CacheFileReadCorrectlyVersion1()
+        public void Read_WhenVersionIs1_ReadsCorrectly()
         {
             var logger = new TestLogger();
 
@@ -41,21 +40,21 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void CacheFileFormat_CacheFileReadCorrectly(bool haveMissingFile)
+        public void Read_WhenVersionIsCurrentVersion_ReadsCorrectly(bool haveMissingPackageFiles)
         {
             using (var workingDir = TestDirectory.Create())
             {
                 var logger = new TestLogger();
 
-                var projectFullPath = Path.Combine(Path.GetTempPath(), "EA11D9B8013142A6B40A81FD90F57EAA");
+                var projectFullPath = Path.Combine(workingDir, "EA11D9B8013142A6B40A81FD90F57EAA");
                 var dgSpecHash = "LhkXQGGI+FQMy9dhLYjG5sWcHX3z/copzi4hjjBiY3Fotv0i7zQCikMZQ+rOKJ03gtx0hoHwIx5oKkM7sVHu7g==";
                 var success = "true";
-                
+
                 var file1 = Path.Combine(workingDir, "7A329DF71DDD41F689C9AD876DDF79F6");
                 var file2 = Path.Combine(workingDir, "C16089965CF84822A71D07580B29AF0E");
 
                 File.WriteAllText(file1, string.Empty);
-                if (!haveMissingFile)
+                if (!haveMissingPackageFiles)
                 {
                     // Don't create one of the files
                     File.WriteAllText(file2, string.Empty);
@@ -67,8 +66,8 @@ namespace NuGet.ProjectModel.Test
   ""version"": {version},
   ""dgSpecHash"": ""{dgSpecHash}"",
   ""success"": {success},
-  ""projectFullPath"": {JsonConvert.ToString(projectFullPath)},
-  ""expectedFiles"": [
+  ""projectFilePath"": {JsonConvert.ToString(projectFullPath)},
+  ""expectedPackageFiles"": [
     {JsonConvert.ToString(file1)},
     {JsonConvert.ToString(file2)}
   ],
@@ -90,13 +89,13 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(bool.Parse(success), cacheFile.Success);
                 Assert.Equal(dgSpecHash, cacheFile.DgSpecHash);
                 Assert.Equal(int.Parse(version), cacheFile.Version);
-                if (haveMissingFile)
+                if (haveMissingPackageFiles)
                 {
-                    Assert.True(cacheFile.HasAnyMissingFiles);
+                    Assert.True(cacheFile.HasAnyMissingPackageFiles);
                 }
                 else
                 {
-                    Assert.False(cacheFile.HasAnyMissingFiles);
+                    Assert.False(cacheFile.HasAnyMissingPackageFiles);
                 }
 
                 Assert.Equal(projectFullPath, cacheFile.ProjectFilePath);
@@ -107,24 +106,25 @@ namespace NuGet.ProjectModel.Test
             }
         }
 
-
         [Fact]
-        public void CacheFileFormat_CacheFileWrittenCorrectly()
+        public void Write_WhenVersionIsCurrentVersion_WritesCorrectly()
         {
-            var projectFullPath = Path.Combine(Path.GetTempPath(), "E6E7F0F96EBE438887ED7D0B9FC88AFA");
+            using (var workingDir = TestDirectory.Create())
+            {
+                var projectFullPath = Path.Combine(workingDir, "E6E7F0F96EBE438887ED7D0B9FC88AFA");
 
-            var file1 = Path.Combine(Path.GetTempPath(), "DA9707B5FCFB4DA8B8BB77AD527C778C");
-            var file2 = Path.Combine(Path.GetTempPath(), "C78CE6D18C604A55BECD845F4F694A4B");
+                var file1 = Path.Combine(workingDir, "DA9707B5FCFB4DA8B8BB77AD527C778C");
+                var file2 = Path.Combine(workingDir, "C78CE6D18C604A55BECD845F4F694A4B");
 
-            var v = "2";
-            var dgSpecHash = "LhkXQGGI+FQMy9dhLYjG5sWcHX3z/copzi4hjjBiY3Fotv0i7zQCikMZQ+rOKJ03gtx0hoHwIx5oKkM7sVHu7g==";
-            var success = "true";
-            var expected = $@"{{
+                var v = "2";
+                var dgSpecHash = "LhkXQGGI+FQMy9dhLYjG5sWcHX3z/copzi4hjjBiY3Fotv0i7zQCikMZQ+rOKJ03gtx0hoHwIx5oKkM7sVHu7g==";
+                var success = "true";
+                var expected = $@"{{
   ""version"": {v},
   ""dgSpecHash"": ""{dgSpecHash}"",
   ""success"": {success},
-  ""projectFullPath"": {JsonConvert.ToString(projectFullPath)},
-  ""expectedFiles"": [
+  ""projectFilePath"": {JsonConvert.ToString(projectFullPath)},
+  ""expectedPackageFiles"": [
     {JsonConvert.ToString(file1)},
     {JsonConvert.ToString(file2)}
   ],
@@ -137,27 +137,28 @@ namespace NuGet.ProjectModel.Test
   ]
 }}";
 
-            var cacheFile = new CacheFile(dgSpecHash)
-            {
-                Success = bool.Parse(success),
-                ProjectFilePath = projectFullPath,
-                ExpectedFilePaths = new List<string>
+                var cacheFile = new CacheFile(dgSpecHash)
+                {
+                    Success = bool.Parse(success),
+                    ProjectFilePath = projectFullPath,
+                    ExpectedPackageFilePaths = new List<string>
                 {
                     file1,
                     file2
                 },
-                LogMessages = new List<IAssetsLogMessage>
+                    LogMessages = new List<IAssetsLogMessage>
                 {
                     new AssetsLogMessage(LogLevel.Information, NuGetLogCode.NU1000, "Test")
                 }
-            };
+                };
 
-            using (var stream = new MemoryStream())
-            {
-                CacheFileFormat.Write(stream, cacheFile);
-                var actual = Encoding.UTF8.GetString(stream.ToArray());
+                using (var stream = new MemoryStream())
+                {
+                    CacheFileFormat.Write(stream, cacheFile);
+                    var actual = Encoding.UTF8.GetString(stream.ToArray());
 
-                Assert.Equal(expected, actual);
+                    Assert.Equal(expected, actual);
+                }
             }
         }
     }

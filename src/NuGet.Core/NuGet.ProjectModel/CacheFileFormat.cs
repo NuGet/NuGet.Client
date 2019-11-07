@@ -15,8 +15,8 @@ namespace NuGet.ProjectModel
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
         private const string SuccessProperty = "success";
-        private const string ExpectedFilesProperty = "expectedFiles";
-        private const string ProjectFullPathProperty = "projectFullPath";
+        private const string ExpectedPackageFilesProperty = "expectedPackageFiles";
+        private const string ProjectFilePathProperty = "projectFilePath";
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
@@ -86,15 +86,15 @@ namespace NuGet.ProjectModel
 
             if (version >= 2)
             {
-                cacheFile.ProjectFilePath = ReadString(cursor[ProjectFullPathProperty]);
+                cacheFile.ProjectFilePath = ReadString(cursor[ProjectFilePathProperty]);
 
-                foreach (JToken expectedFile in cursor[ExpectedFilesProperty])
+                foreach (JToken expectedFile in cursor[ExpectedPackageFilesProperty])
                 {
                     string path = ReadString(expectedFile);
 
                     if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
                     {
-                        cacheFile.HasAnyMissingFiles = true;
+                        cacheFile.HasAnyMissingPackageFiles = true;
                         break;
                     }
                 }
@@ -114,8 +114,8 @@ namespace NuGet.ProjectModel
 
             if (cacheFile.Version >= 2)
             {
-                json[ProjectFullPathProperty] = cacheFile.ProjectFilePath;
-                json[ExpectedFilesProperty] = new JArray(cacheFile.ExpectedFilePaths);
+                json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
+                json[ExpectedPackageFilesProperty] = new JArray(cacheFile.ExpectedPackageFilePaths);
                 json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
             }
 

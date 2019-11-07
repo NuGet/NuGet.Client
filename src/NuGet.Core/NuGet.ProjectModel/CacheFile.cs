@@ -19,14 +19,14 @@ namespace NuGet.ProjectModel
         public bool Success { get; set; }
 
         /// <summary>
-        /// Gets or sets a list of paths that must exist in order for the project to be considered up-to-date.
+        /// Gets or sets a list of package paths that must exist in order for the project to be considered up-to-date.
         /// </summary>
-        public IList<string> ExpectedFilePaths { get; set; }
+        public IList<string> ExpectedPackageFilePaths { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating if one or more of the expected files are missing.
         /// </summary>
-        public bool HasAnyMissingFiles { get; set; }
+        public bool HasAnyMissingPackageFiles { get; set; }
 
         /// <summary>
         /// Gets or sets the full path to the project file.

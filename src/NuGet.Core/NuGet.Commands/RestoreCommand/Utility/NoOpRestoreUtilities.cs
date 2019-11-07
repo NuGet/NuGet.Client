@@ -155,7 +155,7 @@ namespace NuGet.Commands
                 
             }
 
-            if (cacheFile.HasAnyMissingFiles)
+            if (cacheFile.HasAnyMissingPackageFiles)
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_MissingPackagesOnDisk, request.Project.Name));
                 return false;
