@@ -10,20 +10,15 @@ namespace NuGet.Protocol
 {
     public class DownloadTimeoutStream : Stream
     {
-        private readonly Uri _downloadUri;
+        private readonly string _downloadName;
         private readonly Stream _networkStream;
         private readonly TimeSpan _timeout;
 
         public DownloadTimeoutStream(string downloadName, Stream networkStream, TimeSpan timeout)
-            : this (new Uri(downloadName), networkStream, timeout)
         {
-        }
-
-        public DownloadTimeoutStream(Uri downloadUri, Stream networkStream, TimeSpan timeout)
-        {
-            if (downloadUri == null)
+            if (downloadName == null)
             {
-                throw new ArgumentNullException(nameof(downloadUri));
+                throw new ArgumentNullException(nameof(downloadName));
             }
 
             if (networkStream == null)
@@ -31,7 +26,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(networkStream));
             }
             
-            _downloadUri = downloadUri;
+            _downloadName = downloadName;
             _networkStream = networkStream;
             _timeout = timeout;
         }
@@ -78,7 +73,7 @@ namespace NuGet.Protocol
         {
             var timeoutMessage = string.Format(
                 Strings.Error_DownloadTimeout,
-                _downloadUri,
+                _downloadName,
                 _timeout.TotalMilliseconds);
 
             try
