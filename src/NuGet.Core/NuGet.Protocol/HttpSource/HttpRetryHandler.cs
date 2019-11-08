@@ -2,12 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -17,6 +19,24 @@ namespace NuGet.Protocol
     /// </summary>
     public class HttpRetryHandler : IHttpRetryHandler
     {
+        internal const string StopwatchPropertyName = "NuGet_ProtocolDiagnostics_Stopwatches";
+
+        /// <summary>
+        /// Make an HTTP request while retrying after failed attempts or timeouts.
+        /// </summary>
+        /// <remarks>
+        /// This method accepts a factory to create instances of the <see cref="HttpRequestMessage"/> because
+        /// requests cannot always be used. For example, suppose the request is a POST and contains content
+        /// of a stream that can only be consumed once.
+        /// </remarks>
+        public Task<HttpResponseMessage> SendAsync(
+            HttpRetryHandlerRequest request,
+            ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return SendAsync(request, source: string.Empty, log, cancellationToken);
+        }
+
         /// <summary>
         /// Make an HTTP request while retrying after failed attempts or timeouts.
         /// </summary>
@@ -27,9 +47,15 @@ namespace NuGet.Protocol
         /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
+            string source,
             ILogger log,
             CancellationToken cancellationToken)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             var tries = 0;
             HttpResponseMessage response = null;
             var success = false;
@@ -46,8 +72,17 @@ namespace NuGet.Protocol
 
                 using (var requestMessage = request.RequestFactory())
                 {
-                    var stopwatch = Stopwatch.StartNew();
-                    var requestUri = requestMessage.RequestUri.ToString();
+                    var stopwatches = new List<Stopwatch>(2);
+                    var bodyStopwatch = new Stopwatch();
+                    stopwatches.Add(bodyStopwatch);
+                    Stopwatch headerStopwatch = null;
+                    if (request.CompletionOption == HttpCompletionOption.ResponseHeadersRead)
+                    {
+                        headerStopwatch = new Stopwatch();
+                        stopwatches.Add(headerStopwatch);
+                    }
+                    requestMessage.Properties[StopwatchPropertyName] = stopwatches;
+                    var requestUri = requestMessage.RequestUri;
                     
                     try
                     {
@@ -87,7 +122,14 @@ namespace NuGet.Protocol
                             requestUri,
                             (int)request.RequestTimeout.TotalMilliseconds);
                         response = await TimeoutUtility.StartWithTimeout(
-                            timeoutToken => request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken),
+                            async timeoutToken =>
+                            {
+                                bodyStopwatch.Start();
+                                headerStopwatch?.Start();
+                                var responseMessage = await request.HttpClient.SendAsync(requestMessage, request.CompletionOption, timeoutToken);
+                                headerStopwatch?.Stop();
+                                return responseMessage;
+                            },
                             request.RequestTimeout,
                             timeoutMessage,
                             cancellationToken);
@@ -96,10 +138,18 @@ namespace NuGet.Protocol
                         if (response.Content != null)
                         {
                             var networkStream = await response.Content.ReadAsStreamAsync();
-                            var newContent = new DownloadTimeoutStreamContent(
+                            var timeoutStream = new DownloadTimeoutStream(requestUri.ToString(), networkStream, request.DownloadTimeout);
+                            var inProgressEvent = new ProtocolDiagnosticInProgressEvent(
+                                source,
                                 requestUri,
-                                networkStream,
-                                request.DownloadTimeout);
+                                headerStopwatch?.Elapsed,
+                                (int)response.StatusCode,
+                                isRetry: request.IsRetry || tries > 1,
+                                isCancelled: false,
+                                isLastAttempt: tries == request.MaxTries && request.IsLastAttempt);
+                            var diagnosticsStream = new ProtocolDiagnosticsStream(timeoutStream, inProgressEvent, bodyStopwatch, ProtocolDiagnostics.RaiseEvent);
+
+                            var newContent = new StreamContent(diagnosticsStream);
 
                             // Copy over the content headers since we are replacing the HttpContent instance associated
                             // with the response message.
@@ -116,7 +166,7 @@ namespace NuGet.Protocol
                             Strings.Http_ResponseLog,
                             response.StatusCode,
                             requestUri,
-                            stopwatch.ElapsedMilliseconds));
+                            bodyStopwatch.ElapsedMilliseconds));
 
                         if ((int)response.StatusCode >= 500)
                         {
@@ -127,6 +177,19 @@ namespace NuGet.Protocol
                     {
                         response?.Dispose();
 
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                            timestamp: DateTime.UtcNow,
+                            source,
+                            requestUri,
+                            headerDuration: null,
+                            eventDuration: bodyStopwatch.Elapsed,
+                            httpStatusCode: null,
+                            bytes: 0,
+                            isSuccess: false,
+                            isRetry: request.IsRetry || tries > 1,
+                            isCancelled: true,
+                            isLastAttempt: tries == request.MaxTries && request.IsLastAttempt));
+
                         throw;
                     }
                     catch (Exception e)
@@ -134,6 +197,19 @@ namespace NuGet.Protocol
                         success = false;
 
                         response?.Dispose();
+
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                            timestamp: DateTime.UtcNow,
+                            source,
+                            requestUri,
+                            headerDuration: null,
+                            eventDuration: bodyStopwatch.Elapsed,
+                            httpStatusCode: null,
+                            bytes: 0,
+                            isSuccess: false,
+                            isRetry: request.IsRetry || tries > 1,
+                            isCancelled: false,
+                            isLastAttempt: tries == request.MaxTries && request.IsLastAttempt));
 
                         if (tries >= request.MaxTries)
                         {
