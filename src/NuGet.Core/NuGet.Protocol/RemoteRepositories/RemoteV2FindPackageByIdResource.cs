@@ -394,11 +394,12 @@ namespace NuGet.Protocol
             ILogger logger,
             CancellationToken cancellationToken)
         {
-            for (var retry = 0; retry < 3; ++retry)
+            const int maxRetries = 3;
+            for (var retry = 1; retry <= maxRetries; ++retry)
             {
                 var relativeUri = _queryBuilder.BuildFindPackagesByIdUri(id).TrimStart('/');
                 var uri = _baseUri + relativeUri;
-                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retry);
+                var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, isFirstAttempt: retry == 1);
 
                 try
                 {
@@ -427,7 +428,9 @@ namespace NuGet.Protocol
                                     new MediaTypeWithQualityHeaderValue("application/xml")
                                 },
                                 EnsureValidContents = stream => HttpStreamValidation.ValidateXml(uri, stream),
-                                MaxTries = 1
+                                MaxTries = 1,
+                                IsRetry = retry > 1,
+                                IsLastAttempt = retry == maxRetries
                             },
                             async httpSourceResult =>
                             {
@@ -477,14 +480,14 @@ namespace NuGet.Protocol
 
                     return results;
                 }
-                catch (Exception ex) when (retry < 2)
+                catch (Exception ex) when (retry < maxRetries)
                 {
                     var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingFindPackagesById, nameof(FindPackagesByIdAsyncCore), uri)
                         + Environment.NewLine
                         + ExceptionUtilities.DisplayMessage(ex);
                     logger.LogMinimal(message);
                 }
-                catch (Exception ex) when (retry == 2)
+                catch (Exception ex) when (retry == maxRetries)
                 {
                     var message = string.Format(
                         CultureInfo.CurrentCulture,

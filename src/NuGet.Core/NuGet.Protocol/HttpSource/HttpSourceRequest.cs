@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,5 +59,11 @@ namespace NuGet.Protocol
 
         /// <summary>The timeout to apply to <see cref="DownloadTimeoutStream"/> instances.</summary>
         public TimeSpan DownloadTimeout { get; set; } = HttpRetryHandlerRequest.DefaultDownloadTimeout;
+
+        /// <summary>Boolean representing whether the first attempt of this request is already a retry.</summary>
+        public bool IsRetry { get; set; }
+
+        /// <summary>Boolean representing whether this retry request is the last for the URL.</summary>
+        public bool IsLastAttempt { get; set; } = true;
     }
 }
