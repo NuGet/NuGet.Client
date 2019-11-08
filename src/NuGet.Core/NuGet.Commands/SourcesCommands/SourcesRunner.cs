@@ -51,15 +51,13 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandNameRequired));
+                throw new CommandLineException(Strings.SourcesCommandNameRequired);
             }
 
             var packageSource = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (packageSource == null)
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandNoMatchingSourcesFound, args.Name));
+                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             if (enabled && !packageSource.IsEnabled)
@@ -87,18 +85,14 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandNameRequired));
+                throw new CommandLineException(Strings.SourcesCommandNameRequired);
             }
 
             // Check to see if we already have a registered source with the same name or source
-            var sourceList = args.SourceProvider.LoadPackageSources().ToList();
-
             var source = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (source == null)
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                    Strings.SourcesCommandNoMatchingSourcesFound, args.Name));
+                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             args.SourceProvider.RemovePackageSource(args.Name);
@@ -110,25 +104,23 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandNoMatchingSourcesFound));
+                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound);
             }
+
             if (string.Equals(args.Name, Strings.ReservedPackageNameAll))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandAllNameIsReserved));
+                throw new CommandLineException(Strings.SourcesCommandAllNameIsReserved);
             }
+
             if (string.IsNullOrEmpty(args.Source))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandSourceRequired));
+                throw new CommandLineException(Strings.SourcesCommandSourceRequired);
             }
 
             // Make sure that the Source given is a valid one.
             if (!PathValidator.IsValidSource(args.Source))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                 Strings.SourcesCommandInvalidSource));
+                throw new CommandLineException(Strings.SourcesCommandInvalidSource);
             }
 
             ValidateCredentials(args);
@@ -137,14 +129,12 @@ namespace NuGet.Commands
             var existingSourceWithName = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (existingSourceWithName != null)
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandUniqueName));
+                throw new CommandLineException(Strings.SourcesCommandUniqueName);
             }
             var existingSourceWithSource = args.SourceProvider.GetPackageSourceBySource(args.Source);
             if (existingSourceWithSource != null)
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandUniqueSource));
+                throw new CommandLineException(Strings.SourcesCommandUniqueSource);
             }
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
@@ -169,31 +159,27 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandNameRequired));
+                throw new CommandLineException(Strings.SourcesCommandNameRequired);
             }
 
             var existingSource = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (existingSource == null)
             {
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandNoMatchingSourcesFound, args.Name));
+                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             if (!string.IsNullOrEmpty(args.Source) && !existingSource.Source.Equals(args.Source, StringComparison.OrdinalIgnoreCase))
             {
                 if (!PathValidator.IsValidSource(args.Source))
                 {
-                    args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandInvalidSource));
+                    throw new CommandLineException(Strings.SourcesCommandInvalidSource);
                 }
 
                 // If the user is updating the source, verify we don't have a duplicate.
                 var duplicateSource = args.SourceProvider.GetPackageSourceBySource(args.Source);
                 if (duplicateSource != null)
                 {
-                    args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandUniqueSource));
+                    throw new CommandLineException(Strings.SourcesCommandUniqueSource);
                 }
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
@@ -206,7 +192,7 @@ namespace NuGet.Commands
                 var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
                 if (hasExistingAuthTypes && string.IsNullOrEmpty(args.ValidAuthenticationTypes))
                 {
-                    args.LogQuiet(string.Format(CultureInfo.CurrentCulture,
+                    args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandClearingExistingAuthTypes, args.Name));
                 }
 
@@ -234,21 +220,19 @@ namespace NuGet.Commands
             if (isUsernameEmpty ^ isPasswordEmpty)
             {
                 // If only one of them is set, throw.
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandCredentialsRequired));
+                throw new CommandLineException(Strings.SourcesCommandCredentialsRequired);
             }
 
             if (isPasswordEmpty && !isAuthTypesEmpty)
             {
                 // can't specify auth types without credentials
-                args.LogError(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandCredentialsRequiredWithAuthTypes));
+                throw new CommandLineException(Strings.SourcesCommandCredentialsRequiredWithAuthTypes);
             }
         }
 
         private static void PrintRegisteredSourcesShort(SourcesArgs args)
         {
-            var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
+            var sourcesList = args.SourceProvider.LoadPackageSources();
 
             foreach (var source in sourcesList)
             {
@@ -263,7 +247,7 @@ namespace NuGet.Commands
                     legend += "O";
                 }
                 legend += " ";
-                args.LogQuiet(legend + source.Source);
+                args.LogMinimal(legend + source.Source);
             }
         }
 
@@ -278,7 +262,7 @@ namespace NuGet.Commands
                 return;
             }
 
-            args.LogQuiet(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
+            args.LogMinimal(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
             var sourcePadding = new string(' ', 6);
             for (var i = 0; i < sourcesList.Count; i++)
             {
@@ -286,13 +270,13 @@ namespace NuGet.Commands
                 var indexNumber = i + 1;
                 var namePadding = new string(' ', i >= 9 ? 1 : 2);
 
-                args.LogQuiet(string.Format(
+                args.LogMinimal(string.Format(
                     "  {0}.{1}{2} [{3}]",
                     indexNumber,
                     namePadding,
                     source.Name,
                     source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
-                args.LogQuiet(string.Format("{0}{1}", sourcePadding, source.Source));
+                args.LogMinimal(string.Format("{0}{1}", sourcePadding, source.Source));
             }
         }
     }

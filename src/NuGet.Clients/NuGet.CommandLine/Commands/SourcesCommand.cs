@@ -33,8 +33,6 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
 
-
-
         public override void ExecuteCommand()
         {
             if (SourceProvider == null)
@@ -50,7 +48,7 @@ namespace NuGet.CommandLine
             }
             else
             {
-                if (!Enum.TryParse<SourcesAction>(actionArg, false, out action))
+                if (!Enum.TryParse<SourcesAction>(actionArg, ignoreCase: true, out action))
                 {
                     Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
                         NuGetCommand.SourcesCommandUsageSummary));
@@ -73,8 +71,7 @@ namespace NuGet.CommandLine
                 interactive,
                 ConfigFile,
                 isQuiet: Verbosity == Verbosity.Quiet,
-                Console.LogError,
-                Console.LogMinimal
+                Console
                 );
 
             SourcesRunner.Run(sourcesArgs);

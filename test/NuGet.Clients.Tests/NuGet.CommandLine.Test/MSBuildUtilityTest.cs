@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Collections.Generic;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;

@@ -24,15 +24,14 @@ namespace NuGet.Commands
         public bool Interactive { get; }
         public string ConfigFile { get; }
         private bool IsQuiet { get; }
-        public Log LogError { get; }
+        private ILogger Logger { get; }
         public Log LogMinimal { get; }
-        public Log LogQuiet { get; }
 
-        public void LogQuietImplementation(string data)
+        public void LogMinimalRespectingQuiet(string data)
         {
-            if (IsQuiet)
+            if (!IsQuiet)
             {
-                LogMinimal(data);
+                Logger.LogMinimal(data);
             }
         }
         
@@ -50,8 +49,7 @@ namespace NuGet.Commands
             bool interactive,
             string configFile,
             bool isQuiet,
-            Log logError,
-            Log logMinimal
+            ILogger logger
             )
         {
             Settings = settings;
@@ -67,9 +65,8 @@ namespace NuGet.Commands
             Interactive = interactive;
             ConfigFile = configFile;
             IsQuiet = isQuiet;
-            LogError = logError;
-            LogMinimal = logMinimal;
-            LogQuiet = LogQuietImplementation;
+            Logger = logger;
+            LogMinimal = LogMinimalRespectingQuiet;
         }
     }
 }

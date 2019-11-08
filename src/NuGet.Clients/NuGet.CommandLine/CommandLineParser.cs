@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using NuGet.Commands;
 using NuGet.Packaging;
 
 namespace NuGet.CommandLine

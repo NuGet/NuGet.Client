@@ -945,7 +945,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Both UserName and Password must be specified.</value>
   </data>
   <data name="SourcesCommandCredentialsRequiredWithAuthTypes" xml:space="preserve">
-    <value>Both UserName and Password must be specified if ValidAuthenticationTypes is specified</value>
+    <value>Both UserName and Password must be specified if ValidAuthenticationTypes is specified.</value>
   </data>
   <data name="SourcesCommandNoSources" xml:space="preserve">
     <value>No sources found.</value>
