@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using NuGet.Common;
 using NuGet.Configuration;
 
 namespace NuGet.Commands
@@ -19,13 +20,22 @@ namespace NuGet.Commands
         public string Password { get; }
         public bool StorePasswordInClearText { get; }
         public string ValidAuthenticationTypes { get; }
-        public CommandLine.SourcesListFormat Format { get; }
+        public SourcesListFormat Format { get; }
         public bool Interactive { get; }
         public string ConfigFile { get; }
-        public CommandLine.Verbosity Verbosity { get; }
+        private bool IsQuiet { get; }
         public Log LogError { get; }
-        public Log LogInformation { get; }
+        public Log LogMinimal { get; }
+        public Log LogQuiet { get; }
 
+        public void LogQuietImplementation(string data)
+        {
+            if (IsQuiet)
+            {
+                LogMinimal(data);
+            }
+        }
+        
         public SourcesArgs(
             ISettings settings,
             IPackageSourceProvider sourceProvider,
@@ -36,12 +46,12 @@ namespace NuGet.Commands
             string password,
             bool storePasswordInClearText,
             string validAuthenticationTypes,
-            CommandLine.SourcesListFormat format,
+            SourcesListFormat format,
             bool interactive,
             string configFile,
-            CommandLine.Verbosity verbosity,
+            bool isQuiet,
             Log logError,
-            Log logInformation
+            Log logMinimal
             )
         {
             Settings = settings;
@@ -56,9 +66,10 @@ namespace NuGet.Commands
             Format = format;
             Interactive = interactive;
             ConfigFile = configFile;
-            Verbosity = verbosity;
+            IsQuiet = isQuiet;
             LogError = logError;
-            LogInformation = logInformation;
+            LogMinimal = logMinimal;
+            LogQuiet = LogQuietImplementation;
         }
     }
 }

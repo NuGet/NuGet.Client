@@ -20,10 +20,10 @@ namespace NuGet.Commands
                 case SourcesAction.List:
                     switch (args.Format)
                     {
-                        case CommandLine.SourcesListFormat.Short:
+                        case SourcesListFormat.Short:
                             PrintRegisteredSourcesShort(args);
                             break;
-                        case CommandLine.SourcesListFormat.Detailed:
+                        case SourcesListFormat.Detailed:
                         default:
                             PrintRegisteredSourcesDetailed(args);
                             break;
@@ -71,18 +71,15 @@ namespace NuGet.Commands
                 args.SourceProvider.DisablePackageSource(args.Name);
             }
 
-            if (args.Verbosity != CommandLine.Verbosity.Quiet)
+            if (enabled)
             {
-                if (enabled)
-                {
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.SourcesCommandSourceEnabledSuccessfully, args.Name));
-                }
-                else
-                {
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.SourcesCommandSourceDisabledSuccessfully, args.Name));
-                }
+                args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SourcesCommandSourceEnabledSuccessfully, args.Name));
+            }
+            else
+            {
+                args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SourcesCommandSourceDisabledSuccessfully, args.Name));
             }
         }
 
@@ -105,7 +102,7 @@ namespace NuGet.Commands
             }
 
             args.SourceProvider.RemovePackageSource(args.Name);
-            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+            args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
                 Strings.SourcesCommandSourceRemovedSuccessfully, args.Name));
         }
 
@@ -164,11 +161,8 @@ namespace NuGet.Commands
             }
 
             args.SourceProvider.AddPackageSource(newPackageSource);
-            if (args.Verbosity != CommandLine.Verbosity.Quiet)
-            {
-                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.SourcesCommandSourceAddedSuccessfully, args.Name));
-            }
+            args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SourcesCommandSourceAddedSuccessfully, args.Name));
         }
 
         private static void UpdatePackageSource(SourcesArgs args)
@@ -212,7 +206,7 @@ namespace NuGet.Commands
                 var hasExistingAuthTypes = existingSource.Credentials?.ValidAuthenticationTypes.Any() ?? false;
                 if (hasExistingAuthTypes && string.IsNullOrEmpty(args.ValidAuthenticationTypes))
                 {
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
+                    args.LogQuiet(string.Format(CultureInfo.CurrentCulture,
                         Strings.SourcesCommandClearingExistingAuthTypes, args.Name));
                 }
 
@@ -227,11 +221,8 @@ namespace NuGet.Commands
 
             args.SourceProvider.UpdatePackageSource(existingSource, updateCredentials: existingSource.Credentials != null, updateEnabled: false);
 
-            if (args.Verbosity != CommandLine.Verbosity.Quiet)
-            {
-                Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        Strings.SourcesCommandUpdateSuccessful, args.Name));
-            }
+            args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                    Strings.SourcesCommandUpdateSuccessful, args.Name));
         }
 
         private static void ValidateCredentials(SourcesArgs args)
@@ -272,7 +263,7 @@ namespace NuGet.Commands
                     legend += "O";
                 }
                 legend += " ";
-                Console.WriteLine(legend + source.Source);
+                args.LogQuiet(legend + source.Source);
             }
         }
 
@@ -281,16 +272,13 @@ namespace NuGet.Commands
             var sourcesList = args.SourceProvider.LoadPackageSources().ToList();
             if (!sourcesList.Any())
             {
-                if (args.Verbosity != CommandLine.Verbosity.Quiet)
-                {
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                                        Strings.SourcesCommandNoSources));
-                }
+                args.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.SourcesCommandNoSources));
 
                 return;
             }
 
-            Console.WriteLine(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
+            args.LogQuiet(string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandRegisteredSources));
             var sourcePadding = new string(' ', 6);
             for (var i = 0; i < sourcesList.Count; i++)
             {
@@ -298,13 +286,13 @@ namespace NuGet.Commands
                 var indexNumber = i + 1;
                 var namePadding = new string(' ', i >= 9 ? 1 : 2);
 
-                Console.WriteLine(string.Format(
+                args.LogQuiet(string.Format(
                     "  {0}.{1}{2} [{3}]",
                     indexNumber,
                     namePadding,
                     source.Name,
                     source.IsEnabled ? string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandEnabled) : string.Format(CultureInfo.CurrentCulture, Strings.SourcesCommandDisabled)));
-                Console.WriteLine(string.Format("{0}{1}", sourcePadding, source.Source));
+                args.LogQuiet(string.Format("{0}{1}", sourcePadding, source.Source));
             }
         }
     }
