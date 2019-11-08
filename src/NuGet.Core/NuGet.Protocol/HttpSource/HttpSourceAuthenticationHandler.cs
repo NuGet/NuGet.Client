@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Http;
@@ -92,11 +93,33 @@ namespace NuGet.Protocol
                 if (response.StatusCode == HttpStatusCode.Unauthorized ||
                     (configuration.PromptOn403 && response.StatusCode == HttpStatusCode.Forbidden))
                 {
+                    IList<Stopwatch> stopwatches = null;
+
+                    if (request.Properties.TryGetValue(HttpRetryHandler.StopwatchPropertyName, out var value))
+                    {
+                        stopwatches = value as IList<Stopwatch>;
+                        if (stopwatches != null)
+                        {
+                            foreach (var stopwatch in stopwatches)
+                            {
+                                stopwatch.Stop();
+                            }
+                        }
+                    }
+
                     promptCredentials = await AcquireCredentialsAsync(
                         response.StatusCode,
                         beforeLockVersion,
                         configuration.Logger,
                         cancellationToken);
+
+                    if (stopwatches != null)
+                    {
+                        foreach (var stopwatch in stopwatches)
+                        {
+                            stopwatch.Start();
+                        }
+                    }
 
                     if (promptCredentials == null)
                     {
