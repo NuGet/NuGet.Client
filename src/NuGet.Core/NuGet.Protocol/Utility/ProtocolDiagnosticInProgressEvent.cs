@@ -8,7 +8,7 @@ namespace NuGet.Protocol.Utility
     internal sealed class ProtocolDiagnosticInProgressEvent : ProtocolDiagnosticEventBase
     {
         internal ProtocolDiagnosticInProgressEvent(
-            Uri source,
+            string source,
             Uri url,
             TimeSpan? headerDuration,
             int? httpStatusCode,

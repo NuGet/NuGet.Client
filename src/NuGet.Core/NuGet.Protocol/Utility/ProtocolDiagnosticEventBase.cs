@@ -7,7 +7,7 @@ namespace NuGet.Protocol.Utility
 {
     public abstract class ProtocolDiagnosticEventBase
     {
-        public Uri Source { get; }
+        public string Source { get; }
         public Uri Url { get; }
         public TimeSpan? HeaderDuration { get; }
         public int? HttpStatusCode { get; }
@@ -27,7 +27,7 @@ namespace NuGet.Protocol.Utility
         }
 
         protected ProtocolDiagnosticEventBase(
-            Uri source,
+            string source,
             Uri url,
             TimeSpan? headerDuration,
             int? httpStatusCode,

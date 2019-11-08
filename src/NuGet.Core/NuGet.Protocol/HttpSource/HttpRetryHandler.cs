@@ -34,7 +34,7 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken cancellationToken)
         {
-            return SendAsync(request, sourceUri: null, log, cancellationToken);
+            return SendAsync(request, source: string.Empty, log, cancellationToken);
         }
 
         /// <summary>
@@ -47,10 +47,15 @@ namespace NuGet.Protocol
         /// </remarks>
         public async Task<HttpResponseMessage> SendAsync(
             HttpRetryHandlerRequest request,
-            Uri sourceUri,
+            string source,
             ILogger log,
             CancellationToken cancellationToken)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             var tries = 0;
             HttpResponseMessage response = null;
             var success = false;
@@ -135,7 +140,7 @@ namespace NuGet.Protocol
                             var networkStream = await response.Content.ReadAsStreamAsync();
                             var timeoutStream = new DownloadTimeoutStream(requestUri, networkStream, request.DownloadTimeout);
                             var inProgressEvent = new ProtocolDiagnosticInProgressEvent(
-                                sourceUri,
+                                source,
                                 requestUri,
                                 headerStopwatch?.Elapsed,
                                 (int)response.StatusCode,
@@ -174,7 +179,7 @@ namespace NuGet.Protocol
 
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
                             timestamp: DateTime.UtcNow,
-                            sourceUri,
+                            source,
                             requestUri,
                             headerDuration: null,
                             eventDuration: bodyStopwatch.Elapsed,
@@ -195,7 +200,7 @@ namespace NuGet.Protocol
 
                         ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
                             timestamp: DateTime.UtcNow,
-                            sourceUri,
+                            source,
                             requestUri,
                             headerDuration: null,
                             eventDuration: bodyStopwatch.Elapsed,
