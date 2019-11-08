@@ -4,6 +4,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using NuGet.Commands;
 
 namespace NuGet.CommandLine
 {

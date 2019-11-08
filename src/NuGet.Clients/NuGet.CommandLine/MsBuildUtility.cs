@@ -13,8 +13,8 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.VisualStudio.Setup.Configuration;
+using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
 
 namespace NuGet.CommandLine

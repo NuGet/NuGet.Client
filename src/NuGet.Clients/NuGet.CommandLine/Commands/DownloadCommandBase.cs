@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;

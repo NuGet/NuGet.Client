@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;

@@ -2,7 +2,7 @@ using System;
 using System.Globalization;
 using System.Runtime.Serialization;
 
-namespace NuGet.CommandLine
+namespace NuGet.Commands
 {
     [Serializable]
     public class CommandLineException : Exception
@@ -17,7 +17,7 @@ namespace NuGet.CommandLine
         }
 
         public CommandLineException(string format, params object[] args)
-            : base(String.Format(CultureInfo.CurrentCulture, format, args))
+            : base(string.Format(CultureInfo.CurrentCulture, format, args))
         {
         }
 
