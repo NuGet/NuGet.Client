@@ -4,10 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using NuGet.Commands;
-
-[assembly: TypeForwardedTo(typeof(NuGet.CommandLine.SourcesListFormat))]
 
 namespace NuGet.CommandLine
 {
@@ -35,6 +32,8 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
+
+
 
         public override void ExecuteCommand()
         {
@@ -73,9 +72,9 @@ namespace NuGet.CommandLine
                 Format,
                 interactive,
                 ConfigFile,
-                Verbosity,
+                isQuiet: Verbosity == Verbosity.Quiet,
                 Console.LogError,
-                Console.LogInformation
+                Console.LogMinimal
                 );
 
             SourcesRunner.Run(sourcesArgs);
