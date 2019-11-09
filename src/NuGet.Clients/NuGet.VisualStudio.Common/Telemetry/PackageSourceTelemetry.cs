@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Utility;
 
@@ -17,6 +18,9 @@ namespace NuGet.VisualStudio.Telemetry
         private List<SourceRepository> _sources;
         private Guid _parentId;
 
+        /// <summary>Intended only for unit testing. Better than using reflection?</summary>
+        internal ConcurrentDictionary<string, Data> AggregatedData => _data;
+
         public PackageSourceTelemetry(List<SourceRepository> sources, Guid parentId)
         {
             _data = new ConcurrentDictionary<string, Data>();
@@ -25,7 +29,7 @@ namespace NuGet.VisualStudio.Telemetry
             _parentId = parentId;
         }
 
-        private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
+        internal void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
         {
             var data = _data.GetOrAdd(pdEvent.Source, _ => new Data());
 
@@ -107,102 +111,114 @@ namespace NuGet.VisualStudio.Telemetry
         {
             ProtocolDiagnostics.Event -= ProtocolDiagnostics_Event;
 
-            var parentId= _parentId.ToString();
+            var parentId = _parentId.ToString();
             foreach (var kvp in _data)
             {
                 Data data = kvp.Value;
                 string source = kvp.Key;
-                if (data.Metadata.EventTiming.Requests != 0 || data.Nupkg.EventTiming.Requests != 0)
-                {
-                    var @event = new TelemetryEvent("PackageSourceDiagnostics",
-                        new Dictionary<string, object>()
-                        {
-                            { "ParentId", parentId},
-                        });
+                SourceRepository sourceFeed = _sources.FirstOrDefault(s => s.PackageSource.SourceUri?.OriginalString == source);
 
-                    // source info
-                    @event.AddPiiData("source.url", source);
-                    var msFeed = GetMsFeed(source);
-                    if (msFeed != null)
-                    {
-                        @event["source.msfeed"] = msFeed;
-                    }
+                var telemetry = ToTelemetry(data, source, sourceFeed, parentId);
 
-                    SourceRepository sourceFeed = _sources.FirstOrDefault(s => s.PackageSource.SourceUri.OriginalString == source);
-                    if (source != null)
-                    {
-                        @event["source.type"] = sourceFeed.PackageSource.IsHttp ? "http" : sourceFeed.PackageSource.IsLocal ? "local" : "unknown";
-                        @event["source.protocol"] = sourceFeed.PackageSource.ProtocolVersion;
-                    }
-
-                    // metadata
-                    lock (data.Metadata.Lock)
-                    {
-                        @event["metadata.requests"] = data.Metadata.EventTiming.Requests;
-                        @event["metadata.success"] = data.Metadata.Successful;
-                        @event["metadata.retries"] = data.Metadata.Retries;
-                        @event["metadata.cancelled"] = data.Metadata.Cancelled;
-                        @event["metadata.failed"] = data.Metadata.Failed;
-                        @event["metadata.bytes.total"] = data.Metadata.TotalBytes;
-                        @event["metadata.bytes.max"] = data.Metadata.MaxBytes;
-
-                        if (data.Metadata.StatusCodes.Count > 0)
-                        {
-                            @event.AddComplexData("metadata.http.statuscodes", ToStatusCodeTelemetry(data.Metadata.StatusCodes));
-                        }
-
-                        if (data.Metadata.EventTiming.Requests > 0)
-                        {
-                            @event["metadata.timing.min"] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
-                            @event["metadata.timing.mean"] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
-                            @event["metadata.timing.max"] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
-                        }
-
-                        if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
-                        {
-                            @event["metadata.header.timing.min"] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
-                            @event["metadata.header.timing.mean"] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
-                            @event["metadata.header.timing.max"] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
-                        }
-                    }
-
-                    // nupkgs
-                    lock (data.Nupkg.Lock)
-                    {
-                        @event["nupkg.requests"] = data.Nupkg.EventTiming.Requests;
-                        @event["nupkg.success"] = data.Nupkg.Successful;
-                        @event["nupkg.retries"] = data.Nupkg.Retries;
-                        @event["nupkg.cancelled"] = data.Nupkg.Cancelled;
-                        @event["nupkg.failed"] = data.Nupkg.Failed;
-                        @event["nupkg.bytes.total"] = data.Nupkg.TotalBytes;
-                        @event["nupkg.bytes.max"] = data.Nupkg.MaxBytes;
-
-                        if (data.Nupkg.StatusCodes.Count > 0)
-                        {
-                            @event.AddComplexData("nupkg.http.statuscodes", ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
-                        }
-
-                        if (data.Nupkg.EventTiming.Requests > 0)
-                        {
-                            @event["nupkg.timing.min"] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
-                            @event["nupkg.timing.mean"] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
-                            @event["nupkg.timing.max"] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
-                        }
-
-                        if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
-                        {
-                            @event["nupkg.header.timing.min"] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
-                            @event["nupkg.header.timing.mean"] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
-                            @event["nupkg.header.timing.max"] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
-                        }
-                    }
-
-                    TelemetryActivity.EmitTelemetryEvent(@event);
-                }
+                TelemetryActivity.EmitTelemetryEvent(telemetry);
             }
        }
 
-        private TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
+        internal TelemetryEvent ToTelemetry(Data data, string source, SourceRepository sourceFeed, string parentId)
+        {
+            if (data.Metadata.EventTiming.Requests == 0 || data.Nupkg.EventTiming.Requests == 0)
+            {
+                return null;
+            }
+
+            var telemetry = new TelemetryEvent("PackageSourceDiagnostics",
+                new Dictionary<string, object>()
+                {
+                            { "ParentId", parentId },
+                });
+
+            // source info
+            telemetry.AddPiiData("source.url", source);
+
+            if (sourceFeed != null)
+            {
+                var packageSource = sourceFeed.PackageSource;
+                telemetry["source.type"] = packageSource.IsHttp ? "http" : packageSource.IsLocal ? "local" : "unknown";
+                telemetry["source.protocol"] = packageSource.ProtocolVersion;
+
+                var msFeed = GetMsFeed(packageSource);
+                if (msFeed != null)
+                {
+                    telemetry["source.msfeed"] = msFeed;
+                }
+            }
+
+            // metadata
+            lock (data.Metadata.Lock)
+            {
+                telemetry["metadata.requests"] = data.Metadata.EventTiming.Requests;
+                telemetry["metadata.success"] = data.Metadata.Successful;
+                telemetry["metadata.retries"] = data.Metadata.Retries;
+                telemetry["metadata.cancelled"] = data.Metadata.Cancelled;
+                telemetry["metadata.failed"] = data.Metadata.Failed;
+                telemetry["metadata.bytes.total"] = data.Metadata.TotalBytes;
+                telemetry["metadata.bytes.max"] = data.Metadata.MaxBytes;
+
+                if (data.Metadata.StatusCodes.Count > 0)
+                {
+                    telemetry.AddComplexData("metadata.http.statuscodes", ToStatusCodeTelemetry(data.Metadata.StatusCodes));
+                }
+
+                if (data.Metadata.EventTiming.Requests > 0)
+                {
+                    telemetry["metadata.timing.min"] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
+                    telemetry["metadata.timing.mean"] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
+                    telemetry["metadata.timing.max"] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
+                }
+
+                if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
+                {
+                    telemetry["metadata.header.timing.min"] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
+                    telemetry["metadata.header.timing.mean"] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
+                    telemetry["metadata.header.timing.max"] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
+                }
+            }
+
+            // nupkgs
+            lock (data.Nupkg.Lock)
+            {
+                telemetry["nupkg.requests"] = data.Nupkg.EventTiming.Requests;
+                telemetry["nupkg.success"] = data.Nupkg.Successful;
+                telemetry["nupkg.retries"] = data.Nupkg.Retries;
+                telemetry["nupkg.cancelled"] = data.Nupkg.Cancelled;
+                telemetry["nupkg.failed"] = data.Nupkg.Failed;
+                telemetry["nupkg.bytes.total"] = data.Nupkg.TotalBytes;
+                telemetry["nupkg.bytes.max"] = data.Nupkg.MaxBytes;
+
+                if (data.Nupkg.StatusCodes.Count > 0)
+                {
+                    telemetry.AddComplexData("nupkg.http.statuscodes", ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
+                }
+
+                if (data.Nupkg.EventTiming.Requests > 0)
+                {
+                    telemetry["nupkg.timing.min"] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
+                    telemetry["nupkg.timing.mean"] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
+                    telemetry["nupkg.timing.max"] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
+                }
+
+                if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
+                {
+                    telemetry["nupkg.header.timing.min"] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
+                    telemetry["nupkg.header.timing.mean"] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
+                    telemetry["nupkg.header.timing.max"] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
+                }
+            }
+
+            return telemetry;
+        }
+
+            private TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
         {
             var @event = new TelemetryEvent(null);
 
@@ -214,40 +230,35 @@ namespace NuGet.VisualStudio.Telemetry
             return @event;
         }
 
-        private string GetMsFeed(string source)
+        private string GetMsFeed(PackageSource source)
         {
-            if (Uri.TryCreate(source, UriKind.Absolute, out var sourceUri))
+            if (source.IsHttp)
             {
-                var scheme = sourceUri.Scheme;
-                if (scheme.Equals("http", StringComparison.OrdinalIgnoreCase) || scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
+                if (TelemetryUtility.IsNuGetOrg(source))
                 {
-                    var host = sourceUri.Host;
-                    if (host.Equals("nuget.org", StringComparison.OrdinalIgnoreCase) || host.EndsWith(".nuget.org", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "nuget.org";
-                    }
-                    else if (host.Equals("pkgs.dev.azure.com", StringComparison.OrdinalIgnoreCase) || host.EndsWith(".pkgs.visualstudio.com", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "Azure Artifacts";
-                    }
-                    else if (host.Equals("nuget.pkg.github.com", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "GitHub Package Registry";
-                    }
+                    return "nuget.org";
                 }
-                else
+                else if (TelemetryUtility.IsAzureArtifacts(source))
                 {
-                    if (sourceUri.LocalPath.EndsWith(@"\Microsoft SDKs\NuGetPackages\", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return "VS Offline";
-                    }
+                    return "Azure Artifacts";
+                }
+                else if (TelemetryUtility.IsGitHub(source))
+                {
+                    return "GitHub Package Registry";
+                }
+            }
+            else if (source.IsLocal)
+            {
+                if (TelemetryUtility.IsVsOfflineFeed(source))
+                {
+                    return "VS Offline";
                 }
             }
 
             return null;
         }
 
-        private class Data
+        internal class Data
         {
             public ResourceData Metadata { get; }
             public ResourceData Nupkg { get; }
@@ -259,7 +270,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        private class ResourceData
+        internal class ResourceData
         {
             public object Lock = new object();
             public ResourceTimingData EventTiming = new ResourceTimingData();
@@ -273,7 +284,7 @@ namespace NuGet.VisualStudio.Telemetry
             public int Failed;
         }
 
-        private class ResourceTimingData
+        internal class ResourceTimingData
         {
             public int Requests;
             public TimeSpan TotalDuration;

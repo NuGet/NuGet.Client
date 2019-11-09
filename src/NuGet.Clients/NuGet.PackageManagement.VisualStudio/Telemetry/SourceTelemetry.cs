@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.Telemetry
 {
@@ -25,25 +25,6 @@ namespace NuGet.PackageManagement.Telemetry
 
             YesV3AndV2 = YesV3 | YesV2,
         }
-
-        private static readonly Lazy<string> ExpectedVsOfflinePackagesPath = new Lazy<string>(() =>
-        {
-            if (!RuntimeEnvironmentHelper.IsWindows)
-            {
-                return null;
-            }
-
-            try
-            {
-                var programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-                return Path.Combine(programFiles, "Microsoft SDKs", "NuGetPackages");
-            }
-            catch
-            {
-                // Ignore this check if we fail for any reason to generate the path.
-                return null;
-            }
-        });
 
         public static TelemetryEvent GetRestoreSourceSummaryEvent(
             Guid parentId,
@@ -89,12 +70,12 @@ namespace NuGet.PackageManagement.Telemetry
                     {
                         if (source.IsHttp)
                         {
-                            if (IsHttpV3(source))
+                            if (TelemetryUtility.IsHttpV3(source))
                             {
                                 // Http V3 feed
                                 httpV3++;
 
-                                if (IsHttpNuGetOrgDomainOrSubdomain(source))
+                                if (TelemetryUtility.IsNuGetOrg(source))
                                 {
                                     nugetOrg |= HttpStyle.YesV3;
                                 }
@@ -104,7 +85,7 @@ namespace NuGet.PackageManagement.Telemetry
                                 // Http V2 feed
                                 httpV2++;
 
-                                if (IsHttpNuGetOrgDomainOrSubdomain(source))
+                                if (TelemetryUtility.IsNuGetOrg(source))
                                 {
                                     if (source.Source.IndexOf(
                                         "api/v2/curated-feeds/microsoftdotnet",
@@ -124,9 +105,7 @@ namespace NuGet.PackageManagement.Telemetry
                             // Local or UNC feed
                             local++;
 
-                            if (StringComparer.OrdinalIgnoreCase.Equals(
-                                ExpectedVsOfflinePackagesPath.Value,
-                                source.Source?.TrimEnd('\\')))
+                            if (TelemetryUtility.IsVsOfflineFeed(source))
                             {
                                 vsOfflinePackages = true;
                             }
@@ -144,41 +123,6 @@ namespace NuGet.PackageManagement.Telemetry
                 nugetOrg.ToString(),
                 vsOfflinePackages,
                 dotnetCuratedFeed);
-        }
-
-        /// <summary>
-        /// True if the source is http and ends with index.json
-        /// </summary>
-        private static bool IsHttpV3(PackageSource source)
-        {
-            return source.IsHttp &&
-                (source.Source.EndsWith("index.json", StringComparison.OrdinalIgnoreCase)
-                || source.ProtocolVersion == 3);
-        }
-
-        /// <summary>
-        /// True if the source is HTTP and has a *.nuget.org or nuget.org host.
-        /// </summary>
-        private static bool IsHttpNuGetOrgDomainOrSubdomain(PackageSource source)
-        {
-            if (!source.IsHttp)
-            {
-                return false;
-            }
-
-            var uri = source.TrySourceAsUri;
-            if (uri == null)
-            {
-                return false;
-            }
-
-            if (StringComparer.OrdinalIgnoreCase.Equals(uri.Host, "nuget.org")
-                || uri.Host.EndsWith(".nuget.org", StringComparison.OrdinalIgnoreCase))
-            {
-                return true;
-            }
-
-            return false;
         }
 
         // NumLocalFeeds(c:\ or \\ or file:///)
