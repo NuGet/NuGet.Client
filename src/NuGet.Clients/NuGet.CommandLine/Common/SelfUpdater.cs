@@ -97,7 +97,7 @@ namespace NuGet.CommandLine
                 // If for some reason this package doesn't have NuGet.exe then we don't want to use it
                 if (file == null)
                 {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
+                    throw new CommandException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
                 }
 
                 // Get the exe path and move it to a temp file (NuGet.exe.old) so we can replace the running exe with the bits we got 

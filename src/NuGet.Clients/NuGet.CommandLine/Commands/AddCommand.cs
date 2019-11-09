@@ -30,7 +30,7 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(Source))
             {
-                throw new CommandLineException(
+                throw new CommandException(
                     LocalizedResourceManager.GetString(nameof(NuGetResources.AddCommand_SourceNotProvided)));
             }
 

@@ -111,7 +111,7 @@ namespace NuGet.CommandLine
                         projectConfigFilePath,
                         ex.Message);
 
-                    throw new CommandLineException(message);
+                    throw new CommandException(message);
                 }
             }
 

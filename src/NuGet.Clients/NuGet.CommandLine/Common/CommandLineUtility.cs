@@ -20,7 +20,7 @@ namespace NuGet.CommandLine
             Uri result;
             if (!Uri.TryCreate(source, UriKind.Absolute, out result))
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("InvalidSource"), source);
+                throw new CommandException(LocalizedResourceManager.GetString("InvalidSource"), source);
             }
         }
 

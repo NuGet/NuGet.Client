@@ -251,7 +251,7 @@ namespace NuGet.CommandLine
 
             if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
             {
-                throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
             }
 
             return dependencyBehavior;
@@ -342,7 +342,7 @@ namespace NuGet.CommandLine
                             LocalizedResourceManager.GetString("InstallCommandUnableToFindPackage"),
                             packageId);
 
-                        throw new CommandLineException(message);
+                        throw new CommandException(message);
                     }
 
                     version = resolvePackage.LatestVersion;

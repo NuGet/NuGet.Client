@@ -40,7 +40,7 @@ namespace NuGet.CommandLine
 
             if (!File.Exists(msbuildPath))
             {
-                throw new CommandLineException(
+                throw new CommandException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
@@ -84,7 +84,7 @@ namespace NuGet.CommandLine
 
             if (!File.Exists(msbuildPath))
             {
-                throw new CommandLineException(
+                throw new CommandException(
                     string.Format(
                         CultureInfo.CurrentCulture,
                         LocalizedResourceManager.GetString(nameof(NuGetResources.MsBuildDoesNotExistAtPath)),
@@ -157,7 +157,7 @@ namespace NuGet.CommandLine
                         }
                         catch (Exception ex)
                         {
-                            throw new CommandLineException(
+                            throw new CommandException(
                                 LocalizedResourceManager.GetString(nameof(NuGetResources.Error_CannotKillMsBuild)) + " : " +
                                 ex.Message,
                                 ex);
@@ -189,7 +189,7 @@ namespace NuGet.CommandLine
                     if (!finished)
                     {
                         // MSBuild timed out
-                        throw new CommandLineException(
+                        throw new CommandException(
                                 LocalizedResourceManager.GetString(nameof(NuGetResources.Error_MsBuildTimedOut)));
                     }
 
@@ -394,7 +394,7 @@ namespace NuGet.CommandLine
                 var solutionParserType = assembly.GetType("Mono.XBuild.CommandLine.SolutionParser");
                 if (solutionParserType == null)
                 {
-                    throw new CommandLineException(
+                    throw new CommandException(
                         LocalizedResourceManager.GetString("Error_CannotGetXBuildSolutionParser"));
                 }
 
@@ -403,7 +403,7 @@ namespace NuGet.CommandLine
                     new Type[] { typeof(string) });
                 if (getAllProjectFileNamesMethod == null)
                 {
-                    throw new CommandLineException(
+                    throw new CommandException(
                         LocalizedResourceManager.GetString("Error_CannotGetGetAllProjectFileNamesMethod"));
                 }
 
@@ -419,7 +419,7 @@ namespace NuGet.CommandLine
                     solutionFile,
                     ex.Message);
 
-                throw new CommandLineException(message);
+                throw new CommandException(message);
             }
         }
 
@@ -451,7 +451,7 @@ namespace NuGet.CommandLine
                     solutionFile,
                     exMessage);
 
-                throw new CommandLineException(message);
+                throw new CommandException(message);
             }
         }
 
@@ -535,7 +535,7 @@ namespace NuGet.CommandLine
 
                 if (!installedToolsets.Any())
                 {
-                    throw new CommandLineException(
+                    throw new CommandException(
                         LocalizedResourceManager.GetString(
                             nameof(NuGetResources.Error_CannotFindMsbuild)));
                 }
@@ -721,7 +721,7 @@ namespace NuGet.CommandLine
 
             if (selectedToolset == null)
             {
-                throw new CommandLineException(
+                throw new CommandException(
                     LocalizedResourceManager.GetString(
                             nameof(NuGetResources.Error_MSBuildNotInstalled)));
             }
@@ -773,7 +773,7 @@ namespace NuGet.CommandLine
                         nameof(NuGetResources.Error_CannotFindMsbuild)),
                     userVersion);
 
-                throw new CommandLineException(message);
+                throw new CommandException(message);
             }
 
             return selectedToolset;
@@ -827,7 +827,7 @@ namespace NuGet.CommandLine
                             nameof(NuGetResources.MsbuildPathNotExist)),
                         msbuildPath);
 
-                    throw new CommandLineException(message);
+                    throw new CommandException(message);
                 }
                 
                 return new Lazy<MsBuildToolset>(() => new MsBuildToolset(msbuildVersion, msbuildPath));

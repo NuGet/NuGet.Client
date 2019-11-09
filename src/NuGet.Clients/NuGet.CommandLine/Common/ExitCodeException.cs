@@ -4,7 +4,7 @@ using NuGet.Commands;
 namespace NuGet.CommandLine
 {
     [Serializable]
-    public class ExitCodeException : CommandLineException
+    public class ExitCodeException : CommandException
     {
         public ExitCodeException(int exitCode)
         {
