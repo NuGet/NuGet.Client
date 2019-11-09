@@ -51,13 +51,13 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                throw new CommandLineException(Strings.SourcesCommandNameRequired);
+                throw new CommandException(Strings.SourcesCommandNameRequired);
             }
 
             var packageSource = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (packageSource == null)
             {
-                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
+                throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             if (enabled && !packageSource.IsEnabled)
@@ -85,14 +85,14 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                throw new CommandLineException(Strings.SourcesCommandNameRequired);
+                throw new CommandException(Strings.SourcesCommandNameRequired);
             }
 
             // Check to see if we already have a registered source with the same name or source
             var source = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (source == null)
             {
-                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
+                throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             args.SourceProvider.RemovePackageSource(args.Name);
@@ -104,23 +104,23 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound);
+                throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound);
             }
 
             if (string.Equals(args.Name, Strings.ReservedPackageNameAll))
             {
-                throw new CommandLineException(Strings.SourcesCommandAllNameIsReserved);
+                throw new CommandException(Strings.SourcesCommandAllNameIsReserved);
             }
 
             if (string.IsNullOrEmpty(args.Source))
             {
-                throw new CommandLineException(Strings.SourcesCommandSourceRequired);
+                throw new CommandException(Strings.SourcesCommandSourceRequired);
             }
 
             // Make sure that the Source given is a valid one.
             if (!PathValidator.IsValidSource(args.Source))
             {
-                throw new CommandLineException(Strings.SourcesCommandInvalidSource);
+                throw new CommandException(Strings.SourcesCommandInvalidSource);
             }
 
             ValidateCredentials(args);
@@ -129,12 +129,12 @@ namespace NuGet.Commands
             var existingSourceWithName = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (existingSourceWithName != null)
             {
-                throw new CommandLineException(Strings.SourcesCommandUniqueName);
+                throw new CommandException(Strings.SourcesCommandUniqueName);
             }
             var existingSourceWithSource = args.SourceProvider.GetPackageSourceBySource(args.Source);
             if (existingSourceWithSource != null)
             {
-                throw new CommandLineException(Strings.SourcesCommandUniqueSource);
+                throw new CommandException(Strings.SourcesCommandUniqueSource);
             }
 
             var newPackageSource = new Configuration.PackageSource(args.Source, args.Name);
@@ -159,27 +159,27 @@ namespace NuGet.Commands
         {
             if (string.IsNullOrEmpty(args.Name))
             {
-                throw new CommandLineException(Strings.SourcesCommandNameRequired);
+                throw new CommandException(Strings.SourcesCommandNameRequired);
             }
 
             var existingSource = args.SourceProvider.GetPackageSourceByName(args.Name);
             if (existingSource == null)
             {
-                throw new CommandLineException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
+                throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, args.Name);
             }
 
             if (!string.IsNullOrEmpty(args.Source) && !existingSource.Source.Equals(args.Source, StringComparison.OrdinalIgnoreCase))
             {
                 if (!PathValidator.IsValidSource(args.Source))
                 {
-                    throw new CommandLineException(Strings.SourcesCommandInvalidSource);
+                    throw new CommandException(Strings.SourcesCommandInvalidSource);
                 }
 
                 // If the user is updating the source, verify we don't have a duplicate.
                 var duplicateSource = args.SourceProvider.GetPackageSourceBySource(args.Source);
                 if (duplicateSource != null)
                 {
-                    throw new CommandLineException(Strings.SourcesCommandUniqueSource);
+                    throw new CommandException(Strings.SourcesCommandUniqueSource);
                 }
 
                 existingSource = new Configuration.PackageSource(args.Source, existingSource.Name);
@@ -220,13 +220,13 @@ namespace NuGet.Commands
             if (isUsernameEmpty ^ isPasswordEmpty)
             {
                 // If only one of them is set, throw.
-                throw new CommandLineException(Strings.SourcesCommandCredentialsRequired);
+                throw new CommandException(Strings.SourcesCommandCredentialsRequired);
             }
 
             if (isPasswordEmpty && !isAuthTypesEmpty)
             {
                 // can't specify auth types without credentials
-                throw new CommandLineException(Strings.SourcesCommandCredentialsRequiredWithAuthTypes);
+                throw new CommandException(Strings.SourcesCommandCredentialsRequiredWithAuthTypes);
             }
         }
 

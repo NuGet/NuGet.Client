@@ -5,28 +5,28 @@ using System.Runtime.Serialization;
 namespace NuGet.Commands
 {
     [Serializable]
-    public class CommandLineException : Exception
+    public class CommandException : Exception
     {
-        public CommandLineException()
+        public CommandException()
         {
         }
 
-        public CommandLineException(string message)
+        public CommandException(string message)
             : base(message)
         {
         }
 
-        public CommandLineException(string format, params object[] args)
+        public CommandException(string format, params object[] args)
             : base(string.Format(CultureInfo.CurrentCulture, format, args))
         {
         }
 
-        public CommandLineException(string message, Exception exception)
+        public CommandException(string message, Exception exception)
             : base(message, exception)
         {
         }
 
-        protected CommandLineException(SerializationInfo info, StreamingContext context)
+        protected CommandException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         {
         }

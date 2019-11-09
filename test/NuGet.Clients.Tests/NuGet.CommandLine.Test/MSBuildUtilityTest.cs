@@ -113,7 +113,7 @@ namespace NuGet.CommandLine.Test
             // Arrange
 
             // Act
-            var ex = Assert.Throws<CommandLineException>(() =>
+            var ex = Assert.Throws<CommandException>(() =>
                 {
                     var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
                         userVersion: userVersion,

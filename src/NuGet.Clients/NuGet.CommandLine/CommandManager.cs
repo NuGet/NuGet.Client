@@ -27,7 +27,7 @@ namespace NuGet.CommandLine
 
             if (!results.Any())
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("UnknowCommandError"), commandName);
+                throw new CommandException(LocalizedResourceManager.GetString("UnknowCommandError"), commandName);
             }
 
             var matchedCommand = results.First();
@@ -40,7 +40,7 @@ namespace NuGet.CommandLine
                 if (matchedCommand == null)
                 {
                     // No exact match was found and the result returned multiple prefixes.
-                    throw new CommandLineException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousCommand"), commandName,
+                    throw new CommandException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousCommand"), commandName,
                         String.Join(" ", from c in results select c.CommandAttribute.CommandName)));
                 }
             }

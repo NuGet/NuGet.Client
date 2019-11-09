@@ -129,7 +129,7 @@ namespace NuGet.CommandLine
             {
                 if (!System.Version.TryParse(MinClientVersion, out _minClientVersionValue))
                 {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("PackageCommandInvalidMinClientVersion"));
+                    throw new CommandException(LocalizedResourceManager.GetString("PackageCommandInvalidMinClientVersion"));
                 }
             }
 

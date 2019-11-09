@@ -67,7 +67,7 @@ namespace NuGet.CommandLine
 
                 if (value == null)
                 {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("MissingOptionValueError"), option);
+                    throw new CommandException(LocalizedResourceManager.GetString("MissingOptionValueError"), option);
                 }
 
                 AssignValue(command, propInfo, option, value);
@@ -119,13 +119,13 @@ namespace NuGet.CommandLine
                     property.SetValue(command, TypeHelper.ChangeType(value, property.PropertyType), index: null);
                 }
             }
-            catch (CommandLineException)
+            catch (CommandException)
             {
                 throw;
             }
             catch
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("InvalidOptionValueError"), option, value);
+                throw new CommandException(LocalizedResourceManager.GetString("InvalidOptionValueError"), option, value);
             }
         }
 
@@ -144,7 +144,7 @@ namespace NuGet.CommandLine
             ICommand cmd = _commandManager.GetCommand(cmdName);
             if (cmd == null)
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("UnknowCommandError"), cmdName);
+                throw new CommandException(LocalizedResourceManager.GetString("UnknowCommandError"), cmdName);
             }
 
             ExtractOptions(cmd, argsEnumerator);
@@ -169,7 +169,7 @@ namespace NuGet.CommandLine
             var result = results.FirstOrDefault();
             if (!results.Any())
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("UnknownOptionError"), option);
+                throw new CommandException(LocalizedResourceManager.GetString("UnknownOptionError"), option);
             }
             else if (results.Skip(1).Any())
             {
@@ -181,7 +181,7 @@ namespace NuGet.CommandLine
                 }
                 catch (InvalidOperationException)
                 {
-                    throw new CommandLineException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousOption"), value,
+                    throw new CommandException(String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("AmbiguousOption"), value,
                         String.Join(" ", from c in results select getDisplayName(c))));
                 }
             }
