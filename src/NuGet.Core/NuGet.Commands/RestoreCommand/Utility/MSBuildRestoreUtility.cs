@@ -937,7 +937,7 @@ namespace NuGet.Commands
             // Allow a user to override by setting RestoreProjectStyle in the project.
             if (!string.IsNullOrWhiteSpace(restoreProjectStyle))
             {
-                if (!Enum.TryParse(restoreProjectStyle, out ProjectStyle userSuppliedProjectStyle))
+                if (!Enum.TryParse(restoreProjectStyle, ignoreCase: true, out ProjectStyle userSuppliedProjectStyle))
                 {
                     log.Log(LogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidProjectRestoreStyle, restoreProjectStyle)));
                 }

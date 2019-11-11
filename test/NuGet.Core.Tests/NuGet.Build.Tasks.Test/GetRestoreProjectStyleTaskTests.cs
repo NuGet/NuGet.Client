@@ -76,28 +76,32 @@ namespace NuGet.Build.Tasks.Test
         [Fact]
         public void GetRestoreProjectStyleTask_CanParseExistingProjectStyle()
         {
-            foreach (var projectStyle in Enum.GetValues(typeof(ProjectStyle)).Cast<ProjectStyle>())
+            foreach (var lowerCase in new [] { true, false })
             {
-                var buildEngine = new TestBuildEngine();
-
-                var task = new GetRestoreProjectStyleTask
+                foreach (var projectStyle in Enum.GetValues(typeof(ProjectStyle)).Cast<ProjectStyle>())
                 {
-                    BuildEngine = buildEngine,
-                    RestoreProjectStyle = projectStyle.ToString()
-                };
+                    var buildEngine = new TestBuildEngine();
 
-                task.Execute().Should().BeTrue();
+                    var task = new GetRestoreProjectStyleTask
+                    {
+                        BuildEngine = buildEngine,
+                        RestoreProjectStyle = lowerCase ? projectStyle.ToString().ToLower() : projectStyle.ToString()
+                    };
 
-                task.ProjectStyle.Should().Be(projectStyle);
-                if (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference)
-                {
-                    task.PackageReferenceCompatibleProjectStyle.Should().BeTrue();
-                }
-                else
-                {
-                    task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+                    task.Execute().Should().BeTrue();
+
+                    task.ProjectStyle.Should().Be(projectStyle);
+                    if (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference)
+                    {
+                        task.PackageReferenceCompatibleProjectStyle.Should().BeTrue();
+                    }
+                    else
+                    {
+                        task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+                    }
                 }
             }
+            
         }
 
         [Fact]
