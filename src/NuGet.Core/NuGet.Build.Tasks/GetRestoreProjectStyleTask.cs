@@ -1,15 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Globalization;
-using System.IO;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.ProjectModel;
-using ILogger = NuGet.Common.ILogger;
 using Task = Microsoft.Build.Utilities.Task;
 
 namespace NuGet.Build.Tasks
@@ -22,7 +16,6 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Gets or sets a value indicating whether or not the project has any PackageReference items.
         /// </summary>
-        [Required]
         public bool HasPackageReferenceItems { get; set; }
 
         /// <summary>
