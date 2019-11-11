@@ -15,7 +15,45 @@ namespace NuGet.Build.Tasks.Test
     public class GetRestoreProjectStyleTaskTests
     {
         [Fact]
-        public void GetRestoreProjectStyleTask_CanDetectPackageReference()
+        public void GetRestoreProjectStyleTask_WhenInvalidProjectStyleSupplied_LogsError()
+        {
+            var buildEngine = new TestBuildEngine();
+            var testLogger = buildEngine.TestLogger;
+
+            var task = new GetRestoreProjectStyleTask
+            {
+                BuildEngine = buildEngine,
+                RestoreProjectStyle = "Invalid"
+            };
+
+            task.Execute().Should().BeFalse();
+
+            testLogger.ErrorMessages.Should().ContainSingle().Which.Should().Be("Invalid project restore style 'Invalid'.");
+        }
+
+        [Fact]
+        public void GetRestoreProjectStyleTask_WhenNothingMatches_ReturnsUnknown()
+        {
+            var buildEngine = new TestBuildEngine();
+
+            var task = new GetRestoreProjectStyleTask
+            {
+                BuildEngine = buildEngine,
+                RestoreProjectStyle = string.Empty,
+                ProjectJsonPath = string.Empty,
+                HasPackageReferenceItems = false,
+                MSBuildProjectName = "ProjectA",
+                MSBuildProjectDirectory = "SomeDirectory"
+            };
+
+            task.Execute().Should().BeTrue();
+
+            task.ProjectStyle.Should().Be(ProjectStyle.Unknown);
+            task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
+        }
+
+        [Fact]
+        public void GetRestoreProjectStyleTask_WhenProjectHasPackageReferenceItems_ReturnsPackageReference()
         {
             var buildEngine = new TestBuildEngine();
 
@@ -28,13 +66,13 @@ namespace NuGet.Build.Tasks.Test
             task.Execute().Should().BeTrue();
 
             task.ProjectStyle.Should().Be(ProjectStyle.PackageReference);
-            task.PackageReferenceCompatibleProjectStyle.Should().BeTrue();
+            task.IsPackageReferenceCompatibleProjectStyle.Should().BeTrue();
         }
 
         [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.ProjectA.config")]
-        public void GetRestoreProjectStyleTask_CanDetectPackagesConfig(string packagesConfigFileName)
+        public void GetRestoreProjectStyleTask_WhenProjectHasPackagesConfigFile_ReturnsPackagesConfig(string packagesConfigFileName)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -52,12 +90,12 @@ namespace NuGet.Build.Tasks.Test
                 task.Execute().Should().BeTrue();
 
                 task.ProjectStyle.Should().Be(ProjectStyle.PackagesConfig);
-                task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+                task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
             }
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_CanDetectProjectJson()
+        public void GetRestoreProjectStyleTask_WhenProjectJsonPathSpecified_ReturnsProjectJson()
         {
             var buildEngine = new TestBuildEngine();
 
@@ -70,13 +108,13 @@ namespace NuGet.Build.Tasks.Test
             task.Execute().Should().BeTrue();
 
             task.ProjectStyle.Should().Be(ProjectStyle.ProjectJson);
-            task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+            task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_CanParseExistingProjectStyle()
+        public void GetRestoreProjectStyleTask_WhenProjectStyleSupplied_ReturnsSuppliedProjectStyle()
         {
-            foreach (var lowerCase in new [] { true, false })
+            foreach (var lowerCase in new[] { true, false })
             {
                 foreach (var projectStyle in Enum.GetValues(typeof(ProjectStyle)).Cast<ProjectStyle>())
                 {
@@ -93,57 +131,18 @@ namespace NuGet.Build.Tasks.Test
                     task.ProjectStyle.Should().Be(projectStyle);
                     if (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference)
                     {
-                        task.PackageReferenceCompatibleProjectStyle.Should().BeTrue();
+                        task.IsPackageReferenceCompatibleProjectStyle.Should().BeTrue();
                     }
                     else
                     {
-                        task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+                        task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
                     }
                 }
             }
-            
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_DefaultsToUnknown()
-        {
-            var buildEngine = new TestBuildEngine();
-
-            var task = new GetRestoreProjectStyleTask
-            {
-                BuildEngine = buildEngine,
-                RestoreProjectStyle = string.Empty,
-                ProjectJsonPath = string.Empty,
-                HasPackageReferenceItems = false,
-                MSBuildProjectName = "ProjectA",
-                MSBuildProjectDirectory = "SomeDirectory"
-            };
-
-            task.Execute().Should().BeTrue();
-
-            task.ProjectStyle.Should().Be(ProjectStyle.Unknown);
-            task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
-        }
-
-        [Fact]
-        public void GetRestoreProjectStyleTask_LogsErrorWhenInvalidRestoreStyleSpecified()
-        {
-            var buildEngine = new TestBuildEngine();
-            var testLogger = buildEngine.TestLogger;
-
-            var task = new GetRestoreProjectStyleTask
-            {
-                BuildEngine = buildEngine,
-                RestoreProjectStyle = "Invalid"
-            };
-
-            task.Execute().Should().BeFalse();
-
-            testLogger.ErrorMessages.Should().ContainSingle().Which.Should().Be("Invalid project restore style 'Invalid'.");
-        }
-
-        [Fact]
-        public void GetRestoreProjectStyleTask_UserSpecifiedValueOverridesDetectedValue()
+        public void GetRestoreProjectStyleTask_WhenUserSuppliedValueOverridesDefault_ReturnsUserSuppliedProjectStyle()
         {
             var expected = ProjectStyle.Standalone;
 
@@ -166,7 +165,7 @@ namespace NuGet.Build.Tasks.Test
                 task.Execute().Should().BeTrue();
 
                 task.ProjectStyle.Should().Be(expected);
-                task.PackageReferenceCompatibleProjectStyle.Should().BeFalse();
+                task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
             }
         }
     }

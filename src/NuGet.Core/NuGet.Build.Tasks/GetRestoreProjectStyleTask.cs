@@ -18,6 +18,9 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public bool HasPackageReferenceItems { get; set; }
 
+        [Output]
+        public bool IsPackageReferenceCompatibleProjectStyle { get; set; }
+
         /// <summary>
         /// Gets or sets the full path to the project directory.
         /// </summary>
@@ -29,9 +32,6 @@ namespace NuGet.Build.Tasks
         /// </summary>
         [Required]
         public string MSBuildProjectName { get; set; }
-
-        [Output]
-        public bool PackageReferenceCompatibleProjectStyle { get; set; }
 
         /// <summary>
         /// The path to a project.json file.
@@ -62,11 +62,11 @@ namespace NuGet.Build.Tasks
 
             var result = MSBuildRestoreUtility.GetProjectRestoreStyle(RestoreProjectStyle, HasPackageReferenceItems, ProjectJsonPath, MSBuildProjectDirectory, MSBuildProjectName, log);
 
-            PackageReferenceCompatibleProjectStyle = result.PackageReferenceCompatibleProjectStyle;
+            IsPackageReferenceCompatibleProjectStyle = result.IsPackageReferenceCompatibleProjectStyle;
             ProjectStyle = result.ProjectStyle;
 
             // Log Outputs
-            BuildTasksUtility.LogOutputParam(log, nameof(PackageReferenceCompatibleProjectStyle), PackageReferenceCompatibleProjectStyle.ToString());
+            BuildTasksUtility.LogOutputParam(log, nameof(IsPackageReferenceCompatibleProjectStyle), IsPackageReferenceCompatibleProjectStyle.ToString());
             BuildTasksUtility.LogOutputParam(log, nameof(ProjectStyle), ProjectStyle.ToString());
 
             return !Log.HasLoggedErrors;

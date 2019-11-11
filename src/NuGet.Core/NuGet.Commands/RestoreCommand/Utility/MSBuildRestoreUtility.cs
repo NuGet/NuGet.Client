@@ -930,7 +930,7 @@ namespace NuGet.Commands
         /// <param name="projectName">The name of the project file.</param>
         /// <param name="log">An <see cref="ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, bool}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.</returns>
-        public static (ProjectStyle ProjectStyle, bool PackageReferenceCompatibleProjectStyle) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, ILogger log)
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, ILogger log)
         {
             ProjectStyle projectStyle = ProjectStyle.Unknown;
 
@@ -965,9 +965,9 @@ namespace NuGet.Commands
                 projectStyle = ProjectStyle.Unknown;
             }
 
-            bool packageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
+            bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
 
-            return (projectStyle, packageReferenceCompatibleProjectStyle);
+            return (projectStyle, isPackageReferenceCompatibleProjectStyle);
         }
 
         /// <summary>

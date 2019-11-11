@@ -441,7 +441,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       ProjectJsonPath="$(_CurrentProjectJsonPath)"
       RestoreProjectStyle="$(RestoreProjectStyle)">
         <Output TaskParameter="ProjectStyle" PropertyName="RestoreProjectStyle" />
-        <Output TaskParameter="PackageReferenceCompatibleProjectStyle" PropertyName="PackageReferenceCompatibleProjectStyle" />
+        <Output TaskParameter="IsPackageReferenceCompatibleProjectStyle" PropertyName="PackageReferenceCompatibleProjectStyle" />
     </GetRestoreProjectStyleTask>
 
     <PropertyGroup>
