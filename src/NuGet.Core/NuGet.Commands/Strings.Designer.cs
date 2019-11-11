@@ -295,6 +295,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid project restore style &apos;{0}&apos;..
+        /// </summary>
+        internal static string Error_InvalidProjectRestoreStyle {
+            get {
+                return ResourceManager.GetString("Error_InvalidProjectRestoreStyle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The provided SymbolPackageFormat value {0} is invalid. Allowed values : &apos;snupkg&apos;, &apos;symbols.nupkg&apos;..
         /// </summary>
         internal static string Error_InvalidSymbolPackageFormat {
