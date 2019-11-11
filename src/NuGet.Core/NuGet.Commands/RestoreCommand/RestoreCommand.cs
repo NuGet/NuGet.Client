@@ -148,9 +148,8 @@ namespace NuGet.Commands
 
                                 return new NoOpRestoreResult(
                                     _success,
-                                    null,
-                                    null,
                                     _request.LockFilePath,
+                                    new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
                                     cacheFile,
                                     _request.Project.RestoreMetadata.CacheFilePath,
                                     _request.ProjectStyle,
