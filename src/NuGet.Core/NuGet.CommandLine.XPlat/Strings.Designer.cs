@@ -1032,6 +1032,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior..
+        /// </summary>
+        internal static string Option_ConfigFile {
+            get {
+                return ResourceManager.GetString("Option_ConfigFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
         internal static string OutputDirectory_Description {
@@ -1280,6 +1289,96 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Source_Description {
             get {
                 return ResourceManager.GetString("Source_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Actions Go Here - TODO.
+        /// </summary>
+        internal static string Sources_Action {
+            get {
+                return ResourceManager.GetString("Sources_Action", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string SourcesCommandDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies to the list action. Accepts two values: Detailed (the default) and Short..
+        /// </summary>
+        internal static string SourcesCommandFormatDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandFormatDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the source..
+        /// </summary>
+        internal static string SourcesCommandNameDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password to be used when connecting to an authenticated source..
+        /// </summary>
+        internal static string SourcesCommandPasswordDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandPasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to the package(s) source..
+        /// </summary>
+        internal static string SourcesCommandSourceDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing portable package source credentials by disabling password encryption..
+        /// </summary>
+        internal static string SourcesCommandStorePasswordInClearTextDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandStorePasswordInClearTextDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source].
+        /// </summary>
+        internal static string SourcesCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("SourcesCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UserName to be used when connecting to an authenticated source..
+        /// </summary>
+        internal static string SourcesCommandUserNameDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandUserNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate.
+        /// </summary>
+        internal static string SourcesCommandValidAuthenticationTypesDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
             }
         }
         

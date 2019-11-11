@@ -594,4 +594,40 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="PushCommandSkipDuplicateDescription" xml:space="preserve">
     <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
   </data>
+  <data name="SourcesCommandDescription" xml:space="preserve">
+    <value>Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="SourcesCommandNameDescription" xml:space="preserve">
+    <value>Name of the source.</value>
+  </data>
+  <data name="SourcesCommandPasswordDescription" xml:space="preserve">
+    <value>Password to be used when connecting to an authenticated source.</value>
+  </data>
+  <data name="SourcesCommandSourceDescription" xml:space="preserve">
+    <value>Path to the package(s) source.</value>
+  </data>
+  <data name="SourcesCommandFormatDescription" xml:space="preserve">
+    <value>Applies to the list action. Accepts two values: Detailed (the default) and Short.</value>
+  </data>
+  <data name="SourcesCommandUsageSummary" xml:space="preserve">
+    <value>&lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source]</value>
+    <comment>Only localize "[name]" and "[source]"</comment>
+  </data>
+  <data name="SourcesCommandUserNameDescription" xml:space="preserve">
+    <value>UserName to be used when connecting to an authenticated source.</value>
+  </data>
+  <data name="SourcesCommandStorePasswordInClearTextDescription" xml:space="preserve">
+    <value>Enables storing portable package source credentials by disabling password encryption.</value>
+  </data>
+  <data name="SourcesCommandValidAuthenticationTypesDescription" xml:space="preserve">
+    <value>Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate</value>
+    <comment>Please don't localize "basic,negotiate"</comment>
+  </data>
+  <data name="Option_ConfigFile" xml:space="preserve">
+    <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.</value>
+  </data>
+  <data name="Sources_Action" xml:space="preserve">
+    <value>Actions Go Here - TODO</value>
+  </data>
 </root>
