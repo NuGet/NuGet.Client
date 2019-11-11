@@ -20,7 +20,7 @@ namespace NuGet.Commands
         /// <summary>
         /// The name of the file to use.  When changing this, you should also change <see cref="LockFileFormat.AssetsFileName"/>.
         /// </summary>
-        internal const string NoOpCacheFileName = "project.assets.nuget.cache";
+        internal const string NoOpCacheFileName = "project.nuget.cache";
 
         /// <summary>
         /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
@@ -123,7 +123,7 @@ namespace NuGet.Commands
         /// </summary>
         internal static bool VerifyRestoreOutput(RestoreRequest request, CacheFile cacheFile)
         {
-            if (!File.Exists(request.LockFilePath))
+            if (!string.IsNullOrWhiteSpace(request.LockFilePath) && !File.Exists(request.LockFilePath))
             {
                 request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_AssetsFileNotOnDisk, request.Project.Name));
                 return false;

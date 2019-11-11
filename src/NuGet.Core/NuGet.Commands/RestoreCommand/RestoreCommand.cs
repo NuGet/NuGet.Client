@@ -560,6 +560,7 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
 
+            // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
                 if (!noOp)

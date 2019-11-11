@@ -349,7 +349,7 @@ function Get-CacheFilePathFromProjectPath {
         $ProjectPath
         )
         
-    $projectCacheFilePath = Join-Path (Split-Path -parent $ProjectPath) (Join-Path "obj" "project.assets.nuget.cache")
+    $projectCacheFilePath = Join-Path (Split-Path -parent $ProjectPath) (Join-Path "obj" "project.nuget.cache")
 
     Write-Host "Evaluated cache file path:" $projectCacheFilePath
 
