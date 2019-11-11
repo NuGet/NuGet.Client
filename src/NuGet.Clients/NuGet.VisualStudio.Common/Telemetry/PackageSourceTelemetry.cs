@@ -18,6 +18,8 @@ namespace NuGet.VisualStudio.Telemetry
         private List<SourceRepository> _sources;
         private Guid _parentId;
 
+        internal static readonly string EventName = "PackageSourceDiagnostics";
+
         public PackageSourceTelemetry(List<SourceRepository> sources, Guid parentId)
         {
             _data = new ConcurrentDictionary<string, Data>();
@@ -120,100 +122,107 @@ namespace NuGet.VisualStudio.Telemetry
                 string source = kvp.Key;
                 SourceRepository sourceFeed = _sources.FirstOrDefault(s => s.PackageSource.SourceUri?.OriginalString == source);
 
-                var telemetry = ToTelemetry(data, source, sourceFeed, parentId);
+                var telemetry = ToTelemetry(data, source, sourceFeed.PackageSource, parentId);
 
                 TelemetryActivity.EmitTelemetryEvent(telemetry);
             }
        }
 
-        internal static TelemetryEvent ToTelemetry(Data data, string source, SourceRepository sourceFeed, string parentId)
+        internal static TelemetryEvent ToTelemetry(Data data, string source, PackageSource packageSource, string parentId)
         {
-            if (data.Metadata.EventTiming.Requests == 0 || data.Nupkg.EventTiming.Requests == 0)
+            if (data.Metadata.EventTiming.Requests == 0 && data.Nupkg.EventTiming.Requests == 0)
             {
                 return null;
             }
 
-            var telemetry = new TelemetryEvent("PackageSourceDiagnostics",
+            var telemetry = new TelemetryEvent(EventName,
                 new Dictionary<string, object>()
                 {
-                    { "ParentId", parentId },
+                    { PropertyNames.ParentId, parentId },
                 });
 
             // source info
-            telemetry.AddPiiData("source.url", source);
+            telemetry.AddPiiData(PropertyNames.Source.Url, source);
 
-            if (sourceFeed != null)
+            if (packageSource != null)
             {
-                var packageSource = sourceFeed.PackageSource;
-                telemetry["source.type"] = packageSource.IsHttp ? "http" : packageSource.IsLocal ? "local" : "unknown";
-                telemetry["source.protocol"] = packageSource.ProtocolVersion;
+                if (packageSource.IsHttp)
+                {
+                    telemetry[PropertyNames.Source.Type] = "http";
+                    telemetry[PropertyNames.Source.Protocol] = TelemetryUtility.IsHttpV3(packageSource) ? 3 : packageSource.ProtocolVersion;
+                }
+                else
+                {
+                    telemetry[PropertyNames.Source.Type] = "local";
+                    telemetry[PropertyNames.Source.Protocol] = packageSource.ProtocolVersion;
+                }
 
                 var msFeed = GetMsFeed(packageSource);
                 if (msFeed != null)
                 {
-                    telemetry["source.msfeed"] = msFeed;
+                    telemetry[PropertyNames.Source.MSFeed] = msFeed;
                 }
             }
 
             // metadata
             lock (data.Metadata.Lock)
             {
-                telemetry["metadata.requests"] = data.Metadata.EventTiming.Requests;
-                telemetry["metadata.success"] = data.Metadata.Successful;
-                telemetry["metadata.retries"] = data.Metadata.Retries;
-                telemetry["metadata.cancelled"] = data.Metadata.Cancelled;
-                telemetry["metadata.failed"] = data.Metadata.Failed;
-                telemetry["metadata.bytes.total"] = data.Metadata.TotalBytes;
-                telemetry["metadata.bytes.max"] = data.Metadata.MaxBytes;
+                telemetry[PropertyNames.Metadata.Requests] = data.Metadata.EventTiming.Requests;
+                telemetry[PropertyNames.Metadata.Successful] = data.Metadata.Successful;
+                telemetry[PropertyNames.Metadata.Retries] = data.Metadata.Retries;
+                telemetry[PropertyNames.Metadata.Cancelled] = data.Metadata.Cancelled;
+                telemetry[PropertyNames.Metadata.Failed] = data.Metadata.Failed;
+                telemetry[PropertyNames.Metadata.Bytes.Total] = data.Metadata.TotalBytes;
+                telemetry[PropertyNames.Metadata.Bytes.Max] = data.Metadata.MaxBytes;
 
                 if (data.Metadata.StatusCodes.Count > 0)
                 {
-                    telemetry.AddComplexData("metadata.http.statuscodes", ToStatusCodeTelemetry(data.Metadata.StatusCodes));
+                    telemetry.AddComplexData(PropertyNames.Metadata.Http.StatusCodes, ToStatusCodeTelemetry(data.Metadata.StatusCodes));
                 }
 
                 if (data.Metadata.EventTiming.Requests > 0)
                 {
-                    telemetry["metadata.timing.min"] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
-                    telemetry["metadata.timing.mean"] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
-                    telemetry["metadata.timing.max"] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Metadata.Timing.Min] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Metadata.Timing.Mean] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
+                    telemetry[PropertyNames.Metadata.Timing.Max] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
                 }
 
                 if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
                 {
-                    telemetry["metadata.header.timing.min"] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
-                    telemetry["metadata.header.timing.mean"] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
-                    telemetry["metadata.header.timing.max"] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Metadata.Header.Timing.Min] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Metadata.Header.Timing.Mean] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
+                    telemetry[PropertyNames.Metadata.Header.Timing.Max] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
                 }
             }
 
             // nupkgs
             lock (data.Nupkg.Lock)
             {
-                telemetry["nupkg.requests"] = data.Nupkg.EventTiming.Requests;
-                telemetry["nupkg.success"] = data.Nupkg.Successful;
-                telemetry["nupkg.retries"] = data.Nupkg.Retries;
-                telemetry["nupkg.cancelled"] = data.Nupkg.Cancelled;
-                telemetry["nupkg.failed"] = data.Nupkg.Failed;
-                telemetry["nupkg.bytes.total"] = data.Nupkg.TotalBytes;
-                telemetry["nupkg.bytes.max"] = data.Nupkg.MaxBytes;
+                telemetry[PropertyNames.Nupkg.Requests] = data.Nupkg.EventTiming.Requests;
+                telemetry[PropertyNames.Nupkg.Successful] = data.Nupkg.Successful;
+                telemetry[PropertyNames.Nupkg.Retries] = data.Nupkg.Retries;
+                telemetry[PropertyNames.Nupkg.Cancelled] = data.Nupkg.Cancelled;
+                telemetry[PropertyNames.Nupkg.Failed] = data.Nupkg.Failed;
+                telemetry[PropertyNames.Nupkg.Bytes.Total] = data.Nupkg.TotalBytes;
+                telemetry[PropertyNames.Nupkg.Bytes.Max] = data.Nupkg.MaxBytes;
 
                 if (data.Nupkg.StatusCodes.Count > 0)
                 {
-                    telemetry.AddComplexData("nupkg.http.statuscodes", ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
+                    telemetry.AddComplexData(PropertyNames.Nupkg.Http.StatusCodes, ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
                 }
 
                 if (data.Nupkg.EventTiming.Requests > 0)
                 {
-                    telemetry["nupkg.timing.min"] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
-                    telemetry["nupkg.timing.mean"] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
-                    telemetry["nupkg.timing.max"] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Nupkg.Timing.Min] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Nupkg.Timing.Mean] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
+                    telemetry[PropertyNames.Nupkg.Timing.Max] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
                 }
 
                 if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
                 {
-                    telemetry["nupkg.header.timing.min"] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
-                    telemetry["nupkg.header.timing.mean"] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
-                    telemetry["nupkg.header.timing.max"] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Nupkg.Header.Timing.Min] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
+                    telemetry[PropertyNames.Nupkg.Header.Timing.Mean] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
+                    telemetry[PropertyNames.Nupkg.Header.Timing.Max] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
                 }
             }
 
@@ -292,6 +301,93 @@ namespace NuGet.VisualStudio.Telemetry
             public TimeSpan TotalDuration;
             public TimeSpan MinDuration = TimeSpan.MaxValue;
             public TimeSpan MaxDuration;
+        }
+
+        internal static class PropertyNames
+        {
+            internal static readonly string ParentId = "parentid";
+
+            internal static class Source
+            {
+                internal static readonly string Url = "source.url";
+                internal static readonly string Type = "source.type";
+                internal static readonly string Protocol = "source.protocol";
+                internal static readonly string MSFeed = "source.msfeed";
+            }
+
+            internal static class Metadata
+            {
+                internal static readonly string Requests = "metadata.requests";
+                internal static readonly string Successful = "metadata.successful";
+                internal static readonly string Retries = "metadata.retries";
+                internal static readonly string Cancelled = "metadata.cancelled";
+                internal static readonly string Failed = "metadata.failed";
+
+                internal static class Bytes
+                {
+                    internal static readonly string Total = "metadata.bytes.total";
+                    internal static readonly string Max = "metadata.bytes.max";
+                }
+
+                internal static class Http
+                {
+                    internal static readonly string StatusCodes = "metadata.http.statuscodes";
+                }
+
+                internal static class Timing
+                {
+                    internal static readonly string Min = "metadata.timing.min";
+                    internal static readonly string Mean = "metadata.timing.mean";
+                    internal static readonly string Max = "metadata.timing.max";
+                }
+
+                internal static class Header
+                {
+                    internal static class Timing
+                    {
+                        internal static readonly string Min = "metadata.header.timing.min";
+                        internal static readonly string Mean = "metadata.header.timing.mean";
+                        internal static readonly string Max = "metadata.header.timing.max";
+                    }
+                }
+            }
+
+            internal static class Nupkg
+            {
+                internal static readonly string Requests = "nupkg.requests";
+                internal static readonly string Successful = "nupkg.successful";
+                internal static readonly string Retries = "nupkg.retries";
+                internal static readonly string Cancelled = "nupkg.cancelled";
+                internal static readonly string Failed = "nupkg.failed";
+
+                internal static class Bytes
+                {
+                    internal static readonly string Total = "nupkg.bytes.total";
+                    internal static readonly string Max = "nupkg.bytes.max";
+                }
+
+                internal static class Http
+                {
+                    internal static readonly string StatusCodes = "nupkg.http.statuscodes";
+                }
+
+                internal static class Timing
+                {
+                    internal static readonly string Min = "nupkg.timing.min";
+                    internal static readonly string Mean = "nupkg.timing.mean";
+                    internal static readonly string Max = "nupkg.timing.max";
+                }
+
+                internal static class Header
+                {
+                    internal static class Timing
+                    {
+                        internal static readonly string Min = "nupkg.header.timing.min";
+                        internal static readonly string Mean = "nupkg.header.timing.mean";
+                        internal static readonly string Max = "nupkg.header.timing.max";
+                    }
+                }
+            }
         }
     }
 }

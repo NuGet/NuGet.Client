@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Utility;
 using NuGet.VisualStudio.Telemetry;
@@ -176,6 +177,109 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // a resource is only failed when it's unsuccessful on the last attempt, but not when we cancelled it. Therefore, we expect 2 because isRetry doesn't factor in
             Assert.Equal(2, nupkgData.Failed);
+        }
+
+        [Fact]
+        public void ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject()
+        {
+            // Arrange
+            var data = new PackageSourceTelemetry.Data();
+            data.Metadata.EventTiming.Requests = 0;
+            data.Nupkg.EventTiming.Requests = 0;
+
+            var packageSource = new PackageSource("source");
+
+            // Act
+            var result = PackageSourceTelemetry.ToTelemetry(data, packageSource.Source, packageSource, "parentId");
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [Fact]
+        public void ToTelemetry_WithSource_HasSourceTelemetryProperties()
+        {
+            // Arrange
+            var data = new PackageSourceTelemetry.Data();
+            data.Metadata.EventTiming.Requests = 1;
+
+            var packageSource = new PackageSource(NuGetConstants.V3FeedUrl);
+            packageSource.ProtocolVersion = 3;
+
+            // Act
+            var result = PackageSourceTelemetry.ToTelemetry(data, packageSource.Source, packageSource, "parentId");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(PackageSourceTelemetry.EventName, result.Name);
+            Assert.Equal("parentId", result[PackageSourceTelemetry.PropertyNames.ParentId]);
+            Assert.Equal("http", result[PackageSourceTelemetry.PropertyNames.Source.Type]);
+            Assert.Equal(3, result[PackageSourceTelemetry.PropertyNames.Source.Protocol]);
+            var url = Assert.Single(result.GetPiiData().Where(pair => pair.Key == PackageSourceTelemetry.PropertyNames.Source.Url));
+            Assert.Equal(NuGetConstants.V3FeedUrl, url.Value);
+        }
+
+        [Fact]
+        public void ToTelemetry_WithNupkgData_CreatesTelemetryProperties()
+        {
+            // Arrange
+            var data = new PackageSourceTelemetry.Data();
+            var resourceData = data.Nupkg;
+
+            resourceData.EventTiming.Requests = 10;
+            resourceData.EventTiming.MinDuration = TimeSpan.FromMilliseconds(100);
+            resourceData.EventTiming.MaxDuration = TimeSpan.FromMilliseconds(200);
+            var expectedMean = 150.0;
+            resourceData.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(expectedMean * resourceData.EventTiming.Requests);
+
+            resourceData.HeaderTiming = new PackageSourceTelemetry.ResourceTimingData
+            {
+                Requests = 5,
+                MinDuration = TimeSpan.FromMilliseconds(50),
+                MaxDuration = TimeSpan.FromMilliseconds(300)
+            };
+            resourceData.HeaderTiming.TotalDuration = TimeSpan.FromMilliseconds(expectedMean * resourceData.HeaderTiming.Requests);
+
+            resourceData.TotalBytes = 1_000_000;
+            resourceData.MaxBytes = 200_000;
+
+            resourceData.Successful = 7;
+            resourceData.Retries = 4;
+            resourceData.Cancelled = 2;
+            resourceData.Failed = 1;
+
+            resourceData.StatusCodes.Add(200, 7);
+            resourceData.StatusCodes.Add(404, 3);
+
+            var source = new PackageSource("source");
+
+            // Act
+            var result = PackageSourceTelemetry.ToTelemetry(data, source.Source, source, "parentid");
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Equal(resourceData.EventTiming.Requests, result[PackageSourceTelemetry.PropertyNames.Nupkg.Requests]);
+            Assert.Equal(resourceData.Successful, result[PackageSourceTelemetry.PropertyNames.Nupkg.Successful]);
+            Assert.Equal(resourceData.Retries, result[PackageSourceTelemetry.PropertyNames.Nupkg.Retries]);
+            Assert.Equal(resourceData.Cancelled, result[PackageSourceTelemetry.PropertyNames.Nupkg.Cancelled]);
+            Assert.Equal(resourceData.Failed, result[PackageSourceTelemetry.PropertyNames.Nupkg.Failed]);
+            Assert.Equal(resourceData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Total]);
+            Assert.Equal(resourceData.MaxBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Max]);
+
+            Assert.Equal(resourceData.EventTiming.MinDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Min]);
+            Assert.Equal(resourceData.EventTiming.MaxDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Max]);
+            Assert.Equal(expectedMean, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Mean]);
+
+            Assert.Equal(resourceData.HeaderTiming.MinDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Min]);
+            Assert.Equal(resourceData.HeaderTiming.MaxDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Max]);
+            Assert.Equal(expectedMean, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Mean]);
+
+            var statusCodesValue = Assert.Single(result.GetComplexData().Where(c => c.Key == PackageSourceTelemetry.PropertyNames.Nupkg.Http.StatusCodes));
+            var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue.Value);
+            foreach (var pair in resourceData.StatusCodes)
+            {
+                Assert.Equal(pair.Value, statusCodes[pair.Key.ToString()]);
+            }
         }
 
         private static Uri SampleNupkgUri = new Uri("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg");
