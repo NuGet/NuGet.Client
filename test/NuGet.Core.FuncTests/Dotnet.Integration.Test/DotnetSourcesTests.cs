@@ -21,6 +21,7 @@ namespace Dotnet.Integration.Test
             _fixture = fixture;
         }
 
+
         [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddSource()
         {
@@ -29,7 +30,7 @@ namespace Dotnet.Integration.Test
                 // Arrange
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Add",
                     "--Name",
@@ -63,7 +64,7 @@ namespace Dotnet.Integration.Test
                 // Arrange
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Add",
                     "--Name",
@@ -111,7 +112,7 @@ namespace Dotnet.Integration.Test
                 // Arrange
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Add",
                     "--Name",
@@ -167,7 +168,7 @@ namespace Dotnet.Integration.Test
 
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Add",
                     "--Name",
@@ -243,7 +244,7 @@ namespace Dotnet.Integration.Test
 
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Enable",
                     "--Name",
@@ -321,7 +322,7 @@ namespace Dotnet.Integration.Test
 
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Disable",
                     "--Name",
@@ -392,7 +393,7 @@ namespace Dotnet.Integration.Test
                 // Arrange
                 var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
-                    "nuget",
+                    _fixture.TestNuGetCommandLineXplat, //switch to "nuget" once CLI knows about this feature
                     "sources",
                     "Add",
                     "-Name",

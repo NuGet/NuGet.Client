@@ -21,15 +21,17 @@ namespace Dotnet.Integration.Test
         private readonly TestDirectory _templateDirectory;
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
+        internal readonly string TestNuGetCommandLineXplat; // sometimes we need to test things before CLI parsing code exists
+
         internal readonly string MsBuildSdksPath;
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
+
 
         public MsbuildIntegrationTestFixture()
         {
             _cliDirectory = CopyLatestCliForPack();
-            var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
-            TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
-
+            TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
+            TestNuGetCommandLineXplat = Path.Combine(_cliDirectory, "nuget.commandline.xplat.dll");
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(_cliDirectory, "sdk"))
                 .First(), "Sdks");
