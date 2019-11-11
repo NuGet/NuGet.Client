@@ -2,35 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Test.Utility;
-using Test.Utility;
-using Xunit;
-using Xunit.Extensions;
-using NuGet.Common;
+using System.Xml.Linq;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
+using Xunit;
 
-namespace NuGet.CommandLine.Test
+namespace Dotnet.Integration.Test
 {
-    public class NuGetSourcesCommandTest
+    [Collection("Dotnet Integration Tests")]
+    public class DotnetSourcesTests
     {
-        [Fact]
+        private readonly MsbuildIntegrationTestFixture _fixture;
+
+        public DotnetSourcesTests(MsbuildIntegrationTestFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddSource()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var nugetexe = Util.GetNuGetExePath();
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Add",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-Source",
+                    "--Source",
                     "http://test_source"
                 };
                 var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
@@ -39,34 +43,36 @@ namespace NuGet.CommandLine.Test
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(dotnetExe, root, string.Join(" ", args), true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                Assert.True(result.ExitCode == 0);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
+                var settings = Settings.LoadDefaultSettings(null, null, null);
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var nugetexe = Util.GetNuGetExePath();
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Add",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-Source",
+                    "--Source",
                     "http://test_source",
-                    "-UserName",
+                    "--UserName",
                     "test_user_name",
-                    "-Password",
+                    "--Password",
                     "test_password"
                 };
                 var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
@@ -75,12 +81,12 @@ namespace NuGet.CommandLine.Test
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(dotnetExe, root, string.Join(" ", args), true);
 
                 // Assert
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                var settings = Settings.LoadDefaultSettings(null, null, null);
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -92,30 +98,31 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal("test_user_name", credentialItem.Username);
 
-                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
+                var password = EncryptionUtility.DecryptString(credentialItem.Password);
                 Assert.Equal("test_password", password);
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var nugetexe = Util.GetNuGetExePath();
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Add",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-Source",
+                    "--Source",
                     "http://test_source",
-                    "-UserName",
+                    "--UserName",
                     "test_user_name",
-                    "-Password",
+                    "--Password",
                     "test_password",
-                    "-StorePasswordInClearText"
+                    "--Store-Password-In-Clear-Text"
                 };
                 var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
@@ -123,12 +130,12 @@ namespace NuGet.CommandLine.Test
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(dotnetExe, root, string.Join(" ", args), true);
 
                 // Assert
                 Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                var settings = Settings.LoadDefaultSettings(null, null, null);
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
@@ -143,39 +150,41 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
             using (var configFileDirectory = TestDirectory.Create())
             {
-                var nugetexe = Util.GetNuGetExePath();
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
-                Util.CreateFile(configFileDirectory, configFileName,
+                string nugetConfig =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
-</configuration>");
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
 
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Add",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-Source",
+                    "--Source",
                     "http://test_source",
-                    "-UserName",
+                    "--UserName",
                     "test_user_name",
-                    "-Password",
+                    "--Password",
                     "test_password",
-                    "-ConfigFile",
+                    "--ConfigFile",
                     configFilePath
                 };
 
                 // Act
                 var result = CommandRunner.Run(
-                    nugetexe,
+                    dotnetExe,
                     configFileDirectory,
                     string.Join(" ", args),
                     true);
@@ -183,7 +192,7 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(0, result.Item1);
 
-                var settings = Configuration.Settings.LoadDefaultSettings(
+                var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
@@ -198,23 +207,27 @@ namespace NuGet.CommandLine.Test
 
                 Assert.Equal("test_user_name", credentialItem.Username);
 
-                var password = Configuration.EncryptionUtility.DecryptString(credentialItem.Password);
+                var password = EncryptionUtility.DecryptString(credentialItem.Password);
                 Assert.Equal("test_password", password);
             }
         }
 
-        [Fact]
+        private static void CreateXmlFile(string configFilePath, string nugetConfig)
+        {
+            var nugetConfigXDoc = XDocument.Parse(nugetConfig);
+            ProjectFileUtils.WriteXmlToFile(nugetConfigXDoc, new FileStream(configFilePath, FileMode.CreateNew, FileAccess.Write));
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_EnableSource()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
             using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
-                Util.CreateFile(configFileDirectory, configFileName,
+                var nugetConfig =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
@@ -224,23 +237,27 @@ namespace NuGet.CommandLine.Test
     <add key=""test_source"" value=""true"" />
     <add key=""Microsoft and .NET"" value=""true"" />
   </disabledPackageSources>
-</configuration>");
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
 
+
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Enable",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-ConfigFile",
+                    "--ConfigFile",
                     configFilePath
                 };
 
                 // Act
-                var settings = Configuration.Settings.LoadDefaultSettings(
+                var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
-                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
                 Assert.Single(sources);
 
@@ -251,15 +268,16 @@ namespace NuGet.CommandLine.Test
 
                 // Main Act
                 var result = CommandRunner.Run(
-                    nugetexe,
+                    dotnetExe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
                     true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
+                Assert.True(result.ExitCode == 0);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
-                settings = Configuration.Settings.LoadDefaultSettings(
+                settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
@@ -270,7 +288,7 @@ namespace NuGet.CommandLine.Test
                 var disabledSource = disabledSources.Single();
                 Assert.Equal("Microsoft and .NET", disabledSource.Key);
 
-                packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                packageSourceProvider = new PackageSourceProvider(settings);
                 sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 var testSources = sources.Where(s => s.Name == "test_source");
@@ -283,41 +301,42 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_DisableSource()
         {
             // Arrange
-            var nugetexe = Util.GetNuGetExePath();
-
             using (var configFileDirectory = TestDirectory.Create())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
-                Util.CreateFile(configFileDirectory, configFileName,
+                var nugetConfig =
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
     <add key=""test_source"" value=""http://test_source"" />
   </packageSources>
-</configuration>");
+</configuration>";
+                CreateXmlFile(configFilePath, nugetConfig);
 
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Disable",
-                    "-Name",
+                    "--Name",
                     "test_source",
-                    "-ConfigFile",
+                    "--ConfigFile",
                     configFilePath
                 };
 
                 // Act
-                var settings = Configuration.Settings.LoadDefaultSettings(
+                var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
 
-                var packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
                 Assert.Single(sources);
 
@@ -328,20 +347,21 @@ namespace NuGet.CommandLine.Test
 
                 // Main Act
                 var result = CommandRunner.Run(
-                    nugetexe,
+                    dotnetExe,
                     Directory.GetCurrentDirectory(),
                     string.Join(" ", args),
                     true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
+                Assert.True(result.ExitCode == 0);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
-                settings = Configuration.Settings.LoadDefaultSettings(
+                settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
                     null);
 
-                packageSourceProvider = new Configuration.PackageSourceProvider(settings);
+                packageSourceProvider = new PackageSourceProvider(settings);
                 sources = packageSourceProvider.LoadPackageSources().ToList();
 
                 var testSources = sources.Where(s => s.Name == "test_source");
@@ -354,30 +374,32 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Theory]
+        //TODO:  [PlatformFact(Platform.Windows)]
+        [Theory()]
         [InlineData("sources a b")]
         [InlineData("sources a b c")]
         [InlineData("sources B a -ConfigFile file.txt -Name x -Source y")]
         public void SourcesCommandTest_Failure_InvalidArguments(string cmd)
         {
-            Util.TestCommandInvalidArguments(cmd);
+            TestCommandInvalidArguments(cmd);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var nugetexe = Util.GetNuGetExePath();
+                var dotnetExe = _fixture.TestDotnetCli;
                 var args = new string[] {
+                    "nuget",
                     "sources",
                     "Add",
                     "-Name",
                     "test_source",
-                    "-Source",
+                    "--Source",
                     "http://test_source",
-                    "-Verbosity",
+                    "--Verbosity",
                     "Quiet"
                 };
                 var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
@@ -386,20 +408,71 @@ namespace NuGet.CommandLine.Test
                 // Set the working directory to C:\, otherwise,
                 // the test will change the nuget.config at the code repo's root directory
                 // And, will fail since global nuget.config is updated
-                var result = CommandRunner.Run(nugetexe, root, string.Join(" ", args), true);
+                var result = CommandRunner.Run(dotnetExe, root, string.Join(" ", args), true);
 
                 // Assert
-                Util.VerifyResultSuccess(result);
+                Assert.True(result.ExitCode == 0);
+                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
                 // Ensure that no messages are shown with Verbosity as Quiet
                 Assert.Equal(string.Empty, result.Item2);
-                var settings = Configuration.Settings.LoadDefaultSettings(null, null, null);
+                var settings = Settings.LoadDefaultSettings(null, null, null);
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
                 Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
             }
         }
+
+
+        /// <summary>
+        /// Verify non-zero status code and proper messages
+        /// </summary>
+        /// <remarks>Checks invalid arguments message in stderr, check help message in stdout</remarks>
+        /// <param name="commandName">The nuget.exe command name to verify, without "nuget.exe" at the beginning</param>
+        public void TestCommandInvalidArguments(string command)
+        {
+            // Act
+            var result = CommandRunner.Run(
+                _fixture.TestDotnetCli,
+                Directory.GetCurrentDirectory(),
+                command,
+                waitForExit: true);
+
+            var commandSplit = command.Split(' ');
+
+            // Break the test if no proper command is found
+            if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
+                Assert.True(false, "command not found");
+
+            var mainCommand = commandSplit[0];
+
+            // Assert command
+            Assert.Contains(mainCommand, result.Item3, StringComparison.InvariantCultureIgnoreCase);
+            // Assert invalid argument message
+            var invalidMessage = string.Format(": invalid arguments.", mainCommand);
+            // Verify Exit code
+            VerifyResultFailure(result, invalidMessage);
+            // Verify traits of help message in stdout
+            Assert.Contains("usage:", result.Item2);
+        }
+
+        /// <summary>
+        /// Utility for asserting faulty executions of nuget.exe
+        /// 
+        /// Asserts a non-zero status code and a message on stderr.
+        /// </summary>
+        /// <param name="result">An instance of <see cref="CommandRunnerResult"/> with command execution results</param>
+        /// <param name="expectedErrorMessage">A portion of the error message to be sent</param>
+        public static void VerifyResultFailure(CommandRunnerResult result,
+                                               string expectedErrorMessage)
+        {
+            Assert.True(
+                result.Item1 != 0,
+                "nuget.exe DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+
+            Assert.True(
+                result.Item3.Contains(expectedErrorMessage),
+                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item3);
+        }
     }
-
-
 }
