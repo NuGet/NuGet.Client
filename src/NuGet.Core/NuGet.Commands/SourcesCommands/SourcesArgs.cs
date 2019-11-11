@@ -25,16 +25,24 @@ namespace NuGet.Commands
         public string ConfigFile { get; }
         private bool IsQuiet { get; }
         private ILogger Logger { get; }
+        private Log LogMinimalOverride { get; }
         public Log LogMinimal { get; }
 
         public void LogMinimalRespectingQuiet(string data)
         {
             if (!IsQuiet)
             {
-                Logger.LogMinimal(data);
+                if (LogMinimalOverride != null)
+                {
+                    LogMinimalOverride(data);
+                }
+                else
+                {
+                    Logger.LogMinimal(data);
+                }
             }
         }
-        
+
         public SourcesArgs(
             ISettings settings,
             IPackageSourceProvider sourceProvider,
@@ -49,7 +57,8 @@ namespace NuGet.Commands
             bool interactive,
             string configFile,
             bool isQuiet,
-            ILogger logger
+            ILogger logger,
+            Log logMinimalOverride
             )
         {
             Settings = settings;
@@ -67,6 +76,7 @@ namespace NuGet.Commands
             IsQuiet = isQuiet;
             Logger = logger;
             LogMinimal = LogMinimalRespectingQuiet;
+            LogMinimalOverride = logMinimalOverride;
         }
     }
 }
