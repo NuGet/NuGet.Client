@@ -929,8 +929,9 @@ namespace NuGet.Commands
         /// <param name="projectDirectory">The full path to the project directory.</param>
         /// <param name="projectName">The name of the project file.</param>
         /// <param name="log">An <see cref="ILogger"/> object used to log messages.</param>
-        /// <returns>A <see cref="Tuple{ProjectStyle, bool}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.</returns>
-        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, ILogger log)
+        /// <returns>A <see cref="Tuple{ProjectStyle, bool}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
+        /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle)? GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, ILogger log)
         {
             ProjectStyle projectStyle = ProjectStyle.Unknown;
 
@@ -940,6 +941,8 @@ namespace NuGet.Commands
                 if (!Enum.TryParse(restoreProjectStyle, ignoreCase: true, out ProjectStyle userSuppliedProjectStyle))
                 {
                     log.Log(LogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_InvalidProjectRestoreStyle, restoreProjectStyle)));
+
+                    return null;
                 }
 
                 projectStyle = userSuppliedProjectStyle;
@@ -954,7 +957,7 @@ namespace NuGet.Commands
                 // If this is not a PackageReference project check if project.json or projectName.project.json exists.
                 projectStyle = ProjectStyle.ProjectJson;
             }
-            else if (MSBuildRestoreUtility.ProjectHasPackagesConfigFile(projectDirectory, projectName))
+            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName))
             {
                 // If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists
                 projectStyle = ProjectStyle.PackagesConfig;
