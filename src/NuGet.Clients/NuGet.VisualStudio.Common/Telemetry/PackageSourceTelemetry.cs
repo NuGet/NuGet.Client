@@ -18,9 +18,6 @@ namespace NuGet.VisualStudio.Telemetry
         private List<SourceRepository> _sources;
         private Guid _parentId;
 
-        /// <summary>Intended only for unit testing. Better than using reflection?</summary>
-        internal ConcurrentDictionary<string, Data> AggregatedData => _data;
-
         public PackageSourceTelemetry(List<SourceRepository> sources, Guid parentId)
         {
             _data = new ConcurrentDictionary<string, Data>();
@@ -29,9 +26,14 @@ namespace NuGet.VisualStudio.Telemetry
             _parentId = parentId;
         }
 
-        internal void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
+        private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
         {
-            var data = _data.GetOrAdd(pdEvent.Source, _ => new Data());
+            AddAggregateData(pdEvent, _data);
+        }
+
+        public static void AddAggregateData(ProtocolDiagnosticEvent pdEvent, ConcurrentDictionary<string, Data> allData)
+        {
+            var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
 
             var resourceData = pdEvent.Url.OriginalString.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
                 ? data.Nupkg
@@ -91,7 +93,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        private void ApplyTiming(ResourceTimingData timingData, TimeSpan duration)
+        private static void ApplyTiming(ResourceTimingData timingData, TimeSpan duration)
         {
             timingData.Requests++;
             timingData.TotalDuration += duration;
@@ -124,7 +126,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
        }
 
-        internal TelemetryEvent ToTelemetry(Data data, string source, SourceRepository sourceFeed, string parentId)
+        internal static TelemetryEvent ToTelemetry(Data data, string source, SourceRepository sourceFeed, string parentId)
         {
             if (data.Metadata.EventTiming.Requests == 0 || data.Nupkg.EventTiming.Requests == 0)
             {
@@ -134,7 +136,7 @@ namespace NuGet.VisualStudio.Telemetry
             var telemetry = new TelemetryEvent("PackageSourceDiagnostics",
                 new Dictionary<string, object>()
                 {
-                            { "ParentId", parentId },
+                    { "ParentId", parentId },
                 });
 
             // source info
@@ -218,19 +220,19 @@ namespace NuGet.VisualStudio.Telemetry
             return telemetry;
         }
 
-            private TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
+        private static TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
         {
-            var @event = new TelemetryEvent(null);
+            var subevent = new TelemetryEvent(null);
 
             foreach (var pair in statusCodes)
             {
-                @event[pair.Key.ToString()] = pair.Value;
+                subevent[pair.Key.ToString()] = pair.Value;
             }
 
-            return @event;
+            return subevent;
         }
 
-        private string GetMsFeed(PackageSource source)
+        private static string GetMsFeed(PackageSource source)
         {
             if (source.IsHttp)
             {
@@ -258,7 +260,7 @@ namespace NuGet.VisualStudio.Telemetry
             return null;
         }
 
-        internal class Data
+        public class Data
         {
             public ResourceData Metadata { get; }
             public ResourceData Nupkg { get; }
@@ -270,7 +272,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal class ResourceData
+        public class ResourceData
         {
             public object Lock = new object();
             public ResourceTimingData EventTiming = new ResourceTimingData();
@@ -284,7 +286,7 @@ namespace NuGet.VisualStudio.Telemetry
             public int Failed;
         }
 
-        internal class ResourceTimingData
+        public class ResourceTimingData
         {
             public int Requests;
             public TimeSpan TotalDuration;

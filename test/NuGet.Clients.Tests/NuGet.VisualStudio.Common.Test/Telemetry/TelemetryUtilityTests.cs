@@ -6,7 +6,7 @@ using NuGet.Configuration;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
-namespace NuGet.VisualStudio.Common.Test
+namespace NuGet.VisualStudio.Common.Test.Telemetry
 {
     public class TelemetryUtilityTests
     {

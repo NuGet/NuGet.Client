@@ -12,7 +12,7 @@ namespace NuGet.Protocol.Utility
         public long Bytes { get; }
         public bool IsSuccess { get; }
 
-        internal ProtocolDiagnosticEvent(
+        public ProtocolDiagnosticEvent(
             DateTime timestamp,
             string source,
             Uri url,
