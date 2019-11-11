@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio.Telemetry
             AddAggregateData(pdEvent, _data);
         }
 
-        public static void AddAggregateData(ProtocolDiagnosticEvent pdEvent, ConcurrentDictionary<string, Data> allData)
+        internal static void AddAggregateData(ProtocolDiagnosticEvent pdEvent, ConcurrentDictionary<string, Data> allData)
         {
             var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
 
@@ -68,7 +68,7 @@ namespace NuGet.VisualStudio.Telemetry
                     resourceData.Cancelled++;
                 }
 
-                if (pdEvent.IsLastAttempt && !pdEvent.IsSuccess)
+                if (pdEvent.IsLastAttempt && !pdEvent.IsSuccess && !pdEvent.IsCancelled)
                 {
                     resourceData.Failed++;
                 }
@@ -260,19 +260,19 @@ namespace NuGet.VisualStudio.Telemetry
             return null;
         }
 
-        public class Data
+        internal class Data
         {
-            public ResourceData Metadata { get; }
-            public ResourceData Nupkg { get; }
+            internal ResourceData Metadata { get; }
+            internal ResourceData Nupkg { get; }
 
-            public Data()
+            internal Data()
             {
                 Metadata = new ResourceData();
                 Nupkg = new ResourceData();
             }
         }
 
-        public class ResourceData
+        internal class ResourceData
         {
             public object Lock = new object();
             public ResourceTimingData EventTiming = new ResourceTimingData();
@@ -286,7 +286,7 @@ namespace NuGet.VisualStudio.Telemetry
             public int Failed;
         }
 
-        public class ResourceTimingData
+        internal class ResourceTimingData
         {
             public int Requests;
             public TimeSpan TotalDuration;
