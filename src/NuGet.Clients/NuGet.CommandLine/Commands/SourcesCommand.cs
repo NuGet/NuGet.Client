@@ -71,7 +71,8 @@ namespace NuGet.CommandLine
                 interactive,
                 ConfigFile,
                 isQuiet: Verbosity == Verbosity.Quiet,
-                Console
+                Console,
+                logMinimalOverride: null // no override needed
                 );
 
             SourcesRunner.Run(sourcesArgs);
