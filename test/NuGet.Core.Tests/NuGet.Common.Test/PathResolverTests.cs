@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,11 +12,11 @@ namespace NuGet.Common.Test
 {
     public class PathResolverTests : IClassFixture<TestDirectoryFixture>
     {
-        private TestDirectoryFixture _fixture;
+        private readonly TestDirectoryFixture _fixture;
 
         public PathResolverTests(TestDirectoryFixture fixture)
         {
-            _fixture = fixture;
+            _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
         [Theory]
@@ -36,7 +36,7 @@ namespace NuGet.Common.Test
         [InlineData(@"**\*.a", true)]
         [InlineData("?", false)]
         [InlineData("[", false)]
-        public void PathResolver_IsWildcardSearch(string filter, bool expectedResult)
+        public void IsWildcardSearch_WithValidFilter_ReturnsExpectedResult(string filter, bool expectedResult)
         {
             Assert.Equal(expectedResult, PathResolver.IsWildcardSearch(filter));
         }
@@ -50,7 +50,7 @@ namespace NuGet.Common.Test
         [InlineData("a/", true)]
         [InlineData("/a", false)]
         [InlineData("/a/", true)]
-        public void PathResolver_IsDirectoryPath(string path, bool expectedResult)
+        public void IsDirectoryPath_WithSpecificPath_ReturnsExpectedResult(string path, bool expectedResult)
         {
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
@@ -66,7 +66,7 @@ namespace NuGet.Common.Test
         [InlineData(@"C:\a\", true)]
         [InlineData(@".\", true)]
         [InlineData(@"..\", true)]
-        public void PathResolver_IsDirectoryPath_OnWindows(string path, bool expectedResult)
+        public void IsDirectoryPath_WithSpecificPath_OnWindows_ReturnsExpectedResult(string path, bool expectedResult)
         {
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
@@ -82,7 +82,7 @@ namespace NuGet.Common.Test
         [InlineData(@"C:\a\", false)]
         [InlineData(@".\", false)]
         [InlineData(@"..\", false)]
-        public void PathResolver_IsDirectoryPath_OnMacOS(string path, bool expectedResult)
+        public void IsDirectoryPath_WithSpecificPath_OnMacOs_ReturnsExpectedResult(string path, bool expectedResult)
         {
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
@@ -98,7 +98,7 @@ namespace NuGet.Common.Test
         [InlineData(@"C:\a\", false)]
         [InlineData(@".\", false)]
         [InlineData(@"..\", false)]
-        public void PathResolver_IsDirectoryPath_OnLinux(string path, bool expectedResult)
+        public void IsDirectoryPath_WithSpecificPath_OnLinux_ReturnsExpectedResult(string path, bool expectedResult)
         {
             Assert.Equal(expectedResult, PathResolver.IsDirectoryPath(path));
         }
@@ -109,117 +109,120 @@ namespace NuGet.Common.Test
         [InlineData(@"**\")]
         [InlineData("**/a/*.b")]
         [InlineData(@"**\a\*.b")]
-        public void PathResolver_NormalizeWildcardForExcludedFiles_WithLeadingGlobstarReturnsWildcardAsIs(string wildcard)
+        public void NormalizeWildcardForExcludedFiles_WithLeadingGlobstar_ReturnsWildcardAsIs(string wildcard)
         {
-            var actualResult = PathResolver.NormalizeWildcardForExcludedFiles(_fixture.Path, wildcard);
+            string actualResult = PathResolver.NormalizeWildcardForExcludedFiles(_fixture.Path, wildcard);
 
             Assert.Equal(wildcard, actualResult);
         }
 
         [Fact]
-        public void PathResolver_NormalizeWildcardForExcludedFiles_HandlesLeadingOsSpecificParentPathReference()
+        public void NormalizeWildcardForExcludedFiles_WithLeadingParentPathReference_ReturnsNormalizedWildcard()
         {
-            var basePath = Path.Combine(_fixture.Path, "dir1", "dir2");
-            var wildcard = string.Format("..{0}..{0}*", Path.DirectorySeparatorChar);
-            var expectedResult = string.Format("{0}{1}*", new DirectoryInfo(_fixture.Path).FullName, Path.DirectorySeparatorChar);
-            var actualResult = PathResolver.NormalizeWildcardForExcludedFiles(basePath, wildcard);
+            string basePath = Path.Combine(_fixture.Path, "dir1", "dir2");
+            string wildcard = string.Format("..{0}..{0}*", Path.DirectorySeparatorChar);
+            string expectedResult = string.Format("{0}{1}*", new DirectoryInfo(_fixture.Path).FullName, Path.DirectorySeparatorChar);
+            string actualResult = PathResolver.NormalizeWildcardForExcludedFiles(basePath, wildcard);
 
             Assert.Equal(expectedResult, actualResult);
         }
 
         [Fact]
-        public void PathResolver_GetMatches_HandlesDotGlobstar()
+        public void GetMatches_WithDotGlobstar_ReturnsMatches()
         {
-            var sources = GetPlatformSpecificPaths(new[] { ".{0}a{0}.c", ".{0}a{0}c", ".{0}.c", ".{0}c", "bc", "b.c", "c", ".c" });
-            var wildcards = new[] { ".**" };
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = GetPlatformSpecificPaths(new[] { ".c" });
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { ".{0}a{0}.c", ".{0}a{0}c", ".{0}.c", ".{0}c", "bc", "b.c", "c", ".c" });
+            string[] wildcards = new[] { ".**" };
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".c" });
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_GetMatches_HandlesGlobstarSlash()
+        public void GetMatches_WithGlobstarSlash_ReturnsMatches()
         {
-            var sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
-            var wildcards = GetPlatformSpecificPaths(new[] { "a{0}**{0}d" });
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "a{0}**{0}d" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_GetMatches_WithGlobstarSlashFileNameMatchesFileName()
+        public void GetMatches_WithGlobstarSlashFileName_ReturnsFileNameMatches()
         {
-            var sources = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c", "a{0}bc", "bc" });
-            var wildcards = GetPlatformSpecificPaths(new[] { "**{0}c" });
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c" });
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c", "a{0}bc", "bc" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "**{0}c" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c" });
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_GetMatches_HandlesGlobstar()
+        public void GetMatches_WithGlobstar_ReturnsMatches()
         {
-            var sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
-            var wildcards = GetPlatformSpecificPaths(new[] { "a{0}**d" });
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "a{0}**d" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}b{0}d", "a{0}b{0}c{0}d" });
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_GetMatchesHandlesStar()
+        public void GetMatches_WithStar_ReturnsMatches()
         {
-            var sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
-            var wildcards = GetPlatformSpecificPaths(new[] { "a{0}*{0}*{0}d" });
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = GetPlatformSpecificPaths(new[] { "a{0}b{0}c{0}d" });
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { "a{0}d", "a{0}de", "a{0}b{0}d", "a{0}b{0}de", "a{0}b{0}c{0}d", "a{0}b{0}c{0}de" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "a{0}*{0}*{0}d" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}b{0}c{0}d" });
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_GetMatches_HandlesQuestionMark()
+        public void GetMatches_WithQuestionMark_ReturnsMatches()
         {
-            var sources = new[] { "a", "ab", "abc", "ac", "adc" };
-            var wildcards = new[] { "a?c" };
-            var actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
-            var expectedResults = new[] { "abc", "adc" };
+            string[] sources = new[] { "a", "ab", "abc", "ac", "adc" };
+            string[] wildcards = new[] { "a?c" };
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            string[] expectedResults = new[] { "abc", "adc" };
 
             Assert.Equal(expectedResults, actualResults);
         }
 
         [Fact]
-        public void PathResolver_FilterPackageFiles_HandlesWildcard()
+        public void FilterPackageFiles_WithWildcard_RemovesWildcardMatches()
         {
             var sources = new List<string>(GetPlatformSpecificPaths(new[] { "c", "a{0}c", "a{0}b{0}c", "a{0}d" }));
-            var wildcards = GetPlatformSpecificPaths(new[] { "**{0}c" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "**{0}c" });
 
             PathResolver.FilterPackageFiles(sources, path => path, wildcards);
 
-            var expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d" });
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { "a{0}d" });
             Assert.Equal(expectedResults, sources);
         }
 
         [Theory]
         [InlineData("dir1/dir2")]
         [InlineData(@"dir1\dir2")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryFindsNoMatchingFiles(string searchPath)
+        public void PerformWildcardSearch_WithDirectory_FindsNoMatchingFiles(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(new string[] { }, actualFullPaths);
         }
 
         [Fact]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryFindsMatchingEmptyDirectory()
+        public void PerformWildcardSearch_WithDirectory_FindsMatchingEmptyDirectory()
         {
             string normalizedBasePath;
-            var actualResults = PathResolver.PerformWildcardSearch(_fixture.Path, "dir*", includeEmptyDirectories: true, normalizedBasePath: out normalizedBasePath);
+            IEnumerable<PathResolver.SearchPathResult> actualResults = PathResolver.PerformWildcardSearch(
+                _fixture.Path, "dir*",
+                includeEmptyDirectories: true,
+                normalizedBasePath: out normalizedBasePath);
 
             Assert.Collection(actualResults, result =>
             {
@@ -235,17 +238,19 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/dir2/")]
         [InlineData(@"dir1\dir2\")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursively_OnWindows_FindsAllMatchingFiles(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     @"\dir1\dir2\file1.txt",
                     @"\dir1\dir2\file2.txt",
                     @"\dir1\dir2\dir3\file1.txt",
                     @"\dir1\dir2\dir3\file2.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [PlatformTheory(Platform.Darwin)]
@@ -257,9 +262,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir2/dir3/file2.txt"
             })]
         [InlineData(@"dir1\dir2\", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursivelyFindsAllMatchingFiles_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursively_OnMacOs_FindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -273,48 +278,52 @@ namespace NuGet.Common.Test
                 "/dir1/dir2/dir3/file2.txt"
             })]
         [InlineData(@"dir1\dir2\", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursivelyFindsAllMatchingFiles_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryAndTrailingSlashRecursively_OnLinux_FindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
 
         [Fact]
-        public void PathResolver_PerformWildcardSearch_WithFileNameFindsNoMatchingFile()
+        public void PerformWildcardSearch_WithFileName_FindsNoMatchingFile()
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "file3.txt");
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "file3.txt");
 
             Verify(new string[] { }, actualFullPaths);
         }
 
         [Fact]
-        public void PathResolver_PerformWildcardSearch_WithFileNameFindsMatchingFile()
+        public void PerformWildcardSearch_WithFileName_FindsMatchingFile()
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "file1.txt");
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "file1.txt");
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     $"{Path.DirectorySeparatorChar}file1.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [Fact]
-        public void PathResolver_PerformWildcardSearch_WithFileNamePatternFindsMatchingFiles()
+        public void PerformWildcardSearch_WithFileNamePattern_FindsMatchingFiles()
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "*.txt");
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "*.txt");
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     $"{Path.DirectorySeparatorChar}file1.txt",
                     $"{Path.DirectorySeparatorChar}file2.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [Fact]
-        public void PathResolver_PerformWildcardSearch_WithFileNamePatternFindsNoMatchingFile()
+        public void PerformWildcardSearch_WithFileNamePattern_FindsNoMatchingFile()
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "*.dll");
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, "*.dll");
 
             Verify(new string[] { }, actualFullPaths);
         }
@@ -322,9 +331,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/file2.txt")]
         [InlineData(@"dir1\file2.txt")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithDirectoryAndFileName_OnWindows_FindsMatchingFile(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(new[] { @"\dir1\file2.txt" }, actualFullPaths);
         }
@@ -332,9 +341,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/file2.txt", new[] { "/dir1/file2.txt" })]
         [InlineData(@"dir1\file2.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryAndFileName_OnMacOs_FindsMatchingFile(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -342,9 +351,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/file2.txt", new[] { "/dir1/file2.txt" })]
         [InlineData(@"dir1\file2.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryAndFileNameFindsMatchingFile_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryAndFileName_OnLinux_FindsMatchingFile(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -352,9 +361,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/../file1.txt")]
         [InlineData(@"dir1\..\file1.txt")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithDirectoryRelativePathAndFileName_OnWindows_FindsMatchingFile(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(new[] { @"\dir1\..\file1.txt" }, actualFullPaths);
         }
@@ -362,9 +371,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Darwin)]
         [InlineData("dir1/../file1.txt", new[] { "/dir1/../file1.txt" })]
         [InlineData(@"dir1\..\file1.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryRelativePathAndFileName_OnMacOs_FindsMatchingFile(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -372,9 +381,9 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Linux)]
         [InlineData("dir1/../file1.txt", new[] { "/dir1/../file1.txt" })]
         [InlineData(@"dir1\..\file1.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryRelativePathAndFileNameFindsMatchingFile_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryRelativePathAndFileName_OnLinux_FindsMatchingFile(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -382,18 +391,20 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("**/file1.txt")]
         [InlineData(@"**\file1.txt")]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNameRecursivelyFindsAllMatchingFiles(string searchPath)
+        public void PerformWildcardSearch_WithGlobstarAndFileName_OnWindows_RecursivelyFindsAllMatchingFiles(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     @"\file1.txt",
                     @"\dir1\file1.txt",
                     @"\dir1\dir2\file1.txt",
                     @"\dir1\dir2\dir3\file1.txt",
                     @"\dir1\dir4\file1.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [PlatformTheory(Platform.Darwin)]
@@ -406,9 +417,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file1.txt"
             })]
         [InlineData(@"**\file1.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNameRecursivelyFindsAllMatchingFiles_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithGlobstarAndFileName_OnMacOs_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -423,9 +434,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file1.txt"
             })]
         [InlineData(@"**\file1.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNameRecursivelyFindsAllMatchingFiles_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithGlobstarAndFileName_OnLinux_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -433,11 +444,12 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("**/*.txt")]
         [InlineData(@"**\*.txt")]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithGlobstarAndFileNamePattern_OnWindows_RecursivelyFindsAllMatchingFiles(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     @"\file1.txt",
                     @"\file2.txt",
@@ -449,7 +461,8 @@ namespace NuGet.Common.Test
                     @"\dir1\dir2\dir3\file2.txt",
                     @"\dir1\dir4\file1.txt",
                     @"\dir1\dir4\file2.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [PlatformTheory(Platform.Darwin)]
@@ -467,9 +480,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"**\*.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithGlobstarAndFileNamePattern_OnMacOs_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -489,9 +502,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"**\*.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithGlobstarAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithGlobstarAndFileNamePattern_OnLinux_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -499,17 +512,19 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/**/file2.txt")]
         [InlineData(@"dir1\**\file2.txt")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectoryRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectory_OnWindows_RecursivelyFindsAllMatchingFiles(string searchPath)
         {
             var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     @"\dir1\file2.txt",
                     @"\dir1\dir2\file2.txt",
                     @"\dir1\dir2\dir3\file2.txt",
                     @"\dir1\dir4\file2.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [PlatformTheory(Platform.Darwin)]
@@ -521,9 +536,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"dir1\**\file2.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectoryRecursivelyFindsAllMatchingFiles_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectory_OnMacOs_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -537,9 +552,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"dir1\**\file2.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectoryRecursivelyFindsAllMatchingFiles_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryGlobstarAndFileNameAtNonRootDirectory_OnLinux_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -547,17 +562,19 @@ namespace NuGet.Common.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("dir1/dir*/*.txt")]
         [InlineData(@"dir1\dir*\*.txt")]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryPatternAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnWindows(string searchPath)
+        public void PerformWildcardSearch_WithDirectoryPatternAndFileNamePattern_OnWindows_RecursivelyFindsAllMatchingFiles(string searchPath)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
-            Verify(new[]
+            Verify(
+                new[]
                 {
                     @"\dir1\dir2\file1.txt",
                     @"\dir1\dir2\file2.txt",
                     @"\dir1\dir4\file1.txt",
                     @"\dir1\dir4\file2.txt"
-                }, actualFullPaths);
+                },
+                actualFullPaths);
         }
 
         [PlatformTheory(Platform.Darwin)]
@@ -569,9 +586,9 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"dir1\dir*\*.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryPatternAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnMacOs(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryPatternAndFileNamePattern_OnMacOs_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
@@ -585,18 +602,18 @@ namespace NuGet.Common.Test
                 "/dir1/dir4/file2.txt"
             })]
         [InlineData(@"dir1\dir*\*.txt", new string[] { })]
-        public void PathResolver_PerformWildcardSearch_WithDirectoryPatternAndFileNamePatternRecursivelyFindsAllMatchingFiles_OnLinux(string searchPath, string[] expectedResults)
+        public void PerformWildcardSearch_WithDirectoryPatternAndFileNamePattern_OnLinux_RecursivelyFindsAllMatchingFiles(string searchPath, string[] expectedResults)
         {
-            var actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
+            IEnumerable<string> actualFullPaths = PathResolver.PerformWildcardSearch(_fixture.Path, searchPath);
 
             Verify(expectedResults, actualFullPaths);
         }
 
         private void Verify(IEnumerable<string> expectedRelativePaths, IEnumerable<string> actualFullPaths)
         {
-            var actualRelativePaths = actualFullPaths.Select(fullPath => fullPath.Substring(_fixture.Path.Length));
-            var expectedResults = expectedRelativePaths.OrderBy(path => path);
-            var actualResults = actualRelativePaths.OrderBy(path => path);
+            IEnumerable<string> actualRelativePaths = actualFullPaths.Select(fullPath => fullPath.Substring(_fixture.Path.Length));
+            IOrderedEnumerable<string> expectedResults = expectedRelativePaths.OrderBy(path => path);
+            IOrderedEnumerable<string> actualResults = actualRelativePaths.OrderBy(path => path);
 
             Assert.Equal(expectedResults, actualResults);
         }
@@ -628,12 +645,9 @@ namespace NuGet.Common.Test
     */
     public sealed class TestDirectoryFixture : IDisposable
     {
-        private TestDirectory _rootDirectory;
+        private readonly TestDirectory _rootDirectory;
 
-        public string Path
-        {
-            get { return _rootDirectory.Path; }
-        }
+        public string Path => _rootDirectory.Path;
 
         public TestDirectoryFixture()
         {
@@ -650,11 +664,11 @@ namespace NuGet.Common.Test
         private void PopulateTestDirectory()
         {
             var rootDirectory = new DirectoryInfo(_rootDirectory.Path);
-            var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
-            var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
-            var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
-            var directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
-            var directory5 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
+            DirectoryInfo directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+            DirectoryInfo directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+            DirectoryInfo directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
+            DirectoryInfo directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
+            Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
 
             CreateTestFiles(rootDirectory);
             CreateTestFiles(directory1);

@@ -18,9 +18,13 @@ namespace NuGet.Common
         /// <param name="getPath">Function that returns the path to filter a package file </param>
         /// <param name="wildcards">The wildcards to apply to match the path with.</param>
         /// <returns></returns>
-        public static IEnumerable<T> GetMatches<T>(IEnumerable<T> source, Func<T, string> getPath, IEnumerable<string> wildcards)
+        public static IEnumerable<T> GetMatches<T>(
+            IEnumerable<T> source,
+            Func<T, string> getPath,
+            IEnumerable<string> wildcards)
         {
-            var filters = wildcards.Select(WildcardToRegex);
+            IEnumerable<Regex> filters = wildcards.Select(WildcardToRegex);
+
             return source.Where(item =>
             {
                 string path = getPath(item);
@@ -31,19 +35,23 @@ namespace NuGet.Common
         /// <summary>
         /// Removes files from the source that match any wildcard.
         /// </summary>
-        public static void FilterPackageFiles<T>(ICollection<T> source,
-            Func<T, string> getPath, IEnumerable<string> wildcards)
+        public static void FilterPackageFiles<T>(
+            ICollection<T> source,
+            Func<T, string> getPath,
+            IEnumerable<string> wildcards)
         {
             GetFilteredPackageFiles<T>(source, getPath, wildcards);
         }
 
-        public static IEnumerable<T> GetFilteredPackageFiles<T>(ICollection<T> source,
-            Func<T, string> getPath, IEnumerable<string> wildcards)
+        public static IEnumerable<T> GetFilteredPackageFiles<T>(
+            ICollection<T> source,
+            Func<T, string> getPath,
+            IEnumerable<string> wildcards)
         {
             var matchedFiles = new HashSet<T>(GetMatches(source, getPath, wildcards));
+            List<T> toRemove = source.Where(matchedFiles.Contains).ToList();
 
-            IList<T> toRemove = source.Where(matchedFiles.Contains).ToList();
-            foreach (var item in toRemove)
+            foreach (T item in toRemove)
             {
                 source.Remove(item);
             }
@@ -64,7 +72,8 @@ namespace NuGet.Common
 
         private static Regex WildcardToRegex(string wildcard)
         {
-            var pattern = Regex.Escape(wildcard);
+            string pattern = Regex.Escape(wildcard);
+
             if (Path.DirectorySeparatorChar == '/')
             {
                 // regex wildcard adjustments for *nix-style file systems
@@ -92,12 +101,20 @@ namespace NuGet.Common
 
         public static IEnumerable<string> PerformWildcardSearch(string basePath, string searchPath)
         {
-            string normalizedBasePath;
-            var searchResults = PerformWildcardSearch(basePath, searchPath, includeEmptyDirectories: false, normalizedBasePath: out normalizedBasePath);
+            IEnumerable<SearchPathResult> searchResults = PerformWildcardSearch(
+                basePath,
+                searchPath,
+                includeEmptyDirectories: false,
+                normalizedBasePath: out string normalizedBasePath);
+
             return searchResults.Select(s => s.Path);
         }
 
-        public static IEnumerable<SearchPathResult> PerformWildcardSearch(string basePath, string searchPath, bool includeEmptyDirectories, out string normalizedBasePath)
+        public static IEnumerable<SearchPathResult> PerformWildcardSearch(
+            string basePath,
+            string searchPath,
+            bool includeEmptyDirectories,
+            out string normalizedBasePath)
         {
             bool searchDirectory = false;
 
@@ -129,7 +146,7 @@ namespace NuGet.Common
 
             // Starting from the base path, enumerate over all files and match it using the wildcard expression provided by the user.
             // Note: We use Directory.GetFiles() instead of Directory.EnumerateFiles() here to support Mono
-            var matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
+            IEnumerable<SearchPathResult> matchedFiles = from file in Directory.GetFiles(normalizedBasePath, "*.*", searchOption)
                                where searchRegex.IsMatch(file)
                                select new SearchPathResult(file, isFile: true);
 
@@ -140,13 +157,13 @@ namespace NuGet.Common
 
             // retrieve empty directories
             // Note: We use Directory.GetDirectories() instead of Directory.EnumerateDirectories() here to support Mono
-            var matchedDirectories = from directory in Directory.GetDirectories(normalizedBasePath, "*.*", searchOption)
+            IEnumerable<SearchPathResult> matchedDirectories = from directory in Directory.GetDirectories(normalizedBasePath, "*.*", searchOption)
                                      where searchRegex.IsMatch(directory) && IsEmptyDirectory(directory)
                                      select new SearchPathResult(directory, isFile: false);
 
             if (searchDirectory && IsEmptyDirectory(normalizedBasePath))
             {
-                matchedDirectories = matchedDirectories.Concat(new [] { new SearchPathResult(normalizedBasePath, isFile: false) });
+                matchedDirectories = matchedDirectories.Concat(new[] { new SearchPathResult(normalizedBasePath, isFile: false) });
             }
 
             return matchedFiles.Concat(matchedDirectories);
@@ -161,7 +178,7 @@ namespace NuGet.Common
                 // For paths without wildcard, we could either have base relative paths (such as lib\foo.dll) or paths outside the base path
                 // (such as basePath: C:\packages and searchPath: D:\packages\foo.dll)
                 // In this case, Path.Combine would pick up the right root to enumerate from.
-                var searchRoot = Path.GetDirectoryName(searchPath);
+                string searchRoot = Path.GetDirectoryName(searchPath);
                 basePathToEnumerate = Path.Combine(basePath, searchRoot);
             }
             else
@@ -180,6 +197,7 @@ namespace NuGet.Common
                     basePathToEnumerate = Path.Combine(basePath, nonWildcardPortion);
                 }
             }
+
             return basePathToEnumerate;
         }
 
@@ -189,7 +207,7 @@ namespace NuGet.Common
             string currentDirectoryPath = $".{Path.DirectorySeparatorChar}";
 
             // If no base path is provided, use the current directory.
-            basePath = String.IsNullOrEmpty(basePath) ? currentDirectoryPath : basePath;
+            basePath = string.IsNullOrEmpty(basePath) ? currentDirectoryPath : basePath;
 
             // If the search path is relative, transfer the parent directory portion to the base path.
             // This needs to be done because the base path determines the root for our enumeration.
@@ -224,29 +242,13 @@ namespace NuGet.Common
 
         public struct SearchPathResult
         {
-            private readonly string _path;
-            private readonly bool _isFile;
-
-            public string Path
-            {
-                get
-                {
-                    return _path;
-                }
-            }
-
-            public bool IsFile
-            {
-                get
-                {
-                    return _isFile;
-                }
-            }
+            public string Path { get; }
+            public bool IsFile { get; }
 
             public SearchPathResult(string path, bool isFile)
             {
-                _path = path;
-                _isFile = isFile;
+                Path = path;
+                IsFile = isFile;
             }
         }
     }
