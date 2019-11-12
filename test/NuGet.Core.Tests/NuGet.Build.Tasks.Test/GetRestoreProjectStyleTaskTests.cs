@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
+using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -15,7 +16,7 @@ namespace NuGet.Build.Tasks.Test
     public class GetRestoreProjectStyleTaskTests
     {
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenInvalidProjectStyleSupplied_LogsError()
+        public void Execute_WhenInvalidProjectStyleSupplied_LogsError()
         {
             var buildEngine = new TestBuildEngine();
             var testLogger = buildEngine.TestLogger;
@@ -28,11 +29,11 @@ namespace NuGet.Build.Tasks.Test
 
             task.Execute().Should().BeFalse();
 
-            testLogger.ErrorMessages.Should().ContainSingle().Which.Should().Be("Invalid project restore style 'Invalid'.");
+            testLogger.LogMessages.Should().Contain(i => i.Code == NuGetLogCode.NU1008 && i.Message == "Invalid project restore style 'Invalid'.");
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenNothingMatches_ReturnsUnknown()
+        public void Execute_WhenNothingMatches_ReturnsUnknown()
         {
             var buildEngine = new TestBuildEngine();
 
@@ -53,7 +54,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenProjectHasPackageReferenceItems_ReturnsPackageReference()
+        public void Execute_WhenProjectHasPackageReferenceItems_ReturnsPackageReference()
         {
             var buildEngine = new TestBuildEngine();
 
@@ -72,7 +73,7 @@ namespace NuGet.Build.Tasks.Test
         [Theory]
         [InlineData("packages.config")]
         [InlineData("packages.ProjectA.config")]
-        public void GetRestoreProjectStyleTask_WhenProjectHasPackagesConfigFile_ReturnsPackagesConfig(string packagesConfigFileName)
+        public void Execute_WhenProjectHasPackagesConfigFile_ReturnsPackagesConfig(string packagesConfigFileName)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -95,7 +96,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenProjectJsonPathSpecified_ReturnsProjectJson()
+        public void Execute_WhenProjectJsonPathSpecified_ReturnsProjectJson()
         {
             var buildEngine = new TestBuildEngine();
 
@@ -112,7 +113,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenProjectStyleSupplied_ReturnsSuppliedProjectStyle()
+        public void Execute_WhenProjectStyleSupplied_ReturnsSuppliedProjectStyle()
         {
             foreach (var lowerCase in new[] { true, false })
             {
@@ -142,7 +143,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void GetRestoreProjectStyleTask_WhenUserSuppliedValueOverridesDefault_ReturnsUserSuppliedProjectStyle()
+        public void Execute_WhenUserSuppliedValueOverridesDefault_ReturnsUserSuppliedProjectStyle()
         {
             var expected = ProjectStyle.Standalone;
 

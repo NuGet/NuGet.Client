@@ -72,7 +72,7 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogOutputParam(log, nameof(IsPackageReferenceCompatibleProjectStyle), IsPackageReferenceCompatibleProjectStyle.ToString());
             BuildTasksUtility.LogOutputParam(log, nameof(ProjectStyle), ProjectStyle.ToString());
 
-            return !Log.HasLoggedErrors;
+            return result != null;
         }
     }
 }
