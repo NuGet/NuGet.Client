@@ -7,24 +7,28 @@ using System.Collections.Generic;
 using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Utility;
 
 namespace NuGet.VisualStudio.Telemetry
 {
     public sealed class PackageSourceTelemetry : IDisposable
     {
-        private ConcurrentDictionary<string, Data> _data;
-        private List<SourceRepository> _sources;
-        private Guid _parentId;
+        private readonly ConcurrentDictionary<string, Data> _data;
+        private readonly IDictionary<string, PackageSource> _sources;
+        private readonly Guid _parentId;
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
-        public PackageSourceTelemetry(List<SourceRepository> sources, Guid parentId)
+        public PackageSourceTelemetry(IEnumerable<PackageSource> sources, Guid parentId)
         {
+            if (sources == null)
+            {
+                throw new ArgumentNullException(nameof(sources));
+            }
+
             _data = new ConcurrentDictionary<string, Data>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
-            _sources = sources;
+            _sources = sources.ToDictionary(s => s.Source);
             _parentId = parentId;
         }
 
@@ -120,13 +124,19 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 Data data = kvp.Value;
                 string source = kvp.Key;
-                SourceRepository sourceFeed = _sources.FirstOrDefault(s => s.PackageSource.SourceUri?.OriginalString == source);
+                if (!_sources.TryGetValue(kvp.Key, out PackageSource packageSource))
+                {
+                    packageSource = null;
+                }
 
-                var telemetry = ToTelemetry(data, source, sourceFeed.PackageSource, parentId);
+                var telemetry = ToTelemetry(data, source, packageSource, parentId);
 
-                TelemetryActivity.EmitTelemetryEvent(telemetry);
+                if (telemetry != null)
+                {
+                    TelemetryActivity.EmitTelemetryEvent(telemetry);
+                }
             }
-       }
+        }
 
         internal static TelemetryEvent ToTelemetry(Data data, string source, PackageSource packageSource, string parentId)
         {
@@ -177,7 +187,7 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (data.Metadata.StatusCodes.Count > 0)
                 {
-                    telemetry.AddComplexData(PropertyNames.Metadata.Http.StatusCodes, ToStatusCodeTelemetry(data.Metadata.StatusCodes));
+                    telemetry.ComplexData[PropertyNames.Metadata.Http.StatusCodes] = ToStatusCodeTelemetry(data.Metadata.StatusCodes);
                 }
 
                 if (data.Metadata.EventTiming.Requests > 0)
@@ -208,7 +218,7 @@ namespace NuGet.VisualStudio.Telemetry
 
                 if (data.Nupkg.StatusCodes.Count > 0)
                 {
-                    telemetry.AddComplexData(PropertyNames.Nupkg.Http.StatusCodes, ToStatusCodeTelemetry(data.Nupkg.StatusCodes));
+                    telemetry.ComplexData[PropertyNames.Nupkg.Http.StatusCodes] = ToStatusCodeTelemetry(data.Nupkg.StatusCodes);
                 }
 
                 if (data.Nupkg.EventTiming.Requests > 0)
@@ -231,7 +241,7 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
         {
-            var subevent = new TelemetryEvent(null);
+            var subevent = new TelemetryEvent(eventName: null);
 
             foreach (var pair in statusCodes)
             {
@@ -283,12 +293,12 @@ namespace NuGet.VisualStudio.Telemetry
 
         internal class ResourceData
         {
-            public object Lock = new object();
-            public ResourceTimingData EventTiming = new ResourceTimingData();
+            public readonly object Lock = new object();
+            public readonly ResourceTimingData EventTiming = new ResourceTimingData();
             public ResourceTimingData HeaderTiming;
             public long TotalBytes;
             public long MaxBytes;
-            public Dictionary<int, int> StatusCodes = new Dictionary<int, int>();
+            public readonly Dictionary<int, int> StatusCodes = new Dictionary<int, int>();
             public int Successful;
             public int Retries;
             public int Cancelled;

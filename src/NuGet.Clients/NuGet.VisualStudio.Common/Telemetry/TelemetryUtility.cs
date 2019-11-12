@@ -30,6 +30,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsHttpV3(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             return source.IsHttp &&
                 (source.Source.EndsWith("index.json", StringComparison.OrdinalIgnoreCase)
                 || source.ProtocolVersion == 3);
@@ -40,6 +45,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsNuGetOrg(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             if (!source.IsHttp)
             {
                 return false;
@@ -65,6 +75,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsAzureArtifacts(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             if (!source.IsHttp)
             {
                 return false;
@@ -90,6 +105,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsGitHub(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             if (!source.IsHttp)
             {
                 return false;
@@ -114,6 +134,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsVsOfflineFeed(PackageSource source)
         {
+            if (source == null)
+            {
+                throw new ArgumentNullException(nameof(source));
+            }
+
             if (!source.IsLocal)
             {
                 return false;

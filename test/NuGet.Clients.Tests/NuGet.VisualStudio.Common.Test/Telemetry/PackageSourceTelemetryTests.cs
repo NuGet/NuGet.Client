@@ -274,15 +274,15 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(resourceData.HeaderTiming.MaxDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Max]);
             Assert.Equal(expectedMean, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Mean]);
 
-            var statusCodesValue = Assert.Single(result.GetComplexData().Where(c => c.Key == PackageSourceTelemetry.PropertyNames.Nupkg.Http.StatusCodes));
-            var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue.Value);
+            var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Nupkg.Http.StatusCodes, result.ComplexData);
+            var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue);
             foreach (var pair in resourceData.StatusCodes)
             {
                 Assert.Equal(pair.Value, statusCodes[pair.Key.ToString()]);
             }
         }
 
-        private static Uri SampleNupkgUri = new Uri("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg");
+        private static readonly Uri SampleNupkgUri = new Uri("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg");
 
         private static ProtocolDiagnosticEvent CreateSampleProtocolDiagnosticsEvent(
             DateTime? timestamp = null,

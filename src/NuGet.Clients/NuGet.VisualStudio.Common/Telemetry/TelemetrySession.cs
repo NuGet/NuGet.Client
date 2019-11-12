@@ -35,17 +35,17 @@ namespace NuGet.VisualStudio.Telemetry
 
             var vsTelemetryEvent = new VsTelemetryEvent(VSEventNamePrefix + telemetryEvent.Name);
 
-            foreach (var pair in telemetryEvent)
+            foreach (KeyValuePair<string, object> pair in telemetryEvent)
             {
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = pair.Value;
             }
 
-            foreach (var pair in telemetryEvent.GetPiiData())
+            foreach (KeyValuePair<string, object> pair in telemetryEvent.GetPiiData())
             {
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = new VsTelemetryPiiProperty(pair.Value);
             }
 
-            foreach (var pair in telemetryEvent.GetComplexData())
+            foreach (KeyValuePair<string, object> pair in telemetryEvent.ComplexData)
             {
                 vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = ToComplexProperty(pair.Value);
             }
@@ -55,22 +55,21 @@ namespace NuGet.VisualStudio.Telemetry
 
         private static object ToComplexProperty(object value)
         {
-            if (value is TelemetryEvent @event)
+            if (value is TelemetryEvent telemetryEvent)
             {
                 var dictionary = new Dictionary<string, object>();
 
-                foreach (var pair in @event)
-
+                foreach (KeyValuePair<string, object> pair in telemetryEvent)
                 {
                     dictionary[pair.Key] = pair.Value;
                 }
 
-                foreach (var pair in @event.GetPiiData())
+                foreach (KeyValuePair<string, object> pair in telemetryEvent.GetPiiData())
                 {
                     dictionary[pair.Key] = new VsTelemetryPiiProperty(pair.Value);
                 }
 
-                foreach (var pair in @event.GetComplexData())
+                foreach (KeyValuePair<string, object> pair in telemetryEvent.ComplexData)
                 {
                     dictionary[pair.Key] = ToComplexProperty(pair.Value);
                 }
@@ -81,7 +80,7 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 var list = new List<object>();
 
-                foreach (var item in list)
+                foreach (var item in enumerable)
                 {
                     list.Add(ToComplexProperty(item));
                 }

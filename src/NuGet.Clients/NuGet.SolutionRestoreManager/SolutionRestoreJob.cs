@@ -161,69 +161,68 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
-            var sources = _sourceRepositoryProvider.GetRepositories().ToList();
-            PackageSourceTelemetry packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId);
-
             try
             {
-                var solutionDirectory = _solutionManager.SolutionDirectory;
-                var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
-
-                // Get the projects from the SolutionManager
-                // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
-
-                if (projects.Any() && solutionDirectory == null)
+                var sources = _sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource);
+                using (new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId))
                 {
-                    await _logger.DoAsync((l, _) =>
+                    var solutionDirectory = _solutionManager.SolutionDirectory;
+                    var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
+
+                    // Get the projects from the SolutionManager
+                    // Note that projects that are not supported by NuGet, will not show up in this list
+                    projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
+
+                    if (projects.Any() && solutionDirectory == null)
                     {
-                        _status = NuGetOperationStatus.Failed;
-                        l.ShowError(Resources.SolutionIsNotSaved);
-                        l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
-                    });
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                            l.ShowError(Resources.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+                        });
 
-                    return;
-                }
+                        return;
+                    }
 
-                // Check if there are any projects that are not INuGetIntegratedProject, that is,
-                // projects with packages.config. OR 
-                // any of the deferred project is type of packages.config, If so, perform package restore on them
-                if (projects.Any(project => !(project is INuGetIntegratedProject)))
-                {
-                    await RestorePackagesOrCheckForMissingPackagesAsync(
-                        projects,
-                        solutionDirectory,
+                    // Check if there are any projects that are not INuGetIntegratedProject, that is,
+                    // projects with packages.config. OR 
+                    // any of the deferred project is type of packages.config, If so, perform package restore on them
+                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    {
+                        await RestorePackagesOrCheckForMissingPackagesAsync(
+                            projects,
+                            solutionDirectory,
+                            isSolutionAvailable,
+                            restoreSource,
+                            token);
+                    }
+
+                    var dependencyGraphProjects = projects
+                        .OfType<IDependencyGraphProject>()
+                        .ToList();
+
+                    await RestorePackageSpecProjectsAsync(
+                        dependencyGraphProjects,
+                        forceRestore,
                         isSolutionAvailable,
                         restoreSource,
                         token);
-                }
 
-                var dependencyGraphProjects = projects
-                    .OfType<IDependencyGraphProject>()
-                    .ToList();
-
-                await RestorePackageSpecProjectsAsync(
-                    dependencyGraphProjects,
-                    forceRestore,
-                    isSolutionAvailable,
-                    restoreSource,
-                    token);
-
-                // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
-                // project in the solution. Extending this behavior to all solutions is tracked here:
-                // NuGet/Home#4478
-                if (projects.OfType<NetCorePackageReferenceProject>().Any())
-                {
-                    _restoreEventsPublisher.OnSolutionRestoreCompleted(
-                        new SolutionRestoredEventArgs(_status, solutionDirectory));
+                    // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
+                    // project in the solution. Extending this behavior to all solutions is tracked here:
+                    // NuGet/Home#4478
+                    if (projects.OfType<NetCorePackageReferenceProject>().Any())
+                    {
+                        _restoreEventsPublisher.OnSolutionRestoreCompleted(
+                            new SolutionRestoredEventArgs(_status, solutionDirectory));
+                    }
                 }
             }
             finally
             {
                 _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                 _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
-
-                packageSourceTelemetry?.Dispose();
 
                 stopWatch.Stop();
                 var duration = stopWatch.Elapsed;
