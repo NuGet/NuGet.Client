@@ -1294,6 +1294,17 @@ namespace Dotnet.Integration.Test
         [InlineData("##/folderA/abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
         [InlineData("##/../abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
 
+        // 'build' naming: https://github.com/NuGet/Home/issues/8810
+        [InlineData("build-info.txt", "", "build-info.txt")]
+        [InlineData("../build-info.txt", "/", "build-info.txt")]
+        [InlineData("../build-info.txt", "folderA/", "folderA/build-info.txt")]
+        [InlineData("buildInfo.txt", "/", "buildInfo.txt")]
+        [InlineData("buildfoo.bar", "", "buildfoo.bar")]
+        [InlineData("databuild.txt", "", "databuild.txt")]
+        [InlineData("build.log", "", "build.log")]
+        [InlineData("build", "", "build")]
+        [InlineData("../build", "", "build")]
+        [InlineData("../build", "folderA/", "folderA/build")]
         public void PackCommand_PackProject_PackagePathPacksContentCorrectly(string sourcePath, string packagePath,
             string expectedTargetPaths)
         {
