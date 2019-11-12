@@ -906,7 +906,6 @@ namespace NuGet.Commands
             return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
         }
 
-
         /// <summary>
         /// Function used to display errors and warnings at the end of restore operation.
         /// The errors and warnings are read from the assets file based on restore result.

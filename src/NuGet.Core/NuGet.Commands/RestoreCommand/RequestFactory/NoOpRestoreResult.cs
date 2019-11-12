@@ -22,10 +22,10 @@ namespace NuGet.Commands
                 msbuildFiles : null, lockFile : null, previousLockFile : null, lockFilePath: lockFilePath,
                 cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
-            _lockFileLazy = lockFileLazy;
+            _lockFileLazy = lockFileLazy ?? throw new ArgumentNullException(nameof(lockFileLazy));
         }
 
-        public override LockFile LockFile => _lockFileLazy?.Value;
+        public override LockFile LockFile => _lockFileLazy.Value;
 
         public override LockFile PreviousLockFile => LockFile;
 
