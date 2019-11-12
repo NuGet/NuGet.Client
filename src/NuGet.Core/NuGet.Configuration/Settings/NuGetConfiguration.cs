@@ -40,7 +40,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal NuGetConfiguration(SettingsFile origin)
+        internal NuGetConfiguration(ISettingsFile origin)
             : base()
         {
             var defaultSource = new SourceItem(NuGetConstants.FeedName, NuGetConstants.V3FeedUrl, protocolVersion: PackageSourceProvider.MaxSupportedProtocolVersion.ToString());
@@ -60,7 +60,7 @@ namespace NuGet.Configuration
             SetOrigin(origin);
         }
 
-        internal NuGetConfiguration(XElement element, SettingsFile origin)
+        internal NuGetConfiguration(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             if (!string.Equals(element.Name.LocalName, ElementName, StringComparison.OrdinalIgnoreCase))

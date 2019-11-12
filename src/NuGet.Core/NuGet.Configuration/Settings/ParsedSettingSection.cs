@@ -9,7 +9,7 @@ namespace NuGet.Configuration
 {
     internal sealed class ParsedSettingSection : SettingSection
     {
-        internal ParsedSettingSection(XElement element, SettingsFile origin)
+        internal ParsedSettingSection(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

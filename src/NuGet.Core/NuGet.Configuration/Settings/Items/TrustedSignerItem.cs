@@ -52,7 +52,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal TrustedSignerItem(XElement element, SettingsFile origin)
+        internal TrustedSignerItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             _parsedDescendants = element.Nodes().Where(n => n is XElement || n is XText text && !string.IsNullOrWhiteSpace(text.Value))
@@ -69,7 +69,7 @@ namespace NuGet.Configuration
             Certificates = parsedCertificates;
         }
 
-        internal override void SetOrigin(SettingsFile origin)
+        internal override void SetOrigin(ISettingsFile origin)
         {
             base.SetOrigin(origin);
 

@@ -40,7 +40,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal AddItem(XElement element, SettingsFile origin)
+        internal AddItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

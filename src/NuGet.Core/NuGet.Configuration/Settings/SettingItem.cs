@@ -25,7 +25,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal SettingItem(XElement element, SettingsFile origin)
+        internal SettingItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             if (!CanHaveChildren && element.HasElements)

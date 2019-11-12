@@ -12,9 +12,9 @@ namespace NuGet.Configuration
 
         internal ISettingsGroup Parent { get; set; }
 
-        internal SettingsFile Origin { get; private set; }
+        internal ISettingsFile Origin { get; private set; }
 
-        internal SettingBase(XNode node, SettingsFile origin)
+        internal SettingBase(XNode node, ISettingsFile origin)
         {
             Node = node ?? throw new ArgumentNullException(nameof(node));
             Origin = origin ?? throw new ArgumentNullException(nameof(origin));
@@ -67,7 +67,7 @@ namespace NuGet.Configuration
         /// Since an origin should not be updated, any update will be ignored.
         /// </summary>
         /// <remarks>Each setting can override this method to include any descendants to the origin</remarks>
-        internal virtual void SetOrigin(SettingsFile origin)
+        internal virtual void SetOrigin(ISettingsFile origin)
         {
             if (Origin == null || (Origin != null && Origin == origin))
             {

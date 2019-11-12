@@ -35,7 +35,7 @@ namespace NuGet.Configuration
 
         public override bool IsEmpty() => !Children.Any() || Children.All(c => c.IsEmpty());
 
-        internal SettingsGroup(XElement element, SettingsFile origin)
+        internal SettingsGroup(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             ElementName = element.Name.LocalName;
@@ -65,7 +65,7 @@ namespace NuGet.Configuration
             return element;
         }
 
-        internal override void SetOrigin(SettingsFile origin)
+        internal override void SetOrigin(ISettingsFile origin)
         {
             base.SetOrigin(origin);
 

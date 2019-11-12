@@ -46,7 +46,7 @@ namespace NuGet.Configuration
             return combiner.CombinedHash;
         }
 
-        internal SourceItem(XElement element, SettingsFile origin)
+        internal SourceItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

@@ -19,7 +19,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal AuthorItem(XElement element, SettingsFile origin)
+        internal AuthorItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

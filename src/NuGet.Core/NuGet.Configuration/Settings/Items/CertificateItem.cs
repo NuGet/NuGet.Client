@@ -75,7 +75,7 @@ namespace NuGet.Configuration
             AddAttribute(ConfigurationConstants.AllowUntrustedRoot, allowUntrustedRoot.ToString().ToLower());
         }
 
-        internal CertificateItem(XElement element, SettingsFile origin)
+        internal CertificateItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             if (HashAlgorithm == HashAlgorithmName.Unknown)

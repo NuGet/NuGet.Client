@@ -10,7 +10,7 @@ namespace NuGet.Configuration
 {
     internal static class SettingFactory
     {
-        internal static SettingBase Parse(XNode node, SettingsFile origin)
+        internal static SettingBase Parse(XNode node, ISettingsFile origin)
         {
             if (node == null)
             {
@@ -77,7 +77,7 @@ namespace NuGet.Configuration
             return null;
         }
 
-        internal static IEnumerable<T> ParseChildren<T>(XElement xElement, SettingsFile origin, bool canBeCleared) where T : SettingElement
+        internal static IEnumerable<T> ParseChildren<T>(XElement xElement, ISettingsFile origin, bool canBeCleared) where T : SettingElement
         {
             var children = new List<T>();
 

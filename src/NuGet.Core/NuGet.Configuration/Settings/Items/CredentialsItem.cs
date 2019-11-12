@@ -144,7 +144,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal CredentialsItem(XElement element, SettingsFile origin)
+        internal CredentialsItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             ElementName = element.Name.LocalName;
@@ -320,7 +320,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override void SetOrigin(SettingsFile origin)
+        internal override void SetOrigin(ISettingsFile origin)
         {
             base.SetOrigin(origin);
 

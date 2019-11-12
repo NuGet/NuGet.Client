@@ -35,7 +35,7 @@ namespace NuGet.Configuration
             Content = owners.Split(OwnersListSeparator).Select(o => o.Trim()).ToList();
         }
 
-        internal OwnersItem(XElement element, SettingsFile origin)
+        internal OwnersItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             var descendants = element.Nodes().Where(n => n is XText text && !string.IsNullOrWhiteSpace(text.Value) || n is XElement)

@@ -68,7 +68,7 @@ namespace NuGet.Configuration
             return newSetting;
         }
 
-        internal SettingText(XText text, SettingsFile origin)
+        internal SettingText(XText text, ISettingsFile origin)
             : base(text, origin)
         {
             var value = text.Value.Trim();

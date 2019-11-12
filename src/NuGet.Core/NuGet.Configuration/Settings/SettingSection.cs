@@ -47,7 +47,7 @@ namespace NuGet.Configuration
             ElementName = name;
         }
 
-        internal SettingSection(XElement element, SettingsFile origin)
+        internal SettingSection(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

@@ -54,7 +54,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal RepositoryItem(XElement element, SettingsFile origin)
+        internal RepositoryItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             var parsedOwners = _parsedDescendants.OfType<OwnersItem>();
@@ -147,7 +147,7 @@ namespace NuGet.Configuration
             return combiner.CombinedHash;
         }
 
-        internal override void SetOrigin(SettingsFile origin)
+        internal override void SetOrigin(ISettingsFile origin)
         {
             base.SetOrigin(origin);
 

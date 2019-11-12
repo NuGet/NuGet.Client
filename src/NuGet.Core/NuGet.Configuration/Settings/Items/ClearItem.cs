@@ -16,7 +16,7 @@ namespace NuGet.Configuration
         {
         }
 
-        internal ClearItem(XElement element, SettingsFile origin)
+        internal ClearItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
         }

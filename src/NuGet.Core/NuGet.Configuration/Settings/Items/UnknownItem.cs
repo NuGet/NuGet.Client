@@ -23,7 +23,7 @@ namespace NuGet.Configuration
 
         private Dictionary<SettingBase, SettingBase> _mutableChildren;
 
-        internal UnknownItem(XElement element, SettingsFile origin)
+        internal UnknownItem(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             ElementName = element.Name.LocalName;
@@ -231,7 +231,7 @@ namespace NuGet.Configuration
             }
         }
 
-        internal override void SetOrigin(SettingsFile origin)
+        internal override void SetOrigin(ISettingsFile origin)
         {
             base.SetOrigin(origin);
 

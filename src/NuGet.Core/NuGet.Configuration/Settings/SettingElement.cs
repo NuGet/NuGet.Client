@@ -93,7 +93,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="element">Xelement read from XML file document tree</param>
         /// <param name="origin">Settings file that this element was read from</param>
-        internal SettingElement(XElement element, SettingsFile origin)
+        internal SettingElement(XElement element, ISettingsFile origin)
             : base(element, origin)
         {
             ValidateAttributes(element, origin);
@@ -227,7 +227,7 @@ namespace NuGet.Configuration
             return true;
         }
 
-        private void ValidateAttributes(XElement element, SettingsFile origin)
+        private void ValidateAttributes(XElement element, ISettingsFile origin)
         {
             if (AllowedAttributes != null)
             {
