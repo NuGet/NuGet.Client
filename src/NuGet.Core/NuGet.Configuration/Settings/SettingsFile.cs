@@ -74,7 +74,6 @@ namespace NuGet.Configuration
         {
             _physicalSettingsFile = new PhysicalSettingsFile(directoryPath, fileName, isMachineWide);
              Priority = 0;
-            
         }
 
         public SettingSection GetSection(string sectionName) => _physicalSettingsFile.GetSection(sectionName);
