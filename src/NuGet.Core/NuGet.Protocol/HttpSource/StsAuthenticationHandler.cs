@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if !IS_CORECLR
@@ -88,9 +88,12 @@ namespace NuGet.Protocol
                 // keep the token store version
                 var cacheVersion = _tokenStore.Version;
 
-                PrepareSTSRequest(request);
+                using (var req = request.Clone())
+                {
+                    PrepareSTSRequest(req);
 
-                response = await base.SendAsync(request, cancellationToken);
+                    response = await base.SendAsync(req, cancellationToken);
+                }
 
                 if (!shouldRetry && response.StatusCode == HttpStatusCode.Unauthorized)
                 {
