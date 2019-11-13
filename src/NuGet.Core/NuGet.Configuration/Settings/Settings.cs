@@ -41,8 +41,6 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        //private readonly SettingsFile _settingsHead;
-
         private readonly Dictionary<string, VirtualSettingSection> _computedSections;
 
         public SettingSection GetSection(string sectionName)
