@@ -17,7 +17,7 @@ namespace NuGet.Configuration
         /// <summary>
         /// Full path to the settings file
         /// </summary>
-        public string ConfigFilePath => Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
+        internal string ConfigFilePath { get; }
 
         /// <summary>
         /// Folder under which the settings file is present
@@ -28,11 +28,6 @@ namespace NuGet.Configuration
         /// Filename of the settings file
         /// </summary>
         internal string FileName { get; }
-
-        /// <summary>
-        /// Next config file to read in the hierarchy
-        /// </summary>
-        internal SettingsFile Next { get; private set; }
 
         /// <summary>
         /// Defines if the configuration settings have been changed but have not been saved to disk
@@ -46,12 +41,6 @@ namespace NuGet.Configuration
         internal bool IsMachineWide { get; }
 
         /// <summary>
-        /// Order in which the files will be read.
-        /// A larger number means closer to the user.
-        /// </summary>
-        internal int Priority { get; private set; }
-
-        /// <summary>
         /// XML element for settings file
         /// </summary>
         private readonly XDocument _xDocument;
@@ -61,6 +50,17 @@ namespace NuGet.Configuration
         /// By definition of a nuget.config, the root element has to be a 'configuration' element
         /// </summary>
         private readonly NuGetConfiguration _rootElement;
+
+        /// <summary>
+        /// Next config file to read in the hierarchy
+        /// </summary>
+        internal SettingsFile Next { get; private set; }
+
+        /// <summary>
+        /// Order in which the files will be read.
+        /// A larger number means closer to the user.
+        /// </summary>
+        internal int Priority { get; private set; }
 
         /// <summary>
         /// Creates an instance of a non machine wide SettingsFile with the default filename.
@@ -108,8 +108,9 @@ namespace NuGet.Configuration
 
             DirectoryPath = directoryPath;
             FileName = fileName;
+            ConfigFilePath = Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
             IsMachineWide = isMachineWide;
-            Priority = 0;
+            //Priority = 0;
 
             XDocument config = null;
             ExecuteSynchronized(() =>
@@ -183,30 +184,30 @@ namespace NuGet.Configuration
            return _rootElement.Sections.TryGetValue(sectionName, out section);
         }
 
-        internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
-        {
-            if (settingFiles == null && !settingFiles.Any())
-            {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(settingFiles));
-            }
+        //internal static void ConnectSettingsFilesLinkedList(IList<SettingsFile> settingFiles)
+        //{
+        //    if (settingFiles == null && !settingFiles.Any())
+        //    {
+        //        throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(settingFiles));
+        //    }
 
-            settingFiles.First().Priority = settingFiles.Count;
+        //    settingFiles.First().Priority = settingFiles.Count;
 
-            if (settingFiles.Count > 1)
-            {
-                // if multiple setting files were loaded, chain them in a linked list
-                for (var i = 1; i < settingFiles.Count; ++i)
-                {
-                    settingFiles[i].SetNextFile(settingFiles[i - 1]);
-                }
-            }
-        }
+        //    if (settingFiles.Count > 1)
+        //    {
+        //        // if multiple setting files were loaded, chain them in a linked list
+        //        for (var i = 1; i < settingFiles.Count; ++i)
+        //        {
+        //            settingFiles[i].SetNextFile(settingFiles[i - 1]);
+        //        }
+        //    }
+        //}
 
-        internal void SetNextFile(SettingsFile settingsFile)
-        {
-            Next = settingsFile;
-            Priority = settingsFile.Priority - 1;
-        }
+        //internal void SetNextFile(SettingsFile settingsFile)
+        //{
+        //    Next = settingsFile;
+        //    Priority = settingsFile.Priority - 1;
+        //}
 
         internal void MergeSectionsInto(Dictionary<string, VirtualSettingSection> sectionsContainer)
         {

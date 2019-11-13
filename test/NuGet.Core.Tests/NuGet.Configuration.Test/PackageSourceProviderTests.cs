@@ -698,7 +698,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("packageSourceCredentials"));
             settings.Setup(s => s.GetSection("config"))
                 .Returns(new VirtualSettingSection("config"));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -733,6 +734,8 @@ namespace NuGet.Configuration.Test
 
             settings.Setup(s => s.GetSection("config"))
                 .Returns(new VirtualSettingSection("config"));
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
 
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
@@ -772,7 +775,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("disabledPackageSources",
                         new AddItem("Source4", "true")
                     ));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -864,7 +868,8 @@ namespace NuGet.Configuration.Test
                     new SourceItem("two", "twosource"),
                     new SourceItem("three", "threesource")
                 ));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             settings
                 .Setup(s => s.GetSection("packageSourceCredentials"))
                 .Returns(new VirtualSettingSection("two",
@@ -902,7 +907,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("packageSourceCredentials",
                     new CredentialsItem("two source", "user1", encryptedPassword, isPasswordClearText: false, validAuthenticationTypes: null)
                     ));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -934,7 +940,8 @@ namespace NuGet.Configuration.Test
              .Returns(new VirtualSettingSection("two",
                  new CredentialsItem("two", "user1", clearTextPassword, isPasswordClearText: true, validAuthenticationTypes: null)
                  ));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -964,7 +971,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("two",
                     new CredentialsItem("two", "settinguser", "settingpassword", isPasswordClearText: true, validAuthenticationTypes: null)
                     ));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -1230,7 +1238,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("packageSourceCredentials"));
             settings.Setup(s => s.GetSection("config"))
                 .Returns(new VirtualSettingSection("config"));
-
+            settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 

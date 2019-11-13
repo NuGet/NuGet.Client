@@ -1076,7 +1076,7 @@ namespace NuGet.Configuration.Test
             {
                 SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act & Assert
                 var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "", new AddItem("SomeKey", "SomeValue")));
@@ -1095,7 +1095,7 @@ namespace NuGet.Configuration.Test
             {
                 SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act & Assert
                 var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "SomeKey", item: null));
@@ -1112,7 +1112,7 @@ namespace NuGet.Configuration.Test
             {
                 SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), @"<configuration></configuration>");
                 var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
                 var ex = Record.Exception(() => settings.AddOrUpdate(settingsFile, "section", new AddItem("SomeKey", "SomeValue")));
@@ -1139,7 +1139,7 @@ namespace NuGet.Configuration.Test
 
                 SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
                 settings.AddOrUpdate(settingsFile, "NewSectionName", new AddItem("key", "value"));
@@ -1179,7 +1179,7 @@ namespace NuGet.Configuration.Test
 
                 SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
                 settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("keyTwo", "valueTwo"));
@@ -1215,7 +1215,7 @@ namespace NuGet.Configuration.Test
 
                 SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
                 settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("key", "NewValue"));
@@ -1261,7 +1261,7 @@ namespace NuGet.Configuration.Test
             {
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act & Assert
                 settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("newKey", "value"));
@@ -1316,7 +1316,7 @@ namespace NuGet.Configuration.Test
             {
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory);
-                var settings = new Settings(settingsFile);
+                var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act & Assert
                 settings.AddOrUpdate(settingsFile, "SectionName", new AddItem("newKey", "value"));
@@ -2242,8 +2242,8 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetConfigFilePaths_SettingsWithoutFiles_ReturnEmptyList()
         {
-            var settings = new Settings(settingsHead: null);
-
+            var settings = new Settings(new List<SettingsFile>());
+            // Why does this not throw?
             var configFilePaths = settings.GetConfigFilePaths();
 
             configFilePaths.Should().NotBeNull();
@@ -2315,7 +2315,7 @@ namespace NuGet.Configuration.Test
         [Fact]
         public void GetConfigRoots_SettingsWithoutFiles_ReturnEmptyList()
         {
-            var settings = new Settings(settingsHead: null);
+            var settings = new Settings(new List<SettingsFile>());
 
             var configRoots = settings.GetConfigRoots();
 

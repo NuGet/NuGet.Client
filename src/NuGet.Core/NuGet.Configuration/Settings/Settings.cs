@@ -41,7 +41,7 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        private readonly SettingsFile _settingsHead;
+        //private readonly SettingsFile _settingsHead;
 
         private readonly Dictionary<string, VirtualSettingSection> _computedSections;
 
@@ -109,7 +109,9 @@ namespace NuGet.Configuration
 
             if (currentSettings == null)
             {
-                Priority.First().SetNextFile(settingsFile);
+                // pretty sure this is SettingsFiles.AddFirst
+                SettingsFiles.Add(settingsFile);
+               // Priority.First().SetNextFile(settingsFile);
             }
 
             // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
@@ -165,27 +167,45 @@ namespace NuGet.Configuration
         public event EventHandler SettingsChanged = delegate { };
 
         public Settings(string root)
-            : this(new SettingsFile(root)) { }
+            : this(new List<SettingsFile> { new SettingsFile(root) }) { }
 
         public Settings(string root, string fileName)
-            : this(new SettingsFile(root, fileName)) { }
+            : this(new List<SettingsFile> { new SettingsFile(root, fileName) }) { }
 
         public Settings(string root, string fileName, bool isMachineWide)
-            : this(new SettingsFile(root, fileName, isMachineWide)) { }
-
-        internal Settings(SettingsFile settingsHead)
+            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide) })
         {
-            _settingsHead = settingsHead;
+        }
+
+        //internal Settings(SettingsFile settingsHead)
+        //{
+        //    _settingsHead = settingsHead;
+
+        //    var settingsFiles = new List<SettingsFile>();
+        //    var curr = _settingsHead?.Next; // TODO NK - This is weird...why?
+        //    while (curr != null)
+        //    {
+        //        settingsFiles.Add(curr);
+        //        curr = curr.Next;
+        //    }
+        //}
+
+        private IList<SettingsFile> SettingsFiles { get; } // TODO NK - This will be priority.
+
+        internal Settings(IList<SettingsFile> settingsFiles)
+        {
+            SettingsFiles = settingsFiles;
+
             var computedSections = new Dictionary<string, VirtualSettingSection>();
 
-            var curr = _settingsHead;
-            while (curr != null)
+            // They come in priority order, closest to further....revert merge them.
+            for(int i = settingsFiles.Count - 1; i >= 0; i--)
             {
-                curr.MergeSectionsInto(computedSections);
-                curr = curr.Next;
+                settingsFiles[i].MergeSectionsInto(computedSections);
             }
 
             _computedSections = computedSections;
+
         }
 
         private SettingsFile GetOutputSettingFileForSection(string sectionName)
@@ -219,18 +239,22 @@ namespace NuGet.Configuration
         {
             get
             {
-                // explore the linked list, terminating when a duplicate path is found
-                var current = _settingsHead;
-                var found = new List<SettingsFile>();
-                var paths = new HashSet<string>();
-                while (current != null && paths.Add(current.ConfigFilePath))
-                {
-                    found.Add(current);
-                    current = current.Next;
-                }
 
-                return found
-                    .OrderByDescending(s => s.Priority);
+                //// explore the linked list, terminating when a duplicate path is found
+                //var current = _settingsHead;
+                //var found = new List<SettingsFile>();
+                //var paths = new HashSet<string>();
+                //while (current != null && paths.Add(current.ConfigFilePath))
+                //{
+                //    found.Add(current);
+                //    current = current.Next;
+                //}
+
+                //return found
+                //    .OrderByDescending(s => s.Priority);
+
+                // The first value in the linked list is the highest priority and the one closest to the user.
+                return SettingsFiles;
             }
         }
 
@@ -425,9 +449,10 @@ namespace NuGet.Configuration
             if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
             {
                 // Priority gives you the settings file in the order you want to start reading them
-                validSettingFiles.AddRange(
-                    mwSettings.Priority.Select(
-                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide)));
+                var files = mwSettings.Priority.Select(
+                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide));
+
+                validSettingFiles.AddRange(files);
             }
 
             if (validSettingFiles?.Any() != true)
@@ -438,14 +463,14 @@ namespace NuGet.Configuration
                 return NullSettings.Instance;
             }
 
-            SettingsFile.ConnectSettingsFilesLinkedList(validSettingFiles);
+            //SettingsFile.ConnectSettingsFilesLinkedList(validSettingFiles);
 
             // Create a settings object with the linked list head. Typically, it's either the config file in %ProgramData%\NuGet\Config,
             // or the user wide config (%APPDATA%\NuGet\nuget.config) if there are no machine
             // wide config files. The head file is the one we want to read first, while the user wide config
             // is the one that we want to write to.
             // TODO: add UI to allow specifying which one to write to
-            return new Settings(validSettingFiles.Last());
+            return new Settings(settingsFiles: validSettingFiles);
         }
 
         private static SettingsFile LoadUserSpecificSettings(
@@ -564,9 +589,7 @@ namespace NuGet.Configuration
 
             if (settingFiles.Any())
             {
-                SettingsFile.ConnectSettingsFilesLinkedList(settingFiles);
-
-                return new Settings(settingFiles.Last());
+                return new Settings(settingFiles);
             }
 
             return NullSettings.Instance;
@@ -612,7 +635,7 @@ namespace NuGet.Configuration
         /// </summary>
         public IList<string> GetConfigFilePaths()
         {
-            return Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName))).ToList();
+            return Priority.Select(config => config.ConfigFilePath).ToList();
         }
 
         /// <summary>
