@@ -479,14 +479,14 @@ phases:
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath) -ValidateVsix"
-    condition: " and(succeeded()) "
+    condition: "succeeded()"
 
   - task: PowerShell@1
     displayName: "Validate Repository Artifacts Localization"
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\cibuild\\BuildValidator.ps1"
       arguments: "-BuildRTM $(BuildRTM) -BuildOutputTargetPath $(BuildOutputTargetPath)"
-    condition: " and(succeeded()) "
+    condition: "succeeded()"
 
     # Use dotnet msbuild instead of MSBuild CLI.
     # Using MSBuild CLI results in an assembly binding failure for NuGet.Common.dll 4.4.0.3 because Microsoft.DotNet.Build.Tasks.Feed.dll references SleetLib.dll which references NuGet.Common 4.4.0.3.
