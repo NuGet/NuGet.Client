@@ -1,13 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Diagnostics;
-using System.IO;
-using System.Net;
 using System.Net.Http;
-using System.Reflection;
-using System.Threading.Tasks;
 
 namespace NuGet.Protocol
 {
@@ -20,15 +16,13 @@ namespace NuGet.Protocol
         /// </summary>
         internal static HttpRequestMessage Clone(this HttpRequestMessage request)
         {
+            Debug.Assert(request.Content == null, "Cloning the request content is not yet implemented.");
+
             var clone = new HttpRequestMessage(request.Method, request.RequestUri)
             {
+                Content = request.Content,
                 Version = request.Version
             };
-
-            if (request.Content != null)
-            {
-                clone.Content = new HttpContentWrapper(request.Content);
-            }
 
             foreach (var header in request.Headers)
             {
@@ -41,48 +35,6 @@ namespace NuGet.Protocol
             }
 
             return clone;
-        }
-
-        // Wraps HttpContent but does not dispose it for cloning
-        internal class HttpContentWrapper : HttpContent
-        {
-            private static readonly MethodInfo SerializeToStreamAsyncMethod =
-                typeof(HttpContent).GetMethod(nameof(SerializeToStreamAsync), BindingFlags.NonPublic | BindingFlags.Instance);
-
-            private static readonly MethodInfo TryComputeLengthMethod =
-                typeof(HttpContent).GetMethod(nameof(TryComputeLength), BindingFlags.NonPublic | BindingFlags.Instance);
-
-            private HttpContent _httpContent;
-
-            public HttpContentWrapper(HttpContent httpContent)
-            {
-                _httpContent = httpContent;
-
-                foreach (var header in _httpContent.Headers)
-                {
-                    Headers.TryAddWithoutValidation(header.Key, header.Value);
-                }
-            }
-
-            protected override Task SerializeToStreamAsync(Stream stream, TransportContext context)
-            {
-                return (Task)SerializeToStreamAsyncMethod.Invoke(_httpContent, new object[] { stream, context });
-            }
-
-            protected override bool TryComputeLength(out long length)
-            {
-                length = 0;
-
-                var args = new object[] { length };
-                var result = (bool)TryComputeLengthMethod.Invoke(_httpContent, args);
-                length = (long)args[0];
-                return result;
-            }
-
-            protected override void Dispose(bool disposing)
-            {
-                _httpContent = null; // do not dispose!
-            }
         }
 
         /// <summary>
