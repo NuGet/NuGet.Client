@@ -38,6 +38,58 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal("VS/NuGet/fileandforget/a/b", actualResult);
         }
 
+        [Fact]
+        public void IsHttpV3_WhenSourceIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => TelemetryUtility.IsHttpV3(source: null));
+
+            Assert.Equal("source", exception.ParamName);
+        }
+
+        [Fact]
+        public void IsHttpV3_WhenSourceIsLocal_ReturnsFalse()
+        {
+            var source = new PackageSource(@"C:\packages");
+            var actualResult = TelemetryUtility.IsHttpV3(source);
+
+            Assert.False(actualResult);
+        }
+
+        [Theory]
+        [InlineData("https://nuget.test/index.json")]
+        [InlineData("https://nuget.test/INDEX.JSON")]
+        public void IsHttpV3_WhenSourceIsHttpAndEndsWithIndexJson_ReturnsTrue(string packageSourceUrl)
+        {
+            var source = new PackageSource(packageSourceUrl);
+            var actualResult = TelemetryUtility.IsHttpV3(source);
+
+            Assert.True(actualResult);
+        }
+
+        [Fact]
+        public void IsHttpV3_WhenSourceIsHttpAndProtocolVersionIs2_ReturnsFalse()
+        {
+            var source = new PackageSource("https://nuget.test")
+            {
+                ProtocolVersion = 2
+            };
+            var actualResult = TelemetryUtility.IsHttpV3(source);
+
+            Assert.False(actualResult);
+        }
+
+        [Fact]
+        public void IsHttpV3_WhenSourceIsHttpAndProtocolVersionIs3_ReturnsTrue()
+        {
+            var source = new PackageSource("https://nuget.test")
+            {
+                ProtocolVersion = 3
+            };
+            var actualResult = TelemetryUtility.IsHttpV3(source);
+
+            Assert.True(actualResult);
+        }
+
         [Theory]
         [InlineData("http://nuget.org/api/v2", true)]
         [InlineData("http://NUGET.ORG/api/v2", true)]
@@ -96,6 +148,56 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void IsVsOfflineFeed_WhenSourceIsNull_Throws()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(() => TelemetryUtility.IsVsOfflineFeed(source: null));
+
+            Assert.Equal("source", exception.ParamName);
+        }
+
+        [Fact]
+        public void IsVsOfflineFeed_WhenSourceIsNotLocal_ReturnsFalse()
+        {
+            var source = new PackageSource("https://nuget.test");
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(source);
+
+            Assert.False(actualResult);
+        }
+
+        [Fact]
+        public void IsVsOfflineFeed_WhenVsOfflinePackagesPathIsNull_ReturnsFalse()
+        {
+            var source = new PackageSource(@"C:\packages");
+            string expectedVsOfflinePackagesPath = null;
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
+
+            Assert.False(actualResult);
+        }
+
+        [Fact]
+        public void IsVsOfflineFeed_WhenVsOfflinePackagesPathIsValidAndDoesNotMatchPackageSource_ReturnsFalse()
+        {
+            var source = new PackageSource(@"C:\packages");
+            var expectedVsOfflinePackagesPath = @"C:\VSOfflinePackages";
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
+
+            Assert.False(actualResult);
+        }
+
+        [Theory]
+        [InlineData(@"C:\VSOfflinePackages", @"C:\VSOfflinePackages")]  // identical
+        [InlineData(@"c:\vsofflinepackages", @"C:\VSOfflinePackages")]  // differ only in casing
+        [InlineData(@"C:\VSOfflinePackages\", @"C:\VSOfflinePackages")] // differ only in trailing slash
+        public void IsVsOfflineFeed_WhenVsOfflinePackagesPathIsValidAndMatchesPackageSource_ReturnsFalse(string packageSourcePath, string vsOfflinePackagesPath)
+        {
+            var source = new PackageSource(packageSourcePath);
+            var expectedVsOfflinePackagesPath = vsOfflinePackagesPath;
+            bool actualResult = TelemetryUtility.IsVsOfflineFeed(source, expectedVsOfflinePackagesPath);
+
+            Assert.True(actualResult);
         }
     }
 }

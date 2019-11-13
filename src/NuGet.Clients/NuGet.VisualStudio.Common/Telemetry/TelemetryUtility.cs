@@ -134,6 +134,11 @@ namespace NuGet.VisualStudio.Telemetry
         /// </summary>
         public static bool IsVsOfflineFeed(PackageSource source)
         {
+            return IsVsOfflineFeed(source, ExpectedVsOfflinePackagesPath.Value);
+        }
+
+        internal static bool IsVsOfflineFeed(PackageSource source, string expectedVsOfflinePackagesPath)
+        {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
@@ -144,7 +149,6 @@ namespace NuGet.VisualStudio.Telemetry
                 return false;
             }
 
-            var expectedVsOfflinePackagesPath = ExpectedVsOfflinePackagesPath.Value;
             return expectedVsOfflinePackagesPath != null &&
                 StringComparer.OrdinalIgnoreCase.Equals(expectedVsOfflinePackagesPath, source.Source?.TrimEnd('\\'));
         }

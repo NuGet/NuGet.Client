@@ -161,10 +161,10 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
-            try
+            var sources = _sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource);
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId))
             {
-                var sources = _sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource);
-                using (new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId))
+                try
                 {
                     var solutionDirectory = _solutionManager.SolutionDirectory;
                     var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
@@ -218,30 +218,32 @@ namespace NuGet.SolutionRestoreManager
                             new SolutionRestoredEventArgs(_status, solutionDirectory));
                     }
                 }
-            }
-            finally
-            {
-                _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
-                _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
-
-                stopWatch.Stop();
-                var duration = stopWatch.Elapsed;
-
-                // Do not log any restore message if user disabled restore.
-                if (_packageRestoreConsent.IsGranted)
+                finally
                 {
-                    await _logger.WriteSummaryAsync(_status, duration);
+                    _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
+                    _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
+
+                    packageSourceTelemetry.SendTelemetry();
+
+                    stopWatch.Stop();
+                    var duration = stopWatch.Elapsed;
+
+                    // Do not log any restore message if user disabled restore.
+                    if (_packageRestoreConsent.IsGranted)
+                    {
+                        await _logger.WriteSummaryAsync(_status, duration);
+                    }
+                    else
+                    {
+                        _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
+                    }
+                    // Emit telemetry event for restore operation
+                    EmitRestoreTelemetryEvent(
+                        projects,
+                        restoreSource,
+                        startTime,
+                        duration.TotalSeconds);
                 }
-                else
-                {
-                    _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
-                }
-                // Emit telemetry event for restore operation
-                EmitRestoreTelemetryEvent(
-                    projects,
-                    restoreSource,
-                    startTime,
-                    duration.TotalSeconds);
             }
         }
 

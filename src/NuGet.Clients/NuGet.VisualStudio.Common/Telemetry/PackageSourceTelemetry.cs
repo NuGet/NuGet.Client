@@ -118,7 +118,10 @@ namespace NuGet.VisualStudio.Telemetry
         public void Dispose()
         {
             ProtocolDiagnostics.Event -= ProtocolDiagnostics_Event;
+        }
 
+        public void SendTelemetry()
+        {
             var parentId = _parentId.ToString();
             foreach (var kvp in _data)
             {
@@ -154,24 +157,26 @@ namespace NuGet.VisualStudio.Telemetry
             // source info
             telemetry.AddPiiData(PropertyNames.Source.Url, source);
 
-            if (packageSource != null)
+            if (packageSource == null)
             {
-                if (packageSource.IsHttp)
-                {
-                    telemetry[PropertyNames.Source.Type] = "http";
-                    telemetry[PropertyNames.Source.Protocol] = TelemetryUtility.IsHttpV3(packageSource) ? 3 : packageSource.ProtocolVersion;
-                }
-                else
-                {
-                    telemetry[PropertyNames.Source.Type] = "local";
-                    telemetry[PropertyNames.Source.Protocol] = packageSource.ProtocolVersion;
-                }
+                packageSource = new PackageSource(source);
+            }
 
-                var msFeed = GetMsFeed(packageSource);
-                if (msFeed != null)
-                {
-                    telemetry[PropertyNames.Source.MSFeed] = msFeed;
-                }
+            if (packageSource.IsHttp)
+            {
+                telemetry[PropertyNames.Source.Type] = "http";
+                telemetry[PropertyNames.Source.Protocol] = TelemetryUtility.IsHttpV3(packageSource) ? 3 : packageSource.ProtocolVersion;
+            }
+            else
+            {
+                telemetry[PropertyNames.Source.Type] = "local";
+                telemetry[PropertyNames.Source.Protocol] = packageSource.ProtocolVersion;
+            }
+
+            var msFeed = GetMsFeed(packageSource);
+            if (msFeed != null)
+            {
+                telemetry[PropertyNames.Source.MSFeed] = msFeed;
             }
 
             // metadata
@@ -261,11 +266,11 @@ namespace NuGet.VisualStudio.Telemetry
                 }
                 else if (TelemetryUtility.IsAzureArtifacts(source))
                 {
-                    return "Azure Artifacts";
+                    return "Azure DevOps";
                 }
                 else if (TelemetryUtility.IsGitHub(source))
                 {
-                    return "GitHub Package Registry";
+                    return "GitHub";
                 }
             }
             else if (source.IsLocal)
