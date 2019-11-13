@@ -83,8 +83,8 @@ namespace NuGet.Configuration
             var sourcesItems = packageSourcesSection?.Items.OfType<SourceItem>();
 
             // Order the list so that the closer to the user appear first
-            var priority = settings.GetConfigFilePaths();
-            var sources = sourcesItems?.OrderBy(i => priority.IndexOf(i.Origin?.ConfigFilePath));
+            IList<string> configFilePaths = settings.GetConfigFilePaths();
+            var sources = sourcesItems?.OrderBy(i => configFilePaths.IndexOf(i.Origin?.ConfigFilePath)); //lower index => higher priority => closer to user.
             // get list of disabled packages
             var disabledSourcesSection = settings.GetSection(ConfigurationConstants.DisabledPackageSources);
             var disabledSourcesSettings = disabledSourcesSection?.Items.OfType<AddItem>();

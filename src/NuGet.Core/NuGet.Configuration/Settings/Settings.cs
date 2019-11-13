@@ -186,7 +186,7 @@ namespace NuGet.Configuration
         /// <param name="settingsFiles"></param>
         internal Settings(IList<SettingsFile> settingsFiles)
         {
-            SettingsFiles = settingsFiles;
+            SettingsFiles = settingsFiles ?? throw new ArgumentNullException(nameof(settingsFiles));
 
             var computedSections = new Dictionary<string, VirtualSettingSection>();
 

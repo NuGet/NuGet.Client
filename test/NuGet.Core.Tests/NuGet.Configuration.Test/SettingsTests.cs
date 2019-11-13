@@ -2243,7 +2243,7 @@ namespace NuGet.Configuration.Test
         public void GetConfigFilePaths_SettingsWithoutFiles_ReturnEmptyList()
         {
             var settings = new Settings(new List<SettingsFile>());
-            // Why does this not throw?
+
             var configFilePaths = settings.GetConfigFilePaths();
 
             configFilePaths.Should().NotBeNull();

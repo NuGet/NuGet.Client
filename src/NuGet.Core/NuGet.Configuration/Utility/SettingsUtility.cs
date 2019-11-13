@@ -301,10 +301,9 @@ namespace NuGet.Configuration
 
             // Settings are usually read from top to bottom, but in the case of fallback folders
             // we care more about the bottom ones, so those ones should go first.
-            var priority = settings.GetConfigFilePaths();
-
+            IList<string> configFilePaths = settings.GetConfigFilePaths();
             return fallbackValues
-                .OrderBy(i => priority.IndexOf(i.Origin?.ConfigFilePath)) //lower index => higher priority => closer to user.
+                .OrderBy(i => configFilePaths.IndexOf(i.Origin?.ConfigFilePath)) //lower index => higher priority => closer to user.
                 .OfType<AddItem>()
                 .Select(folder => folder.GetValueAsPath())
                 .ToList();
