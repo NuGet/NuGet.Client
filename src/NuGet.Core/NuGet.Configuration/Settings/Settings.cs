@@ -109,9 +109,7 @@ namespace NuGet.Configuration
 
             if (currentSettings == null)
             {
-                // pretty sure this is SettingsFiles.AddFirst
                 SettingsFiles.Add(settingsFile);
-               // Priority.First().SetNextFile(settingsFile);
             }
 
             // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
@@ -177,35 +175,31 @@ namespace NuGet.Configuration
         {
         }
 
-        //internal Settings(SettingsFile settingsHead)
-        //{
-        //    _settingsHead = settingsHead;
+        /// <summary>
+        /// All the SettingsFiles represent by this settings object.
+        /// The ordering is important, closest to furthest from the user.
+        /// </summary>
+        private IList<SettingsFile> SettingsFiles { get; }
 
-        //    var settingsFiles = new List<SettingsFile>();
-        //    var curr = _settingsHead?.Next; // TODO NK - This is weird...why?
-        //    while (curr != null)
-        //    {
-        //        settingsFiles.Add(curr);
-        //        curr = curr.Next;
-        //    }
-        //}
-
-        private IList<SettingsFile> SettingsFiles { get; } // TODO NK - This will be priority.
-
+        /// <summary>
+        /// Create a settings object.
+        /// The settings files need to be ordered from closest to furthest from the user.
+        /// </summary>
+        /// <param name="settingsFiles"></param>
         internal Settings(IList<SettingsFile> settingsFiles)
         {
             SettingsFiles = settingsFiles;
 
             var computedSections = new Dictionary<string, VirtualSettingSection>();
 
-            // They come in priority order, closest to further....revert merge them.
+            // They come in priority order, closest to furthest
+            // reverse merge them, so the closest ones apply.
             for(int i = settingsFiles.Count - 1; i >= 0; i--)
             {
                 settingsFiles[i].MergeSectionsInto(computedSections);
             }
 
             _computedSections = computedSections;
-
         }
 
         private SettingsFile GetOutputSettingFileForSection(string sectionName)
@@ -233,30 +227,9 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// Enumerates the sequence of <see cref="SettingsFile"/> instances
-        /// ordered from closer to user to further
+        /// ordered from closer to user to furthest
         /// </summary>
-        internal IEnumerable<SettingsFile> Priority
-        {
-            get
-            {
-
-                //// explore the linked list, terminating when a duplicate path is found
-                //var current = _settingsHead;
-                //var found = new List<SettingsFile>();
-                //var paths = new HashSet<string>();
-                //while (current != null && paths.Add(current.ConfigFilePath))
-                //{
-                //    found.Add(current);
-                //    current = current.Next;
-                //}
-
-                //return found
-                //    .OrderByDescending(s => s.Priority);
-
-                // The first value in the linked list is the highest priority and the one closest to the user.
-                return SettingsFiles;
-            }
-        }
+        internal IEnumerable<SettingsFile> Priority => SettingsFiles;
 
         public void SaveToDisk()
         {
@@ -462,8 +435,6 @@ namespace NuGet.Configuration
                 // Returning a null instance prevents us from silently failing and also from picking up the wrong config
                 return NullSettings.Instance;
             }
-
-            //SettingsFile.ConnectSettingsFilesLinkedList(validSettingFiles);
 
             // Create a settings object with the linked list head. Typically, it's either the config file in %ProgramData%\NuGet\Config,
             // or the user wide config (%APPDATA%\NuGet\nuget.config) if there are no machine

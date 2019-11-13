@@ -794,35 +794,40 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        //TODO [Fact]
-        //public void SettingsFile_ConnectSettingsFilesLinkedList_ConnectsConfigsCorrectly()
-        //{
-        //    // Arrange
-        //    var configFile = "NuGet.Config";
-        //    using (var mockBaseDirectory = TestDirectory.Create())
-        //    using (var mockSubDirectory = TestDirectory.Create(mockBaseDirectory))
-        //    using (var mockSubSubDirectory = TestDirectory.Create(mockSubDirectory))
-        //    {
-        //        SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
-        //        SettingsTestUtils.CreateConfigurationFile(configFile, mockSubDirectory, @"<configuration></configuration>");
-        //        SettingsTestUtils.CreateConfigurationFile(configFile, mockSubSubDirectory, @"<configuration></configuration>");
+        [Fact]
+        public void SettingsFile_PriorityIsPreservedInSettings()
+        {
+            // Arrange
+            var configFile = "NuGet.Config";
+            using (var mockBaseDirectory = TestDirectory.Create())
+            using (var mockSubDirectory = TestDirectory.Create(mockBaseDirectory))
+            using (var mockSubSubDirectory = TestDirectory.Create(mockSubDirectory))
+            {
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockBaseDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockSubDirectory, @"<configuration></configuration>");
+                SettingsTestUtils.CreateConfigurationFile(configFile, mockSubSubDirectory, @"<configuration></configuration>");
 
-        //        var baseSettingsFile = new SettingsFile(mockBaseDirectory);
-        //        var subSettingsFile = new SettingsFile(mockSubDirectory);
-        //        var subSubSettingsFile = new SettingsFile(mockSubSubDirectory);
+                var baseSettingsFile = new SettingsFile(mockBaseDirectory);
+                var subSettingsFile = new SettingsFile(mockSubDirectory);
+                var subSubSettingsFile = new SettingsFile(mockSubSubDirectory);
 
-        //        // Act & Assert
-        //        baseSettingsFile.Should().NotBeNull();
-        //        subSettingsFile.Should().NotBeNull();
-        //        subSubSettingsFile.Should().NotBeNull();
+                // Act & Assert
+                baseSettingsFile.Should().NotBeNull();
+                subSettingsFile.Should().NotBeNull();
+                subSubSettingsFile.Should().NotBeNull();
+                var settings = new Settings(new List<SettingsFile>() { subSubSettingsFile, subSettingsFile, baseSettingsFile });
 
-        //        SettingsFile.ConnectSettingsFilesLinkedList(new List<SettingsFile>() { baseSettingsFile, subSettingsFile, subSubSettingsFile });
+                var priority = settings.Priority.GetEnumerator();
 
-        //        subSubSettingsFile.Next.Should().BeSameAs(subSettingsFile);
-        //        subSettingsFile.Next.Should().BeSameAs(baseSettingsFile);
-        //        baseSettingsFile.Next.Should().BeNull();
-        //    }
-        //}
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(subSubSettingsFile);
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(subSettingsFile);
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(baseSettingsFile);
+                Assert.False(priority.MoveNext());
+            }
+        }
 
         [Fact]
         public void SettingsFile_MergeSectionsInto_WhenSectionDoNotMatch_AllSectionsAreReturned()
