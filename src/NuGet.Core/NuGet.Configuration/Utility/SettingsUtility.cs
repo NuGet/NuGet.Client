@@ -304,7 +304,7 @@ namespace NuGet.Configuration
             var priority = settings.GetConfigFilePaths();
 
             return fallbackValues
-                .OrderBy(i => priority.IndexOf(i.Origin.ConfigFilePath)) //lower index => higher priority => closer to user.
+                .OrderBy(i => priority.IndexOf(i.Origin?.ConfigFilePath)) //lower index => higher priority => closer to user.
                 .OfType<AddItem>()
                 .Select(folder => folder.GetValueAsPath())
                 .ToList();
