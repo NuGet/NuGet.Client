@@ -80,6 +80,11 @@ namespace NuGet.Common
         NU1007 = 1007,
 
         /// <summary>
+        /// Project style specified is not a valid value.
+        /// </summary>
+        NU1008 = 1008,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
