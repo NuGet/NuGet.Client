@@ -41,8 +41,6 @@ namespace NuGet.Configuration
             new[] { "*.config" } :
             new[] { "*.Config", "*.config" };
 
-        private readonly SettingsFile _settingsHead;
-
         private readonly Dictionary<string, VirtualSettingSection> _computedSections;
 
         public SettingSection GetSection(string sectionName)
@@ -109,7 +107,7 @@ namespace NuGet.Configuration
 
             if (currentSettings == null)
             {
-                Priority.First().SetNextFile(settingsFile);
+                SettingsFiles.Add(settingsFile);
             }
 
             // If it is an update this will take care of it and modify the underlaying object, which is also referenced by _computedSections.
@@ -165,24 +163,38 @@ namespace NuGet.Configuration
         public event EventHandler SettingsChanged = delegate { };
 
         public Settings(string root)
-            : this(new SettingsFile(root)) { }
+            : this(new List<SettingsFile> { new SettingsFile(root) }) { }
 
         public Settings(string root, string fileName)
-            : this(new SettingsFile(root, fileName)) { }
+            : this(new List<SettingsFile> { new SettingsFile(root, fileName) }) { }
 
         public Settings(string root, string fileName, bool isMachineWide)
-            : this(new SettingsFile(root, fileName, isMachineWide)) { }
-
-        internal Settings(SettingsFile settingsHead)
+            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide) })
         {
-            _settingsHead = settingsHead;
+        }
+
+        /// <summary>
+        /// All the SettingsFiles represent by this settings object.
+        /// The ordering is important, closest to furthest from the user.
+        /// </summary>
+        private IList<SettingsFile> SettingsFiles { get; }
+
+        /// <summary>
+        /// Create a settings object.
+        /// The settings files need to be ordered from closest to furthest from the user.
+        /// </summary>
+        /// <param name="settingsFiles"></param>
+        internal Settings(IList<SettingsFile> settingsFiles)
+        {
+            SettingsFiles = settingsFiles ?? throw new ArgumentNullException(nameof(settingsFiles));
+
             var computedSections = new Dictionary<string, VirtualSettingSection>();
 
-            var curr = _settingsHead;
-            while (curr != null)
+            // They come in priority order, closest to furthest
+            // reverse merge them, so the closest ones apply.
+            for(int i = settingsFiles.Count - 1; i >= 0; i--)
             {
-                curr.MergeSectionsInto(computedSections);
-                curr = curr.Next;
+                settingsFiles[i].MergeSectionsInto(computedSections);
             }
 
             _computedSections = computedSections;
@@ -213,26 +225,9 @@ namespace NuGet.Configuration
 
         /// <summary>
         /// Enumerates the sequence of <see cref="SettingsFile"/> instances
-        /// ordered from closer to user to further
+        /// ordered from closer to user to furthest
         /// </summary>
-        internal IEnumerable<SettingsFile> Priority
-        {
-            get
-            {
-                // explore the linked list, terminating when a duplicate path is found
-                var current = _settingsHead;
-                var found = new List<SettingsFile>();
-                var paths = new HashSet<string>();
-                while (current != null && paths.Add(current.ConfigFilePath))
-                {
-                    found.Add(current);
-                    current = current.Next;
-                }
-
-                return found
-                    .OrderByDescending(s => s.Priority);
-            }
-        }
+        internal IEnumerable<SettingsFile> Priority => SettingsFiles;
 
         public void SaveToDisk()
         {
@@ -425,9 +420,10 @@ namespace NuGet.Configuration
             if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
             {
                 // Priority gives you the settings file in the order you want to start reading them
-                validSettingFiles.AddRange(
-                    mwSettings.Priority.Select(
-                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide)));
+                var files = mwSettings.Priority.Select(
+                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide));
+
+                validSettingFiles.AddRange(files);
             }
 
             if (validSettingFiles?.Any() != true)
@@ -438,14 +434,12 @@ namespace NuGet.Configuration
                 return NullSettings.Instance;
             }
 
-            SettingsFile.ConnectSettingsFilesLinkedList(validSettingFiles);
-
             // Create a settings object with the linked list head. Typically, it's either the config file in %ProgramData%\NuGet\Config,
             // or the user wide config (%APPDATA%\NuGet\nuget.config) if there are no machine
             // wide config files. The head file is the one we want to read first, while the user wide config
             // is the one that we want to write to.
             // TODO: add UI to allow specifying which one to write to
-            return new Settings(validSettingFiles.Last());
+            return new Settings(settingsFiles: validSettingFiles);
         }
 
         private static SettingsFile LoadUserSpecificSettings(
@@ -564,9 +558,7 @@ namespace NuGet.Configuration
 
             if (settingFiles.Any())
             {
-                SettingsFile.ConnectSettingsFilesLinkedList(settingFiles);
-
-                return new Settings(settingFiles.Last());
+                return new Settings(settingFiles);
             }
 
             return NullSettings.Instance;
@@ -612,7 +604,7 @@ namespace NuGet.Configuration
         /// </summary>
         public IList<string> GetConfigFilePaths()
         {
-            return Priority.Select(config => Path.GetFullPath(Path.Combine(config.DirectoryPath, config.FileName))).ToList();
+            return Priority.Select(config => config.ConfigFilePath).ToList();
         }
 
         /// <summary>

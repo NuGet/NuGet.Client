@@ -51,7 +51,7 @@ namespace NuGet.Configuration
         event EventHandler SettingsChanged;
 
         /// <summary>
-        /// Get a list of all the paths of the settings files used as part of this settings object
+        /// Get a list of all the paths of the settings files used as part of this settings object. The paths are ordered with the closest one to user first.
         /// </summary>
         IList<string> GetConfigFilePaths();
 

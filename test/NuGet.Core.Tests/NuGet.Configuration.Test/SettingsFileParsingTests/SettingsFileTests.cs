@@ -795,7 +795,7 @@ namespace NuGet.Configuration.Test
         }
 
         [Fact]
-        public void SettingsFile_ConnectSettingsFilesLinkedList_ConnectsConfigsCorrectly()
+        public void SettingsFile_PriorityIsPreservedInSettings()
         {
             // Arrange
             var configFile = "NuGet.Config";
@@ -815,12 +815,17 @@ namespace NuGet.Configuration.Test
                 baseSettingsFile.Should().NotBeNull();
                 subSettingsFile.Should().NotBeNull();
                 subSubSettingsFile.Should().NotBeNull();
+                var settings = new Settings(new List<SettingsFile>() { subSubSettingsFile, subSettingsFile, baseSettingsFile });
 
-                SettingsFile.ConnectSettingsFilesLinkedList(new List<SettingsFile>() { baseSettingsFile, subSettingsFile, subSubSettingsFile });
+                var priority = settings.Priority.GetEnumerator();
 
-                subSubSettingsFile.Next.Should().BeSameAs(subSettingsFile);
-                subSettingsFile.Next.Should().BeSameAs(baseSettingsFile);
-                baseSettingsFile.Next.Should().BeNull();
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(subSubSettingsFile);
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(subSettingsFile);
+                Assert.True(priority.MoveNext());
+                priority.Current.Should().BeSameAs(baseSettingsFile);
+                Assert.False(priority.MoveNext());
             }
         }
 
