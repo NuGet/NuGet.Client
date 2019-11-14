@@ -82,10 +82,7 @@ namespace NuGet.Protocol
                 // store the auth state before sending the request
                 var beforeLockVersion = _credentials.Version;
 
-                using (var req = request.Clone())
-                {
-                    response = await base.SendAsync(req, cancellationToken);
-                }
+                response = await base.SendAsync(request, cancellationToken);
 
                 if (_credentialService == null)
                 {

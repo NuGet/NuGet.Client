@@ -3,9 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -394,43 +394,6 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()),
                     Times.Once());
-        }
-
-        [Fact]
-        public async Task SendAsync_RetryWithClonedRequest()
-        {
-            var packageSource = new PackageSource("http://package.source.net");
-            var clientHandler = new HttpClientHandler();
-
-            var credentialService = Mock.Of<ICredentialService>();
-            Mock.Get(credentialService)
-                .Setup(
-                    x => x.GetCredentialsAsync(
-                        packageSource.SourceUri,
-                        It.IsAny<IWebProxy>(),
-                        CredentialRequestType.Unauthorized,
-                        It.IsAny<string>(),
-                        It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
-
-            var requests = 0;
-            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
-            {
-                InnerHandler = new LambdaMessageHandler(
-                    request =>
-                    {
-                        Assert.Null(request.Headers.Authorization);
-                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "TEST");
-                        requests++;
-                        return new HttpResponseMessage(HttpStatusCode.Unauthorized);
-                    })
-            };
-
-            var response = await SendAsync(handler);
-
-            Assert.True(requests > 1, "No retries");
-            Assert.NotNull(response);
-            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         private static LambdaMessageHandler GetLambdaMessageHandler(HttpStatusCode statusCode)
