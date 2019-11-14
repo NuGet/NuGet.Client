@@ -51,6 +51,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                 .Setup(x => x.GetSection("config"))
                 .Returns(() => new VirtualSettingSection("config",
                     new AddItem("globalPackagesFolder", "solution/packages")));
+            Mock.Get(settings)
+                .Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
 
             var target = new VsPathContextProvider(
                 settings,
@@ -79,6 +82,9 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     new AddItem("a", "solution/packagesA"),
                     new AddItem("b", "solution/packagesB")
                 ));
+            settings
+                .Setup(x => x.GetConfigFilePaths())
+                .Returns(new List<string>());
 
             var target = new VsPathContextProvider(
                 settings.Object,
@@ -333,6 +339,8 @@ namespace NuGet.VisualStudio.Implementation.Test.Extensibility
                     new AddItem("a", "solution/packagesA"),
                     new AddItem("b", "solution/packagesB")
                 ));
+                settings.Setup(s => s.GetConfigFilePaths())
+                .Returns(new List<string>());
 
                 var solutionManager = new Mock<IVsSolutionManager>();
                 solutionManager
