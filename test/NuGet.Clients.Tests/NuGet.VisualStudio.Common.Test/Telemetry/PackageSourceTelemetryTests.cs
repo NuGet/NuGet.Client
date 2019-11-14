@@ -94,8 +94,6 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var pair = Assert.Single(data);
             var times = pair.Value.Nupkg.EventTiming;
             Assert.Equal(timings.Length, times.Requests);
-            Assert.Equal(timings.Min(), times.MinDuration);
-            Assert.Equal(timings.Max(), times.MaxDuration);
             Assert.Equal(timings.Sum(t => t.TotalMilliseconds), times.TotalDuration.TotalMilliseconds, precision: 3);
         }
 
@@ -227,18 +225,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var resourceData = data.Nupkg;
 
             resourceData.EventTiming.Requests = 10;
-            resourceData.EventTiming.MinDuration = TimeSpan.FromMilliseconds(100);
-            resourceData.EventTiming.MaxDuration = TimeSpan.FromMilliseconds(200);
-            var expectedMean = 150.0;
-            resourceData.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(expectedMean * resourceData.EventTiming.Requests);
+            resourceData.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(1234);
 
             resourceData.HeaderTiming = new PackageSourceTelemetry.ResourceTimingData
             {
                 Requests = 5,
-                MinDuration = TimeSpan.FromMilliseconds(50),
-                MaxDuration = TimeSpan.FromMilliseconds(300)
+                TotalDuration = TimeSpan.FromMilliseconds(1111)
             };
-            resourceData.HeaderTiming.TotalDuration = TimeSpan.FromMilliseconds(expectedMean * resourceData.HeaderTiming.Requests);
 
             resourceData.TotalBytes = 1_000_000;
             resourceData.MaxBytes = 200_000;
@@ -266,13 +259,8 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(resourceData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Total]);
             Assert.Equal(resourceData.MaxBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Max]);
 
-            Assert.Equal(resourceData.EventTiming.MinDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Min]);
-            Assert.Equal(resourceData.EventTiming.MaxDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Max]);
-            Assert.Equal(expectedMean, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Mean]);
-
-            Assert.Equal(resourceData.HeaderTiming.MinDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Min]);
-            Assert.Equal(resourceData.HeaderTiming.MaxDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Max]);
-            Assert.Equal(expectedMean, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Mean]);
+            Assert.Equal(resourceData.EventTiming.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Total]);
+            Assert.Equal(resourceData.HeaderTiming.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Total]);
 
             var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Nupkg.Http.StatusCodes, result.ComplexData);
             var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue);
@@ -280,6 +268,44 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             {
                 Assert.Equal(pair.Value, statusCodes[pair.Key.ToString()]);
             }
+        }
+
+        [Fact]
+        public void GetTotals_WithData_ReturnsCorrectSums()
+        {
+            // Arrange
+            var data = new PackageSourceTelemetry.Data();
+            data.Nupkg.EventTiming.Requests = 2;
+            data.Nupkg.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(11);
+            data.Nupkg.TotalBytes = 97;
+            data.Metadata.EventTiming.Requests= 5;
+            data.Metadata.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(13);
+            data.Metadata.TotalBytes = 89;
+
+            var allData = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            for (int i = 1; i <= 7; i++)
+            {
+                allData[i.ToString()] = data;
+            }
+
+            int expectedRequests = 0;
+            long expectedBytes = 0;
+            TimeSpan expectedDuration = TimeSpan.Zero;
+
+            foreach(var resourceData in allData.SelectMany(d => new [] { d.Value.Nupkg, d.Value.Metadata}))
+            {
+                expectedRequests += resourceData.EventTiming.Requests;
+                expectedBytes += resourceData.TotalBytes;
+                expectedDuration += resourceData.EventTiming.TotalDuration;
+            }
+
+            // Act
+            var totals = PackageSourceTelemetry.GetTotals(allData);
+
+            // Assert
+            Assert.Equal(expectedRequests, totals.Requests);
+            Assert.Equal(expectedBytes, totals.Bytes);
+            Assert.Equal(expectedDuration, totals.Duration);
         }
 
         private static readonly Uri SampleNupkgUri = new Uri("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg");

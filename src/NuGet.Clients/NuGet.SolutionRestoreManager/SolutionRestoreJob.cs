@@ -237,12 +237,15 @@ namespace NuGet.SolutionRestoreManager
                     {
                         _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
                     }
+
+                    var protocolDiagnosticsTotals = packageSourceTelemetry.GetTotals();
                     // Emit telemetry event for restore operation
                     EmitRestoreTelemetryEvent(
                         projects,
                         restoreSource,
                         startTime,
-                        duration.TotalSeconds);
+                        duration.TotalSeconds,
+                        protocolDiagnosticsTotals);
                 }
             }
         }
@@ -250,7 +253,8 @@ namespace NuGet.SolutionRestoreManager
         private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
             RestoreOperationSource source,
             DateTimeOffset startTime,
-            double duration)
+            double duration,
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -271,7 +275,7 @@ namespace NuGet.SolutionRestoreManager
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
             var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
-            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources, protocolDiagnosticTotals);
 
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }

@@ -12,6 +12,7 @@ using NuGet.Indexing;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -107,24 +108,36 @@ namespace NuGet.PackageManagement.VisualStudio
                     searchOperationId,
                     searchText,
                     filter.IncludePrerelease));
-
-                _telemetryService.EmitTelemetryEvent(SourceTelemetry.GetSearchSourceSummaryEvent(
-                    searchOperationId,
-                    _sourceRepositories.Select(x => x.PackageSource)));
             }
 
-            var searchTasks = TaskCombinators.ObserveErrorsAsync(
-                _sourceRepositories,
-                r => r.PackageSource.Name,
-                (r, t) => r.SearchAsync(searchText, filter, PageSize, t),
-                LogError,
-                cancellationToken);
+            SearchResult<IPackageSearchMetadata> result;
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories.Select(r => r.PackageSource), searchOperationId))
+            {
+                var searchTasks = TaskCombinators.ObserveErrorsAsync(
+                    _sourceRepositories,
+                    r => r.PackageSource.Name,
+                    (r, t) => r.SearchAsync(searchText, filter, PageSize, t),
+                    LogError,
+                    cancellationToken);
 
-            return await WaitForCompletionOrBailOutAsync(
-                searchText,
-                searchTasks,
-                new TelemetryState(searchOperationId, pageIndex: 0),
-                cancellationToken);
+                result = await WaitForCompletionOrBailOutAsync(
+                    searchText,
+                    searchTasks,
+                    new TelemetryState(searchOperationId, pageIndex: 0),
+                    cancellationToken);
+
+                if (_telemetryService != null)
+                {
+                    packageSourceTelemetry.SendTelemetry();
+                    var protocolDiagnosticTotals = packageSourceTelemetry.GetTotals();
+                    _telemetryService.EmitTelemetryEvent(SourceTelemetry.GetSearchSourceSummaryEvent(
+                        searchOperationId,
+                        _sourceRepositories.Select(x => x.PackageSource),
+                        protocolDiagnosticTotals));
+                }
+            }
+
+            return result;
         }
 
         public async Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)

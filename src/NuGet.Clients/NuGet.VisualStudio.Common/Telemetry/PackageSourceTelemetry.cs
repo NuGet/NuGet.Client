@@ -103,16 +103,6 @@ namespace NuGet.VisualStudio.Telemetry
         {
             timingData.Requests++;
             timingData.TotalDuration += duration;
-
-            if (timingData.MinDuration > duration)
-            {
-                timingData.MinDuration = duration;
-            }
-
-            if (timingData.MaxDuration < duration)
-            {
-                timingData.MaxDuration = duration;
-            }
         }
 
         public void Dispose()
@@ -179,69 +169,86 @@ namespace NuGet.VisualStudio.Telemetry
                 telemetry[PropertyNames.Source.MSFeed] = msFeed;
             }
 
-            // metadata
-            lock (data.Metadata.Lock)
-            {
-                telemetry[PropertyNames.Metadata.Requests] = data.Metadata.EventTiming.Requests;
-                telemetry[PropertyNames.Metadata.Successful] = data.Metadata.Successful;
-                telemetry[PropertyNames.Metadata.Retries] = data.Metadata.Retries;
-                telemetry[PropertyNames.Metadata.Cancelled] = data.Metadata.Cancelled;
-                telemetry[PropertyNames.Metadata.Failed] = data.Metadata.Failed;
-                telemetry[PropertyNames.Metadata.Bytes.Total] = data.Metadata.TotalBytes;
-                telemetry[PropertyNames.Metadata.Bytes.Max] = data.Metadata.MaxBytes;
+            AddResourceProperties(telemetry, data.Metadata, PropertyNames.Metadata);
+            AddResourceProperties(telemetry, data.Nupkg, PropertyNames.Nupkg);
 
-                if (data.Metadata.StatusCodes.Count > 0)
-                {
-                    telemetry.ComplexData[PropertyNames.Metadata.Http.StatusCodes] = ToStatusCodeTelemetry(data.Metadata.StatusCodes);
-                }
-
-                if (data.Metadata.EventTiming.Requests > 0)
-                {
-                    telemetry[PropertyNames.Metadata.Timing.Min] = data.Metadata.EventTiming.MinDuration.TotalMilliseconds;
-                    telemetry[PropertyNames.Metadata.Timing.Mean] = data.Metadata.EventTiming.TotalDuration.TotalMilliseconds / data.Metadata.EventTiming.Requests;
-                    telemetry[PropertyNames.Metadata.Timing.Max] = data.Metadata.EventTiming.MaxDuration.TotalMilliseconds;
-                }
-
-                if (data.Metadata.HeaderTiming != null && data.Metadata.HeaderTiming.Requests > 0)
-                {
-                    telemetry[PropertyNames.Metadata.Header.Timing.Min] = data.Metadata.HeaderTiming.MinDuration.TotalMilliseconds;
-                    telemetry[PropertyNames.Metadata.Header.Timing.Mean] = data.Metadata.HeaderTiming.TotalDuration.TotalMilliseconds / data.Metadata.HeaderTiming.Requests;
-                    telemetry[PropertyNames.Metadata.Header.Timing.Max] = data.Metadata.HeaderTiming.MaxDuration.TotalMilliseconds;
-                }
-            }
-
-            // nupkgs
-            lock (data.Nupkg.Lock)
-            {
-                telemetry[PropertyNames.Nupkg.Requests] = data.Nupkg.EventTiming.Requests;
-                telemetry[PropertyNames.Nupkg.Successful] = data.Nupkg.Successful;
-                telemetry[PropertyNames.Nupkg.Retries] = data.Nupkg.Retries;
-                telemetry[PropertyNames.Nupkg.Cancelled] = data.Nupkg.Cancelled;
-                telemetry[PropertyNames.Nupkg.Failed] = data.Nupkg.Failed;
-                telemetry[PropertyNames.Nupkg.Bytes.Total] = data.Nupkg.TotalBytes;
-                telemetry[PropertyNames.Nupkg.Bytes.Max] = data.Nupkg.MaxBytes;
-
-                if (data.Nupkg.StatusCodes.Count > 0)
-                {
-                    telemetry.ComplexData[PropertyNames.Nupkg.Http.StatusCodes] = ToStatusCodeTelemetry(data.Nupkg.StatusCodes);
-                }
-
-                if (data.Nupkg.EventTiming.Requests > 0)
-                {
-                    telemetry[PropertyNames.Nupkg.Timing.Min] = data.Nupkg.EventTiming.MinDuration.TotalMilliseconds;
-                    telemetry[PropertyNames.Nupkg.Timing.Mean] = data.Nupkg.EventTiming.TotalDuration.TotalMilliseconds / data.Nupkg.EventTiming.Requests;
-                    telemetry[PropertyNames.Nupkg.Timing.Max] = data.Nupkg.EventTiming.MaxDuration.TotalMilliseconds;
-                }
-
-                if (data.Nupkg.HeaderTiming != null && data.Nupkg.HeaderTiming.Requests > 0)
-                {
-                    telemetry[PropertyNames.Nupkg.Header.Timing.Min] = data.Nupkg.HeaderTiming.MinDuration.TotalMilliseconds;
-                    telemetry[PropertyNames.Nupkg.Header.Timing.Mean] = data.Nupkg.HeaderTiming.TotalDuration.TotalMilliseconds / data.Nupkg.HeaderTiming.Requests;
-                    telemetry[PropertyNames.Nupkg.Header.Timing.Max] = data.Nupkg.HeaderTiming.MaxDuration.TotalMilliseconds;
-                }
-            }
+            ResourceData all = CalculateTotal(data.Metadata, data.Nupkg);
+            AddResourceProperties(telemetry, all, PropertyNames.All);
 
             return telemetry;
+        }
+
+        private static void AddResourceProperties(TelemetryEvent telemetry, ResourceData data, PackageSourceDiagnosticsPropertyNames.ResourcePropertyNames propertyNames)
+        {
+            lock (data.Lock)
+            {
+                telemetry[propertyNames.Requests] = data.EventTiming.Requests;
+                telemetry[propertyNames.Successful] = data.Successful;
+                telemetry[propertyNames.Retries] = data.Retries;
+                telemetry[propertyNames.Cancelled] = data.Cancelled;
+                telemetry[propertyNames.Failed] = data.Failed;
+                telemetry[propertyNames.Bytes.Total] = data.TotalBytes;
+                telemetry[propertyNames.Bytes.Max] = data.MaxBytes;
+
+                if (data.StatusCodes.Count > 0)
+                {
+                    telemetry.ComplexData[propertyNames.Http.StatusCodes] = ToStatusCodeTelemetry(data.StatusCodes);
+                }
+
+                if (data.EventTiming.Requests > 0)
+                {
+                    telemetry[propertyNames.Timing.Total] = data.EventTiming.TotalDuration.TotalMilliseconds;
+                }
+
+                if (data.HeaderTiming != null && data.HeaderTiming.Requests > 0)
+                {
+                    telemetry[propertyNames.Header.Timing.Total] = data.HeaderTiming.TotalDuration.TotalMilliseconds;
+                }
+            }
+        }
+
+        private static ResourceData CalculateTotal(params ResourceData[] data)
+        {
+            var all = new ResourceData();
+
+            foreach (ResourceData resourceData in data)
+            {
+                lock (resourceData.Lock)
+                {
+                    all.EventTiming.Requests += resourceData.EventTiming.Requests;
+                    all.EventTiming.TotalDuration += resourceData.EventTiming.TotalDuration;
+                    if (resourceData.HeaderTiming != null)
+                    {
+                        if (all.HeaderTiming == null)
+                        {
+                            all.HeaderTiming = new ResourceTimingData();
+                        }
+
+                        all.HeaderTiming.Requests += resourceData.HeaderTiming.Requests;
+                        all.HeaderTiming.TotalDuration += resourceData.HeaderTiming.TotalDuration;
+                    }
+
+                    all.TotalBytes += resourceData.TotalBytes;
+                    all.MaxBytes += resourceData.MaxBytes;
+
+                    foreach (var kvp in resourceData.StatusCodes)
+                    {
+                        if (!all.StatusCodes.TryGetValue(kvp.Key, out int count))
+                        {
+                            count = 0;
+                        }
+                        count += kvp.Value;
+                        all.StatusCodes[kvp.Key] = count;
+                    }
+
+                    all.Successful += resourceData.Successful;
+                    all.Retries += resourceData.Retries;
+                    all.Cancelled += resourceData.Cancelled;
+                    all.Failed += resourceData.Failed;
+                }
+            }
+
+            return all;
         }
 
         private static TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
@@ -284,6 +291,50 @@ namespace NuGet.VisualStudio.Telemetry
             return null;
         }
 
+        public Totals GetTotals()
+        {
+            return GetTotals(_data);
+        }
+
+        internal static Totals GetTotals(ConcurrentDictionary<string, Data> data)
+        {
+            int requests = 0;
+            long bytes = 0;
+            TimeSpan duration = TimeSpan.Zero;
+
+            foreach (var source in data)
+            {
+                Increment(source.Value.Metadata, ref requests, ref bytes, ref duration);
+                Increment(source.Value.Nupkg, ref requests, ref bytes, ref duration);
+            }
+
+            return new Totals(requests, bytes, duration);
+
+            void Increment(ResourceData rd, ref int r, ref long b, ref TimeSpan d)
+            {
+                lock (rd.Lock)
+                {
+                    r += rd.EventTiming.Requests;
+                    b += rd.TotalBytes;
+                    d += rd.EventTiming.TotalDuration;
+                }
+            }
+        }
+
+        public class Totals
+        {
+            public Totals(int requests, long bytes, TimeSpan duration)
+            {
+                Requests = requests;
+                Bytes = bytes;
+                Duration = duration;
+            }
+
+            public int Requests { get; }
+            public long Bytes { get; }
+            public TimeSpan Duration { get; }
+        }
+
         internal class Data
         {
             internal ResourceData Metadata { get; }
@@ -314,94 +365,99 @@ namespace NuGet.VisualStudio.Telemetry
         {
             public int Requests;
             public TimeSpan TotalDuration;
-            public TimeSpan MinDuration = TimeSpan.MaxValue;
-            public TimeSpan MaxDuration;
         }
 
-        internal static class PropertyNames
+        internal static PackageSourceDiagnosticsPropertyNames PropertyNames = new PackageSourceDiagnosticsPropertyNames();
+
+        internal class PackageSourceDiagnosticsPropertyNames
         {
-            internal static readonly string ParentId = "parentid";
+            internal string ParentId { get; } = "parentid";
+            internal SourcePropertyNames Source { get; } = new SourcePropertyNames("source");
+            internal ResourcePropertyNames Metadata { get; } = new ResourcePropertyNames("metadata");
+            internal ResourcePropertyNames Nupkg { get; } = new ResourcePropertyNames("nupkg");
+            internal ResourcePropertyNames All { get; } = new ResourcePropertyNames("all");
 
-            internal static class Source
+            internal class ResourcePropertyNames
             {
-                internal static readonly string Url = "source.url";
-                internal static readonly string Type = "source.type";
-                internal static readonly string Protocol = "source.protocol";
-                internal static readonly string MSFeed = "source.msfeed";
+                internal ResourcePropertyNames(string prefix)
+                {
+                    Requests = prefix + ".requests";
+                    Successful = prefix + ".successful";
+                    Retries = prefix + ".retries";
+                    Cancelled = prefix + ".cancelled";
+                    Failed = prefix + ".failed";
+                    Bytes = new BytesPropertyNames(prefix + ".bytes");
+                    Http = new HttpPropertyNames(prefix + ".http");
+                    Timing = new TimingPropertyNames(prefix + ".timing");
+                    Header = new HeaderPropertyNames(prefix + ".header");
+                }
+
+                internal string Requests { get; }
+                internal string Successful { get; }
+                internal string Retries { get; }
+                internal string Cancelled { get; }
+                internal string Failed { get; }
+                internal BytesPropertyNames Bytes { get; }
+                internal HttpPropertyNames Http { get; }
+                internal TimingPropertyNames Timing { get; }
+                internal HeaderPropertyNames Header { get; }
             }
 
-            internal static class Metadata
+            internal class SourcePropertyNames
             {
-                internal static readonly string Requests = "metadata.requests";
-                internal static readonly string Successful = "metadata.successful";
-                internal static readonly string Retries = "metadata.retries";
-                internal static readonly string Cancelled = "metadata.cancelled";
-                internal static readonly string Failed = "metadata.failed";
-
-                internal static class Bytes
+                public SourcePropertyNames(string prefix)
                 {
-                    internal static readonly string Total = "metadata.bytes.total";
-                    internal static readonly string Max = "metadata.bytes.max";
+                    Url = prefix + ".url";
+                    Type = prefix + ".type";
+                    Protocol = prefix + ".nugetprotocol";
+                    MSFeed = prefix + ".msfeed";
                 }
 
-                internal static class Http
-                {
-                    internal static readonly string StatusCodes = "metadata.http.statuscodes";
-                }
-
-                internal static class Timing
-                {
-                    internal static readonly string Min = "metadata.timing.min";
-                    internal static readonly string Mean = "metadata.timing.mean";
-                    internal static readonly string Max = "metadata.timing.max";
-                }
-
-                internal static class Header
-                {
-                    internal static class Timing
-                    {
-                        internal static readonly string Min = "metadata.header.timing.min";
-                        internal static readonly string Mean = "metadata.header.timing.mean";
-                        internal static readonly string Max = "metadata.header.timing.max";
-                    }
-                }
+                internal string Url { get; }
+                internal string Type { get; }
+                internal string Protocol { get; }
+                internal string MSFeed { get; }
             }
 
-            internal static class Nupkg
+            internal class TimingPropertyNames
             {
-                internal static readonly string Requests = "nupkg.requests";
-                internal static readonly string Successful = "nupkg.successful";
-                internal static readonly string Retries = "nupkg.retries";
-                internal static readonly string Cancelled = "nupkg.cancelled";
-                internal static readonly string Failed = "nupkg.failed";
-
-                internal static class Bytes
+                public TimingPropertyNames(string prefix)
                 {
-                    internal static readonly string Total = "nupkg.bytes.total";
-                    internal static readonly string Max = "nupkg.bytes.max";
+                    Total = prefix + ".total";
                 }
 
-                internal static class Http
+                internal string Total { get; }
+            }
+
+            internal class HeaderPropertyNames
+            {
+                internal HeaderPropertyNames(string prefix)
                 {
-                    internal static readonly string StatusCodes = "nupkg.http.statuscodes";
+                    Timing = new TimingPropertyNames(prefix + ".timing");
                 }
 
-                internal static class Timing
+                internal TimingPropertyNames Timing { get; }
+            }
+
+            internal class HttpPropertyNames
+            {
+                internal HttpPropertyNames(string prefix)
                 {
-                    internal static readonly string Min = "nupkg.timing.min";
-                    internal static readonly string Mean = "nupkg.timing.mean";
-                    internal static readonly string Max = "nupkg.timing.max";
+                    StatusCodes = prefix + ".statuscodes";
                 }
 
-                internal static class Header
+                internal string StatusCodes { get; }
+            }
+
+            internal class BytesPropertyNames
+            {
+                internal  BytesPropertyNames(string prefix)
                 {
-                    internal static class Timing
-                    {
-                        internal static readonly string Min = "nupkg.header.timing.min";
-                        internal static readonly string Mean = "nupkg.header.timing.mean";
-                        internal static readonly string Max = "nupkg.header.timing.max";
-                    }
+                    Total = prefix + ".total";
+                    Max = prefix + ".max";
                 }
+                internal string Total { get; }
+                internal string Max { get; }
             }
         }
     }

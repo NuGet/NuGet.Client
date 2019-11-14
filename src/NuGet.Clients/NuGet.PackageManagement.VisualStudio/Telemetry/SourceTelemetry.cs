@@ -28,22 +28,26 @@ namespace NuGet.PackageManagement.Telemetry
 
         public static TelemetryEvent GetRestoreSourceSummaryEvent(
             Guid parentId,
-            IEnumerable<PackageSource> packageSources)
+            IEnumerable<PackageSource> packageSources,
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             return GetSourceSummaryEvent(
                 "RestorePackageSourceSummary",
                 parentId,
-                packageSources);
+                packageSources,
+                protocolDiagnosticTotals);
         }
 
         public static TelemetryEvent GetSearchSourceSummaryEvent(
             Guid parentId,
-            IEnumerable<PackageSource> packageSources)
+            IEnumerable<PackageSource> packageSources,
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             return GetSourceSummaryEvent(
                 "SearchPackageSourceSummary",
                 parentId,
-                packageSources);
+                packageSources,
+                protocolDiagnosticTotals);
         }
 
         /// <summary>
@@ -52,7 +56,8 @@ namespace NuGet.PackageManagement.Telemetry
         private static TelemetryEvent GetSourceSummaryEvent(
             string eventName,
             Guid parentId,
-            IEnumerable<PackageSource> packageSources)
+            IEnumerable<PackageSource> packageSources,
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             var local = 0;
             var httpV2 = 0;
@@ -122,7 +127,8 @@ namespace NuGet.PackageManagement.Telemetry
                 httpV3,
                 nugetOrg.ToString(),
                 vsOfflinePackages,
-                dotnetCuratedFeed);
+                dotnetCuratedFeed,
+                protocolDiagnosticTotals);
         }
 
         // NumLocalFeeds(c:\ or \\ or file:///)
@@ -141,7 +147,8 @@ namespace NuGet.PackageManagement.Telemetry
                 int httpV3,
                 string nugetOrg,
                 bool vsOfflinePackages,
-                bool dotnetCuratedFeed)
+                bool dotnetCuratedFeed,
+                PackageSourceTelemetry.Totals protocolDiagnosticTotals)
                 : base(eventName)
             {
                 this["NumLocalFeeds"] = local;
@@ -151,6 +158,9 @@ namespace NuGet.PackageManagement.Telemetry
                 this["VsOfflinePackages"] = vsOfflinePackages;
                 this["DotnetCuratedFeed"] = dotnetCuratedFeed;
                 this["ParentId"] = parentId.ToString();
+                this["protocol.requests"] = protocolDiagnosticTotals.Requests;
+                this["protocol.bytes"] = protocolDiagnosticTotals.Bytes;
+                this["protocol.duration"] = protocolDiagnosticTotals.Duration.TotalMilliseconds;
             }
         }
     }
