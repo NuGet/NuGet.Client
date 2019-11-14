@@ -315,6 +315,22 @@ namespace NuGet.Configuration
                 useTestingGlobalPath: false);
         }
 
+        public static ISettings LoadImmutableSettingsGivenConfigPaths(IList<string> configFilePaths, SettingsLoadingContext settingsLoadingContext)
+        {
+            if (configFilePaths == null || configFilePaths.Count == 0)
+            {
+                return NullSettings.Instance;
+            }
+            var settings = new List<SettingsFile>();
+
+            foreach (var configFilePath in configFilePaths)
+            {
+                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath));
+            }
+
+            return new ImmutableSettings(LoadSettingsGivenSettingsFiles(settings));
+        }
+
         public static ISettings LoadSettingsGivenConfigPaths(IList<string> configFilePaths)
         {
             var settings = new List<SettingsFile>();
@@ -329,14 +345,21 @@ namespace NuGet.Configuration
                 settings.Add(new SettingsFile(file.DirectoryName, file.Name));
             }
 
-            return LoadSettingsForSpecificConfigs(
-                settings.First().DirectoryPath,
-                settings.First().FileName,
-                validSettingFiles: settings,
-                machineWideSettings: null,
-                loadUserWideSettings: false,
-                useTestingGlobalPath: false);
+            return LoadSettingsGivenSettingsFiles(settings);
         }
+
+
+        private static ISettings LoadSettingsGivenSettingsFiles(List<SettingsFile> settings)
+        {
+            return LoadSettingsForSpecificConfigs(
+                            settings.First().DirectoryPath,
+                            settings.First().FileName,
+                            validSettingFiles: settings,
+                            machineWideSettings: null,
+                            loadUserWideSettings: false,
+                            useTestingGlobalPath: false);
+        }
+
 
         /// <summary>
         /// For internal use only
