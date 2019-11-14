@@ -363,7 +363,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
             }
 
-            return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath, projectPath: spec.RestoreMetadata.ProjectPath));
+            return Task.FromResult(NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: spec.RestoreMetadata.OutputPath));
         }
 
         #endregion

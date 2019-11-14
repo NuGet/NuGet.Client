@@ -2379,7 +2379,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile.LogMessages, logger.Object);
 
             // Assert
             logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning && l.Message == "Test Warning" && l.Code == NuGetLogCode.NU1500)),
@@ -2431,7 +2431,7 @@ namespace NuGet.Commands.Test
             };
 
             // Act
-            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile, logger.Object);
+            var codes = MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(lockFile.LogMessages, logger.Object);
 
             // Assert
             logger.Verify(x => x.LogAsync(It.Is<RestoreLogMessage>(l => l.Level == LogLevel.Warning &&

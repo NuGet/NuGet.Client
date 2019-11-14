@@ -245,14 +245,6 @@ namespace NuGet.Commands
             // Run the restore
             var request = summaryRequest.Request;
 
-            // Read the existing lock file, this is needed to support IsLocked=true
-            // This is done on the thread and not as part of creating the request due to
-            // how long it takes to load the lock file.
-            if (request.ExistingLockFile == null)
-            {
-                request.ExistingLockFile = LockFileUtilities.GetLockFile(request.LockFilePath, log);
-            }
-
             var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync(token);
 

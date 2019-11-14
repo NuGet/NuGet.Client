@@ -15,6 +15,8 @@ namespace NuGet.ProjectModel
         private const string VersionProperty = "version";
         private const string DGSpecHashProperty = "dgSpecHash";
         private const string SuccessProperty = "success";
+        private const string ExpectedPackageFilesProperty = "expectedPackageFiles";
+        private const string ProjectFilePathProperty = "projectFilePath";
 
         public static CacheFile Read(Stream stream, ILogger log, string path)
         {
@@ -81,6 +83,25 @@ namespace NuGet.ProjectModel
             var cacheFile = new CacheFile(hash);
             cacheFile.Version = version;
             cacheFile.Success = success;
+
+            if (version >= 2)
+            {
+                cacheFile.ProjectFilePath = ReadString(cursor[ProjectFilePathProperty]);
+
+                foreach (JToken expectedFile in cursor[ExpectedPackageFilesProperty])
+                {
+                    string path = ReadString(expectedFile);
+
+                    if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
+                    {
+                        cacheFile.HasAnyMissingPackageFiles = true;
+                        break;
+                    }
+                }
+
+                cacheFile.LogMessages = LockFileFormat.ReadLogMessageArray(cursor[LockFileFormat.LogsProperty] as JArray, cacheFile.ProjectFilePath);
+            }
+
             return cacheFile;
         }
 
@@ -90,6 +111,14 @@ namespace NuGet.ProjectModel
             json[VersionProperty] = WriteInt(cacheFile.Version);
             json[DGSpecHashProperty] = WriteString(cacheFile.DgSpecHash);
             json[SuccessProperty] = WriteBool(cacheFile.Success);
+
+            if (cacheFile.Version >= 2)
+            {
+                json[ProjectFilePathProperty] = cacheFile.ProjectFilePath;
+                json[ExpectedPackageFilesProperty] = new JArray(cacheFile.ExpectedPackageFilePaths);
+                json[LockFileFormat.LogsProperty] = cacheFile.LogMessages == null ? new JArray() : LockFileFormat.WriteLogMessages(cacheFile.LogMessages, cacheFile.ProjectFilePath);
+            }
+
             return json;
         }
 

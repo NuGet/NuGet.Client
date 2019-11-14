@@ -140,9 +140,8 @@ namespace NuGet.Commands.Test
                 var logger = new TestLogger();
                 var result = new NoOpRestoreResult(
                     success: true,
-                    lockFile: new LockFile(),
-                    previousLockFile: new LockFile(),
                     lockFilePath: path,
+                    new Lazy<LockFile>(() => new LockFile()), 
                     cacheFile: new CacheFile("NotSoRandomString"),
                     cacheFilePath: cachePath,
                     projectStyle: ProjectStyle.Unknown,
@@ -162,6 +161,72 @@ namespace NuGet.Commands.Test
                 Assert.False(File.Exists(path), $"The lock file should not have been written: {path}");
                 Assert.False(File.Exists(cachePath), $"The cache file should not have been written: {cachePath}");
                 Assert.Equal(2, logger.Messages.Count);
+            }
+        }
+
+        [Fact]
+        public void NoOpRestoreResult_IsLazy()
+        {
+            const string lockFileContent = @"{
+  ""version"": 1,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.10-beta-23008"": {
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.10-beta-23008"": {
+      ""sha512"": ""JkGp8sCzxxRY1GS+p1SEk8WcaT8pu++/5b94ar2i/RaUN/OzkcGP/6OLFUxUf1uar75pUvotpiMawVt1dCEUVA=="",
+      ""type"": ""Package"",
+      ""files"": [
+        ""_rels/.rels"",
+        ""System.Runtime.nuspec"",
+        ""License.rtf"",
+        ""ref/dotnet/System.Runtime.dll"",
+        ""ref/net451/_._"",
+        ""lib/net451/_._"",
+        ""ref/win81/_._"",
+        ""lib/win81/_._"",
+        ""ref/netcore50/System.Runtime.dll"",
+        ""package/services/metadata/core-properties/cdec43993f064447a2d882cbfd022539.psmdcp"",
+        ""[Content_Types].xml""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime >= 4.0.10-beta-*""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  }
+}
+";
+
+            // Arrange
+            using (var td = TestDirectory.Create())
+            {
+                var path = Path.Combine(td, "project.lock.json");
+                File.WriteAllText(path, lockFileContent);
+                var logger = new TestLogger();
+                var result = new NoOpRestoreResult(
+                    success: true,
+                    lockFilePath: path,
+                    new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(path, logger)),
+                    cacheFile: new CacheFile("NotSoRandomString"),
+                    cacheFilePath: null,
+                    projectStyle: ProjectStyle.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
+
+                // Act
+                var actual = result.LockFile;
+
+                // Assert
+                Assert.Equal(1, actual.Libraries.Count);
+                Assert.Equal("System.Runtime", actual.Libraries[0].Name);
             }
         }
     }

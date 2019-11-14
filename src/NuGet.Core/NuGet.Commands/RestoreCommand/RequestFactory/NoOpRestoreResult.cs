@@ -15,12 +15,19 @@ namespace NuGet.Commands
 {
     public class NoOpRestoreResult : RestoreResult
     {
-        public NoOpRestoreResult(bool success, LockFile lockFile, LockFile previousLockFile, string lockFilePath, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
+        private readonly Lazy<LockFile> _lockFileLazy;
+
+        public NoOpRestoreResult(bool success, string lockFilePath, Lazy<LockFile> lockFileLazy, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
             base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
-                msbuildFiles : null, lockFile : lockFile, previousLockFile : previousLockFile, lockFilePath: lockFilePath,
+                msbuildFiles : null, lockFile : null, previousLockFile : null, lockFilePath: lockFilePath,
                 cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
+            _lockFileLazy = lockFileLazy ?? throw new ArgumentNullException(nameof(lockFileLazy));
         }
+
+        public override LockFile LockFile => _lockFileLazy.Value;
+
+        public override LockFile PreviousLockFile => LockFile;
 
         //We override this method because in the case of a no op we don't need to update anything
 #pragma warning disable CS1998 // This async method lacks 'await' operators and will run synchronously.

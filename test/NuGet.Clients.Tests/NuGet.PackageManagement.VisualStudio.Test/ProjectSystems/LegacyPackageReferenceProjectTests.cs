@@ -124,7 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var cachePath = await testProject.GetCacheFilePathAsync();
 
                 // Assert
-                Assert.Equal(Path.Combine(testMSBuildProjectExtensionsPath, $"{testProj}.nuget.cache"), cachePath);
+                Assert.Equal(Path.Combine(testMSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName), cachePath);
 
                 // Verify
                 Mock.Get(projectAdapter)
@@ -180,7 +180,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 var assetsPath = await testProject.GetCacheFilePathAsync();
 
                 // Assert
-                Assert.Equal(Path.Combine(testMSBuildProjectExtensionsPath, $"{testProj}.nuget.cache"), assetsPath);
+                Assert.Equal(Path.Combine(testMSBuildProjectExtensionsPath, NoOpRestoreUtilities.NoOpCacheFileName), assetsPath);
 
                 // Verify
                 Mock.Get(projectAdapter)

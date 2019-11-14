@@ -19,6 +19,7 @@ namespace NuGet.ProjectModel
     {
         public static readonly int Version = 3;
         public static readonly string LockFileName = "project.lock.json";
+        // If this is ever renamed, you should also rename NoOpRestoreUtilities.NoOpCacheFileName to keep them in sync.
         public static readonly string AssetsFileName = "project.assets.json";
 
         private const string VersionProperty = "version";
@@ -46,7 +47,7 @@ namespace NuGet.ProjectModel
         private const string ToolsProperty = "tools";
         private const string PackageFoldersProperty = "packageFolders";
         private const string PackageSpecProperty = "project";
-        private const string LogsProperty = "logs";
+        internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
 
@@ -444,7 +445,7 @@ namespace NuGet.ProjectModel
             return assetsLogMessage;
         }
 
-        private static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
+        internal static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
         {
             var logMessageArray = new JArray();
             foreach(var logMessage in logMessages)
@@ -686,7 +687,7 @@ namespace NuGet.ProjectModel
             return items;
         }
 
-        private static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
+        internal static IList<IAssetsLogMessage> ReadLogMessageArray(JArray json, string projectPath)
         {
             if (json == null)
             {

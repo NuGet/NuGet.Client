@@ -130,7 +130,7 @@ namespace NuGet.Commands
                         {
                             noOpTelemetry.StartIntervalMeasure();
 
-                            var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request);
+                            var noOpSuccess = NoOpRestoreUtilities.VerifyRestoreOutput(_request, cacheFile);
 
                             noOpTelemetry.EndIntervalMeasure(MsbuildAssetsVerificationDuration);
                             noOpTelemetry.TelemetryEvent[MsbuildAssetsVerificationResult] = noOpSuccess;
@@ -140,7 +140,7 @@ namespace NuGet.Commands
                                 noOpTelemetry.StartIntervalMeasure();
 
                                 // Replay Warnings and Errors from an existing lock file in case of a no-op.
-                                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
+                                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(cacheFile.LogMessages, _logger);
 
                                 noOpTelemetry.EndIntervalMeasure(ReplayLogsDuration);
 
@@ -148,9 +148,8 @@ namespace NuGet.Commands
 
                                 return new NoOpRestoreResult(
                                     _success,
-                                    _request.ExistingLockFile,
-                                    _request.ExistingLockFile,
-                                    _request.ExistingLockFile.Path,
+                                    _request.LockFilePath,
+                                    new Lazy<LockFile>(() => LockFileUtilities.GetLockFile(_request.LockFilePath, _logger)),
                                     cacheFile,
                                     _request.Project.RestoreMetadata.CacheFilePath,
                                     _request.ProjectStyle,
@@ -188,7 +187,7 @@ namespace NuGet.Commands
                         _success = result;
 
                         // Replay Warnings and Errors from an existing lock file
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile, _logger);
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
 
                         if (cacheFile != null)
                         {
@@ -328,6 +327,9 @@ namespace NuGet.Commands
                     if (cacheFile != null)
                     {
                         cacheFile.Success = _success;
+                        cacheFile.ProjectFilePath = _request.Project.FilePath;
+                        cacheFile.LogMessages = assetsFile.LogMessages;
+                        cacheFile.ExpectedPackageFilePaths = NoOpRestoreUtilities.GetRestoreOutput(_request, assetsFile);
                     }
 
                     var errorCodes = ConcatAsString(new HashSet<NuGetLogCode>(logs.Where(l => l.Level == LogLevel.Error).Select(l => l.Code)));
@@ -388,14 +390,14 @@ namespace NuGet.Commands
         /// <summary>
         /// Accounts for using the restore commands on 2 projects living in the same path
         /// </summary>
-        private bool VerifyAssetsFileMatchesProject()
+        private bool VerifyCacheFileMatchesProject(CacheFile cacheFile)
         {
             if (_request.Project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
                 return true;
             }
             var pathComparer = PathUtility.GetStringComparerBasedOnOS();
-            return (_request.ExistingLockFile != null && pathComparer.Equals( _request.ExistingLockFile.PackageSpec.FilePath , _request.Project.FilePath));
+            return pathComparer.Equals(cacheFile.ProjectFilePath, _request.Project.FilePath);
         }
 
         private bool ValidatePackagesSha512(PackagesLockFile lockFile, LockFile assetsFile)
@@ -533,7 +535,7 @@ namespace NuGet.Commands
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
-                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyAssetsFileMatchesProject())
+                if (cacheFile.IsValid && StringComparer.Ordinal.Equals(cacheFile.DgSpecHash, newDgSpecHash) && VerifyCacheFileMatchesProject(cacheFile))
                 {
                     _logger.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoreNoOpFinish, _request.Project.Name));
                     _success = true;
@@ -558,13 +560,10 @@ namespace NuGet.Commands
                 NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
 
+            // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.
             if (_request.ProjectStyle == ProjectStyle.DotnetCliTool)
             {
-                if (noOp) // Only if the hash matches, then load the lock file. This is a performance hit, so we need to delay it as much as possible.
-                {
-                    _request.ExistingLockFile = LockFileUtilities.GetLockFile(_request.LockFilePath, _logger);
-                }
-                else
+                if (!noOp)
                 {
                     // Clean up to preserve the pre no-op behavior. This should not be used, but we want to be cautious. 
                     _request.LockFilePath = null;

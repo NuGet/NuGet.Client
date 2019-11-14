@@ -621,7 +621,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
-            Assert.Equal(Path.Combine(actualProjectSpec.RestoreMetadata.OutputPath,$"{Path.GetFileName(projectFullPath)}.nuget.cache"), actualProjectSpec.RestoreMetadata.CacheFilePath);
+            Assert.Equal(Path.Combine(actualProjectSpec.RestoreMetadata.OutputPath, NoOpRestoreUtilities.NoOpCacheFileName), actualProjectSpec.RestoreMetadata.CacheFilePath);
         }
 
         [Theory]

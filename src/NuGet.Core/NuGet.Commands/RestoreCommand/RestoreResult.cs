@@ -44,12 +44,12 @@ namespace NuGet.Commands
         /// Gets the lock file that was generated during the restore or, in the case of a locked lock file,
         /// was used to determine the packages to install during the restore.
         /// </summary>
-        public LockFile LockFile { get; }
+        public virtual LockFile LockFile { get; }
 
         /// <summary>
         /// The existing lock file. This is null if no lock file was provided on the <see cref="RestoreRequest"/>.
         /// </summary>
-        public LockFile PreviousLockFile { get; }
+        public virtual LockFile PreviousLockFile { get; }
 
         /// <summary>
         /// Restore time

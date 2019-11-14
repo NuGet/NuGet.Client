@@ -2647,7 +2647,7 @@ namespace NuGet.PackageManagement
             if (updatedPackageSpec.RestoreSettings.HideWarningsAndErrors &&
                 !restoreResult.Result.Success)
             {
-                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile, logger);
+                await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(restoreResult.Result.LockFile?.LogMessages, logger);
             }
 
             // Build the installation context
