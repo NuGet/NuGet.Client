@@ -130,23 +130,19 @@ namespace NuGet.PackageManagement.UI.Test
                 var events = eventsQueue.ToArray();
                 Assert.True(4 == events.Length, string.Join(Environment.NewLine, events.Select(e => e.Name)));
 
-                var search = events[0];
-                Assert.Equal("Search", search.Name);
+                var search = Assert.Single(events, e => e.Name == "Search");
                 Assert.Equal(true, search["IncludePrerelease"]);
                 Assert.Equal("nuget", search.GetPiiData().First(p => p.Key == "Query").Value);
                 var operationId = Assert.IsType<string>(search["OperationId"]);
                 var parsedOperationId = Guid.ParseExact(operationId, "D");
 
-                var sources = events[1];
-                Assert.Equal("SearchPackageSourceSummary", sources.Name);
+                var sources = Assert.Single(events, e => e.Name == "SearchPackageSourceSummary");
                 Assert.Equal(1, sources["NumHTTPv3Feeds"]);
                 Assert.Equal("YesV3", sources["NuGetOrg"]);
                 Assert.Equal(operationId, sources["ParentId"]);
 
-                var page0 = events[2];
-                Assert.Equal("SearchPage", page0.Name);
+                var page0 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 0);
                 Assert.Equal("Ready", page0["LoadingStatus"]);
-                Assert.Equal(0, page0["PageIndex"]);
                 Assert.Equal(operationId, page0["ParentId"]);
                 Assert.IsType<int>(page0["ResultCount"]);
                 Assert.IsType<double>(page0["Duration"]);
@@ -154,10 +150,8 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.IsType<string>(page0["IndividualSourceDurations"]);
                 Assert.Equal(1, ((JArray)JsonConvert.DeserializeObject((string)page0["IndividualSourceDurations"])).Values<double>().Count());
 
-                var page1 = events[3];
-                Assert.Equal("SearchPage", page1.Name);
+                var page1 = Assert.Single(events, e => e.Name == "SearchPage" && e["PageIndex"] is int && (int)e["PageIndex"] == 1);
                 Assert.Equal("Ready", page1["LoadingStatus"]);
-                Assert.Equal(1, page1["PageIndex"]);
                 Assert.Equal(operationId, page1["ParentId"]);
                 Assert.IsType<int>(page1["ResultCount"]);
                 Assert.IsType<double>(page1["Duration"]);
