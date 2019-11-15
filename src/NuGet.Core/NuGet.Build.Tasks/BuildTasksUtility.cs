@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Build.Framework;
+using NuGet.Commands;
 using NuGet.ProjectModel;
 
 namespace NuGet.Build.Tasks
@@ -33,12 +34,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public static void AddAllProjectsForRestore(DependencyGraphSpec spec)
         {
-            // Add everything from projects except for packages.config and unknown project types
-            foreach (var project in spec.Projects
-                .Where(project => RestorableTypes.Contains(project.RestoreMetadata.ProjectStyle)))
-            {
-                spec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
-            }
+            MSBuildRestoreUtility.AddAllProjectsForRestore(spec);
         }
 
         public static void CopyPropertyIfExists(ITaskItem item, IDictionary<string, string> properties, string key)
@@ -89,13 +85,5 @@ namespace NuGet.Build.Tasks
                 properties.Add(key, string.Concat(value.Select(e => e + ";")));
             }
         }
-
-        private static HashSet<ProjectStyle> RestorableTypes = new HashSet<ProjectStyle>()
-        {
-            ProjectStyle.DotnetCliTool,
-            ProjectStyle.PackageReference,
-            ProjectStyle.Standalone,
-            ProjectStyle.ProjectJson
-        };
     }
 }

@@ -2,21 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using Newtonsoft.Json;
 using NuGet.Commands;
 using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Credentials;
-using NuGet.ProjectModel;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Build.Tasks
 {
@@ -25,12 +19,6 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public class RestoreTask : Microsoft.Build.Utilities.Task, ICancelableTask, IDisposable
     {
-#if IS_DESKTOP
-        private const string HttpUserAgent = "NuGet Desktop MSBuild Task";
-#else
-        private const string HttpUserAgent = "NuGet .NET Core MSBuild Task";
-#endif
-
         private readonly CancellationTokenSource _cts = new CancellationTokenSource();
 
         /// <summary>
@@ -114,7 +102,6 @@ namespace NuGet.Build.Tasks
 
             try
             {
-                DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !Interactive);
                 return ExecuteAsync(log).Result;
             }
             catch (AggregateException ex) when (_cts.Token.IsCancellationRequested && ex.InnerException is TaskCanceledException)
@@ -128,13 +115,6 @@ namespace NuGet.Build.Tasks
                 ExceptionUtilities.LogException(e, log);
                 return false;
             }
-            finally
-            {
-                // The CredentialService lifetime is for the duration of the process. We should not leave a potentially unavailable logger. 
-                // We need to update the delegating logger with a null instance
-                // because the tear downs of the plugins and similar rely on idleness and process exit.
-                DefaultCredentialServiceUtility.UpdateCredentialServiceDelegatingLogger(NullLogger.Instance);
-            }
         }
  
         private async Task<bool> ExecuteAsync(Common.ILogger log)
@@ -145,99 +125,23 @@ namespace NuGet.Build.Tasks
                 return true;
             }
 
-            // Set user agent and connection settings.
-            ConfigureProtocol();
-
             // Convert to the internal wrapper
             var wrappedItems = RestoreGraphItems.Select(MSBuildUtility.WrapMSBuildItem);
 
-            //var graphLines = RestoreGraphItems;
-            var providerCache = new RestoreCommandProvidersCache();
+            var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
 
-            using (var cacheContext = new SourceCacheContext())
-            {
-                cacheContext.NoCache = RestoreNoCache;
-                cacheContext.IgnoreFailedSources = RestoreIgnoreFailedSources;
-
-                // Pre-loaded request provider containing the graph file
-                var providers = new List<IPreLoadedRestoreRequestProvider>();
-
-                var dgFile = MSBuildRestoreUtility.GetDependencySpec(wrappedItems);
-
-                if (dgFile.Restore.Count < 1)
-                {
-                    // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
-                    log.LogMinimal(Strings.NoProjectsToRestore);
-                    return true;
-                }
-
-                // Add all child projects
-                if (RestoreRecursive)
-                {
-                    BuildTasksUtility.AddAllProjectsForRestore(dgFile);
-                }
-
-                providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dgFile));
-
-                var restoreContext = new RestoreArgs()
-                {
-                    CacheContext = cacheContext,
-                    LockFileVersion = LockFileFormat.Version,
-                    DisableParallel = RestoreDisableParallel,
-                    Log = log,
-                    MachineWideSettings = new XPlatMachineWideSetting(),
-                    PreLoadedRequestProviders = providers,
-                    AllowNoOp = !RestoreForce,
-                    HideWarningsAndErrors = HideWarningsAndErrors,
-                    RestoreForceEvaluate = RestoreForceEvaluate
-                };
-
-                // 'dotnet restore' fails on slow machines (https://github.com/NuGet/Home/issues/6742)
-                // The workaround is to pass the '--disable-parallel' option.
-                // We apply the workaround by default when the system has 1 cpu.
-                // This will fix restore failures on VMs with 1 CPU and containers with less or equal to 1 CPU assigned.
-                if (Environment.ProcessorCount == 1)
-                {
-                    restoreContext.DisableParallel = true;
-                }
-
-                if (restoreContext.DisableParallel)
-                {
-                    HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
-                }
-
-                _cts.Token.ThrowIfCancellationRequested();
-
-                var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, _cts.Token);
-
-                // Summary
-                RestoreSummary.Log(log, restoreSummaries);
-
-                return restoreSummaries.All(x => x.Success);
-            }
-        }
-
-        private static void ConfigureProtocol()
-        {
-            // Set connection limit
-            NetworkProtocolUtility.SetConnectionLimit();
-
-            // Set user agent string used for network calls
-            SetUserAgent();
-
-            // This method has no effect on .NET Core.
-            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
-        }
-
-        private static void SetUserAgent()
-        {
-#if IS_CORECLR
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent)
-                .WithOSDescription(RuntimeInformation.OSDescription));
-#else
-            // OS description is set by default on Desktop
-            UserAgent.SetUserAgentString(new UserAgentStringBuilder(HttpUserAgent));
-#endif
+            return await MSBuildRestoreUtility.RestoreAsync(
+                dependencyGraphSpec: dgFile,
+                interactive: Interactive,
+                recursive: RestoreRecursive,
+                noCache: RestoreNoCache,
+                ignoreFailedSources: RestoreIgnoreFailedSources,
+                disableParallel: RestoreDisableParallel,
+                force: RestoreForce,
+                forceEvaluate: RestoreForceEvaluate,
+                hideWarningsAndErrors: HideWarningsAndErrors,
+                log: log,
+                cancellationToken: _cts.Token);
         }
 
         public void Cancel()

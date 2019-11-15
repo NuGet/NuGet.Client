@@ -1529,6 +1529,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Nothing to do. None of the projects specified contain packages to restore..
+        /// </summary>
+        internal static string NoProjectsToRestore {
+            get {
+                return ResourceManager.GetString("NoProjectsToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to There are no trusted signers..
         /// </summary>
         internal static string NoTrustedSigners {

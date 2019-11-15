@@ -900,4 +900,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Invalid project restore style '{0}'.</value>
     <comment>0 - User specified restore project style</comment>
   </data>
+  <data name="NoProjectsToRestore" xml:space="preserve">
+    <value>Nothing to do. None of the projects specified contain packages to restore.</value>
+  </data>
 </root>

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -128,9 +128,6 @@
   </data>
   <data name="NoProjectsProvidedToTask" xml:space="preserve">
     <value>Unable to find a project to restore!</value>
-  </data>
-  <data name="NoProjectsToRestore" xml:space="preserve">
-    <value>Nothing to do. None of the projects specified contain packages to restore.</value>
   </data>
   <data name="RestoreCanceled" xml:space="preserve">
     <value>Restore canceled!</value>
