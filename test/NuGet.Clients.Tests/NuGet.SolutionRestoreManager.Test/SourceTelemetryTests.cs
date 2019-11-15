@@ -9,6 +9,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Test.Utility;
+using NuGet.VisualStudio.Telemetry;
 using Xunit;
 
 namespace NuGet.SolutionRestoreManager.Test
@@ -26,14 +27,18 @@ namespace NuGet.SolutionRestoreManager.Test
         private const string YesV3AndV2 = "YesV3AndV2";
         private const string VsOfflinePackages = "VsOfflinePackages";
         private const string DotnetCuratedFeed = "DotnetCuratedFeed";
+        private const string ProtocolRequests = "protocol.requests";
+        private const string ProtocolBytes = "protocol.bytes";
+        private const string ProtocolDuration = "protocol.duration";
 
         private static readonly Guid Parent = Guid.Parse("33411664-388A-4C48-A607-A2C554171FCE");
+        private static readonly PackageSourceTelemetry.Totals ProtocolDiagnosticTotals = new PackageSourceTelemetry.Totals(1, 2, TimeSpan.FromMilliseconds(3));
 
         [Fact]
         public void GivenEmptySourcesVerifyEventNameForRestore()
         {
             var sources = new List<PackageSource>();
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
 
             summary.Name.Should().Be("RestorePackageSourceSummary");
         }
@@ -41,7 +46,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GivenEmptySourcesVerifyEventNameForSearch()
         {
             var sources = new List<PackageSource>();
-            var summary = SourceTelemetry.GetSearchSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetSearchSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
 
             summary.Name.Should().Be("SearchPackageSourceSummary");
         }
@@ -50,7 +55,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public void GivenEmptySourcesVerifyZeroCounts()
         {
             var sources = new List<PackageSource>();
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -76,7 +81,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource(source)
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -103,7 +108,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource(@"C:\Program Files\Microsoft SDKs\NuGetPackages" + suffix)
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -125,7 +130,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://NuGet.org/api/v2/")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -147,7 +152,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://www.NuGet.org/api/v2/")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -169,7 +174,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://nuget.org/v3/index.JSON")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -191,7 +196,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://api.nuget.org/v3/index.JSON")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -214,7 +219,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://www.NuGet.org/api/v2/"),
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -237,7 +242,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://api.nuget.org/v3/index.json"),
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -261,7 +266,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("packages")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -284,7 +289,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https://api.nuget.org.myget.org/api.nuget.org/index.json")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -308,7 +313,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource(@"\\share\packages"),
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -331,7 +336,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("https:/bad"),
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -353,7 +358,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("http://tempuri.local/index.json")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -375,7 +380,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 new PackageSource("http://tempuri.local/packages/")
             };
 
-            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources);
+            var summary = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
             var summaryStrings = GetValuesAsStrings(summary);
             var summaryInts = GetValuesAsInts(summary);
             var summaryBools = GetValuesAsBools(summary);
@@ -387,6 +392,17 @@ namespace NuGet.SolutionRestoreManager.Test
             summaryStrings[NuGetOrg].Should().Be(NotPresent);
             summaryBools[VsOfflinePackages].Should().Be(false);
             summaryBools[DotnetCuratedFeed].Should().Be(false);
+        }
+
+        [Fact]
+        public void VerifyProtocolDiagnosticTotals()
+        {
+            var sources = new List<PackageSource>();
+            var telemetry = SourceTelemetry.GetRestoreSourceSummaryEvent(Parent, sources, ProtocolDiagnosticTotals);
+
+            telemetry[ProtocolRequests].Should().Be(1);
+            telemetry[ProtocolBytes].Should().Be(2L);
+            telemetry[ProtocolDuration].Should().Be(3.0);
         }
 
         private static Dictionary<string, string> GetValuesAsStrings(TelemetryEvent item)

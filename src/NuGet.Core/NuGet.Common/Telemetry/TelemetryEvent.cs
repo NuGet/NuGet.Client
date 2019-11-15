@@ -49,6 +49,8 @@ namespace NuGet.Common
             }
         }
 
+        public IDictionary<string, object> ComplexData { get; } = new Dictionary<string, object>();
+
         public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
         {
             return _properties.GetEnumerator();
