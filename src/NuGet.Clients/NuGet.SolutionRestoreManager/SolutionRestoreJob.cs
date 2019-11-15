@@ -26,6 +26,7 @@ using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -160,90 +161,100 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
-            try
+            var sources = _sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource);
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId))
             {
-                var solutionDirectory = _solutionManager.SolutionDirectory;
-                var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
-
-                // Get the projects from the SolutionManager
-                // Note that projects that are not supported by NuGet, will not show up in this list
-                projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
-
-                if (projects.Any() && solutionDirectory == null)
+                try
                 {
-                    await _logger.DoAsync((l, _) =>
+                    var solutionDirectory = _solutionManager.SolutionDirectory;
+                    var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
+
+                    // Get the projects from the SolutionManager
+                    // Note that projects that are not supported by NuGet, will not show up in this list
+                    projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
+
+                    if (projects.Any() && solutionDirectory == null)
                     {
-                        _status = NuGetOperationStatus.Failed;
-                        l.ShowError(Resources.SolutionIsNotSaved);
-                        l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
-                    });
+                        await _logger.DoAsync((l, _) =>
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                            l.ShowError(Resources.SolutionIsNotSaved);
+                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+                        });
 
-                    return;
-                }
+                        return;
+                    }
 
-                // Check if there are any projects that are not INuGetIntegratedProject, that is,
-                // projects with packages.config. OR 
-                // any of the deferred project is type of packages.config, If so, perform package restore on them
-                if (projects.Any(project => !(project is INuGetIntegratedProject)))
-                {
-                    await RestorePackagesOrCheckForMissingPackagesAsync(
-                        projects,
-                        solutionDirectory,
+                    // Check if there are any projects that are not INuGetIntegratedProject, that is,
+                    // projects with packages.config. OR 
+                    // any of the deferred project is type of packages.config, If so, perform package restore on them
+                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    {
+                        await RestorePackagesOrCheckForMissingPackagesAsync(
+                            projects,
+                            solutionDirectory,
+                            isSolutionAvailable,
+                            restoreSource,
+                            token);
+                    }
+
+                    var dependencyGraphProjects = projects
+                        .OfType<IDependencyGraphProject>()
+                        .ToList();
+
+                    await RestorePackageSpecProjectsAsync(
+                        dependencyGraphProjects,
+                        forceRestore,
                         isSolutionAvailable,
                         restoreSource,
                         token);
+
+                    // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
+                    // project in the solution. Extending this behavior to all solutions is tracked here:
+                    // NuGet/Home#4478
+                    if (projects.OfType<NetCorePackageReferenceProject>().Any())
+                    {
+                        _restoreEventsPublisher.OnSolutionRestoreCompleted(
+                            new SolutionRestoredEventArgs(_status, solutionDirectory));
+                    }
                 }
-
-                var dependencyGraphProjects = projects
-                    .OfType<IDependencyGraphProject>()
-                    .ToList();
-
-                await RestorePackageSpecProjectsAsync(
-                    dependencyGraphProjects,
-                    forceRestore,
-                    isSolutionAvailable,
-                    restoreSource,
-                    token);
-
-                // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
-                // project in the solution. Extending this behavior to all solutions is tracked here:
-                // NuGet/Home#4478
-                if (projects.OfType<NetCorePackageReferenceProject>().Any())
+                finally
                 {
-                    _restoreEventsPublisher.OnSolutionRestoreCompleted(
-                        new SolutionRestoredEventArgs(_status, solutionDirectory));
-                }
-            }
-            finally
-            {
-                _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
-                _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
+                    _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
+                    _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
-                stopWatch.Stop();
-                var duration = stopWatch.Elapsed;
+                    packageSourceTelemetry.SendTelemetry();
 
-                // Do not log any restore message if user disabled restore.
-                if (_packageRestoreConsent.IsGranted)
-                {
-                    await _logger.WriteSummaryAsync(_status, duration);
+                    stopWatch.Stop();
+                    var duration = stopWatch.Elapsed;
+
+                    // Do not log any restore message if user disabled restore.
+                    if (_packageRestoreConsent.IsGranted)
+                    {
+                        await _logger.WriteSummaryAsync(_status, duration);
+                    }
+                    else
+                    {
+                        _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
+                    }
+
+                    var protocolDiagnosticsTotals = packageSourceTelemetry.GetTotals();
+                    // Emit telemetry event for restore operation
+                    EmitRestoreTelemetryEvent(
+                        projects,
+                        restoreSource,
+                        startTime,
+                        duration.TotalSeconds,
+                        protocolDiagnosticsTotals);
                 }
-                else
-                {
-                    _logger.LogDebug(Resources.PackageRefNotRestoredBecauseOfNoConsent);
-                }
-                // Emit telemetry event for restore operation
-                EmitRestoreTelemetryEvent(
-                    projects,
-                    restoreSource,
-                    startTime,
-                    duration.TotalSeconds);
             }
         }
 
         private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
             RestoreOperationSource source,
             DateTimeOffset startTime,
-            double duration)
+            double duration,
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -264,7 +275,7 @@ namespace NuGet.SolutionRestoreManager
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
             var sources = _sourceRepositoryProvider.PackageSourceProvider.LoadPackageSources().ToList();
-            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources);
+            var sourceEvent = SourceTelemetry.GetRestoreSourceSummaryEvent(_nuGetProjectContext.OperationId, sources, protocolDiagnosticTotals);
 
             TelemetryActivity.EmitTelemetryEvent(sourceEvent);
         }
