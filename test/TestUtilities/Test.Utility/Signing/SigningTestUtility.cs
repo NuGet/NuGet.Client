@@ -207,6 +207,12 @@ namespace Test.Utility.Signing
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
         {
+            if (chainCertificateRequest is null)
+            {
+                chainCertificateRequest = new ChainCertificateRequest();
+            }
+            chainCertificateRequest.IsCA = true;
+
             using (var rsa = RSA.Create(publicKeyLength))
             {
                 return GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
@@ -700,6 +706,29 @@ namespace Test.Utility.Signing
                 issue.Level == logLevel &&
                 issue.Message.Contains(untrustedRoot));
         }
+
+        public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string notTimeValid;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                notTimeValid = "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                notTimeValid = "An expired certificate was detected.";
+            }
+            else
+            {
+                notTimeValid = "certificate has expired";
+            }
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains(notTimeValid));
+        }
+
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
