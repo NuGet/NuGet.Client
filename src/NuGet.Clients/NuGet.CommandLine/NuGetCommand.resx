@@ -5593,19 +5593,357 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
 <value>&lt;List|Add|Remove|&gt; [seçenekler]</value>
 </data>
   <data name="ClientCertificatesCommandUsageExamples" xml:space="preserve">
-    <value>nuget client-certificates
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name existingClientCertificate -Path .\MyCertificate.pfx
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
-nuget client-certificates Add -Name existingClientCertificate -Path c:\MyCertificate.pfx -Password 42
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
-nuget client-certificates Add -Name existingClientCertificate -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
 
-nuget client-certificates Add -Name existingClientCertificate -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
 
-nuget client-certificates Add -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
 
-nuget client-certificates Add -StoreLocation My -StoreName Personal -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755</value>
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_chs" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_cht" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_csy" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_deu" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_esp" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_fra" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_ita" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_jpn" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_kor" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_plk" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_ptb" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageExamples_rus" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>  
+  <data name="ClientCertificatesCommandUsageExamples_trk" xml:space="preserve">
+    <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -Name certificateName -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -Name certificateName -StoreLocation LocalMachine -StoreName My -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Remove -Name certificateName
+
+nuget client-certificates
+
+nuget client-certificates List -CheckCertificate true
+
+nuget client-certificates List -Name containsInName
+
+nuget client-certificates List -SourceType storage
+
+nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add action or check certificate existence on List action</value>
   </data>
   <data name="ClientCertificatesDescription" xml:space="preserve">
     <value>Provides the ability to manage list of client certificates located in %AppData%\NuGet\NuGet.config</value>

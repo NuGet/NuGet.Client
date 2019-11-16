@@ -108,19 +108,240 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget client-certificates
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name existingClientCertificate -Path .\MyCertificate.pfx
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
         ///
-        ///nuget client-certificates Add -Name existingClientCertificate -Path c:\MyCertificate.pfx -Password 42
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
-        ///nuget client-certificates Add -Name existingClientCertificate -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Name existingClientCertificate -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClear [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples {
             get {
                 return ResourceManager.GetString("ClientCertificatesCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
+        ///
+        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples_trk", resourceCulture);
             }
         }
         

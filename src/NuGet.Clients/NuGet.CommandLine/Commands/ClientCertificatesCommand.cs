@@ -16,8 +16,8 @@ namespace NuGet.CommandLine.Commands
         "ClientCertificatesDescription",
         MinArgs = 0,
         MaxArgs = 2,
-        UsageSummaryResourceName = "ClientCertificatesCommandUsageSummary", //TODO
-        UsageExampleResourceName = "ClientCertificatesCommandUsageExamples")] //TODO
+        UsageSummaryResourceName = "ClientCertificatesCommandUsageSummary",
+        UsageExampleResourceName = "ClientCertificatesCommandUsageExamples")]
     public class ClientCertificatesCommand : Command
     {
         internal ClientCertificatesCommand()
