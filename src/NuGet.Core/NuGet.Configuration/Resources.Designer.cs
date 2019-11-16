@@ -277,38 +277,38 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fromCert item must have Path entry..
+        ///   Looks up a localized string similar to A fromFile item must have Path entry..
         /// </summary>
-        internal static string FromCertItemMustHavePath {
+        internal static string FromFileItemMustHavePath {
             get {
-                return ResourceManager.GetString("FromCertItemMustHavePath", resourceCulture);
+                return ResourceManager.GetString("FromFileItemMustHavePath", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fromCert item Path value and Base-64 encoded points X.509 certificate not set..
+        ///   Looks up a localized string similar to A fromFile item Path value points on non existing file..
         /// </summary>
-        internal static string FromCertItemPathFileAndBase64NotSet {
+        internal static string FromFileItemPathFileNotExist {
             get {
-                return ResourceManager.GetString("FromCertItemPathFileAndBase64NotSet", resourceCulture);
+                return ResourceManager.GetString("FromFileItemPathFileNotExist", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fromCert item must have only one Path value or Base-64 encoded X.509 certificate..
+        ///   Looks up a localized string similar to A fromFile item Path not set..
         /// </summary>
-        internal static string FromCertItemPathFileAndBase64Set {
+        internal static string FromFileItemPathFileNotSet {
             get {
-                return ResourceManager.GetString("FromCertItemPathFileAndBase64Set", resourceCulture);
+                return ResourceManager.GetString("FromFileItemPathFileNotSet", resourceCulture);
             }
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fromCert item Path value points on non existing file..
+        ///   Looks up a localized string similar to A fromPEM item must have only one Base-64 encoded X.509 certificate (PEM)..
         /// </summary>
-        internal static string FromCertItemPathFileNotExist {
+        internal static string FromPEMItemBase64Set {
             get {
-                return ResourceManager.GetString("FromCertItemPathFileNotExist", resourceCulture);
+                return ResourceManager.GetString("FromPEMItemBase64Set", resourceCulture);
             }
         }
         

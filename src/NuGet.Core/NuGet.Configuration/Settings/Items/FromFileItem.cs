@@ -4,18 +4,17 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Xml.Linq;
 using NuGet.Common;
 
 namespace NuGet.Configuration
 {
     /// <summary>
-    ///     A FromCertItem have 2 children and body text:
-    ///     - [Required] Hex certificate body or Path (AddItem)
+    ///     A FromFileItem have 2 children:
+    ///     - [Required] Path (AddItem)
     ///     - [Optional] Password (AddItem)
     /// </summary>
-    public sealed class FromCertItem : CertificateSearchItem
+    public sealed class FromFileItem : CertificateSearchItem
     {
         private static byte[] ReadStream(Stream input)
         {
@@ -35,22 +34,21 @@ namespace NuGet.Configuration
         private readonly AddItem _password;
         private readonly AddItem _path;
 
-        internal FromCertItem(string filePath = null, string base64Certificate = null, string password = null, SettingsFile origin = null)
+        internal FromFileItem(string filePath = null, string password = null, SettingsFile origin = null)
         {
-            ElementName = ConfigurationConstants.FromCert;
+            ElementName = ConfigurationConstants.FromFile;
             SetOrigin(origin);
 
             _path = new AddItem(ConfigurationConstants.PathToken, filePath);
             _password = new AddItem(ConfigurationConstants.PasswordToken, password);
-            Base64Certificate = base64Certificate;
 
             ValidateItem();
         }
 
-        internal FromCertItem(XElement element, SettingsFile origin)
+        internal FromFileItem(XElement element, SettingsFile origin)
             : base(element, origin)
         {
-            ElementName = ConfigurationConstants.FromCert;
+            ElementName = ConfigurationConstants.FromFile;
 
             IEnumerable<AddItem> parsedItems = element.Elements()
                                                       .Select(e => SettingFactory.Parse(e, origin) as AddItem)
@@ -87,12 +85,8 @@ namespace NuGet.Configuration
             if (_path == null) _path = new AddItem(ConfigurationConstants.PathToken, null);
             if (_password == null) _password = new AddItem(ConfigurationConstants.PasswordToken, null);
 
-            Base64Certificate = element.Value.Trim(' ', '\n', '\r');
-
             ValidateItem();
         }
-
-        public string Base64Certificate { get; set; }
 
         public string Password
         {
@@ -108,24 +102,17 @@ namespace NuGet.Configuration
 
         public override SettingBase Clone()
         {
-            return new FromCertItem(Path, Base64Certificate, Password, Origin);
+            return new FromFileItem(Path, Password, Origin);
         }
 
         public override X509Certificate Search()
         {
             byte[] certificateData;
-            if (string.IsNullOrWhiteSpace(Base64Certificate))
+
+            //Read certificate from file
+            using (FileStream stream = File.OpenRead(FindAbsoluteFilePath()))
             {
-                //Read certificate from file
-                using (FileStream stream = File.OpenRead(FindAbsoluteFilePath()))
-                {
-                    certificateData = ReadStream(stream);
-                }
-            }
-            else
-            {
-                //Transform base64 certificate to bytes
-                certificateData = Encoding.UTF8.GetBytes(Base64Certificate);
+                certificateData = ReadStream(stream);
             }
 
             //If password not set try to create certificate from file stream
@@ -134,7 +121,6 @@ namespace NuGet.Configuration
             //If password is set decrypt it first and try to create certificate from file stream and decrypted password
             var decryptedPassword = EncryptionUtility.DecryptString(Password);
             return new X509Certificate2(certificateData, decryptedPassword);
-
         }
 
         private string FindAbsoluteFilePath()
@@ -162,32 +148,21 @@ namespace NuGet.Configuration
 
         private void ValidateItem()
         {
-            if (string.IsNullOrWhiteSpace(Base64Certificate) && string.IsNullOrWhiteSpace(Path))
+            if (string.IsNullOrWhiteSpace(Path))
             {
                 throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
                                                                     Resources.UserSettings_UnableToParseConfigFile,
-                                                                    Resources.FromCertItemPathFileAndBase64NotSet,
+                                                                    Resources.FromFileItemPathFileNotSet,
                                                                     Origin.ConfigFilePath));
             }
 
-            if (!string.IsNullOrWhiteSpace(Base64Certificate) && !string.IsNullOrWhiteSpace(Path))
+            var filePath = FindAbsoluteFilePath();
+            if (string.IsNullOrWhiteSpace(filePath))
             {
                 throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
                                                                     Resources.UserSettings_UnableToParseConfigFile,
-                                                                    Resources.FromCertItemPathFileAndBase64Set,
+                                                                    Resources.FromFileItemPathFileNotExist,
                                                                     Origin.ConfigFilePath));
-            }
-
-            if (string.IsNullOrWhiteSpace(Base64Certificate))
-            {
-                var filePath = FindAbsoluteFilePath();
-                if (string.IsNullOrWhiteSpace(filePath))
-                {
-                    throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
-                                                                        Resources.UserSettings_UnableToParseConfigFile,
-                                                                        Resources.FromCertItemPathFileNotExist,
-                                                                        Origin.ConfigFilePath));
-                }
             }
         }
     }

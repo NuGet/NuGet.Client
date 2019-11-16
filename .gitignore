@@ -193,3 +193,4 @@ launchSettings.json
 # include the test packages
 !test/EndToEnd/Packages/**/*
 !test/EndToEnd/ProjectTemplates/**/*.pfx
+/NuGet.sln.DotSettings

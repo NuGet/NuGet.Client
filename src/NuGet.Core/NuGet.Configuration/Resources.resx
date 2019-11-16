@@ -196,17 +196,17 @@
   <data name="FileDoesNotExist" xml:space="preserve">
     <value>File '{0}' does not exist.</value>
   </data>
-  <data name="FromCertItemMustHavePath" xml:space="preserve">
-    <value>A fromCert item must have Path entry.</value>
+  <data name="FromFileItemMustHavePath" xml:space="preserve">
+    <value>A fromFile item must have Path entry.</value>
   </data>
-  <data name="FromCertItemPathFileNotExist" xml:space="preserve">
-    <value>A fromCert item Path value points on non existing file.</value>
+  <data name="FromFileItemPathFileNotExist" xml:space="preserve">
+    <value>A fromFile item Path value points on non existing file.</value>
   </data>
-  <data name="FromCertItemPathFileAndBase64NotSet" xml:space="preserve">
-    <value>A fromCert item Path value and Base-64 encoded points X.509 certificate not set.</value>
+  <data name="FromFileItemPathFileNotSet" xml:space="preserve">
+    <value>A fromFile item Path not set.</value>
   </data>
-  <data name="FromCertItemPathFileAndBase64Set" xml:space="preserve">
-    <value>A fromCert item must have only one Path value or Base-64 encoded X.509 certificate.</value>
+  <data name="FromPEMItemBase64Set" xml:space="preserve">
+    <value>A fromPEM item must have only one Base-64 encoded X.509 certificate (PEM).</value>
   </data>
   <data name="FromStorageItemFindTypeNotSupported" xml:space="preserve">
     <value>A fromStorage item FindType entry is not supported.</value>

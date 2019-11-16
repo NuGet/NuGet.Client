@@ -63,7 +63,9 @@ namespace NuGet.Configuration
 
         public static readonly string FingerprintAlgorithm = "fingerprintAlgorithm";
 
-        public static readonly string FromCert = "fromCert";
+        public static readonly string FromFile = "fromFile";
+
+        public static readonly string FromPEM = "fromPEM";
 
         public static readonly string FromStorage = "fromStorage";
 

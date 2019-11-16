@@ -73,8 +73,11 @@ namespace NuGet.Configuration
                     case SettingElementType.FromStorage:
                         return new FromStorageItem(element, origin);
 
-                    case SettingElementType.FromCert:
-                        return new FromCertItem(element, origin);
+                    case SettingElementType.FromFile:
+                        return new FromFileItem(element, origin);
+
+                    case SettingElementType.FromPEM:
+                        return new FromPEMItem(element, origin);
                 }
 
                 return new UnknownItem(element, origin);

@@ -41,6 +41,8 @@ namespace NuGet.Configuration
 
         FromStorage,
 
-        FromCert
+        FromFile,
+
+        FromPEM
     }
 }
