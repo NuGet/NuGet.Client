@@ -34,15 +34,24 @@ namespace NuGet.Configuration
         private readonly AddItem _password;
         private readonly AddItem _path;
 
-        internal FromFileItem(string filePath = null, string password = null, SettingsFile origin = null)
+        public FromFileItem(string name, string filePath, string password = null)
+            : this(name, filePath, password, null)
         {
+        }
+
+        internal FromFileItem(string name, string filePath, string password, SettingsFile origin)
+            : base(name)
+        {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(filePath));
+            }
+
             ElementName = ConfigurationConstants.FromFile;
             SetOrigin(origin);
 
             _path = new AddItem(ConfigurationConstants.PathToken, filePath);
             _password = new AddItem(ConfigurationConstants.PasswordToken, password);
-
-            ValidateItem();
         }
 
         internal FromFileItem(XElement element, SettingsFile origin)
@@ -88,6 +97,12 @@ namespace NuGet.Configuration
             ValidateItem();
         }
 
+        public new string Name
+        {
+            get => base.Name;
+            set => SetName(value);
+        }
+
         public string Password
         {
             get => _password.Value;
@@ -100,17 +115,45 @@ namespace NuGet.Configuration
             set => _path.Value = value;
         }
 
+        public override ClientCertificatesSourceType SourceType => ClientCertificatesSourceType.File;
+
+        internal override XNode AsXNode()
+        {
+            if (Node is XElement)
+            {
+                return Node;
+            }
+
+            var element = new XElement(ElementName,
+                                       _path.AsXNode(),
+                                       _password.AsXNode());
+
+            foreach (KeyValuePair<string, string> attr in Attributes)
+            {
+                element.SetAttributeValue(attr.Key, attr.Value);
+            }
+
+            return element;
+        }
+
         public override SettingBase Clone()
         {
-            return new FromFileItem(Path, Password, Origin);
+            return new FromFileItem(Name, Path, Password, Origin);
         }
 
         public override X509Certificate Search()
         {
             byte[] certificateData;
 
+            var filePath = FindAbsoluteFilePath();
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
+                                                                    Resources.FromFileItemPathFileNotExist));
+            }
+
             //Read certificate from file
-            using (FileStream stream = File.OpenRead(FindAbsoluteFilePath()))
+            using (FileStream stream = File.OpenRead(filePath))
             {
                 certificateData = ReadStream(stream);
             }
@@ -118,9 +161,19 @@ namespace NuGet.Configuration
             //If password not set try to create certificate from file stream
             if (string.IsNullOrWhiteSpace(Password)) return new X509Certificate2(certificateData);
 
-            //If password is set decrypt it first and try to create certificate from file stream and decrypted password
-            var decryptedPassword = EncryptionUtility.DecryptString(Password);
-            return new X509Certificate2(certificateData, decryptedPassword);
+            try
+            {
+                //If password is set decrypt it first and try to create certificate from file stream and decrypted password
+                var decryptedPassword = EncryptionUtility.DecryptString(Password);
+                return new X509Certificate2(certificateData, decryptedPassword);
+            }
+            catch
+            {
+                //Nothing
+            }
+
+            //Try to create certificate from file stream and plain password
+            return new X509Certificate2(certificateData, Password);
         }
 
         private string FindAbsoluteFilePath()
@@ -153,16 +206,7 @@ namespace NuGet.Configuration
                 throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
                                                                     Resources.UserSettings_UnableToParseConfigFile,
                                                                     Resources.FromFileItemPathFileNotSet,
-                                                                    Origin.ConfigFilePath));
-            }
-
-            var filePath = FindAbsoluteFilePath();
-            if (string.IsNullOrWhiteSpace(filePath))
-            {
-                throw new NuGetConfigurationException(string.Format(CultureInfo.CurrentCulture,
-                                                                    Resources.UserSettings_UnableToParseConfigFile,
-                                                                    Resources.FromFileItemPathFileNotExist,
-                                                                    Origin.ConfigFilePath));
+                                                                    Origin?.ConfigFilePath ?? "<Config file path>"));
             }
         }
     }

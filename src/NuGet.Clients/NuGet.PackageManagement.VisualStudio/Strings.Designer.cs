@@ -466,6 +466,15 @@ namespace NuGet.PackageManagement.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client certificate &apos;{0}&apos; cannot be included. Certificate search failed with error &apos;{1}&apos;..
+        /// </summary>
+        public static string Warning_ClientCertificateSearchFailed {
+            get {
+                return ResourceManager.GetString("Warning_ClientCertificateSearchFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Directory &apos;{0}&apos; is not empty. Skipping....
         /// </summary>
         public static string Warning_DirectoryNotEmpty {

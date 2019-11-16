@@ -108,6 +108,275 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to nuget client-certificates
+        ///
+        ///nuget client-certificates Add -Name existingClientCertificate -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certificates Add -Name existingClientCertificate -Path c:\MyCertificate.pfx -Password 42
+        ///
+        ///nuget client-certificates Add -Name existingClientCertificate -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
+        ///
+        ///nuget client-certificates Add -Name existingClientCertificate -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClear [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [options].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [选项].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [選項].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [možnosti].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [Optionen].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [opciones].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [les options].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [opzioni].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [オプション].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [옵션].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [opcje].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [opções].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [параметры].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|&gt; [seçenekler].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides the ability to manage list of client certificates located in %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 提供管理位于 %AppData%\NuGet\NuGet.config 中的客户端证书列表的功能.
+        /// </summary>
+        internal static string ClientCertificatesDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to 提供管理位於 %AppData%\NuGet\NuGet.config 中的客戶端證書列表的功能.
+        /// </summary>
+        internal static string ClientCertificatesDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Poskytuje možnost spravovat seznam klientských certifikátů umístěných v %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bietet die Möglichkeit, eine Liste der Client-Zertifikate zu verwalten, die sich in %AppData%\NuGet\NuGet.config befinden.
+        /// </summary>
+        internal static string ClientCertificatesDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Proporciona la capacidad de administrar la lista de certificados de clientes ubicados en %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Permet de gérer la liste des certificats clients situés dans %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fornisce la possibilità di gestire l&apos;elenco dei certificati client situati in %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to %AppData%\NuGet\NuGet.config にあるクライアント証明書のリストを管理する機能を提供します.
+        /// </summary>
+        internal static string ClientCertificatesDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to %AppData%\NuGet\NuGet.config 에있는 클라이언트 인증서 목록을 관리하는 기능을 제공합니다..
+        /// </summary>
+        internal static string ClientCertificatesDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Zapewnia możliwość zarządzania listą certyfikatów klienta znajdujących się w %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Fornece a capacidade de gerenciar a lista de certificados de cliente localizados em %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Предоставляет возможность управлять списком клиентских сертификатов, расположенных в %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to %AppData%\NuGet\NuGet.config içinde bulunan müşteri sertifikalarının listesini yönetme olanağı sağlar.
+        /// </summary>
+        internal static string ClientCertificatesDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string CommandApiKey {

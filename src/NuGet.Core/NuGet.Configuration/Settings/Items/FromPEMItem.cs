@@ -17,11 +17,10 @@ namespace NuGet.Configuration
     {
         private readonly AddItem _password;
 
-        internal FromPEMItem(string base64Certificate = null, string password = null, SettingsFile origin = null)
+        public FromPEMItem(string name, string base64Certificate = null, string password = null)
+            : base(name)
         {
             ElementName = ConfigurationConstants.FromPEM;
-            SetOrigin(origin);
-
             _password = new AddItem(ConfigurationConstants.PasswordToken, password);
             Base64Certificate = base64Certificate;
 
@@ -62,15 +61,42 @@ namespace NuGet.Configuration
 
         public string Base64Certificate { get; set; }
 
+        public new string Name
+        {
+            get => base.Name;
+            set => SetName(value);
+        }
+
         public string Password
         {
             get => _password.Value;
             set => _password.Value = value;
         }
 
+        public override ClientCertificatesSourceType SourceType => ClientCertificatesSourceType.PEM;
+
+        internal override XNode AsXNode()
+        {
+            if (Node is XElement)
+            {
+                return Node;
+            }
+
+            var element = new XElement(ElementName,
+                                       _password.AsXNode(),
+                                       new XText(Base64Certificate));
+
+            foreach (KeyValuePair<string, string> attr in Attributes)
+            {
+                element.SetAttributeValue(attr.Key, attr.Value);
+            }
+
+            return element;
+        }
+
         public override SettingBase Clone()
         {
-            return new FromPEMItem(Base64Certificate, Password, Origin);
+            return new FromPEMItem(Name, Base64Certificate, Password);
         }
 
         public override X509Certificate Search()
@@ -81,9 +107,19 @@ namespace NuGet.Configuration
             //If password not set try to create certificate from file stream
             if (string.IsNullOrWhiteSpace(Password)) return new X509Certificate2(certificateData);
 
-            //If password is set decrypt it first and try to create certificate from file stream and decrypted password
-            var decryptedPassword = EncryptionUtility.DecryptString(Password);
-            return new X509Certificate2(certificateData, decryptedPassword);
+            try
+            {
+                //If password is set decrypt it first and try to create certificate from file stream and decrypted password
+                var decryptedPassword = EncryptionUtility.DecryptString(Password);
+                return new X509Certificate2(certificateData, decryptedPassword);
+            }
+            catch
+            {
+                //Nothing
+            }
+
+            //Try to create certificate from file stream and plain password
+            return new X509Certificate2(certificateData, Password);
         }
 
         private void ValidateItem()

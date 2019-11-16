@@ -289,4 +289,7 @@
   <data name="CredentialProviderFailed_PluginCredentialProvider" xml:space="preserve">
     <value>The plugin credential providers could not be loaded.</value>
   </data>
+  <data name="Warning_ClientCertificateSearchFailed" xml:space="preserve">
+    <value>Client certificate '{0}' cannot be included. Certificate search failed with error '{1}'.</value>
+  </data>
 </root>

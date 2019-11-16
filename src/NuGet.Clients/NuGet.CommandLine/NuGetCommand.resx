@@ -5550,4 +5550,103 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   <data name="PackageCommandDeterministic" xml:space="preserve">
     <value>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package.</value>
   </data>
+  <data name="ClientCertificatesCommandUsageSummary" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [options]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_chs" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [选项]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_cht" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [選項]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_csy" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [možnosti]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_deu" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [Optionen]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_esp" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [opciones]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_fra" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [les options]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_ita" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [opzioni]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_jpn" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [オプション]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_kor" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [옵션]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_plk" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [opcje]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_ptb" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [opções]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_rus" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [параметры]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageSummary_trk" xml:space="preserve">
+<value>&lt;List|Add|Remove|&gt; [seçenekler]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageExamples" xml:space="preserve">
+    <value>nuget client-certificates
+
+nuget client-certificates Add -Name existingClientCertificate -Path .\MyCertificate.pfx
+
+nuget client-certificates Add -Name existingClientCertificate -Path c:\MyCertificate.pfx -Password 42
+
+nuget client-certificates Add -Name existingClientCertificate -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
+
+nuget client-certificates Add -Name existingClientCertificate -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----" -Password 42 -StorePasswordInClearText true
+
+nuget client-certificates Add -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certificates Add -StoreLocation My -StoreName Personal -FindType FindByThumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755</value>
+  </data>
+  <data name="ClientCertificatesDescription" xml:space="preserve">
+    <value>Provides the ability to manage list of client certificates located in %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_chs" xml:space="preserve">
+    <value>提供管理位于 %AppData%\NuGet\NuGet.config 中的客户端证书列表的功能</value>
+  </data>
+  <data name="ClientCertificatesDescription_cht" xml:space="preserve">
+    <value>提供管理位於 %AppData%\NuGet\NuGet.config 中的客戶端證書列表的功能</value>
+  </data>
+  <data name="ClientCertificatesDescription_csy" xml:space="preserve">
+    <value>Poskytuje možnost spravovat seznam klientských certifikátů umístěných v %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_deu" xml:space="preserve">
+    <value>Bietet die Möglichkeit, eine Liste der Client-Zertifikate zu verwalten, die sich in %AppData%\NuGet\NuGet.config befinden</value>
+  </data>
+  <data name="ClientCertificatesDescription_esp" xml:space="preserve">
+    <value>Proporciona la capacidad de administrar la lista de certificados de clientes ubicados en %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_fra" xml:space="preserve">
+    <value>Permet de gérer la liste des certificats clients situés dans %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_ita" xml:space="preserve">
+    <value>Fornisce la possibilità di gestire l'elenco dei certificati client situati in %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_jpn" xml:space="preserve">
+    <value>%AppData%\NuGet\NuGet.config にあるクライアント証明書のリストを管理する機能を提供します</value>
+  </data>
+  <data name="ClientCertificatesDescription_kor" xml:space="preserve">
+    <value>%AppData%\NuGet\NuGet.config 에있는 클라이언트 인증서 목록을 관리하는 기능을 제공합니다.</value>
+  </data>
+  <data name="ClientCertificatesDescription_plk" xml:space="preserve">
+    <value>Zapewnia możliwość zarządzania listą certyfikatów klienta znajdujących się w %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_ptb" xml:space="preserve">
+    <value>Fornece a capacidade de gerenciar a lista de certificados de cliente localizados em %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_rus" xml:space="preserve">
+    <value>Предоставляет возможность управлять списком клиентских сертификатов, расположенных в %AppData%\NuGet\NuGet.config</value>
+  </data>
+  <data name="ClientCertificatesDescription_trk" xml:space="preserve">
+    <value>%AppData%\NuGet\NuGet.config içinde bulunan müşteri sertifikalarının listesini yönetme olanağı sağlar</value>
+  </data>
 </root>

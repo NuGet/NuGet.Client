@@ -435,6 +435,9 @@
   <data name="Warning_NoPromptDeprecated" xml:space="preserve">
     <value>Option 'NoPrompt' has been deprecated. Use 'NonInteractive' instead.</value>
   </data>
+  <data name="Warning_ClientCertificateSearchFailed" xml:space="preserve">
+    <value>Client certificate '{0}' cannot be included. Certificate search failed with error '{1}'.</value>
+  </data>
   <data name="Error_SettingsIsNull" xml:space="preserve">
     <value>Property Settings is null.</value>
   </data>
@@ -6176,6 +6179,22 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="Error_UnknownAction" xml:space="preserve">
     <value>The action '{0}' is not recognized.</value>
     <comment>0 - action</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesSourceType" xml:space="preserve">
+    <value>The source type '{0}' is not recognized.</value>
+    <comment>0 - source type</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesStoreName" xml:space="preserve">
+    <value>The source name '{0}' is not recognized.</value>
+    <comment>0 - source name</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesStoreLocation" xml:space="preserve">
+    <value>The store location '{0}' is not recognized.</value>
+    <comment>0 - store location</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesFindType" xml:space="preserve">
+    <value>The find type '{0}' is not recognized.</value>
+    <comment>0 - find type</comment>
   </data>
   <data name="ProjectJsonPack_Deprecated" xml:space="preserve">
     <value>`project.json` pack is deprecated. Please consider migrating '{0}' to `PackageReference` and using the pack targets.</value>

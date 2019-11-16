@@ -150,10 +150,10 @@
     <value>Encryption is not supported on non-Windows platforms.</value>
   </data>
   <data name="Error_FromStorageCertificateNotFound" xml:space="preserve">
-    <value>Certificate was not found in {0}. {1} storage by {2} criteria with {3} value.</value>
+    <value>Certificate was not found in {0}.{1} storage by {2} criteria with {3} value.</value>
   </data>
   <data name="Error_FromStorageSeveralCertificatesFound" xml:space="preserve">
-    <value>{0} certificates were found in {1}. {2} storage by {3} criteria with {4} value.</value>
+    <value>{0} certificates were found in {1}.{2} storage by {3} criteria with {4} value.</value>
   </data>
   <data name="Error_InvalidAttribute" xml:space="preserve">
     <value>The attribute {0}-{1} is not valid.</value>

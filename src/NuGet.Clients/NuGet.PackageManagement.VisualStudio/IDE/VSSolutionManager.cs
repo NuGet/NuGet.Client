@@ -174,7 +174,19 @@ namespace NuGet.PackageManagement.VisualStudio
             _vsSolution = await _asyncServiceProvider.GetServiceAsync<SVsSolution, IVsSolution>();
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
-            ClientCertificates.Store(ClientCertificateProvider.Provide(_settings.Value));
+            var clientCertificateProvider = new ClientCertificateProvider(_settings.Value);
+            IReadOnlyList<CertificateSearchItem> clientCertificates = clientCertificateProvider.GetClientCertificates();
+            foreach (var item in clientCertificates)
+            {
+                try
+                {
+                    ClientCertificates.Add(item.Search());
+                }
+                catch (Exception e)
+                {
+                    _logger.LogWarning(string.Format(Strings.Warning_ClientCertificateSearchFailed, item.Name, e.Message));
+                }
+            }
 
             UserAgent.SetUserAgentString(
                     new UserAgentStringBuilder(VSNuGetClientName).WithVisualStudioSKU(dte.GetFullVsVersionString()));

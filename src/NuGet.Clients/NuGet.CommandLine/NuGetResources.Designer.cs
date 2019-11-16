@@ -3445,6 +3445,42 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The find type &apos;{0}&apos; is not recognized..
+        /// </summary>
+        public static string Error_UnknownClientCertificatesFindType {
+            get {
+                return ResourceManager.GetString("Error_UnknownClientCertificatesFindType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source type &apos;{0}&apos; is not recognized..
+        /// </summary>
+        public static string Error_UnknownClientCertificatesSourceType {
+            get {
+                return ResourceManager.GetString("Error_UnknownClientCertificatesSourceType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The store location &apos;{0}&apos; is not recognized..
+        /// </summary>
+        public static string Error_UnknownClientCertificatesStoreLocation {
+            get {
+                return ResourceManager.GetString("Error_UnknownClientCertificatesStoreLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source name &apos;{0}&apos; is not recognized..
+        /// </summary>
+        public static string Error_UnknownClientCertificatesStoreName {
+            get {
+                return ResourceManager.GetString("Error_UnknownClientCertificatesStoreName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This version of msbuild is not supported: &apos;{0}&apos;.
         /// </summary>
         public static string Error_UnsupportedMsbuild {
@@ -16261,6 +16297,15 @@ namespace NuGet.CommandLine {
         public static string UsingPackagesConfigForDependencies_trk {
             get {
                 return ResourceManager.GetString("UsingPackagesConfigForDependencies_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate &apos;{0}&apos; cannot be included. Certificate search failed with error &apos;{1}&apos;..
+        /// </summary>
+        public static string Warning_ClientCertificateSearchFailed {
+            get {
+                return ResourceManager.GetString("Warning_ClientCertificateSearchFailed", resourceCulture);
             }
         }
         

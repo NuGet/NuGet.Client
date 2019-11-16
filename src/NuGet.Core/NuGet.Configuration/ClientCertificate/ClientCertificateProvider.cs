@@ -1,17 +1,62 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
 
 namespace NuGet.Configuration
 {
-    public static class ClientCertificateProvider
+    public class ClientCertificateProvider : IClientCertificateProvider
     {
-        public static IEnumerable<X509Certificate> Provide(ISettings settings)
+        private readonly ISettings _settings;
+
+        public ClientCertificateProvider(ISettings settings)
         {
-            SettingSection clientCertificatesSection = settings.GetSection(ConfigurationConstants.ClientCertificates);
-            return clientCertificatesSection?.Items
-                                            .OfType<CertificateSearchItem>()
-                                            .Select(i => i.Search());
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
+        }
+
+        public void AddOrUpdate(CertificateSearchItem item)
+        {
+            if (item == null)
+            {
+                throw new ArgumentNullException(nameof(item));
+            }
+
+            Remove(new[] { item });
+
+            _settings.AddOrUpdate(ConfigurationConstants.ClientCertificates, item);
+
+            _settings.SaveToDisk();
+        }
+
+        public void Remove(IReadOnlyList<CertificateSearchItem> items)
+        {
+            if (items == null || !items.Any())
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(items));
+            }
+
+            foreach (CertificateSearchItem signer in items)
+            {
+                try
+                {
+                    _settings.Remove(ConfigurationConstants.ClientCertificates, signer);
+                }
+                // An error means the item doesn't exist or is in a machine wide config, therefore just ignore it
+                catch
+                {
+                }
+            }
+
+            _settings.SaveToDisk();
+        }
+
+        public IReadOnlyList<CertificateSearchItem> GetClientCertificates()
+        {
+            SettingSection clientCertificatesSection = _settings.GetSection(ConfigurationConstants.ClientCertificates);
+
+            List<CertificateSearchItem> result = clientCertificatesSection?.Items
+                                                                          .OfType<CertificateSearchItem>()
+                                                                          .ToList();
+            return result ?? Enumerable.Empty<CertificateSearchItem>().ToList();
         }
     }
 }

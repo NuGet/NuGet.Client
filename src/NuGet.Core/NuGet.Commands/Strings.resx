@@ -751,16 +751,34 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="NoTrustedSigners" xml:space="preserve">
     <value>There are no trusted signers.</value>
   </data>
+  <data name="NoClientCertificates" xml:space="preserve">
+    <value>There are no client certificates.</value>
+  </data>
   <data name="NoTrustedSignersMatching" xml:space="preserve">
     <value>No trusted signers with the name: '{0}' were found.</value>
     <comment>0 - trusted signer name</comment>
   </data>
+  <data name="NoClientCertificatesMatching" xml:space="preserve">
+    <value>No client certificates with the name: '{0}' were found.</value>
+    <comment>0 - client certificate name</comment>
+  </data>
   <data name="RegsiteredTrustedSigners" xml:space="preserve">
     <value>Registered trusted signers:</value>
+  </data>
+  <data name="RegsiteredClientCertificates" xml:space="preserve">
+    <value>Registered client certificates:</value>
   </data>
   <data name="SuccessfullyRemovedTrustedSigner" xml:space="preserve">
     <value>Successfully removed the trusted signer '{0}'.</value>
     <comment>0 - trusted signer name</comment>
+  </data>
+  <data name="SuccessfullyRemovedClientCertificate" xml:space="preserve">
+    <value>Successfully removed the client certificate '{0}'.</value>
+    <comment>0 - client certificate name</comment>
+  </data>
+  <data name="SuccessfullyAddedClientCertificate" xml:space="preserve">
+    <value>Successfully added the client certificate '{0}'.</value>
+    <comment>0 - client certificate name</comment>
   </data>
   <data name="TrustedSignerLogCertificates" xml:space="preserve">
     <value>Certificate fingerprint(s):</value>
@@ -792,6 +810,46 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - signer name
 1 - signer type
 </comment>
+  </data>
+  <data name="ClientCertificatesLogTitle" xml:space="preserve">
+    <value>{0} [{1}]</value>
+    <comment>0 - client certificate name
+1 - client certificate source type
+</comment>
+  </data>
+  <data name="ClientCertificatesFromPEM" xml:space="preserve">
+    <value>PEM definition: {0}</value>
+    <comment>0 - Base64 encoded DER certificate in PEM format</comment>
+  </data>
+  <data name="ClientCertificatesFromFilePath" xml:space="preserve">
+    <value>Path: {0}</value>
+    <comment>0 - Path to certificate file</comment>
+  </data>
+  <data name="ClientCertificatesFromStorageStoreLocation" xml:space="preserve">
+    <value>Store location: {0}</value>
+    <comment>0 - Store location</comment>
+  </data>
+  <data name="ClientCertificatesFromStorageStoreName" xml:space="preserve">
+    <value>Store name: {0}</value>
+    <comment>0 - Store name</comment>
+  </data>
+  <data name="ClientCertificatesFromStorageFindType" xml:space="preserve">
+    <value>Find type: {0}</value>
+    <comment>0 - Find type</comment>
+  </data>
+  <data name="ClientCertificatesFromStorageFindValue" xml:space="preserve">
+    <value>Find value: {0}</value>
+    <comment>0 - Find value</comment>
+  </data>
+  <data name="ClientCertificatesItemCertificateMessage" xml:space="preserve">
+    <value>Certificate: {0}</value>
+    <comment>0 - certificate error or success message</comment>
+  </data>
+  <data name="ClientCertificatesFromPEMOrFilePasswordSet" xml:space="preserve">
+    <value>Password: ****</value>
+  </data>
+  <data name="ClientCertificatesFromPEMOrFilePasswordNotSet" xml:space="preserve">
+    <value>Password: -</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>The argument cannot be null or empty.</value>
@@ -840,12 +898,38 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Could not add the trusted signer: {0}</value>
     <comment>0 - Reason</comment>
   </data>
+  <data name="Error_CouldNotAddClientCertificate" xml:space="preserve">
+    <value>Could not add the client certificate: {0}</value>
+    <comment>0 - Reason</comment>
+  </data>
   <data name="Error_CouldNotList" xml:space="preserve">
     <value>Could not list the trusted signers: {0}</value>
     <comment>0 - Reason</comment>
   </data>
+  <data name="Error_CouldNotListClientCertificates" xml:space="preserve">
+    <value>Could not list the client certificates: {0}</value>
+    <comment>0 - Reason</comment>
+  </data>
+  <data name="Error_ExistingAndRequiredClientCertificateSourceMissmatch" xml:space="preserve">
+    <value>Could not modify client certificate of {0} source type. {1} source type expected.</value>
+    <comment>0 - existing client certificate source type, 1 - expected client certificate source type</comment>
+  </data>
+  <data name="Error_UnknownClientCertificateSourceType" xml:space="preserve">
+    <value>Unknown client certificate source type {0}.</value>
+    <comment>0 - client certificate source type</comment>
+  </data>
+  <data name="Error_ClientCertificateNotFound" xml:space="preserve">
+    <value>Client certificate was not found.</value>
+  </data>
+  <data name="Success_ClientCertificate" xml:space="preserve">
+    <value>Client certificate was found.</value>
+  </data>
   <data name="Error_CouldNotRemove" xml:space="preserve">
     <value>Could not remove the trusted signer: {0}</value>
+    <comment>0 - Reason</comment>
+  </data>
+  <data name="Error_CouldNotRemoveClientCertificate" xml:space="preserve">
+    <value>Could not remove the client certificate: {0}</value>
     <comment>0 - Reason</comment>
   </data>
   <data name="Error_CouldNotSync" xml:space="preserve">

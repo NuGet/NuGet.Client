@@ -151,8 +151,20 @@ namespace NuGet.CommandLine
                 SetDefaultCredentialProvider();
                 RepositoryFactory = new CommandLineRepositoryFactory(Console);
 
-                ClientCertificates.Store(ClientCertificateProvider.Provide(Settings));
+                var clientCertificateProvider = new ClientCertificateProvider(Settings);
 
+                IReadOnlyList<CertificateSearchItem> clientCertificates = clientCertificateProvider.GetClientCertificates();
+                foreach (var item in clientCertificates)
+                {
+                    try
+                    {
+                        ClientCertificates.Add(item.Search());
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteWarning(LocalizedResourceManager.GetString("Warning_ClientCertificateSearchFailed"), item.Name, e.Message);
+                    }
+                }
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder(CommandLineConstants.UserAgent));
 
                 OutputNuGetVersion();

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 
@@ -8,6 +7,16 @@ namespace NuGet.Protocol.Core.Types
 {
     public static class ClientCertificates
     {
+        #region Constructors
+
+        static ClientCertificates()
+        {
+            //Default client certificates
+            Certificates = new List<X509Certificate>();
+        }
+
+        #endregion
+
         #region Static members
 
         /// <summary>
@@ -21,36 +30,21 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(httpClientHandler));
             }
 
-            httpClientHandler.ClientCertificates.AddRange(Certificates);
+            httpClientHandler.ClientCertificates.AddRange(Certificates.ToArray());
         }
 
         /// <summary>
-        ///     Store client certificates which will be set to http clients
+        ///     Add client certificates which will be set to http clients
         /// </summary>
-        /// <param name="certificates"></param>
-        public static void Store(IEnumerable<X509Certificate> certificates)
+        /// <param name="certificate">Client certificate</param>
+        public static void Add(X509Certificate certificate)
         {
-            if (certificates == null)
-            {
-                Certificates = Enumerable.Empty<X509Certificate>().ToArray();
-            }
-            else
-            {
-                Certificates = certificates.Where(c => c != null).ToArray();
-            }
+            if (certificate == null) return;
+
+            Certificates.Add(certificate);
         }
 
-        private static X509Certificate[] Certificates { get; set; }
-
-        #endregion
-
-        #region Constructors
-
-        static ClientCertificates()
-        {
-            //Default client certificates
-            Certificates = Enumerable.Empty<X509Certificate>().ToArray();
-        }
+        private static readonly List<X509Certificate> Certificates;
 
         #endregion
     }

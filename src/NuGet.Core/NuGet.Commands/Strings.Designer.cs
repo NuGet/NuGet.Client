@@ -97,6 +97,96 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromFilePath {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromFilePath", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to PEM definition: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromPEM {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromPEM", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password: -.
+        /// </summary>
+        internal static string ClientCertificatesFromPEMOrFilePasswordNotSet {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromPEMOrFilePasswordNotSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password: ****.
+        /// </summary>
+        internal static string ClientCertificatesFromPEMOrFilePasswordSet {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromPEMOrFilePasswordSet", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find type: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromStorageFindType {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromStorageFindType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Find value: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromStorageFindValue {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromStorageFindValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store location: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromStorageStoreLocation {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromStorageStoreLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Store name: {0}.
+        /// </summary>
+        internal static string ClientCertificatesFromStorageStoreName {
+            get {
+                return ResourceManager.GetString("ClientCertificatesFromStorageStoreName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate: {0}.
+        /// </summary>
+        internal static string ClientCertificatesItemCertificateMessage {
+            get {
+                return ResourceManager.GetString("ClientCertificatesItemCertificateMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} [{1}].
+        /// </summary>
+        internal static string ClientCertificatesLogTitle {
+            get {
+                return ResourceManager.GetString("ClientCertificatesLogTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Unable to add trusted author. The package is not author signed..
         /// </summary>
         internal static string Error_AuthorTrustExpectedAuthorSignature {
@@ -133,11 +223,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client certificate was not found..
+        /// </summary>
+        internal static string Error_ClientCertificateNotFound {
+            get {
+                return ResourceManager.GetString("Error_ClientCertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not add the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotAdd {
             get {
                 return ResourceManager.GetString("Error_CouldNotAdd", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not add the client certificate: {0}.
+        /// </summary>
+        internal static string Error_CouldNotAddClientCertificate {
+            get {
+                return ResourceManager.GetString("Error_CouldNotAddClientCertificate", resourceCulture);
             }
         }
         
@@ -151,11 +259,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Could not list the client certificates: {0}.
+        /// </summary>
+        internal static string Error_CouldNotListClientCertificates {
+            get {
+                return ResourceManager.GetString("Error_CouldNotListClientCertificates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not remove the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotRemove {
             get {
                 return ResourceManager.GetString("Error_CouldNotRemove", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not remove the client certificate: {0}.
+        /// </summary>
+        internal static string Error_CouldNotRemoveClientCertificate {
+            get {
+                return ResourceManager.GetString("Error_CouldNotRemoveClientCertificate", resourceCulture);
             }
         }
         
@@ -192,6 +318,15 @@ namespace NuGet.Commands {
         internal static string Error_EmptySourceFileProjectDirectory {
             get {
                 return ResourceManager.GetString("Error_EmptySourceFileProjectDirectory", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Could not modify client certificate of {0} source type. {1} source type expected..
+        /// </summary>
+        internal static string Error_ExistingAndRequiredClientCertificateSourceMissmatch {
+            get {
+                return ResourceManager.GetString("Error_ExistingAndRequiredClientCertificateSourceMissmatch", resourceCulture);
             }
         }
         
@@ -624,6 +759,15 @@ namespace NuGet.Commands {
         internal static string Error_UnknownBuildAction {
             get {
                 return ResourceManager.GetString("Error_UnknownBuildAction", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown client certificate source type {0}..
+        /// </summary>
+        internal static string Error_UnknownClientCertificateSourceType {
+            get {
+                return ResourceManager.GetString("Error_UnknownClientCertificateSourceType", resourceCulture);
             }
         }
         
@@ -1511,6 +1655,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are no client certificates..
+        /// </summary>
+        internal static string NoClientCertificates {
+            get {
+                return ResourceManager.GetString("NoClientCertificates", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No client certificates with the name: &apos;{0}&apos; were found..
+        /// </summary>
+        internal static string NoClientCertificatesMatching {
+            get {
+                return ResourceManager.GetString("NoClientCertificatesMatching", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Properties &apos;{0}&apos;:&apos;{1}&apos; and &apos;{2}&apos;:&apos;{3}&apos; do not match..
         /// </summary>
         internal static string NonMatchingProperties {
@@ -1597,6 +1759,15 @@ namespace NuGet.Commands {
         internal static string PropertyNotAllowedForProjectType {
             get {
                 return ResourceManager.GetString("PropertyNotAllowedForProjectType", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registered client certificates:.
+        /// </summary>
+        internal static string RegsiteredClientCertificates {
+            get {
+                return ResourceManager.GetString("RegsiteredClientCertificates", resourceCulture);
             }
         }
         
@@ -1799,11 +1970,29 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Client certificate was found..
+        /// </summary>
+        internal static string Success_ClientCertificate {
+            get {
+                return ResourceManager.GetString("Success_ClientCertificate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Successfully updated the trusted signer &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullUpdatedTrustedSigner {
             get {
                 return ResourceManager.GetString("SuccessfullUpdatedTrustedSigner", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully added the client certificate &apos;{0}&apos;..
+        /// </summary>
+        internal static string SuccessfullyAddedClientCertificate {
+            get {
+                return ResourceManager.GetString("SuccessfullyAddedClientCertificate", resourceCulture);
             }
         }
         
@@ -1822,6 +2011,15 @@ namespace NuGet.Commands {
         internal static string SuccessfullyAddedTrustedRepository {
             get {
                 return ResourceManager.GetString("SuccessfullyAddedTrustedRepository", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Successfully removed the client certificate &apos;{0}&apos;..
+        /// </summary>
+        internal static string SuccessfullyRemovedClientCertificate {
+            get {
+                return ResourceManager.GetString("SuccessfullyRemovedClientCertificate", resourceCulture);
             }
         }
         

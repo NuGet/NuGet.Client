@@ -19,16 +19,17 @@ namespace NuGet.Configuration
         private const X509FindType DefaultFindType = X509FindType.FindByThumbprint;
         private const StoreLocation DefaultStoreLocation = StoreLocation.CurrentUser;
         private const StoreName DefaultStoreName = StoreName.My;
-
         private readonly AddItem _findType;
         private readonly AddItem _findValue;
         private readonly AddItem _storeLocation;
         private readonly AddItem _storeName;
 
-        public FromStorageItem(string findValue,
-                               StoreLocation storeLocation = DefaultStoreLocation,
-                               StoreName storeName = DefaultStoreName,
-                               X509FindType findType = DefaultFindType)
+        public FromStorageItem(string name,
+                               string findValue,
+                               StoreLocation? storeLocation = null,
+                               StoreName? storeName = null,
+                               X509FindType? findType = null)
+            : base(name)
         {
             ElementName = ConfigurationConstants.FromStorage;
 
@@ -36,6 +37,10 @@ namespace NuGet.Configuration
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(findValue));
             }
+
+            if (!storeLocation.HasValue) storeLocation = DefaultStoreLocation;
+            if (!storeName.HasValue) storeName = DefaultStoreName;
+            if (!findType.HasValue) findType = DefaultFindType;
 
             _storeLocation = new AddItem(ConfigurationConstants.StoreLocationToken, storeLocation.ToString());
             _storeName = new AddItem(ConfigurationConstants.StoreNameToken, storeName.ToString());
@@ -147,8 +152,16 @@ namespace NuGet.Configuration
         public string FindValue
         {
             get => _findValue.Value;
-            set => _findType.Value = value;
+            set => _findValue.Value = value;
         }
+
+        public new string Name
+        {
+            get => base.Name;
+            set => SetName(value);
+        }
+
+        public override ClientCertificatesSourceType SourceType => ClientCertificatesSourceType.Storage;
 
         public StoreLocation StoreLocation
         {
@@ -178,9 +191,30 @@ namespace NuGet.Configuration
             }
         }
 
+        internal override XNode AsXNode()
+        {
+            if (Node is XElement)
+            {
+                return Node;
+            }
+
+            var element = new XElement(ElementName,
+                                       _storeLocation.AsXNode(),
+                                       _storeName.AsXNode(),
+                                       _findType.AsXNode(),
+                                       _findValue.AsXNode());
+
+            foreach (KeyValuePair<string, string> attr in Attributes)
+            {
+                element.SetAttributeValue(attr.Key, attr.Value);
+            }
+
+            return element;
+        }
+
         public override SettingBase Clone()
         {
-            return new FromStorageItem(FindValue, StoreLocation, StoreName, FindType);
+            return new FromStorageItem(Name, FindValue, StoreLocation, StoreName, FindType);
         }
 
         public override X509Certificate Search()
