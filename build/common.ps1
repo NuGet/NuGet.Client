@@ -173,8 +173,7 @@ Function Install-DotnetCLI {
 
     $cli = @{
         Root = $CLIRoot
-        Version = 'latest'
-        Channel = $CliBranchForTesting.Trim()
+        Version = $CliBranchForTesting.Trim()
     }
     
     $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
@@ -197,7 +196,7 @@ Function Install-DotnetCLI {
         $DotNetInstall = Join-Path $cli.Root 'dotnet-install.ps1'
 
         Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
-        & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
+        & $DotNetInstall -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
     if (-not (Test-Path $DotNetExe)) {

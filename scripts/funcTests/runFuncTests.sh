@@ -43,7 +43,7 @@ echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 
 echo $DOTNET_BRANCH
-cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+cli/dotnet-install.sh -i cli -v $DOTNET_BRANCH
 
 # Install the 2.x runtime because our tests target netcoreapp2x
 cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
