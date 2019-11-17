@@ -1970,15 +1970,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client certificate was found..
-        /// </summary>
-        internal static string Success_ClientCertificate {
-            get {
-                return ResourceManager.GetString("Success_ClientCertificate", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Successfully updated the trusted signer &apos;{0}&apos;..
         /// </summary>
         internal static string SuccessfullUpdatedTrustedSigner {

@@ -230,8 +230,7 @@ namespace NuGet.Commands
                             throw new Exception(Strings.Error_ClientCertificateNotFound);
                         }
 
-                        builder.AppendLine($"{defaultIndentation}{string.Format(CultureInfo.CurrentCulture, Strings.ClientCertificatesItemCertificateMessage, Strings.Success_ClientCertificate)}");
-                        builder.AppendLine(certificate.ToString());
+                        builder.AppendLine($"{defaultIndentation}{string.Format(CultureInfo.CurrentCulture, Strings.ClientCertificatesItemCertificateMessage, certificate.GetCertHashString())}");
                     }
                     catch (Exception e)
                     {

@@ -921,9 +921,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_ClientCertificateNotFound" xml:space="preserve">
     <value>Client certificate was not found.</value>
   </data>
-  <data name="Success_ClientCertificate" xml:space="preserve">
-    <value>Client certificate was found.</value>
-  </data>
   <data name="Error_CouldNotRemove" xml:space="preserve">
     <value>Could not remove the trusted signer: {0}</value>
     <comment>0 - Reason</comment>
