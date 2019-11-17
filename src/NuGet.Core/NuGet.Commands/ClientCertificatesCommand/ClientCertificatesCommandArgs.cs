@@ -13,7 +13,7 @@ namespace NuGet.Commands
         public ClientCertificatesCommandAction Action { get; set; }
 
         /// <summary>
-        ///     Indicates that certificate must be checked before Add action or check certificate existence on List action
+        ///     Indicates that certificate must be checked before Add or check certificate existence on List
         /// </summary>
         public bool CheckCertificate { get; set; }
 

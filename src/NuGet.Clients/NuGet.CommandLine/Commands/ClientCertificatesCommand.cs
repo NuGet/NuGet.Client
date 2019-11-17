@@ -24,37 +24,37 @@ namespace NuGet.CommandLine.Commands
         {
         }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandCheckCertificateDescription")] //TODO
-        public bool CheckCertificate { get; set; }
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandCheckCertificateDescription")]
+        public bool Check { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindTypeDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindTypeDescription")]
         public string FindType { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindValueDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindValueDescription")]
         public string FindValue { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandNameDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandNameDescription")]
         public string Name { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPasswordDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPasswordDescription")] 
         public string Password { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPathDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPathDescription")] 
         public string Path { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPEMDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPEMDescription")]
         public string PEM { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandSourceTypeDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandSourceTypeDescription")]
         public string SourceType { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreLocationDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreLocationDescription")]
         public string StoreLocation { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreNameDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreNameDescription")] 
         public string StoreName { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStorePasswordInClearTextDescription")] //TODO
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStorePasswordInClearTextDescription")]
         public bool StorePasswordInClearText { get; set; }
 
         internal IClientCertificatesCommandRunner ClientCertificatesCommandRunner { get; set; }
@@ -135,7 +135,7 @@ namespace NuGet.CommandLine.Commands
             {
                 Action = action,
                 SourceType = sourceType,
-                CheckCertificate = CheckCertificate,
+                CheckCertificate = Check,
                 Name = Name,
                 Path = Path,
                 PEM = PEM,

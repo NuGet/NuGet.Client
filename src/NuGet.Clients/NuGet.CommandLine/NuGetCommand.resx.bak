@@ -5595,7 +5595,7 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   <data name="ClientCertificatesCommandUsageExamples" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5609,7 +5609,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5620,7 +5620,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_chs" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5634,7 +5634,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5645,7 +5645,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_cht" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5659,7 +5659,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5670,7 +5670,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_csy" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5684,7 +5684,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5695,7 +5695,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_deu" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5709,7 +5709,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5720,7 +5720,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_esp" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5734,7 +5734,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5745,7 +5745,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_fra" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5759,7 +5759,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5770,7 +5770,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_ita" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5784,7 +5784,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5795,7 +5795,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_jpn" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5809,7 +5809,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5820,7 +5820,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_kor" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5834,7 +5834,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5845,7 +5845,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_plk" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5859,7 +5859,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5870,7 +5870,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_ptb" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5884,7 +5884,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5895,7 +5895,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_rus" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5909,7 +5909,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5920,7 +5920,7 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
   <data name="ClientCertificatesCommandUsageExamples_trk" xml:space="preserve">
     <value>nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
 
-nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
+nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
 
 nuget client-certificates Add -Name certificateName -PEM "-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----"
 
@@ -5934,7 +5934,7 @@ nuget client-certificates Remove -Name certificateName
 
 nuget client-certificates
 
-nuget client-certificates List -Check true
+nuget client-certificates List -CheckCertificate true
 
 nuget client-certificates List -Name containsInName
 
@@ -5943,132 +5943,132 @@ nuget client-certificates List -SourceType storage
 nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Path "containsInPath" -StoreName My</value>
   </data>
     <data name="ClientCertificatesCommandCheckCertificateDescription" xml:space="preserve">
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_chs" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_cht" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_csy" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_deu" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_esp" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_fra" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_ita" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_jpn" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_kor" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_plk" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_ptb" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_rus" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
-  </data>                                                                                              
-  <data name="ClientCertificatesCommandCheckCertificateDescription_trk" xml:space="preserve">          
-    <value>Indicates that certificate must be checked before Add or check certificate existence on List.</value>
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_chs" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_cht" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_csy" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_deu" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_esp" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_fra" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_ita" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_jpn" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_kor" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_plk" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_ptb" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_rus" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
+  </data>
+  <data name="ClientCertificatesCommandCheckCertificateDescription_trk" xml:space="preserve">
+    <value>Indicates that certificate must be checked before Add or check certificate existence on List</value>
   </data>
 
     <data name="ClientCertificatesCommandFindTypeDescription" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_chs" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_cht" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_csy" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_deu" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_esp" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_fra" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_ita" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_jpn" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_kor" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_plk" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_ptb" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_rus" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindTypeDescription_trk" xml:space="preserve">
-    <value>FindType added to a storage client certificate source.</value>
+    <value>FindType added to a storage client certificate source</value>
   </data>
 
     <data name="ClientCertificatesCommandFindValueDescription" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_chs" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_cht" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_csy" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_deu" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_esp" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_fra" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_ita" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_jpn" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_kor" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_plk" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_ptb" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_rus" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandFindValueDescription_trk" xml:space="preserve">
-    <value>FindValue added to a storage client certificate source.</value>
+    <value>FindValue added to a storage client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandNameDescription" xml:space="preserve">
     <value>Name of the client certificate item.</value>
@@ -6155,88 +6155,88 @@ nuget client-certificates -PEM "containsSequenceInBase64EncodedCertificate" -Pat
     <value>Password for the certificate, if needed. This option can be used to specify the password for the certificate.</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_chs" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_cht" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_csy" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_deu" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_esp" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_fra" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_ita" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_jpn" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_kor" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_plk" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_ptb" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_rus" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPathDescription_trk" xml:space="preserve">
-    <value>Path to certificate file added to a file client certificate source.</value>
+    <value>Path to certificate file added to a file client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_chs" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_cht" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_csy" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_deu" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_esp" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_fra" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_ita" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_jpn" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_kor" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_plk" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_ptb" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_rus" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandPEMDescription_trk" xml:space="preserve">
-    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source.</value>
+    <value>Base64 encoded DER certificate in PEM format added to a PEM client certificate source</value>
   </data>
   <data name="ClientCertificatesCommandSourceTypeDescription" xml:space="preserve">
     <value>Client certificate source type.</value>

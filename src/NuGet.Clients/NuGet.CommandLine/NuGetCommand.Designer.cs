@@ -108,15 +108,1401 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Indicates that certificate must be checked before Add or check certificate existence on List..
+        /// </summary>
+        internal static string ClientCertificatesCommandCheckCertificateDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandCheckCertificateDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindType added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindTypeDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindTypeDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the client certificate item..
+        /// </summary>
+        internal static string ClientCertificatesCommandNameDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandNameDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPathDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPathDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Base64 encoded DER certificate in PEM format added to a PEM client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandPEMDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPEMDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client certificate source type..
+        /// </summary>
+        internal static string ClientCertificatesCommandSourceTypeDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandSourceTypeDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_chs {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_chs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_cht {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_cht", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_csy {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_csy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_deu {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_deu", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_esp {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_esp", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_fra {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_fra", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_ita {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_ita", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_jpn {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_jpn", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_kor {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_kor", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_plk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_plk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_ptb {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_ptb", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_rus {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_rus", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription_trk {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription_trk", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples {
             get {
@@ -127,13 +1513,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_chs {
             get {
@@ -144,13 +1530,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_cht {
             get {
@@ -161,13 +1547,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_csy {
             get {
@@ -178,13 +1564,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_deu {
             get {
@@ -195,13 +1581,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_esp {
             get {
@@ -212,13 +1598,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_fra {
             get {
@@ -229,13 +1615,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_ita {
             get {
@@ -246,13 +1632,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_jpn {
             get {
@@ -263,13 +1649,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_kor {
             get {
@@ -280,13 +1666,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_plk {
             get {
@@ -297,13 +1683,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_ptb {
             get {
@@ -314,13 +1700,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_rus {
             get {
@@ -331,13 +1717,13 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to nuget client-certificates Add -Name certificateName -Path .\MyCertificate.pfx
         ///
-        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -CheckCertificate true
+        ///nuget client-certificates Add -Name certificateName -Path c:\MyCertificate.pfx -Password 42 -Check true
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot;
         ///
         ///nuget client-certificates Add -Name certificateName -PEM &quot;-----BEGIN CERTIFICATE-----...-----END CERTIFICATE-----&quot; -Password 42 -StorePasswordInClearText true
         ///
-        ///nuget client-certificates Add -Na [rest of string was truncated]&quot;;.
+        ///nuget client-certificates Add -Name certific [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string ClientCertificatesCommandUsageExamples_trk {
             get {
