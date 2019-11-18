@@ -48,7 +48,7 @@ namespace NuGet.LibraryModel
         [Fact]
         public void FrameworkDependecy_DifferentFlags_AffectCompare()
         {
-            Assert.Equal(1, new FrameworkDependency("AAA", FrameworkDependencyFlags.All).CompareTo(new FrameworkDependency("AAA", FrameworkDependencyFlags.None)));
+            Assert.True(new FrameworkDependency("AAA", FrameworkDependencyFlags.All).CompareTo(new FrameworkDependency("AAA", FrameworkDependencyFlags.None)) > 0);
         }
     }
 }
