@@ -18,6 +18,7 @@ namespace NuGet.CommandLine.XPlat
     public class Program
     {
         private const string DebugOption = "--debug";
+        private const string DebugLaunchOption = "--debuglaunch";
         private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
@@ -49,7 +50,7 @@ namespace NuGet.CommandLine.XPlat
 
             var debugNuGetXPlat = Environment.GetEnvironmentVariable("DEBUG_NUGET_XPLAT");
 
-            if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
+            if (args.Contains(DebugOption) || string.Equals("attach", debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
             {
                 args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
 
@@ -62,6 +63,11 @@ namespace NuGet.CommandLine.XPlat
                 }
 
                 Debugger.Break();
+            }
+            else if (args.Contains(DebugLaunchOption) || string.Equals("launch", debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
+            {
+                args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugLaunchOption)).ToArray();
+                Debugger.Launch();
             }
 #endif
 

@@ -158,10 +158,18 @@ namespace Dotnet.Integration.Test
         /// </summary>
         internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
         {
+            // if test is being debugged, launch dotnet.exe with a --debuglaunch flag,
+            // which will launch a new debugger, enabling debugging of nuget.commandline.xplat.dll
+            // codepaths.
+            string debugParam = string.Empty;
+            if (Debugger.IsAttached)
+            {
+                debugParam = " --debuglaunch";
+            }
 
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
-                args,
+                args + debugParam,
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
 

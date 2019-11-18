@@ -24,7 +24,7 @@ namespace NuGet.CommandLine
     {
         private const string Utf8Option = "-utf8";
         private const string ForceEnglishOutputOption = "-forceEnglishOutput";
-        private const string DebugOption = "--debug";
+        private const string DebugOption = "--debuglaunch";
         private const string OSVersionRegistryKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
         private const string FilesystemRegistryKey = @"SYSTEM\CurrentControlSet\Control\FileSystem";
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";
@@ -53,9 +53,10 @@ namespace NuGet.CommandLine
             AppContext.SetSwitch("Switch.System.IO.BlockLongPaths", false);
 
 #if DEBUG
-            if (args.Contains(DebugOption, StringComparer.OrdinalIgnoreCase))
+            var debugNuGetExe = Environment.GetEnvironmentVariable("DEBUG_NUGET_EXE");
+            if (args.Contains(DebugOption) || string.Equals("launch", debugNuGetExe, StringComparison.OrdinalIgnoreCase))
             {
-                args = args.Where(arg => !string.Equals(arg, DebugOption, StringComparison.OrdinalIgnoreCase)).ToArray();
+                args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
                 System.Diagnostics.Debugger.Launch();
             }
 #endif
