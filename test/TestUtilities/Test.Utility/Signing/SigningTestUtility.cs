@@ -141,6 +141,7 @@ namespace Test.Utility.Signing
                 {
                     var chainCertificateRequest = new ChainCertificateRequest()
                     {
+                        ConfigureCrl = true,
                         CrlLocalBaseUri = crlLocalUri,
                         CrlServerBaseUri = crlServerUri,
                         IsCA = true
@@ -153,6 +154,7 @@ namespace Test.Utility.Signing
                 {
                     var chainCertificateRequest = new ChainCertificateRequest()
                     {
+                        ConfigureCrl = true,
                         CrlLocalBaseUri = crlLocalUri,
                         CrlServerBaseUri = crlServerUri,
                         IsCA = true,
@@ -207,11 +209,10 @@ namespace Test.Utility.Signing
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
         {
-            if (chainCertificateRequest is null)
+            chainCertificateRequest = chainCertificateRequest ?? new ChainCertificateRequest()
             {
-                chainCertificateRequest = new ChainCertificateRequest();
-            }
-            chainCertificateRequest.IsCA = true;
+                IsCA = true
+            };
 
             using (var rsa = RSA.Create(publicKeyLength))
             {

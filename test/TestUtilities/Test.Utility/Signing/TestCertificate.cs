@@ -62,7 +62,7 @@ namespace Test.Utility.Signing
             CertificateRevocationList crl = null;
 
             // create a crl only if the certificate is part of a chain and it is a CA
-            if (chainCertificateRequest != null && chainCertificateRequest.IsCA)
+            if (chainCertificateRequest != null && chainCertificateRequest.IsCA && chainCertificateRequest.ConfigureCrl)
             {
                 crl = CertificateRevocationList.CreateCrl(cert, chainCertificateRequest.CrlLocalBaseUri);
             }
