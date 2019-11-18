@@ -896,8 +896,4 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Package content hash validation failed for {0}. Expected: {1} Actual: {2}</value>
     <comment>0 - package ID, 1 - expected Sha, 2 - actual sha</comment>
   </data>
-  <data name="Error_InvalidProjectRestoreStyle" xml:space="preserve">
-    <value>Invalid project restore style '{0}'.</value>
-    <comment>0 - User specified restore project style</comment>
-  </data>
 </root>

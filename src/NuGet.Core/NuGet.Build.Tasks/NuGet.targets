@@ -102,7 +102,6 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreSettingsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.WarnForInvalidProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
-  <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectStyleTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -430,22 +429,19 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetRestoreProjectStyle"
     DependsOnTargets="_GetProjectJsonPath;CollectPackageReferences"
     Returns="$(RestoreProjectStyle);$(PackageReferenceCompatibleProjectStyle)">
+    <!-- This may be overridden by setting RestoreProjectStyle in the project. -->
     <PropertyGroup>
-      <_HasPackageReferenceItems Condition="@(PackageReference->Count()) > 0">true</_HasPackageReferenceItems>
+      <!-- If any PackageReferences exist treat it as PackageReference. This has priority over project.json. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND @(PackageReference) != '' ">PackageReference</RestoreProjectStyle>
+      <!-- If this is not a PackageReference project check if project.json or projectName.project.json exists. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND '$(_CurrentProjectJsonPath)' != '' ">ProjectJson</RestoreProjectStyle>
+      <!-- If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' AND (Exists('$(MSBuildProjectDirectory)\packages.config') Or Exists('$(MSBuildProjectDirectory)\packages.$(MSBuildProjectName).config'))">PackagesConfig</RestoreProjectStyle>
+      <!-- This project is either a packages.config project or one that does not use NuGet at all. -->
+      <RestoreProjectStyle Condition=" '$(RestoreProjectStyle)' == '' ">Unknown</RestoreProjectStyle>
     </PropertyGroup>
-
-    <GetRestoreProjectStyleTask
-      HasPackageReferenceItems="$(_HasPackageReferenceItems)"
-      MSBuildProjectDirectory="$(MSBuildProjectDirectory)"
-      MSBuildProjectName="$(MSBuildProjectName)"
-      ProjectJsonPath="$(_CurrentProjectJsonPath)"
-      RestoreProjectStyle="$(RestoreProjectStyle)">
-        <Output TaskParameter="ProjectStyle" PropertyName="RestoreProjectStyle" />
-        <Output TaskParameter="IsPackageReferenceCompatibleProjectStyle" PropertyName="PackageReferenceCompatibleProjectStyle" />
-    </GetRestoreProjectStyleTask>
-
     <PropertyGroup>
-      <_HasPackageReferenceItems />
+      <PackageReferenceCompatibleProjectStyle Condition="  '$(RestoreProjectStyle)' == 'PackageReference' OR '$(RestoreProjectStyle)' == 'DotnetToolReference' ">true</PackageReferenceCompatibleProjectStyle>
     </PropertyGroup>
   </Target>
 

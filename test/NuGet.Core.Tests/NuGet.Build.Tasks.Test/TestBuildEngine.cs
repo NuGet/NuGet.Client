@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections;
 using Microsoft.Build.Framework;
 using NuGet.Common;
@@ -41,15 +40,9 @@ namespace NuGet.Build.Tasks.Test
         {
             var message = new RestoreLogMessage(LogLevel.Error, e.Message)
             {
-            
                 FilePath = e.File,
                 ProjectPath = e.ProjectFile
             };
-
-            if (!string.IsNullOrWhiteSpace(e.Code) && Enum.TryParse(e.Code, ignoreCase: true, out NuGetLogCode code))
-            {
-                message.Code = code;
-            }
 
             TestLogger.Log(message);
         }
@@ -84,11 +77,6 @@ namespace NuGet.Build.Tasks.Test
                 FilePath = e.File,
                 ProjectPath = e.ProjectFile
             };
-
-            if (!string.IsNullOrWhiteSpace(e.Code) && Enum.TryParse(e.Code, ignoreCase: true, out NuGetLogCode code))
-            {
-                message.Code = code;
-            }
 
             TestLogger.Log(message);
         }
