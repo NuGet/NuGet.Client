@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -123,6 +124,16 @@ namespace NuGet.Build.Tasks
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
+            if(dependencyGraphSpec == null)
+            {
+                throw new ArgumentNullException(nameof(dependencyGraphSpec));
+            }
+
+            if (log == null)
+            {
+                throw new ArgumentNullException(nameof(log));
+            }
+
             try
             {
                 DefaultCredentialServiceUtility.SetupDefaultCredentialService(log, !interactive);
