@@ -162,7 +162,7 @@ namespace NuGet.Build.Tasks
                     // Add all child projects
                     if (recursive)
                     {
-                        BuildTasksUtility.AddAllProjectsForRestore(dependencyGraphSpec);
+                        AddAllProjectsForRestore(dependencyGraphSpec);
                     }
 
                     providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dependencyGraphSpec));
