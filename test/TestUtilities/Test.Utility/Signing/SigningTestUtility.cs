@@ -679,10 +679,24 @@ namespace Test.Utility.Signing
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
+            string revocationStatusUnknown;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                revocationStatusUnknown = "The revocation function was unable to check revocation for the certificate";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                revocationStatusUnknown = "An incomplete certificate revocation check occurred.";
+            }
+            else
+            {
+                revocationStatusUnknown = "unable to get certificate CRL";
+            }
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation for the certificate"));
+                issue.Message.Contains(revocationStatusUnknown));
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
