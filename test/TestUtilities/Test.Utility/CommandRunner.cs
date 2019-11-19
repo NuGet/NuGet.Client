@@ -25,7 +25,14 @@ namespace NuGet.Test.Utility
             bool shareProcessObject = false,
             IDictionary<string, string> environmentVariables = null)
         {
-            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments)
+
+            string debugParam = string.Empty;
+            if (Debugger.IsAttached)
+            {
+                debugParam = " --debuglaunch";
+            }
+
+            var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments + debugParam)
             {
                 WorkingDirectory = Path.GetFullPath(workingDirectory),
                 UseShellExecute = false,
