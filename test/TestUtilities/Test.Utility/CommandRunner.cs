@@ -25,11 +25,20 @@ namespace NuGet.Test.Utility
             bool shareProcessObject = false,
             IDictionary<string, string> environmentVariables = null)
         {
-
             string debugParam = string.Empty;
-            if (Debugger.IsAttached)
+            if (
+                string.Compare(process, "nuget.exe", StringComparison.OrdinalIgnoreCase) == 0
+                || 
+                process.EndsWith("\\nuget.exe", StringComparison.OrdinalIgnoreCase)
+            )
             {
-                debugParam = " --debuglaunch";
+                // if test is being debugged, launch nuget.exe with a --debuglaunch flag,
+                // which will launch a new debugger, enabling debugging of nuget.commandline.xplat.dll
+                // codepaths.
+                if (Debugger.IsAttached)
+                {
+                    debugParam = " --debuglaunch";
+                }
             }
 
             var psi = new ProcessStartInfo(Path.GetFullPath(process), arguments + debugParam)
