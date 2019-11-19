@@ -152,17 +152,17 @@ namespace NuGet.Build.Tasks
                     // Pre-loaded request provider containing the graph file
                     var providers = new List<IPreLoadedRestoreRequestProvider>();
 
-                    // Add all child projects
-                    if (recursive)
-                    {
-                        AddAllProjectsForRestore(dependencyGraphSpec);
-                    }
-
                     if (dependencyGraphSpec.Restore.Count < 1)
                     {
                         // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
                         log.LogMinimal(Strings.NoProjectsToRestore);
                         return true;
+                    }
+
+                    // Add all child projects
+                    if (recursive)
+                    {
+                        BuildTasksUtility.AddAllProjectsForRestore(dependencyGraphSpec);
                     }
 
                     providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dependencyGraphSpec));
