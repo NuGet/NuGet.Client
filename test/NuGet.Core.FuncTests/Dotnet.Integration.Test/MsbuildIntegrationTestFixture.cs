@@ -86,7 +86,8 @@ namespace Dotnet.Integration.Test
             var restoreSolutionDirectory = workingDirectory;
             var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
             var packageReference = string.Empty;
-            foreach (var package in packages) {
+            foreach (var package in packages)
+            {
                 packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
             }
 
@@ -156,13 +157,13 @@ namespace Dotnet.Integration.Test
         /// <summary>
         /// dotnet.exe args
         /// </summary>
-        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
+        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode = false)
         {
             // if test is being debugged, launch dotnet.exe with a --debuglaunch flag,
             // which will launch a new debugger, enabling debugging of nuget.commandline.xplat.dll
             // codepaths.
             string debugParam = string.Empty;
-            if (Debugger.IsAttached)
+            if (Debugger.IsAttached && args.StartsWith("nuget "))
             {
                 debugParam = " --debuglaunch";
             }
@@ -270,7 +271,8 @@ namespace Dotnet.Integration.Test
             }
 
 
-            foreach (var nupkgName in nupkgsToCopy) {
+            foreach (var nupkgName in nupkgsToCopy)
+            {
                 using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
                 {
                     var files = nupkg.GetFiles()
