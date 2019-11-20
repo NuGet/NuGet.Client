@@ -16,6 +16,20 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 {
     public class PackageSourceTelemetryTests
     {
+        [Fact]
+        public void Ctor_DuplicateSources_DoesNotThrow()
+        {
+            // Arrange
+            var source = new PackageSource("https://source.test/v3/index.json");
+            PackageSource[] sources = new[] { source, source };
+
+            // Act
+            var target = new PackageSourceTelemetry(sources, Guid.Empty);
+
+            // Assert
+            // no assert, just making sure ctor didn't throw.
+        }
+
         [Theory]
         [InlineData("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg", true)]
         [InlineData("https://source.test/v3/flatcontainer/package/index.json", false)]

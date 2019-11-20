@@ -28,8 +28,13 @@ namespace NuGet.VisualStudio.Telemetry
 
             _data = new ConcurrentDictionary<string, Data>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
-            _sources = sources.ToDictionary(s => s.Source);
             _parentId = parentId;
+
+            _sources = new Dictionary<string, PackageSource>();
+            foreach (var source in sources)
+            {
+                _sources[source.Source] = source;
+            }
         }
 
         private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
