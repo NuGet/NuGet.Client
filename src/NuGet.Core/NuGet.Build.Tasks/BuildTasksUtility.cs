@@ -159,6 +159,16 @@ namespace NuGet.Build.Tasks
         /// <returns><code>true</code> if a packages.config exists next to the project, otherwise <code>false</code>.</returns>
         private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName)
         {
+            if(string.IsNullOrWhiteSpace(projectDirectory))
+            {
+                throw new ArgumentNullException(nameof(projectDirectory));
+            }
+
+            if (string.IsNullOrWhiteSpace(projectName))
+            {
+                throw new ArgumentNullException(nameof(projectName));
+            }
+
             string packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
 
             if (File.Exists(packagesConfigPath))
