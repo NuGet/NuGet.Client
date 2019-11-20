@@ -109,21 +109,18 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
+                SigningTestUtility.AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
 
-                if (!RuntimeEnvironmentHelper.IsMacOSX && RuntimeEnvironmentHelper.IsLinux)
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
                     Assert.Equal(2, logger.Warnings);
-                }else
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                }
+                else
                 {
                     Assert.Equal(1, logger.Warnings);
-                }
-
-                SigningTestUtility.AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
-                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
-
-                if (!RuntimeEnvironmentHelper.IsMacOSX && RuntimeEnvironmentHelper.IsLinux)
-                {
-                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
                 }
             }
         }

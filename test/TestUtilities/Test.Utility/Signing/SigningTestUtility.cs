@@ -693,6 +693,7 @@ namespace Test.Utility.Signing
             {
                 revocationStatusUnknown = "unable to get certificate CRL";
             }
+
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
@@ -738,12 +739,12 @@ namespace Test.Utility.Signing
             {
                 notTimeValid = "certificate has expired";
             }
+
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
                 issue.Message.Contains(notTimeValid));
         }
-
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
         {
