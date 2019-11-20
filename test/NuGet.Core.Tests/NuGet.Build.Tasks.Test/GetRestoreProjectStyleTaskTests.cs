@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
@@ -15,32 +14,18 @@ namespace NuGet.Build.Tasks.Test
 {
     public class GetRestoreProjectStyleTaskTests
     {
-        [Fact]
-        public void Execute_WhenInvalidProjectStyleSupplied_LogsError()
-        {
-            var buildEngine = new TestBuildEngine();
-            var testLogger = buildEngine.TestLogger;
-
-            var task = new GetRestoreProjectStyleTask
-            {
-                BuildEngine = buildEngine,
-                RestoreProjectStyle = "Invalid"
-            };
-
-            task.Execute().Should().BeFalse();
-
-            testLogger.LogMessages.Should().Contain(i => i.Code == NuGetLogCode.NU1008 && i.Message == "Invalid project restore style 'Invalid'.");
-        }
-
-        [Fact]
-        public void Execute_WhenNothingMatches_ReturnsUnknown()
+        [Theory]
+        [InlineData("")]
+        [InlineData("None")]
+        [InlineData("SomethingRandom")]
+        public void Execute_WhenNothingMatches_ReturnsUnknown(string restoreStyle)
         {
             var buildEngine = new TestBuildEngine();
 
             var task = new GetRestoreProjectStyleTask
             {
                 BuildEngine = buildEngine,
-                RestoreProjectStyle = string.Empty,
+                RestoreProjectStyle = restoreStyle,
                 ProjectJsonPath = string.Empty,
                 HasPackageReferenceItems = false,
                 MSBuildProjectName = "ProjectA",
@@ -112,32 +97,31 @@ namespace NuGet.Build.Tasks.Test
             task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
         }
 
-        [Fact]
-        public void Execute_WhenProjectStyleSupplied_ReturnsSuppliedProjectStyle()
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Execute_WhenProjectStyleSupplied_ReturnsSuppliedProjectStyle(bool lowerCase)
         {
-            foreach (var lowerCase in new[] { true, false })
+            foreach (var projectStyle in Enum.GetValues(typeof(ProjectStyle)).Cast<ProjectStyle>())
             {
-                foreach (var projectStyle in Enum.GetValues(typeof(ProjectStyle)).Cast<ProjectStyle>())
+                var buildEngine = new TestBuildEngine();
+
+                var task = new GetRestoreProjectStyleTask
                 {
-                    var buildEngine = new TestBuildEngine();
+                    BuildEngine = buildEngine,
+                    RestoreProjectStyle = lowerCase ? projectStyle.ToString().ToLower() : projectStyle.ToString()
+                };
 
-                    var task = new GetRestoreProjectStyleTask
-                    {
-                        BuildEngine = buildEngine,
-                        RestoreProjectStyle = lowerCase ? projectStyle.ToString().ToLower() : projectStyle.ToString()
-                    };
+                task.Execute().Should().BeTrue();
 
-                    task.Execute().Should().BeTrue();
-
-                    task.ProjectStyle.Should().Be(projectStyle);
-                    if (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference)
-                    {
-                        task.IsPackageReferenceCompatibleProjectStyle.Should().BeTrue();
-                    }
-                    else
-                    {
-                        task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
-                    }
+                task.ProjectStyle.Should().Be(projectStyle);
+                if (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference)
+                {
+                    task.IsPackageReferenceCompatibleProjectStyle.Should().BeTrue();
+                }
+                else
+                {
+                    task.IsPackageReferenceCompatibleProjectStyle.Should().BeFalse();
                 }
             }
         }
