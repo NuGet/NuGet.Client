@@ -47,8 +47,7 @@ namespace NuGet.Build.Tasks
         public static void AddAllProjectsForRestore(DependencyGraphSpec spec)
         {
             // Add everything from projects except for packages.config and unknown project types
-            foreach (var project in spec.Projects
-                .Where(project => RestorableTypes.Contains(project.RestoreMetadata.ProjectStyle)))
+            foreach (var project in spec.Projects.Where(DoesProjectSupportRestore))
             {
                 spec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
             }
@@ -70,6 +69,16 @@ namespace NuGet.Build.Tasks
             {
                 properties.Add(toKey, propertyValue);
             }
+        }
+
+        /// <summary>
+        /// Determines if the specified <see cref="PackageSpec" /> supports restore.
+        /// </summary>
+        /// <param name="packageSpec">A <see cref="PackageSpec" /> for a project.</param>
+        /// <returns><code>true</code> if the project supports restore, otherwise <code>false</code>.</returns>
+        internal static bool DoesProjectSupportRestore(PackageSpec packageSpec)
+        {
+            return RestorableTypes.Contains(packageSpec.RestoreMetadata.ProjectStyle);
         }
 
         public static string GetPropertyIfExists(ITaskItem item, string key)
@@ -111,7 +120,7 @@ namespace NuGet.Build.Tasks
             ProjectStyle.ProjectJson
         };
 
-        public static async Task<bool> RestoreAsync(
+        internal static async Task<bool> RestoreAsync(
             DependencyGraphSpec dependencyGraphSpec,
             bool interactive,
             bool recursive,
