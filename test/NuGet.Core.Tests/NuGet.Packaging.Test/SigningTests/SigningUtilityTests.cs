@@ -109,23 +109,19 @@ namespace NuGet.Packaging.Test
                 Assert.Equal("Certificate chain validation failed.", exception.Message);
 
                 Assert.Equal(1, logger.Errors);
-                Assert.Equal(1, logger.Warnings);
-
-                if (RuntimeEnvironmentHelper.IsWindows)
+                
+                if (RuntimeEnvironmentHelper.IsLinux)
                 {
-                    AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
-                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
-                }
-                else if (RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    AssertExpiredCertificate(logger.LogMessages, LogLevel.Error);
-                    SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning); 
+                    Assert.Equal(2, logger.Warnings);
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                 }
                 else
                 {
-                    AssertPartialChain(logger.LogMessages, LogLevel.Error);
-                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    Assert.Equal(1, logger.Warnings);
                 }
+
+                SigningTestUtility.AssertNotTimeValid(logger.LogMessages, LogLevel.Error);
+                SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Warning);
             }
         }
 
@@ -686,13 +682,6 @@ namespace NuGet.Packaging.Test
         }
 #endif
 
-        private static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file"));
-        }
 
         private static AuthorSignPackageRequest CreateRequest(X509Certificate2 certificate)
         {
@@ -700,22 +689,6 @@ namespace NuGet.Packaging.Test
                 certificate,
                 Common.HashAlgorithmName.SHA256,
                 Common.HashAlgorithmName.SHA256);
-        }
-
-        private static void AssertExpiredCertificate(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("An expired certificate was detected"));
-        }
-
-        private static void AssertPartialChain(IEnumerable<ILogMessage> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("unable to get local issuer certificate"));
         }
 
         private static RepositorySignPackageRequest CreateRequestRepository(

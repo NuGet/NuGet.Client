@@ -141,6 +141,7 @@ namespace Test.Utility.Signing
                 {
                     var chainCertificateRequest = new ChainCertificateRequest()
                     {
+                        ConfigureCrl = true,
                         CrlLocalBaseUri = crlLocalUri,
                         CrlServerBaseUri = crlServerUri,
                         IsCA = true
@@ -153,6 +154,7 @@ namespace Test.Utility.Signing
                 {
                     var chainCertificateRequest = new ChainCertificateRequest()
                     {
+                        ConfigureCrl = true,
                         CrlLocalBaseUri = crlLocalUri,
                         CrlServerBaseUri = crlServerUri,
                         IsCA = true,
@@ -207,6 +209,11 @@ namespace Test.Utility.Signing
             int publicKeyLength = 2048,
             ChainCertificateRequest chainCertificateRequest = null)
         {
+            chainCertificateRequest = chainCertificateRequest ?? new ChainCertificateRequest()
+            {
+                IsCA = true
+            };
+
             using (var rsa = RSA.Create(publicKeyLength))
             {
                 return GenerateCertificate(subjectName, modifyGenerator, rsa, hashAlgorithm, paddingMode, chainCertificateRequest);
@@ -672,10 +679,25 @@ namespace Test.Utility.Signing
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
+            string revocationStatusUnknown;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                revocationStatusUnknown = "The revocation function was unable to check revocation for the certificate";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                revocationStatusUnknown = "An incomplete certificate revocation check occurred.";
+            }
+            else
+            {
+                revocationStatusUnknown = "unable to get certificate CRL";
+            }
+
             Assert.Contains(issues, issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation for the certificate"));
+                issue.Message.Contains(revocationStatusUnknown));
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -699,6 +721,29 @@ namespace Test.Utility.Signing
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
                 issue.Message.Contains(untrustedRoot));
+        }
+
+        public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            string notTimeValid;
+
+            if (RuntimeEnvironmentHelper.IsWindows)
+            {
+                notTimeValid = "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file";
+            }
+            else if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                notTimeValid = "An expired certificate was detected.";
+            }
+            else
+            {
+                notTimeValid = "certificate has expired";
+            }
+
+            Assert.Contains(issues, issue =>
+                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Level == logLevel &&
+                issue.Message.Contains(notTimeValid));
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)

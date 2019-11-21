@@ -14,7 +14,7 @@ namespace Test.Utility.Signing
 
         public bool IsCA { get; set; }
 
-        public bool ConfigureCrl { get; set; } = true;
+        public bool ConfigureCrl { get; set; }
 
         public X509Certificate2 Issuer { get; set; }
     }

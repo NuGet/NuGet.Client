@@ -119,6 +119,8 @@ namespace NuGet.Commands.Test
             }
         }
 
+        //skip this test as the signing APIs are not yet implemented. We should enable this test when signing APIs are implemented. Tracking issue:https://github.com/NuGet/Home/issues/8807
+#if IS_DESKTOP
         [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
@@ -147,6 +149,7 @@ namespace NuGet.Commands.Test
                     message => message.Level == LogLevel.Warning && message.Code == NuGetLogCode.NU3018));
             }
         }
+#endif
 
         private static byte[] GetResource(string name)
         {
