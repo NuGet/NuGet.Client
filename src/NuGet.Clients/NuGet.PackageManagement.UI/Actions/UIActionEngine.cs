@@ -314,6 +314,9 @@ namespace NuGet.PackageManagement.UI
             var startTime = DateTimeOffset.Now;
             var packageCount = 0;
 
+            bool continueAfterPreview = true;
+            bool acceptedLicense = true;
+
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
 
@@ -367,6 +370,7 @@ namespace NuGet.PackageManagement.UI
                             var shouldContinue = uiService.PromptForPreviewAcceptance(results);
                             if (!shouldContinue)
                             {
+                                continueAfterPreview = false;
                                 return;
                             }
                         }
@@ -380,6 +384,7 @@ namespace NuGet.PackageManagement.UI
 
                         if (!accepted)
                         {
+                            acceptedLicense = false;
                             return;
                         }
 
@@ -403,6 +408,10 @@ namespace NuGet.PackageManagement.UI
 
                             // fires ActionsExecuted event to update the UI
                             uiService.OnActionsExecuted(actions);
+                        }
+                        else
+                        {
+                            status = NuGetOperationStatus.Cancelled;
                         }
                     }
                 }
@@ -434,6 +443,15 @@ namespace NuGet.PackageManagement.UI
 
                     uiService.EndOperation();
 
+                    // don't show "Succeeded" if we actually cancelled...
+                    if ((!continueAfterPreview) || (!acceptedLicense))
+                    {
+                        if (status == NuGetOperationStatus.Succeeded)
+                        {
+                            status = NuGetOperationStatus.Cancelled;
+                        }
+                    }
+
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         uiService.Projects,
@@ -443,6 +461,17 @@ namespace NuGet.PackageManagement.UI
                         status,
                         packageCount,
                         duration.TotalSeconds);
+
+                    // log possible cancel reasons...
+                    if (!continueAfterPreview)
+                    {
+                        actionTelemetryEvent["CancelAfterPreview"] = "True";
+                    }
+
+                    if (!acceptedLicense)
+                    {
+                        actionTelemetryEvent["AcceptedLicense"] = "False";
+                    }
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
