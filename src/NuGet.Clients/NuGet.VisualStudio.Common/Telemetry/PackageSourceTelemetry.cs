@@ -28,8 +28,14 @@ namespace NuGet.VisualStudio.Telemetry
 
             _data = new ConcurrentDictionary<string, Data>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
-            _sources = sources.ToDictionary(s => s.Source);
             _parentId = parentId;
+
+            // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
+            _sources = new Dictionary<string, PackageSource>();
+            foreach (var source in sources)
+            {
+                _sources[source.Source] = source;
+            }
         }
 
         private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
