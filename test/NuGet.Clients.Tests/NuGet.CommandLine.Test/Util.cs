@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -17,6 +20,7 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 using System.Reflection;
+using NuGet.Configuration;
 
 namespace NuGet.CommandLine.Test
 {
@@ -246,8 +250,7 @@ namespace NuGet.CommandLine.Test
             }
 
             packageBuilder.Authors.Add("test author");
-
-            var packageFileName = string.Format("{0}.{1}.nupkg", packageId, version);
+            var packageFileName = BuildPackageString(packageId, version, NuGetConstants.PackageExtension);
             var packageFileFullPath = Path.Combine(path, packageFileName);
             Directory.CreateDirectory(path);
             using (var fileStream = File.Create(packageFileFullPath))
@@ -256,6 +259,19 @@ namespace NuGet.CommandLine.Test
             }
 
             return packageFileFullPath;
+        }
+
+        /// <summary>
+        /// Assembles a filename for the given package ID, version, and extension.
+        /// </summary>
+        /// <param name="packageId"></param>
+        /// <param name="version"></param>
+        /// <param name="extension">File extension with or without a leading dot (".").</param>
+        /// <returns></returns>
+        public static string BuildPackageString(string packageId, string version, string extension)
+        {
+            string dotPrefix = (!extension.StartsWith(".")) ? "." : string.Empty;
+            return $"{packageId}.{version}{dotPrefix}{extension}";
         }
 
         /// <summary>
@@ -551,6 +567,18 @@ namespace NuGet.CommandLine.Test
             {
                 { "@id", $"{publishServer.Uri}push" },
                 { "@type", "PackagePublish/2.0.0" }
+            };
+
+            var array = index["resources"] as JArray;
+            array.Add(resource);
+        }
+
+        public static void AddPublishSymbolsResource(JObject index, MockServer publishServer)
+        {
+            var resource = new JObject
+            {
+                { "@id", $"{publishServer.Uri}push" },
+                { "@type", "SymbolPackagePublish/4.9.0" }
             };
 
             var array = index["resources"] as JArray;

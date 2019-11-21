@@ -64,13 +64,15 @@ namespace NuGet.Test.Utility
         public static async Task<FileInfo> CreateSymbolPackageAsync(
            string repositoryDir,
            string id,
-           string version)
+           string version,
+           bool isSnupkg = false)
         {
             var package = new SimpleTestPackageContext()
             {
                 Id = id,
                 Version = version,
-                IsSymbolPackage = true
+                IsSymbolPackage = true,
+                IsSnupkgPackage = isSnupkg
             };
 
             return await CreateFullPackageAsync(repositoryDir, package);
