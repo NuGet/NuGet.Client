@@ -134,7 +134,7 @@ namespace NuGet.Build.Tasks
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
-            if(dependencyGraphSpec == null)
+            if (dependencyGraphSpec == null)
             {
                 throw new ArgumentNullException(nameof(dependencyGraphSpec));
             }
@@ -287,14 +287,14 @@ namespace NuGet.Build.Tasks
         /// <returns><code>true</code> if a packages.config exists next to the project, otherwise <code>false</code>.</returns>
         private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName)
         {
-            if(string.IsNullOrWhiteSpace(projectDirectory))
+            if (string.IsNullOrWhiteSpace(projectDirectory))
             {
-                throw new ArgumentNullException(nameof(projectDirectory));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectDirectory));
             }
 
             if (string.IsNullOrWhiteSpace(projectName))
             {
-                throw new ArgumentNullException(nameof(projectName));
+                throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
             string packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
