@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -18,13 +19,13 @@ namespace NuGet.Test.Utility
     public class SimpleTestPackageContext
     {
         public SimpleTestPackageContext(string packageId)
-            : this ()
+            : this()
         {
             Id = packageId;
         }
 
         public SimpleTestPackageContext(string packageId, string version)
-            : this (packageId)
+            : this(packageId)
         {
             Version = version;
         }
@@ -70,10 +71,18 @@ namespace NuGet.Test.Utility
         public string RuntimeJson { get; set; }
 
         public bool IsSymbolPackage { get; set; }
+        public bool IsSnupkgPackage { get; set; }
 
         public PackageIdentity Identity => new PackageIdentity(Id, NuGetVersion.Parse(Version));
 
-        public string PackageName => IsSymbolPackage ? $"{Id}.{Version}.symbols.nupkg" : $"{Id}.{Version}.nupkg";
+        public string PackageName
+        {
+            get
+            {
+                string dotExtension = !IsSymbolPackage ? NuGetConstants.PackageExtension : (IsSnupkgPackage ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension);
+                return $"{Id}.{Version}{dotExtension}";
+            }
+        }
 
         /// <summary>
         /// Add a file to the zip. Ex: lib/net45/a.dll

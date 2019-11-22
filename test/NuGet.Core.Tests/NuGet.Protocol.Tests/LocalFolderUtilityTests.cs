@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +13,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using Xunit.Sdk;
 
 namespace NuGet.Protocol.Tests
 {
@@ -1027,6 +1029,59 @@ namespace NuGet.Protocol.Tests
                 // Assert
                 Assert.Equal(0, packages.Count);
                 Assert.Equal(0, testLogger.Messages.Count);
+            }
+        }
+
+        [Fact]
+        public void LocalFolderUtility_EnsurePackageFileExists_ThrowsWhenEmpty()
+        {
+            //Arrange
+            List<string> emptyTestList = new List<string>();
+            string packagePath = string.Empty;
+
+            //Act
+            var ex = Assert.Throws<ArgumentException>(() => LocalFolderUtility.EnsurePackageFileExists(packagePath, emptyTestList));
+          
+            //Assert
+            //Expected an exception explaining that the file wasn't found in the list.
+            string expectedError = string.Format(CultureInfo.CurrentCulture,
+                                    Strings.UnableToFindFile,
+                                    packagePath);
+
+            Assert.Equal(expectedError, ex.Message);
+        }
+
+        [Fact]
+        public void LocalFolderUtility_EnsurePackageFileExists_DoesNotThrowWhenExists()
+        {
+            //Arrange
+            List<string> testList = new List<string>();
+            testList.Add("existingFilePath1");
+            string packagePath = string.Empty;
+
+            //Act            
+            LocalFolderUtility.EnsurePackageFileExists(packagePath, testList);
+
+            //Assert
+            //Expected no thrown Exception.
+        }
+
+        [Fact]
+        public async void LocalFolderUtility_ResolvePackageFromPath_EmptyWhenNotFound()
+        {
+            using (var root = TestDirectory.Create())
+            {
+                //Arrange
+                string nonexistentPath = "nonexistentPath";
+                var a = new PackageIdentity("a", NuGetVersion.Parse("1.0.0"));
+                
+                await SimpleTestPackageUtility.CreateFolderFeedPackagesConfigAsync(root, a);
+
+                //Act
+                var resolvedPaths = LocalFolderUtility.ResolvePackageFromPath(nonexistentPath);
+
+                //Assert
+                Assert.Equal(0, resolvedPaths.Count());
             }
         }
 
