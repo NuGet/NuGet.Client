@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
@@ -193,6 +194,7 @@ namespace Microsoft.Build.NuGetSdkResolver
             /// <summary>
             /// Attempts to parse a string as a NuGetVersion and returns an object containing the instance which can be cast later.
             /// </summary>
+            [MethodImpl(MethodImplOptions.NoInlining)]
             public static bool TryParseNuGetVersion(string version, out object parsed)
             {
                 if (NuGetVersion.TryParse(version, out var nuGetVersion))
