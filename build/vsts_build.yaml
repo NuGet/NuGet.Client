@@ -673,9 +673,12 @@ phases:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   queue:
-    name: VSEngMBValidation
+    name: VSEng-MicroBuildMacCustom
     timeoutInMinutes: 75
-    demands: sh
+    demands: 
+    - sh
+    - VSTS_OS -equals Mac_Mojave_10.14
+    - Mono -equals 6.4.0 
 
   steps:
   - task: PowerShell@2
