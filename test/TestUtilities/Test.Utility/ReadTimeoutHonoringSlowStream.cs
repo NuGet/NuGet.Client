@@ -12,7 +12,6 @@ namespace Test.Utility
     {
         private readonly Stream _innerStream;
         private readonly CancellationToken _cancellationToken;
-        private int _readTimeout = int.MaxValue;
 
         public ReadTimeoutHonoringSlowStream(Stream innerStream)
             : this(innerStream, CancellationToken.None)
@@ -34,14 +33,14 @@ namespace Test.Utility
             try
             {
                 var expectedDelayInMs = DelayPerByte.TotalMilliseconds * read;
-                if (_readTimeout > expectedDelayInMs)
+                if (ReadTimeout > expectedDelayInMs)
                 {
                     Task.Delay(new TimeSpan(DelayPerByte.Ticks * read)).Wait(_cancellationToken);
                 }
                 else
                 {
-                    Task.Delay(_readTimeout).Wait(_cancellationToken);
-                    throw new IOException($"..timed out because no data was received for {_readTimeout}ms.", new TimeoutException());
+                    Task.Delay(ReadTimeout).Wait(_cancellationToken);
+                    throw new IOException($"..timed out because no data was received for {ReadTimeout}ms.", new TimeoutException());
                 }
             }
             catch (OperationCanceledException)
@@ -51,7 +50,7 @@ namespace Test.Utility
             return read;
         }
 
-        public override int ReadTimeout { get => _readTimeout; set => _readTimeout = value; }
+        public override int ReadTimeout { get; set; } = int.MaxValue;
         public override bool CanTimeout => true;
     }
 }
