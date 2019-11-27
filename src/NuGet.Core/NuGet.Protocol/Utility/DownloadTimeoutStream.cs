@@ -29,6 +29,10 @@ namespace NuGet.Protocol
             _downloadName = downloadName;
             _networkStream = networkStream;
             _timeout = timeout;
+            if (networkStream.CanTimeout)
+            {
+                networkStream.ReadTimeout = (int)timeout.TotalMilliseconds;
+            }
         }
 
         public override void Flush()
@@ -38,16 +42,9 @@ namespace NuGet.Protocol
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            try
-            {
-                return ReadAsync(buffer, offset, count, CancellationToken.None).Result;
-            }
-            catch (AggregateException e)
-            {
-                throw e.InnerException;
-            }
+            return _networkStream.Read(buffer, offset, count);
         }
-        
+
 #if !IS_CORECLR
         public override IAsyncResult BeginRead(
             byte[] buffer,

@@ -48,7 +48,7 @@ namespace NuGet.Core.FuncTest
         [Fact]
         public async Task DownloadTimeoutStream_TimeoutAsync()
         {
-            await VerifyTimeoutOnReadAsync(ReadStreamAsync);
+            await VerifyTimeoutOnReadFunc(ReadStreamAsync, isSync: false);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace NuGet.Core.FuncTest
         [Fact]
         public async Task DownloadTimeoutStream_TimeoutSync()
         {
-            await VerifyTimeoutOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
+            await VerifyTimeoutOnReadFunc(stream => Task.FromResult(ReadStream(stream)), isSync: true);
         }
 
         [Fact]
@@ -89,6 +89,7 @@ namespace NuGet.Core.FuncTest
             await VerifyFailureOnReadAsync(stream => Task.FromResult(ReadStream(stream)));
         }
 
+       
         public async Task VerifyFailureOnReadAsync(Func<Stream, Task<string>> readAsync)
         {
             // Arrange
@@ -109,7 +110,7 @@ namespace NuGet.Core.FuncTest
             Assert.Same(expected, actual);
         }
 
-        public async Task VerifyTimeoutOnReadAsync(Func<Stream, Task<string>> readAsync)
+        public async Task VerifyTimeoutOnReadFunc(Func<Stream, Task<string>> readFunc, bool isSync)
         {
             // Arrange
             var expectedDownload = "download";
@@ -118,10 +119,18 @@ namespace NuGet.Core.FuncTest
 
             using (var cancellationTokenSource = new CancellationTokenSource())
             {
-                var slowStream = new SlowStream(memoryStream, cancellationTokenSource.Token)
+                SlowStream slowStream;
+                if (isSync)
                 {
-                    DelayPerByte = TimeSpan.FromSeconds(10)
-                };
+                    slowStream = new ReadTimeoutHonoringSlowStream(memoryStream, cancellationTokenSource.Token);
+                }
+                else
+                {
+                    slowStream = new SlowStream(memoryStream, cancellationTokenSource.Token);
+                }
+
+                slowStream.DelayPerByte = TimeSpan.FromSeconds(10);
+
                 var timeoutStream = new DownloadTimeoutStream(
                     expectedDownload,
                     slowStream,
@@ -129,10 +138,9 @@ namespace NuGet.Core.FuncTest
 
                 // Act & Assert
                 var exception = await Assert.ThrowsAsync<IOException>(() =>
-                    readAsync(timeoutStream));
-                Assert.Equal(
-                    $"The download of '{expectedDownload}' timed out because " +
-                    $"no data was received for {timeout.TotalMilliseconds}ms.",
+                    readFunc(timeoutStream));
+                Assert.EndsWith(
+                    $"timed out because no data was received for {timeout.TotalMilliseconds}ms.",
                     exception.Message);
                 Assert.IsType<TimeoutException>(exception.InnerException);
 
