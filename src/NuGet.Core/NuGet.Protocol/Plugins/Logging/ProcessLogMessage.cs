@@ -11,6 +11,7 @@ namespace NuGet.Protocol.Plugins
     {
         private readonly int _processId;
         private readonly string _processName;
+        private readonly DateTime _processStartTime;
 
         internal ProcessLogMessage(DateTimeOffset now)
             : base(now)
@@ -19,6 +20,7 @@ namespace NuGet.Protocol.Plugins
             {
                 _processId = process.Id;
                 _processName = process.ProcessName;
+                _processStartTime = process.StartTime.ToUniversalTime();
             }
         }
 
@@ -26,7 +28,8 @@ namespace NuGet.Protocol.Plugins
         {
             var message = new JObject(
                 new JProperty("process ID", _processId),
-                new JProperty("process name", _processName));
+                new JProperty("process name", _processName),
+                new JProperty("process start time", _processStartTime.ToString("O")));
 
             return ToString("process", message);
         }

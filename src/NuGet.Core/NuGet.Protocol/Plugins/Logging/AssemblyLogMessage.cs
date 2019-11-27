@@ -12,15 +12,18 @@ namespace NuGet.Protocol.Plugins
         private readonly string _fileVersion;
         private readonly string _fullName;
         private readonly string _informationalVersion;
+        private readonly string _entryAssemblyFullName;
 
         internal AssemblyLogMessage(DateTimeOffset now)
             : base(now)
         {
             var assembly = typeof(PluginFactory).Assembly;
+            var entryAssembly = Assembly.GetEntryAssembly();
             var informationalVersionAttribute = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
             var fileVersionAttribute = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
 
             _fullName = assembly.FullName;
+            _entryAssemblyFullName = entryAssembly.FullName;
 
             if (fileVersionAttribute != null)
             {
@@ -35,7 +38,9 @@ namespace NuGet.Protocol.Plugins
 
         public override string ToString()
         {
-            var message = new JObject(new JProperty("assembly full name", _fullName));
+            var message = new JObject(
+                new JProperty("assembly full name", _fullName),
+                new JProperty("entry assembly full name", _entryAssemblyFullName));
 
             if (!string.IsNullOrEmpty(_fileVersion))
             {

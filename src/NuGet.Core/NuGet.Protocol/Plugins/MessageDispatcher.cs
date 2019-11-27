@@ -22,6 +22,7 @@ namespace NuGet.Protocol.Plugins
         private readonly ConcurrentDictionary<string, InboundRequestContext> _inboundRequestContexts;
         private readonly IPluginLogger _logger;
         private readonly ConcurrentDictionary<string, OutboundRequestContext> _outboundRequestContexts;
+        private readonly InboundRequestProcessingHandler _inboundRequestProcessingContext;
 
         /// <summary>
         /// Gets the request handlers for use by the dispatcher.
@@ -38,7 +39,7 @@ namespace NuGet.Protocol.Plugins
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="idGenerator" />
         /// is <c>null</c>.</exception>
         public MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator)
-            : this(requestHandlers, idGenerator, PluginLogger.DefaultInstance)
+            : this(requestHandlers, idGenerator, new InboundRequestProcessingHandler(), PluginLogger.DefaultInstance)
         {
         }
 
@@ -53,7 +54,7 @@ namespace NuGet.Protocol.Plugins
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
-        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, IPluginLogger logger)
+        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, InboundRequestProcessingHandler inboundRequestProcessingContext, IPluginLogger logger)
         {
             if (requestHandlers == null)
             {
@@ -65,6 +66,10 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(idGenerator));
             }
 
+            if(inboundRequestProcessingContext == null)
+            {
+                throw new ArgumentNullException(nameof(inboundRequestProcessingContext));
+            }
             if (logger == null)
             {
                 throw new ArgumentNullException(nameof(logger));
@@ -76,6 +81,7 @@ namespace NuGet.Protocol.Plugins
 
             _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>();
             _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>();
+            _inboundRequestProcessingContext = inboundRequestProcessingContext;
         }
 
         /// <summary>
@@ -89,7 +95,7 @@ namespace NuGet.Protocol.Plugins
             }
 
             Close();
-
+            _inboundRequestProcessingContext.Dispose();
             SetConnection(connection: null);
 
             // Do not dispose of _logger.  This message dispatcher does not own it.
@@ -645,19 +651,6 @@ namespace NuGet.Protocol.Plugins
             return handler;
         }
 
-        private InboundRequestContext GetInboundRequestContext(string requestId)
-        {
-            InboundRequestContext requestContext;
-
-            if (!_inboundRequestContexts.TryGetValue(requestId, out requestContext))
-            {
-                throw new ProtocolException(
-                    string.Format(CultureInfo.CurrentCulture, Strings.Plugin_RequestContextDoesNotExist, requestId));
-            }
-
-            return requestContext;
-        }
-
         private OutboundRequestContext GetOutboundRequestContext(string requestId)
         {
             OutboundRequestContext requestContext;
@@ -699,6 +692,7 @@ namespace NuGet.Protocol.Plugins
                 _connection,
                 message.RequestId,
                 cancellationToken,
+                _inboundRequestProcessingContext,
                 _logger);
         }
 

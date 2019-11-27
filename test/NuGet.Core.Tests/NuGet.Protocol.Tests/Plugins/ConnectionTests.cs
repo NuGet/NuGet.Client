@@ -503,13 +503,13 @@ namespace NuGet.Protocol.Plugins.Tests
                 _simulatedIpc = SimulatedIpc.Create(_combinedCancellationTokenSource.Token);
                 _remoteSender = new Sender(_simulatedIpc.RemoteStandardOutputForRemote);
                 _remoteReceiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardInputForRemote);
-                _remoteDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), localLogger);
+                _remoteDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), new InboundRequestProcessingHandler(), localLogger);
                 LocalToRemoteConnection = new Connection(_remoteDispatcher, _remoteSender, _remoteReceiver, localToRemoteOptions, localLogger);
 
                 var remoteLogger = Logger.CreateLogger("B");
                 _localSender = new Sender(_simulatedIpc.RemoteStandardInputForLocal);
                 _localReceiver = new StandardInputReceiver(_simulatedIpc.RemoteStandardOutputForLocal);
-                _localDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), remoteLogger);
+                _localDispatcher = new MessageDispatcher(new RequestHandlers(), new RequestIdGenerator(), new InboundRequestProcessingHandler(), remoteLogger);
                 RemoteToLocalConnection = new Connection(_localDispatcher, _localSender, _localReceiver, remoteToLocalOptions, remoteLogger);
                 CancellationToken = _combinedCancellationTokenSource.Token;
             }
