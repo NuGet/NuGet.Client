@@ -63,10 +63,26 @@ namespace NuGet.Protocol.Utility
             }
         }
 
-        public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            // ReadAsync calls into Read, so don't double count.
-            return base.ReadAsync(buffer, offset, count, cancellationToken);
+            try
+            {
+                var read = await _baseStream.ReadAsync(buffer, offset, count, cancellationToken);
+                if (read > 0)
+                {
+                    _bytes += read;
+                }
+                else
+                {
+                    RaiseDiagnosticEvent(isSuccess: true);
+                }
+                return read;
+            }
+            catch
+            {
+                RaiseDiagnosticEvent(isSuccess: false);
+                throw;
+            }
         }
 
         public override long Seek(long offset, SeekOrigin origin)
