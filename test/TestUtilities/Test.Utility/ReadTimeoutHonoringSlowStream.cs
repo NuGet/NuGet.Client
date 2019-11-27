@@ -50,7 +50,7 @@ namespace Test.Utility
             return read;
         }
 
-        public override int ReadTimeout { get; set; } = int.MaxValue;
+        public override int ReadTimeout { get; set; } = Timeout.Infinite;
         public override bool CanTimeout => true;
     }
 }
