@@ -28,7 +28,7 @@ namespace NuGet.Client
             fileExtensions: new[] { ".dll", ".winmd", ".exe" });
         private static readonly ContentPropertyDefinition MSBuildProperty = new ContentPropertyDefinition(PropertyNames.MSBuild,
             parser: AllowEmptyFolderParser,
-            fileExtensions: new[] { ".targets", ".props" });
+            fileExtensions: new[] { ".targets", ".props", ".vcxitems" });
         private static readonly ContentPropertyDefinition SatelliteAssemblyProperty = new ContentPropertyDefinition(PropertyNames.SatelliteAssembly,
             parser: AllowEmptyFolderParser,
             fileExtensions: new[] { ".resources.dll" });

@@ -486,7 +486,10 @@ namespace NuGet.Packaging
             var file = Path.GetFileName(path);
 
             return StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.targets", packageId))
-                   || StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.props", packageId));
+                   || StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.props", packageId))
+                   || StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.vcxitems", packageId))
+                   || StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.Extension.targets", packageId))
+                   || StringComparer.OrdinalIgnoreCase.Equals(file, string.Format(CultureInfo.InvariantCulture, "{0}.Extension.props", packageId));
         }
 
         /// <summary>
