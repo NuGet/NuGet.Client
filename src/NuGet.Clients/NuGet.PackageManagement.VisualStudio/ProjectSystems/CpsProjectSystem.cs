@@ -34,8 +34,23 @@ namespace NuGet.PackageManagement.VisualStudio
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    var root = VsProjectAdapter.ProjectDirectory;
-                    var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                    string relativeTargetPath = "";
+
+                    var root = Environment.GetEnvironmentVariable("NuGetRepositoryBasePath");
+
+                    if(root.Length !=0)
+                    {
+                        relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+
+                        relativeTargetPath = "$(NuGetRepositoryBasePath)\\" + relativeTargetPath;
+                    }
+                    else
+                    {
+                        //default
+                        root = VsProjectAdapter.ProjectDirectory;
+                        relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+                    }
+
                     await AddImportStatementAsync(location, relativeTargetPath);
                 });
         }
@@ -69,6 +84,19 @@ namespace NuGet.PackageManagement.VisualStudio
                     // For VS 2012 or above, the operation has to be done inside the Writer lock
                     var relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
                     await RemoveImportStatementAsync(relativeTargetPath);
+
+
+                    //try remove $(NuGetRepositoryBasePath)
+                    root = Environment.GetEnvironmentVariable("NuGetRepositoryBasePath");
+
+                    if (root.Length != 0)
+                    {
+                        relativeTargetPath = PathUtility.GetRelativePath(PathUtility.EnsureTrailingSlash(root), targetFullPath);
+
+                        relativeTargetPath = "$(NuGetRepositoryBasePath)\\" + relativeTargetPath;
+
+                        await RemoveImportStatementAsync(relativeTargetPath);
+                    }
                 });
         }
 
