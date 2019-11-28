@@ -12,10 +12,6 @@ namespace Test.Utility
     {
         private readonly Stream _innerStream;
         private readonly CancellationToken _cancellationToken;
-<<<<<<< HEAD
-=======
-        private int _readTimeout = int.MaxValue;
->>>>>>> Fix threadpool load induced delayed responses to plugin requests
 
         public ReadTimeoutHonoringSlowStream(Stream innerStream)
             : this(innerStream, CancellationToken.None)
@@ -37,23 +33,14 @@ namespace Test.Utility
             try
             {
                 var expectedDelayInMs = DelayPerByte.TotalMilliseconds * read;
-<<<<<<< HEAD
                 if (ReadTimeout > expectedDelayInMs)
-=======
-                if (_readTimeout > expectedDelayInMs)
->>>>>>> Fix threadpool load induced delayed responses to plugin requests
                 {
                     Task.Delay(new TimeSpan(DelayPerByte.Ticks * read)).Wait(_cancellationToken);
                 }
                 else
                 {
-<<<<<<< HEAD
                     Task.Delay(ReadTimeout).Wait(_cancellationToken);
                     throw new IOException($"..timed out because no data was received for {ReadTimeout}ms.", new TimeoutException());
-=======
-                    Task.Delay(_readTimeout).Wait(_cancellationToken);
-                    throw new IOException($"..timed out because no data was received for {_readTimeout}ms.", new TimeoutException());
->>>>>>> Fix threadpool load induced delayed responses to plugin requests
                 }
             }
             catch (OperationCanceledException)
@@ -63,11 +50,7 @@ namespace Test.Utility
             return read;
         }
 
-<<<<<<< HEAD
         public override int ReadTimeout { get; set; } = Timeout.Infinite;
-=======
-        public override int ReadTimeout { get => _readTimeout; set => _readTimeout = value; }
->>>>>>> Fix threadpool load induced delayed responses to plugin requests
         public override bool CanTimeout => true;
     }
 }
