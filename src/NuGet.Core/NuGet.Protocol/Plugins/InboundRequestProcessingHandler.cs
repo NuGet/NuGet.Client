@@ -19,6 +19,10 @@ namespace NuGet.Protocol.Plugins
         {
         }
 
+        /// <summary>
+        /// Requests from the processing methods provided in this set are handled on a dedicated thread.
+        /// </summary>
+        /// <param name="fastProcessingMethods"></param>
         public InboundRequestProcessingHandler(ISet<MessageMethod> fastProcessingMethods) 
         {
             _fastProccessingMethods = fastProcessingMethods ?? throw new ArgumentNullException(nameof(fastProcessingMethods));
@@ -32,6 +36,12 @@ namespace NuGet.Protocol.Plugins
 
         }
 
+        /// <summary>
+        /// Methods that are in the fast processing method list will be handled on a separate thread. Everything else will be queued on the threadpool.
+        /// </summary>
+        /// <param name="messageMethod"></param>
+        /// <param name="task"></param>
+        /// <param name="cancellationToken"></param>
         internal void Handle(MessageMethod messageMethod, Func<Task> task, CancellationToken cancellationToken)
         {
             ThrowIfDisposed();

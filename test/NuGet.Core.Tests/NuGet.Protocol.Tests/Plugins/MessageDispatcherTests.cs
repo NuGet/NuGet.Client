@@ -51,9 +51,9 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_ThrowsForNullInboundRequestProcessingContext()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), inboundRequestProcessingContext: null, logger: PluginLogger.DefaultInstance));
+                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), inboundRequestProcessingHandler: null, logger: PluginLogger.DefaultInstance));
 
-            Assert.Equal("inboundRequestProcessingContext", exception.ParamName);
+            Assert.Equal("inboundRequestProcessingHandler", exception.ParamName);
         }
 
         [Fact]

@@ -52,9 +52,11 @@ namespace NuGet.Protocol.Plugins
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="idGenerator" />
         /// is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="inboundRequestProcessingHandler" />
         /// is <c>null</c>.</exception>
-        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, InboundRequestProcessingHandler inboundRequestProcessingContext, IPluginLogger logger)
+        /// /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// is <c>null</c>.</exception>
+        internal MessageDispatcher(IRequestHandlers requestHandlers, IIdGenerator idGenerator, InboundRequestProcessingHandler inboundRequestProcessingHandler, IPluginLogger logger)
         {
             if (requestHandlers == null)
             {
@@ -66,9 +68,9 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(idGenerator));
             }
 
-            if(inboundRequestProcessingContext == null)
+            if(inboundRequestProcessingHandler == null)
             {
-                throw new ArgumentNullException(nameof(inboundRequestProcessingContext));
+                throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
             }
             if (logger == null)
             {
@@ -81,7 +83,7 @@ namespace NuGet.Protocol.Plugins
 
             _inboundRequestContexts = new ConcurrentDictionary<string, InboundRequestContext>();
             _outboundRequestContexts = new ConcurrentDictionary<string, OutboundRequestContext>();
-            _inboundRequestProcessingContext = inboundRequestProcessingContext;
+            _inboundRequestProcessingContext = inboundRequestProcessingHandler;
         }
 
         /// <summary>

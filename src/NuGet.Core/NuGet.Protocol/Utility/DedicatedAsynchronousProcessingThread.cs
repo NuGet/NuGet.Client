@@ -22,6 +22,10 @@ namespace NuGet.Protocol
         private readonly int _pollingDelayInMilliseconds;
         private readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
 
+        /// <summary>
+        /// DedicatedAsync processing thread.
+        /// </summary>
+        /// <param name="pollingDelayInMilliseconds">The await delay when there are no tasks in the queue.</param>
         public DedicatedAsynchronousProcessingThread(int pollingDelayInMilliseconds = 50)
         {
             _pollingDelayInMilliseconds = pollingDelayInMilliseconds;
@@ -39,6 +43,10 @@ namespace NuGet.Protocol
                 TaskScheduler.Default);
         }
 
+        /// <summary>
+        /// Queueus a task for execution.
+        /// </summary>
+        /// <param name="task">Task to be executed.</param>
         internal void Push(Func<Task> task)
         {
             ThrowIfDisposed();

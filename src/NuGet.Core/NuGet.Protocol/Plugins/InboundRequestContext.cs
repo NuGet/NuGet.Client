@@ -18,6 +18,7 @@ namespace NuGet.Protocol.Plugins
         private bool _isDisposed;
         private readonly IPluginLogger _logger;
         private readonly InboundRequestProcessingHandler _inboundRequestProcessingHandler;
+
         /// <summary>
         /// Gets the request ID.
         /// </summary>
@@ -97,9 +98,8 @@ namespace NuGet.Protocol.Plugins
             _inboundRequestProcessingHandler = inboundRequestProcessingHandler;
         }
 
-        private async Task ProcessResponse(IRequestHandler requestHandler, Message request, IResponseHandler responseHandler)
+        private async Task ProcessResponseAsync(IRequestHandler requestHandler, Message request, IResponseHandler responseHandler)
         {
-            // Top-level exception handler for a worker pool thread.
             try
             {
                 if (_logger.IsEnabled)
@@ -254,7 +254,7 @@ namespace NuGet.Protocol.Plugins
             {
                 _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Queued));
             }
-            Func<Task> task = async () => await ProcessResponse(requestHandler, request, responseHandler);
+            Func<Task> task = async () => await ProcessResponseAsync(requestHandler, request, responseHandler);
 
             _inboundRequestProcessingHandler.Handle(request.Method, task, _cancellationToken);
         }
