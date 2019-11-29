@@ -80,6 +80,9 @@ namespace NuGet.ProjectManagement
     public enum ImportLocation
     {
         Top,
-        Bottom
+        Bottom,
+        ExtensionSettings, //VC++ Projrct <ImportGroup Label="ExtensionSettings">
+        Shared,            //VC++ Projrct <ImportGroup Label="Shared">
+        ExtensionTargets,  //VC++ Projrct <ImportGroup Label="ExtensionTargets">
     }
 }

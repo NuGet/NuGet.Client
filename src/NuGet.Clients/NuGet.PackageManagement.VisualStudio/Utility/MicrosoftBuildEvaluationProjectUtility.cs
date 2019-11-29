@@ -47,15 +47,125 @@ namespace NuGet.PackageManagement.VisualStudio
                 ||
                 msBuildProject.Xml.Imports.All(import => !targetsPath.Equals(import.Project, StringComparison.OrdinalIgnoreCase)))
             {
-                ProjectImportElement pie = msBuildProject.Xml.AddImport(targetsPath);
-                pie.Condition = "Exists('" + targetsPath + "')";
+                ProjectImportElement pie = null;
+
                 if (location == ImportLocation.Top)
                 {
-                    // There's no public constructor to create a ProjectImportElement directly.
-                    // So we have to cheat by adding Import at the end, then remove it and insert at the beginning
-                    pie.Parent.RemoveChild(pie);
+                    pie = msBuildProject.Xml.CreateImportElement(targetsPath);
+
                     msBuildProject.Xml.InsertBeforeChild(pie, msBuildProject.Xml.FirstChild);
                 }
+                else if (location == ImportLocation.Bottom)
+                {
+                    pie = msBuildProject.Xml.AddImport(targetsPath);
+                }
+                else if (location == ImportLocation.ExtensionSettings)
+                {
+                    ProjectImportGroupElement importGroup = null;
+
+                    //Find ExtensionSettings ImportGroup
+                    if (msBuildProject.Xml.ImportGroups != null)
+                    {
+                        importGroup = msBuildProject.Xml.ImportGroups.First(group => group.Label.Equals("ExtensionSettings", StringComparison.OrdinalIgnoreCase));
+                    }
+
+
+                    if(importGroup == null && msBuildProject.Xml.Imports != null)
+                    {
+                        //Find <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+                        var where = msBuildProject.Xml.Imports.First(import => import.Project.Equals("$(VCTargetsPath)\\Microsoft.Cpp.props", StringComparison.OrdinalIgnoreCase));
+
+                        if(where != null)
+                        {
+                            // Insert <ImportGroup Label="ExtensionSettings">
+                            importGroup = msBuildProject.Xml.CreateImportGroupElement();
+                            importGroup.Label = "ExtensionSettings";
+
+                            msBuildProject.Xml.InsertAfterChild(importGroup, where);
+                        }
+                    }
+
+
+                    if(importGroup != null)
+                    {
+                        pie = importGroup.AddImport(targetsPath);
+                    }
+                }
+                else if (location == ImportLocation.Shared)
+                {
+                    //VC++ Shared
+                    ProjectImportGroupElement importGroup = null;
+
+                        
+                    if (msBuildProject.Xml.ImportGroups != null)
+                    {
+                        //Find Shared ImportGroup
+                        importGroup = msBuildProject.Xml.ImportGroups.First(group => group.Label.Equals("Shared", StringComparison.OrdinalIgnoreCase));
+
+
+                        if(importGroup == null)
+                        {
+                            //Find ExtensionSettings ImportGroup
+                            ProjectElement where = msBuildProject.Xml.ImportGroups.First(group => group.Label.Equals("ExtensionSettings", StringComparison.OrdinalIgnoreCase));
+
+                            if(where == null && msBuildProject.Xml.Imports != null)
+                            {
+                                //Find <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+
+                                where = msBuildProject.Xml.Imports.First(import => import.Project.Equals("$(VCTargetsPath)\\Microsoft.Cpp.props", StringComparison.OrdinalIgnoreCase));
+
+                            }
+
+
+                            if(where != null)
+                            {
+                                //Add Shared ImportGroup
+                                importGroup = msBuildProject.Xml.CreateImportGroupElement();
+                                importGroup.Label = "Shared";
+
+                                msBuildProject.Xml.InsertAfterChild(importGroup, where);
+                            }
+                        }
+                    }
+
+
+                    if(importGroup != null)
+                    {
+                        pie = importGroup.AddImport(targetsPath);
+                        pie.Label = "Shared";
+                    }
+                }
+                else if (location == ImportLocation.ExtensionTargets)
+                {
+                    //Find ExtensionTargets ImportGroup
+                    var importGroup = msBuildProject.Xml.ImportGroups.First(group => group.Label.Equals("ExtensionTargets", StringComparison.OrdinalIgnoreCase));
+
+
+                    if(importGroup == null && msBuildProject.Xml.Imports != null)
+                    {
+                        //Find <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+                        var where = msBuildProject.Xml.Imports.First(import => import.Project.Equals("$(VCTargetsPath)\\Microsoft.Cpp.targets", StringComparison.OrdinalIgnoreCase));
+
+                        if(where != null)
+                        {
+                            importGroup = msBuildProject.Xml.CreateImportGroupElement();
+                            importGroup.Label = "ExtensionTargets";
+
+                            msBuildProject.Xml.InsertAfterChild(importGroup, where);
+                        }
+                    }
+
+                    if(importGroup != null)
+                    {
+                        pie = importGroup.AddImport(targetsPath);
+                    }
+                }
+
+                if (pie == null)
+                    return;
+
+                pie.Condition = "Exists('" + targetsPath + "')";
 
                 AddEnsureImportedTarget(msBuildProject, targetsPath);
                 msBuildProject.ReevaluateIfNecessary();

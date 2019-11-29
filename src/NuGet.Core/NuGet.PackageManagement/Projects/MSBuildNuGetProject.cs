@@ -358,8 +358,33 @@ namespace NuGet.ProjectManagement
                 foreach (var buildImportFile in compatibleBuildFilesGroup.Items)
                 {
                     var fullImportFilePath = Path.Combine(packageInstallPath, buildImportFile);
-                    ProjectSystem.AddImport(fullImportFilePath,
-                        fullImportFilePath.EndsWith(".props", StringComparison.OrdinalIgnoreCase) ? ImportLocation.Top : ImportLocation.Bottom);
+
+                    var importFileName = Path.GetFileName(fullImportFilePath);
+
+                    ImportLocation Location = ImportLocation.Bottom;
+
+                    if (importFileName.Equals(packageIdentity.Id + ".props", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Location = ImportLocation.Top;
+                    }
+                    else if (importFileName.Equals(packageIdentity.Id + ".targets", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Location = ImportLocation.Bottom;
+                    }
+                    else if (importFileName.Equals(packageIdentity.Id + ".vcxitems", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Location = ImportLocation.Shared;
+                    }
+                    else if (importFileName.Equals(packageIdentity.Id + ".Extension.props", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Location = ImportLocation.ExtensionSettings;
+                    }
+                    else if (importFileName.Equals(packageIdentity.Id + ".Extension.targets", StringComparison.OrdinalIgnoreCase))
+                    {
+                        Location = ImportLocation.ExtensionTargets;
+                    }
+
+                    ProjectSystem.AddImport(fullImportFilePath, Location);
                 }
             }
 
