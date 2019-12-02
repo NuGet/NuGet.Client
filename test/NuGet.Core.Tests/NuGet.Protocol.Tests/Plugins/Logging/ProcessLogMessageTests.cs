@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using FluentAssertions;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -38,7 +39,10 @@ namespace NuGet.Protocol.Plugins.Tests
 
             actualProcessId.Should().Be(expectedProcessId);
             actualProcessName.Should().Be(expectedProcessName);
-            actualProcessStartTime.Should().Be(expectedProcessStartTime);
+            if (!RuntimeEnvironmentHelper.IsMono)
+            {
+                actualProcessStartTime.Should().Be(expectedProcessStartTime);
+            }
         }
     }
 }
