@@ -18,22 +18,26 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "process");
 
-            Assert.Equal(2, message.Count);
+            Assert.Equal(3, message.Count);
 
             int expectedProcessId;
             string expectedProcessName;
+            string expectedProcessStartTime;
 
             using (var process = Process.GetCurrentProcess())
             {
                 expectedProcessId = process.Id;
                 expectedProcessName = process.ProcessName;
+                expectedProcessStartTime = process.StartTime.ToUniversalTime().ToString("O");
             }
 
             var actualProcessId = message.Value<int>("process ID");
             var actualProcessName = message.Value<string>("process name");
+            var actualProcessStartTime = message.Value<string>("process start time");
 
             Assert.Equal(expectedProcessId, actualProcessId);
             Assert.Equal(expectedProcessName, actualProcessName);
+            Assert.Equal(expectedProcessStartTime, actualProcessStartTime);
         }
     }
 }
