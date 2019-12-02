@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using FluentAssertions;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -35,9 +36,9 @@ namespace NuGet.Protocol.Plugins.Tests
             var actualProcessName = message.Value<string>("process name");
             var actualProcessStartTime = message.Value<string>("process start time");
 
-            Assert.Equal(expectedProcessId, actualProcessId);
-            Assert.Equal(expectedProcessName, actualProcessName);
-            Assert.Equal(expectedProcessStartTime, actualProcessStartTime);
+            actualProcessId.Should().Be(expectedProcessId);
+            actualProcessName.Should().Be(expectedProcessName);
+            actualProcessStartTime.Should().Be(expectedProcessStartTime);
         }
     }
 }
