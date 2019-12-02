@@ -38,7 +38,7 @@ namespace NuGet.Protocol.Tests
             thread.Start();
             thread.Dispose();
 
-            Assert.Throws<ObjectDisposedException>(() => thread.Push(() => Task.CompletedTask));
+            Assert.Throws<ObjectDisposedException>(() => thread.Enqueue(() => Task.CompletedTask));
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace NuGet.Protocol.Tests
         {
             using (var thread = new DedicatedAsynchronousProcessingThread())
             {
-                var exception = Assert.Throws<InvalidOperationException>(() => thread.Push(() => Task.CompletedTask));
+                var exception = Assert.Throws<InvalidOperationException>(() => thread.Enqueue(() => Task.CompletedTask));
                 exception.Message.Should().Be("The processing thread is not started yet.");
             }
         }
@@ -71,7 +71,7 @@ namespace NuGet.Protocol.Tests
                 thread.Start();
                 var executed = false;
                 Func<Task> task = () => { executed = true; handledEvent.Set(); return Task.CompletedTask; };
-                thread.Push(task);
+                thread.Enqueue(task);
                 handledEvent.Wait();
                 Assert.True(executed);
             }
@@ -90,33 +90,15 @@ namespace NuGet.Protocol.Tests
                 Func<Task> task2 = () => { queue.Enqueue(2); countdownEvent.Signal(); return Task.CompletedTask; };
                 Func<Task> task3 = () => { queue.Enqueue(3); countdownEvent.Signal(); return Task.CompletedTask; };
 
-                thread.Push(task1);
-                thread.Push(task2);
-                thread.Push(task3);
+                thread.Enqueue(task1);
+                thread.Enqueue(task2);
+                thread.Enqueue(task3);
 
                 countdownEvent.Wait();
                 Assert.Equal(1, queue.Dequeue());
                 Assert.Equal(2, queue.Dequeue());
                 Assert.Equal(3, queue.Dequeue());
                 Assert.Empty(queue);
-            }
-        }
-
-        [Fact]
-        public void Push_ExecutesNoLaterThanDelay()
-        {
-            var delay = 100;
-            var tolerance = 5;
-            using (var handledEvent = new ManualResetEventSlim(initialState: false))
-            using (var thread = new DedicatedAsynchronousProcessingThread(delay))
-            {
-                thread.Start();
-                var stopwatch = new Stopwatch();
-                Func<Task> task1 = () => { stopwatch.Stop(); handledEvent.Set(); return Task.CompletedTask; };
-                stopwatch.Start();
-                thread.Push(task1);
-                handledEvent.Wait();
-                Assert.True(delay + tolerance > stopwatch.ElapsedMilliseconds);
             }
         }
     }

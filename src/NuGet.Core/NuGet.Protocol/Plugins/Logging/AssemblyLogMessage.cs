@@ -23,7 +23,7 @@ namespace NuGet.Protocol.Plugins
             var fileVersionAttribute = assembly.GetCustomAttribute<AssemblyFileVersionAttribute>();
 
             _fullName = assembly.FullName;
-            _entryAssemblyFullName = entryAssembly.FullName;
+            _entryAssemblyFullName = entryAssembly?.FullName;
 
             if (fileVersionAttribute != null)
             {

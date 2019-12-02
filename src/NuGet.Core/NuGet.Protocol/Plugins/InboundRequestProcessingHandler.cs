@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Plugins
             ThrowIfDisposed();
             if (_fastProccessingMethods.Contains(messageMethod))
             {
-                _processingThread.Value.Push(task);
+                _processingThread.Value.Enqueue(task);
             }
             else
             {

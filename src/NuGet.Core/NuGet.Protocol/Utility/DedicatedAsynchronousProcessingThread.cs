@@ -10,7 +10,7 @@ namespace NuGet.Protocol
 {
     /// <summary>
     /// This class represents a dedicated asynchronous task processing thread.
-    /// Uses a queue to execute all the tasks added through the invocation of <see cref="Push(Func{Task})"/>.
+    /// Uses a queue to execute all the tasks added through the invocation of <see cref="Enqueue(Func{Task})"/>.
     /// The tasks queued here cannot be awaited (think Task.Run, rather than Task.WhenAny/WhenAll).
     /// This implementation is internal on purpose as this is specifically tailed to the plugin V2 use-case.
     /// </summary>
@@ -47,7 +47,7 @@ namespace NuGet.Protocol
         /// Queueus a task for execution.
         /// </summary>
         /// <param name="task">Task to be executed.</param>
-        internal void Push(Func<Task> task)
+        internal void Enqueue(Func<Task> task)
         {
             ThrowIfDisposed();
             ThrowIfNotAlreadyStarted();
