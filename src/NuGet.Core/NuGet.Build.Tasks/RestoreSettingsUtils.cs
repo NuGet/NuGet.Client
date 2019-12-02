@@ -18,7 +18,7 @@ namespace NuGet.Build.Tasks
 
         public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings)
         {
-            return ReadSettings(solutionDirectory, restoreDirectory, restoreConfigFile, machineWideSettings, null);
+            return ReadSettings(solutionDirectory, restoreDirectory, restoreConfigFile, machineWideSettings, settingsLoadContext: null);
         }
 
         public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings, SettingsLoadingContext settingsLoadContext)
@@ -58,7 +58,7 @@ namespace NuGet.Build.Tasks
                 return Configuration.Settings.LoadDefaultSettings(
                     directory,
                     configFileName,
-                    null,
+                    machineWideSettings: null,
                     settingsLoadContext);
             }
         }
