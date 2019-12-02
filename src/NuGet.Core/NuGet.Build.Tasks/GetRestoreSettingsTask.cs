@@ -62,6 +62,11 @@ namespace NuGet.Build.Tasks
         public string[] RestoreFallbackFoldersOverride { get; set; }
 
         /// <summary>
+        /// Restore style for the project
+        /// </summary>
+        public string RestoreProjectStyle { get; set; }
+
+        /// <summary>
         /// Original working directory
         /// </summary>
         [Required]
@@ -103,8 +108,9 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogInputParam(log, nameof(RestorePackagesPathOverride), RestorePackagesPathOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreSourcesOverride), RestoreSourcesOverride);
             BuildTasksUtility.LogInputParam(log, nameof(RestoreFallbackFoldersOverride), RestoreFallbackFoldersOverride);
+            BuildTasksUtility.LogInputParam(log, nameof(RestoreProjectStyle), RestoreProjectStyle);
             BuildTasksUtility.LogInputParam(log, nameof(MSBuildStartupDirectory), MSBuildStartupDirectory);
-            
+
 
             try
             {
@@ -127,7 +133,17 @@ namespace NuGet.Build.Tasks
                 // Find the absolute path of nuget.config, this should only be set on the command line. Setting the path in project files
                 // is something that could happen, but it is not supported.
                 var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
-                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, string.IsNullOrEmpty(RestoreRootConfigDirectory) ? Path.GetDirectoryName(ProjectUniqueName) : RestoreRootConfigDirectory, absoluteConfigFilePath, _machineWideSettings);
+                string restoreDir;
+                // To match non-msbuild behavior, we only default the restoreDir for non-PackagesConfig scenarios.
+                if (string.IsNullOrEmpty(RestoreRootConfigDirectory) && RestoreProjectStyle != "PackagesConfig")
+                {
+                    restoreDir = Path.GetDirectoryName(ProjectUniqueName);
+                }
+                else
+                {
+                    restoreDir = RestoreRootConfigDirectory;
+                }
+                var settings = RestoreSettingsUtils.ReadSettings(RestoreSolutionDirectory, restoreDir, absoluteConfigFilePath, _machineWideSettings);
                 OutputConfigFilePaths = settings.GetConfigFilePaths().ToArray();
 
                 // PackagesPath

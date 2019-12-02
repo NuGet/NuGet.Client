@@ -57,11 +57,30 @@ namespace NuGet.Test.Utility
 
             foreach (var project in Projects)
             {
-                sb.AppendLine("Project(\"{" + SolutionGuid.ToString() + "}" + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath +"\", \"{" + project.ProjectGuid +"}\"");
+                sb.AppendLine("Project(\"{" + SolutionGuid.ToString() + "}" + $"\") = \"{project.ProjectName}\", " + "\"" + project.ProjectPath + "\", \"{" + project.ProjectGuid + "}\"");
                 sb.AppendLine("EndProject");
             }
 
             sb.AppendLine("Global");
+            sb.AppendLine("  GlobalSection(SolutionConfigurationPlatforms) = preSolution");
+            sb.AppendLine("    Debug|Any CPU = Debug|Any CPU");
+            sb.AppendLine("    Release|Any CPU = Release|Any CPU");
+            sb.AppendLine("  EndGlobalSection");
+            sb.AppendLine("  GlobalSection(ProjectConfigurationPlatforms) = postSolution");
+            foreach (var project in Projects)
+            {
+                sb.AppendLine("    {" + project.ProjectGuid + "}.Debug|Any CPU.ActiveCfg = Debug|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid + "}.Debug|Any CPU.Build.0 = Debug|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid + "}.Release|Any CPU.ActiveCfg = Release|Any CPU");
+                sb.AppendLine("    {" + project.ProjectGuid + "}.Release|Any CPU.Build.0 = Release|Any CPU");
+            }
+            sb.AppendLine("  EndGlobalSection");
+            sb.AppendLine("  GlobalSection(SolutionProperties) = preSolution");
+            sb.AppendLine("    HideSolutionNode = FALSE");
+            sb.AppendLine("  EndGlobalSection");
+            sb.AppendLine("  GlobalSection(ExtensibilityGlobals) = postSolution");
+            sb.AppendLine("    SolutionGuid = {" + SolutionGuid.ToString() + "}");
+            sb.AppendLine("  EndGlobalSection");
             sb.AppendLine("EndGlobal");
 
             return sb;
