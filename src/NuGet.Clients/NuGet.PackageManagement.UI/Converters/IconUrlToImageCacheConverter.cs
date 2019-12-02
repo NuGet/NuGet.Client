@@ -7,7 +7,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
-using System.Text;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -69,17 +68,30 @@ namespace NuGet.PackageManagement.UI
             {
                 try
                 {
-                    using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
+                    var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath));
+                    var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
+                    var zipEntry = par.GetEntry(iconEntry);
+                    var stream = zipEntry.Open();
+                    iconBitmapImage.StreamSource = stream;
+                    iconBitmapImage.DownloadCompleted += (e, args) =>
                     {
-                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
-                        var zipEntry = par.GetEntry(iconEntry);
-                        iconBitmapImage.StreamSource = zipEntry.Open();
-                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
-                    }
+                        par.Dispose();
+                        IconBitmapImage_DownloadCompleted(e, args);
+                    };
+                    iconBitmapImage.DecodeFailed += (e, args) =>
+                    {
+                        par.Dispose();
+                        IconBitmapImage_DownloadOrDecodeFailed(e, args);
+                    };
+                    iconBitmapImage.DownloadFailed += (e, args) =>
+                    {
+                        par.Dispose();
+                        IconBitmapImage_DownloadOrDecodeFailed(e, args);
+                    };
+                    imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                 }
                 catch (Exception)
                 {
-
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
                 }
@@ -87,6 +99,9 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 iconBitmapImage.UriSource = iconUrl;
+                iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
+                iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
+                iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
                 imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
             }
 
@@ -103,10 +118,6 @@ namespace NuGet.PackageManagement.UI
             // Instead of scaling larger images and keeping larger image in memory, this makes it so we scale it down, and throw away the bigger image.
             // Only need to set this on one dimension, to preserve aspect ratio
             iconBitmapImage.DecodePixelWidth = DecodePixelWidth;
-
-            iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
 
             BitmapSource image = null;
             try
