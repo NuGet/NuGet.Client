@@ -13,10 +13,12 @@ namespace NuGet.Protocol.Tests
 {
     public class DedicatedAsynchronousProcessingThreadTests
     {
+        TimeSpan _defaultTimeSpan = TimeSpan.FromMilliseconds(50);
+
         [Fact]
         public void Dispose_IsIdempotent()
         {
-            using (var thread = new DedicatedAsynchronousProcessingThread())
+            using (var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan))
             {
                 thread.Dispose();
                 thread.Dispose();
@@ -26,7 +28,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Start_ThrowsForDisposesObject()
         {
-            var thread = new DedicatedAsynchronousProcessingThread();
+            var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan);
             thread.Dispose();
             Assert.Throws<ObjectDisposedException>(() => thread.Start());
         }
@@ -34,7 +36,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Push_ThrowsForDisposesObject()
         {
-            var thread = new DedicatedAsynchronousProcessingThread();
+            var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan);
             thread.Start();
             thread.Dispose();
 
@@ -44,7 +46,7 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void Start_ThrowsForAlreadyStartedObject()
         {
-            using (var thread = new DedicatedAsynchronousProcessingThread())
+            using (var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan))
             {
                 thread.Start();
                 var exception = Assert.Throws<InvalidOperationException>(() => thread.Start());
@@ -53,9 +55,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Push_ThrowsForNotStartedObject()
+        public void Enqueue_ThrowsForNotStartedObject()
         {
-            using (var thread = new DedicatedAsynchronousProcessingThread())
+            using (var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan))
             {
                 var exception = Assert.Throws<InvalidOperationException>(() => thread.Enqueue(() => Task.CompletedTask));
                 exception.Message.Should().Be("The processing thread is not started yet.");
@@ -63,9 +65,9 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Push_ExecutesTaskAsynchronously()
+        public void Enqueue_ExecutesTaskAsynchronously()
         {
-            using (var thread = new DedicatedAsynchronousProcessingThread())
+            using (var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan))
             using (var handledEvent = new ManualResetEventSlim(initialState: false))
             {
                 thread.Start();
@@ -78,10 +80,10 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void Push_ExecutesTaskAsynchronouslyInSameOrderAsPush()
+        public void Enqueue_ExecutesTaskAsynchronouslyInSameOrderAsPush()
         {
             using (var countdownEvent = new CountdownEvent(3))
-            using (var thread = new DedicatedAsynchronousProcessingThread())
+            using (var thread = new DedicatedAsynchronousProcessingThread(_defaultTimeSpan))
             {
                 thread.Start();
                 var queue = new Queue<int>();

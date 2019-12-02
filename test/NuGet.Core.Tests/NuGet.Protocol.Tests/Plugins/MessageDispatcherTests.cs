@@ -48,7 +48,7 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullInboundRequestProcessingContext()
+        public void Constructor_ThrowsForNullInboundRequestProcessinHandler()
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), inboundRequestProcessingHandler: null, logger: PluginLogger.DefaultInstance));
@@ -146,8 +146,8 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void Close_WithDedicatedProcessingContext_DisposesAllActiveInboundRequests()
         {
-            using (var processingContext = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
-            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingContext, PluginLogger.DefaultInstance))
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
             using (var handlingEvent = new ManualResetEventSlim(initialState: false))
             using (var blockingEvent = new ManualResetEventSlim(initialState: false))
             {
@@ -258,14 +258,14 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public void Dispose_DisposesInboundRequestProcessingContext()
+        public void Dispose_DisposesInboundRequestProcessingHandler()
         {
-            var context = new InboundRequestProcessingHandler();
+            var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>());
 
-            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, context, PluginLogger.DefaultInstance))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
             {
                 dispatcher.Dispose();
-                Assert.Throws<ObjectDisposedException>( () => context.Handle(MessageMethod.Handshake, null, CancellationToken.None));
+                Assert.Throws<ObjectDisposedException>(() => processingHandler.Handle(MessageMethod.Handshake, task: null, CancellationToken.None));
             }
         }
 
@@ -862,10 +862,10 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
-        public async Task OnMessageReceived_WithDedicatedProcessingContext_DoesNotThrowForResponseAfterWaitForResponseIsCancelled()
+        public async Task OnMessageReceived_WithDedicatedProcessingHandler_DoesNotThrowForResponseAfterWaitForResponseIsCancelled()
         {
-            using (var context = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.PrefetchPackage }))
-            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, context, PluginLogger.DefaultInstance))
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.PrefetchPackage }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
             using (var cancellationTokenSource = new CancellationTokenSource())
             using (var sentEvent = new ManualResetEventSlim(initialState: false))
             {
@@ -1055,8 +1055,8 @@ namespace NuGet.Protocol.Plugins.Tests
         [Fact]
         public void OnMessageReceived_WithDedicatedProcessingContext_CallsBackIntoHandler()
         {
-            using (var processingContext = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
-            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingContext, PluginLogger.DefaultInstance))
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
             using (var blockingEvent = new ManualResetEventSlim(initialState: false))
             {
                 var requestHandler = new RequestHandler();

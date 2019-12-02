@@ -55,7 +55,7 @@ namespace NuGet.Protocol.Plugins
         /// is either <c>null</c> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="inboundRequestProcessingHandler" />
         /// is <c>null</c>.</exception>
-        /// /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
         internal InboundRequestContext(
             IConnection connection,
@@ -254,7 +254,7 @@ namespace NuGet.Protocol.Plugins
             {
                 _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Queued));
             }
-            Func<Task> task = async () => await ProcessResponseAsync(requestHandler, request, responseHandler);
+            Func<Task> task = () => ProcessResponseAsync(requestHandler, request, responseHandler);
 
             _inboundRequestProcessingHandler.Handle(request.Method, task, _cancellationToken);
         }

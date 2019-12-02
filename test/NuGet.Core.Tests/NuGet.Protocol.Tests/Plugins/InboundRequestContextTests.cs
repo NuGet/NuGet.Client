@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -59,7 +60,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     Mock.Of<IConnection>(),
                     requestId: "a",
                     cancellationToken: CancellationToken.None,
-                    inboundRequestProcessingHandler: new InboundRequestProcessingHandler(),
+                    inboundRequestProcessingHandler: new InboundRequestProcessingHandler(Enumerable.Empty<MessageMethod>()),
                     logger: null));
 
             Assert.Equal("logger", exception.ParamName);

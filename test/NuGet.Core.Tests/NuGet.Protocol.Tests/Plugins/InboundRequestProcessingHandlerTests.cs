@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Plugins;
@@ -24,7 +25,7 @@ namespace NuGet.Protocol.Tests.Plugins
         [Fact]
         public void Dispose_IsIdempotent()
         {
-            using (var handler = new InboundRequestProcessingHandler())
+            using (var handler = new InboundRequestProcessingHandler(Enumerable.Empty<MessageMethod>()))
             {
                 handler.Dispose();
                 handler.Dispose();
@@ -36,7 +37,7 @@ namespace NuGet.Protocol.Tests.Plugins
         public void Handle_NoFastProcessingMethods_ExecuteTask()
         {
             using (var handledEvent = new ManualResetEventSlim(initialState: false))
-            using (var handler = new InboundRequestProcessingHandler())
+            using (var handler = new InboundRequestProcessingHandler(Enumerable.Empty<MessageMethod>()))
             {
                 var executed = false;
                 Func<Task> task = () => { executed = true; handledEvent.Set(); return Task.CompletedTask; };
@@ -68,7 +69,7 @@ namespace NuGet.Protocol.Tests.Plugins
         {
             using (var handledEvent = new ManualResetEventSlim(initialState: false))
             {
-                var handler = new InboundRequestProcessingHandler();
+                var handler = new InboundRequestProcessingHandler(Enumerable.Empty<MessageMethod>());
 
                 var executed = false;
                 Func<Task> task = () => { executed = true; handledEvent.Set(); return Task.CompletedTask; };

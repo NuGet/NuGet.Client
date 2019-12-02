@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,8 +15,8 @@ namespace NuGet.Protocol.Plugins
         private readonly Lazy<DedicatedAsynchronousProcessingThread> _processingThread;
         private bool _isDisposed;
 
-        public InboundRequestProcessingHandler() :
-            this(new HashSet<MessageMethod>())
+        public InboundRequestProcessingHandler()
+            : this(Enumerable.Empty<MessageMethod>())
         {
         }
 
@@ -23,13 +24,17 @@ namespace NuGet.Protocol.Plugins
         /// Requests from the processing methods provided in this set are handled on a dedicated thread.
         /// </summary>
         /// <param name="fastProcessingMethods"></param>
-        public InboundRequestProcessingHandler(ISet<MessageMethod> fastProcessingMethods) 
+        public InboundRequestProcessingHandler(IEnumerable<MessageMethod> fastProcessingMethods)
         {
-            _fastProccessingMethods = fastProcessingMethods ?? throw new ArgumentNullException(nameof(fastProcessingMethods));
+            if (fastProcessingMethods == null)
+            {
+                throw new ArgumentNullException(nameof(fastProcessingMethods));
+            }
+            _fastProccessingMethods = new HashSet<MessageMethod>(fastProcessingMethods);
             // Lazily initialize the processing thread. It is not needed if there are no time critical methods.
             _processingThread = new Lazy<DedicatedAsynchronousProcessingThread>(() =>
             {
-                var thread = new DedicatedAsynchronousProcessingThread();
+                var thread = new DedicatedAsynchronousProcessingThread(TimeSpan.FromMilliseconds(50));
                 thread.Start();
                 return thread;
             });
@@ -51,10 +56,7 @@ namespace NuGet.Protocol.Plugins
             }
             else
             {
-                Task.Run(async () =>
-                {
-                    await task();
-                }, cancellationToken);
+                Task.Run(task, cancellationToken);
             }
         }
 
@@ -64,7 +66,10 @@ namespace NuGet.Protocol.Plugins
             {
                 return;
             }
-            _processingThread.Value.Dispose();
+            if (_processingThread.IsValueCreated)
+            {
+                _processingThread.Value.Dispose();
+            }
             GC.SuppressFinalize(this);
 
             _isDisposed = true;

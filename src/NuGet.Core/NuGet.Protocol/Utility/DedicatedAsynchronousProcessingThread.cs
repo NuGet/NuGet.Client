@@ -14,21 +14,21 @@ namespace NuGet.Protocol
     /// The tasks queued here cannot be awaited (think Task.Run, rather than Task.WhenAny/WhenAll).
     /// This implementation is internal on purpose as this is specifically tailed to the plugin V2 use-case.
     /// </summary>
-    internal class DedicatedAsynchronousProcessingThread : IDisposable
+    internal sealed class DedicatedAsynchronousProcessingThread : IDisposable
     {
         private Task _processingThread;
         private bool _isDisposed;
         private bool _isClosed;
-        private readonly int _pollingDelayInMilliseconds;
+        private TimeSpan _pollingDelay;
         private readonly ConcurrentQueue<Func<Task>> _taskQueue = new ConcurrentQueue<Func<Task>>();
 
         /// <summary>
         /// DedicatedAsync processing thread.
         /// </summary>
-        /// <param name="pollingDelayInMilliseconds">The await delay when there are no tasks in the queue.</param>
-        public DedicatedAsynchronousProcessingThread(int pollingDelayInMilliseconds = 50)
+        /// <param name="pollingDelay">The await delay when there are no tasks in the queue.</param>
+        public DedicatedAsynchronousProcessingThread(TimeSpan pollingDelay)
         {
-            _pollingDelayInMilliseconds = pollingDelayInMilliseconds;
+            _pollingDelay = pollingDelay;
         }
 
         internal void Start()
@@ -66,7 +66,7 @@ namespace NuGet.Protocol
                     }
                     else
                     {
-                        await Task.Delay(_pollingDelayInMilliseconds);
+                        await Task.Delay(_pollingDelay.Milliseconds);
                     }
                 }
                 catch
