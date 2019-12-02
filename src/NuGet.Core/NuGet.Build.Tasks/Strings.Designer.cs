@@ -8,10 +8,14 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace NuGet.Build.Tasks {
+namespace NuGet.Build.Tasks
+{
     using System;
-    
-    
+
+
+    using System.Reflection;
+
+
     /// <summary>
     ///   A strongly-typed resource class, for looking up localized strings, etc.
     /// </summary>
@@ -22,113 +26,181 @@ namespace NuGet.Build.Tasks {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
-        
+    internal class Strings
+    {
+
         private static global::System.Resources.ResourceManager resourceMan;
-        
+
         private static global::System.Globalization.CultureInfo resourceCulture;
-        
+
         [global::System.Diagnostics.CodeAnalysis.SuppressMessageAttribute("Microsoft.Performance", "CA1811:AvoidUncalledPrivateCode")]
-        internal Strings() {
+        internal Strings()
+        {
         }
-        
+
         /// <summary>
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
-            get {
-                if (object.ReferenceEquals(resourceMan, null)) {
+        internal static global::System.Resources.ResourceManager ResourceManager
+        {
+            get
+            {
+                if (object.ReferenceEquals(resourceMan, null))
+                {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Build.Tasks.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
             }
         }
-        
+
         /// <summary>
         ///   Overrides the current thread's CurrentUICulture property for all
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
-            get {
+        internal static global::System.Globalization.CultureInfo Culture
+        {
+            get
+            {
                 return resourceCulture;
             }
-            set {
+            set
+            {
                 resourceCulture = value;
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
-        internal static string Argument_Cannot_Be_Null_Or_Empty {
-            get {
+        internal static string Argument_Cannot_Be_Null_Or_Empty
+        {
+            get
+            {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to ProjectReference &apos;{0}&apos; was resolved using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This project may not be fully compatible with your project..
         /// </summary>
-        internal static string ImportsFallbackWarning {
-            get {
+        internal static string ImportsFallbackWarning
+        {
+            get
+            {
                 return ResourceManager.GetString("ImportsFallbackWarning", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Project &apos;{0}&apos; targets &apos;{2}&apos;. It cannot be referenced by a project that targets &apos;{1}&apos;..
         /// </summary>
-        internal static string NoCompatibleTargetFramework {
-            get {
+        internal static string NoCompatibleTargetFramework
+        {
+            get
+            {
                 return ResourceManager.GetString("NoCompatibleTargetFramework", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Unable to find a project to restore!.
         /// </summary>
-        internal static string NoProjectsProvidedToTask {
-            get {
+        internal static string NoProjectsProvidedToTask
+        {
+            get
+            {
                 return ResourceManager.GetString("NoProjectsProvidedToTask", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Nothing to do. None of the projects specified contain packages to restore..
         /// </summary>
-        internal static string NoProjectsToRestore {
-            get {
+        internal static string NoProjectsToRestore
+        {
+            get
+            {
                 return ResourceManager.GetString("NoProjectsToRestore", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to Restore canceled!.
         /// </summary>
-        internal static string RestoreCanceled {
-            get {
+        internal static string RestoreCanceled
+        {
+            get
+            {
                 return ResourceManager.GetString("RestoreCanceled", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The project fallback framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
-        internal static string UnsupportedFallbackFramework {
-            get {
+        internal static string UnsupportedFallbackFramework
+        {
+            get
+            {
                 return ResourceManager.GetString("UnsupportedFallbackFramework", resourceCulture);
             }
         }
-        
+
         /// <summary>
         ///   Looks up a localized string similar to The project target framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
-        internal static string UnsupportedTargetFramework {
-            get {
+        internal static string UnsupportedTargetFramework
+        {
+            get
+            {
                 return ResourceManager.GetString("UnsupportedTargetFramework", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///  Looks up a localized string similar to No solution found. Restore against a solution or pass in /p:SolutionDir
+        /// </summary>
+        internal static string RestoreNoSolutionFound
+        {
+            get
+            {
+                return ResourceManager.GetString("RestoreNoSolutionFound", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///  Looks up a localized string similar to All packages listed in {0} are already installed.
+        /// </summary>
+        internal static string InstallCommandNothingToInstall
+        {
+            get
+            {
+                return ResourceManager.GetString("InstallCommandNothingToInstall", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///  Looks up a localized string similar to Invalid PackageSaveMode value '{0}'
+        /// </summary>
+        internal static string Warning_InvalidPackageSaveMode
+        {
+            get
+            {
+                return ResourceManager.GetString("Warning_InvalidPackageSaveMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///  Looks up a localized string similar to Error parsing packages.config file at {0}: {1}
+        /// </summary>
+        internal static string Error_PackagesConfigParseError
+        {
+            get
+            {
+                return ResourceManager.GetString("Error_PackagesConfigParseError", resourceCulture);
             }
         }
     }

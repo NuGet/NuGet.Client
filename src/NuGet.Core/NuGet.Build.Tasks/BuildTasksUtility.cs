@@ -11,7 +11,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Build.Framework;
-using Microsoft.Build.Utilities;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -22,7 +21,6 @@ using NuGet.Protocol.Core.Types;
 
 #if IS_DESKTOP
 using System.Collections.Concurrent;
-using System.IO;
 using System.Xml;
 using System.Xml.Linq;
 using NuGet.Packaging;
@@ -144,6 +142,7 @@ namespace NuGet.Build.Tasks
             bool force,
             bool forceEvaluate,
             bool hideWarningsAndErrors,
+            bool restorePC,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -176,7 +175,37 @@ namespace NuGet.Build.Tasks
                 // This method has no effect on .NET Core.
                 NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
+                var restoreSummaries = new List<RestoreSummary>();
                 var providerCache = new RestoreCommandProvidersCache();
+
+#if IS_DESKTOP
+                if (restorePC && dependencyGraphSpec.Projects.Any(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
+                {
+                    var v2RestoreResult = await PerformNuGetV2RestoreAsync(log, dependencyGraphSpec, noCache, disableParallel, interactive);
+                    restoreSummaries.Add(v2RestoreResult);
+
+                    if (restoreSummaries.Count < 1)
+                    {
+                        var message = string.Format(
+                               Strings.InstallCommandNothingToInstall,
+                               "packages.config"
+                        );
+
+                        log.LogMinimal(message);
+                    }
+
+                    if (!v2RestoreResult.Success)
+                    {
+                        v2RestoreResult
+                            .Errors
+                            .Where(l => l.Level == LogLevel.Warning)
+                            .ForEach(message =>
+                            {
+                                log.LogWarning(message.Message);
+                            });
+                    }
+                }
+#endif
 
                 using (var cacheContext = new SourceCacheContext())
                 {
@@ -186,94 +215,53 @@ namespace NuGet.Build.Tasks
                     // Pre-loaded request provider containing the graph file
                     var providers = new List<IPreLoadedRestoreRequestProvider>();
 
-                    if (dependencyGraphSpec.Restore.Count < 1)
+                    if (dependencyGraphSpec.Restore.Count > 0)
                     {
-                        // Restore will fail if given no inputs, but here we should skip it and provide a friendly message.
-                        log.LogMinimal(Strings.NoProjectsToRestore);
-                        return true;
-                    }
-
-                    // Add all child projects
-                    if (recursive)
-                    {
-                        AddAllProjectsForRestore(dependencyGraphSpec);
-                    }
-
-                    providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dependencyGraphSpec));
-
-                    var restoreContext = new RestoreArgs()
-                    {
-                        CacheContext = cacheContext,
-                        LockFileVersion = LockFileFormat.Version,
-                        // 'dotnet restore' fails on slow machines (https://github.com/NuGet/Home/issues/6742)
-                        // The workaround is to pass the '--disable-parallel' option.
-                        // We apply the workaround by default when the system has 1 cpu.
-                        // This will fix restore failures on VMs with 1 CPU and containers with less or equal to 1 CPU assigned.
-                        DisableParallel = Environment.ProcessorCount == 1 ? true : disableParallel,
-                        Log = log,
-                        MachineWideSettings = new XPlatMachineWideSetting(),
-                        PreLoadedRequestProviders = providers,
-                        AllowNoOp = !force,
-                        HideWarningsAndErrors = hideWarningsAndErrors,
-                        RestoreForceEvaluate = forceEvaluate
-                    };
-
-                    if (restoreContext.DisableParallel)
-                    {
-                        HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
-                    }
-
-                    cancellationToken.ThrowIfCancellationRequested();
-
-                    var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, cancellationToken);
-
-#if IS_DESKTOP
-                    if (dependencyGraphSpec.Projects.Any(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
-                    {
-                        var v2RestoreResult = await PerformNuGetV2RestoreAsync(log, dependencyGraphSpec, noCache, disableParallel, interactive);
-                        restoreSummaries.Add(v2RestoreResult);
-
-                        // TODO: Message if no packages needed to be restored?
-                        //var message = string.Format(
-                        //    CultureInfo.CurrentCulture,
-                        //    LocalizedResourceManager.GetString("InstallCommandNothingToInstall"),
-                        //    "packages.config");
-
-                        //Console.LogMinimal(message);
-
-                        if (!v2RestoreResult.Success)
+                        // Add all child projects
+                        if (recursive)
                         {
-                            v2RestoreResult
-                                .Errors
-                                .Where(l => l.Level == LogLevel.Warning)
-                                .ForEach(message =>
-                                {
-                                    if (message.Code > NuGetLogCode.Undefined && message.Code.TryGetName(out var codeString))
-                                    {
-                                        log.LogWarning(
-                                            null,
-                                            codeString,
-                                            null,
-                                            message.FilePath,
-                                            message.StartLineNumber,
-                                            message.StartColumnNumber,
-                                            message.EndLineNumber,
-                                            message.EndColumnNumber,
-                                            message.Message);
-                                    }
-                                    else
-                                    {
-                                        log.LogWarning(message.Message);
-                                    }
-                                });
+                            AddAllProjectsForRestore(dependencyGraphSpec);
                         }
-                    }
-#endif
-                    // Summary
-                    RestoreSummary.Log(log, restoreSummaries);
 
-                    return restoreSummaries.All(x => x.Success);
+                        providers.Add(new DependencyGraphSpecRequestProvider(providerCache, dependencyGraphSpec));
+
+                        var restoreContext = new RestoreArgs()
+                        {
+                            CacheContext = cacheContext,
+                            LockFileVersion = LockFileFormat.Version,
+                            // 'dotnet restore' fails on slow machines (https://github.com/NuGet/Home/issues/6742)
+                            // The workaround is to pass the '--disable-parallel' option.
+                            // We apply the workaround by default when the system has 1 cpu.
+                            // This will fix restore failures on VMs with 1 CPU and containers with less or equal to 1 CPU assigned.
+                            DisableParallel = Environment.ProcessorCount == 1 ? true : disableParallel,
+                            Log = log,
+                            MachineWideSettings = new XPlatMachineWideSetting(),
+                            PreLoadedRequestProviders = providers,
+                            AllowNoOp = !force,
+                            HideWarningsAndErrors = hideWarningsAndErrors,
+                            RestoreForceEvaluate = forceEvaluate
+                        };
+
+                        if (restoreContext.DisableParallel)
+                        {
+                            HttpSourceResourceProvider.Throttle = SemaphoreSlimThrottle.CreateBinarySemaphore();
+                        }
+
+                        cancellationToken.ThrowIfCancellationRequested();
+
+                        restoreSummaries.AddRange(await RestoreRunner.RunAsync(restoreContext, cancellationToken));
+                    }
                 }
+
+                if (restoreSummaries.Count < 1)
+                {
+                    log.LogMinimal(Strings.NoProjectsToRestore);
+                }
+                else
+                {
+                    RestoreSummary.Log(log, restoreSummaries);
+                }
+                return restoreSummaries.All(x => x.Success);
             }
             finally
             {
@@ -368,6 +356,7 @@ namespace NuGet.Build.Tasks
 
             return false;
         }
+
 #if IS_DESKTOP
         private static async Task<RestoreSummary> PerformNuGetV2RestoreAsync(Common.ILogger log, DependencyGraphSpec dgFile, bool noCache, bool disableParallel, bool interactive)
         {
@@ -382,8 +371,9 @@ namespace NuGet.Build.Tasks
 
             foreach (PackageSpec packageSpec in dgFile.Projects.Where(i => i.RestoreMetadata.ProjectStyle == ProjectStyle.PackagesConfig))
             {
-                globalPackageFolder = globalPackageFolder ?? packageSpec.RestoreMetadata.PackagesPath;
-                repositoryPath = repositoryPath ?? packageSpec.RestoreMetadata.RepositoryPath;
+                var pcRestoreMetadata = (PackagesConfigProjectRestoreMetadata)packageSpec.RestoreMetadata;
+                globalPackageFolder = globalPackageFolder ?? pcRestoreMetadata.PackagesPath;
+                repositoryPath = repositoryPath ?? pcRestoreMetadata.RepositoryPath;
 
                 if (packageSources == null)
                 {
@@ -396,24 +386,32 @@ namespace NuGet.Build.Tasks
                         }
                     }
 
-                    packageSources.AddRange(packageSpec.RestoreMetadata.Sources);
+                    packageSources.AddRange(pcRestoreMetadata.Sources);
                 }
 
-                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(packageSpec.RestoreMetadata.ConfigFilePaths);
+                settings = settings ?? Settings.LoadSettingsGivenConfigPaths(pcRestoreMetadata.ConfigFilePaths);
 
-                var packagesConfigPath = Path.Combine(Path.GetDirectoryName(packageSpec.RestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile);
+                var packagesConfigPath = Path.Combine(Path.GetDirectoryName(pcRestoreMetadata.ProjectPath), NuGetConstants.PackageReferenceFile);
 
                 firstPackagesConfigPath = firstPackagesConfigPath ?? packagesConfigPath;
 
-                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true));
+                installedPackageReferences.AddRange(GetInstalledPackageReferences(packagesConfigPath, allowDuplicatePackageIds: true, log));
+            }
+
+            if (string.IsNullOrEmpty(repositoryPath))
+            {
+                throw new InvalidOperationException(Strings.RestoreNoSolutionFound);
             }
 
             PackageSourceProvider packageSourceProvider = new PackageSourceProvider(settings);
-            var sourceRepositoryProvider = new CommandLineSourceRepositoryProvider(packageSourceProvider);
+            var sourceRepositoryProvider = new CachingSourceProvider(packageSourceProvider);
             var nuGetPackageManager = new NuGetPackageManager(sourceRepositoryProvider, settings, repositoryPath);
 
-            // TODO: different default?  Allow user to specify?
-            var packageSaveMode = Packaging.PackageSaveMode.Defaultv2;
+            var effectivePackageSaveMode = CalculateEffectivePackageSaveMode(settings);
+
+            var packageSaveMode = effectivePackageSaveMode == Packaging.PackageSaveMode.None ?
+                Packaging.PackageSaveMode.Defaultv2 :
+                effectivePackageSaveMode;
 
             var missingPackageReferences = installedPackageReferences.Where(reference =>
                 !nuGetPackageManager.PackageExistsInPackagesFolder(reference.PackageIdentity, packageSaveMode)).ToArray();
@@ -428,13 +426,11 @@ namespace NuGet.Build.Tasks
                     new[] { firstPackagesConfigPath },
                     isMissing: true));
 
-            var repositories = packageSources
-                .Select(sourceRepositoryProvider.CreateRepository)
-                .ToArray();
+            var repositories = sourceRepositoryProvider.GetRepositories().ToArray();
 
             var installCount = 0;
             var failedEvents = new ConcurrentQueue<PackageRestoreFailedEventArgs>();
-            var collectorLogger = new RestoreCollectorLogger(new MSBuildLogger(log));
+            var collectorLogger = new RestoreCollectorLogger(log);
 
             var packageRestoreContext = new PackageRestoreContext(
                 nuGetPackageManager,
@@ -449,19 +445,20 @@ namespace NuGet.Build.Tasks
                 logger: collectorLogger);
 
             // TODO: Check require consent?
+            // NOTE: This feature is currently not working at all. See https://github.com/NuGet/Home/issues/4327
             // CheckRequireConsent();
 
             var clientPolicyContext = ClientPolicyContext.GetClientPolicy(settings, collectorLogger);
             var projectContext = new ConsoleProjectContext(collectorLogger)
             {
                 PackageExtractionContext = new PackageExtractionContext(
-                    Packaging.PackageSaveMode.Defaultv2,
+                    packageSaveMode,
                     PackageExtractionBehavior.XmlDocFileSaveMode,
                     clientPolicyContext,
                     collectorLogger)
             };
 
-            // if (EffectivePackageSaveMode != Packaging.PackageSaveMode.None)
+            if (effectivePackageSaveMode != Packaging.PackageSaveMode.None)
             {
                 projectContext.PackageExtractionContext.PackageSaveMode = packageSaveMode;
             }
@@ -469,9 +466,6 @@ namespace NuGet.Build.Tasks
             using (var cacheContext = new SourceCacheContext())
             {
                 cacheContext.NoCache = noCache;
-
-                // TODO: Direct download?
-                // //cacheContext.DirectDownload = DirectDownload;
 
                 var downloadContext = new PackageDownloadContext(cacheContext, repositoryPath, directDownload: false)
                 {
@@ -485,22 +479,60 @@ namespace NuGet.Build.Tasks
                     projectContext,
                     downloadContext);
 
-                if (downloadContext.DirectDownload)
-                {
-                    GetDownloadResultUtility.CleanUpDirectDownloads(downloadContext);
-                }
-
                 return new RestoreSummary(
                     result.Restored,
                     "packages.config projects",
-                    settings.GetConfigFilePaths(),
-                    packageSources.Select(x => x.Source),
+                    settings.GetConfigFilePaths().ToArray(),
+                    packageSources.Select(x => x.Source).ToArray(),
                     installCount,
-                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)));
+                    collectorLogger.Errors.Concat(ProcessFailedEventsIntoRestoreLogs(failedEvents)).ToArray()
+                );
             }
         }
 
-        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds)
+        internal static PackageSaveMode CalculateEffectivePackageSaveMode(ISettings settings)
+        {
+            string packageSaveModeValue = string.Empty;
+            PackageSaveMode effectivePackageSaveMode;
+            if (string.IsNullOrEmpty(packageSaveModeValue))
+            {
+                packageSaveModeValue = SettingsUtility.GetConfigValue(settings, "PackageSaveMode");
+            }
+
+            if (!string.IsNullOrEmpty(packageSaveModeValue))
+            {
+                // The PackageSaveMode flag only determines if nuspec and nupkg are saved at the target location.
+                // For install \ restore, we always extract files.
+                effectivePackageSaveMode = Packaging.PackageSaveMode.Files;
+                foreach (var v in packageSaveModeValue.Split(';'))
+                {
+                    if (v.Equals(Packaging.PackageSaveMode.Nupkg.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        effectivePackageSaveMode |= Packaging.PackageSaveMode.Nupkg;
+                    }
+                    else if (v.Equals(Packaging.PackageSaveMode.Nuspec.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        effectivePackageSaveMode |= Packaging.PackageSaveMode.Nuspec;
+                    }
+                    else
+                    {
+                        string message = String.Format(
+                            Strings.Warning_InvalidPackageSaveMode,
+                            v);
+
+                        throw new InvalidOperationException(message);
+                    }
+                }
+            }
+            else
+            {
+                effectivePackageSaveMode = Packaging.PackageSaveMode.None;
+            }
+            return effectivePackageSaveMode;
+        }
+
+
+        private static IEnumerable<Packaging.PackageReference> GetInstalledPackageReferences(string projectConfigFilePath, bool allowDuplicatePackageIds, Common.ILogger log)
         {
             if (File.Exists(projectConfigFilePath))
             {
@@ -510,16 +542,14 @@ namespace NuGet.Build.Tasks
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
-                catch (XmlException)
+                catch (XmlException ex)
                 {
-                    // TODO: Log an error?
-                    //var message = string.Format(
-                    //    CultureInfo.CurrentCulture,
-                    //    ResourceManager.GetString("Error_PackagesConfigParseError"),
-                    //    projectConfigFilePath,
-                    //    ex.Message);
+                    var message = string.Format(
+                       Strings.Error_PackagesConfigParseError,
+                       projectConfigFilePath,
+                       ex.Message);
 
-                    //Log.LogError(message);
+                    log.LogError(message);
                 }
             }
 
@@ -550,56 +580,6 @@ namespace NuGet.Build.Tasks
             }
 
             return result;
-        }
-        public class CommandLineSourceRepositoryProvider : ISourceRepositoryProvider
-        {
-            private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
-            private readonly List<Lazy<INuGetResourceProvider>> _resourceProviders;
-            private readonly List<SourceRepository> _repositories = new List<SourceRepository>();
-
-            // There should only be one instance of the source repository for each package source.
-            private static readonly ConcurrentDictionary<Configuration.PackageSource, SourceRepository> _cachedSources
-                = new ConcurrentDictionary<Configuration.PackageSource, SourceRepository>();
-
-            public CommandLineSourceRepositoryProvider(Configuration.IPackageSourceProvider packageSourceProvider)
-            {
-                _packageSourceProvider = packageSourceProvider;
-
-                _resourceProviders = new List<Lazy<INuGetResourceProvider>>();
-                _resourceProviders.AddRange(FactoryExtensionsV3.GetCoreV3(Repository.Provider));
-
-                // Create repositories
-                _repositories = _packageSourceProvider.LoadPackageSources()
-                    .Where(s => s.IsEnabled)
-                    .Select(CreateRepository)
-                    .ToList();
-            }
-
-            /// <summary>
-            /// Retrieve repositories that have been cached.
-            /// </summary>
-            public IEnumerable<SourceRepository> GetRepositories()
-            {
-                return _repositories;
-            }
-
-            /// <summary>
-            /// Create a repository and add it to the cache.
-            /// </summary>
-            public SourceRepository CreateRepository(Configuration.PackageSource source)
-            {
-                return CreateRepository(source, FeedType.Undefined);
-            }
-
-            public SourceRepository CreateRepository(Configuration.PackageSource source, FeedType type)
-            {
-                return _cachedSources.GetOrAdd(source, new SourceRepository(source, _resourceProviders, type));
-            }
-
-            public Configuration.IPackageSourceProvider PackageSourceProvider
-            {
-                get { return _packageSourceProvider; }
-            }
         }
 #endif
     }

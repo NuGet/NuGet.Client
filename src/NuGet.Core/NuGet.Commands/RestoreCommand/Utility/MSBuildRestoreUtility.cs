@@ -217,7 +217,6 @@ namespace NuGet.Commands
                     }
 
                     result.RestoreMetadata.PackagesPath = specItem.GetProperty("PackagesPath");
-                    result.RestoreMetadata.RepositoryPath = specItem.GetProperty("RepositoryPath");
                     result.RestoreMetadata.OutputPath = specItem.GetProperty("OutputPath");
                 }
 
@@ -280,7 +279,17 @@ namespace NuGet.Commands
                     var pcRestoreMetadata = (PackagesConfigProjectRestoreMetadata)result.RestoreMetadata;
                     // Packages lock file properties
                     pcRestoreMetadata.PackagesConfigPath = specItem.GetProperty("PackagesConfigPath");
+                    pcRestoreMetadata.RepositoryPath = specItem.GetProperty("RepositoryPath");
+                    var solutionDir = specItem.GetProperty("SolutionDir");
+                    if (string.IsNullOrEmpty(pcRestoreMetadata.RepositoryPath) && !string.IsNullOrEmpty(solutionDir) && solutionDir != "*Undefined*")
+                    {
+                        pcRestoreMetadata.RepositoryPath = Path.Combine(
+                            solutionDir,
+                            "packages"
+                        );
+                    }
                     pcRestoreMetadata.RestoreLockProperties = GetRestoreLockProperites(specItem);
+
                 }
 
                 if (restoreType == ProjectStyle.ProjectJson)

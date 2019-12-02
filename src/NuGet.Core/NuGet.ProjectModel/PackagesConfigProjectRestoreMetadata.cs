@@ -13,6 +13,11 @@ namespace NuGet.ProjectModel
         /// </summary>
         public string PackagesConfigPath { get; set; }
 
+        /// <summary>
+        /// User packages repository path.
+        /// </summary>
+        public string RepositoryPath { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -38,7 +43,7 @@ namespace NuGet.ProjectModel
         {
             var clone = new PackagesConfigProjectRestoreMetadata();
             FillClone(clone);
-            clone.PackagesConfigPath =  PackagesConfigPath;
+            clone.PackagesConfigPath = PackagesConfigPath;
             return clone;
         }
     }
