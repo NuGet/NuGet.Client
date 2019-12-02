@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using NuGet.Configuration;
@@ -18,6 +18,11 @@ namespace NuGet.Build.Tasks
 
         public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings)
         {
+            return ReadSettings(solutionDirectory, restoreDirectory, restoreConfigFile, machineWideSettings, settingsLoadContext: null);
+        }
+
+        public static ISettings ReadSettings(string solutionDirectory, string restoreDirectory, string restoreConfigFile, Lazy<IMachineWideSettings> machineWideSettings, SettingsLoadingContext settingsLoadContext)
+        {
             if (!string.IsNullOrEmpty(solutionDirectory))
             {
                 // Read the solution-level settings
@@ -33,7 +38,8 @@ namespace NuGet.Build.Tasks
                 return Configuration.Settings.LoadDefaultSettings(
                     solutionSettingsFile,
                     configFileName: restoreConfigFile,
-                    machineWideSettings: machineWideSettings.Value);
+                    machineWideSettings: machineWideSettings.Value,
+                    settingsLoadingContext: settingsLoadContext);
             }
 
             if (string.IsNullOrEmpty(restoreConfigFile))
@@ -41,7 +47,8 @@ namespace NuGet.Build.Tasks
                 return Configuration.Settings.LoadDefaultSettings(
                     restoreDirectory,
                     configFileName: null,
-                    machineWideSettings: machineWideSettings.Value);
+                    machineWideSettings: machineWideSettings.Value,
+                    settingsLoadingContext: settingsLoadContext);
             }
             else
             {
@@ -51,7 +58,8 @@ namespace NuGet.Build.Tasks
                 return Configuration.Settings.LoadDefaultSettings(
                     directory,
                     configFileName,
-                    null);
+                    machineWideSettings: null,
+                    settingsLoadContext);
             }
         }
 

@@ -288,12 +288,53 @@ namespace NuGet.Configuration
             string configFileName,
             IMachineWideSettings machineWideSettings)
         {
+            return LoadDefaultSettings(root, configFileName, machineWideSettings, settingsLoadingContext: null);
+        }
+
+        /// <summary>
+        /// Loads user settings from the NuGet configuration files. The method walks the directory
+        /// tree in <paramref name="root" /> up to its root, and reads each NuGet.config file
+        /// it finds in the directories. It then reads the user specific settings,
+        /// which is file <paramref name="configFileName" />
+        /// in <paramref name="root" /> if <paramref name="configFileName" /> is not null,
+        /// If <paramref name="configFileName" /> is null, the user specific settings file is
+        /// %AppData%\NuGet\NuGet.config.
+        /// After that, the machine wide settings files are added.
+        /// </summary>
+        /// <remarks>
+        /// For example, if <paramref name="root" /> is c:\dir1\dir2, <paramref name="configFileName" />
+        /// is "userConfig.file", the files loaded are (in the order that they are loaded):
+        /// c:\dir1\dir2\nuget.config
+        /// c:\dir1\nuget.config
+        /// c:\nuget.config
+        /// c:\dir1\dir2\userConfig.file
+        /// machine wide settings (e.g. c:\programdata\NuGet\Config\*.config)
+        /// </remarks>
+        /// <param name="root">
+        /// The file system to walk to find configuration files.
+        /// Can be null.
+        /// </param>
+        /// <param name="configFileName">The user specified configuration file.</param>
+        /// <param name="machineWideSettings">
+        /// The machine wide settings. If it's not null, the
+        /// settings files in the machine wide settings are added after the user specific
+        /// config file.
+        /// </param>
+        /// <param name="settingsLoadingContext">A <see cref="SettingsLoadingContext" /> object to use when loading the settings.</param>
+        /// <returns>The settings object loaded.</returns>
+        public static ISettings LoadDefaultSettings(
+            string root,
+            string configFileName,
+            IMachineWideSettings machineWideSettings,
+            SettingsLoadingContext settingsLoadingContext)
+        {
             return LoadSettings(
                 root,
                 configFileName,
                 machineWideSettings,
                 loadUserWideSettings: true,
-                useTestingGlobalPath: false);
+                useTestingGlobalPath: false,
+                settingsLoadingContext);
         }
 
         /// <summary>
@@ -369,7 +410,8 @@ namespace NuGet.Configuration
             string configFileName,
             IMachineWideSettings machineWideSettings,
             bool loadUserWideSettings,
-            bool useTestingGlobalPath)
+            bool useTestingGlobalPath,
+            SettingsLoadingContext settingsLoadingContext = null)
         {
             // Walk up the tree to find a config file; also look in .nuget subdirectories
             // If a configFile is passed, don't walk up the tree. Only use that single config file.
@@ -378,7 +420,14 @@ namespace NuGet.Configuration
             {
                 validSettingFiles.AddRange(
                     GetSettingsFilesFullPath(root)
-                        .Select(f => ReadSettings(root, f))
+                        .Select(f =>
+                        {
+                            if (settingsLoadingContext == null)
+                            {
+                                return ReadSettings(root, f);
+                            }
+                            return settingsLoadingContext.GetOrCreateSettingsFile(f);
+                        })
                         .Where(f => f != null));
             }
 
@@ -400,7 +449,8 @@ namespace NuGet.Configuration
             DirectoryInfo root,
             IMachineWideSettings machineWideSettings,
             bool loadUserWideSettings,
-            bool useTestingGlobalPath)
+            bool useTestingGlobalPath,
+            SettingsLoadingContext settingsLoadingContext = null)
         {
             var validSettingFiles = new List<SettingsFile>();
             var comparer = PathUtility.GetStringComparisonBasedOnOS();
@@ -411,7 +461,7 @@ namespace NuGet.Configuration
 
             validSettingFiles.AddRange(
                 settingsFiles
-                    .Select(file => ReadSettings(file.DirectoryName, file.FullName))
+                    .Select(file => ReadSettings(file.DirectoryName, file.FullName, settingsLoadingContext: settingsLoadingContext))
                     .Where(file => file != null));
 
             return LoadSettingsForSpecificConfigs(
@@ -420,7 +470,8 @@ namespace NuGet.Configuration
                 validSettingFiles,
                 machineWideSettings,
                 loadUserWideSettings,
-                useTestingGlobalPath);
+                useTestingGlobalPath,
+                settingsLoadingContext);
         }
 
         private static ISettings LoadSettingsForSpecificConfigs(
@@ -429,11 +480,12 @@ namespace NuGet.Configuration
             List<SettingsFile> validSettingFiles,
             IMachineWideSettings machineWideSettings,
             bool loadUserWideSettings,
-            bool useTestingGlobalPath)
+            bool useTestingGlobalPath,
+            SettingsLoadingContext settingsLoadingContext = null)
         {
             if (loadUserWideSettings)
             {
-                var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath);
+                var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext);
                 if (userSpecific != null)
                 {
                     validSettingFiles.Add(userSpecific);
@@ -444,7 +496,7 @@ namespace NuGet.Configuration
             {
                 // Priority gives you the settings file in the order you want to start reading them
                 var files = mwSettings.Priority.Select(
-                        s => new SettingsFile(s.DirectoryPath, s.FileName, s.IsMachineWide));
+                    s => ReadSettings(s.DirectoryPath, s.FileName, s.IsMachineWide, settingsLoadingContext));
 
                 validSettingFiles.AddRange(files);
             }
@@ -468,7 +520,8 @@ namespace NuGet.Configuration
         private static SettingsFile LoadUserSpecificSettings(
             string root,
             string configFileName,
-            bool useTestingGlobalPath)
+            bool useTestingGlobalPath,
+            SettingsLoadingContext settingsLoadingContext = null)
         {
             // Path.Combine is performed with root so it should not be null
             // However, it is legal for it be empty in this method
@@ -496,7 +549,7 @@ namespace NuGet.Configuration
                     defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
-                userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath);
+                userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
 
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
@@ -522,7 +575,7 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(message);
                 }
 
-                userSpecificSettings = ReadSettings(rootDirectory, configFileName);
+                userSpecificSettings = ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
             }
 
             return userSpecificSettings;
@@ -699,10 +752,15 @@ namespace NuGet.Configuration
             return Path.Combine(configDirectory, value);
         }
 
-        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false)
+        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false, SettingsLoadingContext settingsLoadingContext = null)
         {
             try
             {
+                if (settingsLoadingContext != null)
+                {
+                    return settingsLoadingContext.GetOrCreateSettingsFile(settingsPath, isMachineWideSettings);
+                }
+
                 var tuple = GetFileNameAndItsRoot(settingsRoot, settingsPath);
                 var filename = tuple.Item1;
                 var root = tuple.Item2;
