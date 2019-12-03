@@ -1,0 +1,23 @@
+<!--
+***********************************************************************************************
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <UsingTask TaskName="NuGet.Build.Tasks.RestoreTaskEx" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+
+  <Target Name="Restore">
+    <RestoreTaskEx
+        DisableParallel="$(RestoreDisableParallel)"
+        Force="$(RestoreForce)"
+        ForceEvaluate="$(RestoreForceEvaluate)"
+        HideWarningsAndErrors="$(HideWarningsAndErrors)"
+        IgnoreFailedSources="$(RestoreIgnoreFailedSources)"
+        Interactive="$([MSBuild]::ValueOrDefault('$(NuGetInteractive)', '$(MSBuildInteractive)'))"
+        MSBuildBinPath="$(MSBuildBinPath)"
+        NoCache="$(RestoreNoCache)"
+        ProjectFullPath="$(MSBuildProjectFullPath)"
+        Recursive="$([MSBuild]::ValueOrDefault('$(RestoreRecursive)', 'true'))"
+        SolutionPath="$(SolutionPath)" />
+  </Target>
+</Project>

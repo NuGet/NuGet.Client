@@ -49,6 +49,10 @@
       <Link>NuGet.targets</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.RestoreEx.targets">
+      <Link>NuGet.RestoreEx.targets</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="source.extension.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>
@@ -110,6 +114,14 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.Build.Tasks.csproj">
       <Project>{e09441b8-8d74-4a96-8431-480e2065f844}</Project>
       <Name>NuGet.Build.Tasks</Name>
+    </ProjectReference>
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj">
+      <Project>{3ed13630-90eb-420e-8083-0959b2955c6e}</Project>
+      <Name>NuGet.Build.Tasks.Console</Name>
+      <Ngen>True</Ngen>
+      <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
+      <NgenArchitecture>X86</NgenArchitecture>
+      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>
@@ -434,6 +446,11 @@
         <TargetPath>%(_LocalizedFiles.RecursiveDir)%(_LocalizedFiles.Filename)%(_LocalizedFiles.Extension)</TargetPath>
       </_VsixLocFiles>
       <VSIXSourceItem Include="@(_VsixLocFiles)" />
+    </ItemGroup>
+  </Target>
+  <Target Name="AddAppConfigToVsix" BeforeTargets="GetVsixSourceItems" DependsOnTargets="ResolveAssemblyReferences">
+    <ItemGroup>
+      <Content Include="@(_ReferenceRelatedPaths)" IncludeInVSIX="true" Link="%(Filename)%(Extension)" Condition="'%(_ReferenceRelatedPaths.Name)' == 'NuGet.Build.Tasks.Console' And '%(_ReferenceRelatedPaths.Extension)' == '.config'" />
     </ItemGroup>
   </Target>
 </Project>

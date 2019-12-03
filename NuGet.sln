@@ -237,6 +237,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Tools.Test", "test\Nu
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Msbuild.Integration.Test", "test\NuGet.Core.FuncTests\Msbuild.Integration.Test\Msbuild.Integration.Test.csproj", "{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Console", "src\NuGet.Core\NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj", "{3ED13630-90EB-420E-8083-0959B2955C6E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -571,6 +573,10 @@ Global
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3ED13630-90EB-420E-8083-0959B2955C6E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED13630-90EB-420E-8083-0959B2955C6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ED13630-90EB-420E-8083-0959B2955C6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ED13630-90EB-420E-8083-0959B2955C6E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -668,6 +674,7 @@ Global
 		{02B7C422-C592-4BA6-89A7-ACBD7923B34D} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 		{437C6B7E-B625-4AE5-A4CE-F2B3747FE1CE} = {01BC4531-1E25-48D7-A8FD-A47D6FEC47FB}
 		{92EF44DB-4F40-4610-A1AD-3A554A0CA8B9} = {BB63CACA-866F-454F-BA4C-78B788D032BB}
+		{3ED13630-90EB-420E-8083-0959B2955C6E} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

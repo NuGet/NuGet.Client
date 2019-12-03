@@ -36,6 +36,7 @@
     <MergeExclude Include="$(OutputPath)System.Runtime.Serialization.dll"/>
     <MergeExclude Include="$(OutputPath)System.Security.dll"/>
     <MergeExclude Include="$(OutputPath)System.ServiceModel.dll"/>
+    <MergeExclude Include="$(OutputPath)System.Threading.Tasks.Dataflow.dll"/>
     <MergeExclude Include="$(OutputPath)System.Xml.dll"/>
     <MergeExclude Include="$(OutputPath)System.Xml.Linq.dll"/>
     <MergeExclude Include="$(OutputPath)WindowsBase.dll"/>

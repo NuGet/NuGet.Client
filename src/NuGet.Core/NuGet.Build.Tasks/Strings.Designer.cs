@@ -84,6 +84,15 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
+        /// </summary>
+        internal static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
+            get {
+                return ResourceManager.GetString("Error_PackageDownload_OnlyExactVersionsAreAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ProjectReference &apos;{0}&apos; was resolved using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This project may not be fully compatible with your project..
         /// </summary>
         internal static string ImportsFallbackWarning

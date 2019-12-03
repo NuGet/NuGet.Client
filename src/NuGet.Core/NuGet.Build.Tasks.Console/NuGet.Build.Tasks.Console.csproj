@@ -1,0 +1,43 @@
+<Project>
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
+
+  <PropertyGroup>
+    <TargetFrameworks Condition=" '$(IsVsixBuild)' != 'true' ">$(TargetFrameworksExe)</TargetFrameworks>
+    <TargetFramework Condition=" '$(IsVsixBuild)' == 'true' ">$(NETFXTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <Shipping>true</Shipping>
+    <PackProject>true</PackProject>
+    <SkipShared>true</SkipShared>
+    <Description>NuGet restore console application.</Description>
+    <!-- NU5100: Suppress warning about a DLL not in a lib folder since on .NET Core the EXE is technically a DLL -->
+    <NoWarn>$(NoWarn);CS1591;NU5100</NoWarn>
+    <XPLATProject>true</XPLATProject>
+    <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+    <BuildOutputTargetFolder>contentFiles\any</BuildOutputTargetFolder>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NuGet.Build.Tasks\NuGet.Build.Tasks.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="Runtime" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
+    <Reference Include="Microsoft.Build.Utilities.v4.0" Aliases="MicrosoftBuildUtilitiesv4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="App.config" Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' " />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
+</Project>
