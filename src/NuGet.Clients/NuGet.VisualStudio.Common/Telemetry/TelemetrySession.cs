@@ -47,7 +47,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             foreach (KeyValuePair<string, object> pair in telemetryEvent.ComplexData)
             {
-                vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = ToComplexProperty(pair.Value);
+                vsTelemetryEvent.Properties[VSPropertyNamePrefix + pair.Key] = new VsTelemetryComplexProperty(ToComplexProperty(pair.Value));
             }
 
             return vsTelemetryEvent;
@@ -74,7 +74,7 @@ namespace NuGet.VisualStudio.Telemetry
                     dictionary[pair.Key] = ToComplexProperty(pair.Value);
                 }
 
-                return new VsTelemetryComplexProperty(dictionary);
+                return dictionary;
             }
             else if (value is IEnumerable enumerable)
             {
