@@ -23,13 +23,13 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 VsProjectTypes.CsharpProjectTypeGuid,
                 VsProjectTypes.VbProjectTypeGuid,
-                VsProjectTypes.FsharpProjectTypeGuid
+                VsProjectTypes.FsharpProjectTypeGuid,
+                VsProjectTypes.CppProjectTypeGuid,
             };
 
         private static readonly HashSet<string> UnupgradeableProjectTypes =
             new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                VsProjectTypes.CppProjectTypeGuid,
                 VsProjectTypes.WebApplicationProjectTypeGuid,
                 VsProjectTypes.WebSiteProjectTypeGuid
             };

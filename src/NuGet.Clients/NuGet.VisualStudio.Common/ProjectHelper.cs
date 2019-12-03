@@ -46,6 +46,35 @@ namespace NuGet.VisualStudio
             }
         }
 
+        public static async Task DoWorkInReadLockAsync(Project project, IVsHierarchy hierarchy, Action<MsBuildProject> action)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var vsProject = (IVsProject)hierarchy;
+            UnconfiguredProject unconfiguredProject = GetUnconfiguredProject(vsProject);
+            if (unconfiguredProject != null)
+            {
+                var service = unconfiguredProject.ProjectService.Services.ProjectLockService;
+                if (service != null)
+                {
+                    using (var x = await service.ReadLockAsync())
+                    {
+                        ConfiguredProject configuredProject = await unconfiguredProject.GetSuggestedConfiguredProjectAsync();
+                        MsBuildProject buildProject = await x.GetProjectAsync(configuredProject);
+
+                        if (buildProject != null)
+                        {
+                            action(buildProject);
+                        }
+
+                        await x.ReleaseAsync();
+                    }
+
+                    await unconfiguredProject.ProjectService.Services.ThreadingPolicy.SwitchToUIThread();
+                }
+            }
+        }
+
         private static UnconfiguredProject GetUnconfiguredProject(IVsProject project)
         {
             ThreadHelper.ThrowIfNotOnUIThread();

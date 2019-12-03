@@ -116,6 +116,16 @@ namespace NuGet.PackageManagement.VisualStudio
                     () => CreateCoreProjectSystemServices(vsProjectAdapter, componentModel),
                     componentModel);
             }
+            else if (vsProjectAdapter.Project.Object as Microsoft.VisualStudio.VCProjectEngine.VCProject != null)
+            {
+                //VC Project
+                if (forceCreate
+                    || PackageReference.Equals(restoreProjectStyle, StringComparison.OrdinalIgnoreCase)
+                    || VCProjectSystemServices.HasPackageReference(vsProjectAdapter))
+                {
+                    return new VCProjectSystemServices(vsProjectAdapter, componentModel);
+                }
+            }
             else
             {
                 var asVSProject4 = vsProjectAdapter.Project.Object as VSProject4;
