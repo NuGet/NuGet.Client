@@ -179,6 +179,7 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(2, 2, 0, 0));
             public static readonly NuGetFramework NetCoreApp30
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 0, 0, 0));
-        }
+            public static readonly NuGetFramework NetCoreApp31
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 1, 0, 0));        }
     }
 }

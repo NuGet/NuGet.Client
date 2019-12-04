@@ -567,7 +567,7 @@ namespace Dotnet.Integration.Test
                 var referencedProject = "ClassLibrary2";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp30;
+                var framework = FrameworkConstants.CommonFrameworks.NetCoreApp31;
 
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
