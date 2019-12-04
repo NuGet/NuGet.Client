@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -41,9 +42,18 @@ namespace NuGet.Protocol.Plugins.Tests
         public void Constructor_ThrowsForNullLogger()
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), logger: null));
+                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), new InboundRequestProcessingHandler(), logger: null));
 
             Assert.Equal("logger", exception.ParamName);
+        }
+
+        [Fact]
+        public void Constructor_ThrowsForNullInboundRequestProcessinHandler()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new MessageDispatcher(new RequestHandlers(), new ConstantIdGenerator(), inboundRequestProcessingHandler: null, logger: PluginLogger.DefaultInstance));
+
+            Assert.Equal("inboundRequestProcessingHandler", exception.ParamName);
         }
 
         [Fact]
@@ -134,6 +144,49 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void Close_WithDedicatedProcessingContext_DisposesAllActiveInboundRequests()
+        {
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
+            using (var handlingEvent = new ManualResetEventSlim(initialState: false))
+            using (var blockingEvent = new ManualResetEventSlim(initialState: false))
+            {
+                var requestHandler = new RequestHandler();
+
+                Assert.True(dispatcher.RequestHandlers.TryAdd(MessageMethod.Handshake, requestHandler));
+
+                var connection = new Mock<IConnection>(MockBehavior.Strict);
+                var payload = new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion);
+                var request = dispatcher.CreateMessage(MessageType.Request, MessageMethod.Handshake, payload);
+
+                dispatcher.SetConnection(connection.Object);
+
+                var actualCancellationToken = default(CancellationToken);
+
+                requestHandler.HandleResponseAsyncFunc = (conn, message, responseHandler, cancellationToken) =>
+                {
+                    handlingEvent.Set();
+
+                    actualCancellationToken = cancellationToken;
+
+                    blockingEvent.Set();
+
+                    return Task.FromResult(0);
+                };
+
+                connection.Raise(x => x.MessageReceived += null, new MessageEventArgs(request));
+
+                handlingEvent.Wait();
+
+                dispatcher.Close();
+
+                blockingEvent.Wait();
+
+                Assert.True(actualCancellationToken.IsCancellationRequested);
+            }
+        }
+
+        [Fact]
         public void Close_IsIdempotent()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -196,11 +249,23 @@ namespace NuGet.Protocol.Plugins.Tests
         {
             var logger = new Mock<IPluginLogger>(MockBehavior.Strict);
 
-            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, logger.Object))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, new InboundRequestProcessingHandler(), logger.Object))
             {
                 dispatcher.Dispose();
 
                 logger.Verify();
+            }
+        }
+
+        [Fact]
+        public void Dispose_DisposesInboundRequestProcessingHandler()
+        {
+            var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>());
+
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
+            {
+                dispatcher.Dispose();
+                Assert.Throws<ObjectDisposedException>(() => processingHandler.Handle(MessageMethod.Handshake, task: null, CancellationToken.None));
             }
         }
 
@@ -797,6 +862,53 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public async Task OnMessageReceived_WithDedicatedProcessingHandler_DoesNotThrowForResponseAfterWaitForResponseIsCancelled()
+        {
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.PrefetchPackage }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
+            using (var cancellationTokenSource = new CancellationTokenSource())
+            using (var sentEvent = new ManualResetEventSlim(initialState: false))
+            {
+                var connection = new Mock<IConnection>(MockBehavior.Strict);
+
+                connection.SetupGet(x => x.Options)
+                    .Returns(ConnectionOptions.CreateDefault());
+
+                connection.Setup(x => x.SendAsync(It.IsNotNull<Message>(), It.IsAny<CancellationToken>()))
+                    .Callback<Message, CancellationToken>(
+                        (message, cancellationToken) =>
+                        {
+                            sentEvent.Set();
+                        })
+                    .Returns(Task.FromResult(0));
+
+                dispatcher.SetConnection(connection.Object);
+
+                var outboundRequestTask = Task.Run(() => dispatcher.DispatchRequestAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
+                    MessageMethod.PrefetchPackage,
+                    new PrefetchPackageRequest(
+                        packageSourceRepository: "a",
+                        packageId: "b",
+                        packageVersion: "c"),
+                    cancellationTokenSource.Token));
+
+                sentEvent.Wait();
+
+                cancellationTokenSource.Cancel();
+
+                await Assert.ThrowsAsync<TaskCanceledException>(() => outboundRequestTask);
+
+                var response = MessageUtilities.Create(
+                    _idGenerator.Id,
+                    MessageType.Response,
+                    MessageMethod.PrefetchPackage,
+                    new PrefetchPackageResponse(MessageResponseCode.Success));
+
+                connection.Raise(x => x.MessageReceived += null, new MessageEventArgs(response));
+            }
+        }
+
+        [Fact]
         public async Task OnMessageReceived_DoesNotThrowForCancelResponseAfterWaitForResponseIsCancelled()
         {
             using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator))
@@ -937,6 +1049,40 @@ namespace NuGet.Protocol.Plugins.Tests
                 sentEvent.Wait();
 
                 connection.Verify();
+            }
+        }
+
+        [Fact]
+        public void OnMessageReceived_WithDedicatedProcessingContext_CallsBackIntoHandler()
+        {
+            using (var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod>() { MessageMethod.Handshake }))
+            using (var dispatcher = new MessageDispatcher(new RequestHandlers(), _idGenerator, processingHandler, PluginLogger.DefaultInstance))
+            using (var blockingEvent = new ManualResetEventSlim(initialState: false))
+            {
+                var requestHandler = new RequestHandler();
+
+                Assert.True(dispatcher.RequestHandlers.TryAdd(MessageMethod.Handshake, requestHandler));
+
+                var connection = new Mock<IConnection>(MockBehavior.Strict);
+                var payload = new HandshakeRequest(ProtocolConstants.CurrentVersion, ProtocolConstants.CurrentVersion);
+                var request = dispatcher.CreateMessage(MessageType.Request, MessageMethod.Handshake, payload);
+
+                dispatcher.SetConnection(connection.Object);
+
+                var responseReceived = false;
+
+                requestHandler.HandleResponseAsyncFunc = (conn, message, responseHandler, cancellationToken) =>
+                {
+                    responseReceived = true;
+                    blockingEvent.Set();
+                    return Task.FromResult(0);
+                };
+
+                connection.Raise(x => x.MessageReceived += null, new MessageEventArgs(request));
+
+                blockingEvent.Wait();
+
+                Assert.True(responseReceived);
             }
         }
 

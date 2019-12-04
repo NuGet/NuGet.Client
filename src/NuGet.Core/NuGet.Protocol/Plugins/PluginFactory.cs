@@ -210,7 +210,8 @@ namespace NuGet.Protocol.Plugins
 
                 var sender = new Sender(pluginProcess.StandardInput);
                 var receiver = new StandardOutputReceiver(pluginProcess);
-                var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), _logger);
+                var processingHandler = new InboundRequestProcessingHandler(new HashSet<MessageMethod> { MessageMethod.Handshake, MessageMethod.Log});
+                var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), processingHandler, _logger);
                 connection = new Connection(messageDispatcher, sender, receiver, options, _logger);
 
                 var plugin = new Plugin(
@@ -317,7 +318,7 @@ namespace NuGet.Protocol.Plugins
                 WriteCommonLogMessages(logger);
             }
 
-            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), logger);
+            var messageDispatcher = new MessageDispatcher(requestHandlers, new RequestIdGenerator(), new InboundRequestProcessingHandler(), logger);
             var connection = new Connection(messageDispatcher, sender, receiver, options, logger);
             var pluginProcess = new PluginProcess();
 

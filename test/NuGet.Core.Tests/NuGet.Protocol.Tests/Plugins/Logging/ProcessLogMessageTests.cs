@@ -3,6 +3,8 @@
 
 using System;
 using System.Diagnostics;
+using FluentAssertions;
+using NuGet.Common;
 using Xunit;
 
 namespace NuGet.Protocol.Plugins.Tests
@@ -18,7 +20,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var message = VerifyOuterMessageAndReturnInnerMessage(logMessage, now, "process");
 
-            Assert.Equal(2, message.Count);
+            Assert.Equal(3, message.Count);
 
             int expectedProcessId;
             string expectedProcessName;
@@ -31,9 +33,11 @@ namespace NuGet.Protocol.Plugins.Tests
 
             var actualProcessId = message.Value<int>("process ID");
             var actualProcessName = message.Value<string>("process name");
+            var actualProcessStartTime = message.Value<string>("process start time");
 
-            Assert.Equal(expectedProcessId, actualProcessId);
-            Assert.Equal(expectedProcessName, actualProcessName);
+            actualProcessId.Should().Be(expectedProcessId);
+            actualProcessName.Should().Be(expectedProcessName);
+            actualProcessStartTime.Should().NotBeNull(); // do not assert due to accuracy problems on Mac.
         }
     }
 }

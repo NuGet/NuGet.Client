@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -38,6 +39,20 @@ namespace NuGet.Protocol.Plugins.Tests
         }
 
         [Fact]
+        public void Constructor_ThrowsForNullInboundRequestProcessingHandler()
+        {
+            var exception = Assert.Throws<ArgumentNullException>(
+                () => new InboundRequestContext(
+                    Mock.Of<IConnection>(),
+                    requestId: "a",
+                    cancellationToken: CancellationToken.None,
+                    inboundRequestProcessingHandler: null,
+                    Mock.Of<IPluginLogger>()));
+
+            Assert.Equal("inboundRequestProcessingHandler", exception.ParamName);
+        }
+
+        [Fact]
         public void Constructor_ThrowsForNullLogger()
         {
             var exception = Assert.Throws<ArgumentNullException>(
@@ -45,6 +60,7 @@ namespace NuGet.Protocol.Plugins.Tests
                     Mock.Of<IConnection>(),
                     requestId: "a",
                     cancellationToken: CancellationToken.None,
+                    inboundRequestProcessingHandler: new InboundRequestProcessingHandler(Enumerable.Empty<MessageMethod>()),
                     logger: null));
 
             Assert.Equal("logger", exception.ParamName);
@@ -68,6 +84,17 @@ namespace NuGet.Protocol.Plugins.Tests
                 test.Connection.Verify();
             }
         }
+
+        [Fact]
+        public void Dispose_DoesNotDisposeOfInboundRequestProcessingHandler()
+        {
+            using (var test = new InboundRequestContextTest())
+            {
+                test.Context.Dispose();
+                test.Handler.Verify();
+            }
+        }
+
 
         [Fact]
         public void Dispose_DoesNotDisposeLogger()
@@ -379,17 +406,19 @@ namespace NuGet.Protocol.Plugins.Tests
             internal InboundRequestContext Context { get; }
             internal Mock<IPluginLogger> Logger { get; }
             internal string RequestId { get; }
-
+            internal Mock<InboundRequestProcessingHandler> Handler { get; }
             internal InboundRequestContextTest()
             {
                 CancellationTokenSource = new CancellationTokenSource();
                 Connection = new Mock<IConnection>(MockBehavior.Strict);
                 Logger = new Mock<IPluginLogger>();
                 RequestId = "a";
+                Handler = new Mock<InboundRequestProcessingHandler>(MockBehavior.Strict);
                 Context = new InboundRequestContext(
                     Connection.Object,
                     RequestId,
                     CancellationTokenSource.Token,
+                    Handler.Object,
                     Logger.Object);
             }
 
@@ -412,6 +441,7 @@ namespace NuGet.Protocol.Plugins.Tests
 
                 Connection.Verify();
                 Logger.Verify();
+                Handler.Verify();
             }
         }
     }

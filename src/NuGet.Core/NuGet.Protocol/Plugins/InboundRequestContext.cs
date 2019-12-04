@@ -17,6 +17,7 @@ namespace NuGet.Protocol.Plugins
         private readonly IConnection _connection;
         private bool _isDisposed;
         private readonly IPluginLogger _logger;
+        private readonly InboundRequestProcessingHandler _inboundRequestProcessingHandler;
 
         /// <summary>
         /// Gets the request ID.
@@ -37,7 +38,7 @@ namespace NuGet.Protocol.Plugins
             IConnection connection,
             string requestId,
             CancellationToken cancellationToken)
-            : this(connection, requestId, cancellationToken, PluginLogger.DefaultInstance)
+            : this(connection, requestId, cancellationToken, new InboundRequestProcessingHandler(), PluginLogger.DefaultInstance)
         {
         }
 
@@ -52,12 +53,15 @@ namespace NuGet.Protocol.Plugins
         /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="requestId" />
         /// is either <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="inboundRequestProcessingHandler" />
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
         /// is <c>null</c>.</exception>
         internal InboundRequestContext(
             IConnection connection,
             string requestId,
             CancellationToken cancellationToken,
+            InboundRequestProcessingHandler inboundRequestProcessingHandler,
             IPluginLogger logger)
         {
             if (connection == null)
@@ -75,6 +79,11 @@ namespace NuGet.Protocol.Plugins
                 throw new ArgumentNullException(nameof(logger));
             }
 
+            if (inboundRequestProcessingHandler == null)
+            {
+                throw new ArgumentNullException(nameof(inboundRequestProcessingHandler));
+            }
+
             _connection = connection;
             RequestId = requestId;
 
@@ -85,6 +94,42 @@ namespace NuGet.Protocol.Plugins
             _cancellationToken = _cancellationTokenSource.Token;
 
             _logger = logger;
+
+            _inboundRequestProcessingHandler = inboundRequestProcessingHandler;
+        }
+
+        private async Task ProcessResponseAsync(IRequestHandler requestHandler, Message request, IResponseHandler responseHandler)
+        {
+            try
+            {
+                if (_logger.IsEnabled)
+                {
+                    _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Executing));
+                }
+
+                await requestHandler.HandleResponseAsync(
+                    _connection,
+                    request,
+                    responseHandler,
+                    _cancellationToken);
+            }
+            catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
+            {
+                var response = MessageUtilities.Create(request.RequestId, MessageType.Cancel, request.Method);
+
+                await _connection.SendAsync(response, CancellationToken.None);
+            }
+            catch (Exception ex)
+            {
+                BeginFaultAsync(request, ex);
+            }
+            finally
+            {
+                if (_logger.IsEnabled)
+                {
+                    _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Completed));
+                }
+            }
         }
 
         /// <summary>
@@ -108,8 +153,7 @@ namespace NuGet.Protocol.Plugins
             {
             }
 
-            // Do not dispose of _connection or _logger.  This context does not own them.
-
+            // Do not dispose of the _connection, _logger or _requestProcessingContext.  This context does not own them.
             GC.SuppressFinalize(this);
 
             _isDisposed = true;
@@ -210,42 +254,9 @@ namespace NuGet.Protocol.Plugins
             {
                 _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Queued));
             }
+            Func<Task> task = () => ProcessResponseAsync(requestHandler, request, responseHandler);
 
-            Task.Run(async () =>
-                {
-                    // Top-level exception handler for a worker pool thread.
-                    try
-                    {
-                        if (_logger.IsEnabled)
-                        {
-                            _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Executing));
-                        }
-
-                        await requestHandler.HandleResponseAsync(
-                            _connection,
-                            request,
-                            responseHandler,
-                            _cancellationToken);
-                    }
-                    catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
-                    {
-                        var response = MessageUtilities.Create(request.RequestId, MessageType.Cancel, request.Method);
-
-                        await _connection.SendAsync(response, CancellationToken.None);
-                    }
-                    catch (Exception ex)
-                    {
-                        BeginFaultAsync(request, ex);
-                    }
-                    finally
-                    {
-                        if (_logger.IsEnabled)
-                        {
-                            _logger.Write(new TaskLogMessage(_logger.Now, request.RequestId, request.Method, request.Type, TaskState.Completed));
-                        }
-                    }
-                },
-                _cancellationToken);
+            _inboundRequestProcessingHandler.Handle(request.Method, task, _cancellationToken);
         }
 
         /// <summary>
