@@ -39,6 +39,7 @@ function Test-GetPackageWithUpdatesListsUpdates {
 
 function Test-GetPackageCollapsesPackageVersionsForListAvailable {
     [SkipTest('https://github.com/NuGet/Home/issues/8849')]
+    param()
     # Act
     $packages = Get-Package -ListAvailable jQuery
     $packagesWithMoreThanOne = $packages | group "Id" | Where { $_.count -gt 1 }
