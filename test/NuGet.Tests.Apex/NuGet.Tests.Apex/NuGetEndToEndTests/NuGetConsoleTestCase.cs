@@ -26,7 +26,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: true))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, noAutoRestore: true, addNetStandardFeeds: true))
             {
                 var packageName = "TestPackage";
                 var packageVersion = "1.0.0";
@@ -204,7 +204,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
@@ -252,7 +252,7 @@ namespace NuGet.Tests.Apex
             var packageVersion2 = "2.0.0";
             var source = "https://api.nuget.org/v3/index.json";
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true))
             {
                 // Arrange
                 var solutionService = VisualStudio.Get<SolutionService>();

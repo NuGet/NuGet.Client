@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 using NuGet.Common;
+using Xunit;
 
 namespace NuGet.Test.Utility
 {
@@ -137,5 +138,46 @@ namespace NuGet.Test.Utility
                 item.Remove();
             }
         }
+
+        // Add NetStandard.Library and NetCorePlatforms to the feed and save the file.
+        public void AddNetStandardFeeds()
+        {
+            var reposRoot = GetRepositoryRootDirectory();
+            var netStandardLibraryPackageFeed = GetRepoPackageDirectoryName(reposRoot, "netstandard.library");
+            var netCorePlatformsPackageFeed = GetRepoPackageDirectoryName(reposRoot, "microsoft.netcore.platforms");
+
+            Assert.True(Directory.Exists(netStandardLibraryPackageFeed));
+            Assert.True(Directory.Exists(netCorePlatformsPackageFeed));
+
+            var section = GetOrAddSection(XML, "packageSources");
+            AddEntry(section, "NetStandardLibrary", netStandardLibraryPackageFeed);
+            AddEntry(section, "NetCorePlatforms", netCorePlatformsPackageFeed);
+
+            Save();
+        }
+
+        private static DirectoryInfo GetRepositoryRootDirectory()
+        {
+            DirectoryInfo currentDir = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (currentDir != null)
+            {
+                if (File.Exists(Path.Combine(currentDir.FullName, "NuGet.sln")))
+                {
+                    // We have found the repo root.
+                    return currentDir;
+                }
+
+                currentDir = currentDir.Parent;
+            }
+
+            throw new DirectoryNotFoundException("The directory containing 'NuGet.sln' could not be found");
+        }
+
+        private static string GetRepoPackageDirectoryName(DirectoryInfo reposRoot, string packageId)
+        {
+            var repoPackageDir = Path.Combine(reposRoot.FullName, "packages", packageId);
+            return repoPackageDir;
+        }
+           
     }
 }
