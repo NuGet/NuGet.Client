@@ -154,7 +154,9 @@ namespace NuGet.Protocol
             string embeddedIconPath = _nuspec.GetIcon();
 
             if (embeddedIconPath == null)
+            {
                 return Convert(_nuspec.GetIconUrl());
+            }
 
             var tempUri = Convert(_package.Path);
 
