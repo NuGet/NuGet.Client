@@ -322,12 +322,30 @@ namespace NuGet.PackageManagement.UI
             bool acceptedLicense = true;
 
             List<string> removedPackages = null;
+            List<Tuple<string, string>> existingPackages = new List<Tuple<string, string>>();
             List<Tuple<string,string>> addedPackages = null;
             List<Tuple<string,string>> updatedPackagesOld = null;
             List<Tuple<string,string>> updatedPackagesNew = null;
 
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
+
+            try
+            {
+                // collect the install state of the existing packages
+                foreach (var project in uiService.Projects)
+                {
+                    var result = await project.GetInstalledPackagesAsync(token);
+                    foreach (var package in result)
+                    {
+                        existingPackages.Add(new Tuple<string, string>(package.PackageIdentity.Id, (package.PackageIdentity.Version == null ? "" : package.PackageIdentity.Version.ToNormalizedString())));
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // don't teardown the process if we have a telemetry failure
+            }
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
             {
@@ -487,7 +505,7 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    AddUiActionEngineTelemetryProperties(actionTelemetryEvent, continueAfterPreview, acceptedLicense, userAction, addedPackages, removedPackages, updatedPackagesOld, updatedPackagesNew);
+                    AddUiActionEngineTelemetryProperties(actionTelemetryEvent, continueAfterPreview, acceptedLicense, userAction, existingPackages, addedPackages, removedPackages, updatedPackagesOld, updatedPackagesNew);
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
@@ -499,6 +517,7 @@ namespace NuGet.PackageManagement.UI
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
+            List<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
@@ -535,6 +554,19 @@ namespace NuGet.PackageManagement.UI
             {
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
+            }
+
+            // log the installed package state
+            if (existingPackages != null && existingPackages.Count > 0)
+            {
+                var packages = new List<TelemetryEvent>();
+
+                foreach (var package in existingPackages)
+                {
+                    packages.Add(ToTelemetryPackage(package));
+                }
+
+                actionTelemetryEvent.ComplexData["ExistingPackages"] = packages;
             }
 
             // other packages can be added, removed, or upgraded as part of bulk upgrade or as part of satisfying package dependencies, so log that also
