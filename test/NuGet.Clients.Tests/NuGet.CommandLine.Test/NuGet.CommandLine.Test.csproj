@@ -55,10 +55,14 @@
     <PostBuildEvent>
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)\
-      xcopy /dyc $(ArtifactsDirectory)VS15\NuGet.exe $(OutputPath)\
+      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)
+      xcopy /diy $(ArtifactsDirectory)VS15\NuGet.exe $(OutputPath)
     </PostBuildEvent>
   </PropertyGroup>
+
+  <Target Name="GetOutputPath">
+    <Message Text="OutputPath: $(OutputPath)" />
+  </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
