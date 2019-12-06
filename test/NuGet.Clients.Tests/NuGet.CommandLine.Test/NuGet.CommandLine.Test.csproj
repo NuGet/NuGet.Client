@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -55,7 +55,7 @@
     <PostBuildEvent>
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
-      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)
+      xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)NuGet\
       xcopy /diy $(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe $(OutputPath)NuGet\
     </PostBuildEvent>
   </PropertyGroup>
