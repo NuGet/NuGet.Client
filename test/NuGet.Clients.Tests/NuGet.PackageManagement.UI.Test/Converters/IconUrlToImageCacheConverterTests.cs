@@ -38,7 +38,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -54,7 +54,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -70,7 +70,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -88,7 +88,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -99,6 +99,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        //[Fact]
         public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
         {
             using (var testDir = TestDirectory.Create())
@@ -121,7 +122,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    builder.Uri,
+                    new object[] { builder.Uri },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    uri,
+                    new object[] { uri },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
@@ -186,7 +187,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    builder.Uri,
+                    new object[] { builder.Uri },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);

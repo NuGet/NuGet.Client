@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using NuGet.Packaging;
 using NuGet.Protocol;
@@ -114,6 +115,36 @@ namespace NuGet.PackageManagement.UI
                 return _localMetadata.LoadFileAsText(path);
             }
             return null;
+        }
+
+        public Stream GetEmbeddedIconStream(string iconPath)
+        {
+            Stream stream = null;
+
+            if (_localMetadata != null)
+            {
+                return _localMetadata.GetEmbeddedIconStream(iconPath);
+            }
+
+            return stream;
+        }
+
+        public Stream EmbeddedIconStream
+        {
+            get
+            {
+                if (_localMetadata != null && IconUrl != null && IconUrl.IsAbsoluteUri)
+                {
+                    var poundMark = IconUrl.OriginalString.LastIndexOf('#');
+                    if (poundMark >= 0)
+                    {
+                        var iconEntry = Uri.UnescapeDataString(IconUrl.Fragment).Substring(1);
+                        return GetEmbeddedIconStream(iconEntry);
+                    }
+                }
+
+                return null;
+            }
         }
     }
 }

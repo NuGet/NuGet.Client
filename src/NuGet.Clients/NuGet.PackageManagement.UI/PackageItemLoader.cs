@@ -272,6 +272,7 @@ namespace NuGet.PackageManagement.UI
                         AllowedVersions = allowedVersions,
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
+                        LocalPackageInfo = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.LocalPackageInfo
                     };
 
                     listItem.UpdatePackageStatus(_installedPackages);

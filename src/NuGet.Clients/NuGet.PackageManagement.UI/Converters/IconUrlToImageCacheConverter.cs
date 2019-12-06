@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
@@ -14,7 +15,7 @@ using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class IconUrlToImageCacheConverter : IValueConverter
+    internal class IconUrlToImageCacheConverter : IMultiValueConverter
     {
         private const int DecodePixelWidth = 32;
 
@@ -36,9 +37,9 @@ namespace NuGet.PackageManagement.UI
 
         // We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
         // This leads to a memory savings.
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            var iconUrl = value as Uri;
+            var iconUrl = values[0] as Uri;
             var defaultPackageIcon = parameter as BitmapSource;
             if (iconUrl == null)
             {
@@ -63,23 +64,16 @@ namespace NuGet.PackageManagement.UI
 
             var markIdx = iconUrl.OriginalString.LastIndexOf("#");
 
-            BitmapSource imageResult = null;
-
-            if (iconUrl.IsAbsoluteUri && iconUrl.IsFile && markIdx >= 0)
+            BitmapSource imageResult;
+            if (values.Length > 1 && values[1] != null)
             {
                 try
                 {
-                    using (var par = new PackageArchiveReader(Uri.UnescapeDataString(iconUrl.LocalPath)))
-                    {
-                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
-                        var zipEntry = par.GetEntry(iconEntry);
-                        iconBitmapImage.StreamSource = zipEntry.Open();
-                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
-                    }
+                    iconBitmapImage.StreamSource = values[1] as Stream;
+                    imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                 }
                 catch (Exception)
                 {
-
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
                 }
@@ -147,7 +141,7 @@ namespace NuGet.PackageManagement.UI
 
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
         }

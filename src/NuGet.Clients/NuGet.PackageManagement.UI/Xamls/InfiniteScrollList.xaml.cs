@@ -280,8 +280,7 @@ namespace NuGet.PackageManagement.UI
 
         private async Task<IEnumerable<PackageItemListViewModel>> LoadNextPageAsync(IPackageItemLoader currentLoader, CancellationToken token)
         {
-            var progress = new Progress<IItemLoaderState>(
-                s => HandleItemLoaderStateChange(currentLoader, s));
+            var progress = new Progress<IItemLoaderState>(s => HandleItemLoaderStateChange(currentLoader, s));
 
             // if searchResultTask is in progress then just wait for it to complete
             // without creating new load task

@@ -17,11 +17,10 @@ namespace NuGet.Protocol
     public class LocalPackageSearchMetadata : IPackageSearchMetadata
     {
         private readonly NuspecReader _nuspec;
-        private readonly LocalPackageInfo _package;
 
         public LocalPackageSearchMetadata(LocalPackageInfo package)
         {
-            _package = package ?? throw new ArgumentNullException(nameof(package));
+            LocalPackageInfo = package ?? throw new ArgumentNullException(nameof(package));
             _nuspec = package.Nuspec;
         }
 
@@ -46,7 +45,7 @@ namespace NuGet.Protocol
 
         public Uri ProjectUrl => Convert(_nuspec.GetProjectUrl());
 
-        public DateTimeOffset? Published => _package.LastWriteTimeUtc;
+        public DateTimeOffset? Published => LocalPackageInfo.LastWriteTimeUtc;
 
         /// <remarks>
         /// There is no report abuse url for local packages.
@@ -69,6 +68,8 @@ namespace NuGet.Protocol
         }
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
+
+        public LocalPackageInfo LocalPackageInfo { get; private set; }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
 
@@ -108,7 +109,7 @@ namespace NuGet.Protocol
             string fileContent = null;
             try
             {
-                if (_package.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
+                if (LocalPackageInfo.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
                 {
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
                     if (entry != null)
@@ -156,13 +157,31 @@ namespace NuGet.Protocol
             if (embeddedIconPath == null)
                 return Convert(_nuspec.GetIconUrl());
 
-            var tempUri = Convert(_package.Path);
+            var tempUri = Convert(LocalPackageInfo.Path);
 
             UriBuilder builder = new UriBuilder(tempUri);
             builder.Fragment = embeddedIconPath;
 
             // get the special icon url
             return builder.Uri;
+        }
+
+        public Stream GetEmbeddedIconStream(string iconPath)
+        {
+            try
+            {
+                var reader = LocalPackageInfo.GetReader() as PackageArchiveReader;
+                var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(iconPath));
+
+                return entry.Open();
+            }
+            catch
+            {
+
+            }
+
+            return null;
+
         }
     }
 }

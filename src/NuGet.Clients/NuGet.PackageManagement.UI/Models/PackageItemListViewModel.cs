@@ -10,11 +10,13 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using System.IO;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -293,6 +295,30 @@ namespace NuGet.PackageManagement.UI
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
+        public LocalPackageInfo LocalPackageInfo { get; set; }
+
+        public Stream EmbeddedIconStream
+        {
+            get
+            {
+                if (LocalPackageInfo != null && IconUrl != null && IconUrl.IsAbsoluteUri)
+                {
+                    var poundMark = IconUrl.OriginalString.LastIndexOf('#');
+                    if (poundMark >= 0)
+                    {
+                        var iconEntry = Uri.UnescapeDataString(IconUrl.Fragment).Substring(1);
+                        return GetEmbeddedIconStream(iconEntry);
+                    }
+                }
+
+                return null;
+            }
+            set
+            {
+
+            }
+        }
+
         private void TriggerStatusLoader()
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
@@ -405,6 +431,19 @@ namespace NuGet.PackageManagement.UI
                 var e = new PropertyChangedEventArgs(propertyName);
                 PropertyChanged(this, e);
             }
+        }
+
+        public Stream GetEmbeddedIconStream(string iconPath)
+        {
+            Stream stream = null;
+
+            if (LocalPackageInfo != null)
+            {
+                var par = LocalPackageInfo.GetReader() as PackageArchiveReader;
+                stream = par.GetEntry(iconPath).Open();
+            }
+
+            return stream;
         }
 
         public override string ToString()

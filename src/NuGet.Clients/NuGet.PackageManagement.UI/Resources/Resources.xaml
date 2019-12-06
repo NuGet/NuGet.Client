@@ -689,14 +689,24 @@
     <Setter Property="Width" Value="32" />
     <Setter Property="Source">
       <Setter.Value>
-        <Binding
-          Path="DataContext.IconUrl"
-          IsAsync="True"
-          RelativeSource="{RelativeSource Self}"
+        <MultiBinding
           Converter="{StaticResource IconUrlToImageCacheConverter}"
           ConverterParameter="{x:Static nuget:Images.DefaultPackageIcon}"
           TargetNullValue="{x:Static nuget:Images.DefaultPackageIcon}"
-          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}"/>
+          FallbackValue="{x:Static nuget:Images.DefaultPackageIcon}">
+          <Binding
+            Path="DataContext.IconUrl"
+            RelativeSource="{RelativeSource Self}" />
+          <Binding
+            Path="DataContext.EmbeddedIconStream"
+            RelativeSource="{RelativeSource Self}" />
+          <Binding
+            Path="DataContext.Version"
+            RelativeSource="{RelativeSource Self}" />
+          <Binding
+            Path="DataContext.LocalPackageInfo"
+            RelativeSource="{RelativeSource Self}" />
+        </MultiBinding>
       </Setter.Value>
     </Setter>
     <EventSetter Event="ImageFailed" Handler="PackageIconImage_ImageFailed"/>

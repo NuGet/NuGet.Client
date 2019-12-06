@@ -52,8 +52,8 @@ namespace NuGet.Protocol.Core.Types
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
-
             public bool IsListed { get; set; }
+            public LocalPackageInfo LocalPackageInfo { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -101,7 +101,10 @@ namespace NuGet.Protocol.Core.Types
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
-                LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync)
+                LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
+                LocalPackageInfo = _metadata is LocalPackageSearchMetadata
+                        ? (_metadata as LocalPackageSearchMetadata).LocalPackageInfo
+                        : null
             };
 
             return clonedMetadata;
