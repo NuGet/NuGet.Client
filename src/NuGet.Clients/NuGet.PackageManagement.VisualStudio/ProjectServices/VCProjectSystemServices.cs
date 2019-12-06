@@ -25,7 +25,7 @@ using MicrosoftBuildEvaluationProject = Microsoft.Build.Evaluation.Project;
 namespace NuGet.PackageManagement.VisualStudio
 {
     /// <summary>
-    /// Contains the information specific to a Visual Basic or C# project.
+    /// Contains the information specific to a Visual C++ project.
     /// </summary>
     internal class VCProjectSystemServices
         : GlobalProjectServiceProvider
@@ -92,7 +92,6 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(targetFramework);
 
-            //await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
 
@@ -155,9 +154,9 @@ namespace NuGet.PackageManagement.VisualStudio
         //Have PackageReference?
         public static bool HasPackageReference(IVsProjectAdapter _vsProjectAdapter)
         {
-            Assumes.Present(_vsProjectAdapter);
+            Assumes.Present(_vsProjectAdapter); 
 
-            
+
 
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
@@ -170,8 +169,8 @@ namespace NuGet.PackageManagement.VisualStudio
                     _vsProjectAdapter.VsHierarchy,
                     buildProject =>
                     {
-                        var packageReferences = buildProject.GetItems("PackageReference");
-
+                        //We should only care about the existence of a PackageReference, and not whether the Condition evaluates to false.
+                        var packageReferences = buildProject.Get​Items​Ignoring​Condition("PackageReference");
                         bHasPackageReference = packageReferences != null && packageReferences.Count != 0;
                     });
 
@@ -239,7 +238,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(packageReference);
 
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var includeFlags = packageReference.IncludeType;
             var privateAssetsFlag = packageReference.SuppressParent;
@@ -257,27 +256,19 @@ namespace NuGet.PackageManagement.VisualStudio
                 metadataValues.Add(LibraryIncludeFlagUtils.GetFlagString(privateAssetsFlag).Replace(',', ';'));
             }
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-
-                await ProjectHelper.DoWorkInWriterLockAsync(
-                    _vsProjectAdapter.Project,
-                    _vsProjectAdapter.VsHierarchy,
-                    buildProject => AddOrUpdatePackageReference(
-                        buildProject,
-                        packageReference.Name,
-                        packageReference.LibraryRange.VersionRange,
-                        metadataElements.ToArray(),
-                        metadataValues.ToArray()));
-            });
+            await ProjectHelper.DoWorkInWriterLockAsync(
+                _vsProjectAdapter.Project,
+                _vsProjectAdapter.VsHierarchy,
+                buildProject => AddOrUpdatePackageReference(
+                    buildProject,
+                    packageReference.Name,
+                    packageReference.LibraryRange.VersionRange,
+                    metadataElements.ToArray(),
+                    metadataValues.ToArray()));
         }
 
         private void AddOrUpdatePackageReference(MicrosoftBuildEvaluationProject msBuildEvaluationproject, string packageName, VersionRange packageVersion, string[] metadataElements, string[] metadataValues)
         {
-            //_threadingService.ThrowIfNotOnUIThread();
-
             // Note that API behavior is:
             // - specify a metadata element name with a value => add/replace that metadata item on the package reference
             // - specify a metadata element name with no value => remove that metadata item from the project reference
