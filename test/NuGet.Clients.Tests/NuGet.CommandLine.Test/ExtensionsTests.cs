@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.Test
 {
     public class ExtensionsTests
     {
-        [Fact(Skip ="Disable for now, fix later")]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8887")]
         public void TestExtensionsFsromProgramDirLoaded()
         {
             var nugetexe = Util.GetNuGetExePath();
