@@ -485,7 +485,7 @@ namespace NuGet.CommandLine.Test
         private static string GetNuGetExePathCore()
         {
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "NuGet.exe");
+            var nugetexe = Path.Combine(targetDir, "NuGet", "NuGet.exe");
             return nugetexe;
         }
 
