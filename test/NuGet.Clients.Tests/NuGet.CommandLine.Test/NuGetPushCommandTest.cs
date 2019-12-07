@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 using NuGet.Common;
+using FluentAssertions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1211,7 +1212,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(1, r1.Item1);
+                    r1.Item1.Should().Be(1, because: r1.AllOutput);
                     Assert.Contains("401 (Unauthorized)", r1.Item2 + " " + r1.Item3);
                     Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2 + " " + r1.Item3);
 

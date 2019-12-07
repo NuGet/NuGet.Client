@@ -207,7 +207,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     command,
                     waitForExit: true);
 
-                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.Success.Should().BeTrue();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
@@ -261,7 +261,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     command,
                     waitForExit: true);
 
-                result.Success.Should().BeFalse(because: result.AllOutput);
+                result.Success.Should().BeFalse();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
                 result.Errors.Should().Contain("NU3033: A repository primary signature must not have a repository countersignature.");
             }
@@ -294,7 +294,7 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
                     repoSignCommand,
                     waitForExit: true);
 
-                result.Success.Should().BeTrue(because: result.AllOutput);
+                result.Success.Should().BeTrue();
                 result.AllOutput.Should().Contain(_noTimestamperWarningCode);
             }
         }
