@@ -46,6 +46,7 @@ namespace NuGet.Tests.Apex
                 testContext.SolutionService.Build();
                 testContext.NuGetApexTestService.WaitForAutoRestore();
 
+                VisualStudio.AssertNoErrors();
                 CommonUtility.AssertPackageInAssetsFile(VisualStudio, testContext.Project, "TestProject2", "1.0.0", XunitLogger);
             }
         }

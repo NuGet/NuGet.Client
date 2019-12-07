@@ -37,6 +37,8 @@ namespace NuGet.Tests.Apex
             SolutionService = _visualStudio.Get<SolutionService>();
             NuGetApexTestService = _visualStudio.Get<NuGetApexTestService>();
 
+            VisualStudioHostExtension.ClearWindows(_visualStudio);
+
             Project = CommonUtility.CreateAndInitProject(projectTemplate, _pathContext, SolutionService, logger);
 
             NuGetApexTestService.WaitForAutoRestore();
