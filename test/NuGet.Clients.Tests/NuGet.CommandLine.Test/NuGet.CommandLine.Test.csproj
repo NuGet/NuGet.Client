@@ -60,10 +60,6 @@
     </PostBuildEvent>
   </PropertyGroup>
 
-  <Target Name="GetOutputPath">
-    <Message Text="OutputPath: $(OutputPath)" />
-  </Target>
-
   <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
