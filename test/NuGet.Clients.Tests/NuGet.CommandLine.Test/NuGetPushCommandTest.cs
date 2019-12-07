@@ -1154,7 +1154,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server, plugin provider returns abort
-        [Fact]
+        [SkipMono] //https://github.com/NuGet/Home/issues/8417
         public void PushCommand_PushToServer_WhenPluginReturnsAbort_ThrowsAndDoesNotFallBackToConsoleProvider()
         {
             var nugetexe = Util.GetNuGetExePath();
