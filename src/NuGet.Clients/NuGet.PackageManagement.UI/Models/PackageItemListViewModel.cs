@@ -295,13 +295,16 @@ namespace NuGet.PackageManagement.UI
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
+        /// <summary>
+        /// 
+        /// </summary>
         public LocalPackageInfo LocalPackageInfo { get; set; }
 
         public Stream EmbeddedIconStream
         {
             get
             {
-                if (LocalPackageInfo != null && IconUrl != null && IconUrl.IsAbsoluteUri)
+                if (LocalPackageInfo != null && IconUrl != null && IconUrl.IsFile && IconUrl.IsAbsoluteUri)
                 {
                     var poundMark = IconUrl.OriginalString.LastIndexOf('#');
                     if (poundMark >= 0)
@@ -312,10 +315,6 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 return null;
-            }
-            set
-            {
-
             }
         }
 
@@ -433,14 +432,21 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Stream GetEmbeddedIconStream(string iconPath)
+        private Stream GetEmbeddedIconStream(string iconPath)
         {
             Stream stream = null;
 
             if (LocalPackageInfo != null)
             {
                 var par = LocalPackageInfo.GetReader() as PackageArchiveReader;
-                stream = par.GetEntry(iconPath).Open();
+                try
+                {
+                    stream = par.GetEntry(iconPath).Open();
+                }
+                catch
+                {
+                    stream = null;
+                }
             }
 
             return stream;

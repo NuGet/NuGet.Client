@@ -155,7 +155,9 @@ namespace NuGet.Protocol
             string embeddedIconPath = _nuspec.GetIcon();
 
             if (embeddedIconPath == null)
+            {
                 return Convert(_nuspec.GetIconUrl());
+            }
 
             var tempUri = Convert(LocalPackageInfo.Path);
 
@@ -164,24 +166,6 @@ namespace NuGet.Protocol
 
             // get the special icon url
             return builder.Uri;
-        }
-
-        public Stream GetEmbeddedIconStream(string iconPath)
-        {
-            try
-            {
-                var reader = LocalPackageInfo.GetReader() as PackageArchiveReader;
-                var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(iconPath));
-
-                return entry.Open();
-            }
-            catch
-            {
-
-            }
-
-            return null;
-
         }
     }
 }

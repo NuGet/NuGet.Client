@@ -700,12 +700,6 @@
           <Binding
             Path="DataContext.EmbeddedIconStream"
             RelativeSource="{RelativeSource Self}" />
-          <Binding
-            Path="DataContext.Version"
-            RelativeSource="{RelativeSource Self}" />
-          <Binding
-            Path="DataContext.LocalPackageInfo"
-            RelativeSource="{RelativeSource Self}" />
         </MultiBinding>
       </Setter.Value>
     </Setter>
