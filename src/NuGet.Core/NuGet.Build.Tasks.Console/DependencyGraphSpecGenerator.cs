@@ -18,6 +18,7 @@ using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Graph;
+using Microsoft.Build.Logging;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -734,19 +735,36 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
         private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects)
         {
+            var loggers = new List<ILogger>
+            {
+                LoggingQueue
+            };
+
+            // Get user specified parameters for a binary logger
+            string binlogParameters = Environment.GetEnvironmentVariable("RESTORE_TASK_BINLOG_PARAMETERS");
+
+            // Attach the binary logger if Debug or binlog parameters were specified
+            if (Debug || !string.IsNullOrWhiteSpace(binlogParameters))
+            {
+                loggers.Add(new BinaryLogger
+                {
+                    // Default the binlog parameters if only the debug option was specified
+                    Parameters = binlogParameters ?? "LogFile=nuget.binlog"
+                });
+            }
+
             var projects = new ConcurrentDictionary<string, ProjectWithInnerNodes>(StringComparer.OrdinalIgnoreCase);
 
             var projectCollection = new ProjectCollection(
                 globalProperties: null,
                 // Attach a logger for evaluation only if the Debug option is set
-                loggers: Debug ? new List<ILogger> { LoggingQueue } : null,
+                loggers: loggers,
                 remoteLoggers: null,
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
                 // Having more than 1 node spins up multiple msbuild.exe instances to run builds in parallel
                 // However, these targets complete so quickly that the added overhead makes it take longer
                 maxNodeCount: 1,
-                // Only log critical events unless the Debug option is set for maximum performance
-                onlyLogCriticalEvents: !Debug,
+                onlyLogCriticalEvents: false,
                 // Loading projects as readonly makes parsing a little faster since comments and whitespace can be ignored
                 loadProjectsReadOnly: true);
 
@@ -762,21 +780,18 @@ namespace NuGet.Build.Tasks.Console
 
                 int buildCount = 0;
 
+                var buildParameters = new BuildParameters(projectCollection)
+                {
+                    // Use the same loggers as the project collection
+                    Loggers = projectCollection.Loggers,
+                    LogTaskInputs = Debug
+                };
+
+                // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
+                BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
+
                 try
                 {
-                    var buildParameters = new BuildParameters(projectCollection)
-                    {
-                        // Attach a logger so that events logged when building the projects can be collected
-                        Loggers = new List<ILogger>
-                        {
-                            LoggingQueue
-                        },
-                        OnlyLogCriticalEvents = false
-                    };
-
-                    // BeginBuild starts a queue which accepts build requests and applies the build parameters to all of them
-                    BuildManager.DefaultBuildManager.BeginBuild(buildParameters);
-
                     // Create a ProjectGraph object and pass a factory method which creates a ProjectInstance
                     projectGraph = new ProjectGraph(entryProjects, projectCollection, (path, properties, collection) =>
                     {
