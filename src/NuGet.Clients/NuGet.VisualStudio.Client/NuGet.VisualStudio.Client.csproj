@@ -100,7 +100,6 @@
       <Link>Modules\NuGet\Profile.ps1</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="ClassDiagram1.cd" />
     <None Include="project.json" />
     <Content Include="..\NuGet.PackageManagement.UI\Resources\PackageIconMonikers.imagemanifest">
       <Link>PackageIconMonikers.imagemanifest</Link>
