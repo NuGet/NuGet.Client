@@ -63,12 +63,13 @@ namespace NuGet.PackageManagement.UI
             iconBitmapImage.BeginInit();
 
             BitmapSource imageResult;
-            
+
             if (values.Length > 1
                 && values[1] != null
+                && values[1] != System.Windows.DependencyProperty.UnsetValue
                 && iconUrl.IsFile
                 && !string.IsNullOrEmpty(iconUrl.Fragment)
-                && iconUrl.Fragment.Length > 1) // if it is an embedded icon
+                && iconUrl.Fragment.Length > 1) // is it an embedded icon?
             {
                 try
                 {
