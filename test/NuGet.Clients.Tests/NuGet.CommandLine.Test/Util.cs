@@ -8,7 +8,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 using Moq;
@@ -54,7 +53,7 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, params string[] additionalArgs)
         {
-            var nugetexe = Util.GetNuGetExePath();
+            var nugetexe = GetNuGetExePath();
 
             // Store the dg file for debugging
             var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
@@ -485,7 +484,7 @@ namespace NuGet.CommandLine.Test
         private static string GetNuGetExePathCore()
         {
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "NuGet.exe");
+            var nugetexe = Path.Combine(targetDir, "NuGet", "NuGet.exe");
             return nugetexe;
         }
 

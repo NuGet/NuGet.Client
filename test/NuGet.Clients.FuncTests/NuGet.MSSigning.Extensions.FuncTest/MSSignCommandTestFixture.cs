@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Configuration;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.CommandLine.Test;
@@ -75,7 +77,9 @@ namespace NuGet.MSSigning.Extensions.FuncTest.Commands
             {
                 if (_nugetExePath == null)
                 {
-                    _nugetExePath = Util.GetNuGetExePath();
+                    // Use the non-ILMerged version
+                    var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
+                    _nugetExePath = Path.Combine(targetDir, "NuGet.exe");
                 }
 
                 return _nugetExePath;

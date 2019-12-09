@@ -11,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;
 using NuGet.Common;
+using FluentAssertions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -1153,7 +1154,7 @@ namespace NuGet.CommandLine.Test
         }
 
         // Test push command to a server, plugin provider returns abort
-        [Fact]
+        [SkipMono] //https://github.com/NuGet/Home/issues/8417
         public void PushCommand_PushToServer_WhenPluginReturnsAbort_ThrowsAndDoesNotFallBackToConsoleProvider()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1211,7 +1212,7 @@ namespace NuGet.CommandLine.Test
                     server.Stop();
 
                     // Assert
-                    Assert.Equal(1, r1.Item1);
+                    r1.Item1.Should().Be(1, because: r1.AllOutput);
                     Assert.Contains("401 (Unauthorized)", r1.Item2 + " " + r1.Item3);
                     Assert.Contains($"Credential plugin {pluginPath} handles this request, but is unable to provide credentials. Testing abort.", r1.Item2 + " " + r1.Item3);
 
@@ -1907,10 +1908,10 @@ namespace NuGet.CommandLine.Test
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(
-                   result.Item3.Contains(
-                       "NameResolutionFailure"),
-                   "Expected error message not found in " + result.Item3
-                   );
+                        result.Item3.Contains(
+                        "No such host is known"),
+                        "Expected error message not found in " + result.Item3
+                    );
                 }
                 else
                 {
@@ -1918,8 +1919,9 @@ namespace NuGet.CommandLine.Test
                         result.Item3.Contains(
                             "The remote name could not be resolved: 'invalid-2a0358f1-88f2-48c0-b68a-bb150cac00bd.org'"),
                         "Expected error message not found in " + result.Item3
-                        );
+                    );
                 }
+
             }
         }
 
@@ -1953,12 +1955,8 @@ namespace NuGet.CommandLine.Test
                     result.Item1 != 0,
                     "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-                //TODO: review with nuget team, that this new error is good
-                Assert.True(
-                    result.Item3.Contains(
-                        "Response status code does not indicate success: 404 (Not Found)"),
-                    "Expected error message not found in " + result.Item3
-                    );
+                Assert.Contains("Response status code does not indicate success: 404 (Not Found)", result.Item3);
+
             }
         }
 
@@ -1990,15 +1988,11 @@ namespace NuGet.CommandLine.Test
                                 true);
 
                 // Assert
-                Assert.True(
-                    result.Item1 != 0,
-                    "The run did not fail as desired. Simply got this output:" + result.Item2);
-
                 if (RuntimeEnvironmentHelper.IsMono)
                 {
                     Assert.True(
                    result.Item3.Contains(
-                       "NameResolutionFailure"),
+                       "No such host is known"),
                    "Expected error message not found in " + result.Item3
                    );
                 }

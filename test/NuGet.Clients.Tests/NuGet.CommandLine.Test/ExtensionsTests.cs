@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using FluentAssertions;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -9,8 +10,8 @@ namespace NuGet.CommandLine.Test
 {
     public class ExtensionsTests
     {
-        [Fact]
-        public void TestExtensionsFromProgramDirLoaded()
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/8887")]
+        public void TestExtensionsFsromProgramDirLoaded()
         {
             var nugetexe = Util.GetNuGetExePath();
             using (var randomTestFolder = TestDirectory.Create())
@@ -20,8 +21,7 @@ namespace NuGet.CommandLine.Test
                     randomTestFolder,
                     "hello",
                     true);
-
-                Assert.Equal("Hello!" + Environment.NewLine, result.Item2);
+                result.Item2.Should().Be("Hello!" + Environment.NewLine);
             }
         }
     }

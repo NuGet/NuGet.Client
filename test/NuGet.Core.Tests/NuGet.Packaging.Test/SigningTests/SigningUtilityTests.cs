@@ -94,7 +94,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
         public void Verify_WhenChainBuildingFails_Throws()
         {
             using (var certificate = _fixture.GetExpiredCertificate())
@@ -125,7 +125,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/8047
         public void Verify_WithUntrustedSelfSignedCertificate_Succeeds()
         {
             using (var certificate = _fixture.GetDefaultCertificate())

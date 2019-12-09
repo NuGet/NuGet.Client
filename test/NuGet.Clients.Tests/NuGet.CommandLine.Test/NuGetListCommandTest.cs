@@ -9,6 +9,7 @@ using NuGet.Test.Utility;
 using Xunit;
 using System.Text;
 using NuGet.Common;
+using FluentAssertions;
 
 namespace NuGet.CommandLine.Test
 {
@@ -52,8 +53,9 @@ namespace NuGet.CommandLine.Test
 
             if (RuntimeEnvironmentHelper.IsMono)
             {
-                expected = "NameResolutionFailure";
+                expected = "No such host is known";
             }
+
             var args = new[] { "list", "-Source", "https://" + hostName + "/" };
 
             // Act
@@ -576,7 +578,7 @@ namespace NuGet.CommandLine.Test
                     // verify that the output is detailed
                     var expectedOutput = "testPackage1 1.1.0" + Environment.NewLine +
                         "testPackage2 2.1.0" + Environment.NewLine;
-                    Assert.Equal(expectedOutput, r1.Item2);
+                    r1.Item2.Should().Be(expectedOutput);
 
                     Assert.DoesNotContain("$filter", searchRequest);
                     Assert.Contains("searchTerm='test", searchRequest);
@@ -848,22 +850,7 @@ namespace NuGet.CommandLine.Test
                 result.Item1 != 0,
                 "The run did not fail as desired. Simply got this output:" + result.Item2);
 
-            if (RuntimeEnvironmentHelper.IsMono)
-            {
-                Assert.True(
-               result.Item3.Contains(
-                   "NameResolutionFailure"),
-               "Expected error message not found in " + result.Item3
-               );
-            }
-            else
-            {
-                Assert.True(
-                    result.Item3.Contains(
-                        $"Unable to load the service index for source {invalidInput}."),
-                    "Expected error message not found in " + result.Item3
-                    );
-            }
+                Assert.Contains($"Unable to load the service index for source {invalidInput}.", result.Item3);
         }
 
         [Theory]
