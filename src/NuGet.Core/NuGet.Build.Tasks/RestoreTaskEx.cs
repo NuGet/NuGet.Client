@@ -6,9 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Packaging;
 using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
 
 namespace NuGet.Build.Tasks
@@ -189,14 +191,8 @@ namespace NuGet.Build.Tasks
                     ? SolutionPath
                     : ProjectFullPath;
 
-            // TODO: Find a way to get global properties from the project that is running the task
-            var msBuildGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["ExcludeRestorePackageImports"] = "true"
-            };
-
             // Semicolon delimited list of MSBuild global properties
-            yield return string.Join(";", msBuildGlobalProperties.Select(i => $"{i.Key}={i.Value}"));
+            yield return string.Join(";", GetGlobalProperties().Select(i => $"{i.Key}={i.Value}"));
         }
 
         /// <summary>
@@ -211,6 +207,46 @@ namespace NuGet.Build.Tasks
 #else
             return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.exe"));
 #endif
+        }
+
+        private Dictionary<string, string> GetGlobalProperties()
+        {
+#if IS_CORECLR
+            // MSBuild 16.5 and above has a method to get the global properties, older versions do not
+            Dictionary<string, string> msBuildGlobalProperties = BuildEngine is IBuildEngine6 buildEngine6
+                ? buildEngine6.GetGlobalProperties().ToDictionary(i => i.Key, i => i.Value, StringComparer.OrdinalIgnoreCase)
+                : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+#else
+            var msBuildGlobalProperties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // MSBuild 16.5 added a new interface, IBuildEngine6, which has a GetGlobalProperties() method.  However, we compile against
+            // Microsoft.Build.Framework version 4.0 when targeting .NET Framework, so reflection is required since type checking
+            // can't be done at compile time
+            var buildEngine6Type = typeof(IBuildEngine).Assembly.GetType("Microsoft.Build.Framework.IBuildEngine6");
+
+            if (buildEngine6Type != null)
+            {
+                var getGlobalPropertiesMethod = buildEngine6Type.GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
+
+                if(getGlobalPropertiesMethod != null)
+                {
+                    try
+                    {
+                        if (getGlobalPropertiesMethod.Invoke(BuildEngine, null) is IReadOnlyDictionary<string, string> globalProperties)
+                        {
+                            msBuildGlobalProperties.AddRange(globalProperties);
+                        }
+                    }
+                    catch
+                    {
+                        // Ignored
+                    }
+                }
+            }
+#endif
+            msBuildGlobalProperties["ExcludeRestorePackageImports"] = "true";
+
+            return msBuildGlobalProperties;
         }
     }
 }
