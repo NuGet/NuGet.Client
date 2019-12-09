@@ -111,25 +111,28 @@ namespace NuGet.Protocol
             {
                 if (LocalPackageInfo.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
                 {
-                    var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
-                    if (entry != null)
+                    using (reader)
                     {
-                        if (entry.Length >= FiveMegabytes) 
+                        var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
+                        if (entry != null)
                         {
-                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
+                            if (entry.Length >= FiveMegabytes)
+                            {
+                                fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
+                            }
+                            else
+                            {
+                                using (var licenseStream = entry.Open())
+                                using (TextReader textReader = new StreamReader(licenseStream))
+                                {
+                                    fileContent = textReader.ReadToEnd();
+                                }
+                            }
                         }
                         else
                         {
-                            using (var licenseStream = entry.Open())
-                            using (TextReader textReader = new StreamReader(licenseStream))
-                            {
-                                fileContent = textReader.ReadToEnd();
-                            }
+                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileNotFound, path);
                         }
-                    }
-                    else
-                    {
-                        fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileNotFound, path);
                     }
                 }
             }
@@ -159,10 +162,12 @@ namespace NuGet.Protocol
                 return Convert(_nuspec.GetIconUrl());
             }
 
-            var tempUri = Convert(LocalPackageInfo.Path);
+            var baseUri = Convert(LocalPackageInfo.Path);
 
-            UriBuilder builder = new UriBuilder(tempUri);
-            builder.Fragment = embeddedIconPath;
+            UriBuilder builder = new UriBuilder(baseUri)
+            {
+                Fragment = embeddedIconPath
+            };
 
             // get the special icon url
             return builder.Uri;

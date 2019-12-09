@@ -62,14 +62,36 @@ namespace NuGet.PackageManagement.UI
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
 
-            var markIdx = iconUrl.OriginalString.LastIndexOf("#");
-
             BitmapSource imageResult;
-            if (values.Length > 1 && values[1] != null)
+            
+            if (values.Length > 1
+                && values[1] != null
+                && iconUrl.IsFile
+                && !string.IsNullOrEmpty(iconUrl.Fragment)
+                && iconUrl.Fragment.Length > 1) // if it is an embedded icon
             {
                 try
                 {
-                    iconBitmapImage.StreamSource = values[1] as Stream;
+                    var par = values[1] as PackageArchiveReader;
+                    var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
+                    iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
+
+                    iconBitmapImage.DecodeFailed += (sender, args) =>
+                    {
+                        par.Dispose();
+                        IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                    };
+                    iconBitmapImage.DownloadFailed += (sender, args) =>
+                    {
+                        par.Dispose();
+                        IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                    };
+                    iconBitmapImage.DownloadCompleted += (sender, args) =>
+                    {
+                        par.Dispose();
+                        IconBitmapImage_DownloadCompleted(sender, args);
+                    };
+
                     imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                 }
                 catch (Exception)
@@ -81,6 +103,11 @@ namespace NuGet.PackageManagement.UI
             else
             {
                 iconBitmapImage.UriSource = iconUrl;
+
+                iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
+                iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
+                iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
+
                 imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
             }
 
@@ -97,10 +124,6 @@ namespace NuGet.PackageManagement.UI
             // Instead of scaling larger images and keeping larger image in memory, this makes it so we scale it down, and throw away the bigger image.
             // Only need to set this on one dimension, to preserve aspect ratio
             iconBitmapImage.DecodePixelWidth = DecodePixelWidth;
-
-            iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
 
             BitmapSource image = null;
             try

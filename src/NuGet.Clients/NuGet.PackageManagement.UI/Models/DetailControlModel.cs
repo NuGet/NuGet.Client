@@ -4,11 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -633,13 +633,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public LocalPackageInfo LocalPackageInfo
-        {
-            get
-            {
-                return _searchResultPackage?.LocalPackageInfo;
-            }
-        }
+        public PackageArchiveReader PackageArchiveReader => _searchResultPackage?.PackageArchiveReader;
 
         protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
         {

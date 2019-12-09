@@ -698,7 +698,7 @@
             Path="DataContext.IconUrl"
             RelativeSource="{RelativeSource Self}" />
           <Binding
-            Path="DataContext.EmbeddedIconStream"
+            Path="DataContext.PackageArchiveReader"
             RelativeSource="{RelativeSource Self}" />
         </MultiBinding>
       </Setter.Value>

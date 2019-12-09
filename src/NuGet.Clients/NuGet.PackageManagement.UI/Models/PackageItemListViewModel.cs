@@ -300,24 +300,6 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public LocalPackageInfo LocalPackageInfo { get; set; }
 
-        public Stream EmbeddedIconStream
-        {
-            get
-            {
-                if (LocalPackageInfo != null && IconUrl != null && IconUrl.IsFile && IconUrl.IsAbsoluteUri)
-                {
-                    var poundMark = IconUrl.OriginalString.LastIndexOf('#');
-                    if (poundMark >= 0)
-                    {
-                        var iconEntry = Uri.UnescapeDataString(IconUrl.Fragment).Substring(1);
-                        return GetEmbeddedIconStream(iconEntry);
-                    }
-                }
-
-                return null;
-            }
-        }
-
         private void TriggerStatusLoader()
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
@@ -432,24 +414,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private Stream GetEmbeddedIconStream(string iconPath)
+        public PackageArchiveReader PackageArchiveReader
         {
-            Stream stream = null;
-
-            if (LocalPackageInfo != null)
+            get
             {
-                var par = LocalPackageInfo.GetReader() as PackageArchiveReader;
-                try
-                {
-                    stream = par.GetEntry(iconPath).Open();
-                }
-                catch
-                {
-                    stream = null;
-                }
+                return LocalPackageInfo?.GetReader() as PackageArchiveReader;
             }
-
-            return stream;
         }
 
         public override string ToString()
