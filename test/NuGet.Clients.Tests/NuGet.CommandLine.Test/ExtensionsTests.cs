@@ -10,7 +10,7 @@ namespace NuGet.CommandLine.Test
 {
     public class ExtensionsTests
     {
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/8887")]
+        [Fact]
         public void TestExtensionsFsromProgramDirLoaded()
         {
             var nugetexe = Util.GetNuGetExePath();
