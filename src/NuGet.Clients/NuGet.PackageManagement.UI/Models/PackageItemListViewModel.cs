@@ -296,7 +296,7 @@ namespace NuGet.PackageManagement.UI
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
         /// <summary>
-        /// 
+        /// Information related to the package on disk
         /// </summary>
         public LocalPackageInfo LocalPackageInfo { get; set; }
 
@@ -414,6 +414,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Gets an instance of a package reader. <see cref="LocalPackageInfo"/>
+        /// </summary>
         public PackageArchiveReader PackageArchiveReader
         {
             get

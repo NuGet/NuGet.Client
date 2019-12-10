@@ -17,10 +17,11 @@ namespace NuGet.Protocol
     public class LocalPackageSearchMetadata : IPackageSearchMetadata
     {
         private readonly NuspecReader _nuspec;
+        private readonly LocalPackageInfo _package;
 
         public LocalPackageSearchMetadata(LocalPackageInfo package)
         {
-            LocalPackageInfo = package ?? throw new ArgumentNullException(nameof(package));
+            _package = package ?? throw new ArgumentNullException(nameof(package));
             _nuspec = package.Nuspec;
         }
 
@@ -45,7 +46,7 @@ namespace NuGet.Protocol
 
         public Uri ProjectUrl => Convert(_nuspec.GetProjectUrl());
 
-        public DateTimeOffset? Published => LocalPackageInfo.LastWriteTimeUtc;
+        public DateTimeOffset? Published => _package.LastWriteTimeUtc;
 
         /// <remarks>
         /// There is no report abuse url for local packages.
@@ -69,7 +70,7 @@ namespace NuGet.Protocol
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
 
-        public LocalPackageInfo LocalPackageInfo { get; private set; }
+        public LocalPackageInfo LocalPackageInfo => _package;
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
 
@@ -109,7 +110,7 @@ namespace NuGet.Protocol
             string fileContent = null;
             try
             {
-                if (LocalPackageInfo.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
+                if (_package.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
                 {
                     using (reader)
                     {
@@ -162,7 +163,7 @@ namespace NuGet.Protocol
                 return Convert(_nuspec.GetIconUrl());
             }
 
-            var baseUri = Convert(LocalPackageInfo.Path);
+            var baseUri = Convert(_package.Path);
 
             UriBuilder builder = new UriBuilder(baseUri)
             {
