@@ -4,10 +4,10 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Text;
 using System.Threading;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using NuGet.Packaging;
 using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -98,8 +98,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
-        //[Fact]
+        [Fact(Skip = "Runs only on Windows Desktop with WPF support")]
         public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
         {
             using (var testDir = TestDirectory.Create())
@@ -122,7 +121,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { builder.Uri },
+                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
@@ -187,7 +186,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { builder.Uri },
+                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
