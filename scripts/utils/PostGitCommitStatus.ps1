@@ -192,7 +192,8 @@ function CheckVstsPersonalAccessToken {
     }
 
     try {
-        $response = Invoke-WebRequest -Uri $url -Method GET -Headers $Headers
+        # Basic Parsing prevents the need for Internet Explorer availability.
+        $response = Invoke-WebRequest -Uri $url -Method GET -Headers $Headers -UseBasicParsing
 
         # This will only execute if the Invoke-WebRequest is successful.
         $StatusCode = $response.StatusCode
