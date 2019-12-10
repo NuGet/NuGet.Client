@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        [Fact(Skip = "Runs only on Windows Desktop with WPF support")]
         public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
         {
             using (var testDir = TestDirectory.Create())
