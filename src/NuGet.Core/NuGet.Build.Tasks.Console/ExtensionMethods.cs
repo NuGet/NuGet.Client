@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Build.Execution;
 using NuGet.Commands;
 using NuGet.Common;
 
@@ -14,26 +13,15 @@ namespace NuGet.Build.Tasks.Console
     internal static class ExtensionMethods
     {
         /// <summary>
-        /// Determines if the specified item has a metadata value that is equal to <see cref="bool.TrueString" />.
-        /// </summary>
-        /// <param name="item">The <see cref="ProjectItemInstance" /> to get the metadata value from.</param>
-        /// <param name="name">The name of the metadata to get the value of.</param>
-        /// <param name="defaultValue">The default value to return if the specified metadata has no value.</param>
-        /// <returns><code>true</code> if the specified metadata value is equal to <see cref="bool.TrueString" />, otherwise <code>false</code>.</returns>
-        public static bool IsMetadataTrue(this ProjectItemInstance item, string name, bool defaultValue = false)
-        {
-            return IsValueTrue(item.GetMetadataValue(name), defaultValue);
-        }
-
-        /// <summary>
         /// Determines if the specified item has a property value that is equal to <see cref="bool.TrueString" />.
         /// </summary>
         /// <param name="item">The <see cref="IMSBuildItem" /> to get the metadata value from.</param>
         /// <param name="name">The name of the property to get the value of.</param>
+        /// <param name="defaultValue">The default value to return if the specified metadata has no value.</param>
         /// <returns><code>true</code> if the specified property value is equal to <see cref="bool.TrueString" />, otherwise <code>false</code>.</returns>
-        public static bool IsPropertyTrue(this IMSBuildItem item, string name)
+        public static bool IsPropertyTrue(this IMSBuildItem item, string name, bool defaultValue = false)
         {
-            return IsValueTrue(item.GetProperty(name));
+            return IsValueTrue(item.GetProperty(name), defaultValue);
         }
 
         /// <summary>

@@ -11,14 +11,14 @@ namespace NuGet.Build.Tasks.Console
     /// a single framework only have an outer project.  But if a project targets multiple frameworks, items like PackageReference,
     /// ProjectReference, and other properties need to be gathered from the set of projects for those target frameworks.
     /// </summary>
-    internal sealed class ProjectWithInnerNodes : ConcurrentDictionary<string, ProjectInstance>
+    internal sealed class ProjectWithInnerNodes : ConcurrentDictionary<string, IMSBuildProject>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProjectWithInnerNodes"/> class.
         /// </summary>
         /// <param name="targetFramework">The target framework of the outer project if any, otherwise <code>null</code>.</param>
         /// <param name="outerProject">The <see cref="ProjectInstance"/> of the outer project if any, otherwise <code>null</code>.</param>
-        public ProjectWithInnerNodes(string targetFramework, ProjectInstance outerProject)
+        public ProjectWithInnerNodes(string targetFramework, IMSBuildProject outerProject)
         {
             Add(targetFramework, outerProject);
         }
@@ -26,32 +26,24 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the <see cref="ProjectInstance"/> of the outer project.
         /// </summary>
-        public ProjectInstance OuterProject { get; private set; }
+        public IMSBuildProject OuterProject { get; private set; }
 
-        /// <summary>
-        /// Implicitly converts a <see cref="ProjectWithInnerNodes" /> object to a <see cref="ProjectInstance" /> object.
-        /// </summary>
-        /// <param name="projectWithInnerNodes">The <see cref="ProjectWithInnerNodes" /> object to convert.</param>
-        public static implicit operator ProjectInstance(ProjectWithInnerNodes projectWithInnerNodes)
-        {
-            return projectWithInnerNodes.OuterProject;
-        }
 
         /// <summary>
         /// Sets the outer project if <paramref name="targetFramework"/> is null, otherwise adds the inner project.
         /// </summary>
         /// <param name="targetFramework">The name of the target framework for the project if any, otherwise <code>null</code>.</param>
-        /// <param name="projectInstance">The <see cref="ProjectInstance"/> of the project.</param>
+        /// <param name="project">The <see cref="ProjectInstance"/> of the project.</param>
         /// <returns>The current object.</returns>
-        public ProjectWithInnerNodes Add(string targetFramework, ProjectInstance projectInstance)
+        public ProjectWithInnerNodes Add(string targetFramework, IMSBuildProject project)
         {
             if (string.IsNullOrWhiteSpace(targetFramework))
             {
-                OuterProject = projectInstance;
+                OuterProject = project;
             }
             else
             {
-                TryAdd(targetFramework, projectInstance);
+                TryAdd(targetFramework, project);
             }
 
             return this;

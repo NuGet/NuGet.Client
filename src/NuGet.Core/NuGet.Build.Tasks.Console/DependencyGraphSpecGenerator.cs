@@ -129,43 +129,14 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Gets the package fallback folders for the specified project.
-        /// </summary>
-        /// <param name="project">An <see cref="IMSBuildItem" /> that represents the project.</param>
-        /// <param name="projectDirectory">The full path to the directory that contains the project.</param>
-        /// <param name="innerNodes">A <see cref="IReadOnlyCollection{ProjectInstance}" /> representing the inner nodes of the project if it is targeting multiple frameworks.</param>
-        /// <param name="settings">The <see cref="ISettings" /> for the specified project.</param>
-        /// <returns>An <see cref="IEnumerable{String}" /> containing the fallback folders for the specified project.</returns>
-        private static IEnumerable<string> GetFallbackFolders(IMSBuildItem project, string projectDirectory, IReadOnlyCollection<ProjectInstance> innerNodes, ISettings settings)
-        {
-            var restoreFallbackFolders = project.SplitPropertyValueOrNull("RestoreFallbackFolders");
-
-            var currentFallbackFolders = RestoreSettingsUtils.GetValue(
-                () => project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride")?.Select(i => UriUtility.GetAbsolutePath(projectDirectory, i)),
-                () => MSBuildRestoreUtility.ContainsClearKeyword(restoreFallbackFolders) ? Array.Empty<string>() : null,
-                () => restoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)),
-                () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
-
-            // Append additional fallback folders after removing excluded folders
-            var additionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
-                    values: innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetPropertyValue("RestoreAdditionalProjectFallbackFolders"))),
-                    excludeValues: innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetPropertyValue("RestoreAdditionalProjectFallbackFoldersExcludes"))))
-                .Select(i => UriUtility.GetAbsolutePath(projectDirectory, i));
-
-            return currentFallbackFolders
-                .Concat(additionalProjectFallbackFolders)
-                .Where(i => !string.IsNullOrWhiteSpace(i));
-        }
-
-        /// <summary>
         /// Gets the framework references for the specified project.
         /// </summary>
-        /// <param name="projectInstance">The <see cref="ProjectInstance" /> to get framework references for.</param>
+        /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>
         /// <returns>A <see cref="List{FrameworkDependency}" /> containing the framework references for the specified project.</returns>
-        private static List<FrameworkDependency> GetFrameworkReferences(ProjectInstance projectInstance)
+        internal static List<FrameworkDependency> GetFrameworkReferences(IMSBuildProject project)
         {
             // Get the unique FrameworkReference items, ignoring duplicates
-            var frameworkReferenceItems = projectInstance.GetItems("FrameworkReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
+            var frameworkReferenceItems = project.GetItems("FrameworkReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
 
             // For best performance, its better to create a list with the exact number of items needed rather than using a LINQ statement or AddRange.  This is because if the list
             // is not allocated with enough items, the list has to be grown which can slow things down
@@ -173,9 +144,9 @@ namespace NuGet.Build.Tasks.Console
 
             foreach (var frameworkReferenceItem in frameworkReferenceItems)
             {
-                var privateAssets = MSBuildStringUtility.Split(frameworkReferenceItem.GetMetadataValue("PrivateAssets"));
+                var privateAssets = MSBuildStringUtility.Split(frameworkReferenceItem.GetProperty("PrivateAssets"));
 
-                frameworkDependencies.Add(new FrameworkDependency(frameworkReferenceItem.EvaluatedInclude, FrameworkDependencyFlagsUtils.GetFlags(privateAssets)));
+                frameworkDependencies.Add(new FrameworkDependency(frameworkReferenceItem.Identity, FrameworkDependencyFlagsUtils.GetFlags(privateAssets)));
             }
 
             return frameworkDependencies;
@@ -205,7 +176,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="project">An <see cref="IMSBuildItem" /> representing the project.</param>
         /// <param name="frameworks">An <see cref="IReadOnlyCollection{NuGetFrameowrk}" /> object containing the frameworks that were parsed from the outer project.</param>
         /// <returns>A <see cref="List{String}" /> containing the original target frameworks of the project.</returns>
-        private static List<string> GetOriginalTargetFrameworks(IMSBuildItem project, IReadOnlyCollection<NuGetFramework> frameworks)
+        internal static List<string> GetOriginalTargetFrameworks(IMSBuildProject project, IReadOnlyCollection<NuGetFramework> frameworks)
         {
             // If the project specified the TargetFrameworks property, just return that list
             var projectTargetFrameworks = project.SplitPropertyValueOrNull("TargetFrameworks");
@@ -229,17 +200,17 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the package downloads for the specified project.
         /// </summary>
-        /// <param name="projectInstance">The <see cref="ProjectInstance" /> to get package downloads for.</param>
+        /// <param name="project">The <see cref="ProjectInstance" /> to get package downloads for.</param>
         /// <returns>An <see cref="IEnumerable{DownloadDependency}" /> containing the package downloads for the specified project.</returns>
-        private static IEnumerable<DownloadDependency> GetPackageDownloads(ProjectInstance projectInstance)
+        internal static IEnumerable<DownloadDependency> GetPackageDownloads(IMSBuildProject project)
         {
             // Get the distinct PackageDownload items, ignoring duplicates
-            foreach (var projectItemInstance in projectInstance.GetItems("PackageDownload").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance))
+            foreach (var projectItemInstance in project.GetItems("PackageDownload").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance))
             {
-                string id = projectItemInstance.EvaluatedInclude;
+                string id = projectItemInstance.Identity;
 
                 // PackageDownload items can contain multiple versions
-                foreach (var version in MSBuildStringUtility.Split(projectItemInstance.GetMetadataValue("Version")))
+                foreach (var version in MSBuildStringUtility.Split(projectItemInstance.GetProperty("Version")))
                 {
                     // Validate the version range
                     VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
@@ -257,30 +228,30 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the package references for the specified project.
         /// </summary>
-        /// <param name="projectInstance">The <see cref="ProjectInstance" /> to get package references for.</param>
+        /// <param name="project">The <see cref="ProjectInstance" /> to get package references for.</param>
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
-        private static List<LibraryDependency> GetPackageReferences(ProjectInstance projectInstance)
+        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project)
         {
             // Get the distinct PackageReference items, ignoring duplicates
-            var packageReferenceItems = projectInstance.GetItems("PackageReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
+            var packageReferenceItems = project.GetItems("PackageReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
 
             var libraryDependencies = new List<LibraryDependency>(packageReferenceItems.Count);
 
             foreach (var packageReferenceItem in packageReferenceItems)
             {
-                string version = packageReferenceItem.GetMetadataValue("Version");
+                string version = packageReferenceItem.GetProperty("Version");
 
                 libraryDependencies.Add(new LibraryDependency
                 {
-                    AutoReferenced = packageReferenceItem.IsMetadataTrue("IsImplicitlyDefined"),
-                    GeneratePathProperty = packageReferenceItem.IsMetadataTrue("GeneratePathProperty"),
-                    IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetMetadataValue("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetMetadataValue("ExcludeAssets"), LibraryIncludeFlags.None),
+                    AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
+                    GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
+                    IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     LibraryRange = new LibraryRange(
-                        packageReferenceItem.EvaluatedInclude,
+                        packageReferenceItem.Identity,
                         !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All,
                         LibraryDependencyTarget.Package),
-                    NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetMetadataValue("NoWarn")).ToList(),
-                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetMetadataValue("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
+                    NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
+                    SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
                 });
             }
 
@@ -291,14 +262,13 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the packages path for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <param name="projectDirectory">The full path to the directory containing the project.</param>
         /// <param name="settings">The <see cref="ISettings" /> of the project.</param>
         /// <returns>The full path to the packages directory for the specified project.</returns>
-        private static string GetPackagesPath(IMSBuildItem project, string projectDirectory, ISettings settings)
+        internal static string GetPackagesPath(IMSBuildProject project, ISettings settings)
         {
             return RestoreSettingsUtils.GetValue(
-                () => UriUtility.GetAbsolutePath(projectDirectory, project.GetProperty("RestorePackagesPathOverride")),
-                () => UriUtility.GetAbsolutePath(projectDirectory, project.GetProperty("RestorePackagesPath")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
         }
 
@@ -330,7 +300,7 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
         /// <returns>The name of the specified project.</returns>
-        private static string GetProjectName(IMSBuildItem project)
+        internal static string GetProjectName(IMSBuildProject project)
         {
             string packageId = project.GetProperty("PackageId");
 
@@ -355,13 +325,13 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the project references of the specified project.
         /// </summary>
-        /// <param name="projectInstance">The <see cref="ProjectInstance" /> to get project references for.</param>
+        /// <param name="project">The <see cref="ProjectInstance" /> to get project references for.</param>
         /// <returns>A <see cref="List{ProjectRestoreReference}" /> containing the project references for the specified project.</returns>
-        private static List<ProjectRestoreReference> GetProjectReferences(ProjectInstance projectInstance)
+        internal static List<ProjectRestoreReference> GetProjectReferences(IMSBuildProject project)
         {
             // Get the unique list of ProjectReference items that have the ReferenceOutputAssembly metadata set to "true", ignoring duplicates
-            var projectReferenceItems = projectInstance.GetItems("ProjectReference")
-                .Where(i => i.IsMetadataTrue("ReferenceOutputAssembly", defaultValue: true))
+            var projectReferenceItems = project.GetItems("ProjectReference")
+                .Where(i => i.IsPropertyTrue("ReferenceOutputAssembly", defaultValue: true))
                 .Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance)
                 .ToList();
 
@@ -369,13 +339,13 @@ namespace NuGet.Build.Tasks.Console
 
             foreach (var projectReferenceItem in projectReferenceItems)
             {
-                string fullPath = projectReferenceItem.GetMetadataValue("FullPath");
+                string fullPath = projectReferenceItem.GetProperty("FullPath");
 
                 projectReferences.Add(new ProjectRestoreReference
                 {
-                    ExcludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetMetadataValue("ExcludeAssets"), LibraryIncludeFlags.None),
-                    IncludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetMetadataValue("IncludeAssets"), LibraryIncludeFlags.All),
-                    PrivateAssets = GetLibraryIncludeFlags(projectReferenceItem.GetMetadataValue("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
+                    ExcludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
+                    IncludeAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All),
+                    PrivateAssets = GetLibraryIncludeFlags(projectReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent),
                     ProjectPath = fullPath,
                     ProjectUniqueName = fullPath
                 });
@@ -389,7 +359,7 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="projects">A <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance}" /> representing the target frameworks and their corresponding projects.</param>
         /// <returns>A <see cref="List{ProjectRestoreMetadataFrameworkInfo}" /> containing the restore metadata framework information for the specified project.</returns>
-        private static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(IReadOnlyDictionary<NuGetFramework, ProjectInstance> projects)
+        internal static List<ProjectRestoreMetadataFrameworkInfo> GetProjectRestoreMetadataFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projects)
         {
             var projectRestoreMetadataFrameworkInfos = new List<ProjectRestoreMetadataFrameworkInfo>(projects.Count);
 
@@ -407,29 +377,30 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets the target frameworks for the specified project.
         /// </summary>
-        /// <param name="projectWithInnerNodes">The <see cref="ProjectWithInnerNodes" /> representing the main project and its inner nodes if it targets multiple frameworks.</param>
+        /// <param name="project">An <see cref="IMSBuildProject" /> representing the main project.</param>
+        /// <param name="innerNodes">An <see cref="IReadOnlyDictionary{String,IMSBuildProject}" /> representing all inner projects by their target framework.</param>
         /// <returns></returns>
-        private static IReadOnlyDictionary<NuGetFramework, ProjectInstance> GetProjectTargetFrameworks(ProjectWithInnerNodes projectWithInnerNodes)
+        internal static IReadOnlyDictionary<NuGetFramework, IMSBuildProject> GetProjectTargetFrameworks(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> innerNodes)
         {
             // Get the raw list of target frameworks that the project specifies
             var projectFrameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
-                projectWithInnerNodes.OuterProject.FullPath,
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetFrameworks"),
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetFramework"),
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetFrameworkMoniker"),
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetPlatformIdentifier"),
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetPlatformVersion"),
-                projectWithInnerNodes.OuterProject.GetPropertyValue("TargetPlatformMinVersion")).ToList();
+                projectFilePath: project.FullPath,
+                targetFrameworks: project.GetProperty("TargetFrameworks"),
+                targetFramework: project.GetProperty("TargetFramework"),
+                targetFrameworkMoniker: project.GetProperty("TargetFrameworkMoniker"),
+                targetPlatformIdentifier: project.GetProperty("TargetPlatformIdentifier"),
+                targetPlatformVersion: project.GetProperty("TargetPlatformVersion"),
+                targetPlatformMinVersion: project.GetProperty("TargetPlatformMinVersion")).ToList();
 
-            var projectTargetFrameworks = new Dictionary<NuGetFramework, ProjectInstance>();
+            var projectTargetFrameworks = new Dictionary<NuGetFramework, IMSBuildProject>();
 
             foreach (var projectTargetFramework in projectFrameworkStrings)
             {
                 // Attempt to get the corresponding project instance for the target framework.  If one is not found, then the project must not target multiple frameworks
                 // and the main project should be used
-                if (!projectWithInnerNodes.TryGetValue(projectTargetFramework, out ProjectInstance innerNode))
+                if (!innerNodes.TryGetValue(projectTargetFramework, out IMSBuildProject innerNode))
                 {
-                    innerNode = projectWithInnerNodes.OuterProject;
+                    innerNode = project;
                 }
 
                 // Add the target framework and associate it with the project instance to be used for gathering details
@@ -444,7 +415,7 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
         /// <returns>The <see cref="NuGetVersion" /> of the specified project if one was found, otherwise <see cref="PackageSpec.DefaultVersion" />.</returns>
-        private static NuGetVersion GetProjectVersion(IMSBuildItem project)
+        internal static NuGetVersion GetProjectVersion(IMSBuildItem project)
         {
             string version = project.GetProperty("PackageVersion") ?? project.GetProperty("Version");
 
@@ -460,44 +431,31 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the restore output path for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <param name="projectDirectory">The full path to the directory of the project.</param>
         /// <returns>The full path to the restore output directory for the specified project.</returns>
-        private static string GetRestoreOutputPath(IMSBuildItem project, string projectDirectory)
+        internal static string GetRestoreOutputPath(IMSBuildProject project)
         {
             string outputPath = project.GetProperty("RestoreOutputPath") ?? project.GetProperty("MSBuildProjectExtensionsPath");
 
-            return Path.GetFullPath(Path.Combine(projectDirectory, outputPath));
+            return Path.GetFullPath(Path.Combine(project.Directory, outputPath));
         }
 
         /// <summary>
         /// Gets the package sources of the specified project.
         /// </summary>
         /// <param name="project">An <see cref="IMSBuildItem" /> representing the project..</param>
-        /// <param name="projectDirectory">The full path to the directory that contains the project.</param>
-        /// <param name="innerNodes">An <see cref="IReadOnlyCollection{ProjectInstance}" /> containing the inner nodes of the project if its targets multiple frameworks.</param>
+        /// <param name="innerNodes">An <see cref="IReadOnlyCollection{IMSBuildItem}" /> containing the inner nodes of the project if its targets multiple frameworks.</param>
         /// <param name="settings">The <see cref="ISettings" /> of the specified project.</param>
         /// <returns>A <see cref="List{PackageSource}" /> object containing the packages sources for the specified project.</returns>
-        private static List<PackageSource> GetSources(IMSBuildItem project, string projectDirectory, IReadOnlyCollection<ProjectInstance> innerNodes, ISettings settings)
+        internal static List<PackageSource> GetSources(IMSBuildProject project, IReadOnlyCollection<IMSBuildProject> innerNodes, ISettings settings)
         {
-            var restoreSources = project.SplitPropertyValueOrNull("RestoreSources");
-
-            var currentSources = RestoreSettingsUtils.GetValue(
-                () => project.SplitPropertyValueOrNull("RestoreSourcesOverride")?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)),
-                () => MSBuildRestoreUtility.ContainsClearKeyword(restoreSources) ? Enumerable.Empty<string>() : null,
-                () => restoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)),
-                () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source));
-
-            var additionalProjectSources = MSBuildRestoreUtility.AggregateSources(
-                    values: innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetPropertyValue("RestoreAdditionalProjectSources"))),
-                    excludeValues: Enumerable.Empty<string>())
-                .Select(MSBuildRestoreUtility.FixSourcePath)
-                .Select(i => UriUtility.GetAbsolutePath(projectDirectory, i))
-                .ToArray();
-
-            return currentSources
-                .Concat(additionalProjectSources)
-                .Where(i => !string.IsNullOrWhiteSpace(i))
-                .Select(i => new PackageSource(i)).ToList();
+            return BuildTasksUtility.GetSources(
+                project.Directory,
+                project.SplitPropertyValueOrNull("RestoreSources"),
+                project.SplitPropertyValueOrNull("RestoreSourcesOverride"),
+                innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectSources"))),
+                settings)
+                .Select(i => new PackageSource(i))
+                .ToList();
         }
 
         /// <summary>
@@ -505,15 +463,13 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        private static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, ProjectInstance> projectInnerNodes)
+        private static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
             foreach (var projectInnerNode in projectInnerNodes)
             {
-                var projectInstance = projectInnerNode.Value;
-
-                var msBuildProjectInstance = new MSBuildProjectInstance(projectInstance);
+                var msBuildProjectInstance = projectInnerNode.Value;
 
                 var targetFrameworkInformation = new TargetFrameworkInformation
                 {
@@ -525,15 +481,15 @@ namespace NuGet.Build.Tasks.Console
 
                 var assetTargetFallback = MSBuildStringUtility.Split(msBuildProjectInstance.GetProperty(nameof(TargetFrameworkInformation.AssetTargetFallback))).Select(NuGetFramework.Parse).ToList();
 
-                AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, projectInstance.FullPath);
+                AssetTargetFallbackUtility.EnsureValidFallback(packageTargetFallback, assetTargetFallback, msBuildProjectInstance.FullPath);
 
                 AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInformation, packageTargetFallback, assetTargetFallback);
 
-                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(projectInstance));
+                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance));
 
-                targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(projectInstance));
+                targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(msBuildProjectInstance));
 
-                targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(projectInstance));
+                targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
             }
@@ -546,7 +502,7 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
         /// <returns><code>true</code> if the specified project is considered legacy, otherwise <code>false</code>.</returns>
-        private static bool IsLegacyProject(IMSBuildItem project)
+        internal static bool IsLegacyProject(IMSBuildItem project)
         {
             // We consider the project to be legacy if it does not specify TargetFramework or TargetFrameworks
             return project.GetProperty("TargetFramework") == null && project.GetProperty("TargetFrameworks") == null;
@@ -585,7 +541,7 @@ namespace NuGet.Build.Tasks.Console
                     // Get the PackageSpecs in parallel because creating each one is relatively expensive so parallelism speeds things up
                     Parallel.ForEach(projects, new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount }, project =>
                     {
-                        var packageSpec = GetPackageSpec(project);
+                        var packageSpec = GetPackageSpec(project.OuterProject, project);
 
                         if (packageSpec != null)
                         {
@@ -638,80 +594,81 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets a <see cref="PackageSpec" /> for the specified project.
         /// </summary>
-        /// <param name="projectWithInnerNodes">A <see cref="ProjectWithInnerNodes" /> object that represents the project and its inner nodes if it targets multiple frameworks.</param>
+        /// <param name="project">An <see cref="IMSBuildProject" /> object that represents the project.</param>
+        /// <param name="allInnerNodes">An <see cref="IReadOnlyDictionary{String,IMSBuildProject}" /> that represents all inner projects by their target framework.</param>
         /// <returns></returns>
-        private PackageSpec GetPackageSpec(ProjectWithInnerNodes projectWithInnerNodes)
+        private PackageSpec GetPackageSpec(IMSBuildProject project, IReadOnlyDictionary<string, IMSBuildProject> allInnerNodes)
         {
-            var msbuildProjectInstance = new MSBuildProjectInstance(projectWithInnerNodes);
-
-            var projectDirectory = projectWithInnerNodes.OuterProject.Directory;
-
-            var projectFileFullPath = projectWithInnerNodes.OuterProject.FullPath;
-
             var settings = RestoreSettingsUtils.ReadSettings(
-                msbuildProjectInstance.GetProperty("RestoreSolutionDirectory"),
-                msbuildProjectInstance.GetProperty("RestoreRootConfigDirectory") ?? projectDirectory,
-                UriUtility.GetAbsolutePath(projectDirectory, msbuildProjectInstance.GetProperty("RestoreConfigFile")),
+                project.GetProperty("RestoreSolutionDirectory"),
+                project.GetProperty("RestoreRootConfigDirectory") ?? project.Directory,
+                UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreConfigFile")),
                 MachineWideSettingsLazy,
                 _settingsLoadContext);
 
             // Get the target frameworks for the project and the project instance for each framework
-            var projectsByTargetFramework = GetProjectTargetFrameworks(projectWithInnerNodes);
+            var projectsByTargetFramework = GetProjectTargetFrameworks(project, allInnerNodes);
 
             var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework);
 
             var projectStyle = BuildTasksUtility.GetProjectRestoreStyle(
-                    restoreProjectStyle: msbuildProjectInstance.GetProperty("RestoreProjectStyle"),
+                    restoreProjectStyle: project.GetProperty("RestoreProjectStyle"),
                     hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
-                    projectJsonPath: msbuildProjectInstance.GetProperty("_CurrentProjectJsonPath"),
-                    projectDirectory: projectDirectory,
-                    projectName: msbuildProjectInstance.GetProperty("MSBuildProjectName"),
+                    projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
+                    projectDirectory: project.Directory,
+                    projectName: project.GetProperty("MSBuildProjectName"),
                     log: MSBuildLogger)
                 .ProjectStyle;
 
             // The inner nodes represents each project instance by target framework
-            var innerNodes = projectsByTargetFramework.Values.ToList();
+            var actualInnerNodes = projectsByTargetFramework.Values.ToList();
 
-            var projectName = GetProjectName(msbuildProjectInstance);
+            var projectName = GetProjectName(project);
 
-            var outputPath = GetRestoreOutputPath(msbuildProjectInstance, projectDirectory);
+            var outputPath = GetRestoreOutputPath(project);
 
             var packageSpec = new PackageSpec(targetFrameworkInfos)
             {
-                FilePath = projectFileFullPath,
+                FilePath = project.FullPath,
                 Name = projectName,
                 RestoreMetadata = new ProjectRestoreMetadata
                 {
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, projectFileFullPath),
+                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath),
                     ConfigFilePaths = settings.GetConfigFilePaths(),
                     CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
-                    FallbackFolders = GetFallbackFolders(msbuildProjectInstance, projectDirectory, innerNodes, settings).ToList(),
-                    OriginalTargetFrameworks = GetOriginalTargetFrameworks(msbuildProjectInstance, projectsByTargetFramework.Keys.ToList()),
+                    FallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                        project.Directory,
+                        project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
+                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
+                        actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
+                        actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
+                        settings),
+                    OriginalTargetFrameworks = GetOriginalTargetFrameworks(project, projectsByTargetFramework.Keys.ToList()),
                     OutputPath = outputPath,
-                    PackagesPath = GetPackagesPath(msbuildProjectInstance, projectDirectory, settings),
+                    PackagesPath = GetPackagesPath(project, settings),
                     ProjectName = projectName,
-                    ProjectPath = projectFileFullPath,
+                    ProjectPath = project.FullPath,
                     ProjectStyle = projectStyle,
-                    ProjectUniqueName = projectFileFullPath,
-                    ProjectWideWarningProperties = WarningProperties.GetWarningProperties(msbuildProjectInstance.GetProperty("TreatWarningsAsErrors"), msbuildProjectInstance.GetProperty("WarningsAsErrors"), msbuildProjectInstance.GetProperty("NoWarn")),
-                    RestoreLockProperties = new RestoreLockProperties(msbuildProjectInstance.GetProperty("RestorePackagesWithLockFile"), msbuildProjectInstance.GetProperty("NuGetLockFilePath"), msbuildProjectInstance.IsPropertyTrue("RestoreLockedMode")),
-                    SkipContentFileWrite = IsLegacyProject(msbuildProjectInstance),
-                    Sources = GetSources(msbuildProjectInstance, projectDirectory, innerNodes, settings),
+                    ProjectUniqueName = project.FullPath,
+                    ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn")),
+                    RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode")),
+                    SkipContentFileWrite = IsLegacyProject(project),
+                    Sources = GetSources(project, actualInnerNodes, settings),
                     TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(projectsByTargetFramework),
-                    ValidateRuntimeAssets = msbuildProjectInstance.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
+                    ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
                 },
                 RuntimeGraph = new RuntimeGraph(
-                    MSBuildStringUtility.Split($"{msbuildProjectInstance.GetProperty("RuntimeIdentifiers")};{msbuildProjectInstance.GetProperty("RuntimeIdentifier")}")
-                        .Concat(innerNodes.SelectMany(i => MSBuildStringUtility.Split($"{i.GetPropertyValue("RuntimeIdentifiers")};{i.GetPropertyValue("RuntimeIdentifier")}")))
+                    MSBuildStringUtility.Split($"{project.GetProperty("RuntimeIdentifiers")};{project.GetProperty("RuntimeIdentifier")}")
+                        .Concat(actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty("RuntimeIdentifiers")};{i.GetProperty("RuntimeIdentifier")}")))
                         .Distinct(StringComparer.Ordinal)
                         .Select(rid => new RuntimeDescription(rid))
                         .ToList(),
-                    MSBuildStringUtility.Split(msbuildProjectInstance.GetProperty("RuntimeSupports"))
+                    MSBuildStringUtility.Split(project.GetProperty("RuntimeSupports"))
                         .Distinct(StringComparer.Ordinal)
                         .Select(s => new CompatibilityProfile(s))
                         .ToList()
                     ),
-                Version = GetProjectVersion(msbuildProjectInstance)
+                Version = GetProjectVersion(project)
             };
 
             return packageSpec;
@@ -723,9 +680,9 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="name">The name of the option.</param>
         /// <param name="options">A <see cref="Dictionary{String,String}" />containing options.</param>
         /// <returns><code>true</code> if the specified option is true, otherwise <code>false</code>.</returns>
-        private bool IsOptionTrue(string name, Dictionary<string, string> options)
+        internal static bool IsOptionTrue(string name, Dictionary<string, string> options)
         {
-            return options.TryGetValue(name, out string value) && StringComparer.OrdinalIgnoreCase.Equals(value, "true");
+            return options.TryGetValue(name, out string value) && StringComparer.OrdinalIgnoreCase.Equals(value, bool.TrueString);
         }
 
         /// <summary>
@@ -843,8 +800,8 @@ namespace NuGet.Build.Tasks.Console
                         // Add the project instance to the list, if its an inner node for a multi-targeting project it will be added to the inner collection
                         projects.AddOrUpdate(
                             path,
-                            key => new ProjectWithInnerNodes(targetFramework, projectInstance),
-                            (_, item) => item.Add(targetFramework, projectInstance));
+                            key => new ProjectWithInnerNodes(targetFramework, new MSBuildProjectInstance(projectInstance)),
+                            (_, item) => item.Add(targetFramework, new MSBuildProjectInstance(projectInstance)));
 
                         return projectInstance;
                     });

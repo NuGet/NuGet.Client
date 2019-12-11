@@ -25,6 +25,8 @@ namespace NuGet.Build.Tasks.Console
             _projectItemInstance = projectItemInstance ?? throw new ArgumentNullException(nameof(projectItemInstance));
         }
 
+        public override string Identity => _projectItemInstance.EvaluatedInclude;
+
         /// <inheritdoc cref="MSBuildItemBase.GetPropertyValue(string)" />
         protected override string GetPropertyValue(string name) => _projectItemInstance.GetMetadataValue(name);
     }

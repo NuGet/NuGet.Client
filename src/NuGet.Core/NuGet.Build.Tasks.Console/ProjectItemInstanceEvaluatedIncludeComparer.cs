@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.Build.Execution;
+using NuGet.Commands;
 
 namespace NuGet.Build.Tasks.Console
 {
@@ -11,7 +12,7 @@ namespace NuGet.Build.Tasks.Console
     /// Represents a comparer of MSBuild items which considers any item with the same Include value (case-insensitive) to be identical, regardless of its metadata.
     /// This is used to ignore duplicate items specified by users since NuGet needs to only consider the first one specified.
     /// </summary>
-    internal sealed class ProjectItemInstanceEvaluatedIncludeComparer : IEqualityComparer<ProjectItemInstance>
+    internal sealed class ProjectItemInstanceEvaluatedIncludeComparer : IEqualityComparer<IMSBuildItem>
     {
         /// <summary>
         /// A singleton to be used by callers.
@@ -32,11 +33,11 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="x">The first <see cref="ProjectItemInstance" /> to compare, or <code>null</code>.</param>
         /// <param name="y">The second <see cref="ProjectItemInstance" /> to compare, or <code>null</code>.</param>
         /// <returns><code>true</code> if the specified <see cref="ProjectItemInstance" /> objects have the same Include value, otherwise <code>false</code>.</returns>
-        public bool Equals(ProjectItemInstance x, ProjectItemInstance y)
+        public bool Equals(IMSBuildItem x, IMSBuildItem y)
         {
-            return string.Equals(x?.EvaluatedInclude, y?.EvaluatedInclude, StringComparison.OrdinalIgnoreCase);
+            return string.Equals(x?.Identity, y?.Identity, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode(ProjectItemInstance obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.EvaluatedInclude.GetHashCode());
+        public int GetHashCode(IMSBuildItem obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity.GetHashCode());
     }
 }
