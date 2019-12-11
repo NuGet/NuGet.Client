@@ -143,8 +143,8 @@ namespace NuGet.Test.Utility
         public void AddNetStandardFeeds()
         {
             var reposRoot = GetRepositoryRootDirectory();
-            var netStandardLibraryPackageFeed = GetRepoPackageDirectoryName(reposRoot, "netstandard.library");
-            var netCorePlatformsPackageFeed = GetRepoPackageDirectoryName(reposRoot, "microsoft.netcore.platforms");
+            var netStandardLibraryPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "netstandard.library");
+            var netCorePlatformsPackageFeed = GetRepoPackageDirectoryPath(reposRoot, "microsoft.netcore.platforms");
 
             Assert.True(Directory.Exists(netStandardLibraryPackageFeed));
             Assert.True(Directory.Exists(netCorePlatformsPackageFeed));
@@ -170,10 +170,10 @@ namespace NuGet.Test.Utility
                 currentDir = currentDir.Parent;
             }
 
-            throw new DirectoryNotFoundException("The directory containing 'NuGet.sln' could not be found");
+            throw new DirectoryNotFoundException($"Starting from {Directory.GetCurrentDirectory()} the directory containing 'NuGet.sln' could not be found.");
         }
 
-        private static string GetRepoPackageDirectoryName(DirectoryInfo reposRoot, string packageId)
+        private static string GetRepoPackageDirectoryPath(DirectoryInfo reposRoot, string packageId)
         {
             var repoPackageDir = Path.Combine(reposRoot.FullName, "packages", packageId);
             return repoPackageDir;
