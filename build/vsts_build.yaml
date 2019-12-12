@@ -89,7 +89,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        gci env:* | sort-object name
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: PowerShell@1
     displayName: "Define variables"
@@ -128,7 +128,7 @@ phases:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        gci env:* | sort-object name
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: NuGetCommand@2
     displayName: 'MicroBuild:  install core package'
@@ -559,7 +559,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        gci env:* | sort-object name
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: PowerShell@1
     displayName: "Download Config Files"
@@ -744,7 +744,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        gci env:* | sort-object name
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download Build artifacts"
@@ -844,7 +844,7 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
-        gci env:* | sort-object name
+        Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download Build artifacts"
