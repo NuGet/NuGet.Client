@@ -21,7 +21,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true))
             {
                 VisualStudio.AssertNoErrors();
             }
@@ -35,7 +35,7 @@ namespace NuGet.Tests.Apex
             // Arrange
             EnsureVisualStudioHost();
 
-            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger))
+            using (var testContext = new ApexTestContext(VisualStudio, projectTemplate, XunitLogger, addNetStandardFeeds: true))
             {
                 var project2 = testContext.SolutionService.AddProject(ProjectLanguage.CSharp, projectTemplate, ProjectTargetFramework.V46, "TestProject2");
                 project2.Build();
