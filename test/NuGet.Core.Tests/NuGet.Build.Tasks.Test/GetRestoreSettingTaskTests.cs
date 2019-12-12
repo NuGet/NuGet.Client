@@ -74,7 +74,7 @@ namespace NuGet.Build.Tasks.Test
                 </packageSources>
             </configuration>";
 
-        
+     
 
             var baseConfigPath = "NuGet.Config";
 
@@ -512,6 +512,40 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+        [Fact]
+        public void GetRestoreSettingsTask_PackageReference_ProjectLevelConfig()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    ProjectUniqueName = Path.Combine(testDir, "a.csproj"),
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                var configFile = Path.Combine(testDir, Settings.DefaultSettingsFileName);
+                File.WriteAllText(configFile, RootConfig);
+
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] {});
+                task.OutputConfigFilePaths.Should().Contain(configFile);
+            }
+        }
 
         private static readonly string MachineWideSettingsConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <configuration>
@@ -547,5 +581,16 @@ namespace NuGet.Build.Tasks.Test
               </disabledPackageSources>
             </configuration>";
 
+        private static readonly string RootConfig =
+        @"<?xml version=""1.0"" encoding=""utf-8""?>
+             <configuration>
+              <packageSources>
+                <Clear/>
+                <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+              </packageSources>
+              <disabledPackageSources>
+                 <Clear/>
+              </disabledPackageSources>
+            </configuration>";
     }
 }
