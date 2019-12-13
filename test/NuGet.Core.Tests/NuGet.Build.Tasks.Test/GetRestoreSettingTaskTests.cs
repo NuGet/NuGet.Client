@@ -512,8 +512,12 @@ namespace NuGet.Build.Tasks.Test
             }
         }
 
+        /// <summary>
+        /// This mimics the GetRestoreSettingsTask call when msbuild /t:restore is called.
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// </summary>
         [Fact]
-        public void GetRestoreSettingsTask_PackageReference_ProjectLevelConfig()
+        public void GetRestoreSettingsTask_RestoreTaskBased_PackageReference_ProjectLevelConfig()
         {
             using (var testDir = TestDirectory.CreateInTemp())
             {
@@ -544,6 +548,96 @@ namespace NuGet.Build.Tasks.Test
                 task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
                 task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] {});
                 task.OutputConfigFilePaths.Should().Contain(configFile);
+            }
+        }
+
+        /// <summary>
+        /// This mimics the GetRestoreSettingsTask call when NuGet.exe on a solution is called.
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// </summary>
+        [Fact]
+        public void GetRestoreSettingsTask_NuGetExeBased_PackageReference_ProjectLevelConfig_IsIgnored()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                var projectDir = Path.Combine(testDir, "project");
+                Directory.CreateDirectory(projectDir);
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    ProjectUniqueName = Path.Combine(projectDir, "a.csproj"),
+                    RestoreSolutionDirectory = testDir,
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                var rootConfigFile = Path.Combine(testDir, Settings.DefaultSettingsFileName);
+                var projectLevelConfigFile = Path.Combine(projectDir, Settings.DefaultSettingsFileName);
+                File.WriteAllText(rootConfigFile, RootConfig);
+                File.WriteAllText(projectLevelConfigFile, ProjectLevelConfig);
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] { });
+                task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
+                task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
+
+            }
+        }
+
+        /// <summary>
+        /// This mimics the GetRestoreSettingsTask call when NuGet.exe on a solution is called.
+        /// MSBuild /t:restore behaves the same regardless whether it's invoked on the project or solution level. 
+        /// </summary>
+        [Fact]
+        public void GetRestoreSettingsTask_WithRestoreRootDirectory_ProjectLevelConfigIsIgnored()
+        {
+            using (var testDir = TestDirectory.CreateInTemp())
+            {
+                var projectDir = Path.Combine(testDir, "project");
+                Directory.CreateDirectory(projectDir);
+                // Arrange
+                var buildEngine = new TestBuildEngine();
+                var testLogger = buildEngine.TestLogger;
+
+                var settingsPerFramework = new List<ITaskItem>();
+                var settings1 = new Mock<ITaskItem>();
+                settings1.SetupGet(e => e.ItemSpec).Returns("a");
+                settingsPerFramework.Add(settings1.Object);
+
+                var task = new GetRestoreSettingsTask()
+                {
+                    BuildEngine = buildEngine,
+                    ProjectUniqueName = Path.Combine(projectDir, "a.csproj"),
+                    RestoreRootConfigDirectory = testDir,
+                    RestoreSettingsPerFramework = settingsPerFramework.ToArray()
+                };
+
+                var rootConfigFile = Path.Combine(testDir, Settings.DefaultSettingsFileName);
+                var projectLevelConfigFile = Path.Combine(projectDir, Settings.DefaultSettingsFileName);
+                File.WriteAllText(rootConfigFile, RootConfig);
+                File.WriteAllText(projectLevelConfigFile, ProjectLevelConfig);
+                // Act
+                var result = task.Execute();
+
+                // Assert
+                result.Should().BeTrue();
+                task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
+                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] { });
+                task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
+                task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
+
             }
         }
 
@@ -584,9 +678,27 @@ namespace NuGet.Build.Tasks.Test
         private static readonly string RootConfig =
         @"<?xml version=""1.0"" encoding=""utf-8""?>
              <configuration>
+              <fallbackPackageFolders>
+                <Clear/>
+              </fallbackPackageFolders>
               <packageSources>
                 <Clear/>
                 <add key=""NuGet"" value=""https://api.nuget.org/v3/index.json"" />
+              </packageSources>
+              <disabledPackageSources>
+                 <Clear/>
+              </disabledPackageSources>
+            </configuration>";
+
+
+        private static readonly string ProjectLevelConfig =
+        @"<?xml version=""1.0"" encoding=""utf-8""?>
+             <configuration>
+              <fallbackPackageFolders>
+                <Clear/>
+              </fallbackPackageFolders>
+              <packageSources>
+                <add key=""ProjectLevel"" value=""C:\Source"" />
               </packageSources>
               <disabledPackageSources>
                  <Clear/>
