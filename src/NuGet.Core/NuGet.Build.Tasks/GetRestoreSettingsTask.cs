@@ -135,7 +135,7 @@ namespace NuGet.Build.Tasks
                 var absoluteConfigFilePath = GetGlobalAbsolutePath(RestoreConfigFile);
                 string restoreDir;
                 // To match non-msbuild behavior, we only default the restoreDir for non-PackagesConfig scenarios.
-                if (string.IsNullOrEmpty(RestoreRootConfigDirectory) && RestoreProjectStyle != "PackagesConfig")
+                if (string.IsNullOrEmpty(RestoreRootConfigDirectory))
                 {
                     restoreDir = Path.GetDirectoryName(ProjectUniqueName);
                 }
