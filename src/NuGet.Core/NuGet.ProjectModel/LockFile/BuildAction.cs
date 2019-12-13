@@ -25,6 +25,9 @@ namespace NuGet.ProjectModel
         public static BuildAction AndroidAsset = Define(nameof(AndroidAsset));
         public static BuildAction AndroidResource = Define(nameof(AndroidResource));
         public static BuildAction BundleResource = Define(nameof(BundleResource));
+        public static BuildAction ClCompile = Define(nameof(ClCompile));
+        public static BuildAction ResourceCompile = Define(nameof(ResourceCompile));
+        public static BuildAction MASM = Define(nameof(MASM));
 
         public string Value { get; }
 
