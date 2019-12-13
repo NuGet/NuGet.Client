@@ -529,6 +529,9 @@ Copyright (c) .NET Foundation. All rights reserved.
           DependsOnTargets="_GetRestoreSettingsOverrides;_GetRestoreSettingsCurrentProject;_GetRestoreSettingsAllFrameworks"
           Returns="$(_OutputSources);$(_OutputPackagesPath);$(_OutputRepositoryPath);$(_OutputFallbackFolders);$(_OutputConfigFilePaths)">
 
+    <PropertyGroup Condition=" '$(RestoreSolutionDirectory)' == '' AND '$(RestoreProjectStyle)' == 'PackagesConfig' AND '$(SolutionDir)' != '*Undefined*'">
+      <RestoreSolutionDirectory>$(SolutionDir)</RestoreSolutionDirectory>
+    </PropertyGroup>
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask
      ProjectUniqueName="$(MSBuildProjectFullPath)"

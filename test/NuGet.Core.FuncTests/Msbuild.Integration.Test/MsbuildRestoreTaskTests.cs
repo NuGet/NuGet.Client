@@ -178,7 +178,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
                 Assert.Contains("Installing x 1.0.0", result.AllOutput);
-                Assert.DoesNotContain(configAPath, result.AllOutput);
+                Assert.Contains(configAPath, result.AllOutput);
             }
         }
 
