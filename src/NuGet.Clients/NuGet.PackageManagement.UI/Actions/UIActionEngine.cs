@@ -338,7 +338,11 @@ namespace NuGet.PackageManagement.UI
                     var result = await project.GetInstalledPackagesAsync(token);
                     foreach (var package in result)
                     {
-                        existingPackages.Add(new Tuple<string, string>(package.PackageIdentity.Id, (package.PackageIdentity.Version == null ? "" : package.PackageIdentity.Version.ToNormalizedString())));
+                        Tuple<string, string> packageInfo = new Tuple<string, string>(package.PackageIdentity.Id, (package.PackageIdentity.Version == null ? "" : package.PackageIdentity.Version.ToNormalizedString()));
+                        if (!existingPackages.Contains(packageInfo))
+                        {
+                            existingPackages.Add(packageInfo);
+                        }
                     }
                 }
             }
