@@ -22,14 +22,14 @@ mono --version
 # Download the CLI install script to cli
 echo "Installing dotnet CLI"
 mkdir -p cli
-# Issue 8931 - DISABLED TEMPORARILY curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
+# Issue 8936 - DISABLED TEMPORARILY curl -o cli/dotnet-install.sh -L https://dot.net/v1/dotnet-install.sh
 
 # Run install.sh
-# Issue 8931 chmod +x cli/dotnet-install.sh
+# Issue 8936 chmod +x cli/dotnet-install.sh
 chmod +x scripts/funcTests/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
-# Issue 8931 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
+# Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
 scripts/funcTests/dotnet-install.sh -i cli -c 2.2
 
 DOTNET="$(pwd)/cli/dotnet"
