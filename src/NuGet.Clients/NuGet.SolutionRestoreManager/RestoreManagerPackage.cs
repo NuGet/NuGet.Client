@@ -6,9 +6,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
