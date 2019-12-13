@@ -39,14 +39,14 @@
 
     <!-- .NET Core SDK Insertion Logic -->   
     <!-- when LockSDKVersion is true,  it will use the specific version in CliVersionForBuilding for building, and specific version in OverrideCliBranchForTesting for testing,  -->
-    <!-- when LockSDKVersion is not true, it will ignore the properties and just use the latest version for the channel specified in CliVersionForBuilding for building, CliBranchForTesting for testing -->
+    <!-- when LockSDKVersion is false, it will ignore the properties and just use the latest version for the channel specified in CliVersionForBuilding for building, CliBranchForTesting for testing -->
     <LockSDKVersion>true</LockSDKVersion>
     <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'false'"></OverrideCliBranchForTesting>
-    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100-alpha1-015507</OverrideCliBranchForTesting>
+    <OverrideCliBranchForTesting Condition="'$(LockSDKVersion)' == 'true'">master 5.0.100-alpha1-015516</OverrideCliBranchForTesting>
+    <CliVersionForBuilding Condition="'$(LockSDKVersion)' == 'false'">master</CliVersionForBuilding>
+    <CliVersionForBuilding Condition="'$(LockSDKVersion)' == 'true'">"master 5.0.100-alpha1-015516"</CliVersionForBuilding> 
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master</CliBranchForTesting>
-    <CliVersionForBuilding Condition="'$(LockSDKVersion)' == 'false'">master</CliVersionForBuilding>
-    <CliVersionForBuilding Condition="'$(LockSDKVersion)' == 'true'">"master 5.0.100-alpha1-015507"</CliVersionForBuilding> 
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' == ''">master</CliTargetBranches>
     <SdkTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</SdkTargetBranches>
