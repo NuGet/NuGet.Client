@@ -31,6 +31,8 @@ chmod +x build/dotnet-install.sh
 # Get recommended version for bootstrapping testing version
 # Issue 8931 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
 build/dotnet-install.sh -i cli -c 2.2
+echo "pwd=$(pwd)"
+
 
 DOTNET="$(pwd)/cli/dotnet"
 
