@@ -26,11 +26,11 @@ mkdir -p cli
 
 # Run install.sh
 # Issue 8931 chmod +x cli/dotnet-install.sh
-chmod +x build/dotnet-install.sh
+chmod +x scripts/funcTests/dotnet-install.sh
 
 # Get recommended version for bootstrapping testing version
 # Issue 8931 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
-build/dotnet-install.sh -i cli -c 2.2
+scripts/funcTests/dotnet-install.sh -i cli -c 2.2
 echo "pwd=$(pwd)"
 
 
