@@ -94,14 +94,6 @@ phases:
       - msbuild
 
   steps:
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
-
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
@@ -123,23 +115,6 @@ phases:
       inlineScript: |
         Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
         Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-  
-  - task: PowerShell@1
-    displayName: "add check step"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "=================================check env=================================="
-        gci env:* | format-table -Wrap -AutoSize
-        Write-Host "=================================check temp folder=================================="
-        cd ${env:AGENT_TEMPDIRECTORY}
-        ls
-        cd dotnet
-        ls
-        Write-Host "=================================check temp folder dotnet=================================="
-        .\dotnet.exe --info
-        Write-Host "=================================check dotnet=================================="
-        dotnet --info
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 5.0.0"
@@ -597,14 +572,6 @@ phases:
         SkipDesktopAssemblies: "true"
         
   steps:
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
-
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
@@ -617,23 +584,6 @@ phases:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-
-  - task: PowerShell@1
-    displayName: "add check step"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "=================================check env=================================="
-        gci env:* | format-table -Wrap -AutoSize
-        Write-Host "=================================check temp folder=================================="
-        cd ${env:AGENT_TEMPDIRECTORY}
-        ls
-        cd dotnet
-        ls
-        Write-Host "=================================check temp folder dotnet=================================="
-        .\dotnet.exe --info
-        Write-Host "=================================check dotnet=================================="
-        dotnet --info
 
   - task: PowerShell@1
     displayName: "Print Environment Variables"
@@ -711,13 +661,6 @@ phases:
     demands: sh
 
   steps:
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
 
   - task: ShellScript@2
     displayName: "Install .NET 5.0 for build"
@@ -734,23 +677,6 @@ phases:
       targetType: "inline"
       script: |
         Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
-
-  - task: PowerShell@2
-    displayName: "add check step"
-    inputs:
-      targetType: "inline"
-      script: |
-        Write-Host "=================================check env=================================="
-        gci env:* | format-table -Wrap -AutoSize
-        Write-Host "=================================check temp folder=================================="
-        cd ${env:AGENT_TEMPDIRECTORY}
-        ls
-        cd dotnet
-        ls
-        Write-Host "=================================check temp folder dotnet=================================="
-        ./dotnet --info
-        Write-Host "=================================check dotnet=================================="
-        dotnet --info
 
   - task: PowerShell@2
     displayName: "Update Build Number"
@@ -805,15 +731,7 @@ phases:
     - VSTS_OS -equals Mac_Mojave_10.14
     - Mono -equals 6.4.0 
 
-  steps:
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
-      
+  steps:  
   - task: ShellScript@2
     displayName: "Install .NET 5.0 for build"
     continueOnError: "true"
@@ -838,23 +756,6 @@ phases:
       targetType: "inline"
       script: |
         Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
-
-  - task: PowerShell@2
-    displayName: "add check step"
-    inputs:
-      targetType: "inline"
-      script: |
-        Write-Host "=================================check env=================================="
-        gci env:* | format-table -Wrap -AutoSize
-        Write-Host "=================================check temp folder=================================="
-        cd ${env:AGENT_TEMPDIRECTORY}
-        ls
-        cd dotnet
-        ls
-        Write-Host "=================================check temp folder dotnet=================================="
-        ./dotnet --info
-        Write-Host "=================================check dotnet=================================="
-        dotnet --info
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download NuGet.CommandLine.Test artifacts"
@@ -905,14 +806,6 @@ phases:
     demands: DotNetFramework
 
   steps:
-  # - task: UseDotNet@2
-  #   displayName: 'Use .NET Core sdk'
-  #   inputs:
-  #     packageType: sdk
-  #     version: $(SDKVersionForBuild)
-  #     includePreviewVersions: true
-  #     installationPath: $(Agent.TempDirectory)/dotnet
-
   - task: PowerShell@1
     inputs:
       scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
