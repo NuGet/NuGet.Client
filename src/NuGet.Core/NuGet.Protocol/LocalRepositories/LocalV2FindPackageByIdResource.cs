@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -205,16 +207,30 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            FindPackageByIdDependencyInfo dependencyInfo = null;
-            var info = GetPackageInfo(id, version, cacheContext, logger);
-            if (info != null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                dependencyInfo = GetDependencyInfo(info.Nuspec);
-            }
 
-            return Task.FromResult(dependencyInfo);
+                cancellationToken.ThrowIfCancellationRequested();
+
+                FindPackageByIdDependencyInfo dependencyInfo = null;
+                var info = GetPackageInfo(id, version, cacheContext, logger);
+                if (info != null)
+                {
+                    dependencyInfo = GetDependencyInfo(info.Nuspec);
+                }
+
+                return Task.FromResult(dependencyInfo);
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    resourceType: nameof(FindPackageByIdResource),
+                    type: nameof(LocalV2FindPackageByIdResource),
+                    method: nameof(GetDependencyInfoAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
 
         private LocalPackageInfo GetPackageInfo(

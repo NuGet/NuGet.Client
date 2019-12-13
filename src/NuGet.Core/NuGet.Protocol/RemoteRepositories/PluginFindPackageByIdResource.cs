@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Plugins;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types
@@ -229,41 +231,54 @@ namespace NuGet.Protocol.Core.Types
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
-
-            PackageInfo packageInfo;
-
-            if (packageInfos.TryGetValue(version, out packageInfo))
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                AddOrUpdateLogger(_plugin, logger);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                await _utilities.DoOncePerPluginLifetimeAsync(
-                    MessageMethod.SetLogLevel.ToString(),
-                    () => SetLogLevelAsync(logger, cancellationToken),
-                    cancellationToken);
+                var packageInfos = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-                var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
-                    MessageMethod.PrefetchPackage,
-                    new PrefetchPackageRequest(
-                        _packageSource.Source,
-                        packageInfo.Identity.Id,
-                        packageInfo.Identity.Version.ToNormalizedString()),
-                    cancellationToken);
+                PackageInfo packageInfo;
 
-                if (response != null && response.ResponseCode == MessageResponseCode.Success)
+                if (packageInfos.TryGetValue(version, out packageInfo))
                 {
-                    using (var packageReader = new PluginPackageReader(_plugin, packageInfo.Identity, _packageSource.Source))
-                    {
-                        var nuspecReader = await packageReader.GetNuspecReaderAsync(cancellationToken);
+                    AddOrUpdateLogger(_plugin, logger);
 
-                        return GetDependencyInfo(nuspecReader);
+                    await _utilities.DoOncePerPluginLifetimeAsync(
+                        MessageMethod.SetLogLevel.ToString(),
+                        () => SetLogLevelAsync(logger, cancellationToken),
+                        cancellationToken);
+
+                    var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
+                        MessageMethod.PrefetchPackage,
+                        new PrefetchPackageRequest(
+                            _packageSource.Source,
+                            packageInfo.Identity.Id,
+                            packageInfo.Identity.Version.ToNormalizedString()),
+                        cancellationToken);
+
+                    if (response != null && response.ResponseCode == MessageResponseCode.Success)
+                    {
+                        using (var packageReader = new PluginPackageReader(_plugin, packageInfo.Identity, _packageSource.Source))
+                        {
+                            var nuspecReader = await packageReader.GetNuspecReaderAsync(cancellationToken);
+
+                            return GetDependencyInfo(nuspecReader);
+                        }
                     }
                 }
-            }
 
-            return null;
+                return null;
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _packageSource.Source,
+                    resourceType: nameof(FindPackageByIdResource),
+                    type: nameof(PluginFindPackageByIdResource),
+                    method: nameof(GetDependencyInfoAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
 
         /// <summary>

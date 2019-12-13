@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -11,6 +12,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -150,22 +152,35 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
-            if (packageInfo == null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                return null;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
+                if (packageInfo == null)
+                {
+                    return null;
+                }
+
+                var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+
+                return GetDependencyInfo(reader);
             }
-
-            var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
-                packageInfo.Identity,
-                packageInfo.ContentUri,
-                cacheContext,
-                logger,
-                cancellationToken);
-
-            return GetDependencyInfo(reader);
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    SourceRepository.PackageSource.Source,
+                    resourceType: nameof(FindPackageByIdResource),
+                    type: nameof(RemoteV3FindPackageByIdResource),
+                    method: nameof(GetDependencyInfoAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
 
         /// <summary>

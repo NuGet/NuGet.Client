@@ -27,6 +27,7 @@ namespace NuGet.Protocol.Tests
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
+                    source: "source",
                     baseUris: null,
                     httpSource: CreateDummyHttpSource()));
 
@@ -38,6 +39,7 @@ namespace NuGet.Protocol.Tests
         {
             var exception = Assert.Throws<ArgumentException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
+                    source: "source",
                     new List<Uri>(),
                     CreateDummyHttpSource()));
 
@@ -49,6 +51,7 @@ namespace NuGet.Protocol.Tests
         {
             var exception = Assert.Throws<ArgumentNullException>(
                 () => new HttpFileSystemBasedFindPackageByIdResource(
+                    source: "source",
                     new List<Uri>() { new Uri("https://unit.test") },
                     httpSource: null));
 
@@ -646,6 +649,7 @@ namespace NuGet.Protocol.Tests
                 var baseUris = new List<Uri>() { packageSource.SourceUri };
                 var httpSource = new TestHttpSource(packageSource, responses);
                 var resource = new HttpFileSystemBasedFindPackageByIdResource(
+                    source: "source",
                     baseUris,
                     httpSource);
 

@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Threading;
@@ -14,6 +15,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -239,23 +241,36 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            FindPackageByIdDependencyInfo dependencyInfo = null;
-            if (DoesVersionExist(id, version))
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                var identity = new PackageIdentity(id, version);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                dependencyInfo = ProcessNuspecReader(
-                    id,
-                    version,
-                    nuspecReader =>
-                    {
-                        return GetDependencyInfo(nuspecReader);
-                    });
+                FindPackageByIdDependencyInfo dependencyInfo = null;
+                if (DoesVersionExist(id, version))
+                {
+                    var identity = new PackageIdentity(id, version);
+
+                    dependencyInfo = ProcessNuspecReader(
+                        id,
+                        version,
+                        nuspecReader =>
+                        {
+                            return GetDependencyInfo(nuspecReader);
+                        });
+                }
+
+                return Task.FromResult(dependencyInfo);
             }
-
-            return Task.FromResult(dependencyInfo);
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    resourceType: nameof(FindPackageByIdResource),
+                    type: nameof(LocalV3FindPackageByIdResource),
+                    method: nameof(GetDependencyInfoAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
