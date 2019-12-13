@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -15,6 +17,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class DownloadResourceV3 : DownloadResource
     {
+        private readonly string _source;
         private readonly RegistrationResourceV3 _regResource;
         private readonly HttpSource _client;
         private readonly string _packageBaseAddressUrl;
@@ -22,7 +25,16 @@ namespace NuGet.Protocol
         /// <summary>
         /// Download packages using the download url found in the registration resource.
         /// </summary>
+        [Obsolete("Use constructor with source parameter")]
         public DownloadResourceV3(HttpSource client, RegistrationResourceV3 regResource)
+            : this(source: null, client, regResource)
+        {
+        }
+
+        /// <summary>
+        /// Download packages using the download url found in the registration resource.
+        /// </summary>
+        public DownloadResourceV3(string source, HttpSource client, RegistrationResourceV3 regResource)
             : this(client)
         {
             if (regResource == null)
@@ -30,13 +42,23 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(regResource));
             }
 
+            _source = source;
             _regResource = regResource;
         }
 
         /// <summary>
         /// Download packages using the package base address container resource.
         /// </summary>
+        [Obsolete("Use constructor with source parameter")]
         public DownloadResourceV3(HttpSource client, string packageBaseAddress)
+            : this (source: null, client, packageBaseAddress)
+        {
+        }
+
+        /// <summary>
+        /// Download packages using the package base address container resource.
+        /// </summary>
+        public DownloadResourceV3(string source, HttpSource client, string packageBaseAddress)
             : this(client)
         {
             if (packageBaseAddress == null)
@@ -44,6 +66,7 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(packageBaseAddress));
             }
 
+            _source = source;
             _packageBaseAddressUrl = packageBaseAddress.TrimEnd('/');
         }
 
@@ -122,21 +145,34 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            var uri = await GetDownloadUrl(identity, logger, token);
-
-            if (uri != null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                return await GetDownloadResultUtility.GetDownloadResultAsync(
-                    _client,
-                    identity,
-                    uri,
-                    downloadContext,
-                    globalPackagesFolder,
-                    logger,
-                    token);
-            }
+                var uri = await GetDownloadUrl(identity, logger, token);
 
-            return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
+                if (uri != null)
+                {
+                    return await GetDownloadResultUtility.GetDownloadResultAsync(
+                        _client,
+                        identity,
+                        uri,
+                        downloadContext,
+                        globalPackagesFolder,
+                        logger,
+                        token);
+                }
+
+                return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    resourceType: nameof(DownloadResource),
+                    type: nameof(DownloadResourceV3),
+                    method: nameof(GetDownloadResourceResultAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
     }
 }

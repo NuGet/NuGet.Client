@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,6 +11,7 @@ using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Plugins;
+using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {
@@ -98,40 +100,53 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            AddOrUpdateLogger(_plugin, logger);
-
-            await _utilities.DoOncePerPluginLifetimeAsync(
-                MessageMethod.SetLogLevel.ToString(),
-                () => SetLogLevelAsync(logger, cancellationToken),
-                cancellationToken);
-
-            var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
-                MessageMethod.PrefetchPackage,
-                new PrefetchPackageRequest(_packageSource.Source, identity.Id, identity.Version.ToNormalizedString()),
-                cancellationToken);
-
-            if (response != null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                if (response.ResponseCode == MessageResponseCode.Success)
-                {
-                    var packageReader = new PluginPackageReader(_plugin, identity, _packageSource.Source);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                    return new DownloadResourceResult(packageReader, _packageSource.Source);
+                AddOrUpdateLogger(_plugin, logger);
+
+                await _utilities.DoOncePerPluginLifetimeAsync(
+                    MessageMethod.SetLogLevel.ToString(),
+                    () => SetLogLevelAsync(logger, cancellationToken),
+                    cancellationToken);
+
+                var response = await _plugin.Connection.SendRequestAndReceiveResponseAsync<PrefetchPackageRequest, PrefetchPackageResponse>(
+                    MessageMethod.PrefetchPackage,
+                    new PrefetchPackageRequest(_packageSource.Source, identity.Id, identity.Version.ToNormalizedString()),
+                    cancellationToken);
+
+                if (response != null)
+                {
+                    if (response.ResponseCode == MessageResponseCode.Success)
+                    {
+                        var packageReader = new PluginPackageReader(_plugin, identity, _packageSource.Source);
+
+                        return new DownloadResourceResult(packageReader, _packageSource.Source);
+                    }
+
+                    if (response.ResponseCode == MessageResponseCode.NotFound)
+                    {
+                        return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
+                    }
                 }
 
-                if (response.ResponseCode == MessageResponseCode.NotFound)
-                {
-                    return new DownloadResourceResult(DownloadResourceResultStatus.NotFound);
-                }
+                throw new PluginException(
+                    string.Format(CultureInfo.CurrentCulture,
+                    Strings.Plugin_PackageDownloadFailed,
+                    _plugin.Name,
+                    $"{identity.Id}.{identity.Version.ToNormalizedString()}"));
             }
-
-            throw new PluginException(
-                string.Format(CultureInfo.CurrentCulture,
-                Strings.Plugin_PackageDownloadFailed,
-                _plugin.Name,
-                $"{identity.Id}.{identity.Version.ToNormalizedString()}"));
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _packageSource.Source,
+                    resourceType: nameof(DownloadResource),
+                    type: nameof(DownloadResourcePlugin),
+                    method: nameof(GetDownloadResourceResultAsync),
+                    duration: stopwatch.Elapsed));
+            }
         }
 
         private void AddOrUpdateLogger(IPlugin plugin, ILogger logger)

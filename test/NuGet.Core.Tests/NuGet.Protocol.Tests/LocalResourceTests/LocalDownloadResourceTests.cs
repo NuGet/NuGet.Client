@@ -47,7 +47,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
@@ -104,7 +104,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
@@ -170,7 +170,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
@@ -221,7 +221,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
@@ -248,7 +248,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())
@@ -275,7 +275,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceV2(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 Directory.Delete(root);
 
@@ -307,7 +307,7 @@ namespace NuGet.Protocol.Tests
                 string packagesFolder = null; // This is unused by the implementation.
 
                 var localResource = new FindLocalPackagesResourceUnzipped(root);
-                var resource = new LocalDownloadResource(localResource);
+                var resource = new LocalDownloadResource("source", localResource);
 
                 // Act
                 using (var cacheContext = new SourceCacheContext())

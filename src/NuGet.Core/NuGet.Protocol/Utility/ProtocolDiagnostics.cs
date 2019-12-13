@@ -7,11 +7,20 @@ namespace NuGet.Protocol.Utility
     {
         public delegate void ProtocolDiagnosticEventHandler(ProtocolDiagnosticEvent pdEvent);
 
+        public delegate void ProtocolDiagnosticResourceEventHandler(ProtocolDiagnosticResourceEvent pdrEvent);
+
         public static event ProtocolDiagnosticEventHandler Event;
+
+        public static event ProtocolDiagnosticResourceEventHandler ResourceEvent;
 
         internal static void RaiseEvent(ProtocolDiagnosticEvent pdEvent)
         {
             Event?.Invoke(pdEvent);
+        }
+
+        internal static void RaiseEvent(ProtocolDiagnosticResourceEvent pdrEvent)
+        {
+            ResourceEvent?.Invoke(pdrEvent);
         }
     }
 }

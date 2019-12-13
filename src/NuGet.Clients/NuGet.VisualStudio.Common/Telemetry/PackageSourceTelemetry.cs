@@ -28,6 +28,7 @@ namespace NuGet.VisualStudio.Telemetry
 
             _data = new ConcurrentDictionary<string, Data>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
+            ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             _parentId = parentId;
 
             // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
@@ -36,6 +37,10 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 _sources[source.Source] = source;
             }
+        }
+
+        private void ProtocolDiagnostics_ResourceEvent(ProtocolDiagnosticResourceEvent pdrEvent)
+        {
         }
 
         private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
@@ -114,6 +119,7 @@ namespace NuGet.VisualStudio.Telemetry
         public void Dispose()
         {
             ProtocolDiagnostics.Event -= ProtocolDiagnostics_Event;
+            ProtocolDiagnostics.ResourceEvent -= ProtocolDiagnostics_ResourceEvent;
         }
 
         public void SendTelemetry()
