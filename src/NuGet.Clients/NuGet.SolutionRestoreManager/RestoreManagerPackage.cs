@@ -6,9 +6,6 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.Protocol.Core.Types;
-using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -20,7 +17,10 @@ namespace NuGet.SolutionRestoreManager
     // Flag AllowsBackgroundLoading is set to True and Flag PackageAutoLoadFlags is set to BackgroundLoad
     // which will allow this package to be loaded asynchronously
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
+    // BackgroundLoad this package as soon as a Solution exists.
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]	    
+    // Ensure that this package is loaded in time to listen to solution build events, in order to always be able to restore before build.
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
     [Guid(PackageGuidString)]
     public sealed class RestoreManagerPackage : AsyncPackage
     {
