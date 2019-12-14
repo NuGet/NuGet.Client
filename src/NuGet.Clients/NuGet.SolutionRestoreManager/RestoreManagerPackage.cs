@@ -18,7 +18,7 @@ namespace NuGet.SolutionRestoreManager
     // which will allow this package to be loaded asynchronously
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     // BackgroundLoad this package as soon as a Solution exists.
-    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]	    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]
+    [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionExists_string, PackageAutoLoadFlags.BackgroundLoad)]	    
     // Ensure that this package is loaded in time to listen to solution build events, in order to always be able to restore before build.
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionBuilding_string)]
     [Guid(PackageGuidString)]
