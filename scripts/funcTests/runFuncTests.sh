@@ -53,7 +53,9 @@ do
 	fi
 	echo "Channel is: $Channel"
 	echo "Version is: $Version"
-	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	# Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
+    scripts/funcTests/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	#cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
 	# Display current version
 	$DOTNET --version
