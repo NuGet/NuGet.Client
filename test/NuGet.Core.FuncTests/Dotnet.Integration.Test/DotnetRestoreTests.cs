@@ -371,7 +371,7 @@ EndGlobal";
                 var sources = new List<string>();
                 var projFramework = FrameworkConstants.CommonFrameworks.Net462;
 
-                foreach (var letter in new[] { "A", "B", "C", "D" })
+                foreach (var letter in new[] { "A", "B", "C"})
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(
@@ -446,7 +446,7 @@ EndGlobal";
                 result.Success.Should().BeTrue(because: result.AllOutput);
 
                 // Assert
-                projects.Count.Should().BeGreaterThan(0);
+                projects.Should().NotBeEmpty();
 
                 foreach (var letter in projects.Keys)
                 {
@@ -470,7 +470,7 @@ EndGlobal";
                 var sources = new List<string>();
                 var projFramework = FrameworkConstants.CommonFrameworks.Net462;
 
-                foreach (var letter in new[] { "A", "B", "C", "D" })
+                foreach (var letter in new[] { "A", "B", "C"})
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(

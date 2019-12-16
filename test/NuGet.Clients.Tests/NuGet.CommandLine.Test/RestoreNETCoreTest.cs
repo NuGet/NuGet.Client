@@ -167,18 +167,19 @@ namespace NuGet.CommandLine.Test
             {
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
                 var projects = new Dictionary<string, SimpleTestProjectContext>();
-                var packageId = "packageA";
+                const string packageId = "packageA";
+                const string packageVersion = "1.0.0";
 
                 await SimpleTestPackageUtility.CreatePackagesAsync(
                     pathContext.PackageSource,
                     new SimpleTestPackageContext()
                     {
                         Id = packageId,
-                        Version = "1.0.0"
+                        Version = packageVersion
                     }
-                    );
+                    );;
 
-                foreach (var number in new[] { "2", "3", "4"})
+                foreach (var number in new[] { "2", "3"})
                 {
                     // Project
                     var project = SimpleTestProjectContext.CreateNETCore(
@@ -211,8 +212,7 @@ namespace NuGet.CommandLine.Test
                         {
                             Id = packageId,
                             Version = $"{number}.0.0"
-                        }
-                        );
+                        });
 
                     // Create a nuget.config for the project specific source.
                     var projectDir = Path.GetDirectoryName(project.ProjectPath);
@@ -243,12 +243,13 @@ namespace NuGet.CommandLine.Test
                 var r = Util.Restore(pathContext, pathContext.SolutionRoot, expectedExitCode: 0);
 
                 // Assert
-                Assert.True(projects.Count > 0);
+                r.Success.Should().BeTrue();
+                projects.Should().NotBeEmpty();
 
                 foreach (var number in projects.Keys)
                 {
                     projects[number].AssetsFile.Libraries.Select(e => e.Name).Should().Contain(packageId);
-                    projects[number].AssetsFile.Libraries.Single(e => e.Name.Equals("packageA")).Version.ToString().Should().Be("1.0.0");
+                    projects[number].AssetsFile.Libraries.Single(e => e.Name.Equals(packageId)).Version.ToString().Should().Be(packageVersion);
                 }
             }
         }

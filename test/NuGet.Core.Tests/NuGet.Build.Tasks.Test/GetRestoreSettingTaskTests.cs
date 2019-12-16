@@ -546,7 +546,7 @@ namespace NuGet.Build.Tasks.Test
                 // Assert
                 result.Should().BeTrue();
                 task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] {});
+                task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(configFile);
             }
         }
@@ -589,7 +589,7 @@ namespace NuGet.Build.Tasks.Test
                 // Assert
                 result.Should().BeTrue();
                 task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] { });
+                task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
 
@@ -634,7 +634,7 @@ namespace NuGet.Build.Tasks.Test
                 // Assert
                 result.Should().BeTrue();
                 task.OutputSources.ShouldBeEquivalentTo(new[] { "https://api.nuget.org/v3/index.json" });
-                task.OutputFallbackFolders.ShouldBeEquivalentTo(new string[] { });
+                task.OutputFallbackFolders.Should().BeEmpty();
                 task.OutputConfigFilePaths.Should().Contain(rootConfigFile);
                 task.OutputConfigFilePaths.Should().NotContain(projectLevelConfigFile);
 
