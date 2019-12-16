@@ -150,7 +150,6 @@ namespace NuGet.Commands.Test
             }
         }
 #endif
-
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(

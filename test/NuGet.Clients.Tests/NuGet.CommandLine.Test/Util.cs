@@ -1253,7 +1253,7 @@ EndProject");
             var globalJsonFile =
 @"{
     ""sdk"": {
-              ""version"": ""3.0.100 - preview""
+              ""version"": ""5.0.100-alpha1""
              }
 }";
 
