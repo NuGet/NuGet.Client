@@ -246,7 +246,8 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*.Utility\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Credentials.Test\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Indexing.Test\*.csproj" />
-    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj" />
+    <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj"
+                          Exclude="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\Msbuild.Integration.Test\*.csproj" />
   </ItemGroup>
 
   <!-- All projects in the repository -->
