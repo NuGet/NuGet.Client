@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol.Utility;
@@ -16,6 +15,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly ConcurrentDictionary<string, Data> _data;
         private readonly IDictionary<string, PackageSource> _sources;
         private readonly Guid _parentId;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
@@ -27,6 +27,7 @@ namespace NuGet.VisualStudio.Telemetry
             }
 
             _data = new ConcurrentDictionary<string, Data>();
+            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
             ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             _parentId = parentId;
@@ -41,6 +42,21 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_ResourceEvent(ProtocolDiagnosticResourceEvent pdrEvent)
         {
+            var resourceMethodNameTable = _resourceStringTable.GetOrAdd(pdrEvent.ResourceType, t => new ConcurrentDictionary<string, string>());
+            var resourceTypeAndMethod = resourceMethodNameTable.GetOrAdd(pdrEvent.Method, m => pdrEvent.ResourceType + "." + m);
+
+            var data = _data.GetOrAdd(pdrEvent.Source, _ => new Data());
+            lock (data._lock)
+            {
+                if (data.Resources.TryGetValue(resourceTypeAndMethod, out var t))
+                {
+                    data.Resources[resourceTypeAndMethod] = (t.count + 1, t.duration + pdrEvent.Duration);
+                }
+                else
+                {
+                    data.Resources[resourceTypeAndMethod] = (1, pdrEvent.Duration);
+                }
+            }
         }
 
         private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
@@ -351,11 +367,15 @@ namespace NuGet.VisualStudio.Telemetry
         {
             internal ResourceData Metadata { get; }
             internal ResourceData Nupkg { get; }
+            internal object _lock;
+            internal Dictionary<string, (int count, TimeSpan duration)> Resources { get; }
 
             internal Data()
             {
                 Metadata = new ResourceData();
                 Nupkg = new ResourceData();
+                _lock = new object();
+                Resources = new Dictionary<string, (int count, TimeSpan duration)>();
             }
         }
 
