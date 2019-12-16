@@ -35,13 +35,6 @@ scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
-#restore solution packages
-$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
-
 echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
@@ -60,7 +53,9 @@ do
 	fi
 	echo "Channel is: $Channel"
 	echo "Version is: $Version"
-	cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	# Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
+    scripts/funcTests/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
+	#cli/dotnet-install.sh -i cli -c $Channel -v $Version -nopath
 
 	# Display current version
 	$DOTNET --version
@@ -75,6 +70,13 @@ echo "Deleting .NET Core temporary files"
 rm -rf "/tmp/"dotnet.*
 
 echo "================="
+
+#restore solution packages
+$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
 
 # init the repo
 
