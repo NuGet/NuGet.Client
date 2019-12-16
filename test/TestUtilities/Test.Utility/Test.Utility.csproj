@@ -74,7 +74,7 @@
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Diagnostics.Process" Version="$(SystemPackagesVersion)" />
     <PackageReference Include="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.2" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.0-alpha1.19473.1" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->
