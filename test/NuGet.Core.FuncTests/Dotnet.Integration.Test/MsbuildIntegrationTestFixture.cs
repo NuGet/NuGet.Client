@@ -33,9 +33,9 @@ namespace Dotnet.Integration.Test
             var sdkPaths = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk"));
 
             MsBuildSdksPath = Path.Combine(
-             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("3")).First()
+             sdkPaths.Where(path => path.Split(Path.DirectorySeparatorChar).Last().StartsWith("5")).First()
              , "Sdks");
-     
+
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
@@ -287,154 +287,153 @@ namespace Dotnet.Integration.Test
 
                 var artifactDirectories = projectArtifactsFolder.EnumerateDirectories();
 
-                IEnumerable<DirectoryInfo> frameworkArtifactFolders = artifactDirectories.Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp3.0"));
+                IEnumerable<DirectoryInfo> frameworkArtifactFolders = artifactDirectories.Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp5.0"));
                 if (!frameworkArtifactsFolders.Any())
                 {
                     frameworkArtifactsFolders = frameworkArtifactsFolders.Where(folder => folder.FullName.Contains("netstandard2.0"));
                 }
-
-                foreach (var frameworkArtifactsFolder in frameworkArtifactsFolders)
-                {
-                    var fileName = projectName + ".dll";
-                    File.Copy(
-                            sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
-                            destFileName: Path.Combine(pathToSdkInCli, fileName),
-                            overwrite: true);
-                    // Copy the restore targets.
-                    if (projectName.Equals(restoreProjectName))
+                    foreach (var frameworkArtifactsFolder in frameworkArtifactsFolders)
                     {
+                        var fileName = projectName + ".dll";
                         File.Copy(
-                            sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
-                            destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
-                            overwrite: true);
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
+                                destFileName: Path.Combine(pathToSdkInCli, fileName),
+                                overwrite: true);
+                        // Copy the restore targets.
+                        if (projectName.Equals(restoreProjectName))
+                        {
+                            File.Copy(
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
+                                destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
+                                overwrite: true);
+                        }
                     }
                 }
             }
-        }
 
-        private void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
-        {
-            var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
-
-            const string packProjectName = "NuGet.Build.Tasks.Pack";
-            const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
-            // Copy the pack SDK.
-            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").Single();
-            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
-            // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
-            // In VisualStudio, simply use the non il merged version.
-            var ilMergedPackDirectoryPath = Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge");
-            if (Directory.Exists(ilMergedPackDirectoryPath))
+            private void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration, string toolsetVersion)
             {
-                var packFileName = packProjectName + ".dll";
-                // Only use the il merged assembly if it's newer than the build.
-                DateTime packAssemblyCreationDate = File.GetCreationTimeUtc(Path.Combine(packProjectCoreArtifactsDirectory.FullName, packFileName));
-                DateTime ilMergedPackAssemblyCreationDate = File.GetCreationTimeUtc(Path.Combine(ilMergedPackDirectoryPath, packFileName));
-                if (ilMergedPackAssemblyCreationDate > packAssemblyCreationDate)
+                var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
+
+                const string packProjectName = "NuGet.Build.Tasks.Pack";
+                const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
+                // Copy the pack SDK.
+                var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").Single();
+                var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
+                // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
+                // In VisualStudio, simply use the non il merged version.
+                var ilMergedPackDirectoryPath = Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge");
+                if (Directory.Exists(ilMergedPackDirectoryPath))
                 {
-                    FileUtility.Replace(
-                        sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
-                        destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
-                }
-                else
-                {
-                    foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+                    var packFileName = packProjectName + ".dll";
+                    // Only use the il merged assembly if it's newer than the build.
+                    DateTime packAssemblyCreationDate = File.GetCreationTimeUtc(Path.Combine(packProjectCoreArtifactsDirectory.FullName, packFileName));
+                    DateTime ilMergedPackAssemblyCreationDate = File.GetCreationTimeUtc(Path.Combine(ilMergedPackDirectoryPath, packFileName));
+                    if (ilMergedPackAssemblyCreationDate > packAssemblyCreationDate)
                     {
-                        File.Copy(
-                            sourceFileName: assembly.FullName,
-                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
-                            overwrite: true);
+                        FileUtility.Replace(
+                            sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
+                            destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
                     }
-                }
-                // Copy the pack targets
-                var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
-                var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
-                var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
-                File.Copy(packTargetsSource, targetsDestination, overwrite: true);
-                File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
-            }
-        }
-
-        public void Dispose()
-        {
-            RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
-            KillDotnetExe(TestDotnetCli);
-            _cliDirectory.Dispose();
-            _templateDirectory.Dispose();
-        }
-
-        private static void KillDotnetExe(string pathToDotnetExe)
-        {
-            var processes = Process.GetProcessesByName("dotnet")
-                .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
-            var testDirProcesses = Process.GetProcesses()
-                .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
-            try
-            {
-                if (processes != null)
-                {
-                    foreach (var process in processes)
+                    else
                     {
-                        if (string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
+                        foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+                        {
+                            File.Copy(
+                                sourceFileName: assembly.FullName,
+                                destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
+                                overwrite: true);
+                        }
+                    }
+                    // Copy the pack targets
+                    var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
+                    var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
+                    var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
+                    File.Copy(packTargetsSource, targetsDestination, overwrite: true);
+                    File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
+                }
+            }
+
+            public void Dispose()
+            {
+                RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
+                KillDotnetExe(TestDotnetCli);
+                _cliDirectory.Dispose();
+                _templateDirectory.Dispose();
+            }
+
+            private static void KillDotnetExe(string pathToDotnetExe)
+            {
+                var processes = Process.GetProcessesByName("dotnet")
+                    .Where(t => string.Compare(t.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), ignoreCase: true) == 0);
+                var testDirProcesses = Process.GetProcesses()
+                    .Where(t => t.MainModule.FileName.StartsWith(TestFileSystemUtility.NuGetTestFolder, StringComparison.OrdinalIgnoreCase));
+                try
+                {
+                    if (processes != null)
+                    {
+                        foreach (var process in processes)
+                        {
+                            if (string.Compare(process.MainModule.FileName, Path.GetFullPath(pathToDotnetExe), true) == 0)
+                            {
+                                process.Kill();
+                            }
+                        }
+                    }
+
+                    if (testDirProcesses != null)
+                    {
+                        foreach (var process in testDirProcesses)
                         {
                             process.Kill();
                         }
                     }
-                }
 
-                if (testDirProcesses != null)
+                }
+                catch { }
+            }
+
+            /// <summary>
+            /// Depth-first recursive delete, with handling for descendant 
+            /// directories open in Windows Explorer or used by another process
+            /// </summary>
+            private static void DeleteDirectory(string path)
+            {
+                foreach (string directory in Directory.GetDirectories(path))
                 {
-                    foreach (var process in testDirProcesses)
-                    {
-                        process.Kill();
-                    }
+                    DeleteDirectory(directory);
                 }
 
-            }
-            catch { }
-        }
+                try
+                {
+                    Directory.Delete(path, true);
+                }
+                catch (IOException)
+                {
+                    Directory.Delete(path, true);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    var MaxTries = 100;
 
-        /// <summary>
-        /// Depth-first recursive delete, with handling for descendant 
-        /// directories open in Windows Explorer or used by another process
-        /// </summary>
-        private static void DeleteDirectory(string path)
-        {
-            foreach (string directory in Directory.GetDirectories(path))
-            {
-                DeleteDirectory(directory);
-            }
+                    for (var i = 0; i < MaxTries; i++)
+                    {
 
-            try
-            {
-                Directory.Delete(path, true);
-            }
-            catch (IOException)
-            {
-                Directory.Delete(path, true);
-            }
-            catch (UnauthorizedAccessException)
-            {
-                var MaxTries = 100;
-
-                for (var i = 0; i < MaxTries; i++)
+                        try
+                        {
+                            Directory.Delete(path, recursive: true);
+                            break;
+                        }
+                        catch (UnauthorizedAccessException) when (i < (MaxTries - 1))
+                        {
+                            Thread.Sleep(100);
+                        }
+                    }
+                }
+                catch
                 {
 
-                    try
-                    {
-                        Directory.Delete(path, recursive: true);
-                        break;
-                    }
-                    catch (UnauthorizedAccessException) when (i < (MaxTries - 1))
-                    {
-                        Thread.Sleep(100);
-                    }
                 }
-            }
-            catch
-            {
-
             }
         }
     }
-}
