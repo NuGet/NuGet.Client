@@ -37,15 +37,6 @@ scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
-echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
-
-#restore solution packages
-$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
-if [ $? -ne 0 ]; then
-	echo "Restore failed!!"
-	exit 1
-fi
-
 echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
@@ -80,6 +71,13 @@ rm -rf "/tmp/"dotnet.*
 
 echo "second dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 echo "================="
+
+#restore solution packages
+$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
+if [ $? -ne 0 ]; then
+	echo "Restore failed!!"
+	exit 1
+fi
 
 # init the repo
 

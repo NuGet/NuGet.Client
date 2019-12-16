@@ -229,12 +229,6 @@ EndGlobal";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", tfm);
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
-
-                    ProjectFileUtils.ChangeProperty(
-                        xml,
-                        "TargetFramework",
-                        "netstandard2.1");
-
                     ProjectFileUtils.AddItem(
                         xml,
                         "PackageReference",
