@@ -49,6 +49,8 @@
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.0-alpha1.19473.1" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0-alpha1.19473.1" />
   </ItemGroup>
 
   <ItemGroup>
