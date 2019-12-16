@@ -62,7 +62,6 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// <param name="startingDirectory">An optional <see cref="DirectoryInfo" /> representing the directory to start the search in.</param>
         /// <param name="result">Receives the <see cref="FileInfo" /> of the file if found, otherwise <code>null</code>.</param>
         /// <returns><code>true</code> if a file was found in the directory or any parent directory, otherwise <code>false</code>.</returns>
-        [System.Runtime.CompilerServices.MethodImpl(System.Runtime.CompilerServices.MethodImplOptions.AggressiveInlining)]
         public static bool TryGetPathOfFileAbove(string fileName, DirectoryInfo startingDirectory, out string result)
         {
             result = null;
