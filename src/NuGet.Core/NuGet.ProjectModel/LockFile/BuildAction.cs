@@ -28,6 +28,7 @@ namespace NuGet.ProjectModel
         public static BuildAction ClCompile = Define(nameof(ClCompile));
         public static BuildAction ResourceCompile = Define(nameof(ResourceCompile));
         public static BuildAction MASM = Define(nameof(MASM));
+        public static BuildAction Midl = Define(nameof(Midl));
 
         public string Value { get; }
 
