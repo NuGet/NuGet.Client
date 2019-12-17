@@ -45,7 +45,7 @@ namespace NuGet.Commands
             })
             {
                 // Create a unique temporary directory for the project
-                var projectDirectory = Directory.CreateDirectory(Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N")));
+                var projectDirectory = Directory.CreateDirectory(Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N")));
 
                 try
                 {
