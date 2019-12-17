@@ -11,6 +11,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -1341,6 +1342,81 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.True(result.Success);
                 Assert.Equal(0, lockFile.Libraries.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_AllowNoOpFalse_DoesNotPersistDgSpecCacheFile()
+        {
+            // Arrange
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packageA = new PackageIdentity("packageA", NuGetVersion.Parse("1.0.0"));
+                var packagesDir = Directory.CreateDirectory(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = Directory.CreateDirectory(Path.Combine(workingDir, "packageSource"));
+                var projectFullPath = Path.Combine(workingDir, "projects", "project1", "project1.csproj");
+                var targetFrameworks = new [] { FrameworkConstants.CommonFrameworks.NetStandard20 };
+                var logger = new TestLogger();
+
+                await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, packageA.Id, packageA.Version.OriginalVersion);
+
+                var packageSpec = new PackageSpec(targetFrameworks.Select(i => new TargetFrameworkInformation
+                {
+                    FrameworkName = i,
+                }).ToList())
+                {
+                    Dependencies = new List<LibraryDependency>
+                    {
+                        new LibraryDependency
+                        {
+                            IncludeType = LibraryIncludeFlags.None,
+                            LibraryRange = new LibraryRange(packageA.Id, new VersionRange(packageA.Version), LibraryDependencyTarget.Package),
+                            SuppressParent = LibraryIncludeFlags.All,
+                            Type = LibraryDependencyType.Build
+                        }
+                    },
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ConfigFilePaths = new List<string> {Path.Combine(workingDir, Settings.DefaultSettingsFileName)},
+                        FallbackFolders = new List<string>(),
+                        OriginalTargetFrameworks = targetFrameworks.Select(i => i.ToString()).ToList(),
+                        OutputPath = Path.GetDirectoryName(projectFullPath),
+                        PackagesPath = packagesDir.FullName,
+                        ProjectName = Path.GetFileNameWithoutExtension(projectFullPath),
+                        ProjectPath = projectFullPath,
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        ProjectUniqueName = projectFullPath,
+                        Sources = new List<PackageSource> {new PackageSource(packageSource.FullName)},
+                    },
+                    FilePath = projectFullPath,
+                    Name = Path.GetFileNameWithoutExtension(projectFullPath),
+                };
+
+                var dependencyGraphSpec = new DependencyGraphSpec();
+
+                dependencyGraphSpec.AddProject(packageSpec);
+
+                dependencyGraphSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+
+                var request = new TestRestoreRequest(packageSpec, packageSpec.RestoreMetadata.Sources, packagesDir.FullName, logger)
+                {
+                    AllowNoOp = false,
+                    DependencyGraphSpec = dependencyGraphSpec,
+                    ProjectStyle = packageSpec.RestoreMetadata.ProjectStyle
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                
+                // Assert
+                Assert.True(result.Success);
+
+                var dgSpecCacheFilePath = NoOpRestoreUtilities.GetPersistedDGSpecFilePath(request);
+
+                Assert.NotNull(dgSpecCacheFilePath);
+
+                Assert.False(File.Exists(dgSpecCacheFilePath));
             }
         }
     }
