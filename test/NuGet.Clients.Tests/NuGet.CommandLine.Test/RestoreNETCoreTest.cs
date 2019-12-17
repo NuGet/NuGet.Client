@@ -157,11 +157,110 @@ namespace NuGet.CommandLine.Test
 
         /// <summary>
         /// Create 3 projects, each with their own nuget.config file and source.
-        /// When restoring without a solution settings should be found from the project folder.
-        /// Solution settings are verified in RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings
+        /// When restoring with a solution, the settings from the project folder should not be used.
         /// </summary>
         [Fact]
-        public async Task RestoreNetCore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolutionAsync()
+        public async Task RestoreNetCore_WithNuGetExe_WhenRestoringASolution_VerifyPerProjectConfigSourcesAreNotUsed()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projects = new Dictionary<string, SimpleTestProjectContext>();
+                const string packageId = "packageA";
+                const string packageVersion = "1.0.0";
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(
+                    pathContext.PackageSource,
+                    new SimpleTestPackageContext()
+                    {
+                        Id = packageId,
+                        Version = packageVersion
+                    }
+                    );;
+
+                foreach (var number in new[] { "2", "3"})
+                {
+                    // Project
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"project{number}",
+                        pathContext.SolutionRoot,
+                        NuGetFramework.Parse("net45"));
+
+                    projects.Add(number, project);
+
+                    // Package
+
+                    var referencePackage = new SimpleTestPackageContext()
+                    {
+                        Id = packageId,
+                        Version = "*",
+                        PrivateAssets = "all",
+                    };
+
+                    project.AddPackageToAllFrameworks(referencePackage);
+                    project.Properties.Clear();
+
+                    solution.Projects.Add(project);
+
+                    // Source
+                    var source = Path.Combine(pathContext.WorkingDirectory, $"source{number}");
+
+                    await SimpleTestPackageUtility.CreatePackagesAsync(
+                        source,
+                        new SimpleTestPackageContext()
+                        {
+                            Id = packageId,
+                            Version = $"{number}.0.0"
+                        });
+
+                    // Create a nuget.config for the project specific source.
+                    var projectDir = Path.GetDirectoryName(project.ProjectPath);
+                    Directory.CreateDirectory(projectDir);
+                    var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                    var doc = new XDocument();
+                    var configuration = new XElement(XName.Get("configuration"));
+                    doc.Add(configuration);
+
+                    var config = new XElement(XName.Get("config"));
+                    configuration.Add(config);
+
+                    var packageSources = new XElement(XName.Get("packageSources"));
+                    configuration.Add(packageSources);
+
+                    var sourceEntry = new XElement(XName.Get("add"));
+                    sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                    sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                    packageSources.Add(sourceEntry);
+
+                    File.WriteAllText(configPath, doc.ToString());
+                }
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.Restore(pathContext, pathContext.SolutionRoot, expectedExitCode: 0);
+
+                // Assert
+                r.Success.Should().BeTrue();
+                projects.Should().NotBeEmpty();
+
+                foreach (var number in projects.Keys)
+                {
+                    projects[number].AssetsFile.Libraries.Select(e => e.Name).Should().Contain(packageId);
+                    projects[number].AssetsFile.Libraries.Single(e => e.Name.Equals(packageId)).Version.ToString().Should().Be(packageVersion);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create 3 projects, each with their own nuget.config file and source.
+        /// When restoring without a solution settings should be found from the project folder.
+        /// Solution settings are verified in RestoreProjectJson_RestoreFromSlnUsesNuGetFolderSettings and RestoreNetCore_WithNuGetExe_WhenRestoringASolution_VerifyPerProjectConfigSourcesAreNotUsed
+        /// </summary>
+        [Fact]
+        public async Task RestoreNetCore_WithNuGetExe_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolutionAsync()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())

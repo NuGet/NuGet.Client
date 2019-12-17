@@ -4,9 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
+using Microsoft.Build.Evaluation;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
@@ -354,8 +356,211 @@ EndGlobal";
             }
         }
 
+        /// <summary>
+        /// Create 3 projects, each with their own nuget.config file and source.
+        /// When restoring in PackageReference the settings should be found from the project folder.
+        /// </summary>
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithoutSolutionAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projects = new Dictionary<string, SimpleTestProjectContext>();
+                var sources = new List<string>();
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462;
 
-            private static byte[] GetResource(string name)
+                foreach (var letter in new[] { "A", "B", "C"})
+                {
+                    // Project
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"project{letter}",
+                        pathContext.SolutionRoot,
+                        projFramework);
+
+                    projects.Add(letter, project);
+                    solution.Projects.Add(project);
+
+                    // Package
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = $"package{letter}",
+                        Version = "1.0.0"
+                    };
+
+                    // Do not flow the reference up
+                    package.PrivateAssets = "all";
+
+                    project.AddPackageToAllFrameworks(package);
+                    project.Properties.Clear();
+
+                    // Source
+                    var source = Path.Combine(pathContext.WorkingDirectory, $"source{letter}");
+                    await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
+                    sources.Add(source);
+
+                    // Create a nuget.config for the project specific source.
+                    var projectDir = Path.GetDirectoryName(project.ProjectPath);
+                    Directory.CreateDirectory(projectDir);
+                    var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                    var doc = new XDocument();
+                    var configuration = new XElement(XName.Get("configuration"));
+                    doc.Add(configuration);
+
+                    var config = new XElement(XName.Get("config"));
+                    configuration.Add(config);
+
+                    var packageSources = new XElement(XName.Get("packageSources"));
+                    configuration.Add(packageSources);
+
+                    var sourceEntry = new XElement(XName.Get("add"));
+                    sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                    sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                    packageSources.Add(sourceEntry);
+
+                    File.WriteAllText(configPath, doc.ToString());
+                }
+
+                // Create root project
+                var projectRoot = SimpleTestProjectContext.CreateNETCore(
+                    "projectRoot",
+                    pathContext.SolutionRoot,
+                    projFramework);
+
+                // Link the root project to all other projects
+                foreach (var child in projects.Values)
+                {
+                    projectRoot.AddProjectToAllFrameworks(child);
+                }
+
+                projectRoot.Save();
+                solution.Projects.Add(projectRoot);
+
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore {projectRoot.ProjectPath}");
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Assert
+                projects.Should().NotBeEmpty();
+
+                foreach (var letter in projects.Keys)
+                {
+                    projects[letter].AssetsFile.Should().NotBeNull(because: result.AllOutput);
+                    projects[letter].AssetsFile.Libraries.Select(e => e.Name).Should().Contain($"package{letter}", because: result.AllOutput);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Create 3 projects, each with their own nuget.config file and source.
+        /// When restoring in PackageReference the settings should be found from the project folder.
+        /// </summary>
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_VerifyPerProjectConfigSourcesAreUsedForChildProjectsWithSolutionAsync()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var projects = new Dictionary<string, SimpleTestProjectContext>();
+                var sources = new List<string>();
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462;
+
+                foreach (var letter in new[] { "A", "B", "C"})
+                {
+                    // Project
+                    var project = SimpleTestProjectContext.CreateNETCore(
+                        $"project{letter}",
+                        pathContext.SolutionRoot,
+                        projFramework);
+
+                    projects.Add(letter, project);
+
+                    // Package
+                    var package = new SimpleTestPackageContext()
+                    {
+                        Id = $"package{letter}",
+                        Version = "1.0.0"
+                    };
+
+                    // Do not flow the reference up
+                    package.PrivateAssets = "all";
+
+                    project.AddPackageToAllFrameworks(package);
+                    project.Properties.Clear();
+
+                    // Source
+                    var source = Path.Combine(pathContext.WorkingDirectory, $"source{letter}");
+                    await SimpleTestPackageUtility.CreatePackagesAsync(source, package);
+                    sources.Add(source);
+
+                    // Create a nuget.config for the project specific source.
+                    var projectDir = Path.GetDirectoryName(project.ProjectPath);
+                    Directory.CreateDirectory(projectDir);
+                    var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                    var doc = new XDocument();
+                    var configuration = new XElement(XName.Get("configuration"));
+                    doc.Add(configuration);
+
+                    var config = new XElement(XName.Get("config"));
+                    configuration.Add(config);
+
+                    var packageSources = new XElement(XName.Get("packageSources"));
+                    configuration.Add(packageSources);
+
+                    var sourceEntry = new XElement(XName.Get("add"));
+                    sourceEntry.Add(new XAttribute(XName.Get("key"), "projectSource"));
+                    sourceEntry.Add(new XAttribute(XName.Get("value"), source));
+                    packageSources.Add(sourceEntry);
+
+                    File.WriteAllText(configPath, doc.ToString());
+                }
+
+                // Create root project
+                var projectRoot = SimpleTestProjectContext.CreateNETCore(
+                    "projectRoot",
+                    pathContext.SolutionRoot,
+                    projFramework);
+
+                // Link the root project to all other projects
+                // Save them.
+                foreach (var child in projects.Values)
+                {
+                    projectRoot.AddProjectToAllFrameworks(child);
+                    child.Save();
+                }
+                projectRoot.Save();
+                var solutionPath = Path.Combine(pathContext.SolutionRoot, "solution.sln");
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"new sln {solutionPath}");
+
+                foreach (var child in projects.Values)
+                {
+                    _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"sln {solutionPath} add {child.ProjectPath}");
+                }
+                _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"sln {solutionPath} add {projectRoot.ProjectPath}");
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore {solutionPath}");
+
+                result.Success.Should().BeTrue(because: result.AllOutput);
+
+                // Assert
+                projects.Count.Should().BeGreaterThan(0);
+
+                foreach (var letter in projects.Keys)
+                {
+                    projects[letter].AssetsFile.Should().NotBeNull(because: result.AllOutput);
+                    projects[letter].AssetsFile.Libraries.Select(e => e.Name).Should().Contain($"package{letter}", because: result.AllOutput);
+                }
+            }
+        }
+
+        private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
                 $"Dotnet.Integration.Test.compiler.resources.{name}",
