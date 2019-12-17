@@ -23,11 +23,11 @@ namespace NuGet.Commands
         internal const string NoOpCacheFileName = "project.nuget.cache";
 
         /// <summary>
-        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
+        /// If the dependencyGraphSpec is not set or <see cref="RestoreRequest.AllowNoOp" /> is <code>false</code>, we cannot no-op on this project restore.
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
-            return request.DependencyGraphSpec != null;
+            return request.DependencyGraphSpec != null && request.AllowNoOp;
         }
 
         /// <summary>
