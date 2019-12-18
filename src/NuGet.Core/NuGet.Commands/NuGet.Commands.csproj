@@ -37,6 +37,26 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Compile Update="CommandArgs\CommandArgs.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommandArgs.tt</DependentUpon>
+    </Compile>
+    <Compile Update="CommandArgs\VerbArgs.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VerbArgs.tt</DependentUpon>
+    </Compile>
+    <Compile Update="CommandRunners\CommandRunners.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>CommandRunners.tt</DependentUpon>
+    </Compile>
+    <Compile Update="CommandRunners\VerbRunners.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VerbRunners.tt</DependentUpon>
+    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -87,6 +107,29 @@
     </AssemblyAttribute>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <ItemGroup>
+    <None Update="CommandArgs\CommandArgs.tt">
+      <LastGenOutput>CommandArgs.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="CommandArgs\VerbArgs.tt">
+      <LastGenOutput>VerbArgs.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="CommandRunners\CommandRunners.tt">
+      <LastGenOutput>CommandRunners.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+    <None Update="CommandRunners\VerbRunners.tt">
+      <LastGenOutput>VerbRunners.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

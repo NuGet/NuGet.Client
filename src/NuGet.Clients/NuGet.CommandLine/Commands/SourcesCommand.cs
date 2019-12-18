@@ -4,6 +4,7 @@
 using System;
 using System.Globalization;
 using System.Linq;
+using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 
 namespace NuGet.CommandLine
@@ -33,12 +34,13 @@ namespace NuGet.CommandLine
         [Option(typeof(NuGetCommand), "SourcesCommandFormatDescription")]
         public SourcesListFormat Format { get; set; }
 
+
         public override void ExecuteCommand()
         {
-            if (SourceProvider == null)
-            {
-                throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
-            }
+            //if (SourceProvider == null)
+            //{
+            //    throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
+            //}
 
             SourcesAction action = SourcesAction.None;
             var actionArg = Arguments.FirstOrDefault();
@@ -55,27 +57,56 @@ namespace NuGet.CommandLine
                 }
             }
 
-            var interactive = !NonInteractive;
+            //TODO: validate addSourceArgs - should that be in the command or in the runner - likely runner, so we can share it.
+            //TODO: how do you ensure that invalid params (like username), isn't passed into disable.
+            switch (action)
+            {
+                case SourcesAction.Add:
+                    var addArgs = new AddSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile };
+                    AddSourceRunner.Run(addArgs, () => Console);
+                    break;
+                case SourcesAction.Update:
+                    var updateSourceArgs = new UpdateSourceArgs() { Name = Name, Source = Source, Username = Username, Password = Password, StorePasswordInClearText = StorePasswordInClearText, ValidAuthenticationTypes = ValidAuthenticationTypes, Configfile = ConfigFile };
+                    UpdateSourceRunner.Run(updateSourceArgs, () => Console);
+                    break;
+                case SourcesAction.Remove:
+                    var removeSourceArgs = new RemoveSourceArgs() { Name = Name, Configfile = ConfigFile };
+                    RemoveSourceRunner.Run(removeSourceArgs, () => Console);
+                    break;
+                case SourcesAction.Disable:
+                    var disableSourceArgs = new DisableSourceArgs() { Name = Name, Configfile = ConfigFile };
+                    DisableSourceRunner.Run(disableSourceArgs, () => Console);
+                    break;
+                case SourcesAction.Enable:
+                    var enableSourceArgs = new EnableSourceArgs() { Name = Name, Configfile = ConfigFile };
+                    EnableSourceRunner.Run(enableSourceArgs, () => Console);
+                    break;
+                case SourcesAction.List:
+                    var listSourceArgs = new ListSourceArgs() { Configfile = ConfigFile, Format = Format.ToString() };
+                    ListSourceRunner.Run(listSourceArgs, () => Console);
+                    break;
+                default:
+                    //TODO: implement
+                    throw new NotImplementedException();
+            }
 
-            var sourcesArgs = new SourcesArgs(
-                Settings,
-                SourceProvider,
-                action,
-                Name,
-                Source,
-                Username,
-                Password,
-                StorePasswordInClearText,
-                ValidAuthenticationTypes,
-                Format,
-                interactive,
-                ConfigFile,
-                isQuiet: Verbosity == Verbosity.Quiet,
-                Console,
-                logMinimalOverride: null // no override needed
-                );
+            //var sourcesArgs = new SourcesArgs()
+            //{
+            //    Settings = Settings,
+            //    SourceProvider = SourceProvider,
+            //    Action = action,
+            //    Name = Name,
+            //    Source = Source,
+            //    Username = Username,
+            //    Password = Password,
+            //    StorePasswordInClearText = StorePasswordInClearText,
+            //    ValidAuthenticationTypes = ValidAuthenticationTypes,
+            //    Format = Format,
+            //    IsQuiet = (Verbosity == Verbosity.Quiet),
+            //    Logger = Console,
+            //};
 
-            SourcesRunner.Run(sourcesArgs);
+            //SourcesRunner.Run(sourcesArgs);
         }
     }
 }

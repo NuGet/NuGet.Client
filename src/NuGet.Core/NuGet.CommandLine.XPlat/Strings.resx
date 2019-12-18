@@ -598,6 +598,30 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config</value>
     <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
   </data>
+  <data name="AddSourceCommandDescription" xml:space="preserve">
+    <value>Add a NuGet source.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="DisableCommandDescription" xml:space="preserve">
+    <value>Disable a NuGet source.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="EnableSourceCommandDescription" xml:space="preserve">
+    <value>Enable a NuGet source.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="ListSourceCommandDescription" xml:space="preserve">
+    <value>Lists all configured NuGet sources.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="RemoveSourceCommandDescription" xml:space="preserve">
+    <value>Remove a NuGet source.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
+  <data name="UpdateSourceCommandDescription" xml:space="preserve">
+    <value>Update a NuGet sources.</value>
+    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+  </data>
   <data name="SourcesCommandNameDescription" xml:space="preserve">
     <value>Name of the source.</value>
   </data>

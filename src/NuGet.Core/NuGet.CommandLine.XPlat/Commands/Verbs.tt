@@ -1,0 +1,215 @@
+<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Xml.XDocument" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+<#
+
+ string InitCaps(string input)
+ {
+    string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+    return output;
+ }
+ bool IsArgument(string type)
+ {
+    return type == "Argument";
+ }
+ string GetProperty(XElement element)
+ {
+    switch  (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "Option";
+        case "SwitchOption":
+            return "Option";
+        case "Argument":
+            return "Argument";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+ string GetOptionType(XElement element)
+ {
+    switch (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "SingleValue";
+        case "SwitchOption":
+            return "NoValue";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+
+ var commandFile = this.Host.ResolvePath("Commands.xml");
+ var commands = XDocument.Load(commandFile);
+#>
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Commands;
+using NuGet.Common;
+
+
+namespace NuGet.CommandLine.XPlat
+{
+
+<#
+// ********************** Verb-Parser Template
+foreach (var verb in commands.Descendants(XName.Get("Verb","")))
+{
+    var commandName = verb.Attribute(XName.Get("Name", "")).Value;
+    var commandFormalName = InitCaps(commandName);
+#>
+    internal partial class <#= commandFormalName #>VerbParser
+    {
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger,
+                                      Func<ILogger> getLogger2)
+        {
+            app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
+            {
+<#
+    foreach (var noun in verb.Descendants(XName.Get("Noun")))
+    {
+        var nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
+        var nounFormalName = InitCaps(nounName);
+        if (nounName != null)
+        {
+#>
+                <#= commandFormalName #>Cmd.Command("<#= nounName #>", <#= nounFormalName #>Cmd =>
+                {
+<#
+        }
+        foreach (var option in noun.Descendants()) {
+            var optionName = option.Attribute(XName.Get("Name", "")).Value;
+            var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
+            var optionFormalName = optionName.Replace("-","");
+
+            if (IsArgument(GetProperty(option)))
+            {
+                
+#>
+                    var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Argument(
+                        "<#= optionName #>", "<#= optionHelp != null ? optionHelp : "" #>");
+<#
+            }
+            else
+            {
+                var optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
+#>
+                    var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
+                        "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName #>",
+                        "<#= optionHelp != null ? optionHelp : "" #>",
+                        CommandOptionType.<#= GetOptionType(option) #>);
+<#
+            }
+        }
+#>
+                    <#= nounFormalName #>Cmd.HelpOption("-h|--help");
+
+                    <#= nounFormalName #>Cmd.OnExecute(() =>
+                    {
+                        var args = new <#= commandFormalName #><#= nounFormalName #>Args()
+                        {
+<#
+        foreach (var option in noun.Descendants())
+        {
+            var optionName = option.Attribute(XName.Get("Name", "")).Value;
+            var optionFormalName = optionName.Replace("-","");
+            var optionCapsName = InitCaps(optionFormalName);
+            if (IsArgument(GetProperty(option)))
+            {
+#>
+                            <#= optionCapsName #> = <#=optionFormalName#>.Value,
+<#
+            }
+            else
+            {
+                var optionType = GetOptionType(option);
+                switch (optionType)
+                {
+                    case "SingleValue":
+#>
+                            <#= optionCapsName #> = <#= optionFormalName #>.Value(),
+<#                    
+                        break;
+                    case "NoValue":
+#>
+                            <#= optionCapsName #> = <#= optionFormalName #>.HasValue(),
+<#                    
+                        break;
+                }
+            }
+        }
+#>
+                        };
+
+<#  // ****** IMPLEMENT REQUIRED ARGUMENTS ********
+
+            foreach (var option2 in noun.Descendants())
+            {
+                var required = option2.Attribute(XName.Get("Required", ""))?.Value == "true";
+                if (required)
+                {
+                    var optionName2 = option2.Attribute(XName.Get("Name", "")).Value;
+                    var optionFormalName2 = optionName2.Replace("-","");
+                    var optionCapsName2 = InitCaps(optionFormalName2);
+
+                    if (IsArgument(GetProperty(option2)))
+                    {
+#>
+                    if (args.<#= optionCapsName2 #> == null)
+                    {
+                        throw new CommandException("'<#=optionFormalName2#>' argument is missing but required.");
+                    }
+<#
+                    }
+                    else
+                    {
+                        var optionType2 = GetOptionType(option2);
+                        switch (optionType2)
+                        {
+                        case "SingleValue":
+#>
+                        if (args.<#= optionCapsName2 #> == null)
+                        {
+                            throw new CommandException("'<#=optionFormalName2#>' option is missing but required.");
+                        }
+<#                    
+                            break;
+                        case "NoValue":
+#>
+                        //TODO: implement required for bool
+<#                    
+                            break;
+                        }
+                    }     
+                }
+            }
+#> 
+                        <#= commandFormalName #><#= nounFormalName #>Runner.Run(args, getLogger);
+                        return 0;
+
+                    });
+                });
+<#
+        }
+#>
+                <#= commandFormalName #>Cmd.HelpOption("-h|--help");
+                <#= commandFormalName #>Cmd.OnExecute(() => 
+                {
+                    app.ShowHelp("<#= commandName #>");
+                    return 0;
+                });
+            });
+        }
+    }
+
+<#
+}
+#>
+}

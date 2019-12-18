@@ -2,17 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Test.Utility;
-using Test.Utility;
-using Xunit;
-using Xunit.Extensions;
-using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
@@ -306,7 +300,7 @@ namespace NuGet.CommandLine.Test
                     "sources",
                     "Disable",
                     "-Name",
-                    "test_source",
+                    "TEST_SOURCE", // this should work in a case sensitive manner
                     "-ConfigFile",
                     configFilePath
                 };
@@ -400,6 +394,4 @@ namespace NuGet.CommandLine.Test
             }
         }
     }
-
-
 }

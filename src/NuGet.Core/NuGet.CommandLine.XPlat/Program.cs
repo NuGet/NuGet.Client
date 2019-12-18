@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
+using NuGet.Commands;
 
 #if DEBUG
 using Microsoft.Build.Locator;
@@ -19,6 +20,7 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string DebugOption = "--debug";
         private const string DotnetNuGetAppName = "dotnet nuget";
+        private const string DotnetNuGetSourcesAppName = "dotnet nuget sources";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
         public static int Main(string[] args)
@@ -71,17 +73,19 @@ namespace NuGet.CommandLine.XPlat
                 CultureUtility.DisableLocalization();
             }
 
-            var app = InitializeApp(args);
-            args = args
-                .Where(e => e != "package")
-                .ToArray();
+            log.LogLevel = LogLevel.Information;
 
-            var verbosity = app.Option(XPlatUtility.VerbosityOption, Strings.Switch_Verbosity, CommandOptionType.SingleValue);
+            var app = InitializeApp(args, log);
 
-            // Options aren't parsed until we call app.Execute(), so look directly for the verbosity option ourselves
-            LogLevel logLevel;
-            TryParseVerbosity(args, verbosity, out logLevel);
-            log.LogLevel = logLevel;
+            // Remove the right item in array for "package" commands.
+            if (app.Name == DotnetPackageAppName)
+            {
+                // package add ...
+                args[0] = null;
+                args = args
+                    .Where(e => e != null)
+                    .ToArray();
+            }
 
             NetworkProtocolUtility.SetConnectionLimit();
 
@@ -90,13 +94,9 @@ namespace NuGet.CommandLine.XPlat
             // This method has no effect on .NET Core.
             NetworkProtocolUtility.ConfigureSupportedSslProtocols();
 
-            // Register commands
-            RegisterCommands(app, log);
-
             app.OnExecute(() =>
             {
                 app.ShowHelp();
-
                 return 0;
             });
 
@@ -135,41 +135,31 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-        private static CommandLineApplication InitializeApp(string[] args)
+        private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {
             var app = new CommandLineApplication();
 
             if (args.Any() && args[0] == "package")
             {
                 app.Name = DotnetPackageAppName;
-            }
-            else
-            {
-                app.Name = DotnetNuGetAppName;
-            }
-            app.FullName = Strings.App_FullName;
-            app.HelpOption(XPlatUtility.HelpOption);
-            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
-
-            return app;
-        }
-
-        private static void RegisterCommands(CommandLineApplication app, CommandOutputLogger log)
-        {
-            // Register commands
-            if (app.Name == DotnetPackageAppName)
-            {
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
                 ListPackageCommand.Register(app, () => log, () => new ListPackageCommandRunner());
             }
             else
             {
+                app.Name = DotnetNuGetAppName;
+                CommandParsers.Register(app, () => log);
                 DeleteCommand.Register(app, () => log);
                 PushCommand.Register(app, () => log);
                 LocalsCommand.Register(app, () => log);
-                SourcesCommand.Register(app, () => log);
             }
+
+            app.FullName = Strings.App_FullName;
+            app.HelpOption(XPlatUtility.HelpOption);
+            app.VersionOption("--version", typeof(Program).GetTypeInfo().Assembly.GetName().Version.ToString());
+
+            return app;
         }
 
         /// <summary>

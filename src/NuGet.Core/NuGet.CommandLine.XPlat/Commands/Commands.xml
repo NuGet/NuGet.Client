@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Commands>
+  <Verb Name="add">
+    <Noun Name="source">
+      <SingleValueOption Name="name" Shortcut="n" Required="true" />
+      <SingleValueOption Name="source" Shortcut="s" Required="true" />
+      <SingleValueOption Name="username" Shortcut="u" />
+      <SingleValueOption Name="password" Shortcut="p" />
+      <SwitchOption Name="store-Password-In-Clear-Text" />
+      <SingleValueOption Name="validAuthenticationTypes" />
+      <SingleValueOption Name="configfile" />
+      <Value Name="logger2" Type="ILogger" />
+    </Noun>
+  </Verb>
+  <Verb Name="disable">
+    <Noun Name="source">
+      <SingleValueOption Name="name" Shortcut="n" Required="true" />
+      <SingleValueOption Name="configfile" />
+    </Noun>
+  </Verb>
+  <Verb Name="enable">
+    <Noun Name="source">
+      <SingleValueOption Name="name" Shortcut="n" Required="true" />
+      <SingleValueOption Name="configfile" />
+    </Noun>
+  </Verb>
+  <Verb Name="list">
+    <Noun Name="source">
+      <!-- TODO:shortcut?? -->
+      <SingleValueOption Name="format" />
+      <SingleValueOption Name="configfile" />
+    </Noun>
+  </Verb>
+  <Verb Name="remove">
+    <Noun Name="source">
+      <SingleValueOption Name="name" Shortcut="n" Required="true" />
+      <SingleValueOption Name="configfile" />
+    </Noun>
+  </Verb>
+  <Verb Name="update">
+    <Noun Name="source">
+      <SingleValueOption Name="name" Shortcut="n" Required="true" />
+      <SingleValueOption Name="source" Shortcut="s" Required="true" />
+      <SingleValueOption Name="username" Shortcut="n" />
+      <SingleValueOption Name="password" Shortcut="s" />
+      <SwitchOption Name="storePasswordInClearText" />
+      <SingleValueOption Name="validAuthenticationTypes" />
+      <SingleValueOption Name="configfile" />
+    </Noun>
+  </Verb>
+</Commands>

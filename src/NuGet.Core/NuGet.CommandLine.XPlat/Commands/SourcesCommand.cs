@@ -1,156 +1,192 @@
-// Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+//// Copyright (c) .NET Foundation. All rights reserved.
+//// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Globalization;
-using System.IO;
-using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Commands;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Credentials;
+//using System;
+//using System.IO;
+//using Microsoft.Extensions.CommandLineUtils;
+//using NuGet.Commands;
+//using NuGet.Common;
+//using NuGet.Configuration;
 
-namespace NuGet.CommandLine.XPlat
-{
-    internal static class SourcesCommand
-    {
-        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
-        {
-            app.Command("sources", sources =>
-            {
-                sources.Description = Strings.SourcesCommandDescription;
-                sources.HelpOption(XPlatUtility.HelpOption);
+//namespace NuGet.CommandLine.XPlat
+//{
+//    internal static class SourcesCommand
+//    {
+//        public static void Register(CommandLineApplication app, SourcesAction action, Func<ILogger> getLogger, bool needsNoun = false)
+//        {
+//            string actionStr = action.ToString().ToLower();
+//            string description = GetCommandDescription(actionStr);
 
-                var arguments = sources.Argument(
-                    "Action",
-                    Strings.Sources_Action,
-                    multipleValues: false);
+//            app.Command(actionStr, sources =>
+//            {
+//                sources.Description = description;
 
-                var name = sources.Option(
-                    "-n|--name <name>",
-                    Strings.SourcesCommandNameDescription,
-                    CommandOptionType.SingleValue);
+//                // these options are set in the switch statement, so depending on the action, may or may not be set.
+//                CommandOption name = null,
+//                                  format = null,
+//                                  source = null,
+//                                  username = null,
+//                                  password = null,
+//                                  storePasswordInClearText = null,
+//                                  validAuthenticationTypes = null,
+//                                  configfile = null;
+//                if (needsNoun)
+//                {
+//                    var nestedCommand =
+//                        new CommandLineApplication(throwOnUnexpectedArg: true)
+//                            { Name = "source" };
 
-                var source = sources.Option(
-                    "-s|--source <source>",
-                    Strings.SourcesCommandSourceDescription,
-                    CommandOptionType.SingleValue);
+//                    // need to tell them to put "source" as noun
+//                    sources.Commands.Add(nestedCommand);
+//                }
+//                else
+//                {
+//                    switch (action)
+//                    {
+//                        case SourcesAction.List:
+//                            format = sources.Option(
+//                                "-f|--format",
+//                                Strings.SourcesCommandFormatDescription,
+//                                CommandOptionType.SingleValue);
+//                            break;
+//                        case SourcesAction.Add:
+//                        case SourcesAction.Update:
+//                            name = sources.Option(
+//                                "-n|--name <name>",
+//                                Strings.SourcesCommandNameDescription,
+//                                CommandOptionType.SingleValue);
+//                            source = sources.Option(
+//                                "-s|--source <source>",
+//                                Strings.SourcesCommandSourceDescription,
+//                                CommandOptionType.SingleValue);
+//                            username = sources.Option(
+//                                "-u|--username <username>",
+//                                Strings.SourcesCommandUserNameDescription,
+//                                CommandOptionType.SingleValue);
+//                            password = sources.Option(
+//                                "-p|--password <password>",
+//                                Strings.SourcesCommandUserNameDescription,
+//                                CommandOptionType.SingleValue);
+//                            storePasswordInClearText = sources.Option(
+//                                "--store-password-in-clear-text",
+//                                Strings.SourcesCommandStorePasswordInClearTextDescription,
+//                                CommandOptionType.NoValue);
+//                            validAuthenticationTypes = sources.Option(
+//                                "--valid-authentication-types",
+//                                Strings.SourcesCommandValidAuthenticationTypesDescription,
+//                                CommandOptionType.SingleValue);
+//                            break;
+//                        case SourcesAction.Remove:
+//                        case SourcesAction.Enable:
+//                        case SourcesAction.Disable:
+//                            name = sources.Option(
+//                                "-n|--name <name>",
+//                                Strings.SourcesCommandNameDescription,
+//                                CommandOptionType.SingleValue);
+//                            break;
+//                    }
 
-                var username = sources.Option(
-                    "-u|--username <username>",
-                    Strings.SourcesCommandUserNameDescription,
-                    CommandOptionType.SingleValue);
+//                    configfile = sources.Option(
+//                        "-c|--configfile",
+//                        Strings.Option_ConfigFile,
+//                        CommandOptionType.SingleValue);
+//                }
 
-                var password = sources.Option(
-                    "-p|--password <password>",
-                    Strings.SourcesCommandUserNameDescription,
-                    CommandOptionType.SingleValue);
+//                sources.HelpOption(XPlatUtility.HelpOption);
 
-                var storePasswordInClearText = sources.Option(
-                    "--store-password-in-clear-text",
-                    Strings.SourcesCommandStorePasswordInClearTextDescription,
-                    CommandOptionType.NoValue);
+//                sources.OnExecute(() =>
+//                {
+//                    var sourcesArgs = new SourcesArgs()
+//                    {
+//                        Action = action,
+//                        Logger = getLogger(),
+//                        LogMinimalOverride = LogMinimalOverride,
+//                        Name = name?.Value(),
+//                        Source = source?.Value(),
+//                        Username = username?.Value(),
+//                        Password = password?.Value(),
+//                        ValidAuthenticationTypes = validAuthenticationTypes?.Value(),
+//                        IsQuiet = false, // verbosity quiet not implemented in `dotnet nuget sources` yet. Covered by #6374.
+//                    };
 
-                var validAuthenticationTypes = sources.Option(
-                    "--valid-authentication-types",
-                    Strings.SourcesCommandValidAuthenticationTypesDescription,
-                    CommandOptionType.SingleValue);
+//                    if (storePasswordInClearText != null)
+//                    {
+//                        sourcesArgs.StorePasswordInClearText = storePasswordInClearText.HasValue();
+//                    }
 
-                var format = sources.Option(
-                    "-f|--format",
-                    Strings.SourcesCommandFormatDescription,
-                    CommandOptionType.SingleValue);
+//                    if (format != null)
+//                    {
+//                        SourcesListFormat formatValue;
+//                        Enum.TryParse<SourcesListFormat>(format.Value(), ignoreCase: true, out formatValue);
+//                        sourcesArgs.Format = formatValue;
+//                    }
 
-                var interactive = sources.Option(
-                    "--interactive",
-                    Strings.NuGetXplatCommand_Interactive,
-                    CommandOptionType.NoValue);
+//                    sourcesArgs.Settings = GetSettings(configfile.Value(), Directory.GetCurrentDirectory());
+//#pragma warning disable CS0618 // Type or member is obsolete
+//                    var sourceProvider = new PackageSourceProvider(sourcesArgs.Settings, enablePackageSourcesChangedEvent: false);
+//#pragma warning restore CS0618 // Type or member is obsolete
+//                    sourcesArgs.SourceProvider = sourceProvider;
 
-                var configfile = sources.Option(
-                    "-c|--configfile",
-                    Strings.Option_ConfigFile,
-                    CommandOptionType.SingleValue);
+//                    SourcesRunner.Run(sourcesArgs);
 
-                sources.OnExecute(() =>
-                {
-                    SourcesAction action = SourcesAction.None;
+//                    return 0;
+//                });
+//            });
+//        }
 
-                    string actionArg = null;
-                    if (arguments.Values.Count == 0)
-                    {
-                        action = SourcesAction.List;
-                    }
-                    else
-                    {
-                        actionArg = arguments.Values[0];
-                        if (!Enum.TryParse<SourcesAction>(actionArg, ignoreCase: true, out action))
-                        {
-                            Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                                Strings.SourcesCommandUsageSummary));
-                            return 1;
-                        }
-                    }
+//        private static string GetCommandDescription(string actionStr)
+//        {
+//            if (actionStr == null)
+//            {
+//                throw new ArgumentNullException("actionStr");
+//            }
 
-                    SourcesListFormat formatValue;
-                    Enum.TryParse<SourcesListFormat>(format.Value(), ignoreCase: true, out formatValue);
+//            switch (actionStr)
+//            {
+//                case "source":
+//                    return Strings.SourcesCommandDescription;
+//                case "add":
+//                    return Strings.AddSourceCommandDescription;
+//                case "remove":
+//                    return Strings.RemoveSourceCommandDescription;
+//                case "enable":
+//                    return Strings.EnableSourceCommandDescription;
+//                case "disable":
+//                    return Strings.DisableCommandDescription;
+//                case "list":
+//                    return Strings.ListSourceCommandDescription;
+//                case "update":
+//                    return Strings.UpdateSourceCommandDescription;
+//            }
 
-                    var settings = GetSettings(configfile.Value(), Directory.GetCurrentDirectory());
+//            return null;
+//        }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-                    var sourceProvider = new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false);
-#pragma warning restore CS0618 // Type or member is obsolete
+//        private static void LogMinimalOverride(string data)
+//        {
+//            // in dotnet sdk, we need to use Console.WriteLine instead of logger.LogMinimal to avoid "log: " prefix on each line
+//            Console.WriteLine(data);
+//        }
 
-                    var sourcesArgs = new SourcesArgs(
-                            settings,
-                            sourceProvider,
-                            action,
-                            name.Value(),
-                            source.Value(),
-                            username.Value(),
-                            password.Value(),
-                            storePasswordInClearText.HasValue(),
-                            validAuthenticationTypes.Value(),
-                            formatValue,
-                            interactive.HasValue(),
-                            configfile.Value(),
-                            isQuiet: false,    //TODO: Verbosity == Verbosity.Quiet
-                            getLogger(),
-                            logMinimalOverride: LogMinimalOverride
-                            );
+//        private static ISettings GetSettings(string configfile, string currentDirectory)
+//        {
+//            if (string.IsNullOrEmpty(configfile))
+//            {
+//                // Use settings based on probing given currentDirectory
+//                return NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory,
+//                    configFileName: null,
+//                    machineWideSettings: new XPlatMachineWideSetting());
+//            }
+//            else
+//            {
+//                // Use ConfigFile only
+//                var configFileFullPath = Path.GetFullPath(configfile);
+//                var configDirectory = Path.GetDirectoryName(configFileFullPath);
+//                var configFileName = Path.GetFileName(configFileFullPath);
 
-                    DefaultCredentialServiceUtility.SetupDefaultCredentialService(getLogger(), !interactive.HasValue());
-
-                    SourcesRunner.Run(sourcesArgs);
-
-                    // TODO: ensure errors are returning non-zero
-                    return 0;
-                });
-            });
-        }
-
-        private static void LogMinimalOverride(string data)
-        {
-            // in dotnet sdk, we need to use Console.WriteLine instead of logger.LogMinimal to avoid "log: " prefix on each line
-            Console.WriteLine(data);
-        }
-
-        private static ISettings GetSettings(string configfile, string currentDirectory)
-        {
-            if (string.IsNullOrEmpty(configfile))
-            {
-                return NuGet.Configuration.Settings.LoadDefaultSettings(currentDirectory,
-                    configFileName: null,
-                    machineWideSettings: new XPlatMachineWideSetting());
-            }
-            else
-            {
-                var configFileFullPath = Path.GetFullPath(configfile);
-                var directory = Path.GetDirectoryName(configFileFullPath);
-                var configFileName = Path.GetFileName(configFileFullPath);
-
-                return NuGet.Configuration.Settings.LoadSpecificSettings(currentDirectory,
-                    configFileName: configFileName);
-            }
-        }
-    }
-}
+//                return NuGet.Configuration.Settings.LoadSpecificSettings(configDirectory,
+//                    configFileName: configFileName);
+//            }
+//        }
+//    }
+//}

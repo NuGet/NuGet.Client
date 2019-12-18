@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using NuGet.Common;
@@ -44,6 +45,8 @@ namespace NuGet.Commands
                 case SourcesAction.Update:
                     UpdatePackageSource(args);
                     break;
+                default: // args.Action must be one of the values above.
+                    throw new InvalidEnumArgumentException("Action");
             }
         }
 

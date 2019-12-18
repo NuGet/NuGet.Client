@@ -1,0 +1,86 @@
+<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Xml.XDocument" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+<#
+
+ string InitCaps(string input)
+ {
+    string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+    return output;
+ }
+ bool IsArgument(string type)
+ {
+    return type == "Argument";
+ }
+ string GetProperty(XElement element)
+ {
+    switch  (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "Option";
+        case "SwitchOption":
+            return "Option";
+        case "Argument":
+            return "Argument";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+ string GetOptionType(XElement element)
+ {
+    switch (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "SingleValue";
+        case "SwitchOption":
+            return "NoValue";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+ var commandFile = this.Host.ResolvePath("..\\..\\..\\src\\nuget.core\\nuget.commandline.xplat\\commands\\Commands.xml");
+ var commands = XDocument.Load(commandFile);
+#>
+using System;
+using System.Threading.Tasks;
+using Microsoft.Extensions.CommandLineUtils;
+using NuGet.Common;
+
+
+namespace NuGet.CommandLine.XPlat
+{
+
+    internal class CommandParsers
+    {
+        public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        {
+<#
+ foreach (var command in commands.Descendants(XName.Get("Verb","")))
+ {
+    var verbName = command.Attribute(XName.Get("Name", "")).Value;
+    var verbFormalName = InitCaps(verbName);
+#>
+            //<#= verbFormalName #>VerbParser.Register(app, getLogger);
+<#
+ }
+#>
+
+<#
+ foreach (var command in commands.Descendants(XName.Get("Command","")))
+ {
+    var commandName = command.Attribute(XName.Get("Name", "")).Value;
+    var commandFormalName = InitCaps(commandName);
+#>
+            //<#= commandFormalName #>CommandParser.Register(app, getLogger);
+<#
+ }
+#>
+        }
+    }
+
+}

@@ -5,6 +5,7 @@ namespace NuGet.Commands
 {
     public enum SourcesListFormat
     {
+        None = 0,
         Detailed,
         Short
     }

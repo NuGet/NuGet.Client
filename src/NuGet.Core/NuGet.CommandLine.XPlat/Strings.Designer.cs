@@ -169,6 +169,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a NuGet source..
+        /// </summary>
+        internal static string AddSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("AddSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string ApiKey_Description {
@@ -264,6 +273,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string DisableBuffering_Description {
             get {
                 return ResourceManager.GetString("DisableBuffering_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable a NuGet source..
+        /// </summary>
+        internal static string DisableCommandDescription {
+            get {
+                return ResourceManager.GetString("DisableCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable a NuGet source..
+        /// </summary>
+        internal static string EnableSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("EnableSourceCommandDescription", resourceCulture);
             }
         }
         
@@ -808,6 +835,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lists all configured NuGet sources..
+        /// </summary>
+        internal static string ListSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("ListSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the cache location(s) to list or clear.
         ///&lt;all | http-cache | global-packages | temp&gt;.
         /// </summary>
@@ -1185,6 +1221,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove a NuGet source..
+        /// </summary>
+        internal static string RemoveSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("RemoveSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files..
         /// </summary>
         internal static string Restore_Arg_ProjectName_Description {
@@ -1433,6 +1478,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Tool_Description {
             get {
                 return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update a NuGet sources..
+        /// </summary>
+        internal static string UpdateSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("UpdateSourceCommandDescription", resourceCulture);
             }
         }
         

@@ -1,0 +1,96 @@
+<#@ template debug="false" hostspecific="true" language="C#" #>
+<#@ assembly name="System.Xml.XDocument" #>
+<#@ assembly name="System.Xml.Linq" #>
+<#@ assembly name="System.Xml" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Xml.Linq" #>
+<#@ import namespace="System.Linq" #>
+<#@ output extension=".cs" #>
+<#
+
+ string InitCaps(string input)
+ {
+    string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+    return output;
+ }
+ bool IsArgument(string type)
+ {
+    return type == "Argument";
+ }
+ string GetProperty(XElement element)
+ {
+    switch  (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "Option";
+        case "SwitchOption":
+            return "Option";
+        case "Argument":
+            return "Argument";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+ string GetOptionType(XElement element)
+ {
+    switch (element.Name.LocalName)
+    {
+        case "SingleValueOption":
+            return "SingleValue";
+        case "SwitchOption":
+            return "NoValue";
+        default:
+            return "Unknown Element Type" + element.Name.LocalName;
+    }
+ }
+
+ var commandFile = this.Host.ResolvePath("..\\..\\NuGet.CommandLine.XPlat\\Commands\\Commands.xml");
+ var commands = XDocument.Load(commandFile);
+#>
+using System;
+using System.Threading.Tasks;
+using NuGet.Common;
+
+
+namespace NuGet.CommandLine.XPlat
+{
+
+
+ <#
+ // ********************* Verb-Runner ***************************
+
+    foreach (var verb in commands.Descendants(XName.Get("Verb","")))
+    {
+        var commandName = verb.Attribute(XName.Get("Name", "")).Value;
+        var commandFormalName = InitCaps(commandName);
+        foreach (var noun in verb.Descendants(XName.Get("Noun")))
+        {
+            var nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
+            var nounFormalName = InitCaps(nounName);
+#>
+
+    public partial class <#= commandFormalName + nounFormalName #>Runner
+    {
+        static public void DebugParameters(<#= commandFormalName + nounFormalName #>Args args, Func<ILogger> getLogger)
+        {
+            Output(args, getLogger);
+        }
+
+        static void Output(<#= commandFormalName + nounFormalName #>Args args, Func<ILogger> getLogger)
+        {
+            Type argsType = args.GetType();
+            foreach (var propInfo in argsType.GetProperties(System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic))
+            {
+                getLogger().LogInformation(propInfo.Name + " = " + propInfo.GetValue(args));
+            }
+
+            return;
+        }
+    } 
+
+<#
+        }
+    } 
+#>
+
+}
