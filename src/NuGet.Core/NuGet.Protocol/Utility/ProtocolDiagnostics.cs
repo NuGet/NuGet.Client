@@ -5,17 +5,17 @@ namespace NuGet.Protocol.Utility
 {
     public static class ProtocolDiagnostics
     {
-        public delegate void ProtocolDiagnosticEventHandler(ProtocolDiagnosticEvent pdEvent);
+        public delegate void ProtocolDiagnosticHttpEventHandler(ProtocolDiagnosticHttpEvent pdEvent);
 
         public delegate void ProtocolDiagnosticResourceEventHandler(ProtocolDiagnosticResourceEvent pdrEvent);
 
-        public static event ProtocolDiagnosticEventHandler Event;
+        public static event ProtocolDiagnosticHttpEventHandler HttpEvent;
 
         public static event ProtocolDiagnosticResourceEventHandler ResourceEvent;
 
-        internal static void RaiseEvent(ProtocolDiagnosticEvent pdEvent)
+        internal static void RaiseEvent(ProtocolDiagnosticHttpEvent pdEvent)
         {
-            Event?.Invoke(pdEvent);
+            HttpEvent?.Invoke(pdEvent);
         }
 
         internal static void RaiseEvent(ProtocolDiagnosticResourceEvent pdrEvent)

@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Protocol.Utility;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
@@ -21,81 +23,95 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             // Arrange
             const string feedUrl = "https://source.test/v3/index.json";
-            PackageSource[] sources = new[]
+            SourceRepository[] sources = new[]
             {
-                new PackageSource(source: feedUrl, name: "Source1"),
-                new PackageSource(source: feedUrl, name: "Source2")
+                new SourceRepository(new PackageSource(source: feedUrl, name: "Source1"), Repository.Provider.GetCoreV3()),
+                new SourceRepository(new PackageSource(source: feedUrl, name: "Source2"), Repository.Provider.GetCoreV3())
             };
 
             // Act
-            _ = new PackageSourceTelemetry(sources, Guid.Empty);
+            _ = new PackageSourceTelemetry(sources, Guid.Empty, "test");
 
             // Assert
             // no assert, just making sure ctor didn't throw.
         }
 
-        [Theory]
-        [InlineData("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg", true)]
-        [InlineData("https://source.test/v3/flatcontainer/package/index.json", false)]
-        public void AddAggregateData_SplitsMetadataAndNupkgCorrectly(string url, bool isNupkg)
-        {
-            // Arrange
-            var pde = CreateSampleProtocolDiagnosticsEvent(url: new Uri(url));
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-
-            // Act
-            PackageSourceTelemetry.AddAggregateData(pde, data);
-
-            // Assert
-            KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
-            if (isNupkg)
-            {
-                Assert.Equal(0, pair.Value.Metadata.EventTiming.Requests);
-                Assert.Equal(1, pair.Value.Nupkg.EventTiming.Requests);
-            }
-            else
-            {
-                Assert.Equal(1, pair.Value.Metadata.EventTiming.Requests);
-                Assert.Equal(0, pair.Value.Nupkg.EventTiming.Requests);
-            }
-        }
-
         [Fact]
-        public void AddAggregateData_DifferentSources()
+        public void AddResourceData_DifferentSources_StoredSeparately()
         {
             // Arrange
-            var pde1 = CreateSampleProtocolDiagnosticsEvent(source: "source1");
-            var pde2 = CreateSampleProtocolDiagnosticsEvent(source: "source2");
+            var re1 = CreateSampleResourceEvent(source: "source1");
+            var re2 = CreateSampleResourceEvent(source: "source2");
             var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
 
             // Act
-            PackageSourceTelemetry.AddAggregateData(pde1, data);
-            PackageSourceTelemetry.AddAggregateData(pde2, data);
+            PackageSourceTelemetry.AddResourceData(re1, data, stringTable);
+            PackageSourceTelemetry.AddResourceData(re2, data, stringTable);
 
             // Assert
             Assert.Equal(2, data.Count);
         }
 
         [Fact]
-        public void AddAggregateData_HeaderTimingCountedCorrectly()
+        public void AddResourceData_SameSourceDifferentResource_StoredSeparately()
         {
             // Arrange
-            var pde1 = CreateSampleProtocolDiagnosticsEvent(headerDuration: null);
-            var pde2 = CreateSampleProtocolDiagnosticsEvent(headerDuration: TimeSpan.FromMilliseconds(100));
+            var re1 = CreateSampleResourceEvent(method: nameof(FindPackageByIdResource.GetDependencyInfoAsync));
+            var re2 = CreateSampleResourceEvent(method: nameof(FindPackageByIdResource.CopyNupkgToStreamAsync));
             var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
 
             // Act
-            PackageSourceTelemetry.AddAggregateData(pde1, data);
-            PackageSourceTelemetry.AddAggregateData(pde2, data);
+            PackageSourceTelemetry.AddResourceData(re1, data, stringTable);
+            PackageSourceTelemetry.AddResourceData(re2, data, stringTable);
 
             // Assert
-            KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
-            Assert.Equal(1, pair.Value.Nupkg.HeaderTiming.Requests);
-            Assert.Equal(2, pair.Value.Nupkg.EventTiming.Requests);
+            var result = Assert.Single(data).Value;
+            Assert.Equal(2, result.Resources.Count);
         }
 
         [Fact]
-        public void AddAggregateData_TimingAggregation()
+        public void AddResourceData_SameSourceSameResource_AccumulatesCorrectly()
+        {
+            // Arrange
+            var re1 = CreateSampleResourceEvent(duration: TimeSpan.FromMilliseconds(100));
+            var re2 = CreateSampleResourceEvent(duration: TimeSpan.FromMilliseconds(200));
+            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
+
+            // Act
+            PackageSourceTelemetry.AddResourceData(re1, data, stringTable);
+            PackageSourceTelemetry.AddResourceData(re2, data, stringTable);
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            var resourceData = Assert.Single(result.Resources).Value;
+            Assert.Equal(2, resourceData.count);
+            Assert.Equal(TimeSpan.FromMilliseconds(300), resourceData.duration);
+        }
+
+        [Fact]
+        public void AddHttpData_NullHeaderDuration_SetsResultToNull()
+        {
+            // Arrange
+            var pde1 = CreateSampleHttpEvent(headerDuration: TimeSpan.FromMilliseconds(150));
+            var pde2 = CreateSampleHttpEvent(headerDuration: null);
+            var pde3 = CreateSampleHttpEvent(headerDuration: TimeSpan.FromMilliseconds(100));
+            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+
+            // Act
+            PackageSourceTelemetry.AddHttpData(pde1, data);
+            PackageSourceTelemetry.AddHttpData(pde2, data);
+            PackageSourceTelemetry.AddHttpData(pde3, data);
+
+            // Assert
+            KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
+            Assert.Null(pair.Value.Http.HeaderDuration);
+        }
+
+        [Fact]
+        public void AddHttpData_MultipleEvents_DurationsAccumulate()
         {
             // Arrange
             var timings = new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150), TimeSpan.FromMilliseconds(200) };
@@ -104,38 +120,53 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             // Act
             for (int i = 0; i < timings.Length; i++)
             {
-                var pde = CreateSampleProtocolDiagnosticsEvent(eventDuration: timings[i]);
-                PackageSourceTelemetry.AddAggregateData(pde, data);
+                var pde = CreateSampleHttpEvent(eventDuration: timings[i]);
+                PackageSourceTelemetry.AddHttpData(pde, data);
             }
 
             // Assert
             var pair = Assert.Single(data);
-            var times = pair.Value.Nupkg.EventTiming;
-            Assert.Equal(timings.Length, times.Requests);
-            Assert.Equal(timings.Sum(t => t.TotalMilliseconds), times.TotalDuration.TotalMilliseconds, precision: 3);
+            var http = pair.Value.Http;
+            Assert.Equal(timings.Length, http.Requests);
+            Assert.Equal(timings.Aggregate(TimeSpan.Zero, (a, b) => a + b), http.TotalDuration);
         }
 
         [Fact]
-        public void AddAggregateData_IsThreadSafe()
+        public async Task AddData_IsThreadSafe()
         {
             // Arrange
             var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
             var eventsToRaise = 10000;
 
-            // Act
-            Parallel.For(0, eventsToRaise, _ =>
+            Task SendEvents(Action action)
             {
-                var pde = CreateSampleProtocolDiagnosticsEvent();
-                PackageSourceTelemetry.AddAggregateData(pde, data);
-            });
+                var tasks = new List<Task>();
+
+                for (int i =0; i < eventsToRaise; i++)
+                {
+                    tasks.Add(Task.Run(() => action()));
+                }
+
+                return Task.WhenAll(tasks);
+            }
+            var source = "http://source.test/v3/index.json";
+            var resourceEvent = CreateSampleResourceEvent(source: source);
+            var httpEvent = CreateSampleHttpEvent(source: source);
+
+            // Act
+            var resourceEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddResourceData(resourceEvent, data, stringTable)));
+            var httpEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddHttpData(httpEvent, data)));
+            await Task.WhenAll(resourceEvents, httpEvents);
 
             // Assert
             KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
-            Assert.Equal(eventsToRaise, pair.Value.Nupkg.EventTiming.Requests);
+            Assert.Equal(eventsToRaise, pair.Value.Resources.Sum(r => r.Value.count));
+            Assert.Equal(eventsToRaise, pair.Value.Http.Requests);
         }
 
         [Fact]
-        public void AddAggregateData_CountsBytes()
+        public void AddHttpData_MultipleEvents_CountsBytes()
         {
             // Arrange
             var bytes = new[] { 1_000, 1_500, 10_000 };
@@ -144,22 +175,21 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             // Act
             for (int i = 0; i < bytes.Length; i++)
             {
-                var pde = CreateSampleProtocolDiagnosticsEvent(bytes: bytes[i]);
-                PackageSourceTelemetry.AddAggregateData(pde, data);
+                var pde = CreateSampleHttpEvent(bytes: bytes[i]);
+                PackageSourceTelemetry.AddHttpData(pde, data);
             }
 
             // Assert
             var pair = Assert.Single(data);
-            var nupkgData = pair.Value.Nupkg;
-            Assert.Equal(bytes.Sum(), nupkgData.TotalBytes);
-            Assert.Equal(bytes.Max(), nupkgData.MaxBytes);
+            var httpData = pair.Value.Http;
+            Assert.Equal(bytes.Sum(), httpData.TotalBytes);
         }
 
         [Fact]
-        public void AddAggregateData_Counts()
+        public void AddHttpData_MultipleEvents_CountsBools()
         {
             // Arrange
-            var events = new List<ProtocolDiagnosticEvent>();
+            var events = new List<ProtocolDiagnosticHttpEvent>();
             var trueFalseList = new[] { true, false };
             foreach (var isSuccess in trueFalseList)
             {
@@ -169,7 +199,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
                     {
                         foreach (var isLastAttempt in trueFalseList)
                         {
-                            events.Add(CreateSampleProtocolDiagnosticsEvent(isSuccess: isSuccess, isRetry: isRetry, isCancelled: isCancelled, isLastAttempt: isLastAttempt));
+                            events.Add(CreateSampleHttpEvent(isSuccess: isSuccess, isRetry: isRetry, isCancelled: isCancelled, isLastAttempt: isLastAttempt));
                         }
                     }
                 }
@@ -179,110 +209,108 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             // Act
             for (int i = 0; i < events.Count; i++)
             {
-                PackageSourceTelemetry.AddAggregateData(events[i], data);
+                PackageSourceTelemetry.AddHttpData(events[i], data);
             }
 
             // Assert
             var pair = Assert.Single(data);
-            var nupkgData = pair.Value.Nupkg;
+            var httpData = pair.Value.Http;
 
             // isSuccess, isRetry and isCancelled were each true for exactly half the events
-            Assert.Equal(events.Count / 2, nupkgData.Successful);
-            Assert.Equal(events.Count / 2, nupkgData.Retries);
-            Assert.Equal(events.Count / 2, nupkgData.Cancelled);
+            Assert.Equal(events.Count / 2, httpData.Successful);
+            Assert.Equal(events.Count / 2, httpData.Retries);
+            Assert.Equal(events.Count / 2, httpData.Cancelled);
 
-            // a resource is only failed when it's unsuccessful on the last attempt, but not when we cancelled it. Therefore, we expect 2 because isRetry doesn't factor in
-            Assert.Equal(2, nupkgData.Failed);
+            // a resource is only failed when it's unsuccessful on the last attempt, but not when we cancelled it. Therefore, we expect 2, for each value of isRetry
+            Assert.Equal(2, httpData.Failed);
         }
 
         [Fact]
-        public void ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject()
+        public async Task ToTelemetry_ZeroRequests_DoesNotCreateTelemetryObject()
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
-            data.Metadata.EventTiming.Requests = 0;
-            data.Nupkg.EventTiming.Requests = 0;
+            data.NupkgCount = 0;
+            data.Resources.Clear();
+            data.Http.Requests = 0;
 
-            var packageSource = new PackageSource("source");
+            var sourceRepository = new SourceRepository(new PackageSource("source"), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = PackageSourceTelemetry.ToTelemetry(data, packageSource.Source, packageSource, "parentId");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, sourceRepository, "parentId", "actionName");
 
             // Assert
             Assert.Null(result);
         }
 
         [Fact]
-        public void ToTelemetry_WithSource_HasSourceTelemetryProperties()
+        public async Task ToTelemetry_WithData_CreatesTelemetryProperties()
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
-            data.Metadata.EventTiming.Requests = 1;
 
-            var packageSource = new PackageSource(NuGetConstants.V3FeedUrl);
-            packageSource.ProtocolVersion = 3;
+            data.Resources.Add("resource 1", (count: 1, duration: TimeSpan.FromMilliseconds(1234)));
+            data.Resources.Add("resource 2", (count: 1, duration: TimeSpan.FromMilliseconds(1111)));
+            data.Resources.Add("resource 3", (count: 1, duration: TimeSpan.FromMilliseconds(1122)));
+
+            data.NupkgCount = 3;
+            data.NupkgSize = 123456;
+
+            var httpData = data.Http;
+            httpData.Requests = 10;
+            httpData.TotalDuration = TimeSpan.FromMilliseconds(1234);
+            httpData.HeaderDuration = TimeSpan.FromMilliseconds(123);
+            httpData.TotalBytes = 1_000_000;
+            httpData.Successful = 7;
+            httpData.Retries = 4;
+            httpData.Cancelled = 2;
+            httpData.Failed = 1;
+            httpData.StatusCodes.Add(200, 7);
+            httpData.StatusCodes.Add(404, 3);
+
+            var source = new SourceRepository(new PackageSource(NuGetConstants.V3FeedUrl), Repository.Provider.GetCoreV3());
 
             // Act
-            var result = PackageSourceTelemetry.ToTelemetry(data, packageSource.Source, packageSource, "parentId");
+            var result = await PackageSourceTelemetry.ToTelemetryAsync(data, source, "parentId", "actionName");
 
             // Assert
             Assert.NotNull(result);
+
             Assert.Equal(PackageSourceTelemetry.EventName, result.Name);
             Assert.Equal("parentId", result[PackageSourceTelemetry.PropertyNames.ParentId]);
-            Assert.Equal("http", result[PackageSourceTelemetry.PropertyNames.Source.Type]);
-            Assert.Equal(3, result[PackageSourceTelemetry.PropertyNames.Source.Protocol]);
+            Assert.Equal("actionName", result[PackageSourceTelemetry.PropertyNames.Action]);
+
+            Assert.Equal(FeedType.HttpV3, result[PackageSourceTelemetry.PropertyNames.Source.Type]);
             var url = Assert.Single(result.GetPiiData().Where(pair => pair.Key == PackageSourceTelemetry.PropertyNames.Source.Url));
             Assert.Equal(NuGetConstants.V3FeedUrl, url.Value);
-        }
+            Assert.Equal("nuget.org", result[PackageSourceTelemetry.PropertyNames.Source.MSFeed]);
 
-        [Fact]
-        public void ToTelemetry_WithNupkgData_CreatesTelemetryProperties()
-        {
-            // Arrange
-            var data = new PackageSourceTelemetry.Data();
-            var resourceData = data.Nupkg;
+            Assert.Equal(data.NupkgCount, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Copied]);
+            Assert.Equal(data.NupkgSize, result[PackageSourceTelemetry.PropertyNames.Nupkgs.Bytes]);
 
-            resourceData.EventTiming.Requests = 10;
-            resourceData.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(1234);
-
-            resourceData.HeaderTiming = new PackageSourceTelemetry.ResourceTimingData
+            Assert.Equal(data.Resources.Sum(r => r.Value.count), result[PackageSourceTelemetry.PropertyNames.Resources.Calls]);
+            foreach (var resource in data.Resources)
             {
-                Requests = 5,
-                TotalDuration = TimeSpan.FromMilliseconds(1111)
-            };
+                var resourceTelemetryValue = Assert.Contains(PackageSourceTelemetry.PropertyNames.Resources.Details, result.ComplexData);
+                var resourceTelemetry = Assert.IsType<TelemetryEvent>(resourceTelemetryValue);
+                var resourceDetailsValue = Assert.Contains(resource.Key, resourceTelemetry.ComplexData);
+                var resourceDetails = Assert.IsType<TelemetryEvent>(resourceDetailsValue);
+                Assert.Equal(resource.Value.count, resourceDetails["count"]);
+                Assert.Equal(resource.Value.duration.TotalMilliseconds, resourceDetails["duration"]);
+            }
 
-            resourceData.TotalBytes = 1_000_000;
-            resourceData.MaxBytes = 200_000;
+            Assert.Equal(httpData.Requests, result[PackageSourceTelemetry.PropertyNames.Http.Requests]);
+            Assert.Equal(httpData.Successful, result[PackageSourceTelemetry.PropertyNames.Http.Successful]);
+            Assert.Equal(httpData.Retries, result[PackageSourceTelemetry.PropertyNames.Http.Retries]);
+            Assert.Equal(httpData.Cancelled, result[PackageSourceTelemetry.PropertyNames.Http.Cancelled]);
+            Assert.Equal(httpData.Failed, result[PackageSourceTelemetry.PropertyNames.Http.Failed]);
+            Assert.Equal(httpData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Http.Bytes]);
+            Assert.Equal(httpData.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Total]);
+            Assert.Equal(httpData.HeaderDuration.Value.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Http.Duration.Header]);
 
-            resourceData.Successful = 7;
-            resourceData.Retries = 4;
-            resourceData.Cancelled = 2;
-            resourceData.Failed = 1;
-
-            resourceData.StatusCodes.Add(200, 7);
-            resourceData.StatusCodes.Add(404, 3);
-
-            var source = new PackageSource("source");
-
-            // Act
-            var result = PackageSourceTelemetry.ToTelemetry(data, source.Source, source, "parentid");
-
-            // Assert
-            Assert.NotNull(result);
-            Assert.Equal(resourceData.EventTiming.Requests, result[PackageSourceTelemetry.PropertyNames.Nupkg.Requests]);
-            Assert.Equal(resourceData.Successful, result[PackageSourceTelemetry.PropertyNames.Nupkg.Successful]);
-            Assert.Equal(resourceData.Retries, result[PackageSourceTelemetry.PropertyNames.Nupkg.Retries]);
-            Assert.Equal(resourceData.Cancelled, result[PackageSourceTelemetry.PropertyNames.Nupkg.Cancelled]);
-            Assert.Equal(resourceData.Failed, result[PackageSourceTelemetry.PropertyNames.Nupkg.Failed]);
-            Assert.Equal(resourceData.TotalBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Total]);
-            Assert.Equal(resourceData.MaxBytes, result[PackageSourceTelemetry.PropertyNames.Nupkg.Bytes.Max]);
-
-            Assert.Equal(resourceData.EventTiming.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Timing.Total]);
-            Assert.Equal(resourceData.HeaderTiming.TotalDuration.TotalMilliseconds, result[PackageSourceTelemetry.PropertyNames.Nupkg.Header.Timing.Total]);
-
-            var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Nupkg.Http.StatusCodes, result.ComplexData);
+            var statusCodesValue = Assert.Contains<string, object>(PackageSourceTelemetry.PropertyNames.Http.StatusCodes, result.ComplexData);
             var statusCodes = Assert.IsType<TelemetryEvent>(statusCodesValue);
-            foreach (var pair in resourceData.StatusCodes)
+            foreach (var pair in httpData.StatusCodes)
             {
                 Assert.Equal(pair.Value, statusCodes[pair.Key.ToString()]);
             }
@@ -293,12 +321,9 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             // Arrange
             var data = new PackageSourceTelemetry.Data();
-            data.Nupkg.EventTiming.Requests = 2;
-            data.Nupkg.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(11);
-            data.Nupkg.TotalBytes = 97;
-            data.Metadata.EventTiming.Requests= 5;
-            data.Metadata.EventTiming.TotalDuration = TimeSpan.FromMilliseconds(13);
-            data.Metadata.TotalBytes = 89;
+            data.NupkgSize = 97;
+            data.Resources.Add("resource 1", (count: 2, duration: TimeSpan.FromMilliseconds(11)));
+            data.Resources.Add("resource 2", (count: 5, duration: TimeSpan.FromMilliseconds(13)));
 
             var allData = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
             for (int i = 1; i <= 7; i++)
@@ -307,14 +332,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             }
 
             int expectedRequests = 0;
-            long expectedBytes = 0;
+            long expectedBytes = allData.Sum(d => d.Value.NupkgSize);
             TimeSpan expectedDuration = TimeSpan.Zero;
 
-            foreach(var resourceData in allData.SelectMany(d => new [] { d.Value.Nupkg, d.Value.Metadata}))
+            foreach (var resourceData in allData.SelectMany(d => d.Value.Resources))
             {
-                expectedRequests += resourceData.EventTiming.Requests;
-                expectedBytes += resourceData.TotalBytes;
-                expectedDuration += resourceData.EventTiming.TotalDuration;
+                expectedRequests += resourceData.Value.count;
+                expectedDuration += resourceData.Value.duration;
             }
 
             // Act
@@ -328,7 +352,24 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
         private static readonly Uri SampleNupkgUri = new Uri("https://source.test/v3/flatcontainer/package/package.1.0.0.nupkg");
 
-        private static ProtocolDiagnosticEvent CreateSampleProtocolDiagnosticsEvent(
+        private static ProtocolDiagnosticResourceEvent CreateSampleResourceEvent(
+            string source = "https://source.test/v3/index.json",
+            string resourceType = nameof(FindPackageByIdResource),
+            string type = nameof(HttpFileSystemBasedFindPackageByIdResource),
+            string method = nameof(FindPackageByIdResource.GetDependencyInfoAsync),
+            TimeSpan? duration = null)
+        {
+            duration = duration ?? TimeSpan.FromMilliseconds(100);
+
+            var resourceEvent = new ProtocolDiagnosticResourceEvent(source,
+                resourceType,
+                type,
+                method,
+                duration.Value);
+            return resourceEvent;
+        }
+
+        private static ProtocolDiagnosticHttpEvent CreateSampleHttpEvent(
             DateTime? timestamp = null,
             string source = "https://source.test/v3/index.json",
             Uri url = null,
@@ -356,7 +397,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
                 eventDuration = TimeSpan.FromMilliseconds(100);
             }
 
-            var pde = new ProtocolDiagnosticEvent(
+            var pde = new ProtocolDiagnosticHttpEvent(
                 timestamp: timestamp.Value,
                 source: source,
                 url: url,

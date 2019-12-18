@@ -161,8 +161,8 @@ namespace NuGet.SolutionRestoreManager
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
             _packageRestoreManager.PackageRestoreFailedEvent += PackageRestoreManager_PackageRestoreFailedEvent;
 
-            var sources = _sourceRepositoryProvider.GetRepositories().Select(s => s.PackageSource);
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId))
+            var sources = _sourceRepositoryProvider.GetRepositories();
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(sources, _nuGetProjectContext.OperationId, "restore"))
             {
                 try
                 {
@@ -223,7 +223,7 @@ namespace NuGet.SolutionRestoreManager
                     _packageRestoreManager.PackageRestoredEvent -= PackageRestoreManager_PackageRestored;
                     _packageRestoreManager.PackageRestoreFailedEvent -= PackageRestoreManager_PackageRestoreFailedEvent;
 
-                    packageSourceTelemetry.SendTelemetry();
+                    await packageSourceTelemetry.SendTelemetryAsync();
 
                     stopWatch.Stop();
                     var duration = stopWatch.Elapsed;

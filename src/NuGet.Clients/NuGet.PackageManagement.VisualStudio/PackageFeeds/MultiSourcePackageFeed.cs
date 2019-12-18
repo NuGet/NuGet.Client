@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             SearchResult<IPackageSearchMetadata> result;
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories.Select(r => r.PackageSource), searchOperationId))
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, searchOperationId, "search"))
             {
                 var searchTasks = TaskCombinators.ObserveErrorsAsync(
                     _sourceRepositories,
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                 if (_telemetryService != null)
                 {
-                    packageSourceTelemetry.SendTelemetry();
+                    await packageSourceTelemetry.SendTelemetryAsync();
                     var protocolDiagnosticTotals = packageSourceTelemetry.GetTotals();
                     _telemetryService.EmitTelemetryEvent(SourceTelemetry.GetSearchSourceSummaryEvent(
                         searchOperationId,

@@ -5,7 +5,7 @@ using System;
 
 namespace NuGet.Protocol.Utility
 {
-    public abstract class ProtocolDiagnosticEventBase
+    public abstract class ProtocolDiagnosticHttpEventBase
     {
         public string Source { get; }
         public Uri Url { get; }
@@ -15,7 +15,7 @@ namespace NuGet.Protocol.Utility
         public bool IsCancelled { get; }
         public bool IsLastAttempt { get; }
 
-        protected ProtocolDiagnosticEventBase(ProtocolDiagnosticEventBase other)
+        protected ProtocolDiagnosticHttpEventBase(ProtocolDiagnosticHttpEventBase other)
             : this(other.Source,
                   other.Url,
                   other.HeaderDuration,
@@ -26,7 +26,7 @@ namespace NuGet.Protocol.Utility
         {
         }
 
-        protected ProtocolDiagnosticEventBase(
+        protected ProtocolDiagnosticHttpEventBase(
             string source,
             Uri url,
             TimeSpan? headerDuration,

@@ -17,10 +17,10 @@ namespace NuGet.Protocol.Tests.Utility
         {
             // Arrange
             var memoryStream = new MemoryStream(capacity: 100);
-            ProtocolDiagnosticInProgressEvent incompleteEvent = CreateInProgressEvent();
+            ProtocolDiagnosticInProgressHttpEvent incompleteEvent = CreateInProgressEvent();
             var stopwatch = Stopwatch.StartNew();
-            ProtocolDiagnosticEvent completedEvent = null;
-            void GotEvent(ProtocolDiagnosticEvent @event)
+            ProtocolDiagnosticHttpEvent completedEvent = null;
+            void GotEvent(ProtocolDiagnosticHttpEvent @event)
             {
                 Assert.Null(completedEvent);
                 completedEvent = @event;
@@ -42,10 +42,10 @@ namespace NuGet.Protocol.Tests.Utility
         {
             // Arrange
             var memoryStream = new MemoryStream(capacity: 100);
-            ProtocolDiagnosticInProgressEvent inProgressEvent = CreateInProgressEvent();
+            ProtocolDiagnosticInProgressHttpEvent inProgressEvent = CreateInProgressEvent();
             var stopwatch = Stopwatch.StartNew();
-            ProtocolDiagnosticEvent completedEvent = null;
-            void GotEvent(ProtocolDiagnosticEvent @event)
+            ProtocolDiagnosticHttpEvent completedEvent = null;
+            void GotEvent(ProtocolDiagnosticHttpEvent @event)
             {
                 Assert.Null(completedEvent);
                 completedEvent = @event;
@@ -68,10 +68,10 @@ namespace NuGet.Protocol.Tests.Utility
         {
             // Arrange
             var memoryStream = new MemoryStream(capacity: 100);
-            ProtocolDiagnosticInProgressEvent inProgressEvent = CreateInProgressEvent();
+            ProtocolDiagnosticInProgressHttpEvent inProgressEvent = CreateInProgressEvent();
             var stopwatch = Stopwatch.StartNew();
-            ProtocolDiagnosticEvent completedEvent = null;
-            void GotEvent(ProtocolDiagnosticEvent @event)
+            ProtocolDiagnosticHttpEvent completedEvent = null;
+            void GotEvent(ProtocolDiagnosticHttpEvent @event)
             {
                 Assert.Null(completedEvent);
                 completedEvent = @event;
@@ -99,10 +99,10 @@ namespace NuGet.Protocol.Tests.Utility
             var stream = new Mock<Stream>();
             stream.Setup(s => s.Read(It.IsAny<byte[]>(), It.IsAny<int>(), It.IsAny<int>()))
                 .Throws<TimeoutException>();
-            ProtocolDiagnosticInProgressEvent inProgressEvent = CreateInProgressEvent();
+            ProtocolDiagnosticInProgressHttpEvent inProgressEvent = CreateInProgressEvent();
             var stopwatch = Stopwatch.StartNew();
-            ProtocolDiagnosticEvent completedEvent = null;
-            void GotEvent(ProtocolDiagnosticEvent @event)
+            ProtocolDiagnosticHttpEvent completedEvent = null;
+            void GotEvent(ProtocolDiagnosticHttpEvent @event)
             {
                 Assert.Null(completedEvent);
                 completedEvent = @event;
@@ -123,9 +123,9 @@ namespace NuGet.Protocol.Tests.Utility
             Assert.False(completedEvent.IsSuccess);
         }
 
-        private ProtocolDiagnosticInProgressEvent CreateInProgressEvent()
+        private ProtocolDiagnosticInProgressHttpEvent CreateInProgressEvent()
         {
-            return new ProtocolDiagnosticInProgressEvent(
+            return new ProtocolDiagnosticInProgressHttpEvent(
                 source: "https://source.test/",
                 url: new Uri("https://source.test/resource"),
                 headerDuration: null,

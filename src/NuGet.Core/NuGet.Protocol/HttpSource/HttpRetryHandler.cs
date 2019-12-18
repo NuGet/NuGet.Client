@@ -139,7 +139,7 @@ namespace NuGet.Protocol
                         {
                             var networkStream = await response.Content.ReadAsStreamAsync();
                             var timeoutStream = new DownloadTimeoutStream(requestUri.ToString(), networkStream, request.DownloadTimeout);
-                            var inProgressEvent = new ProtocolDiagnosticInProgressEvent(
+                            var inProgressEvent = new ProtocolDiagnosticInProgressHttpEvent(
                                 source,
                                 requestUri,
                                 headerStopwatch?.Elapsed,
@@ -177,7 +177,7 @@ namespace NuGet.Protocol
                     {
                         response?.Dispose();
 
-                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpEvent(
                             timestamp: DateTime.UtcNow,
                             source,
                             requestUri,
@@ -198,7 +198,7 @@ namespace NuGet.Protocol
 
                         response?.Dispose();
 
-                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticEvent(
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticHttpEvent(
                             timestamp: DateTime.UtcNow,
                             source,
                             requestUri,

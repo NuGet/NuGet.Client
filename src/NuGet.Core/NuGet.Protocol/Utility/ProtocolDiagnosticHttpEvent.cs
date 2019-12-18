@@ -5,14 +5,14 @@ using System;
 
 namespace NuGet.Protocol.Utility
 {
-    public sealed class ProtocolDiagnosticEvent : ProtocolDiagnosticEventBase
+    public sealed class ProtocolDiagnosticHttpEvent : ProtocolDiagnosticHttpEventBase
     {
         public DateTime Timestamp { get; }
         public TimeSpan EventDuration { get; }
         public long Bytes { get; }
         public bool IsSuccess { get; }
 
-        internal ProtocolDiagnosticEvent(
+        internal ProtocolDiagnosticHttpEvent(
             DateTime timestamp,
             string source,
             Uri url,
@@ -29,7 +29,7 @@ namespace NuGet.Protocol.Utility
                   eventDuration,
                   bytes,
                   isSuccess,
-                  new ProtocolDiagnosticInProgressEvent(
+                  new ProtocolDiagnosticInProgressHttpEvent(
                       source,
                       url,
                       headerDuration,
@@ -40,12 +40,12 @@ namespace NuGet.Protocol.Utility
         {
         }
 
-        internal ProtocolDiagnosticEvent(
+        internal ProtocolDiagnosticHttpEvent(
             DateTime timestamp,
             TimeSpan eventDuration,
             long bytes,
             bool isSuccess,
-            ProtocolDiagnosticEventBase eventBase)
+            ProtocolDiagnosticHttpEventBase eventBase)
             : base(eventBase)
         {
             Timestamp = timestamp;
