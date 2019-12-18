@@ -497,11 +497,11 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Theory]
-        [InlineData(@"expected\", @"notexpected1\", @"notexpected2\", @"notexpected3\", @"expected\")]
-        [InlineData(null, @"expected\", @"notexpected2\", @"notexpected3\", @"expected\")]
-        [InlineData(null, null, @"expected\solution.sln", null, @"expected\packages")]
-        [InlineData(null, null, null, @"expected\", @"expected\")]
-        [InlineData(null, null, "*Undefined*", @"expected\", @"expected\")]
+        [InlineData("expected/", "notexpected1/", "notexpected2/", "notexpected3/", "expected/")]
+        [InlineData(null, "expected/", "notexpected2/", "notexpected3/", "expected/")]
+        [InlineData(null, null, "expected/solution.sln", null, "expected/packages")]
+        [InlineData(null, null, null, "expected/", "expected/")]
+        [InlineData(null, null, "*Undefined*", "expected/", "expected/")]
         public void DependencyGraphSpecGenerator_GetRepositoryPath(string repositoryPathOverride, string restoreRepositoryPath, string solutionPath, string repositoryPath, string expected)
         {
             using (var testDirectory = TestDirectory.Create())
@@ -510,7 +510,7 @@ namespace NuGet.Build.Tasks.Test
                 {
                     ["RestoreRepositoryPath"] = restoreRepositoryPath,
                     ["RestoreRepositoryPathOverride"] = repositoryPathOverride,
-                    ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : Path.Combine(testDirectory, solutionPath)
+                    ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : UriUtility.GetAbsolutePath(testDirectory, solutionPath)
                 });
 
                 var settings = new MockSettings
@@ -521,13 +521,13 @@ namespace NuGet.Build.Tasks.Test
                             ConfigurationConstants.Config,
                             repositoryPath == null
                                 ? new SettingItem[0]
-                                : new SettingItem[] { new AddItem(ConfigurationConstants.RepositoryPath, Path.Combine(testDirectory, repositoryPath)) })
+                                : new SettingItem[] { new AddItem(ConfigurationConstants.RepositoryPath, UriUtility.GetAbsolutePath(testDirectory, repositoryPath)) })
                     }
                 };
 
                 var actual = DependencyGraphSpecGenerator.GetRepositoryPath(project, settings);
 
-                expected = Path.Combine(testDirectory, expected);
+                expected = UriUtility.GetAbsolutePath(testDirectory, expected);
 
                 actual.Should().Be(expected);
             }

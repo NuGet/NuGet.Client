@@ -403,14 +403,9 @@ namespace NuGet.Build.Tasks.Console
                 {
                     string solutionDir = project.GetProperty("SolutionPath");
 
-                    if (string.Equals(solutionDir, "*Undefined*", StringComparison.OrdinalIgnoreCase))
-                    {
-                        solutionDir = project.Directory;
-                    }
-                    else
-                    {
-                        solutionDir = Path.GetDirectoryName(solutionDir);
-                    }
+                    solutionDir = string.Equals(solutionDir, "*Undefined*", StringComparison.OrdinalIgnoreCase)
+                        ? project.Directory
+                        : Path.GetDirectoryName(solutionDir);
 
                     return UriUtility.GetAbsolutePath(solutionDir, PackagesConfig.PackagesNodeName);
                 });
