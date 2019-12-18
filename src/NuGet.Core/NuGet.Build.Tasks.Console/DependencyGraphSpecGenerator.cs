@@ -117,6 +117,7 @@ namespace NuGet.Build.Tasks.Console
                     force: IsOptionTrue(nameof(RestoreTaskEx.Force), options),
                     forceEvaluate: IsOptionTrue(nameof(RestoreTaskEx.ForceEvaluate), options),
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
+                    restorePC: IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options),
                     log: MSBuildLogger,
                     cancellationToken: CancellationToken.None);
             }
@@ -150,24 +151,6 @@ namespace NuGet.Build.Tasks.Console
             }
 
             return frameworkDependencies;
-        }
-
-        /// <summary>
-        /// Gets the <see cref="LibraryIncludeFlags" /> for the specified value.
-        /// </summary>
-        /// <param name="value">A semicolon delimited list of include flags.</param>
-        /// <param name="defaultValue">The default value ot return if the value contains no flags.</param>
-        /// <returns>The <see cref="LibraryIncludeFlags" /> for the specified value, otherwise the <paramref name="defaultValue" />.</returns>
-        private static LibraryIncludeFlags GetLibraryIncludeFlags(string value, LibraryIncludeFlags defaultValue)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-            {
-                return defaultValue;
-            }
-
-            string[] parts = MSBuildStringUtility.Split(value);
-
-            return parts.Length > 0 ? LibraryIncludeFlagUtils.GetFlags(parts) : defaultValue;
         }
 
         /// <summary>
@@ -270,29 +253,6 @@ namespace NuGet.Build.Tasks.Console
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPathOverride")),
                 () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestorePackagesPath")),
                 () => SettingsUtility.GetGlobalPackagesFolder(settings));
-        }
-
-        /// <summary>
-        /// Gets the list of project graph entry points.  If the entry project is a solution, this method returns all of the projects it contains.
-        /// </summary>
-        /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
-        /// <param name="globalProperties">A <see cref="Dictionary{String,String}" /> representing the global properties for the project.</param>
-        /// <returns></returns>
-        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, Dictionary<string, string> globalProperties)
-        {
-            // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
-            if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
-            {
-                var solutionFile = SolutionFile.Parse(entryProjectPath);
-
-                return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
-            }
-
-            // Return just the main project in a list if its not a solution file
-            return new List<ProjectGraphEntryPoint>
-            {
-                new ProjectGraphEntryPoint(entryProjectPath, globalProperties),
-            };
         }
 
         /// <summary>
@@ -428,6 +388,35 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Gets the repository path for the specified project.
+        /// </summary>
+        /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
+        /// <param name="settings">The <see cref="ISettings" /> of the specified project.</param>
+        /// <returns>The repository path of the specified project.</returns>
+        internal static string GetRepositoryPath(IMSBuildProject project, ISettings settings)
+        {
+            return RestoreSettingsUtils.GetValue(
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPathOverride")),
+                () => UriUtility.GetAbsolutePath(project.Directory, project.GetProperty("RestoreRepositoryPath")),
+                () => SettingsUtility.GetRepositoryPath(settings),
+                () =>
+                {
+                    string solutionDir = project.GetProperty("SolutionPath");
+
+                    if (string.Equals(solutionDir, "*Undefined*", StringComparison.OrdinalIgnoreCase))
+                    {
+                        solutionDir = project.Directory;
+                    }
+                    else
+                    {
+                        solutionDir = Path.GetDirectoryName(solutionDir);
+                    }
+
+                    return UriUtility.GetAbsolutePath(solutionDir, PackagesConfig.PackagesNodeName);
+                });
+        }
+
+        /// <summary>
         /// Gets the restore output path for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
@@ -456,6 +445,69 @@ namespace NuGet.Build.Tasks.Console
                 settings)
                 .Select(i => new PackageSource(i))
                 .ToList();
+        }
+
+        /// <summary>
+        /// Gets a value indicating if the specified project is a legacy project.
+        /// </summary>
+        /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
+        /// <returns><code>true</code> if the specified project is considered legacy, otherwise <code>false</code>.</returns>
+        internal static bool IsLegacyProject(IMSBuildItem project)
+        {
+            // We consider the project to be legacy if it does not specify TargetFramework or TargetFrameworks
+            return project.GetProperty("TargetFramework") == null && project.GetProperty("TargetFrameworks") == null;
+        }
+
+        /// <summary>
+        /// Determines of the specified option is <code>true</code>.
+        /// </summary>
+        /// <param name="name">The name of the option.</param>
+        /// <param name="options">A <see cref="Dictionary{String,String}" />containing options.</param>
+        /// <returns><code>true</code> if the specified option is true, otherwise <code>false</code>.</returns>
+        internal static bool IsOptionTrue(string name, Dictionary<string, string> options)
+        {
+            return options.TryGetValue(name, out string value) && StringComparer.OrdinalIgnoreCase.Equals(value, bool.TrueString);
+        }
+
+        /// <summary>
+        /// Gets the <see cref="LibraryIncludeFlags" /> for the specified value.
+        /// </summary>
+        /// <param name="value">A semicolon delimited list of include flags.</param>
+        /// <param name="defaultValue">The default value ot return if the value contains no flags.</param>
+        /// <returns>The <see cref="LibraryIncludeFlags" /> for the specified value, otherwise the <paramref name="defaultValue" />.</returns>
+        private static LibraryIncludeFlags GetLibraryIncludeFlags(string value, LibraryIncludeFlags defaultValue)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return defaultValue;
+            }
+
+            string[] parts = MSBuildStringUtility.Split(value);
+
+            return parts.Length > 0 ? LibraryIncludeFlagUtils.GetFlags(parts) : defaultValue;
+        }
+
+        /// <summary>
+        /// Gets the list of project graph entry points.  If the entry project is a solution, this method returns all of the projects it contains.
+        /// </summary>
+        /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
+        /// <param name="globalProperties">A <see cref="Dictionary{String,String}" /> representing the global properties for the project.</param>
+        /// <returns></returns>
+        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, Dictionary<string, string> globalProperties)
+        {
+            // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
+            if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
+            {
+                var solutionFile = SolutionFile.Parse(entryProjectPath);
+
+                return solutionFile.ProjectsInOrder.Where(i => i.ProjectType == SolutionProjectType.KnownToBeMSBuildFormat).Select(i => new ProjectGraphEntryPoint(i.AbsolutePath, globalProperties)).ToList();
+            }
+
+            // Return just the main project in a list if its not a solution file
+            return new List<ProjectGraphEntryPoint>
+            {
+                new ProjectGraphEntryPoint(entryProjectPath, globalProperties),
+            };
         }
 
         /// <summary>
@@ -495,17 +547,6 @@ namespace NuGet.Build.Tasks.Console
             }
 
             return targetFrameworkInfos;
-        }
-
-        /// <summary>
-        /// Gets a value indicating if the specified project is a legacy project.
-        /// </summary>
-        /// <param name="project">The <see cref="IMSBuildItem" /> representing the project.</param>
-        /// <returns><code>true</code> if the specified project is considered legacy, otherwise <code>false</code>.</returns>
-        internal static bool IsLegacyProject(IMSBuildItem project)
-        {
-            // We consider the project to be legacy if it does not specify TargetFramework or TargetFrameworks
-            return project.GetProperty("TargetFramework") == null && project.GetProperty("TargetFrameworks") == null;
         }
 
         /// <summary>
@@ -609,57 +650,16 @@ namespace NuGet.Build.Tasks.Console
             // Get the target frameworks for the project and the project instance for each framework
             var projectsByTargetFramework = GetProjectTargetFrameworks(project, allInnerNodes);
 
-            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework);
+            var restoreMetadataAndTargetFrameworkInformation = GetProjectRestoreMetadataAndTargetFrameworkInformation(project, projectsByTargetFramework, settings);
 
-            var projectStyle = BuildTasksUtility.GetProjectRestoreStyle(
-                    restoreProjectStyle: project.GetProperty("RestoreProjectStyle"),
-                    hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
-                    projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
-                    projectDirectory: project.Directory,
-                    projectName: project.GetProperty("MSBuildProjectName"),
-                    log: MSBuildLogger)
-                .ProjectStyle;
-
-            // The inner nodes represents each project instance by target framework
-            var actualInnerNodes = projectsByTargetFramework.Values.ToList();
-
-            var projectName = GetProjectName(project);
-
-            var outputPath = GetRestoreOutputPath(project);
-
-            var packageSpec = new PackageSpec(targetFrameworkInfos)
+            var packageSpec = new PackageSpec(restoreMetadataAndTargetFrameworkInformation.TargetFrameworkInfos)
             {
                 FilePath = project.FullPath,
-                Name = projectName,
-                RestoreMetadata = new ProjectRestoreMetadata
-                {
-                    CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath),
-                    ConfigFilePaths = settings.GetConfigFilePaths(),
-                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
-                    FallbackFolders = BuildTasksUtility.GetFallbackFolders(
-                        project.Directory,
-                        project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
-                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
-                        actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
-                        actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
-                        settings),
-                    OriginalTargetFrameworks = GetOriginalTargetFrameworks(project, projectsByTargetFramework.Keys.ToList()),
-                    OutputPath = outputPath,
-                    PackagesPath = GetPackagesPath(project, settings),
-                    ProjectName = projectName,
-                    ProjectPath = project.FullPath,
-                    ProjectStyle = projectStyle,
-                    ProjectUniqueName = project.FullPath,
-                    ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn")),
-                    RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode")),
-                    SkipContentFileWrite = IsLegacyProject(project),
-                    Sources = GetSources(project, actualInnerNodes, settings),
-                    TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(projectsByTargetFramework),
-                    ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
-                },
+                Name = restoreMetadataAndTargetFrameworkInformation.RestoreMetadata.ProjectName,
+                RestoreMetadata = restoreMetadataAndTargetFrameworkInformation.RestoreMetadata,
                 RuntimeGraph = new RuntimeGraph(
                     MSBuildStringUtility.Split($"{project.GetProperty("RuntimeIdentifiers")};{project.GetProperty("RuntimeIdentifier")}")
-                        .Concat(actualInnerNodes.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty("RuntimeIdentifiers")};{i.GetProperty("RuntimeIdentifier")}")))
+                        .Concat(projectsByTargetFramework.Values.SelectMany(i => MSBuildStringUtility.Split($"{i.GetProperty("RuntimeIdentifiers")};{i.GetProperty("RuntimeIdentifier")}")))
                         .Distinct(StringComparer.Ordinal)
                         .Select(rid => new RuntimeDescription(rid))
                         .ToList(),
@@ -675,14 +675,74 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Determines of the specified option is <code>true</code>.
+        /// Gets the restore metadata and target framework information for the specified project.
         /// </summary>
-        /// <param name="name">The name of the option.</param>
-        /// <param name="options">A <see cref="Dictionary{String,String}" />containing options.</param>
-        /// <returns><code>true</code> if the specified option is true, otherwise <code>false</code>.</returns>
-        internal static bool IsOptionTrue(string name, Dictionary<string, string> options)
+        /// <param name="project">An <see cref="IMSBuildProject" /> representing the project.</param>
+        /// <param name="projectsByTargetFramework">A <see cref="IReadOnlyDictionary{NuGetFramework,IMSBuildProject}" /> containing the inner nodes by target framework.</param>
+        /// <param name="settings">The <see cref="ISettings" /> of the specified project.</param>
+        /// <returns>A <see cref="Tuple" /> containing the <see cref="ProjectRestoreMetadata" /> and <see cref="List{TargetFrameworkInformation}" /> for the specified project.</returns>
+        private (ProjectRestoreMetadata RestoreMetadata, List<TargetFrameworkInformation> TargetFrameworkInfos) GetProjectRestoreMetadataAndTargetFrameworkInformation(IMSBuildProject project, IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectsByTargetFramework, ISettings settings)
         {
-            return options.TryGetValue(name, out string value) && StringComparer.OrdinalIgnoreCase.Equals(value, bool.TrueString);
+            var projectName = GetProjectName(project);
+
+            var outputPath = GetRestoreOutputPath(project);
+
+            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework);
+
+            var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+                restoreProjectStyle: project.GetProperty("RestoreProjectStyle"),
+                hasPackageReferenceItems: targetFrameworkInfos.Any(i => i.Dependencies.Any()),
+                projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
+                projectDirectory: project.Directory,
+                projectName: project.GetProperty("MSBuildProjectName"),
+                log: MSBuildLogger);
+
+            var projectStyle = projectStyleResult.ProjectStyle;
+
+            var innerNodes = projectsByTargetFramework.Values.ToList();
+
+            ProjectRestoreMetadata restoreMetadata;
+
+            if (projectStyle == ProjectStyle.PackagesConfig)
+            {
+                restoreMetadata = new PackagesConfigProjectRestoreMetadata
+                {
+                    PackagesConfigPath = projectStyleResult.PackagesConfigPath,
+                    RepositoryPath = GetRepositoryPath(project, settings)
+                };
+            }
+            else
+            {
+                restoreMetadata = new ProjectRestoreMetadata
+                {
+                    CrossTargeting = (projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference) && projectsByTargetFramework.Count > 1,
+                    FallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                        project.Directory,
+                        project.SplitPropertyValueOrNull("RestoreFallbackFolders"),
+                        project.SplitPropertyValueOrNull("RestoreFallbackFoldersOverride"),
+                        innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFolders"))),
+                        innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
+                        settings),
+                    SkipContentFileWrite = IsLegacyProject(project),
+                    ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility")
+                };
+            }
+
+            restoreMetadata.CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(outputPath, project.FullPath);
+            restoreMetadata.ConfigFilePaths = settings.GetConfigFilePaths();
+            restoreMetadata.OutputPath = outputPath;
+            restoreMetadata.OriginalTargetFrameworks = GetOriginalTargetFrameworks(project, projectsByTargetFramework.Keys.ToList());
+            restoreMetadata.PackagesPath = GetPackagesPath(project, settings);
+            restoreMetadata.ProjectName = projectName;
+            restoreMetadata.ProjectPath = project.FullPath;
+            restoreMetadata.ProjectStyle = projectStyle;
+            restoreMetadata.ProjectUniqueName = project.FullPath;
+            restoreMetadata.ProjectWideWarningProperties = WarningProperties.GetWarningProperties(project.GetProperty("TreatWarningsAsErrors"), project.GetProperty("WarningsAsErrors"), project.GetProperty("NoWarn"));
+            restoreMetadata.RestoreLockProperties = new RestoreLockProperties(project.GetProperty("RestorePackagesWithLockFile"), project.GetProperty("NuGetLockFilePath"), project.IsPropertyTrue("RestoreLockedMode"));
+            restoreMetadata.Sources = GetSources(project, innerNodes, settings);
+            restoreMetadata.TargetFrameworks = GetProjectRestoreMetadataFrameworkInfos(projectsByTargetFramework);
+
+            return (restoreMetadata, targetFrameworkInfos);
         }
 
         /// <summary>

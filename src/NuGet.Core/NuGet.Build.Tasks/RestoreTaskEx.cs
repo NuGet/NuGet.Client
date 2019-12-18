@@ -83,6 +83,11 @@ namespace NuGet.Build.Tasks
         public bool Recursive { get; set; }
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not to restore projects using packages.config.
+        /// </summary>
+        public bool RestorePackagesConfig { get; set; }
+
+        /// <summary>
         /// Gets or sets the full path to the solution file (if any) that is being built.
         /// </summary>
         public string SolutionPath { get; set; }
@@ -173,6 +178,7 @@ namespace NuGet.Build.Tasks
                 [nameof(Interactive)] = Interactive,
                 [nameof(NoCache)] = NoCache,
                 [nameof(Recursive)] = Recursive,
+                [nameof(RestorePackagesConfig)] = RestorePackagesConfig
             };
 
             // Semicolon delimited list of options
@@ -195,20 +201,6 @@ namespace NuGet.Build.Tasks
             yield return string.Join(";", GetGlobalProperties().Select(i => $"{i.Key}={i.Value}"));
         }
 
-        /// <summary>
-        /// Gets the file name of the process.
-        /// </summary>
-        /// <returns>The full path to the file for the process.</returns>
-        private string GetProcessFileName()
-        {
-#if IS_CORECLR
-            // In .NET Core, the path to dotnet is the file to run
-            return Path.GetFullPath(Path.Combine(MSBuildBinPath, "..", "..", "dotnet"));
-#else
-            return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.exe"));
-#endif
-        }
-
         private Dictionary<string, string> GetGlobalProperties()
         {
 #if IS_CORECLR
@@ -228,7 +220,7 @@ namespace NuGet.Build.Tasks
             {
                 var getGlobalPropertiesMethod = buildEngine6Type.GetMethod("GetGlobalProperties", BindingFlags.Instance | BindingFlags.Public);
 
-                if(getGlobalPropertiesMethod != null)
+                if (getGlobalPropertiesMethod != null)
                 {
                     try
                     {
@@ -245,8 +237,23 @@ namespace NuGet.Build.Tasks
             }
 #endif
             msBuildGlobalProperties["ExcludeRestorePackageImports"] = "true";
+            msBuildGlobalProperties["SolutionPath"] = SolutionPath;
 
             return msBuildGlobalProperties;
+        }
+
+        /// <summary>
+        /// Gets the file name of the process.
+        /// </summary>
+        /// <returns>The full path to the file for the process.</returns>
+        private string GetProcessFileName()
+        {
+#if IS_CORECLR
+            // In .NET Core, the path to dotnet is the file to run
+            return Path.GetFullPath(Path.Combine(MSBuildBinPath, "..", "..", "dotnet"));
+#else
+            return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.exe"));
+#endif
         }
     }
 }

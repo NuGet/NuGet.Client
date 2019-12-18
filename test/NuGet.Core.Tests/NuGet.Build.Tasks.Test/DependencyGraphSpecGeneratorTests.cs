@@ -497,6 +497,43 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Theory]
+        [InlineData(@"expected\", @"notexpected1\", @"notexpected2\", @"notexpected3\", @"expected\")]
+        [InlineData(null, @"expected\", @"notexpected2\", @"notexpected3\", @"expected\")]
+        [InlineData(null, null, @"expected\solution.sln", null, @"expected\packages")]
+        [InlineData(null, null, null, @"expected\", @"expected\")]
+        [InlineData(null, null, "*Undefined*", @"expected\", @"expected\")]
+        public void DependencyGraphSpecGenerator_GetRepositoryPath(string repositoryPathOverride, string restoreRepositoryPath, string solutionPath, string repositoryPath, string expected)
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var project = new MockMSBuildProject(testDirectory, new Dictionary<string, string>
+                {
+                    ["RestoreRepositoryPath"] = restoreRepositoryPath,
+                    ["RestoreRepositoryPathOverride"] = repositoryPathOverride,
+                    ["SolutionPath"] = solutionPath == null || solutionPath == "*Undefined*" ? solutionPath : Path.Combine(testDirectory, solutionPath)
+                });
+
+                var settings = new MockSettings
+                {
+                    Sections = new List<SettingSection>
+                    {
+                        new MockSettingSection(
+                            ConfigurationConstants.Config,
+                            repositoryPath == null
+                                ? new SettingItem[0]
+                                : new SettingItem[] { new AddItem(ConfigurationConstants.RepositoryPath, Path.Combine(testDirectory, repositoryPath)) })
+                    }
+                };
+
+                var actual = DependencyGraphSpecGenerator.GetRepositoryPath(project, settings);
+
+                expected = Path.Combine(testDirectory, expected);
+
+                actual.Should().Be(expected);
+            }
+        }
+
+        [Theory]
         [InlineData(@"obj1\", null, @"obj1\")]
         [InlineData(@"obj1", null, "obj1")]
         [InlineData(@"custom\", null, @"custom\")]

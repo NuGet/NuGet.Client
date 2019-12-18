@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -283,9 +283,10 @@ namespace NuGet.Build.Tasks
         /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
-        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigPath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
             ProjectStyle projectStyle;
+            string packagesConfigPath = null;
 
             // Allow a user to override by setting RestoreProjectStyle in the project.
             if (!string.IsNullOrWhiteSpace(restoreProjectStyle))
@@ -306,7 +307,7 @@ namespace NuGet.Build.Tasks
                 // If this is not a PackageReference project check if project.json or projectName.project.json exists.
                 projectStyle = ProjectStyle.ProjectJson;
             }
-            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName))
+            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName, out packagesConfigPath))
             {
                 // If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists
                 projectStyle = ProjectStyle.PackagesConfig;
@@ -319,7 +320,7 @@ namespace NuGet.Build.Tasks
 
             bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
 
-            return (projectStyle, isPackageReferenceCompatibleProjectStyle);
+            return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigPath);
         }
 
         /// <summary>
@@ -327,8 +328,9 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="projectDirectory">The full path of the project directory.</param>
         /// <param name="projectName">The name of the project file.</param>
+        /// <param name="packagesConfigPath">Receives the full path to the packages.config file if one exists, otherwise <code>null</code>.</param>
         /// <returns><code>true</code> if a packages.config exists next to the project, otherwise <code>false</code>.</returns>
-        private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName)
+        private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName, out string packagesConfigPath)
         {
             if (string.IsNullOrWhiteSpace(projectDirectory))
             {
@@ -340,7 +342,7 @@ namespace NuGet.Build.Tasks
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
-            string packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
+            packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
 
             if (File.Exists(packagesConfigPath))
             {
@@ -353,6 +355,8 @@ namespace NuGet.Build.Tasks
             {
                 return true;
             }
+
+            packagesConfigPath = null;
 
             return false;
         }
