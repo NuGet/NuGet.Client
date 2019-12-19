@@ -45,10 +45,12 @@ echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
 
 echo $DOTNET_BRANCH
-cli/dotnet-install.sh -i cli -c $DOTNET_BRANCH
+# Issue 8936 - TEMPORARILY using direct path to script
+scripts/funcTests/dotnet-install.sh -i cli -c $DOTNET_BRANCH
 
 # Install the 2.x runtime because our tests target netcoreapp2x
-cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
+# Issue 8936 - TEMPORARILY using direct path to script
+scripts/funcTests/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
 # Display current version
 $DOTNET --version
 
