@@ -53,6 +53,8 @@
     <VSServicesVersion>16.144.1-preview</VSServicesVersion>
     <VSComponentsVersion>16.0.189-g83e7c53a57</VSComponentsVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
+    <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/NuGet/Home/issues/8508 -->
+    <PatchedSystemPackagesVersion>5.0.0-alpha1.19473.1</PatchedSystemPackagesVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
