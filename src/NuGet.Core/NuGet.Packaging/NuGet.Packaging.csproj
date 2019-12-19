@@ -49,8 +49,9 @@
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
     <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="5.0.0-alpha1.19473.1" />
-    <PackageReference Include="System.Security.Cryptography.Cng" Version="5.0.0-alpha1.19473.1" />
+    <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/NuGet/Home/issues/8508 -->
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="$(PatchedSystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="$(PatchedSystemPackagesVersion)" />
   </ItemGroup>
 
   <ItemGroup>
