@@ -65,6 +65,8 @@
     <MoqVersion>4.12.0</MoqVersion>
     <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
     <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.5.0-preview-19606-01</MicrosoftBuildPackageVersion>
+    <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/NuGet/Home/issues/8508 -->
+    <PatchedSystemPackagesVersion>5.0.0-alpha1.19473.1</PatchedSystemPackagesVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
