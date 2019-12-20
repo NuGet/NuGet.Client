@@ -7,11 +7,15 @@ namespace NuGet.Protocol.Utility
     {
         public delegate void ProtocolDiagnosticHttpEventHandler(ProtocolDiagnosticHttpEvent pdEvent);
 
-        public delegate void ProtocolDiagnosticResourceEventHandler(ProtocolDiagnosticResourceEvent pdrEvent);
-
         public static event ProtocolDiagnosticHttpEventHandler HttpEvent;
 
+        public delegate void ProtocolDiagnosticResourceEventHandler(ProtocolDiagnosticResourceEvent pdrEvent);
+
         public static event ProtocolDiagnosticResourceEventHandler ResourceEvent;
+
+        public delegate void ProtocolDiagnosticsNupkgCopiedEventHandler(ProtocolDiagnosticNupkgCopiedEvent ncEvent);
+
+        public static event ProtocolDiagnosticsNupkgCopiedEventHandler NupkgCopiedEvent;
 
         internal static void RaiseEvent(ProtocolDiagnosticHttpEvent pdEvent)
         {
@@ -21,6 +25,11 @@ namespace NuGet.Protocol.Utility
         internal static void RaiseEvent(ProtocolDiagnosticResourceEvent pdrEvent)
         {
             ResourceEvent?.Invoke(pdrEvent);
+        }
+
+        internal static void RaiseEvent(ProtocolDiagnosticNupkgCopiedEvent ncEvent)
+        {
+            NupkgCopiedEvent?.Invoke(ncEvent);
         }
     }
 }

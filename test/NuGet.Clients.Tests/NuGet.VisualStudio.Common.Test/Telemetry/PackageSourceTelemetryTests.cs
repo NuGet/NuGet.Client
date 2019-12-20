@@ -132,6 +132,26 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         }
 
         [Fact]
+        public void AddNupkgCopiedData_MultipleEvents_AccumulatesCorrectly()
+        {
+            // Arrange
+            var sizes = new[] { 1, 22, 333, 4444, 55555, 666666 };
+            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+
+            // Act
+            for (int i = 0; i < sizes.Length; i++)
+            {
+                var nce = new ProtocolDiagnosticNupkgCopiedEvent("source", sizes[i]);
+                PackageSourceTelemetry.AddNupkgCopiedData(nce, data);
+            }
+
+            // Assert
+            var result = Assert.Single(data).Value;
+            Assert.Equal(sizes.Length, result.NupkgCount);
+            Assert.Equal(sizes.Sum(), result.NupkgSize);
+        }
+
+        [Fact]
         public async Task AddData_IsThreadSafe()
         {
             // Arrange
@@ -153,16 +173,19 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var source = "http://source.test/v3/index.json";
             var resourceEvent = CreateSampleResourceEvent(source: source);
             var httpEvent = CreateSampleHttpEvent(source: source);
+            var nupkgCopiedEvent = new ProtocolDiagnosticNupkgCopiedEvent(source, fileSize: 123456);
 
             // Act
             var resourceEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddResourceData(resourceEvent, data, stringTable)));
             var httpEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddHttpData(httpEvent, data)));
-            await Task.WhenAll(resourceEvents, httpEvents);
+            var nupkgCopiedEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddNupkgCopiedData(nupkgCopiedEvent, data)));
+            await Task.WhenAll(resourceEvents, httpEvents, nupkgCopiedEvents);
 
             // Assert
             KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
             Assert.Equal(eventsToRaise, pair.Value.Resources.Sum(r => r.Value.count));
             Assert.Equal(eventsToRaise, pair.Value.Http.Requests);
+            Assert.Equal(eventsToRaise, pair.Value.NupkgCount);
         }
 
         [Fact]

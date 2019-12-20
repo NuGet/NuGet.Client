@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
@@ -25,6 +24,8 @@ using Xunit;
 
 namespace NuGet.Commands.FuncTest
 {
+    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+
     public class RestoreCommandTests
     {
         [Theory]

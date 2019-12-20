@@ -16,6 +16,8 @@ using Xunit;
 
 namespace Commands.Test
 {
+    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+
     public class NugetPackageUtilsTests
     {
         private readonly int DefaultTimeOut = (int)TimeSpan.FromMinutes(5).TotalMilliseconds;

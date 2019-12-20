@@ -35,6 +35,7 @@ namespace NuGet.VisualStudio.Telemetry
             _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
             ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
+            ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
             _parentId = parentId;
             _actionName = actionName;
 
@@ -127,10 +128,27 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
+        private void ProtocolDiagnostics_NupkgCopiedEvent(ProtocolDiagnosticNupkgCopiedEvent ncEvent)
+        {
+            AddNupkgCopiedData(ncEvent, _data);
+        }
+
+        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, ConcurrentDictionary<string, Data> allData)
+        {
+            var data = allData.GetOrAdd(ncEvent.Source, _ => new Data());
+
+            lock (data._lock)
+            {
+                data.NupkgCount++;
+                data.NupkgSize += ncEvent.FileSize;
+            }
+        }
+
         public void Dispose()
         {
             ProtocolDiagnostics.HttpEvent -= ProtocolDiagnostics_HttpEvent;
             ProtocolDiagnostics.ResourceEvent -= ProtocolDiagnostics_ResourceEvent;
+            ProtocolDiagnostics.NupkgCopiedEvent -= ProtocolDiagnostics_NupkgCopiedEvent;
         }
 
         public async Task SendTelemetryAsync()

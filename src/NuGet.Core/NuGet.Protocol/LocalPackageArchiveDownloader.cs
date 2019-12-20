@@ -7,15 +7,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Utility;
 
-namespace NuGet.Packaging
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A package downloader for local archive packages.
     /// </summary>
-    [Obsolete("Use NuGet.Protocol.LocalPackageArchiveDownloader")]
     public sealed class LocalPackageArchiveDownloader : IPackageDownloader
     {
         private Func<Exception, Task<bool>> _handleExceptionAsync;
@@ -185,6 +186,8 @@ namespace NuGet.Packaging
                     const int bufferSize = 8192;
 
                     await source.CopyToAsync(destination, bufferSize, cancellationToken);
+
+                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(Source, destination.Length));
 
                     return true;
                 }
