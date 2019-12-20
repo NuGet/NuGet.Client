@@ -768,9 +768,7 @@ jobs:
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
-    demands: 
-      - DotNetFramework
-      - agent.name -equals DDNuGetW006
+    demands: DotNetFramework
 
   steps:
   - task: PowerShell@1
@@ -867,9 +865,7 @@ jobs:
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
-    demands: 
-      - DotNetFramework
-      - agent.name -equals DDNuGetW006
+    demands: DotNetFramework
 
   steps:
   - checkout: self
