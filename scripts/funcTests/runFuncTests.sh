@@ -14,6 +14,10 @@ done
 
 RESULTCODE=0
 
+# print openssl version
+echo "==================================================================================================="
+openssl version -a
+echo "==================================================================================================="
 # move up to the repo root
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 DIR=$SCRIPTDIR/../..

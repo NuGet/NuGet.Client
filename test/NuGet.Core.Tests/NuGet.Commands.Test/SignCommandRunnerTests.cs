@@ -108,7 +108,15 @@ namespace NuGet.Commands.Test
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
-                test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
+                if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
+                {
+                    test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
+                }
+                else if (RuntimeEnvironmentHelper.IsLinux)
+                {
+                    test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
+                }
+                
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
