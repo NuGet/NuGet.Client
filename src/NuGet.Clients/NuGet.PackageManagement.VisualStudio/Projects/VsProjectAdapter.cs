@@ -393,6 +393,10 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var projectPath = FullName;
+            var targetFrameworks = await BuildProperties.GetPropertyValueAsync(
+                ProjectBuildProperties.TargetFrameworks);
+            var targetFramework = await BuildProperties.GetPropertyValueAsync(
+                ProjectBuildProperties.TargetFramework);
             var platformIdentifier = await BuildProperties.GetPropertyValueAsync(
                 ProjectBuildProperties.TargetPlatformIdentifier);
             var platformVersion = await BuildProperties.GetPropertyValueAsync(
@@ -406,8 +410,8 @@ namespace NuGet.PackageManagement.VisualStudio
             // this check. The values can be passed as null here.
             var frameworkStrings = MSBuildProjectFrameworkUtility.GetProjectFrameworkStrings(
                 projectFilePath: projectPath,
-                targetFrameworks: null,
-                targetFramework: null,
+                targetFrameworks: targetFrameworks,
+                targetFramework: targetFramework,
                 targetFrameworkMoniker: targetFrameworkMoniker,
                 targetPlatformIdentifier: platformIdentifier,
                 targetPlatformVersion: platformVersion,
