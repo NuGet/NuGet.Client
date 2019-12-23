@@ -45,9 +45,10 @@
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
-    <!-- These cause a NU5104 warning. When upgrading to a stable version of this package, remove the no warns from the respective projects -->
+    <VSFrameworkVersion>16.4.29519.181</VSFrameworkVersion>
     <VSServicesVersion>16.153.0</VSServicesVersion>
     <VSComponentsVersion>16.4.280</VSComponentsVersion>
+    <VSThreadingVersion>16.4.43</VSThreadingVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
   </PropertyGroup>
 
@@ -72,7 +73,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>$(NoWarn);1762;VSTHRD010;VSSDK005;VSTHRD109;VSTHRD003;VSTHRD100;VSSDK006</NoWarn> <!-- Revert the vsthrd-->
+    <NoWarn>$(NoWarn);1762;VSTHRD010;VSSDK005;VSTHRD109;VSTHRD003;VSTHRD100;VSSDK006;VSSDK004</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
     <!--This property ensures that if you build the exact sources twice,
