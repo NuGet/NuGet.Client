@@ -46,8 +46,8 @@
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
     <!-- These cause a NU5104 warning. When upgrading to a stable version of this package, remove the no warns from the respective projects -->
-    <VSServicesVersion>16.144.1-preview</VSServicesVersion>
-    <VSComponentsVersion>16.0.189-g83e7c53a57</VSComponentsVersion>
+    <VSServicesVersion>16.153.0</VSServicesVersion>
+    <VSComponentsVersion>16.4.280</VSComponentsVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
   </PropertyGroup>
 
@@ -72,7 +72,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>$(NoWarn);1762</NoWarn>
+    <NoWarn>$(NoWarn);1762;VSTHRD010;VSSDK005;VSTHRD109;VSTHRD003;VSTHRD100;VSSDK006</NoWarn> <!-- Revert the vsthrd-->
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
     <!--This property ensures that if you build the exact sources twice,

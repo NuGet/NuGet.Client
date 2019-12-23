@@ -19,8 +19,8 @@
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26201" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26201" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="16.4.29519.181" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="16.4.280" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
