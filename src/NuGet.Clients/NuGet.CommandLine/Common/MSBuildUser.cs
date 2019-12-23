@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -31,24 +31,9 @@ namespace NuGet.Common
             }
 
             _msbuildDirectory = msbuildDirectory;
-            var msbuildAssemblyPath = Path.Combine(msbuildDirectory, "Microsoft.Build.dll");
-            var msbuildFrameworkAssemblyPath = Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll");
-            try
-            {
-                _msbuildAssembly = Assembly.LoadFile(msbuildAssemblyPath);
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message + $"Path: {msbuildAssemblyPath}", e);
-            }
-            try
-            {
-                _frameworkAssembly = Assembly.LoadFile(msbuildFrameworkAssemblyPath);
-            }
-            catch (Exception e)
-            {
-                throw new Exception(e.Message + $"Path: {msbuildFrameworkAssemblyPath}", e);
-            }
+            _msbuildAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.dll"));
+            _frameworkAssembly = Assembly.LoadFile(Path.Combine(msbuildDirectory, "Microsoft.Build.Framework.dll"));
+
             LoadTypes();
         }
 
