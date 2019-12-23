@@ -16,7 +16,7 @@ namespace NuGet.Common
     {
         private const int NumberOfRetries = 3000;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
-        private static readonly KeyedMutex PerFileLock = new KeyedMutex();
+        private static readonly KeyedLock PerFileLock = new KeyedLock();
 
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,

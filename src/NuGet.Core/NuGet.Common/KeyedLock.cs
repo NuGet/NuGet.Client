@@ -8,12 +8,12 @@ using System.Threading.Tasks;
 
 namespace NuGet.Common
 {
-    internal sealed class KeyedMutex : IDisposable
+    internal sealed class KeyedLock : IDisposable
     {
         private readonly Dictionary<string, LockState> _locks;
         private readonly SemaphoreSlim _dictionaryLock;
 
-        internal KeyedMutex()
+        internal KeyedLock()
         {
             _locks = new Dictionary<string, LockState>();
             _dictionaryLock = new SemaphoreSlim(initialCount: 1);
