@@ -1178,13 +1178,7 @@ EndProject");
 
         public static string GetMsbuildPathOnWindows()
         {
-            var msbuildPath = @"C:\Program Files (x86)\MSBuild\14.0\Bin";
-            if (!Directory.Exists(msbuildPath))
-            {
-                msbuildPath = @"C:\Program Files\MSBuild\14.0\Bin";
-            }
-
-            return msbuildPath;
+            return MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(null, null, null).Value.Path;
         }
 
         public static string GetHintPath(string path)
