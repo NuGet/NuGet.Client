@@ -90,6 +90,7 @@ System.Net.Http.Formatting.dll
 System.Memory.dll
 System.Numerics.Vectors.dll
 System.Runtime.CompilerServices.Unsafe.dll
+System.Resources.Extensions.dll
 System.Security.AccessControl.dll
 System.Security.Principal.Windows.dll
 System.Threading.Tasks.Extensions.dll
