@@ -1,5 +1,9 @@
-﻿using System.Windows;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Data;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -13,7 +17,10 @@ namespace NuGet.PackageManagement.UI
         private void PackageIconImage_ImageFailed(object sender, ExceptionRoutedEventArgs e)
         {
             var image = sender as Image;
-            image.Source = Images.DefaultPackageIcon;
+
+            e.Handled = true; // don't repropagate the event
+            var binding = BindingOperations.GetBindingExpression(image, Image.SourceProperty);
+            binding.UpdateTarget();
         }
     }
 }
