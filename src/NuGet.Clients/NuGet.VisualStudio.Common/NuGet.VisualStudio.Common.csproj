@@ -28,7 +28,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="$(VSComponentsVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.8.28010" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
@@ -38,9 +38,9 @@
     <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="$(VSComponentsVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="$(VSComponentsVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="15.8.28010" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="15.8.132" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="15.8.132" />
+    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="$(VSFrameworkVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(VSThreadingVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
     <PackageReference Include="VSLangProj" Version="7.0.3300" />
     <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
