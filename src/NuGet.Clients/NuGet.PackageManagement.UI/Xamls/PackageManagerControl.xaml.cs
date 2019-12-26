@@ -1360,12 +1360,18 @@ namespace NuGet.PackageManagement.UI
                nugetUi => SetOptions(nugetUi, NuGetActionType.Update));
         }
 
-        private async void UpgradeButton_Click(object sender, RoutedEventArgs e)
+        private void UpgradeButton_Click(object sender, RoutedEventArgs e)
         {
-            var project = Model.Context.Projects.FirstOrDefault();
-            Debug.Assert(project != null);
-
-            await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                var project = Model.Context.Projects.FirstOrDefault();
+                Debug.Assert(project != null);
+                await Model.Context.UIActionEngine.UpgradeNuGetProjectAsync(Model.UIController, project);
+            })
+            .FileAndForget(
+                            TelemetryUtility.CreateFileAndForgetEventName(
+                                nameof(PackageManagerControl),
+                                nameof(UpgradeButton_Click)));
         }
     }
 }

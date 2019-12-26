@@ -23,6 +23,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
 using ISettings = NuGet.Configuration.ISettings;
@@ -234,13 +235,13 @@ namespace NuGetVSExtension
 
                 // menu command for upgrading packages.config files to PackageReference - References context menu
                 var upgradeNuGetProjectCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradeNuGetProject);
-                var upgradeNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
+                var upgradeNuGetProjectCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommand, null,
                     BeforeQueryStatusForUpgradeNuGetProject, upgradeNuGetProjectCommandID);
                 _mcs.AddCommand(upgradeNuGetProjectCommand);
 
                 // menu command for upgrading packages.config files to PackageReference - packages.config context menu
                 var upgradePackagesConfigCommandID = new CommandID(GuidList.guidNuGetDialogCmdSet, PkgCmdIDList.cmdidUpgradePackagesConfig);
-                var upgradePackagesConfigCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommandAsync, null,
+                var upgradePackagesConfigCommand = new OleMenuCommand(ExecuteUpgradeNuGetProjectCommand, null,
                     BeforeQueryStatusForUpgradePackagesConfig, upgradePackagesConfigCommandID);
                 _mcs.AddCommand(upgradePackagesConfigCommand);
 
@@ -523,9 +524,22 @@ namespace NuGetVSExtension
             return windowFrame;
         }
 
-        private async void ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
+        private void ExecuteUpgradeNuGetProjectCommand(object sender, EventArgs e)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await ExecuteUpgradeNuGetProjectCommandAsync(sender, e);
+            })
+          .FileAndForget(
+                          TelemetryUtility.CreateFileAndForgetEventName(
+                              nameof(NuGetPackage),
+                              nameof(ExecuteUpgradeNuGetProjectCommand)));
+
+        }
+
+        private async Task ExecuteUpgradeNuGetProjectCommandAsync(object sender, EventArgs e)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (ShouldMEFBeInitialized())
             {
