@@ -262,7 +262,7 @@ namespace NuGet.Commands
             log.LogInformation(Strings.Log_Committing);
             await result.CommitAsync(log, token);
 
-            if (result.Success)
+            if (summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
                 // For no-op results, don't log a minimal message since a summary is logged at the end
                 // For regular results, log a minimal message so that users can see which projects were actually restored
@@ -273,17 +273,16 @@ namespace NuGet.Commands
                         summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
                             Strings.Log_RestoreCompleteDotnetTool :
                             Strings.Log_RestoreComplete,
-                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
-                        summaryRequest.InputPath));
+                        summaryRequest.InputPath,
+                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
             else
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
-                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
-                    Strings.Log_RestoreFailedDotnetTool :
+                    result.Success ?
+                    Strings.Log_RestoreComplete :
                     Strings.Log_RestoreFailed,
-                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
                     summaryRequest.InputPath));
             }
 

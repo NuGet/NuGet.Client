@@ -250,14 +250,12 @@
     <value>Found project root directory: {0}.</value>
   </data>
   <data name="Log_RestoreComplete" xml:space="preserve">
-    <value>Restore completed in {0} for {1}.</value>
-    <comment>{0} is the restore duration.
-{1} is the path to the project file.</comment>
+    <value>Restored {0} (in {1})</value>
+    <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailed" xml:space="preserve">
-    <value>Restore failed in {0} for {1}.</value>
-    <comment>{0} is the restore duration.
-{1} is the path to the project file.</comment>
+    <value>Failed to restore {0}</value>
+    <comment>{0} is the path to the project file.</comment>
   </data>
   <data name="Log_RunningNonParallelRestore" xml:space="preserve">
     <value>Running non-parallel restore.</value>
@@ -881,8 +879,8 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>{0} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailedDotnetTool" xml:space="preserve">
-    <value>Restore failed in {0}.</value>
-    <comment>{0} is the restore duration.</comment>
+    <value>Failed to restore {0} (in {1})</value>
+    <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
     <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
