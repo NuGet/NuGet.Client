@@ -45,11 +45,10 @@ namespace NuGet.SolutionRestoreManager
         protected override void Dispose(bool disposing)
         {
             // disposing is true when called from IDispose.Dispose; false when called from Finalizer.
+            // Guarantees thread-safe execution of this method.
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (disposing)
             {
-                // Guarantees thread-safe execution of this method.
-                ThreadHelper.ThrowIfNotOnUIThread();
-
                 _handler?.Dispose();
                 _handler = null;
             }
