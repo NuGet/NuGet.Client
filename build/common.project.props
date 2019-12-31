@@ -48,6 +48,7 @@
     <VSFrameworkVersion>16.4.29519.181</VSFrameworkVersion>
     <VSServicesVersion>16.153.0</VSServicesVersion>
     <VSComponentsVersion>16.4.280</VSComponentsVersion>
+    <VSSDKBuildToolsVersion>15.9.3032</VSSDKBuildToolsVersion>
     <VSThreadingVersion>16.4.43</VSThreadingVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
   </PropertyGroup>
