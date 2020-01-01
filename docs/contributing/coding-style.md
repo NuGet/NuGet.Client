@@ -1,7 +1,3 @@
-TODO NK - 
-
-Getting Started page! https://github.com/dotnet/project-system/blob/master/docs/repo/getting-started.md
-
 # Coding guidelines
 
 Let's face it. No matter what coding guidelines we choose, we're not going to make everyone happy. 
@@ -14,10 +10,6 @@ being "right."
 
 ## Basics
 
-### Home repo
-
-The https://github.com/nuget/Home repo is the starting point for all things NuGet. It has the [issue tracker](https://github.com/nuget/home/issues) as well as an [up-to-date README](https://github.com/NuGet/Home/blob/master/README.md) of how repos are structured. Make sure to consult it before beginning your journey through NuGet code.
-
 ### Branching strategy
 
 Talk about branch strategy, feature branches, release branches etc. 
@@ -26,6 +18,8 @@ The active development branch in our repo is `dev`. What we ship comes from the 
 We use trunk based development model. See https://trunkbaseddevelopment.com/youre-doing-it-wrong/ and https://rollout.io/blog/trunk-based-development-what-why/
 
 ### Code reviews and checkins
+
+TODO NK - Maybe this should go to contributing guidelines? There's really no good way to do this. 
 
 To help ensure that only the highest quality code makes its way into the project, all code changes need to be submitted to GitHub as PRs. 
 
@@ -51,7 +45,7 @@ All build artifacts go under a generated `artifacts` folder.
 
 ###$ Project naming pattern
 
-The general naming pattern is `NuGet.<area>.<subarea>`. All NuGet assemblies ship together and follow the same versioning, save for some exceptions like `NuGet.VisualStudio.Interop`. 
+The general naming pattern is `NuGet.<area>.<subarea>`. All NuGet assemblies ship together and follow the same assembly versioning, save for some exceptions like `NuGet.VisualStudio.Interop`. 
 All assemblies have the same name as their project. 
 All package versions are the same. No exceptions. 
 
@@ -304,6 +298,8 @@ In general there should be exactly one unit test assembly for each product runti
 #### Unit test class naming
 
 Test class names end with `Test` and live in the same namespace as the class being tested. For example, the unit tests for the `NuGet.Fruit.Banana` class would be in a `NuGet.Fruit.BananaTest` class in the test assembly.
+
+TODO NK - This is not something we have honored.
 
 #### Unit test method naming
 
