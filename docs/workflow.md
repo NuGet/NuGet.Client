@@ -19,8 +19,8 @@ To commit the PR to the repo use the GitHub `Squash and Merge` button. We can't 
 
 ### Branching strategy
 
-Talk about branch strategy, feature branches, release branches etc. 
-The active development branch in our repo is `dev`. What we ship comes from the `release-majorminorx` branches. 
+Talk about branch strategy, feature branches, release branches etc.
+The active development branch in our repo is `dev`. What we ship comes from the `release-majorminorx` branches.
 
 We use trunk based development model. See https://trunkbaseddevelopment.com/youre-doing-it-wrong/ and https://rollout.io/blog/trunk-based-development-what-why/
 
@@ -41,5 +41,5 @@ Test projects have a different convention for the build customization files they
 ### Project naming pattern
 
 The general naming pattern is `NuGet.<area>.<subarea>`. All NuGet assemblies ship together and follow the same assembly versioning, save for some exceptions like `NuGet.VisualStudio.Interop`. 
-All assemblies have the same name as their project. 
-All package versions are the same. No exceptions. 
+All assemblies have the same name as their project.
+All package versions are the same. No exceptions.

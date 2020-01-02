@@ -1,18 +1,16 @@
 # Coding guidelines
 
-Let's face it. No matter what coding guidelines we choose, we're not going to make everyone happy. 
-In fact, some people out there might be downright angry at the choices we make. 
+Let's face it. No matter what coding guidelines we choose, we're not going to make everyone happy.
+In fact, some people out there might be downright angry at the choices we make.
 But the fact of the matter is that there is no "one true bracing style," despite [attempts to name a bracing style as such](http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS). 
 
-While we would like to embrace everyone's individual style, working together on the same codebase would be utter chaos 
-if we don't enforce some consistency. When it comes to coding guidelines, consistency can be even more important than 
-being "right."
+While we would like to embrace everyone's individual style, working together on the same codebase would be utter chaos if we don't enforce some consistency. When it comes to coding guidelines, consistency can be even more important than being "right."
 
-### Copyright header and license notice
+## Copyright header and license notice
 
 All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exact header (please do not make any changes to it):
 
-```c#
+```csharp
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 ```
@@ -35,10 +33,10 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. We use `_camelCase` for internal and private fields and use `readonly` where possible. Prefix internal and private instance fields with `_`. Static fields are all CamelCase regardless of visibility. When used on static fields, `readonly` should come after `static` (e.g. `static readonly` not `readonly static`).  Public fields should be used sparingly and should use PascalCasing with no prefix when used.
 
-1. We avoid `this.` unless absolutely necessary. 
+1. We avoid `this.` unless absolutely necessary.
 
 1. We always specify the visibility, even if it's the default (e.g.
-   `private string _foo` not `string _foo`). Visibility should be the first modifier (e.g. 
+   `private string _foo` not `string _foo`). Visibility should be the first modifier (e.g.
    `public abstract` not `abstract public`).
 
 1. Namespace imports should be specified at the top of the file, *outside* of
@@ -54,9 +52,9 @@ The general rule we follow is "use Visual Studio defaults".
    rather than `_member`), the existing style in that file takes precedence. Changes/refactorings are possible, but depending on the complexity, change frequency of the file, might need to be considered on their own merits in a separate pull request.
 
 1. We only use `var` when it's obvious what the variable type is.
-For example the following are correct: 
+For example the following are correct:
 
-```c#
+```csharp
 var fruit = "Lychee";
 var fruits = new List<Fruit>();
 string fruit = null; // can't use "var" because the type isn't known (though you could do (string)null, don't!)
@@ -66,17 +64,16 @@ FruitFlavor flavor = fruit.GetFlavor();
 
 The following are incorrect:
 
-```c#
+```csharp
 var flavor = fruit.GetFlavor();
 string fruit = "Lychee";
 List<Fruit> fruits = new List<Fruit>();
 ```
 
-
 1. We use language keywords instead of BCL types (e.g. `int, string, float` instead of `Int32, String, Single`, etc) for both type references as well as method calls (e.g. `int.Parse` instead of `Int32.Parse`). 
 The following are correct:
 
-```c#
+```csharp
 public string TrimString(string s) {
     return string.IsNullOrEmpty(s)
         ? null
@@ -88,7 +85,7 @@ var intTypeName = nameof(Int32); // can't use C# type keywords with nameof
 
 The following are incorrect:
 
-```c#
+```csharp
 public String TrimString(String s) {
     return String.IsNullOrEmpty(s)
         ? null
@@ -109,13 +106,13 @@ public String TrimString(String s) {
 
 1. Do *not* use regions.
 
-1. Do sort the members in classes in the following order: static members, fields, constructors, events, properties then methods. 
+1. Do sort the members in classes in the following order: static members, fields, constructors, events, properties then methods.
 
-1. Do add a new line at the end of all files. 
+1. Do add a new line at the end of all files.
 
-1. Do prefer modern language features when available, such as object initializers, collection initalizers, coalescing expressions, etc. 
+1. Do prefer modern language features when available, such as object initializers, collection initalizers, coalescing expressions, etc.
 
-These are incorrect: 
+These are incorrect:
 
 ```cs
 var packages = new List<PackageIdentity>;
@@ -147,34 +144,35 @@ var idList = new List<string>
 };
 ```
 
-1. Always use a trailing comma at the end of multi-line initializers (TODO NK - Check editor config setting :))
+1. Always use a trailing comma at the end of multi-line initializers.
 
 1. All async methods should have a name ending with Async.
 
-1. All interfaces must be pascal cased prefixed with I. 
+1. All interfaces must be pascal cased prefixed with I.
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
-TODO NK - 
-We also use the [.NET Codeformatter Tool](https://github.com/dotnet/codeformatter) to ensure the code base maintains a consistent style over time, the tool automatically fixes the code base to conform to the guidelines outlined above.
-
 ### When to use internals vs. public and when to use InternalsVisibleTo
 
-Usage of internal types and members is allowed, but should be use infrequently..
+Usage of internal types and members is allowed. Do consider whether external customers could benefit from having said internal class public.
+
+In .NET public types are a big commitment so be aware that any time you add a public method/class that is an API we are willing to maintain.
+
+We should keep our public API surface area reasonably small.
 
 `InternalsVisibleTo` is used only to allow a unit test to test internal types and members of its runtime assembly. We do not use `InternalsVisibleTo` between two runtime assemblies.
 
-If two runtime assemblies need to share common helpers then we will use a "shared source" solution with build-time only packages. 
+If two runtime assemblies need to share common helpers then we use shared compilation.
 
 If two runtime assemblies need to call each other's APIs, the APIs should be public. If we need it, it is likely that our customers need it.
+Do consider the scope of the assembly when adding new types, ask yourself whether that assembly should be doing *the work* in question.
 
 ### Argument null checking
 
 Null checking is required for parameters that cannot be null (big surprise!). All of our null checks are within the method body.
 In constructors where a field or property is initialized coalescing checks are allowed. Otherwise use the regular bracing approach.
 
-
-```c#
+```csharp
 
     Path = path ?? throw new ArgumentNullException(nameof(path));
     ....
@@ -184,8 +182,6 @@ In constructors where a field or property is initialized coalescing checks are a
     }
 
 ```
-
-The null checking code will be code-gen'ed at compile time into the method body.
 
 ### Async method patterns
 
@@ -197,7 +193,7 @@ Passing cancellation tokens is done with an optional parameter with a value of `
 
 Sample async method:
 
-```c#
+```csharp
 public Task GetDataAsync(
     QueryParams query,
     int maxData,
@@ -219,7 +215,7 @@ The namespace of the extension method class should generally be the namespace th
 
 The class name of an extension method container (also known as a "sponsor type") should generally follow the pattern of `<Feature>Extensions`, `<Target><Feature>Extensions`, or `<Feature><Target>Extensions`. For example:
 
-```c#
+```csharp
 namespace Food {
     class Fruit { ... }
 }
@@ -264,14 +260,14 @@ TODO NK - This is not something we have honored.
 
 Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*. Pascal casing and underscores can be used to improve readability. The following test names are correct:
 
-```
+```csharp
 PublicApiArgumentsShouldHaveNotNullAnnotation
 Public_api_arguments_should_have_not_null_annotation
 ```
 
 The following test names are incorrect:
 
-```
+```csharp
 Test1
 Constructor
 FormatString
@@ -282,15 +278,15 @@ GetData
 
 The contents of every unit test should be split into three distinct stages, optionally separated by these comments:
 
-```c#
+```csharp
 // Arrange  
 // Act  
-// Assert 
+// Assert
 ```
 
 The crucial thing here is that the `Act` stage is exactly one statement. That one statement is nothing more than a call to the one method that you are trying to test. Keeping that one statement as simple as possible is also very important. For example, this is not ideal:
 
-```c#
+```csharp
 int result = myObj.CallSomeMethod(GetComplexParam1(), GetComplexParam2(), GetComplexParam3());
 ```
 
@@ -298,7 +294,7 @@ This style is not recommended because way too many things can go wrong in this o
 
 The ideal pattern is to move the complex parameter building into the `Arrange` section:
 
-```c#
+```csharp
 // Arrange
 P1 p1 = GetComplexParam1();
 P2 p2 = GetComplexParam2();
@@ -313,14 +309,13 @@ Assert.AreEqual(1234, result);
 
 Now the only reason the line with `CallSomeMethod()` can fail is if the method itself blew up. This is especially important when you're using helpers such as `ExceptionHelper`, where the delegate you pass into it must fail for exactly one reason.
 
-
 ### Testing exception messages
 
 In general testing the specific exception message in a unit test is important. This ensures that the exact desired exception is what is being tested rather than a different exception of the same type. In order to verify the exact exception it is important to verify the message.
 
 To make writing unit tests easier it is recommended to compare the error message to the RESX resource. However, comparing against a string literal is also permitted.
 
-```c#
+```csharp
 var ex = Assert.Throws<InvalidOperationException>(
     () => fruitBasket.GetBananaById(1234));
 Assert.Equal(
@@ -334,7 +329,7 @@ Consider using fluent assertions.
 
 xUnit.net includes many kinds of assertions – please use the most appropriate one for your test. This will make the tests a lot more readable and also allow the test runner report the best possible errors (whether it's local or the CI machine). For example, these are bad:
 
-```c#
+```csharp
 Assert.Equal(true, someBool);
 
 Assert.True("abc123" == someString);
@@ -352,7 +347,7 @@ for (int i = 0; i < list1.Length; i++) {
 
 These are good:
 
-```c#
+```csharp
 Assert.True(someBool);
 
 Assert.Equal("abc123", someString);
@@ -363,7 +358,7 @@ Assert.Equal(list1, list2, StringComparer.OrdinalIgnoreCase);
 
 #### Parallel tests
 
-By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests!
+By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests! TODO NK - We should investigate, reenabling test parallelization.
 
 For functional tests it is reasonable to disable parallel tests.
 
@@ -372,38 +367,26 @@ For functional tests it is reasonable to disable parallel tests.
 Public namespaces, type names, member names, and parameter names must use complete words or common/standard abbreviations.
 
 These are correct:
-```c#
+
+```csharp
 public void AddReference(AssemblyReference reference);
 public EcmaScriptObject SomeObject { get; }
 ```
 
 These are incorrect:
-```c#
+
+```csharp
 public void AddRef(AssemblyReference ref);
 public EcmaScriptObject SomeObj { get; }
 ```
 
-### Issue tracking
-
-Bug management takes place in GitHub. For the NuGet.org website, we track issues in the [NuGet Gallery Issue Tracker](https://github.com/nuget/NuGetGallery/issues). NuGet client tools (the Visual Studio extension, NuGet.exe command line tool, etc.) issues are tracked in [NuGet Home](https://github.com/nuget/home/issues).
-
-Bugs cannot be moved between repos so make sure you open a bug in the right repo. If a bug is opened in the wrong repo someone will have to manually copy it to the correct repo.
-
 ### GitHub Flavored Markdown
 
-GitHub supports Markdown in many places throughout the system (issues, comments, etc.). However, there are a few differences from regular Markdown that are described here:
+GitHub supports Markdown in many places throughout the system (issues, comments, etc.). However, there are a few differences from regular Markdown that are described [here](https://help.github.com/articles/github-flavored-markdown).
 
-	https://help.github.com/articles/github-flavored-markdown
+TODO NK -
 
-### Including people in a GitHub discussion
-
-To include another team member in a discussion on GitHub you can use an `@ mention` to cause a notification to be sent to that person. This will automatically send a notification email to that person (assuming they have not altered their GitHub account settings). For example, in a PR's discussion thread or in an issue tracker comment you can type `@username` to have them receive a notification. This is useful when you want to "include" someone in a code review in a PR, or if you want to get another opinion on an issue in the issue tracker.
-
-Do not just assume people will see an issue or discussion and make sure to mention people who need to see it.
-
-TODO NK - 
-
-Add powershell guidelines. 
+Add powershell guidelines.
 
 https://github.com/dotnet/roslyn/blob/master/docs/contributing/Powershell%20Guidelines.md
 
@@ -413,6 +396,6 @@ https://devblogs.microsoft.com/pfxteam/know-thine-implicit-allocations/
 
 Add how to debug/build and test.
 
-Debugging tips etc. 
+Debugging tips etc.
 
 https://github.com/dotnet/project-system/tree/master/docs/repo
