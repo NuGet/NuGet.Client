@@ -183,11 +183,13 @@ In constructors where a field or property is initialized coalescing checks are a
 
 ```
 
+### Optional parameters
+
+TODO NK - talk about optional parameters.
+
 ### Async method patterns
 
 By default all async methods must have the `Async` suffix. There are some exceptional circumstances where a method name from a previous framework will be grandfathered in.
-
-TODO NK - talk about optional parameters.
 
 Passing cancellation tokens is done with an optional parameter with a value of `default(CancellationToken)`, which is equivalent to `CancellationToken.None` (one of the few places that we use optional parameters).
 
