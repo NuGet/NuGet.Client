@@ -8,47 +8,6 @@ While we would like to embrace everyone's individual style, working together on 
 if we don't enforce some consistency. When it comes to coding guidelines, consistency can be even more important than 
 being "right."
 
-## Basics
-
-### Branching strategy
-
-Talk about branch strategy, feature branches, release branches etc. 
-The active development branch in our repo is `dev`. What we ship comes from the `release-majorminorx` branches. 
-
-We use trunk based development model. See https://trunkbaseddevelopment.com/youre-doing-it-wrong/ and https://rollout.io/blog/trunk-based-development-what-why/
-
-### Code reviews and checkins
-
-TODO NK - Maybe this should go to contributing guidelines? There's really no good way to do this. 
-
-To help ensure that only the highest quality code makes its way into the project, all code changes need to be submitted to GitHub as PRs. 
-
-In general a PR should be approved by the Subject Matter Expert (SME) of that code. For example, a change to the Banana project should be signed off by `@MrMonkey`, and not by `@MrsGiraffe`. If you don't know the SME, someone on the team will help you identify them. Of course, sometimes it's the SME who is making a change, in which case a secondary person will have to sign off on the change (e.g. `@JuniorMonkey`).
-
-To commit the PR to the repo use the GitHub `Squash and Merge` button. We can't stress this enough. Always use `Squash and Merge` unless an exception is explicitly stated in this document. 
-
-### Solution and project folder structure and naming
-
-The NuGet.Client repo currently has only one solution file named `NuGet.sln`. We do not want/need to have more than one solution file. 
-If deemed necessary by the team, we can consider solution filters at a future point. 
-
-Every project in the NuGet.Client repo should be PackageReference based and if possible (read this as not .NET Framework WPF), an SDK based one. 
-The production source code is under the `src` folder.
-The test source code is under the `test` folder.
-The files affecting build are located under the `build` folder.
-The powershell files that are not part of the `Package Manager Console` are located under the `scripts` folder.
-
-Follow the existing pattern for new project files (for example, if NuGet.Commands imports common.props at some point, so should NuGet.MyNewProject). 
-Test projects have a different convention for the build customization files they import, so pay attention to that.
-
-All build artifacts go under a generated `artifacts` folder.
-
-###$ Project naming pattern
-
-The general naming pattern is `NuGet.<area>.<subarea>`. All NuGet assemblies ship together and follow the same assembly versioning, save for some exceptions like `NuGet.VisualStudio.Interop`. 
-All assemblies have the same name as their project. 
-All package versions are the same. No exceptions. 
-
 ### Copyright header and license notice
 
 All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exact header (please do not make any changes to it):
@@ -72,7 +31,7 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. We use [Allman style](http://en.wikipedia.org/wiki/Indent_style#Allman_style) braces, where each brace begins on a new line. One exception is that a `using` statement is permitted to be nested within another `using` statement by starting on the following line at the same indentation level, even if the nested `using` contains a controlled block.
 
-1. We use four spaces of indentation (no tabs). TODO NK - I'd like to argue for tabs but not a hill I am willing to die on.
+1. We use four spaces of indentation (no tabs).
 
 1. We use `_camelCase` for internal and private fields and use `readonly` where possible. Prefix internal and private instance fields with `_`. Static fields are all CamelCase regardless of visibility. When used on static fields, `readonly` should come after `static` (e.g. `static readonly` not `readonly static`).  Public fields should be used sparingly and should use PascalCasing with no prefix when used.
 
@@ -283,7 +242,7 @@ Note: Public means callable by a customer, so it includes protected APIs. Howeve
 
 ### Assertions
 
-Do not use `Debug.Assert()`. Consider using `Assumes.Present()` especially in Visual Studio code when interacting with the service providers.
+Do not use `Debug.Assert()`. Consider using `Assumes.Present()`, specifically in Visual Studio code when interacting with the service providers.
 
 ### Unit tests and functional tests
 
