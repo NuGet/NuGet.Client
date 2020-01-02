@@ -254,9 +254,7 @@ In general there should be exactly one unit test assembly for each product runti
 
 #### Unit test class naming
 
-Test class names end with `Test` and live in the same namespace as the class being tested. For example, the unit tests for the `NuGet.Fruit.Banana` class would be in a `NuGet.Fruit.BananaTest` class in the test assembly.
-
-TODO NK - This is not something we have honored.
+Test class names end with `Test` and live in a similar namespace as the class being tested. For example, the unit tests for the `NuGet.Fruit.Banana` class would be in a `NuGet.Fruit.Banana.Test` class in the test assembly.
 
 #### Unit test method naming
 
@@ -360,7 +358,9 @@ Assert.Equal(list1, list2, StringComparer.OrdinalIgnoreCase);
 
 #### Parallel tests
 
-By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests! TODO NK - We should investigate, reenabling test parallelization.
+By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests! 
+
+Issue tracking the re-enabling of the [paralelization](https://github.com/NuGet/Home/issues/8987) in the current unit tests.
 
 For functional tests it is reasonable to disable parallel tests.
 
