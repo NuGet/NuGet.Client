@@ -19,8 +19,11 @@ namespace NuGet.PackageManagement.UI
             var image = sender as Image;
 
             e.Handled = true; // don't repropagate the event
-            var binding = BindingOperations.GetBindingExpression(image, Image.SourceProperty);
-            binding.UpdateTarget();
+            BindingExpression binding = BindingOperations.GetBindingExpression(image, Image.SourceProperty);
+            if (binding != null && binding.Status != BindingStatus.Detached)
+            {
+                binding.UpdateTarget();
+            }
         }
     }
 }
