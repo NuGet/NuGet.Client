@@ -73,6 +73,8 @@ NuGet members may contribute directly to the main remote.
 
    `.\build.ps1`
 
+    > Note: You have to to run .\configure.ps1 and .\build.ps1 at least once in order for your build to succeed.
+
 1. Run unit and functional tests if inside Microsoft corpnet with
 
     `.\runTests.ps1`
