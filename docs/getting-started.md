@@ -7,6 +7,7 @@
   - .NET Core Cross Platform Development
   - .NET desktop development
   - Visual Studio extension development.
+  - C++ development
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
@@ -43,7 +44,7 @@ upstream        no_push (push)
 
 ### NuGet team members
 
-NuGet members contribute directly to the main remote. 
+NuGet members may contribute directly to the main remote.
 
 ## Build
 
@@ -86,4 +87,3 @@ NuGet members contribute directly to the main remote.
 
 - [Workflow](workflow.md)
 - [Coding Guidelines](coding-guidelines.md)
-- [Debugging](debugging.md)

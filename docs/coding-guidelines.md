@@ -10,7 +10,7 @@ While we would like to embrace everyone's individual style, working together on 
 
 All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exact header (please do not make any changes to it):
 
-```csharp
+```cs
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 ```
@@ -54,44 +54,44 @@ The general rule we follow is "use Visual Studio defaults".
 1. We only use `var` when it's obvious what the variable type is.
 For example the following are correct:
 
-```csharp
-var fruit = "Lychee";
-var fruits = new List<Fruit>();
-string fruit = null; // can't use "var" because the type isn't known (though you could do (string)null, don't!)
-const string expectedName = "name"; // can't use "var" with const
-FruitFlavor flavor = fruit.GetFlavor();
-```
+    ```cs
+    var fruit = "Apple";
+    var fruits = new List<Fruit>();
+    string fruit = null; // can't use "var" because the type isn't known (though you could do (string)null, don't!)
+    const string expectedName = "name"; // can't use "var" with const
+    FruitFlavor flavor = fruit.GetFlavor();
+    ```
 
-The following are incorrect:
+    The following are incorrect:
 
-```csharp
-var flavor = fruit.GetFlavor();
-string fruit = "Lychee";
-List<Fruit> fruits = new List<Fruit>();
-```
+    ```cs
+    var flavor = fruit.GetFlavor();
+    string fruit = "Apple";
+    List<Fruit> fruits = new List<Fruit>();
+    ```
 
-1. We use language keywords instead of BCL types (e.g. `int, string, float` instead of `Int32, String, Single`, etc) for both type references as well as method calls (e.g. `int.Parse` instead of `Int32.Parse`). 
-The following are correct:
+1. We use language keywords instead of BCL types (e.g. `int, string, float` instead of `Int32, String, Single`, etc) for both type references as well as method calls (e.g. `int.Parse` instead of `Int32.Parse`).
+    The following are correct:
 
-```csharp
-public string TrimString(string s) {
-    return string.IsNullOrEmpty(s)
-        ? null
-        : s.Trim();
-}
+    ```cs
+    public string TrimString(string s) {
+        return string.IsNullOrEmpty(s)
+            ? null
+            : s.Trim();
+    }
 
-var intTypeName = nameof(Int32); // can't use C# type keywords with nameof
-```
+    var intTypeName = nameof(Int32); // can't use C# type keywords with nameof
+    ```
 
-The following are incorrect:
+    The following are incorrect:
 
-```csharp
-public String TrimString(String s) {
-    return String.IsNullOrEmpty(s)
-        ? null
-        : s.Trim();
-}
-```
+    ```cs
+    public String TrimString(String s) {
+        return String.IsNullOrEmpty(s)
+            ? null
+            : s.Trim();
+    }
+    ```
 
 1. We use PascalCasing to name all our constant local variables and fields. The only exception is for interop code where the constant value should exactly match the name and value of the code you are calling via interop.
 
@@ -110,41 +110,39 @@ public String TrimString(String s) {
 
 1. Do add a new line at the end of all files.
 
-1. Do prefer modern language features when available, such as object initializers, collection initalizers, coalescing expressions, etc.
+1. Do prefer modern language features when available, such as object initializers, collection initializers, coalescing expressions, etc.
 
-These are incorrect:
+    These are incorrect:
 
-```cs
-var packages = new List<PackageIdentity>;
+    ```cs
+    var packages = new List<PackageIdentity>;
 
-var packageIdentity = new PackageIdentity();  
-packageIdentity.Id = "NuGet.Commands";  
-packageIdentity.Version = "5.4.0";
+    var packageIdentity = new PackageIdentity();  
+    packageIdentity.Id = "NuGet.Commands";  
+    packageIdentity.Version = "5.4.0";
 
-var idList = new List<string>();
-var id1 = "Id1"
-var id2 = "Id2";
-idList.Add(id1);
-idList.Add(id2);
-```
+    var idList = new List<string>();
+    var id1 = "Id1"
+    var id2 = "Id2";
+    idList.Add(id1);
+    idList.Add(id2);
+    ```
 
-These are correct:
+    These are correct:
 
-```cs
-var packageIdentity = new PackageIdentity();  
-{
-    Id = "NuGet.Commands";  
-    Version = "5.4.0";
-}
+    ```cs
+    var packageIdentity = new PackageIdentity();  
+    {
+        Id = "NuGet.Commands";  
+        Version = "5.4.0";
+    }
 
-var idList = new List<string>
-{
-    "Id1",
-    "Id2",
-};
-```
-
-1. Always use a trailing comma at the end of multi-line initializers.
+    var idList = new List<string>
+    {
+        "Id1",
+        "Id2",
+    };
+    ```
 
 1. All async methods should have a name ending with Async.
 
@@ -172,7 +170,7 @@ Do consider the scope of the assembly when adding new types, ask yourself whethe
 Null checking is required for parameters that cannot be null (big surprise!). All of our null checks are within the method body.
 In constructors where a field or property is initialized coalescing checks are allowed. Otherwise use the regular bracing approach.
 
-```csharp
+```cs
 
     Path = path ?? throw new ArgumentNullException(nameof(path));
     ....
@@ -185,21 +183,26 @@ In constructors where a field or property is initialized coalescing checks are a
 
 ### Optional parameters
 
-TODO NK - talk about optional parameters.
+Optional parameters are allowed in certain situations, but discouraged.
+Optional parameters are at the root for many versioning issues.
+The optional parameter default values are a compile time decision, that's why adding a new optional parameter to an API is a breaking change!
+Furthermore, if you have a method with optional parameters, adding an overload with additional optional parameters might cause a compile-time breaking change.
+Optional parameters in internal/private methods are acceptable.
 
 ### Async method patterns
 
 By default all async methods must have the `Async` suffix. There are some exceptional circumstances where a method name from a previous framework will be grandfathered in.
 
-Passing cancellation tokens is done with an optional parameter with a value of `default(CancellationToken)`, which is equivalent to `CancellationToken.None` (one of the few places that we use optional parameters).
+Passing cancellation tokens can be passed an optional parameter with a value of `default(CancellationToken)`, which is equivalent to `CancellationToken.None`.
+Prefer not having optional parameters.
 
 Sample async method:
 
-```csharp
+```cs
 public Task GetDataAsync(
     QueryParams query,
     int maxData,
-    CancellationToken cancellationToken = default(CancellationToken))
+    CancellationToken cancellationToken)
 {
     ...
 }
@@ -210,18 +213,17 @@ public Task GetDataAsync(
 The general rule is: if a regular static method would suffice, avoid extension methods.
 
 Extension methods are often useful to create chainable method calls, for example, when constructing complex objects, or creating queries.
-
 Internal extension methods are allowed, but bear in mind the previous guideline: ask yourself if an extension method is truly the most appropriate pattern.
-
 The namespace of the extension method class should generally be the namespace that represents the functionality of the extension method, as opposed to the namespace of the target type.
-
 The class name of an extension method container (also known as a "sponsor type") should generally follow the pattern of `<Feature>Extensions`, `<Target><Feature>Extensions`, or `<Feature><Target>Extensions`. For example:
 
-```csharp
-namespace Food {
+```cs
+namespace Food
+{
     class Fruit { ... }
 }
-namespace Fruit.Eating {
+namespace Fruit.Eating
+{
     class FruitExtensions { public static void Eat(this Fruit fruit); }
   OR
     class FruitEatingExtensions { public static void Eat(this Fruit fruit); }
@@ -240,7 +242,8 @@ Note: Public means callable by a customer, so it includes protected APIs. Howeve
 
 ### Assertions
 
-Do not use `Debug.Assert()`. Consider using `Assumes.Present()`, specifically in Visual Studio code when interacting with the service providers.
+Do not use `Debug.Assert()`. That's what unit tests are for.
+Consider using `Assumes.Present()`, specifically in Visual Studio code when interacting with the service providers.
 
 ### Unit tests and functional tests
 
@@ -250,24 +253,24 @@ The unit tests for the `NuGet.Fruit` assembly live in the `NuGet.Fruit.Tests` as
 
 The functional tests for the `NuGet.Fruit` assembly live in the `NuGet.Fruit.FunctionalTests` assembly.
 
-In general there should be exactly one unit test assembly for each product runtime assembly. In general there should be one functional test assembly per product (NuGet.exe/MSBuild.exe/dotnet.exe). Exceptions can be made for both. Some are already grand-fathered in.
+In general there should be exactly one unit test assembly for each product runtime assembly. In general there should be one functional test assembly per product (NuGet.exe/MSBuild.exe/dotnet.exe). Exceptions can be made for both. Some are already grandfathered in.
 
 #### Unit test class naming
 
-Test class names end with `Test` and live in a similar namespace as the class being tested. For example, the unit tests for the `NuGet.Fruit.Banana` class would be in a `NuGet.Fruit.Banana.Test` class in the test assembly.
+Test class names end with `Test` and live in a similar namespace as the class being tested. For example, the unit tests for the `NuGet.Fruit.Banana` class would be in a `NuGet.Fruit.Test.BananaTest` class in the test assembly.
 
 #### Unit test method naming
 
 Unit test method names must be descriptive about *what is being tested*, *under what conditions*, and *what the expectations are*. Pascal casing and underscores can be used to improve readability. The following test names are correct:
 
-```csharp
-PublicApiArgumentsShouldHaveNotNullAnnotation
-Public_api_arguments_should_have_not_null_annotation
+```cs
+PublicApiArgumentsShouldNotBeNull
+Public_api_arguments_should_not_be_null
 ```
 
 The following test names are incorrect:
 
-```csharp
+```cs
 Test1
 Constructor
 FormatString
@@ -278,7 +281,7 @@ GetData
 
 The contents of every unit test should be split into three distinct stages, optionally separated by these comments:
 
-```csharp
+```cs
 // Arrange  
 // Act  
 // Assert
@@ -286,7 +289,7 @@ The contents of every unit test should be split into three distinct stages, opti
 
 The crucial thing here is that the `Act` stage is exactly one statement. That one statement is nothing more than a call to the one method that you are trying to test. Keeping that one statement as simple as possible is also very important. For example, this is not ideal:
 
-```csharp
+```cs
 int result = myObj.CallSomeMethod(GetComplexParam1(), GetComplexParam2(), GetComplexParam3());
 ```
 
@@ -294,7 +297,7 @@ This style is not recommended because way too many things can go wrong in this o
 
 The ideal pattern is to move the complex parameter building into the `Arrange` section:
 
-```csharp
+```cs
 // Arrange
 P1 p1 = GetComplexParam1();
 P2 p2 = GetComplexParam2();
@@ -313,9 +316,9 @@ Now the only reason the line with `CallSomeMethod()` can fail is if the method i
 
 In general testing the specific exception message in a unit test is important. This ensures that the exact desired exception is what is being tested rather than a different exception of the same type. In order to verify the exact exception it is important to verify the message.
 
-To make writing unit tests easier it is recommended to compare the error message to the RESX resource. However, comparing against a string literal is also permitted.
+To make writing unit tests easier it is recommended to compare the error message to the resx resource. However, comparing against a string literal is also permitted.
 
-```csharp
+```cs
 var ex = Assert.Throws<InvalidOperationException>(
     () => fruitBasket.GetBananaById(1234));
 Assert.Equal(
@@ -323,13 +326,12 @@ Assert.Equal(
     ex.Message);
 ```
 
-#### Use xUnit.net's plethora of built-in assertions
+#### Test assertions
 
-Consider using fluent assertions.
+Both xunit.net and FluentAssertions are allowed. FluentAssertions do not truncate the equality messages, thus sometimes making it easier to diagnose the failure.
+Both of these will make the tests a lot more readable and also allow the test runner report the best possible errors. For example, these are bad:
 
-xUnit.net includes many kinds of assertions – please use the most appropriate one for your test. This will make the tests a lot more readable and also allow the test runner report the best possible errors (whether it's local or the CI machine). For example, these are bad:
-
-```csharp
+```cs
 Assert.Equal(true, someBool);
 
 Assert.True("abc123" == someString);
@@ -347,7 +349,7 @@ for (int i = 0; i < list1.Length; i++) {
 
 These are good:
 
-```csharp
+```cs
 Assert.True(someBool);
 
 Assert.Equal("abc123", someString);
@@ -356,9 +358,23 @@ Assert.Equal("abc123", someString);
 Assert.Equal(list1, list2, StringComparer.OrdinalIgnoreCase);
 ```
 
+Some places where FluentAssetion shine are:
+
+```cs
+
+RestoreResult restoreResult = await RestoreRunner.RestoreAsync(restoreRequest);
+
+// xunit assertions
+Assert.True(restoreResult.Success);
+
+// fluent assertions
+
+restoreResult.Success.Should().BeTrue(because: restoreResult.AllOutput);
+```
+
 #### Parallel tests
 
-By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests! 
+By default all unit test assemblies should run in parallel mode, which is the default. Unit tests shouldn't depend on any shared state, and so should generally be runnable in parallel. If the tests fail in parallel, the first thing to do is to figure out *why*; do not just disable parallel tests!
 
 Issue tracking the re-enabling of the [paralelization](https://github.com/NuGet/Home/issues/8987) in the current unit tests.
 
@@ -370,14 +386,14 @@ Public namespaces, type names, member names, and parameter names must use comple
 
 These are correct:
 
-```csharp
+```cs
 public void AddReference(AssemblyReference reference);
 public EcmaScriptObject SomeObject { get; }
 ```
 
 These are incorrect:
 
-```csharp
+```cs
 public void AddRef(AssemblyReference ref);
 public EcmaScriptObject SomeObj { get; }
 ```
@@ -385,19 +401,3 @@ public EcmaScriptObject SomeObj { get; }
 ### GitHub Flavored Markdown
 
 GitHub supports Markdown in many places throughout the system (issues, comments, etc.). However, there are a few differences from regular Markdown that are described [here](https://help.github.com/articles/github-flavored-markdown).
-
-TODO NK -
-
-Add powershell guidelines.
-
-https://github.com/dotnet/roslyn/blob/master/docs/contributing/Powershell%20Guidelines.md
-
-performance guidelines - https://github.com/dotnet/runtime/blob/master/docs/coding-guidelines/performance-guidelines.md
-
-https://devblogs.microsoft.com/pfxteam/know-thine-implicit-allocations/
-
-Add how to debug/build and test.
-
-Debugging tips etc.
-
-https://github.com/dotnet/project-system/tree/master/docs/repo
