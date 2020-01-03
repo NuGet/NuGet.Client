@@ -16,7 +16,7 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 ## Getting Started guide
 
-For how to contribute to this repo follow the [Getting Started guide](docs\getting-started.md)
+For how to contribute to this repo follow the [Contributing doc](CONTRIBUTING.md).
 
 ## Home repo
 
