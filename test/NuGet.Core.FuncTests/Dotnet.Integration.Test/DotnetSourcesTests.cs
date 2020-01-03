@@ -359,16 +359,16 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("list --foo", 1)]
-        [InlineData("foo", 0)]
-        [InlineData("a b", 0)]
-        [InlineData("a b c", 0)]
-        [InlineData("B a --configfile file.txt --name x --source y", 0)]
-        [InlineData("list --configfile file.txt B a", 3)]
+        [InlineData("list source --foo", 2)]
+        [InlineData("add source foo", 2)]
+        [InlineData("remove source a b", 2)]
+        [InlineData("remove a b c", 1)]
+        [InlineData("add source B a --configfile file.txt --name x --source y", 2)]
+        [InlineData("list source --configfile file.txt B a", 4)]
         public void SourcesCommandTest_Failure_InvalidArguments(string cmd, int badParam)
         {
-            // all of these commands need to start with "nuget sources ", and need to adjust bad param to account for those 2 new params
-            TestCommandInvalidArguments("nuget sources " + cmd, badParam + 2);
+            // all of these commands need to start with "nuget ", and need to adjust bad param to account for those 2 new params
+            TestCommandInvalidArguments("nuget " + cmd, badParam + 1);
         }
 
         // Skipping this test - and cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.
@@ -426,7 +426,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(false, "command not found");
 
             // 0th - "nuget"
-            // 1st - "sources"
+            // 1st - "source"
             // 2nd - action
             // 3rd - nextParam
             string badCommand = commandSplit[badCommandIndex];

@@ -10,7 +10,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class AddVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("add", AddCmd =>
             {
@@ -33,11 +34,11 @@ namespace NuGet.CommandLine.XPlat
                         "",
                         CommandOptionType.SingleValue);
                     var storePasswordInClearText = SourceCmd.Option(
-                        "--store-Password-In-Clear-Text",
+                        "--store-password-in-clear-text",
                         "",
                         CommandOptionType.NoValue);
                     var validAuthenticationTypes = SourceCmd.Option(
-                        "--validAuthenticationTypes",
+                        "--valid-authentication-types",
                         "",
                         CommandOptionType.SingleValue);
                     var configfile = SourceCmd.Option(
@@ -85,7 +86,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class DisableVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("disable", DisableCmd =>
             {
@@ -131,7 +133,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class EnableVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("enable", EnableCmd =>
             {
@@ -177,7 +180,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class ListVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("list", ListCmd =>
             {
@@ -219,7 +223,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class RemoveVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("remove", RemoveCmd =>
             {
@@ -265,7 +270,8 @@ namespace NuGet.CommandLine.XPlat
 
     internal partial class UpdateVerbParser
     {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
+        internal static void Register(CommandLineApplication app,
+                                      Func<ILogger> getLogger)
         {
             app.Command("update", UpdateCmd =>
             {
@@ -288,11 +294,11 @@ namespace NuGet.CommandLine.XPlat
                         "",
                         CommandOptionType.SingleValue);
                     var storePasswordInClearText = SourceCmd.Option(
-                        "--storePasswordInClearText",
+                        "--store-password-in-clear-text",
                         "",
                         CommandOptionType.NoValue);
                     var validAuthenticationTypes = SourceCmd.Option(
-                        "--validAuthenticationTypes",
+                        "--valid-authentication-types",
                         "",
                         CommandOptionType.SingleValue);
                     var configfile = SourceCmd.Option(

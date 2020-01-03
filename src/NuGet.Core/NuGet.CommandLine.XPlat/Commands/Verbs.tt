@@ -67,8 +67,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
     internal partial class <#= commandFormalName #>VerbParser
     {
         internal static void Register(CommandLineApplication app,
-                                      Func<ILogger> getLogger,
-                                      Func<ILogger> getLogger2)
+                                      Func<ILogger> getLogger)
         {
             app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
             {
@@ -102,7 +101,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                 var optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
 #>
                     var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
-                        "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName #>",
+                        "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName.ToLower() #>",
                         "<#= optionHelp != null ? optionHelp : "" #>",
                         CommandOptionType.<#= GetOptionType(option) #>);
 <#

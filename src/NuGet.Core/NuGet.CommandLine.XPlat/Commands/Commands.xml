@@ -7,9 +7,8 @@
       <SingleValueOption Name="username" Shortcut="u" />
       <SingleValueOption Name="password" Shortcut="p" />
       <SwitchOption Name="store-Password-In-Clear-Text" />
-      <SingleValueOption Name="validAuthenticationTypes" />
+      <SingleValueOption Name="valid-Authentication-Types" />
       <SingleValueOption Name="configfile" />
-      <Value Name="logger2" Type="ILogger" />
     </Noun>
   </Verb>
   <Verb Name="disable">
@@ -43,8 +42,8 @@
       <SingleValueOption Name="source" Shortcut="s" Required="true" />
       <SingleValueOption Name="username" Shortcut="n" />
       <SingleValueOption Name="password" Shortcut="s" />
-      <SwitchOption Name="storePasswordInClearText" />
-      <SingleValueOption Name="validAuthenticationTypes" />
+      <SwitchOption Name="store-Password-In-Clear-Text" />
+      <SingleValueOption Name="valid-Authentication-Types" />
       <SingleValueOption Name="configfile" />
     </Noun>
   </Verb>

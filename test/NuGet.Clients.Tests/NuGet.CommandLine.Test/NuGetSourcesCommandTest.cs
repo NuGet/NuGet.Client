@@ -300,7 +300,7 @@ namespace NuGet.CommandLine.Test
                     "sources",
                     "Disable",
                     "-Name",
-                    "TEST_SOURCE", // this should work in a case sensitive manner
+                    "test_source",
                     "-ConfigFile",
                     configFilePath
                 };
