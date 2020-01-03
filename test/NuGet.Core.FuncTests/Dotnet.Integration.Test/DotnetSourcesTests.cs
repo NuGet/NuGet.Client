@@ -23,7 +23,6 @@ namespace Dotnet.Integration.Test
         }
 
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddSource()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -55,7 +54,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -103,7 +101,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -149,7 +146,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
@@ -215,7 +211,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_EnableSource()
         {
             // Arrange
@@ -291,7 +286,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_DisableSource()
         {
             // Arrange
@@ -358,7 +352,6 @@ namespace Dotnet.Integration.Test
             }
         }
 
-        [PlatformTheory(Platform.Windows)]
         [InlineData("list source --foo", 2)]
         [InlineData("add source foo", 2)]
         [InlineData("remove source a b", 2)]
