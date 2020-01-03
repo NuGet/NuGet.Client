@@ -31,7 +31,7 @@ The general rule we follow is "use Visual Studio defaults".
 
 1. We use four spaces of indentation (no tabs).
 
-1. We use `_camelCase` for internal and private fields and use `readonly` where possible. Prefix internal and private instance fields with `_`. Static fields are all CamelCase regardless of visibility. When used on static fields, `readonly` should come after `static` (e.g. `static readonly` not `readonly static`).  Public fields should be used sparingly and should use PascalCasing with no prefix when used.
+1. We use `_camelCase` for internal and private fields and use `readonly` where possible. Prefix internal and private instance fields with `_`. Static fields are all PascalCase regardless of visibility. When used on static fields, `readonly` should come after `static` (e.g. `static readonly` not `readonly static`).  Public fields should be used sparingly and should use PascalCasing with no prefix when used.
 
 1. We avoid `this.` unless absolutely necessary.
 
@@ -42,14 +42,11 @@ The general rule we follow is "use Visual Studio defaults".
 1. Namespace imports should be specified at the top of the file, *outside* of
    `namespace` declarations, and should be sorted alphabetically, with the exception of `System.*` namespaces, which are to be placed on top of all others.
 
-1. Avoid more than one empty line at any time. For example, do not have two
-   blank lines between members of a type.
-1. Avoid spurious free spaces.
-   For example avoid `if (someVar == 0)...`, where the dots mark the spurious free spaces.
-   Consider enabling "View White Space (Ctrl+R, Ctrl+W)" or "Edit -> Advanced -> View White Space" if using Visual Studio to aid detection.
+1. Avoid more than one empty line at any time. For example, do not have two blank lines between members of a type.
 
-1. If a file happens to differ in style from these guidelines (e.g. private members are named `m_member`
-   rather than `_member`), the existing style in that file takes precedence. Changes/refactorings are possible, but depending on the complexity, change frequency of the file, might need to be considered on their own merits in a separate pull request.
+1. Avoid spurious free spaces. For example avoid `if (someVar == 0)...`, where the dots mark the spurious free spaces. Consider enabling "View White Space (Ctrl+R, Ctrl+W)" or "Edit -> Advanced -> View White Space" if using Visual Studio to aid detection.
+
+1. If a file happens to differ in style from these guidelines (e.g. private members are named `m_member` rather than `_member`), the existing style in that file takes precedence. Changes/refactorings are possible, but depending on the complexity, change frequency of the file, might need to be considered on their own merits in a separate pull request.
 
 1. We only use `var` when it's obvious what the variable type is.
 For example the following are correct:
@@ -234,7 +231,7 @@ namespace Fruit.Eating
 
 When writing extension methods for an interface the sponsor type name must not start with an `I`.
 
-### Doc comments
+### Code comments
 
 The person writing the code will write the doc comments. Public APIs only. No need for doc comments on non-public types.
 

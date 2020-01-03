@@ -7,16 +7,25 @@
   - .NET Core Cross Platform Development
   - .NET desktop development
   - Visual Studio extension development.
-  - C++ development
+  - Desktop development with C++
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
 - Git
 - Windows Powershell v3.0+
 
 > Note that you can work on the NuGet.Client repo with Visual Studio 2017, but you will be unable to test the Visual Studio extension.
 
+## Contributing
+
+1. [Open an issue here](https://github.com/NuGet/Home/issues) and get some feedback from the NuGet team.
+1. Follow the instructions in [Code](#code)
+1. Make you change, and add tests.
+1. Create a [pull request](https://github.com/NuGet/NuGet.Client/pulls).
+1. _One-time_: Sign the contributor license agreement, if you haven't signed it before. The [.NET Foundation Bot](https://github.com/dnfclas) will comment on the pull request you just created and guide you on how to sign the CLA.
+1. Submit a doc pull request to the [docs.microsoft-com.nuget](https://github.com/NuGet/docs.microsoft.com-nuget/) repo, if this is a new feature or behavior change.
+
 ## Code
 
-Non NuGet members contribute to this repository is via the [fork model](https://help.github.com/articles/fork-a-repo/). Contributors push changes to their own "forked" version of NuGet.Client, and then submit a pull request into it requesting those changes be merged.
+The way non-NuGet members contribute to this repository is via the [fork model](https://help.github.com/articles/fork-a-repo/). Contributors push changes to their own "forked" version of NuGet.Client, and then submit a pull request into it requesting those changes be merged.
 
 To get started:
 
