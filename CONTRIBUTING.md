@@ -94,5 +94,5 @@ NuGet members may contribute directly to the main remote.
 
 ## Resources for NuGet.Client development
 
-- [Workflow](docs\workflow.md)
-- [Coding Guidelines](docs\coding-guidelines.md)
+- [Workflow](docs/workflow.md)
+- [Coding Guidelines](docs/coding-guidelines.md)
