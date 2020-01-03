@@ -352,6 +352,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Theory]
         [InlineData("list source --foo", 2)]
         [InlineData("add source foo", 2)]
         [InlineData("remove source a b", 2)]
