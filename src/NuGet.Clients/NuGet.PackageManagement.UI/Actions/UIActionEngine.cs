@@ -507,7 +507,7 @@ namespace NuGet.PackageManagement.UI
             TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {
                 var subEvent = new TelemetryEvent(eventName: null);
-                subEvent.AddPiiData("id", package.Item1);
+                subEvent.AddPiiData("id", package.Item1?.ToLowerInvariant() ?? "(empty package id)");
                 subEvent["version"] = package.Item2;
                 return subEvent;
             }
@@ -556,7 +556,7 @@ namespace NuGet.PackageManagement.UI
 
                 foreach (var package in removedPackages)
                 {
-                    packages.Add(new TelemetryPiiProperty(package));
+                    packages.Add(new TelemetryPiiProperty(package?.ToLowerInvariant() ?? "(empty package id)"));
                 }
 
                 actionTelemetryEvent.ComplexData["RemovedPackages"] = packages;
