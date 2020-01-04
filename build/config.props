@@ -46,17 +46,6 @@
     <ToolsetTargetBranches Condition="'$(OverrideToolsetTargetBranches)' == ''">master</ToolsetTargetBranches>
   </PropertyGroup>
 
-  <!-- Dependency versions -->
-  <PropertyGroup>
-    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonVersionCore>
-    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) != ''">$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersionCore>
-    <XunitVersion>2.4.1</XunitVersion>
-    <TestSDKVersion>15.5.0</TestSDKVersion>
-    <MoqVersion>4.12.0</MoqVersion>
-    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-    <MicrosoftBuildPackageVersion Condition="$(MicrosoftBuildPackageVersion) == ''">16.0.461</MicrosoftBuildPackageVersion>
-  </PropertyGroup>
-
   <!-- Config -->
   <PropertyGroup>
     <RepositoryName>NuGet</RepositoryName>
