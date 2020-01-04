@@ -21,6 +21,7 @@ namespace NuGet.VisualStudio.Telemetry
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
+        private readonly HashSet<string> _knownSources;
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
@@ -45,18 +46,30 @@ namespace NuGet.VisualStudio.Telemetry
             {
                 _sources[source.PackageSource.Source] = source;
             }
+
+            _knownSources = new HashSet<string>();
+            foreach (var source in _sources.Keys)
+            {
+                _knownSources.Add(source);
+            }
         }
 
         private void ProtocolDiagnostics_ResourceEvent(ProtocolDiagnosticResourceEvent pdEvent)
         {
-            AddResourceData(pdEvent, _data, _resourceStringTable);
+            AddResourceData(pdEvent, _data, _resourceStringTable, _knownSources);
         }
 
         internal static void AddResourceData(
             ProtocolDiagnosticResourceEvent pdEvent,
             ConcurrentDictionary<string, Data> allData,
-            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> resourceStringTable)
+            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> resourceStringTable,
+            HashSet<string> sources)
         {
+            if (!sources.Contains(pdEvent.Source))
+            {
+                return;
+            }
+
             var resourceMethodNameTable = resourceStringTable.GetOrAdd(pdEvent.ResourceType, t => new ConcurrentDictionary<string, string>());
             var resourceTypeAndMethod = resourceMethodNameTable.GetOrAdd(pdEvent.Method, m => pdEvent.ResourceType + "." + m);
 
@@ -76,11 +89,16 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_HttpEvent(ProtocolDiagnosticHttpEvent pdEvent)
         {
-            AddHttpData(pdEvent, _data);
+            AddHttpData(pdEvent, _data, _knownSources);
         }
 
-        internal static void AddHttpData(ProtocolDiagnosticHttpEvent pdEvent, ConcurrentDictionary<string, Data> allData)
+        internal static void AddHttpData(ProtocolDiagnosticHttpEvent pdEvent, ConcurrentDictionary<string, Data> allData, HashSet<string> sources)
         {
+            if (!sources.Contains(pdEvent.Source))
+            {
+                return;
+            }
+
             var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
 
             lock (data._lock)
@@ -130,11 +148,16 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_NupkgCopiedEvent(ProtocolDiagnosticNupkgCopiedEvent ncEvent)
         {
-            AddNupkgCopiedData(ncEvent, _data);
+            AddNupkgCopiedData(ncEvent, _data, _knownSources);
         }
 
-        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, ConcurrentDictionary<string, Data> allData)
+        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, ConcurrentDictionary<string, Data> allData, HashSet<string> sources)
         {
+            if (!sources.Contains(ncEvent.Source))
+            {
+                return;
+            }
+
             var data = allData.GetOrAdd(ncEvent.Source, _ => new Data());
 
             lock (data._lock)
