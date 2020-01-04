@@ -22,7 +22,7 @@ namespace Dotnet.Integration.Test
             _fixture = fixture;
         }
 
-
+        [Fact]
         public void SourcesCommandTest_AddSource()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -54,6 +54,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -101,6 +102,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
         public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
@@ -146,6 +148,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
@@ -211,6 +214,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
         public void SourcesCommandTest_EnableSource()
         {
             // Arrange
@@ -286,6 +290,7 @@ namespace Dotnet.Integration.Test
             }
         }
 
+        [Fact]
         public void SourcesCommandTest_DisableSource()
         {
             // Arrange
@@ -365,7 +370,7 @@ namespace Dotnet.Integration.Test
             TestCommandInvalidArguments("nuget " + cmd, badParam + 1);
         }
 
-        // Skipping this test - and cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.
+        [Fact(Skip = "cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.")]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
             using (var preserver = new DefaultConfigurationFilePreserver())
