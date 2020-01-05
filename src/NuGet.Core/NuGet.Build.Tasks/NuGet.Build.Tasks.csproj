@@ -22,6 +22,7 @@
     <Content Include="NuGet.targets">
       <PackagePath>runtimes\any\native</PackagePath>
       <Pack>true</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 

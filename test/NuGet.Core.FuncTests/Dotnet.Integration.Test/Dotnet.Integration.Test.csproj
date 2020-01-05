@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
   
@@ -15,6 +15,7 @@
   <ItemGroup>
     <ProjectReference Include="..\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Pack\NuGet.Build.Tasks.Pack.csproj" />
   </ItemGroup>
 
   <ItemGroup>
