@@ -7,12 +7,15 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
-using NuGet.XPlat.FuncTest;
-using NuGet.Test.Utility;
+
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Protocol;
+using NuGet.Test.Utility;
+using NuGet.XPlat.FuncTest;
+
 using Xunit;
 
 namespace Dotnet.Integration.Test
@@ -38,23 +41,6 @@ namespace Dotnet.Integration.Test
             _processEnvVars.Add("UseSharedCompilation", "false");
             _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
             _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
-            // We do this here so that dotnet new will extract all the packages on the first run on the machine.
-            InitDotnetNewToExtractPackages();
-        }
-
-        private void InitDotnetNewToExtractPackages()
-        {
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var projectName = "ClassLibrary1";
-                CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", timeOut: 300000);
-            }
-
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var projectName = "ConsoleApp1";
-                CreateDotnetNewProject(testDirectory.Path, projectName, " console", timeOut: 300000);
-            }
         }
 
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
@@ -248,116 +234,97 @@ namespace Dotnet.Integration.Test
 
         private void UpdateCliWithLatestNuGetAssemblies(string cliDirectory)
         {
-            var nupkgsDirectory = DotnetCliUtil.GetNupkgDirectoryInRepo();
-
-            var pathToPackNupkg = FindMostRecentNupkg(nupkgsDirectory, "NuGet.Build.Tasks.Pack");
-
-            var nupkgsToCopy = new List<string> { "NuGet.Build.Tasks", "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
-
+            var artifactsDirectory = DotnetCliUtil.GetArtifactsDirectoryInRepo();
             var pathToSdkInCli = Path.Combine(
                     Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
-
-            using (var nupkg = new PackageArchiveReader(pathToPackNupkg))
-            {
-                var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
-                var files = nupkg.GetFiles()
-                .Where(fileName => fileName.StartsWith("Desktop")
-                                || fileName.StartsWith("CoreCLR")
-                                || fileName.StartsWith("build")
-                                || fileName.StartsWith("buildCrossTargeting"));
-
-                DeleteDirectory(pathToPackSdk);
-                CopyNupkgFilesToTarget(nupkg, pathToPackSdk, files);
-            }
-
-
-            foreach (var nupkgName in nupkgsToCopy) {
-                using (var nupkg = new PackageArchiveReader(FindMostRecentNupkg(nupkgsDirectory, nupkgName)))
-                {
-                     var files = nupkg.GetFiles()
-                    .Where(fileName => fileName.StartsWith("lib/netstandard")
-                                    || fileName.StartsWith("lib/netcoreapp")
-                                    || fileName.Contains("NuGet.targets"));
-
-                    CopyFlatlistOfFilesToTarget(nupkg, pathToSdkInCli, files);
-                }
-            }
+            const string configuration =
+#if DEBUG
+                "Debug";
+#else
+                "Release";
+#endif
+            CopyPackSdkArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
+            CopyRestoreArtifacts(artifactsDirectory, pathToSdkInCli, configuration);
         }
 
-        private void CopyFlatlistOfFilesToTarget(PackageArchiveReader nupkg, string destination, IEnumerable<string> packageFiles)
+        private void CopyRestoreArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
-            var packageFileExtractor = new PackageFileExtractor(packageFiles,
-                             PackageExtractionBehavior.XmlDocFileSaveMode);
-            var logger = new TestCommandOutputLogger();
-            var token = CancellationToken.None;
-            var filesCopied = new List<string>();
+            const string restoreProjectName = "NuGet.Build.Tasks";
+            const string restoreTargetsName = "NuGet.targets";
+            var sdkDependencies = new List<string> { restoreProjectName, "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
 
-            foreach (var packageFile in packageFiles)
+            // Copy rest of the NuGet assemblies.
+            foreach (var projectName in sdkDependencies)
             {
-                token.ThrowIfCancellationRequested();
-
-                var entry = nupkg.GetEntry(packageFile);
-
-                var packageFileName = entry.FullName;
-                // An entry in a ZipArchive could start with a '/' based on how it is zipped
-                // Remove it if present
-                if (packageFileName.StartsWith("/", StringComparison.Ordinal))
+                var projectArtifactsFolder = new DirectoryInfo(Path.Combine(artifactsDirectory, projectName, "16.0", "bin", configuration));
+                foreach (var frameworkArtifactsFolder in projectArtifactsFolder.EnumerateDirectories())
                 {
-                    packageFileName = packageFileName.Substring(1);
-                }
-                // Get only the name, without the path, since we are extracting to flat list
-                packageFileName = Path.GetFileName(packageFileName);
-
-                // ZipArchive always has forward slashes in them. By replacing them with DirectorySeparatorChar;
-                // in windows, we get the windows-style path
-                var normalizedPath = Uri.UnescapeDataString(packageFileName.Replace('/', Path.DirectorySeparatorChar));
-
-                var targetFilePath = Path.Combine(destination, normalizedPath);
-                if (!targetFilePath.StartsWith(destination, StringComparison.OrdinalIgnoreCase))
-                {
-                    continue;
-                }
-                try
-                {
-                    File.Delete(targetFilePath);
-                }
-                catch
-                {
-                    // Do nothing
-                }
-                using (var stream = entry.Open())
-                {
-                    var copiedFile = packageFileExtractor.ExtractPackageFile(packageFileName, targetFilePath, stream);
-                    if (copiedFile != null)
+                    if (frameworkArtifactsFolder.FullName.Contains("netstandard") ||
+                        frameworkArtifactsFolder.FullName.Contains("netcoreapp"))
                     {
-                        entry.UpdateFileTimeFromEntry(copiedFile, logger);
-
-                        filesCopied.Add(copiedFile);
+                        var fileName = projectName + ".dll";
+                        OverwriteFile(
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
+                                destFileName: Path.Combine(pathToSdkInCli, fileName));
+                        // Copy the restore targets.
+                        if (projectName.Equals(restoreProjectName))
+                        {
+                            OverwriteFile(
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
+                                destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName));
+                        }
                     }
                 }
             }
-
         }
 
-        private void CopyNupkgFilesToTarget(PackageArchiveReader nupkg, string destPath, IEnumerable<string> files)
+        private void CopyPackSdkArtifacts(string artifactsDirectory, string pathToSdkInCli, string configuration)
         {
-            var packageFileExtractor = new PackageFileExtractor(files,
-                                         PackageExtractionBehavior.XmlDocFileSaveMode);
+            var pathToPackSdk = Path.Combine(pathToSdkInCli, "Sdks", "NuGet.Build.Tasks.Pack");
 
-            nupkg.CopyFiles(destPath, files, packageFileExtractor.ExtractPackageFile, new TestCommandOutputLogger(),
-                CancellationToken.None);
-
+            const string packProjectName = "NuGet.Build.Tasks.Pack";
+            const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
+            // Copy the pack SDK.
+            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, "16.0", "bin", configuration)).EnumerateDirectories("netstandard*").Single();
+            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
+            // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
+            // In VisualStudio, simply use the non il merged version.
+            var ilMergedPackDirectoryPath = Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge");
+            if (Directory.Exists(ilMergedPackDirectoryPath))
+            {
+                var packFileName = packProjectName + ".dll";
+                // Only use the il merged assembly if it's newer than the build.
+                var packAssemblyCreationDate = new FileInfo(Path.Combine(packProjectCoreArtifactsDirectory.FullName, packFileName)).CreationTime;
+                var ilMergedPackAssemblyCreationDate = new FileInfo(Path.Combine(ilMergedPackDirectoryPath, packFileName)).CreationTime;
+                if (ilMergedPackAssemblyCreationDate > packAssemblyCreationDate)
+                {
+                    FileUtility.Replace(
+                        sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
+                        destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
+                }
+                else
+                {
+                    foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+                    {
+                        OverwriteFile(
+                            sourceFileName: assembly.FullName,
+                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name));
+                    }
+                }
+                // Copy the pack targets
+                var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
+                var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
+                var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
+                OverwriteFile(packTargetsSource, targetsDestination);
+                OverwriteFile(packTargetsSource, targetsDestinationCrossTargeting);
+            }
         }
 
-        private static string FindMostRecentNupkg(string nupkgDirectory, string id)
+        private void OverwriteFile(string sourceFileName, string destFileName)
         {
-            var info = LocalFolderUtility.GetPackagesV2(nupkgDirectory, new TestLogger());
-
-            return info.Where(t => t.Identity.Id.Equals(id, StringComparison.OrdinalIgnoreCase))
-                .Where(t => !Path.GetExtension(Path.GetFileNameWithoutExtension(t.Path)).Equals(".symbols"))
-                .OrderByDescending(p => p.LastWriteTimeUtc)
-                .First().Path;
+            FileUtility.Delete(destFileName);
+            File.Copy(sourceFileName, destFileName);
         }
 
         public void Dispose()
