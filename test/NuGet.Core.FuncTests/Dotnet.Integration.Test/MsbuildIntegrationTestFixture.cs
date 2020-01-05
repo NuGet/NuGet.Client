@@ -23,6 +23,7 @@ namespace Dotnet.Integration.Test
     public class MsbuildIntegrationTestFixture : IDisposable
     {
         private readonly TestDirectory _cliDirectory;
+        private readonly TestDirectory _templateDirectory;
         private readonly string _dotnetCli = DotnetCliUtil.GetDotnetCli();
         internal readonly string TestDotnetCli;
         internal readonly string MsBuildSdksPath;
@@ -36,6 +37,7 @@ namespace Dotnet.Integration.Test
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(_cliDirectory, "sdk"))
                 .First(), "Sdks");
+            _templateDirectory = TestDirectory.Create();
 
             _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
             _processEnvVars.Add("UseSharedCompilation", "false");
@@ -45,21 +47,76 @@ namespace Dotnet.Integration.Test
 
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {
+            args = args.Trim();
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
             {
                 Directory.CreateDirectory(workingDirectory);
             }
- 
-            var result = CommandRunner.Run(TestDotnetCli,
-                workingDirectory,
-                $"new {args}",
-                waitForExit: true,
-                timeOutInMilliseconds: timeOut,
-                environmentVariables: _processEnvVars);
+            var templateDirectory = Path.Combine(_templateDirectory.Path, args);
 
-            Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
-            Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
+            if (Directory.Exists(templateDirectory))
+            {
+                CopyFromTemplate(projectName, args, workingDirectory, templateDirectory);
+            }
+            else
+            {
+                Directory.CreateDirectory(templateDirectory);
+
+                var result = CommandRunner.Run(TestDotnetCli,
+                    templateDirectory,
+                    $"new {args}",
+                    waitForExit: true,
+                    timeOutInMilliseconds: timeOut,
+                    environmentVariables: _processEnvVars);
+                // Delete the obj directory. It's a completely different scenario :)
+                Directory.Delete(Path.Combine(templateDirectory, "obj"), true);
+                CopyFromTemplate(projectName, args, workingDirectory, templateDirectory);
+                Assert.True(result.Item1 == 0, $"Creating project failed with following log information :\n {result.AllOutput}");
+                Assert.True(string.IsNullOrWhiteSpace(result.Item3), $"Creating project failed with following message in error stream :\n {result.AllOutput}");
+            }
+        }
+
+        private static void CopyFromTemplate(string projectName, string args, string workingDirectory, string templateDirectory)
+        {
+            DirectoryCopy(templateDirectory, workingDirectory);
+            File.Move(
+                Path.Combine(workingDirectory, args + ".csproj"),
+                Path.Combine(workingDirectory, projectName + ".csproj"));
+        }
+
+        private static void DirectoryCopy(string sourceDirName, string destDirName)
+        {
+            // Get the subdirectories for the specified directory.
+            var dir = new DirectoryInfo(sourceDirName);
+
+            if (!dir.Exists)
+            {
+                throw new DirectoryNotFoundException(
+                    "Source directory does not exist or could not be found: "
+                    + sourceDirName);
+            }
+
+            DirectoryInfo[] dirs = dir.GetDirectories();
+            // If the destination directory doesn't exist, create it.
+            if (!Directory.Exists(destDirName))
+            {
+                Directory.CreateDirectory(destDirName);
+            }
+
+            // Get the files in the directory and copy them to the new location.
+            FileInfo[] files = dir.GetFiles();
+            foreach (FileInfo file in files)
+            {
+                string temppath = Path.Combine(destDirName, file.Name);
+                file.CopyTo(temppath, false);
+            }
+
+            foreach (DirectoryInfo subdir in dirs)
+            {
+                string temppath = Path.Combine(destDirName, subdir.Name);
+                DirectoryCopy(subdir.FullName, temppath);
+            }
         }
 
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
@@ -332,6 +389,7 @@ namespace Dotnet.Integration.Test
             RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
             KillDotnetExe(TestDotnetCli);
             _cliDirectory.Dispose();
+            _templateDirectory.Dispose();
         }
 
         private static void KillDotnetExe(string pathToDotnetExe)
