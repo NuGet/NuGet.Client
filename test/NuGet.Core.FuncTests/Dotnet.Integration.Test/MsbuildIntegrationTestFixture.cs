@@ -79,44 +79,13 @@ namespace Dotnet.Integration.Test
 
         private static void CopyFromTemplate(string projectName, string args, string workingDirectory, string templateDirectory)
         {
-            DirectoryCopy(templateDirectory, workingDirectory);
+            foreach(var file in new DirectoryInfo(templateDirectory).GetFiles())
+            {
+                File.Copy(file.FullName, Path.Combine(workingDirectory, file.Name));
+            }
             File.Move(
                 Path.Combine(workingDirectory, args + ".csproj"),
                 Path.Combine(workingDirectory, projectName + ".csproj"));
-        }
-
-        private static void DirectoryCopy(string sourceDirName, string destDirName)
-        {
-            // Get the subdirectories for the specified directory.
-            var dir = new DirectoryInfo(sourceDirName);
-
-            if (!dir.Exists)
-            {
-                throw new DirectoryNotFoundException(
-                    "Source directory does not exist or could not be found: "
-                    + sourceDirName);
-            }
-
-            DirectoryInfo[] dirs = dir.GetDirectories();
-            // If the destination directory doesn't exist, create it.
-            if (!Directory.Exists(destDirName))
-            {
-                Directory.CreateDirectory(destDirName);
-            }
-
-            // Get the files in the directory and copy them to the new location.
-            FileInfo[] files = dir.GetFiles();
-            foreach (FileInfo file in files)
-            {
-                string temppath = Path.Combine(destDirName, file.Name);
-                file.CopyTo(temppath, false);
-            }
-
-            foreach (DirectoryInfo subdir in dirs)
-            {
-                string temppath = Path.Combine(destDirName, subdir.Name);
-                DirectoryCopy(subdir.FullName, temppath);
-            }
         }
 
         internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
