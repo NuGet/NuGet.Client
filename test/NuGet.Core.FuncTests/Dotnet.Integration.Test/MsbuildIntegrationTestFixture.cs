@@ -9,10 +9,7 @@ using System.Linq;
 using System.Threading;
 
 using NuGet.Common;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Packaging.PackageExtraction;
-using NuGet.Protocol;
 using NuGet.Test.Utility;
 using NuGet.XPlat.FuncTest;
 
@@ -31,18 +28,21 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
-            _cliDirectory = CopyLatestCliForPack();
-            TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
+            if (RuntimeEnvironmentHelper.IsWindows)
+            { 
+                _cliDirectory = CopyLatestCliForPack();
+                TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
 
-            MsBuildSdksPath = Path.Combine(Directory.GetDirectories
-                (Path.Combine(_cliDirectory, "sdk"))
-                .First(), "Sdks");
-            _templateDirectory = TestDirectory.Create();
+                MsBuildSdksPath = Path.Combine(Directory.GetDirectories
+                    (Path.Combine(_cliDirectory, "sdk"))
+                    .First(), "Sdks");
+                _templateDirectory = TestDirectory.Create();
 
-            _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
-            _processEnvVars.Add("UseSharedCompilation", "false");
-            _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
-            _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
+                _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
+                _processEnvVars.Add("UseSharedCompilation", "false");
+                _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+                _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
+            }
         }
 
         /// <summary>
@@ -359,10 +359,13 @@ namespace Dotnet.Integration.Test
 
         public void Dispose()
         {
-            RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
-            KillDotnetExe(TestDotnetCli);
-            _cliDirectory.Dispose();
-            _templateDirectory.Dispose();
+            if (RuntimeEnvironmentHelper.IsWindows)
+            { 
+                RunDotnet(Path.GetDirectoryName(TestDotnetCli), "build-server shutdown");
+                KillDotnetExe(TestDotnetCli);
+                _cliDirectory.Dispose();
+                _templateDirectory.Dispose();
+            }
         }
 
         private static void KillDotnetExe(string pathToDotnetExe)
