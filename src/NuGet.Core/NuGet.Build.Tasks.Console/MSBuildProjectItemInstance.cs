@@ -9,7 +9,7 @@ namespace NuGet.Build.Tasks.Console
     /// <summary>
     /// Represents an <see cref="MSBuildItemBase" /> implementation which wraps a <see cref="ProjectItemInstance" /> object.
     /// </summary>
-    internal class MSBuildProjectItemInstance : MSBuildItemBase
+    internal sealed class MSBuildProjectItemInstance : MSBuildItemBase
     {
         /// <summary>
         /// Gets the <see cref="ProjectItemInstance" /> being wrapped.

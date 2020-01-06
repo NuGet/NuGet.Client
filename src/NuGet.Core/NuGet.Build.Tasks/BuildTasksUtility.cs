@@ -283,10 +283,10 @@ namespace NuGet.Build.Tasks
         /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
-        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigPath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
             ProjectStyle projectStyle;
-            string packagesConfigPath = null;
+            string packagesConfigFilePath = null;
 
             // Allow a user to override by setting RestoreProjectStyle in the project.
             if (!string.IsNullOrWhiteSpace(restoreProjectStyle))
@@ -307,7 +307,7 @@ namespace NuGet.Build.Tasks
                 // If this is not a PackageReference project check if project.json or projectName.project.json exists.
                 projectStyle = ProjectStyle.ProjectJson;
             }
-            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName, out packagesConfigPath))
+            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName, out packagesConfigFilePath))
             {
                 // If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists
                 projectStyle = ProjectStyle.PackagesConfig;
@@ -320,7 +320,7 @@ namespace NuGet.Build.Tasks
 
             bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
 
-            return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigPath);
+            return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigFilePath);
         }
 
         /// <summary>

@@ -160,4 +160,10 @@
     <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
     <comment>0 - the version string that's not exact</comment>
   </data>
+  <data name="CreatedDependencyGraphSpec" xml:space="preserve">
+    <value>Created DependencyGraphSpec in {0:D2}ms.</value>
+  </data>
+  <data name="ProjectEvaluationSummary" xml:space="preserve">
+    <value>Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures).</value>
+  </data>
 </root>

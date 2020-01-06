@@ -107,7 +107,7 @@ namespace NuGet.Build.Tasks
             try
             {
                 using (var semaphore = new SemaphoreSlim(initialCount: 0, maxCount: 1))
-                using (var loggingQueue = new TaskLoggingQueue(this))
+                using (var loggingQueue = new TaskLoggingQueue(Log))
                 using (var process = new Process())
                 {
                     process.EnableRaisingEvents = true;
@@ -138,13 +138,19 @@ namespace NuGet.Build.Tasks
 
                         if (!process.HasExited)
                         {
-                            process.Kill();
+                            try
+                            {
+                                process.Kill();
+                            }
+                            catch (InvalidOperationException)
+                            {
+                                // The process may have exited, in this case ignore the exception
+                            }
                         }
                     }
                     catch (Exception e) when (
-                        e is TaskCanceledException
-                        || e is OperationCanceledException
-                        || (e is AggregateException aggregateException && aggregateException.InnerException is TaskCanceledException))
+                        e is OperationCanceledException
+                        || (e is AggregateException aggregateException && aggregateException.InnerException is OperationCanceledException))
                     {
                     }
                 }
@@ -229,7 +235,7 @@ namespace NuGet.Build.Tasks
                             msBuildGlobalProperties.AddRange(globalProperties);
                         }
                     }
-                    catch
+                    catch (Exception)
                     {
                         // Ignored
                     }

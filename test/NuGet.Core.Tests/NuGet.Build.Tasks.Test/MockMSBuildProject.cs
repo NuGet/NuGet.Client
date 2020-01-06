@@ -22,7 +22,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         public MockMSBuildProject(string fullPath)
-            : this(fullPath, null)
+            : this(fullPath, properties: null)
         {
         }
 
@@ -32,7 +32,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         public MockMSBuildProject(string fullPath, IDictionary<string, string> properties)
-            : this(fullPath, properties, null)
+            : this(fullPath, properties, items: null)
         {
         }
 

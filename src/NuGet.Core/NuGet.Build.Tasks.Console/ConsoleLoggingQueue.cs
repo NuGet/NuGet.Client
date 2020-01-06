@@ -27,16 +27,6 @@ namespace NuGet.Build.Tasks.Console
     internal class ConsoleLoggingQueue : LoggingQueue<ConsoleOutLogMessage>, IBuildEngine, ILogger
     {
         /// <summary>
-        /// Serialization settings for messages.  These should be set to be as fast as possible and not for friendly
-        /// display since no user will ever see them.
-        /// </summary>
-        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
-        {
-            DefaultValueHandling = DefaultValueHandling.Ignore,
-            NullValueHandling = NullValueHandling.Ignore,
-        };
-
-        /// <summary>
         ///
         /// </summary>
         private readonly Lazy<TaskLoggingHelper> _taskLoggingHelperLazy;
@@ -93,8 +83,6 @@ namespace NuGet.Build.Tasks.Console
             get => _verbosity;
             set
             {
-                _verbosity = value;
-
                 // Determine the minimum verbosity of messages
                 switch (value)
                 {
@@ -113,8 +101,10 @@ namespace NuGet.Build.Tasks.Console
                         break;
 
                     default:
-                        throw new ArgumentOutOfRangeException(nameof(value), value, null);
+                        throw new ArgumentOutOfRangeException(nameof(value));
                 }
+
+                _verbosity = value;
             }
         }
 
@@ -160,7 +150,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="message">The <see cref="ConsoleOutLogMessage" /> to log.</param>
         protected override void Process(ConsoleOutLogMessage message)
         {
-            System.Console.Out.WriteLine(JsonConvert.SerializeObject(message, SerializerSettings));
+            System.Console.Out.WriteLine(message.ToJson());
         }
 
         /// <summary>

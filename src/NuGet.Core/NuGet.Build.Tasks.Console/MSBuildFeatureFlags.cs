@@ -48,7 +48,7 @@ namespace NuGet.Build.Tasks.Console
         /// to be found by MSBuild (stuff like $(MSBuildExtensionsPath).
         /// More info here: https://github.com/microsoft/msbuild/blob/master/src/Shared/BuildEnvironmentHelper.cs#L125
         /// </remarks>
-        public static string MSBuildExePath
+        public static string MSBuildExeFilePath
         {
             get => Environment.GetEnvironmentVariable("MSBUILD_EXE_PATH");
             set => Environment.SetEnvironmentVariable("MSBUILD_EXE_PATH", value);

@@ -38,6 +38,6 @@ namespace NuGet.Build.Tasks.Console
             return string.Equals(x?.Identity, y?.Identity, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode(IMSBuildItem obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity.GetHashCode());
+        public int GetHashCode(IMSBuildItem obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity);
     }
 }

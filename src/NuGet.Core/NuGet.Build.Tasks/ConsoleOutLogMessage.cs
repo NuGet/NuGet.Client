@@ -3,6 +3,7 @@
 
 using System;
 using Microsoft.Build.Framework;
+using Newtonsoft.Json;
 
 namespace NuGet.Build.Tasks
 {
@@ -11,6 +12,16 @@ namespace NuGet.Build.Tasks
     /// </summary>
     internal sealed class ConsoleOutLogMessage
     {
+        /// <summary>
+        /// Serialization settings for messages.  These should be set to be as fast as possible and not for friendly
+        /// display since no user will ever see them.
+        /// </summary>
+        private static readonly JsonSerializerSettings SerializerSettings = new JsonSerializerSettings
+        {
+            DefaultValueHandling = DefaultValueHandling.Ignore,
+            NullValueHandling = NullValueHandling.Ignore,
+        };
+
         /// <inheritdoc cref="BuildMessageEventArgs.Code" />
         public string Code { get; set; }
 
@@ -43,7 +54,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         public ConsoleOutLogMessageType MessageType { get; set; }
 
-        /// <inheritdoc cref="BuildMessageEventArgs.ColumnNumber" />
+        /// <inheritdoc cref="BuildMessageEventArgs.ProjectFile" />
         public string ProjectFile { get; set; }
 
         /// <inheritdoc cref="BuildEventArgs.SenderName" />
@@ -51,6 +62,11 @@ namespace NuGet.Build.Tasks
 
         /// <inheritdoc cref="BuildMessageEventArgs.Subcategory" />
         public string Subcategory { get; set; }
+
+        public string ToJson()
+        {
+            return JsonConvert.SerializeObject(this, SerializerSettings);
+        }
 
         /// <summary>
         /// Implicitly converts a <see cref="BuildMessageEventArgs" /> object to a <see cref="ConsoleOutLogMessage" /> object.

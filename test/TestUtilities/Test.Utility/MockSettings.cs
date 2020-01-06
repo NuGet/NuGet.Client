@@ -29,8 +29,6 @@ namespace Test.Utility
 
         public void AddOrUpdate(string sectionName, SettingItem item)
         {
-            OnSettingsChanged();
-
             throw new NotImplementedException();
         }
 
@@ -51,8 +49,6 @@ namespace Test.Utility
 
         public void Remove(string sectionName, SettingItem item)
         {
-            OnSettingsChanged();
-
             throw new NotImplementedException();
         }
 

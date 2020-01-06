@@ -22,10 +22,10 @@ namespace NuGet.Build.Tasks
         /// <summary>
         /// Initializes a new instance of the TaskLoggingHelperQueue class.
         /// </summary>
-        /// <param name="task">The <see cref="Task" /> to create a logging queue for.</param>
-        public TaskLoggingQueue(Task task)
+        /// <param name="taskLoggingHelper">The <see cref="Task" /> to create a logging queue for.</param>
+        public TaskLoggingQueue(TaskLoggingHelper taskLoggingHelper)
         {
-            _log = task?.Log ?? throw new ArgumentNullException(nameof(task));
+            _log = taskLoggingHelper ?? throw new ArgumentNullException(nameof(taskLoggingHelper));
         }
 
         /// <summary>
@@ -49,10 +49,10 @@ namespace NuGet.Build.Tasks
                 {
                     consoleOutLogMessage = JsonConvert.DeserializeObject<ConsoleOutLogMessage>(message);
                 }
-                catch
+                catch (Exception)
                 {
                     // Log the raw message if it couldn't be deserialized
-                    _log.LogMessage(null, null, null, 0, 0, 0, 0, message, null, null, MessageImportance.Low);
+                    _log.LogMessageFromText(message, MessageImportance.Low);
 
                     return;
                 }

@@ -90,14 +90,14 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Restores the specified projects.
         /// </summary>
-        /// <param name="entryProjectPath">The main project to restore.  This can be a project for a Visual Studio© Solution File.</param>
+        /// <param name="entryProjectFilePath">The main project to restore.  This can be a project for a Visual Studio© Solution File.</param>
         /// <param name="globalProperties">The global properties to use when evaluation MSBuild projects.</param>
         /// <param name="options">The set of options to use when restoring.  These options come from the main MSBuild process and control how restore functions.</param>
         /// <returns><code>true</code> if the restore succeeded, otherwise <code>false</code>.</returns>
         [MethodImpl(MethodImplOptions.NoInlining)]
-        public async Task<bool> RestoreAsync(string entryProjectPath, Dictionary<string, string> globalProperties, Dictionary<string, string> options)
+        public async Task<bool> RestoreAsync(string entryProjectFilePath, IDictionary<string, string> globalProperties, IReadOnlyDictionary<string, string> options)
         {
-            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectPath, globalProperties);
+            var dependencyGraphSpec = GetDependencyGraphSpec(entryProjectFilePath, globalProperties);
 
             // If the dependency graph spec is null, something went wrong evaluating the projects, so return false
             if (dependencyGraphSpec == null)
@@ -459,7 +459,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="name">The name of the option.</param>
         /// <param name="options">A <see cref="Dictionary{String,String}" />containing options.</param>
         /// <returns><code>true</code> if the specified option is true, otherwise <code>false</code>.</returns>
-        internal static bool IsOptionTrue(string name, Dictionary<string, string> options)
+        internal static bool IsOptionTrue(string name, IReadOnlyDictionary<string, string> options)
         {
             return options.TryGetValue(name, out string value) && StringComparer.OrdinalIgnoreCase.Equals(value, bool.TrueString);
         }
@@ -486,9 +486,9 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the list of project graph entry points.  If the entry project is a solution, this method returns all of the projects it contains.
         /// </summary>
         /// <param name="entryProjectPath">The full path to the main project or solution file.</param>
-        /// <param name="globalProperties">A <see cref="Dictionary{String,String}" /> representing the global properties for the project.</param>
+        /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> representing the global properties for the project.</param>
         /// <returns></returns>
-        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, Dictionary<string, string> globalProperties)
+        private static List<ProjectGraphEntryPoint> GetProjectGraphEntryPoints(string entryProjectPath, IDictionary<string, string> globalProperties)
         {
             // If the project's extension is .sln, parse it as a Visual Studio solution and return the projects it contains
             if (string.Equals(Path.GetExtension(entryProjectPath), ".sln", StringComparison.OrdinalIgnoreCase))
@@ -548,9 +548,9 @@ namespace NuGet.Build.Tasks.Console
         /// Gets a <see cref="DependencyGraphSpec" /> for the specified project.
         /// </summary>
         /// <param name="entryProjectPath">The full path to a project or Visual Studio Solution File.</param>
-        /// <param name="globalProperties">A <see cref="Dictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
+        /// <param name="globalProperties">An <see cref="IDictionary{String,String}" /> containing the global properties to use when evaluation MSBuild projects.</param>
         /// <returns>A <see cref="DependencyGraphSpec" /> for the specified project if they could be loaded, otherwise <code>null</code>.</returns>
-        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, Dictionary<string, string> globalProperties)
+        private DependencyGraphSpec GetDependencyGraphSpec(string entryProjectPath, IDictionary<string, string> globalProperties)
         {
             try
             {
@@ -581,7 +581,7 @@ namespace NuGet.Build.Tasks.Console
 
                         if (packageSpec != null)
                         {
-                            // TODO: Make the backing collection Concurrent in future PR
+                            // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
                             lock (dependencyGraphSpec)
                             {
                                 dependencyGraphSpec.AddProject(packageSpec);
@@ -613,9 +613,8 @@ namespace NuGet.Build.Tasks.Console
                 }
 
                 sw.Stop();
-
-                // TODO: Localized resource
-                MSBuildLogger.LogDebug(string.Format(CultureInfo.CurrentCulture, "Created DependencyGraphSpec in {0:D2}ms.", sw.ElapsedMilliseconds));
+                
+                MSBuildLogger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.CreatedDependencyGraphSpec, sw.ElapsedMilliseconds));
 
                 return dependencyGraphSpec;
             }
@@ -702,7 +701,7 @@ namespace NuGet.Build.Tasks.Console
             {
                 restoreMetadata = new PackagesConfigProjectRestoreMetadata
                 {
-                    PackagesConfigPath = projectStyleResult.PackagesConfigPath,
+                    PackagesConfigPath = projectStyleResult.PackagesConfigFilePath,
                     RepositoryPath = GetRepositoryPath(project, settings)
                 };
             }
@@ -869,8 +868,7 @@ namespace NuGet.Build.Tasks.Console
 
                 sw.Stop();
 
-                // TODO: Localized resource
-                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, "Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures).", projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissions.Count));
+                MSBuildLogger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.ProjectEvaluationSummary, projectGraph.ProjectNodes.Count, sw.ElapsedMilliseconds, buildCount, failedBuildSubmissions.Count));
 
                 if (failedBuildSubmissions.Any())
                 {

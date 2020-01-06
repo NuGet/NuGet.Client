@@ -41,7 +41,9 @@ namespace NuGet.Build.Tasks.Console
                 System.Console.WriteLine("Waiting for debugger to attach to Process ID: {Process.GetCurrentProcess().Id}");
 
                 while (!Debugger.IsAttached)
+                {
                     System.Threading.Thread.Sleep(100);
+                }
 
                 Debugger.Break();
 #else
@@ -56,7 +58,7 @@ namespace NuGet.Build.Tasks.Console
             }
 
             // Enable MSBuild feature flags
-            MSBuildFeatureFlags.MSBuildExePath = arguments.MSBuildExePath.FullName;
+            MSBuildFeatureFlags.MSBuildExeFilePath = arguments.MSBuildExeFilePath.FullName;
             MSBuildFeatureFlags.EnableCacheFileEnumerations = true;
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
@@ -64,7 +66,7 @@ namespace NuGet.Build.Tasks.Console
 #if DEBUG
             // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
             // handler is used in order to locate the MSBuild assemblies
-            string msbuildDirectory = arguments.MSBuildExePath.DirectoryName;
+            string msbuildDirectory = arguments.MSBuildExeFilePath.DirectoryName;
 
             AppDomain.CurrentDomain.AssemblyResolve += (sender, resolveArgs) =>
             {
@@ -78,7 +80,7 @@ namespace NuGet.Build.Tasks.Console
 
             using (var dependencyGraphSpecGenerator = new DependencyGraphSpecGenerator(debug: debug))
             {
-                return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectPath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
+                return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
             }
         }
 
@@ -118,7 +120,7 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="args">A <see cref="T:string[]" /> containing the process command-line arguments.</param>
         /// <param name="arguments">A <see cref="T:Tuple&lt;Dictionary&lt;string, string&gt;, FileInfo, string, Dictionary&lt;string, string&gt;&gt;" /> that receives the parsed command-line arguments.</param>
         /// <returns><code>true</code> if the arguments were successfully parsed, otherwise <code>false</code>.</returns>
-        private static bool TryParseArguments(string[] args, out (Dictionary<string, string> Options, FileInfo MSBuildExePath, string EntryProjectPath, Dictionary<string, string> MSBuildGlobalProperties) arguments)
+        private static bool TryParseArguments(string[] args, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments)
         {
             if (args.Length != 4)
             {
@@ -130,16 +132,16 @@ namespace NuGet.Build.Tasks.Console
             try
             {
                 var options = ParseSemicolonDelimitedListOfKeyValuePairs(args[0]);
-                var msbuildExePath = new FileInfo(args[1]);
-                var entryProjectPath = args[2];
+                var msbuildExeFilePath = new FileInfo(args[1]);
+                var entryProjectFilePath = args[2];
                 var globalProperties = ParseSemicolonDelimitedListOfKeyValuePairs(args[3]);
 
-                arguments = (options, msbuildExePath, entryProjectPath, globalProperties);
+                arguments = (options, msbuildExeFilePath, entryProjectFilePath, globalProperties);
 
                 // Command-line is correct if no exceptions were thrown and the MSBuild path exists and an entry project were specified
-                return msbuildExePath.Exists && !string.IsNullOrWhiteSpace(entryProjectPath);
+                return msbuildExeFilePath.Exists && !string.IsNullOrWhiteSpace(entryProjectFilePath);
             }
-            catch
+            catch (Exception)
             {
                 arguments = (null, null, null, null);
 
