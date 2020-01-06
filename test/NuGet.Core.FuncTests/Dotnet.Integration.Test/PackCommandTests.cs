@@ -903,7 +903,7 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 // Act
                 msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
-                msbuildFixture.BuildProject(workingDirectory, projectName, "");
+                msbuildFixture.BuildProject(workingDirectory, projectName, "/restore");
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.nuspec"), nuspecFileContent);
                 File.WriteAllText(Path.Combine(workingDirectory, "abc.txt"), "sample text");
 
