@@ -45,6 +45,10 @@ namespace Dotnet.Integration.Test
             _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
         }
 
+        /// <summary>
+        /// Creates a new dotnet project of the specified type. Note that restore/build are not run when this command is invoked. 
+        /// That is because the project generation is cached.
+        /// </summary>
         internal void CreateDotnetNewProject(string solutionRoot, string projectName, string args = "console", int timeOut = 60000)
         {
             args = args.Trim();
