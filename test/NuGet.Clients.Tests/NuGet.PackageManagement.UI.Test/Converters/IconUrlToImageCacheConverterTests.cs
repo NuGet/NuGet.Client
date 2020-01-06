@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -38,7 +39,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl },
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -54,7 +55,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl },
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -70,7 +71,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl },
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -88,7 +89,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl },
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -98,7 +99,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [WpfFact]
+        [Fact(Skip = "Runs only on Windows Desktop with WPF support")]
         public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
         {
             using (var testDir = TestDirectory.Create())
@@ -152,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { uri },
+                    new object[] { uri, DependencyProperty.UnsetValue },
                     typeof(ImageSource),
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
