@@ -114,8 +114,9 @@
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
       <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
-      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\16.0\bin\release\net472\*\NuGet.Commands.resources.dll" />
+      <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\*.resources.dll" />
     </ItemGroup>
+    <Message Text="LocalizedArtifacts : @(LocalizedArtifacts, '%0a')" Importance="High"/>
     <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
     <PropertyGroup>
       <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
