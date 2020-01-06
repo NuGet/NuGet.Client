@@ -235,7 +235,14 @@ phases:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:AfterBuild"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
+
+  - task: MSBuild@1
+    displayName: "Build Final NuGet.exe (via ILMerge)"
+    inputs:
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:ILMergeNuGetExe"
 
   - task: MSBuild@1
     displayName: "Sign Assemblies"

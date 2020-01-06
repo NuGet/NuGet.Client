@@ -109,7 +109,8 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+  <!-- This will be called from CI build -->
+  <Target Name="ILMergeNuGetExe" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
       <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
