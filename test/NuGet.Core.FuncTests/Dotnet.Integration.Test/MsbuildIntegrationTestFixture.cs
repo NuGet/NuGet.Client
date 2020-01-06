@@ -28,21 +28,19 @@ namespace Dotnet.Integration.Test
 
         public MsbuildIntegrationTestFixture()
         {
-            if (RuntimeEnvironmentHelper.IsWindows)
-            { 
-                _cliDirectory = CopyLatestCliForPack();
-                TestDotnetCli = Path.Combine(_cliDirectory, "dotnet.exe");
+            _cliDirectory = CopyLatestCliForPack();
+            var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
+            TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
-                MsBuildSdksPath = Path.Combine(Directory.GetDirectories
-                    (Path.Combine(_cliDirectory, "sdk"))
-                    .First(), "Sdks");
-                _templateDirectory = TestDirectory.Create();
+            MsBuildSdksPath = Path.Combine(Directory.GetDirectories
+                (Path.Combine(_cliDirectory, "sdk"))
+                .First(), "Sdks");
+            _templateDirectory = TestDirectory.Create();
 
-                _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
-                _processEnvVars.Add("UseSharedCompilation", "false");
-                _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
-                _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
-            }
+            _processEnvVars.Add("MSBuildSDKsPath", MsBuildSdksPath);
+            _processEnvVars.Add("UseSharedCompilation", "false");
+            _processEnvVars.Add("DOTNET_MULTILEVEL_LOOKUP", "0");
+            _processEnvVars.Add("MSBUILDDISABLENODEREUSE ", "true");
         }
 
         /// <summary>
