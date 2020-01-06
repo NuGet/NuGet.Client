@@ -45,11 +45,22 @@
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
+  </PropertyGroup>
+
+  <!-- Dependency versions -->
+  <PropertyGroup>
     <VSFrameworkVersion>16.4.29519.181</VSFrameworkVersion>
     <VSServicesVersion>16.153.0</VSServicesVersion>
     <VSComponentsVersion>16.4.280</VSComponentsVersion>
     <VSThreadingVersion>16.4.43</VSThreadingVersion>
     <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
+    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonVersionCore>
+    <NewtonsoftJsonVersionCore Condition="$(NewtonsoftJsonPackageVersion) != ''">$(NewtonsoftJsonPackageVersion)</NewtonsoftJsonVersionCore>
+    <XunitVersion>2.4.1</XunitVersion>
+    <TestSDKVersion>15.5.0</TestSDKVersion>
+    <MoqVersion>4.12.0</MoqVersion>
+    <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
+    <MicrosoftBuildPackageVersion Condition="$(MicrosoftBuildPackageVersion) == ''">16.4.0</MicrosoftBuildPackageVersion>
   </PropertyGroup>
 
   <!-- Defaults -->
