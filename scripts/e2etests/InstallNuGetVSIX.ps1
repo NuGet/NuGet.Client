@@ -28,6 +28,8 @@ $VSIXPath = Join-Path $FuncTestRoot 'NuGet.Tools.vsix'
 
 Copy-Item $VSIXSrcPath $VSIXPath
 
+# If a previous install was 
+
 # Because we are upgrading an installed system component VSIX, we need to downgrade first.
 $numberOfTries = 0
 $success = $false

@@ -207,6 +207,26 @@ function Update-Configuration(
     Start-Process -FilePath $vsFilePath -ArgumentList '/updateConfiguration' -Wait
 }
 
+function ResumeVSInstall {
+    param(
+        [Parameter(Mandatory = $true)]
+        [int]$ProcessExitTimeoutInSeconds
+    )
+
+    $VSInstallerPath = "${env:ProgramFiles(86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+    $VSFolderPath = GetVSFolderPath 16.0
+
+    Write-Host 'Resuming any incomplete install'
+    $args = "resume --installerPath ""$VSFolderPath"" -q"
+    Write-Host "$VSInstallerPath $args"
+    $p = Start-Process "$VSInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
+
+    if ($p.ExitCode -ne 0) {
+        Write-Error "Error resuming VS installer"
+        return $false
+    }
+}
+
 function UninstallVSIX {
     param(
         [Parameter(Mandatory = $true)]
@@ -259,11 +279,20 @@ function DowngradeVSIX {
     $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
 
     if ($p.ExitCode -ne 0) {
+        if ($p.ExitCode == -2146233079)
+        {
+            Write-Host "Previous VSIX install appears not to have completed. Resuming VS install."
+            if (ResumeVSInstall) {
+                Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
+                $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
+            }
+        }
+
         if ($p.ExitCode -eq 2001) {
             Write-Host "This VS2017 version does not support downgrade. Moving on to installing the VSIX! Exit code: $($p.ExitCode)" 
             return $true
         }
-        else {
+        elseif ($p.ExitCode -ne 0) {
             Write-Error "Error downgrading the VSIX! Exit code: $($p.ExitCode)"
             return $false
         }
