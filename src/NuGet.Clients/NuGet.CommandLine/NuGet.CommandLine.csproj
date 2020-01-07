@@ -116,12 +116,13 @@
       <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
       <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\$(NETFXTargetFramework)\**\*.resources.dll" />
     </ItemGroup>
-    <Message Text="LocalizedArtifacts : @(LocalizedArtifacts, '%0a')" Importance="High"/>
     <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
+    <Error Text="Satellite assemblies count ILMerged into NuGet.exe should be 13, but was: @(LocalizedArtifacts-&gt;Count())" Condition="'@(LocalizedArtifacts-&gt;Count())' != '13'" />
     <PropertyGroup>
       <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
       <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
       <IlmergeCommand Condition="Exists($(MS_PFX_PATH))">$(IlmergeCommand) /delaysign /keyfile:$(MS_PFX_PATH)</IlmergeCommand>
+      <!-- LocalizedArtifacts need fullpath, since there will be duplicate file names -->
       <IlmergeCommand>$(IlmergeCommand) $(PathToBuiltNuGetExe) @(BuildArtifacts->'%(filename)%(extension)', ' ') @(LocalizedArtifacts->'%(fullpath)', ' ')</IlmergeCommand>
     </PropertyGroup>
     <MakeDir Directories="$(ArtifactsDirectory)$(VsixOutputDirName)" />
