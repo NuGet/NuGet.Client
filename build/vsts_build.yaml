@@ -242,7 +242,7 @@ phases:
       solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:ILMergeNuGetExe"
+      msbuildArguments: "/t:ILMergeNuGetExe /p:LocalizedArtifactCount=13"
 
   - task: MSBuild@1
     displayName: "Sign Assemblies"

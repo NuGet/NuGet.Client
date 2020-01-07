@@ -109,15 +109,20 @@
     </EmbeddedResource>
   </ItemGroup>
 
-  <!-- This will be called from CI build -->
-  <Target Name="ILMergeNuGetExe" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+  <!-- This will also be called from CI build, after assemblies are localized  -->
+  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true'">
+    <PropertyGroup>
+      <!-- when done after build, no localizedartifacts are built yet -->
+      <LocalizedArtifactCount Condition="'$(LocalizedArtifactCount)' == ''">0</LocalizedArtifactCount>
+    </PropertyGroup>
     <ItemGroup>
       <BuildArtifacts Include="$(OutputPath)\*.dll" Exclude="@(MergeExclude)" />
       <!-- NuGet.exe needs all NuGet.Commands.resources.dll merged in -->
       <LocalizedArtifacts Include="$(ArtifactsDirectory)\NuGet.Commands\**\$(NETFXTargetFramework)\**\*.resources.dll" />
     </ItemGroup>
     <Error Text="Build dependencies are inconsistent with mergeinclude specified in ilmerge.props" Condition="'@(BuildArtifacts-&gt;Count())' != '@(MergeInclude-&gt;Count())'" />
-    <Error Text="Satellite assemblies count ILMerged into NuGet.exe should be 13, but was: @(LocalizedArtifacts-&gt;Count())" Condition="'@(LocalizedArtifacts-&gt;Count())' != '13'" />
+    <Error Text="Satellite assemblies count ILMerged into NuGet.exe should be $(LocalizedArtifactCount), but was: @(LocalizedArtifacts-&gt;Count())" 
+           Condition="'@(LocalizedArtifacts-&gt;Count())' != '$(LocalizedArtifactCount)'" />
     <PropertyGroup>
       <PathToBuiltNuGetExe>$(OutputPath)NuGet.exe</PathToBuiltNuGetExe>
       <IlmergeCommand>$(ILMergeExePath) /lib:$(OutputPath) /out:$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe @(MergeAllowDup -> '/allowdup:%(Identity)', ' ') /log:$(OutputPath)IlMergeLog.txt</IlmergeCommand>
