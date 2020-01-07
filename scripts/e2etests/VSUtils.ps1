@@ -225,6 +225,9 @@ function ResumeVSInstall {
         Write-Error "Error resuming VS installer"
         return $false
     }
+    else {
+        return $true
+    }
 }
 
 function UninstallVSIX {
@@ -279,7 +282,7 @@ function DowngradeVSIX {
     $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
 
     if ($p.ExitCode -ne 0) {
-        if ($p.ExitCode == -2146233079)
+        if ($p.ExitCode -eq -2146233079)
         {
             Write-Host "Previous VSIX install appears not to have completed. Resuming VS install."
             if (ResumeVSInstall) {
