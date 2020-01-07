@@ -63,20 +63,22 @@ namespace NuGet.Build.Tasks.Console
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
 
-#if DEBUG
-            // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
-            // handler is used in order to locate the MSBuild assemblies
-            string msbuildDirectory = arguments.MSBuildExeFilePath.DirectoryName;
-
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, resolveArgs) =>
+            // Only wire up an AssemblyResolve event handler if being debugged.
+            if (IsDebug())
             {
-                var assemblyName = new AssemblyName(resolveArgs.Name);
+                // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
+                // handler is used in order to locate the MSBuild assemblies
+                string msbuildDirectory = arguments.MSBuildExeFilePath.DirectoryName;
 
-                var path = Path.Combine(msbuildDirectory, $"{assemblyName.Name}.dll");
+                AppDomain.CurrentDomain.AssemblyResolve += (sender, resolveArgs) =>
+                {
+                    var assemblyName = new AssemblyName(resolveArgs.Name);
 
-                return File.Exists(path) ? Assembly.LoadFrom(path) : null;
-            };
-#endif
+                    var path = Path.Combine(msbuildDirectory, $"{assemblyName.Name}.dll");
+
+                    return File.Exists(path) ? Assembly.LoadFrom(path) : null;
+                };
+            }
 
             using (var dependencyGraphSpecGenerator = new DependencyGraphSpecGenerator(debug: debug))
             {

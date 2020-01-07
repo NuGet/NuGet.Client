@@ -118,10 +118,6 @@
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks.Console\NuGet.Build.Tasks.Console.csproj">
       <Project>{3ed13630-90eb-420e-8083-0959b2955c6e}</Project>
       <Name>NuGet.Build.Tasks.Console</Name>
-      <Ngen>True</Ngen>
-      <NgenApplication>$(NgenApplicationDefault)</NgenApplication>
-      <NgenArchitecture>X86</NgenArchitecture>
-      <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj">
       <Project>{98bee375-a5a0-4fc2-9b7a-25db41c8045d}</Project>

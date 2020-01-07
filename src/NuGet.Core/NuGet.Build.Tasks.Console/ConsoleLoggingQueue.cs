@@ -26,9 +26,6 @@ namespace NuGet.Build.Tasks.Console
     /// This class implements <see cref="ILogger" /> so that it can be passed to MSBuild APIs that require an ILogger to log messages.</remarks>
     internal class ConsoleLoggingQueue : LoggingQueue<ConsoleOutLogMessage>, IBuildEngine, ILogger
     {
-        /// <summary>
-        ///
-        /// </summary>
         private readonly Lazy<TaskLoggingHelper> _taskLoggingHelperLazy;
 
         /// <summary>
