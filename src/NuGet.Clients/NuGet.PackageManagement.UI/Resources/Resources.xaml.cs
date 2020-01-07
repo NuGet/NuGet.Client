@@ -19,7 +19,7 @@ namespace NuGet.PackageManagement.UI
             var image = sender as Image;
 
             e.Handled = true; // don't repropagate the event
-            BindingExpression binding = BindingOperations.GetBindingExpression(image, Image.SourceProperty);
+            MultiBindingExpression binding = BindingOperations.GetMultiBindingExpression(image, Image.SourceProperty);
             if (binding != null && binding.Status != BindingStatus.Detached)
             {
                 binding.UpdateTarget();
