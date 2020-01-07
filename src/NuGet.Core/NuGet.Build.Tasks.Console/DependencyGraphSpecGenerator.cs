@@ -32,7 +32,7 @@ using ILogger = Microsoft.Build.Framework.ILogger;
 
 namespace NuGet.Build.Tasks.Console
 {
-    internal class DependencyGraphSpecGenerator : IDisposable
+    internal sealed class DependencyGraphSpecGenerator : IDisposable
     {
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
@@ -56,7 +56,6 @@ namespace NuGet.Build.Tasks.Console
         {
             Debug = debug;
 
-            // TODO: Pass verbosity from main process
             _loggingQueueLazy = new Lazy<ConsoleLoggingQueue>(() => new ConsoleLoggingQueue(LoggerVerbosity.Normal));
             _msBuildLoggerLazy = new Lazy<MSBuildLogger>(() => new MSBuildLogger(LoggingQueue.TaskLoggingHelper));
         }
@@ -64,17 +63,17 @@ namespace NuGet.Build.Tasks.Console
         /// <summary>
         /// Gets or sets a value indicating if this application is being debugged.
         /// </summary>
-        public bool Debug { get; set; }
+        public bool Debug { get; }
 
         /// <summary>
         /// Gets a <see cref="ConsoleLoggingQueue" /> object to be used for logging.
         /// </summary>
-        protected ConsoleLoggingQueue LoggingQueue => _loggingQueueLazy.Value;
+        private ConsoleLoggingQueue LoggingQueue => _loggingQueueLazy.Value;
 
         /// <summary>
         /// Gets a <see cref="MSBuildLogger" /> object to be used for logging.
         /// </summary>
-        protected MSBuildLogger MSBuildLogger => _msBuildLoggerLazy.Value;
+        private MSBuildLogger MSBuildLogger => _msBuildLoggerLazy.Value;
 
         public void Dispose()
         {
@@ -613,7 +612,7 @@ namespace NuGet.Build.Tasks.Console
                 }
 
                 sw.Stop();
-                
+
                 MSBuildLogger.LogDebug(string.Format(CultureInfo.CurrentCulture, Strings.CreatedDependencyGraphSpec, sw.ElapsedMilliseconds));
 
                 return dependencyGraphSpec;
