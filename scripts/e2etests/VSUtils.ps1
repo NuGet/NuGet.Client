@@ -285,7 +285,8 @@ function DowngradeVSIX {
         if ($p.ExitCode -eq -2146233079)
         {
             Write-Host "Previous VSIX install appears not to have completed. Resuming VS install."
-            if ( (ResumeVSInstall) -eq $true) {
+            $resumeResult = ResumeVSInstall
+            if ( $resumeResult -eq $true) {
                 Write-Host "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
                 $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList "/q /a /d:$vsixID"
             }
