@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.UI
             bool acceptedLicense = true;
 
             List<string> removedPackages = null;
-            List<Tuple<string, string>> existingPackages = new List<Tuple<string, string>>();
+            HashSet<Tuple<string, string>> existingPackages = new HashSet<Tuple<string, string>>();
             List<Tuple<string,string>> addedPackages = null;
             List<Tuple<string,string>> updatedPackagesOld = null;
             List<Tuple<string,string>> updatedPackagesNew = null;
@@ -521,7 +521,7 @@ namespace NuGet.PackageManagement.UI
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
-            List<Tuple<string, string>> existingPackages,
+            HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
