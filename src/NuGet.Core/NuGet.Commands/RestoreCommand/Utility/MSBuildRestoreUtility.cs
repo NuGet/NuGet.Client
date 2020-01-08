@@ -345,6 +345,11 @@ namespace NuGet.Commands
             }
         }
 
+        public static void NormalizePathCasings(Dictionary<string, string> paths, DependencyGraphSpec graphSpec)
+        {
+            NormalizePathCasings((IDictionary<string, string>) paths, graphSpec);
+        }
+
         /// <summary>
         /// Change all project paths to the same casing.
         /// </summary>
