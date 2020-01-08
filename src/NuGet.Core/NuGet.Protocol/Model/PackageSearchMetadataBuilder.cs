@@ -104,8 +104,10 @@ namespace NuGet.Protocol.Core.Types
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
                 LocalPackageInfo = _metadata is LocalPackageSearchMetadata
                         ? (_metadata as LocalPackageSearchMetadata).LocalPackageInfo
+                        : _metadata is ClonedPackageSearchMetadata
+                        ? (_metadata as ClonedPackageSearchMetadata).LocalPackageInfo
                         : null
-            };
+        };
 
             return clonedMetadata;
         }
