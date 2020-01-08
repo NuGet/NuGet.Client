@@ -213,7 +213,11 @@ function ResumeVSInstall {
         [int]$ProcessExitTimeoutInSeconds
     )
 
-    $VSInstallerPath = "${env:ProgramFiles(86)}\Microsoft Visual Studio\Installer\vs_installer.exe"
+    $ProgramFilesPath = ${env:ProgramFiles}
+    if (Test-Path ${env:ProgramFiles(x86)}) {
+        $ProgramFilesPath = ${env:ProgramFiles(x86)}
+    }
+    $VSInstallerPath = "$ProgramFilesPath\Microsoft Visual Studio\Installer\vs_installer.exe"
     $VSFolderPath = GetVSFolderPath 16.0
 
     Write-Host 'Resuming any incomplete install'
