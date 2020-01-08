@@ -20,10 +20,10 @@ using Xunit;
 
 namespace NuGet.Build.Tasks.Test
 {
-    public class DependencyGraphSpecGeneratorTests
+    public class MSBuildStaticGraphRestoreTests
     {
         [Fact]
-        public void DependencyGraphSpecGenerator_GetFrameworkReferences()
+        public void GetFrameworkReferences_WhenDuplicatesExist_DuplicatesIgnored()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -60,14 +60,14 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("net45", new[] { "net45" })]
         [InlineData("net40;net45", new[] { "net40", "net45" })]
         [InlineData("net40;net45;netstandard2.0", new[] { "net40", "net45", "netstandard2.0" })]
-        public void DependencyGraphSpecGenerator_GetOriginalTargetFrameworks_WhenTargetFramworksNotSpecified(string targetFrameworks, string[] expected)
+        public void GetOriginalTargetFrameworks_WhenTargetFrameworksNotSpecified_HasCorrectTargetFramework(string targetFrameworks, string[] expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
                 ["TargetFrameworks"] = null
             });
 
-            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, targetFrameworks.Split(';').Select(i => NuGetFramework.Parse(i)).ToList());
+            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, targetFrameworks.Split(';').Select(NuGetFramework.Parse).ToList());
 
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -76,7 +76,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("net45", new[] { "net45" })]
         [InlineData("net40;net45", new[] { "net40", "net45" })]
         [InlineData("net40;net45 ; netstandard2.0 ", new[] { "net40", "net45", "netstandard2.0" })]
-        public void DependencyGraphSpecGenerator_GetOriginalTargetFrameworks_WhenTargetFramworksSpecified(string targetFrameworks, string[] expected)
+        public void GetOriginalTargetFrameworks_WhenTargetFramworksSpecified_HasCorrectTargetFramework(string targetFrameworks, string[] expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -89,7 +89,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetPackageDownloads()
+        public void GetPackageDownloads_WhenDuplicatesExist_DuplicatesIgnored()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -122,7 +122,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("(1.2.3,]")]
         [InlineData("1.*")]
         [InlineData("[1.2.3];4.5.6", "4.5.6")]
-        public void DependencyGraphSpecGenerator_GetPackageDownloads_ThrowsWhenNotExactVersion(string version, string expected = null)
+        public void GetPackageDownloads_WhenNotExactVersion_ThrowsException(string version, string expected = null)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -147,7 +147,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetPackageReferences()
+        public void GetPackageReferences_WhenDuplicatesOrMetadataSpecified_DuplicatesIgnoredAndMetadataReadCorrectly()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -226,7 +226,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData(null, null, @".nuget\packages", @".nuget\packages")]
         [InlineData(null, "MyPackages", @".nuget\packages", "MyPackages")]
         [InlineData("Override", "MyPackages", @".nuget\packages", "Override")]
-        public void DependencyGraphSpecGenerator_GetPackagesPath(string packagesPathOverride, string packagesPath, string globalPackagesFolder, string expected)
+        public void GetPackagesPath_WhenPathOrOverrideSpecified_PathIsCorrect(string packagesPathOverride, string packagesPath, string globalPackagesFolder, string expected)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -259,7 +259,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData(null, null, "MyProject", "MyProject")]
         [InlineData(null, "", "MyProject", "MyProject")]
         [InlineData(null, null, null, null)]
-        public void DependencyGraphSpecGenerator_GetProjectName(string packageId, string assemblyName, string msbuildProjectName, string expected)
+        public void GetProjectName_WhenPackageIdOrAssemblyNameSpecified_CorretValueIsDetermined(string packageId, string assemblyName, string msbuildProjectName, string expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -274,7 +274,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetProjectReferences()
+        public void GetProjectReferences_WhenDuplicateExistsOrMetadataSpecified_DuplicatesIgnoredAndMetadataReadCorrectly()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -331,7 +331,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetProjectRestoreMetadataFrameworkInfos()
+        public void GetProjectRestoreMetadataFrameworkInfos_WhenProjectReferenceSpecified_CorrectTargetFrameworkDetected()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -399,7 +399,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetProjectTargetFrameworks_LegacyCsproj()
+        public void GetProjectTargetFrameworks_WhenLegacyCsproj_CorrectTargetFrameworkDetected()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -420,7 +420,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetProjectTargetFrameworks_MultipleTargetFrameworks()
+        public void GetProjectTargetFrameworks_WhenMultipleTargetFrameworks_CorrectTargetFrameworkDetected()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -455,7 +455,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetProjectTargetFrameworks_SingleTargetFramework()
+        public void GetProjectTargetFrameworks_WhenSingleTargetFramework_CorrectTargetFrameworkDetected()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -483,7 +483,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("1.2.3", "4.5.6", "1.2.3")]
         [InlineData(null, "4.5.6", "4.5.6")]
         [InlineData(null, null, "1.0.0")]
-        public void DependencyGraphSpecGenerator_GetProjectVersion(string packageVersion, string version, string expected)
+        public void GetProjectVersion_WhenPackageVersionOrVersionSpecified_CorrectVersionDetected(string packageVersion, string version, string expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -502,7 +502,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData(null, null, "expected/solution.sln", null, "expected/packages")]
         [InlineData(null, null, null, "expected/", "expected/")]
         [InlineData(null, null, "*Undefined*", "expected/", "expected/")]
-        public void DependencyGraphSpecGenerator_GetRepositoryPath(string repositoryPathOverride, string restoreRepositoryPath, string solutionPath, string repositoryPath, string expected)
+        public void GetRepositoryPath_WhenPathSolutionOrOverrideSpecified_CorrectPathDetected(string repositoryPathOverride, string restoreRepositoryPath, string solutionPath, string repositoryPath, string expected)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -539,7 +539,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData(@"custom\", null, @"custom\")]
         [InlineData(null, @"obj2\", @"obj2\")]
         [InlineData(null, @"obj3", "obj3")]
-        public void DependencyGraphSpecGenerator_GetRestoreOutputPath(string restoreOutputPath, string msbuildProjectExtensionsPath, string expected)
+        public void GetRestoreOutputPath_WhenOutputPathOrMSBuildProjectExtensionsPathSpecified_CorrectPathDetected(string restoreOutputPath, string msbuildProjectExtensionsPath, string expected)
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -558,7 +558,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetSources_WithPerTargetFrameworkSources()
+        public void GetSources_WhenPerTargetFrameworkSources_CorrectSourcesDetected()
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -598,7 +598,33 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_GetSources_WithRestoreSources()
+        public void GetSources_WhenRestoreSourcesAndRestoreSourcesOverrideSpecified_CorrectSourcesDetected()
+        {
+            var project = new MockMSBuildProject(new Dictionary<string, string>
+            {
+                ["RestoreSources"] = "https://source1;https://source2",
+                ["RestoreSourcesOverride"] = "https://source3"
+            });
+
+            var settings = new MockSettings
+            {
+                Sections = new List<SettingSection>
+                {
+                    new MockSettingSection(ConfigurationConstants.PackageSources,
+                        new AddItem("source4", "https://source4"))
+                }
+            };
+
+            var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
+
+            actual.ShouldBeEquivalentTo(new[]
+            {
+                new PackageSource("https://source3"),
+            });
+        }
+
+        [Fact]
+        public void GetSources_WhenRestoreSourcesSpecified_CorrectSourcesDetected()
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -624,32 +650,6 @@ namespace NuGet.Build.Tasks.Test
             });
         }
 
-        [Fact]
-        public void DependencyGraphSpecGenerator_GetSources_WithRestoreSourcesAndRestoreSourcesOverride()
-        {
-            var project = new MockMSBuildProject(new Dictionary<string, string>
-            {
-                ["RestoreSources"] = "https://source1;https://source2",
-                ["RestoreSourcesOverride"] = "https://source3"
-            });
-
-            var settings = new MockSettings
-            {
-                Sections = new List<SettingSection>
-                {
-                    new MockSettingSection(ConfigurationConstants.PackageSources,
-                        new AddItem("source4", "https://source4"))
-                }
-            };
-
-            var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
-
-            actual.ShouldBeEquivalentTo(new[]
-            {
-                new PackageSource("https://source3"),
-            });
-        }
-
         [Theory]
         [InlineData(null, null, true)]
         [InlineData("", null, true)]
@@ -658,7 +658,7 @@ namespace NuGet.Build.Tasks.Test
         [InlineData("net472", null, false)]
         [InlineData("", "net45;net46", false)]
         [InlineData(null, "net45;net46", false)]
-        public void DependencyGraphSpecGenerator_IsLegacyProject(string targetFramework, string targetFrameworks, bool expected)
+        public void IsLegacyProject_WhenTargetFrameworkOrTargetFrameworksSpecified_CorrectValueDetected(string targetFramework, string targetFrameworks, bool expected)
         {
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
@@ -672,7 +672,7 @@ namespace NuGet.Build.Tasks.Test
         }
 
         [Fact]
-        public void DependencyGraphSpecGenerator_IsOptionTrue()
+        public void IsOptionTrue_WhenAnyValueSpecified_CorrectValueDetected()
         {
             // Options with a key that starts with true should be true, otherwise false
             var options = new Dictionary<string, string>
