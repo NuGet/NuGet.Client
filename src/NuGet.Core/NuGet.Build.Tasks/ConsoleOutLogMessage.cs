@@ -10,7 +10,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents a log message that can be serialized and sent across a text stream like <see cref="Console.Out" />.
     /// </summary>
-    internal sealed class ConsoleOutLogMessage
+    public sealed class ConsoleOutLogMessage
     {
         /// <summary>
         /// Serialization settings for messages.  These should be set to be as fast as possible and not for friendly

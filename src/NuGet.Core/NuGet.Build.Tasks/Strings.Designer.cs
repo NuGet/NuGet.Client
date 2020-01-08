@@ -22,7 +22,7 @@ namespace NuGet.Build.Tasks {
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    internal class Strings {
+    public class Strings {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace NuGet.Build.Tasks {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Resources.ResourceManager ResourceManager {
+        public static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Build.Tasks.Strings", typeof(Strings).Assembly);
@@ -51,7 +51,7 @@ namespace NuGet.Build.Tasks {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        internal static global::System.Globalization.CultureInfo Culture {
+        public static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Argument cannot be null or empty.
         /// </summary>
-        internal static string Argument_Cannot_Be_Null_Or_Empty {
+        public static string Argument_Cannot_Be_Null_Or_Empty {
             get {
                 return ResourceManager.GetString("Argument_Cannot_Be_Null_Or_Empty", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Created DependencyGraphSpec in {0:D2}ms..
         /// </summary>
-        internal static string CreatedDependencyGraphSpec {
+        public static string CreatedDependencyGraphSpec {
             get {
                 return ResourceManager.GetString("CreatedDependencyGraphSpec", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
-        internal static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
+        public static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
             get {
                 return ResourceManager.GetString("Error_PackageDownload_OnlyExactVersionsAreAllowed", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Error parsing packages.config file at {0}: {1}.
         /// </summary>
-        internal static string Error_PackagesConfigParseError {
+        public static string Error_PackagesConfigParseError {
             get {
                 return ResourceManager.GetString("Error_PackagesConfigParseError", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to ProjectReference &apos;{0}&apos; was resolved using &apos;{1}&apos; instead of the project target framework &apos;{2}&apos;. This project may not be fully compatible with your project..
         /// </summary>
-        internal static string ImportsFallbackWarning {
+        public static string ImportsFallbackWarning {
             get {
                 return ResourceManager.GetString("ImportsFallbackWarning", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to All packages listed in {0} are already installed..
         /// </summary>
-        internal static string InstallCommandNothingToInstall {
+        public static string InstallCommandNothingToInstall {
             get {
                 return ResourceManager.GetString("InstallCommandNothingToInstall", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Project &apos;{0}&apos; targets &apos;{2}&apos;. It cannot be referenced by a project that targets &apos;{1}&apos;..
         /// </summary>
-        internal static string NoCompatibleTargetFramework {
+        public static string NoCompatibleTargetFramework {
             get {
                 return ResourceManager.GetString("NoCompatibleTargetFramework", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Unable to find a project to restore!.
         /// </summary>
-        internal static string NoProjectsProvidedToTask {
+        public static string NoProjectsProvidedToTask {
             get {
                 return ResourceManager.GetString("NoProjectsProvidedToTask", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Nothing to do. None of the projects specified contain packages to restore..
         /// </summary>
-        internal static string NoProjectsToRestore {
+        public static string NoProjectsToRestore {
             get {
                 return ResourceManager.GetString("NoProjectsToRestore", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures)..
         /// </summary>
-        internal static string ProjectEvaluationSummary {
+        public static string ProjectEvaluationSummary {
             get {
                 return ResourceManager.GetString("ProjectEvaluationSummary", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Restore canceled!.
         /// </summary>
-        internal static string RestoreCanceled {
+        public static string RestoreCanceled {
             get {
                 return ResourceManager.GetString("RestoreCanceled", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to No solution found. Restore against a solution or pass in /p:SolutionDir.
         /// </summary>
-        internal static string RestoreNoSolutionFound {
+        public static string RestoreNoSolutionFound {
             get {
                 return ResourceManager.GetString("RestoreNoSolutionFound", resourceCulture);
             }
@@ -171,7 +171,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to The project fallback framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
-        internal static string UnsupportedFallbackFramework {
+        public static string UnsupportedFallbackFramework {
             get {
                 return ResourceManager.GetString("UnsupportedFallbackFramework", resourceCulture);
             }
@@ -180,7 +180,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to The project target framework &apos;{0}&apos; is not a supported target framework..
         /// </summary>
-        internal static string UnsupportedTargetFramework {
+        public static string UnsupportedTargetFramework {
             get {
                 return ResourceManager.GetString("UnsupportedTargetFramework", resourceCulture);
             }
@@ -189,7 +189,7 @@ namespace NuGet.Build.Tasks {
         /// <summary>
         ///   Looks up a localized string similar to Invalid PackageSaveMode value &apos;{0}&apos;..
         /// </summary>
-        internal static string Warning_InvalidPackageSaveMode {
+        public static string Warning_InvalidPackageSaveMode {
             get {
                 return ResourceManager.GetString("Warning_InvalidPackageSaveMode", resourceCulture);
             }

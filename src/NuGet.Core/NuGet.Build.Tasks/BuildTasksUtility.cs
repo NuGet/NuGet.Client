@@ -88,7 +88,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="packageSpec">A <see cref="PackageSpec" /> for a project.</param>
         /// <returns><code>true</code> if the project supports restore, otherwise <code>false</code>.</returns>
-        internal static bool DoesProjectSupportRestore(PackageSpec packageSpec)
+        public static bool DoesProjectSupportRestore(PackageSpec packageSpec)
         {
             return RestorableTypes.Contains(packageSpec.RestoreMetadata.ProjectStyle);
         }
@@ -132,7 +132,7 @@ namespace NuGet.Build.Tasks
             ProjectStyle.ProjectJson
         };
 
-        internal static async Task<bool> RestoreAsync(
+        public static async Task<bool> RestoreAsync(
             DependencyGraphSpec dependencyGraphSpec,
             bool interactive,
             bool recursive,
@@ -283,7 +283,7 @@ namespace NuGet.Build.Tasks
         /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
-        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
             ProjectStyle projectStyle;
             string packagesConfigFilePath = null;
@@ -597,7 +597,7 @@ namespace NuGet.Build.Tasks
         /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
         /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
         /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
-        internal static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
+        public static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
         {
             // Fallback folders
             var currentFallbackFolders = RestoreSettingsUtils.GetValue(
@@ -615,7 +615,7 @@ namespace NuGet.Build.Tasks
             return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
         }
 
-        internal static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
+        public static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
         {
             // Sources
             var currentSources = RestoreSettingsUtils.GetValue(

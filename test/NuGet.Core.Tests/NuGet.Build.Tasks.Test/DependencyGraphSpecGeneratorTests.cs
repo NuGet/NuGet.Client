@@ -43,7 +43,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetFrameworkReferences(project);
+                var actual = MSBuildStaticGraphRestore.GetFrameworkReferences(project);
 
                 actual.ShouldBeEquivalentTo(new List<FrameworkDependency>
                 {
@@ -67,7 +67,7 @@ namespace NuGet.Build.Tasks.Test
                 ["TargetFrameworks"] = null
             });
 
-            var actual = DependencyGraphSpecGenerator.GetOriginalTargetFrameworks(project, targetFrameworks.Split(';').Select(i => NuGetFramework.Parse(i)).ToList());
+            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, targetFrameworks.Split(';').Select(i => NuGetFramework.Parse(i)).ToList());
 
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -83,7 +83,7 @@ namespace NuGet.Build.Tasks.Test
                 ["TargetFrameworks"] = targetFrameworks
             });
 
-            var actual = DependencyGraphSpecGenerator.GetOriginalTargetFrameworks(project, new List<NuGetFramework>());
+            var actual = MSBuildStaticGraphRestore.GetOriginalTargetFrameworks(project, new List<NuGetFramework>());
 
             actual.ShouldBeEquivalentTo(expected);
         }
@@ -106,7 +106,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetPackageDownloads(project);
+                var actual = MSBuildStaticGraphRestore.GetPackageDownloads(project);
 
                 actual.ShouldBeEquivalentTo(new List<DownloadDependency>
                 {
@@ -139,7 +139,7 @@ namespace NuGet.Build.Tasks.Test
 
                 Action act = () =>
                 {
-                    var _ = DependencyGraphSpecGenerator.GetPackageDownloads(project).ToList();
+                    var _ = MSBuildStaticGraphRestore.GetPackageDownloads(project).ToList();
                 };
 
                 act.ShouldThrow<ArgumentException>().WithMessage($"'{expected ?? VersionRange.Parse(version).OriginalString}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.");
@@ -171,7 +171,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetPackageReferences(project);
+                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project);
 
                 actual.ShouldBeEquivalentTo(new List<LibraryDependency>
                 {
@@ -244,7 +244,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetPackagesPath(project, settings);
+                var actual = MSBuildStaticGraphRestore.GetPackagesPath(project, settings);
 
                 actual.Should().Be(Path.Combine(testDirectory, expected));
             }
@@ -268,7 +268,7 @@ namespace NuGet.Build.Tasks.Test
                 ["MSBuildProjectName"] = msbuildProjectName
             });
 
-            var actual = DependencyGraphSpecGenerator.GetProjectName(project);
+            var actual = MSBuildStaticGraphRestore.GetProjectName(project);
 
             actual.Should().Be(expected);
         }
@@ -299,7 +299,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetProjectReferences(project);
+                var actual = MSBuildStaticGraphRestore.GetProjectReferences(project);
 
                 actual.ShouldBeEquivalentTo(new[]
                 {
@@ -363,7 +363,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetProjectRestoreMetadataFrameworkInfos(projects);
+                var actual = MSBuildStaticGraphRestore.GetProjectRestoreMetadataFrameworkInfos(projects);
 
                 actual.ShouldBeEquivalentTo(new[]
                 {
@@ -410,7 +410,7 @@ namespace NuGet.Build.Tasks.Test
 
                 var innerNodes = new Dictionary<string, IMSBuildProject>();
 
-                var actual = DependencyGraphSpecGenerator.GetProjectTargetFrameworks(project, innerNodes)
+                var actual = MSBuildStaticGraphRestore.GetProjectTargetFrameworks(project, innerNodes)
                     .Should().ContainSingle();
 
                 actual.Subject.Key.Should().Be(FrameworkConstants.CommonFrameworks.Net461);
@@ -436,7 +436,7 @@ namespace NuGet.Build.Tasks.Test
                     ["netstandard2.0"] = new MockMSBuildProject("Project-netstandard2.0"),
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetProjectTargetFrameworks(project, innerNodes);
+                var actual = MSBuildStaticGraphRestore.GetProjectTargetFrameworks(project, innerNodes);
 
                 actual.Keys.ShouldBeEquivalentTo(
                     new[]
@@ -471,7 +471,7 @@ namespace NuGet.Build.Tasks.Test
                     ["netstandard2.0"] = new MockMSBuildProject("Project-netstandard2.0"),
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetProjectTargetFrameworks(project, innerNodes);
+                var actual = MSBuildStaticGraphRestore.GetProjectTargetFrameworks(project, innerNodes);
 
                 actual.Should().ContainSingle()
                     .Which.Value.FullPath.Should().Be("Project-net45");
@@ -491,7 +491,7 @@ namespace NuGet.Build.Tasks.Test
                 ["Version"] = version
             });
 
-            var actual = DependencyGraphSpecGenerator.GetProjectVersion(project);
+            var actual = MSBuildStaticGraphRestore.GetProjectVersion(project);
 
             actual.Should().Be(NuGetVersion.Parse(expected));
         }
@@ -525,7 +525,7 @@ namespace NuGet.Build.Tasks.Test
                     }
                 };
 
-                var actual = DependencyGraphSpecGenerator.GetRepositoryPath(project, settings);
+                var actual = MSBuildStaticGraphRestore.GetRepositoryPath(project, settings);
 
                 expected = UriUtility.GetAbsolutePath(testDirectory, expected);
 
@@ -549,7 +549,7 @@ namespace NuGet.Build.Tasks.Test
                     ["MSBuildProjectExtensionsPath"] = msbuildProjectExtensionsPath
                 });
 
-                var actual = DependencyGraphSpecGenerator.GetRestoreOutputPath(project);
+                var actual = MSBuildStaticGraphRestore.GetRestoreOutputPath(project);
 
                 expected = Path.Combine(testDirectory, expected);
 
@@ -586,7 +586,7 @@ namespace NuGet.Build.Tasks.Test
                 }
             };
 
-            var actual = DependencyGraphSpecGenerator.GetSources(project, projectsByTargetFramework, settings);
+            var actual = MSBuildStaticGraphRestore.GetSources(project, projectsByTargetFramework, settings);
 
             actual.ShouldBeEquivalentTo(new[]
             {
@@ -615,7 +615,7 @@ namespace NuGet.Build.Tasks.Test
                 }
             };
 
-            var actual = DependencyGraphSpecGenerator.GetSources(project, new[] { project }, settings);
+            var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
 
             actual.ShouldBeEquivalentTo(new[]
             {
@@ -642,7 +642,7 @@ namespace NuGet.Build.Tasks.Test
                 }
             };
 
-            var actual = DependencyGraphSpecGenerator.GetSources(project, new[] { project }, settings);
+            var actual = MSBuildStaticGraphRestore.GetSources(project, new[] { project }, settings);
 
             actual.ShouldBeEquivalentTo(new[]
             {
@@ -666,7 +666,7 @@ namespace NuGet.Build.Tasks.Test
                 ["TargetFrameworks"] = targetFrameworks
             });
 
-            var actual = DependencyGraphSpecGenerator.IsLegacyProject(project);
+            var actual = MSBuildStaticGraphRestore.IsLegacyProject(project);
 
             actual.Should().Be(expected);
         }
@@ -689,7 +689,7 @@ namespace NuGet.Build.Tasks.Test
 
             foreach (KeyValuePair<string, string> keyValuePair in options)
             {
-                var actual = DependencyGraphSpecGenerator.IsOptionTrue(keyValuePair.Key, options);
+                var actual = MSBuildStaticGraphRestore.IsOptionTrue(keyValuePair.Key, options);
 
                 if (keyValuePair.Key.StartsWith("true", StringComparison.OrdinalIgnoreCase))
                 {

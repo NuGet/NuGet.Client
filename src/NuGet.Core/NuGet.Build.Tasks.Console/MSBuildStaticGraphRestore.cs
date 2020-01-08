@@ -28,11 +28,10 @@ using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
-using ILogger = Microsoft.Build.Framework.ILogger;
 
 namespace NuGet.Build.Tasks.Console
 {
-    internal sealed class DependencyGraphSpecGenerator : IDisposable
+    internal sealed class MSBuildStaticGraphRestore : IDisposable
     {
         private static readonly Lazy<IMachineWideSettings> MachineWideSettingsLazy = new Lazy<IMachineWideSettings>(() => new XPlatMachineWideSetting());
 
@@ -52,7 +51,7 @@ namespace NuGet.Build.Tasks.Console
 
         private readonly SettingsLoadingContext _settingsLoadContext = new SettingsLoadingContext();
 
-        public DependencyGraphSpecGenerator(bool debug = false)
+        public MSBuildStaticGraphRestore(bool debug = false)
         {
             Debug = debug;
 
@@ -129,7 +128,7 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
-        /// Gets the framework references for the specified project.
+        /// Gets the framework references per target framework for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get framework references for.</param>
         /// <returns>A <see cref="List{FrameworkDependency}" /> containing the framework references for the specified project.</returns>
@@ -571,6 +570,12 @@ namespace NuGet.Build.Tasks.Console
 
                 var dependencyGraphSpec = new DependencyGraphSpec(isReadOnly: true);
 
+                // Unique names created by the MSBuild restore target are project paths, these
+                // can be different on case-insensitive file systems for the same project file.
+                // To workaround this unique names should be compared based on the OS.
+                var uniqueNameComparer = PathUtility.GetStringComparerBasedOnOS();
+                var projectPathLookup = new ConcurrentDictionary<string, string>(uniqueNameComparer);
+
                 try
                 {
                     // Get the PackageSpecs in parallel because creating each one is relatively expensive so parallelism speeds things up
@@ -580,6 +585,19 @@ namespace NuGet.Build.Tasks.Console
 
                         if (packageSpec != null)
                         {
+                            // Keep track of all project path casings
+                            var uniqueName = packageSpec.RestoreMetadata.ProjectUniqueName;
+                            if (uniqueName != null && !projectPathLookup.ContainsKey(uniqueName))
+                            {
+                                projectPathLookup.TryAdd(uniqueName, uniqueName);
+                            }
+
+                            var projectPath = packageSpec.RestoreMetadata.ProjectPath;
+                            if (projectPath != null && !projectPathLookup.ContainsKey(projectPath))
+                            {
+                                projectPathLookup.TryAdd(projectPath, projectPath);
+                            }
+
                             // TODO: Remove this lock once https://github.com/NuGet/Home/issues/9002 is fixed
                             lock (dependencyGraphSpec)
                             {
@@ -598,6 +616,9 @@ namespace NuGet.Build.Tasks.Console
 
                     return null;
                 }
+
+                // Fix project reference casings to match the original project on case insensitive file systems.
+                MSBuildRestoreUtility.NormalizePathCasings(projectPathLookup, dependencyGraphSpec);
 
                 // Add all entry projects if they support restore.  In most cases this is just a single project but if the entry
                 // project is a solution, then all projects in the solution are added (if they support restore)
@@ -745,7 +766,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>An <see cref="ICollection{ProjectWithInnerNodes}" /> object containing projects and their inner nodes if they are targeting multiple frameworks.</returns>
         private ICollection<ProjectWithInnerNodes> LoadProjects(IEnumerable<ProjectGraphEntryPoint> entryProjects)
         {
-            var loggers = new List<ILogger>
+            var loggers = new List<Microsoft.Build.Framework.ILogger>
             {
                 LoggingQueue
             };

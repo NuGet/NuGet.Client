@@ -10,7 +10,7 @@ namespace NuGet.Build.Tasks
     /// Represents a queue of logging messages that need to be processed.
     /// </summary>
     /// <typeparam name="T">The type of object to be added to the queue.</typeparam>
-    internal abstract class LoggingQueue<T> : IDisposable
+    public abstract class LoggingQueue<T> : IDisposable
     {
         /// <summary>
         /// Stores the queue of actions to be executed.

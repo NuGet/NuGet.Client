@@ -10,7 +10,6 @@ using Microsoft.Build.Framework;
 #if IS_CORECLR
 using Microsoft.Build.Utilities;
 #endif
-using Newtonsoft.Json;
 #if IS_DESKTOP
 using TaskLoggingHelper = MicrosoftBuildUtilitiesv4::Microsoft.Build.Utilities.TaskLoggingHelper;
 #endif
@@ -51,7 +50,7 @@ namespace NuGet.Build.Tasks.Console
         {
             Verbosity = verbosity;
 
-            _taskLoggingHelperLazy = new Lazy<TaskLoggingHelper>(() => new TaskLoggingHelper(this, nameof(DependencyGraphSpecGenerator)));
+            _taskLoggingHelperLazy = new Lazy<TaskLoggingHelper>(() => new TaskLoggingHelper(this, nameof(MSBuildStaticGraphRestore)));
         }
 
         /// <inheritdoc cref="IBuildEngine.ColumnNumberOfTaskNode" />

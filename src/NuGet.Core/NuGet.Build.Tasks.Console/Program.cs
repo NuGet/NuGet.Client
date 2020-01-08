@@ -52,7 +52,7 @@ namespace NuGet.Build.Tasks.Console
             }
 
             // Parse command-line arguments
-            if (!TryParseArguments(args, out var arguments))
+            if (!TryParseArguments(args, out (Dictionary<string, string> Options, FileInfo MSBuildExeFilePath, string EntryProjectFilePath, Dictionary<string, string> MSBuildGlobalProperties) arguments))
             {
                 return 1;
             }
@@ -80,7 +80,7 @@ namespace NuGet.Build.Tasks.Console
                 };
             }
 
-            using (var dependencyGraphSpecGenerator = new DependencyGraphSpecGenerator(debug: debug))
+            using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
             {
                 return await dependencyGraphSpecGenerator.RestoreAsync(arguments.EntryProjectFilePath, arguments.MSBuildGlobalProperties, arguments.Options) ? 0 : 1;
             }

@@ -6,7 +6,7 @@ namespace NuGet.Build.Tasks
     /// <summary>
     /// Represents the type of a console out log message.
     /// </summary>
-    internal enum ConsoleOutLogMessageType
+    public enum ConsoleOutLogMessageType
     {
         /// <summary>
         /// The type was not specified.
