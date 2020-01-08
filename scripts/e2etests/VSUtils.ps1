@@ -209,6 +209,8 @@ function Update-Configuration(
 
 function ResumeVSInstall {
     param(
+        [ValidateSet("16.0")]
+        [string]$VSVersion,
         [Parameter(Mandatory = $true)]
         [int]$ProcessExitTimeoutInSeconds
     )
@@ -218,7 +220,7 @@ function ResumeVSInstall {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
     }
     $VSInstallerPath = "$ProgramFilesPath\Microsoft Visual Studio\Installer\vs_installer.exe"
-    $VSFolderPath = GetVSFolderPath 16.0
+    $VSFolderPath = GetVSFolderPath $VSVersion
 
     Write-Host 'Resuming any incomplete install'
     $args = "resume --installPath ""$VSFolderPath"" -q"
@@ -226,7 +228,7 @@ function ResumeVSInstall {
     $p = Start-Process "$VSInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
 
     if ($p.ExitCode -ne 0) {
-        Write-Error "Error resuming VS installer"
+        Write-Error "Error resuming VS installer. Exit code $($p.ExitCode)"
         return $false
     }
     else {
@@ -291,7 +293,7 @@ function DowngradeVSIX {
         if ($p.ExitCode -eq -2146233079)
         {
             Write-Host "Previous VSIX install appears not to have completed. Resuming VS install."
-            $resumeResult = ResumeVSInstall $ProcessExitTimeoutInSeconds
+            $resumeResult = ResumeVSInstall $VSVersion $ProcessExitTimeoutInSeconds
             if ( $resumeResult -eq $true) {
                 Write-Host """$VSIXInstallerPath"" $args"
                 $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
