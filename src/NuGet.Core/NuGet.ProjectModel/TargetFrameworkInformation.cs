@@ -39,6 +39,11 @@ namespace NuGet.ProjectModel
         public IList<DownloadDependency> DownloadDependencies { get; } = new List<DownloadDependency>();
 
         /// <summary>
+        /// List of the package versions defined in the Central package versions management file. 
+        /// </summary>
+        public IList<CentralVersionDependency> CentralVersionDependencies { get; set; } = new List<CentralVersionDependency>();
+
+        /// <summary>
         /// A set of unique FrameworkReferences
         /// </summary>
         public ISet<FrameworkDependency> FrameworkReferences { get; } = new HashSet<FrameworkDependency>();
@@ -64,6 +69,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(DownloadDependencies);
             hashCode.AddSequence(FrameworkReferences);
             hashCode.AddObject(RuntimeIdentifierGraphPath);
+            hashCode.AddObject(CentralVersionDependencies);
             return hashCode.CombinedHash;
         }
 
@@ -90,6 +96,7 @@ namespace NuGet.ProjectModel
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
                    FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
+                   CentralVersionDependencies.OrderedEquals(other.CentralVersionDependencies, centralVersion => centralVersion) &&
                    string.Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath);
         }
 
@@ -104,6 +111,7 @@ namespace NuGet.ProjectModel
             clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
             clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
             clonedObject.RuntimeIdentifierGraphPath = RuntimeIdentifierGraphPath;
+            clonedObject.CentralVersionDependencies = CentralVersionDependencies.Select(item => item.Clone()).ToList();
             return clonedObject;
         }
     }

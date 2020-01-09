@@ -57,6 +57,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NuGetInteractive Condition=" '$(NuGetInteractive)' == '' ">$(MSBuildInteractive)</NuGetInteractive>
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
+    <!-- Flag if the Central package file is enabled -->
+    <_CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true' AND '$(_CentralPackageVersionsFeatureFlagEnabled)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -94,6 +96,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectJsonPathTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.GetCentralPackageVersionsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestorePackageDownloadsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreFrameworkReferencesTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreDotnetCliToolsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
@@ -169,6 +172,14 @@ Copyright (c) .NET Foundation. All rights reserved.
   -->
   <Target Name="CollectPackageReferences" Returns="@(PackageReference)" />
 
+  <!--
+    ============================================================
+    CollectCentralPackageVersions
+    Gathers all PackageVersion items from the central package versions file.
+    ============================================================
+  -->
+  <Target Name="CollectCentralPackageVersions" Returns="@(PackageVersion)" />
+  
   <!--
     ============================================================
     CollectPackageDownloads
@@ -704,6 +715,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
+        <CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -832,7 +844,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectCentralPackageVersions;CollectPackageDownloads;CollectFrameworkReferences"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
@@ -859,6 +871,19 @@ Copyright (c) .NET Foundation. All rights reserved.
         TaskParameter="RestoreGraphItems"
         ItemName="_RestoreGraphEntry" />
     </GetRestorePackageReferencesTask>
+
+    <!-- Write out central package versions -->
+    <GetCentralPackageVersionsTask
+      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(_CentralPackageVersionsEnabled)' == 'true' "
+      ProjectUniqueName="$(MSBuildProjectFullPath)"
+      CentralPackageVersions="@(PackageVersion)"
+      TargetFrameworks="$(TargetFramework)"
+      >
+
+      <Output
+        TaskParameter="RestoreGraphItems"
+        ItemName="_RestoreGraphEntry" />
+    </GetCentralPackageVersionsTask>
 
     <!-- Write out package downloads -->
     <GetRestorePackageDownloadsTask

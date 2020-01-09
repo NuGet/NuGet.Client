@@ -113,6 +113,8 @@ namespace NuGet.ProjectModel
 
         public RestoreLockProperties RestoreLockProperties { get; set; } = new RestoreLockProperties();
 
+        public bool CentralPackageVersionsEnabled { get; set; }
+
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
@@ -136,6 +138,7 @@ namespace NuGet.ProjectModel
             hashCode.AddObject(SkipContentFileWrite);
             hashCode.AddObject(ProjectWideWarningProperties);
             hashCode.AddObject(RestoreLockProperties);
+            hashCode.AddObject(CentralPackageVersionsEnabled);
 
             return hashCode.CombinedHash;
         }
@@ -175,7 +178,8 @@ namespace NuGet.ProjectModel
                    SkipContentFileWrite == other.SkipContentFileWrite &&
                    EqualityUtility.SequenceEqualWithNullCheck(Files, other.Files) &&
                    EqualityUtility.EqualsWithNullCheck(ProjectWideWarningProperties, other.ProjectWideWarningProperties) &&
-                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties);
+                   EqualityUtility.EqualsWithNullCheck(RestoreLockProperties, other.RestoreLockProperties) &&
+                   EqualityUtility.EqualsWithNullCheck(CentralPackageVersionsEnabled, other.CentralPackageVersionsEnabled) ;
         }
 
         public virtual ProjectRestoreMetadata Clone()
@@ -207,6 +211,7 @@ namespace NuGet.ProjectModel
             clone.Files = Files?.Select(c => c.Clone()).ToList();
             clone.ProjectWideWarningProperties = ProjectWideWarningProperties?.Clone();
             clone.RestoreLockProperties = RestoreLockProperties?.Clone();
+            clone.CentralPackageVersionsEnabled = CentralPackageVersionsEnabled;
         }
     }
 }
