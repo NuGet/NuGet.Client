@@ -25,7 +25,14 @@ namespace NuGet.VisualStudio.Telemetry
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
-        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, string actionName)
+        public enum TelemetryAction
+        {
+            Unknown = 0,
+            Restore,
+            Search
+        }
+
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
         {
             if (sources == null)
             {
@@ -38,7 +45,7 @@ namespace NuGet.VisualStudio.Telemetry
             ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
             ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
             _parentId = parentId;
-            _actionName = actionName;
+            _actionName = GetActionName(action);
 
             // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
             _sources = new Dictionary<string, SourceRepository>();
@@ -51,6 +58,19 @@ namespace NuGet.VisualStudio.Telemetry
             foreach (var source in _sources.Keys)
             {
                 _knownSources.Add(source);
+            }
+        }
+
+        private static string GetActionName(TelemetryAction action)
+        {
+            switch (action)
+            {
+                case TelemetryAction.Restore:
+                case TelemetryAction.Search:
+                    return action.ToString();
+
+                default:
+                    throw new ArgumentException("Unknown value of " + nameof(TelemetryAction), nameof(action));
             }
         }
 

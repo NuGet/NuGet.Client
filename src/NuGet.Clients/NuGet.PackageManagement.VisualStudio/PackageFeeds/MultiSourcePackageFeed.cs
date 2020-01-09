@@ -111,7 +111,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             SearchResult<IPackageSearchMetadata> result;
-            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, searchOperationId, "search"))
+            using (var packageSourceTelemetry = new PackageSourceTelemetry(_sourceRepositories, searchOperationId, PackageSourceTelemetry.TelemetryAction.Search))
             {
                 var searchTasks = TaskCombinators.ObserveErrorsAsync(
                     _sourceRepositories,
