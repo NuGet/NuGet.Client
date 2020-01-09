@@ -16,12 +16,11 @@ namespace NuGet.VisualStudio.Telemetry
 {
     public sealed class PackageSourceTelemetry : IDisposable
     {
-        private readonly ConcurrentDictionary<string, Data> _data;
+        private readonly IReadOnlyDictionary<string, Data> _data;
         private readonly IDictionary<string, SourceRepository> _sources;
         private readonly Guid _parentId;
         private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
         private readonly string _actionName;
-        private readonly HashSet<string> _knownSources;
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
@@ -39,14 +38,6 @@ namespace NuGet.VisualStudio.Telemetry
                 throw new ArgumentNullException(nameof(sources));
             }
 
-            _data = new ConcurrentDictionary<string, Data>();
-            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-            ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
-            ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
-            ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
-            _parentId = parentId;
-            _actionName = GetActionName(action);
-
             // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
             _sources = new Dictionary<string, SourceRepository>();
             foreach (var source in sources)
@@ -54,11 +45,19 @@ namespace NuGet.VisualStudio.Telemetry
                 _sources[source.PackageSource.Source] = source;
             }
 
-            _knownSources = new HashSet<string>();
+            var data = new Dictionary<string, Data>(_sources.Count);
             foreach (var source in _sources.Keys)
             {
-                _knownSources.Add(source);
+                data[source] = new Data();
             }
+            _data = data;
+
+            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
+            ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
+            ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
+            ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
+            _parentId = parentId;
+            _actionName = GetActionName(action);
         }
 
         private static string GetActionName(TelemetryAction action)
@@ -76,16 +75,15 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_ResourceEvent(ProtocolDiagnosticResourceEvent pdEvent)
         {
-            AddResourceData(pdEvent, _data, _resourceStringTable, _knownSources);
+            AddResourceData(pdEvent, _data, _resourceStringTable);
         }
 
         internal static void AddResourceData(
             ProtocolDiagnosticResourceEvent pdEvent,
-            ConcurrentDictionary<string, Data> allData,
-            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> resourceStringTable,
-            HashSet<string> sources)
+            IReadOnlyDictionary<string, Data> allData,
+            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> resourceStringTable)
         {
-            if (!sources.Contains(pdEvent.Source))
+            if (!allData.TryGetValue(pdEvent.Source, out Data data))
             {
                 return;
             }
@@ -93,7 +91,6 @@ namespace NuGet.VisualStudio.Telemetry
             var resourceMethodNameTable = resourceStringTable.GetOrAdd(pdEvent.ResourceType, t => new ConcurrentDictionary<string, string>());
             var resourceTypeAndMethod = resourceMethodNameTable.GetOrAdd(pdEvent.Method, m => pdEvent.ResourceType + "." + m);
 
-            var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
             lock (data._lock)
             {
                 if (data.Resources.TryGetValue(resourceTypeAndMethod, out var t))
@@ -109,17 +106,15 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_HttpEvent(ProtocolDiagnosticHttpEvent pdEvent)
         {
-            AddHttpData(pdEvent, _data, _knownSources);
+            AddHttpData(pdEvent, _data);
         }
 
-        internal static void AddHttpData(ProtocolDiagnosticHttpEvent pdEvent, ConcurrentDictionary<string, Data> allData, HashSet<string> sources)
+        internal static void AddHttpData(ProtocolDiagnosticHttpEvent pdEvent, IReadOnlyDictionary<string, Data> allData)
         {
-            if (!sources.Contains(pdEvent.Source))
+            if (!allData.TryGetValue(pdEvent.Source, out Data data))
             {
                 return;
             }
-
-            var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
 
             lock (data._lock)
             {
@@ -168,17 +163,15 @@ namespace NuGet.VisualStudio.Telemetry
 
         private void ProtocolDiagnostics_NupkgCopiedEvent(ProtocolDiagnosticNupkgCopiedEvent ncEvent)
         {
-            AddNupkgCopiedData(ncEvent, _data, _knownSources);
+            AddNupkgCopiedData(ncEvent, _data);
         }
 
-        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, ConcurrentDictionary<string, Data> allData, HashSet<string> sources)
+        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, IReadOnlyDictionary<string, Data> allData)
         {
-            if (!sources.Contains(ncEvent.Source))
+            if (!allData.TryGetValue(ncEvent.Source, out Data data))
             {
                 return;
             }
-
-            var data = allData.GetOrAdd(ncEvent.Source, _ => new Data());
 
             lock (data._lock)
             {
@@ -344,7 +337,7 @@ namespace NuGet.VisualStudio.Telemetry
             return GetTotals(_data);
         }
 
-        internal static Totals GetTotals(ConcurrentDictionary<string, Data> data)
+        internal static Totals GetTotals(IReadOnlyDictionary<string, Data> data)
         {
             int requests = 0;
             long bytes = 0;

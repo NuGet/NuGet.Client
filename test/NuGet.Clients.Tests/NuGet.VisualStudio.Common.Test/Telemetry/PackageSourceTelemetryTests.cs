@@ -37,47 +37,21 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         }
 
         [Fact]
-        public void AddResourceData_DifferentSources_StoredSeparately()
-        {
-            // Arrange
-            var re1 = CreateSampleResourceEvent(source: "source1");
-            var re2 = CreateSampleResourceEvent(source: "source2");
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-            var sources = new HashSet<string>()
-            {
-                re1.Source,
-                re2.Source
-            };
-
-            // Act
-            PackageSourceTelemetry.AddResourceData(re1, data, stringTable, sources);
-            PackageSourceTelemetry.AddResourceData(re2, data, stringTable, sources);
-
-            // Assert
-            Assert.Equal(2, data.Count);
-        }
-
-        [Fact]
         public void AddResourceData_SameSourceDifferentResource_StoredSeparately()
         {
             // Arrange
             var re1 = CreateSampleResourceEvent(method: nameof(FindPackageByIdResource.GetDependencyInfoAsync));
             var re2 = CreateSampleResourceEvent(method: nameof(FindPackageByIdResource.CopyNupkgToStreamAsync));
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var data = CreateDataDictionary(SampleSource);
             var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-            var sources = new HashSet<string>()
-            {
-                SampleSource
-            };
 
             // Act
-            PackageSourceTelemetry.AddResourceData(re1, data, stringTable, sources);
-            PackageSourceTelemetry.AddResourceData(re2, data, stringTable, sources);
+            PackageSourceTelemetry.AddResourceData(re1, data, stringTable);
+            PackageSourceTelemetry.AddResourceData(re2, data, stringTable);
 
             // Assert
-            var result = Assert.Single(data).Value;
-            Assert.Equal(2, result.Resources.Count);
+            var sourceData = data[SampleSource];
+            Assert.Equal(2, sourceData.Resources.Count);
         }
 
         [Fact]
@@ -86,16 +60,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             // Arrange
             var re1 = CreateSampleResourceEvent(duration: TimeSpan.FromMilliseconds(100));
             var re2 = CreateSampleResourceEvent(duration: TimeSpan.FromMilliseconds(200));
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var data = CreateDataDictionary(SampleSource);
             var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
-            var sources = new HashSet<string>()
-            {
-                SampleSource
-            };
 
             // Act
-            PackageSourceTelemetry.AddResourceData(re1, data, stringTable, sources);
-            PackageSourceTelemetry.AddResourceData(re2, data, stringTable, sources);
+            PackageSourceTelemetry.AddResourceData(re1, data, stringTable);
+            PackageSourceTelemetry.AddResourceData(re2, data, stringTable);
 
             // Assert
             var result = Assert.Single(data).Value;
@@ -111,16 +81,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             var pde1 = CreateSampleHttpEvent(headerDuration: TimeSpan.FromMilliseconds(150));
             var pde2 = CreateSampleHttpEvent(headerDuration: null);
             var pde3 = CreateSampleHttpEvent(headerDuration: TimeSpan.FromMilliseconds(100));
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var sources = new HashSet<string>()
-            {
-                SampleSource
-            };
+            var data = CreateDataDictionary(SampleSource);
 
             // Act
-            PackageSourceTelemetry.AddHttpData(pde1, data, sources);
-            PackageSourceTelemetry.AddHttpData(pde2, data, sources);
-            PackageSourceTelemetry.AddHttpData(pde3, data, sources);
+            PackageSourceTelemetry.AddHttpData(pde1, data);
+            PackageSourceTelemetry.AddHttpData(pde2, data);
+            PackageSourceTelemetry.AddHttpData(pde3, data);
 
             // Assert
             KeyValuePair<string, PackageSourceTelemetry.Data> pair = Assert.Single(data);
@@ -132,17 +98,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             // Arrange
             var timings = new[] { TimeSpan.FromMilliseconds(100), TimeSpan.FromMilliseconds(150), TimeSpan.FromMilliseconds(200) };
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var sources = new HashSet<string>
-            {
-                SampleSource
-            };
+            var data = CreateDataDictionary(SampleSource);
 
             // Act
             for (int i = 0; i < timings.Length; i++)
             {
                 var pde = CreateSampleHttpEvent(eventDuration: timings[i]);
-                PackageSourceTelemetry.AddHttpData(pde, data, sources);
+                PackageSourceTelemetry.AddHttpData(pde, data);
             }
 
             // Assert
@@ -157,17 +119,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             // Arrange
             var sizes = new[] { 1, 22, 333, 4444, 55555, 666666 };
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var sources = new HashSet<string>
-            {
-                SampleSource
-            };
+            var data = CreateDataDictionary(SampleSource);
 
             // Act
             for (int i = 0; i < sizes.Length; i++)
             {
-                var nce = new ProtocolDiagnosticNupkgCopiedEvent("source", sizes[i]);
-                PackageSourceTelemetry.AddNupkgCopiedData(nce, data, sources);
+                var nce = new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, sizes[i]);
+                PackageSourceTelemetry.AddNupkgCopiedData(nce, data);
             }
 
             // Assert
@@ -180,7 +138,7 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         public async Task AddData_IsThreadSafe()
         {
             // Arrange
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
+            var data = CreateDataDictionary(SampleSource);
             var stringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
             var eventsToRaise = 10000;
             var sources = new HashSet<string>
@@ -199,15 +157,15 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
 
                 return Task.WhenAll(tasks);
             }
-            var source = "http://source.test/v3/index.json";
-            var resourceEvent = CreateSampleResourceEvent(source: source);
-            var httpEvent = CreateSampleHttpEvent(source: source);
-            var nupkgCopiedEvent = new ProtocolDiagnosticNupkgCopiedEvent(source, fileSize: 123456);
+
+            var resourceEvent = CreateSampleResourceEvent();
+            var httpEvent = CreateSampleHttpEvent();
+            var nupkgCopiedEvent = new ProtocolDiagnosticNupkgCopiedEvent(SampleSource, fileSize: 123456);
 
             // Act
-            var resourceEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddResourceData(resourceEvent, data, stringTable, sources)));
-            var httpEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddHttpData(httpEvent, data, sources)));
-            var nupkgCopiedEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddNupkgCopiedData(nupkgCopiedEvent, data, sources)));
+            var resourceEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddResourceData(resourceEvent, data, stringTable)));
+            var httpEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddHttpData(httpEvent, data)));
+            var nupkgCopiedEvents = Task.Run(() => SendEvents(() => PackageSourceTelemetry.AddNupkgCopiedData(nupkgCopiedEvent, data)));
             await Task.WhenAll(resourceEvents, httpEvents, nupkgCopiedEvents);
 
             // Assert
@@ -222,17 +180,13 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
         {
             // Arrange
             var bytes = new[] { 1_000, 1_500, 10_000 };
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var sources = new HashSet<string>
-            {
-                SampleSource
-            };
+            var data = CreateDataDictionary(SampleSource);
 
             // Act
             for (int i = 0; i < bytes.Length; i++)
             {
                 var pde = CreateSampleHttpEvent(bytes: bytes[i]);
-                PackageSourceTelemetry.AddHttpData(pde, data, sources);
+                PackageSourceTelemetry.AddHttpData(pde, data);
             }
 
             // Assert
@@ -260,16 +214,12 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
                     }
                 }
             }
-            var data = new ConcurrentDictionary<string, PackageSourceTelemetry.Data>();
-            var sources = new HashSet<string>
-            {
-                SampleSource
-            };
+            var data = CreateDataDictionary(SampleSource);
 
             // Act
             for (int i = 0; i < events.Count; i++)
             {
-                PackageSourceTelemetry.AddHttpData(events[i], data, sources);
+                PackageSourceTelemetry.AddHttpData(events[i], data);
             }
 
             // Assert
@@ -408,6 +358,17 @@ namespace NuGet.VisualStudio.Common.Test.Telemetry
             Assert.Equal(expectedRequests, totals.Requests);
             Assert.Equal(expectedBytes, totals.Bytes);
             Assert.Equal(expectedDuration, totals.Duration);
+        }
+
+        private static IReadOnlyDictionary<string, PackageSourceTelemetry.Data> CreateDataDictionary(params string[] sources)
+        {
+            var data = new Dictionary<string, PackageSourceTelemetry.Data>();
+            foreach (var source in sources)
+            {
+                data[source] = new PackageSourceTelemetry.Data();
+            }
+
+            return data;
         }
 
         private const string SampleSource = "https://source.test/v3/index.json";
