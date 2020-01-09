@@ -40,7 +40,7 @@ The general rule we follow is "use Visual Studio defaults".
    `public abstract` not `abstract public`).
 
 1. Namespace imports should be specified at the top of the file, *outside* of
-   `namespace` declarations, and should be sorted alphabetically, with the exception of `System.*` namespaces, which are to be placed on top of all others.
+   `namespace` declarations, and should be sorted alphabetically, with the exception of `System.*` namespaces, which are to be placed on top of all others. Always remove unnecessary imports.
 
 1. Avoid more than one empty line at any time. For example, do not have two blank lines between members of a type.
 
@@ -144,6 +144,8 @@ For example the following are correct:
 1. All async methods should have a name ending with Async.
 
 1. All interfaces must be pascal cased prefixed with I.
+
+1. Adding TODOs is not recommended and should be avoided whenever possible. In cases in which they do get added each TODO needs to be linked to an issue. Use the full url to the GitHub issue.
 
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
