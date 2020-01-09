@@ -69,7 +69,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(DownloadDependencies);
             hashCode.AddSequence(FrameworkReferences);
             hashCode.AddObject(RuntimeIdentifierGraphPath);
-            hashCode.AddObject(CentralVersionDependencies);
+            hashCode.AddSequence(CentralVersionDependencies);
             return hashCode.CombinedHash;
         }
 
@@ -111,7 +111,7 @@ namespace NuGet.ProjectModel
             clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
             clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
             clonedObject.RuntimeIdentifierGraphPath = RuntimeIdentifierGraphPath;
-            clonedObject.CentralVersionDependencies = CentralVersionDependencies.Select(item => item.Clone()).ToList();
+            clonedObject.CentralVersionDependencies.AddRange(CentralVersionDependencies.Select(item => item.Clone()));
             return clonedObject;
         }
     }
