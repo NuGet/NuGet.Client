@@ -330,6 +330,8 @@ namespace NuGet.PackageManagement.UI
             // Enable granular level telemetry events for nuget ui operation
             uiService.ProjectContext.OperationId = Guid.NewGuid();
 
+            Stopwatch packageEnumerationTime = new Stopwatch();
+            packageEnumerationTime.Start();
             try
             {
                 // collect the install state of the existing packages
@@ -350,6 +352,7 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't teardown the process if we have a telemetry failure
             }
+            packageEnumerationTime.Stop();
 
             await _lockService.ExecuteNuGetOperationAsync(async () =>
             {
@@ -510,6 +513,8 @@ namespace NuGet.PackageManagement.UI
                         duration.TotalSeconds);
 
                     AddUiActionEngineTelemetryProperties(actionTelemetryEvent, continueAfterPreview, acceptedLicense, userAction, existingPackages, addedPackages, removedPackages, updatedPackagesOld, updatedPackagesNew);
+
+                    actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
                     TelemetryActivity.EmitTelemetryEvent(actionTelemetryEvent);
                 }
