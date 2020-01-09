@@ -174,7 +174,7 @@ namespace Microsoft.Build.NuGetSdkResolver
                     }
                     catch (Exception e)
                     {
-                        errors.Add(e.Message);
+                        errors.Add(e.ToString());
                     }
                     finally
                     {
