@@ -16,16 +16,17 @@
 
   <PropertyGroup>
     <ReferenceOutputPath>$(ArtifactsDirectory)NuGet.VisualStudio.Client\$(VisualStudioVersion)\bin\$(Configuration)\</ReferenceOutputPath>
-    <NuGetTargetsPath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\NuGet.targets</NuGetTargetsPath>
+    <NuGetTargetsBasePath>$(RepositoryRootDirectory)src\NuGet.Core\NuGet.Build.Tasks\</NuGetTargetsBasePath>
     <XmlTransformPath>$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\</XmlTransformPath>
     <NewtonsoftJsonPath>$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\</NewtonsoftJsonPath>
-  </PropertyGroup>
+  
+</PropertyGroup>
 
   <PropertyGroup>
     <!-- Variables added here will be usable in the swr file.  This is a semi colon delimited
           list of name=value items.  Use $(name) in the swr file to reference the variable.
     -->
-    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsPath=$(NuGetTargetsPath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion);MajorVSVersion=$(MajorVSVersion);NewtonsoftJsonPath=$(NewtonsoftJsonPath)</PackagePreprocessorDefinitions>
+    <PackagePreprocessorDefinitions>$(PackagePreprocessorDefinitions);ReferenceOutputPath=$(ReferenceOutputPath);NuGetTargetsBasePath=$(NuGetTargetsBasePath);XmlTransformPath=$(XmlTransformPath);BuildNumber=$(BuildNumber);MajorNuGetVersion=$(MajorNuGetVersion);MinorNuGetVersion=$(MinorNuGetVersion);PatchNuGetVersion=$(PatchNuGetVersion);MajorVSVersion=$(MajorVSVersion);NewtonsoftJsonPath=$(NewtonsoftJsonPath)</PackagePreprocessorDefinitions>
   </PropertyGroup>
 
   <ItemGroup>

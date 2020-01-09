@@ -158,36 +158,20 @@ namespace NuGet.Build.Tasks
                     () => SettingsUtility.GetRepositoryPath(settings));
 
                 // Sources
-                var currentSources = RestoreSettingsUtils.GetValue(
-                    () => RestoreSourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => GetGlobalAbsolutePath(e)).ToArray(),
-                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreSources) ? Array.Empty<string>() : null,
-                    () => RestoreSources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
-                    () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
-
-                // Append additional sources
-                // Escape strings to avoid xplat path issues with msbuild.
-                var additionalProjectSources = MSBuildRestoreUtility.AggregateSources(
-                        values: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectSources"),
-                        excludeValues: Enumerable.Empty<string>())
-                    .Select(MSBuildRestoreUtility.FixSourcePath)
-                    .ToArray();
-
-                OutputSources = AppendItems(currentSources, additionalProjectSources);
+                OutputSources = BuildTasksUtility.GetSources(
+                    Path.GetDirectoryName(ProjectUniqueName),
+                    RestoreSources,
+                    RestoreSourcesOverride,
+                    GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectSources"),
+                    settings);
 
                 // Fallback folders
-                var currentFallbackFolders = RestoreSettingsUtils.GetValue(
-                    () => RestoreFallbackFoldersOverride?.Select(e => GetGlobalAbsolutePath(e)).ToArray(),
-                    () => MSBuildRestoreUtility.ContainsClearKeyword(RestoreFallbackFolders) ? Array.Empty<string>() : null,
-                    () => RestoreFallbackFolders?.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e)).ToArray(),
-                    () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
-
-                // Append additional fallback folders after removing excluded folders
-                var additionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
-                        values: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
-                        excludeValues: GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFoldersExcludes"))
-                    .ToArray();
-
-                OutputFallbackFolders = AppendItems(currentFallbackFolders, additionalProjectFallbackFolders);
+                OutputFallbackFolders = BuildTasksUtility.GetFallbackFolders(
+                    Path.GetDirectoryName(ProjectUniqueName),
+                    RestoreFallbackFolders, RestoreFallbackFoldersOverride,
+                    GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFolders"),
+                    GetPropertyValues(RestoreSettingsPerFramework, "RestoreAdditionalProjectFallbackFoldersExcludes"),
+                    settings);
             }
             catch (Exception ex)
             {
@@ -204,19 +188,6 @@ namespace NuGet.Build.Tasks
             BuildTasksUtility.LogOutputParam(log, nameof(OutputConfigFilePaths), OutputConfigFilePaths);
 
             return true;
-        }
-
-        private string[] AppendItems(string[] current, string[] additional)
-        {
-            if (additional == null || additional.Length == 0)
-            {
-                // noop
-                return current;
-            }
-
-            var additionalAbsolute = additional.Select(e => UriUtility.GetAbsolutePathFromFile(ProjectUniqueName, e));
-
-            return current.Concat(additionalAbsolute).ToArray();
         }
 
         /// <summary>

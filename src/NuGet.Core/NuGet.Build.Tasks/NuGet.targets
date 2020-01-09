@@ -1259,4 +1259,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
+  <!--
+    ============================================================
+    Import NuGet.RestoreEx.targets if the MSBuild property 'RestoreEnableStaticGraph'
+    is 'true'.  This file overrides the Restore target to use MSBuild Static Graph
+    to load and evaluate projects which is much faster.
+
+    This feature is not supported for NuGet.exe scenarios and NuGet.RestoreEx.targets
+    won't exist in that case.
+    ============================================================
+  -->
+  <Import Project="NuGet.RestoreEx.targets" Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true' And Exists('NuGet.RestoreEx.targets')" />
 </Project>

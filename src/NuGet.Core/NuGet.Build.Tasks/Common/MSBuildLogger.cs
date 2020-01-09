@@ -11,7 +11,7 @@ namespace NuGet.Build
     /// <summary>
     /// TaskLoggingHelper -> ILogger
     /// </summary>
-    internal class MSBuildLogger : LoggerBase, Common.ILogger
+    public class MSBuildLogger : LoggerBase, Common.ILogger
     {
         private readonly TaskLoggingHelper _taskLogging;
 
