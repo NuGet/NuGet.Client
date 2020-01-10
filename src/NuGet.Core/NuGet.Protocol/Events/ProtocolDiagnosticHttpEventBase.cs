@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.Protocol.Utility
+namespace NuGet.Protocol.Events
 {
     public abstract class ProtocolDiagnosticHttpEventBase
     {

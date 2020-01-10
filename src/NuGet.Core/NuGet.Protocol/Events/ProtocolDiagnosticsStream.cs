@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Protocol.Utility
+namespace NuGet.Protocol.Events
 {
     internal sealed class ProtocolDiagnosticsStream : Stream
     {

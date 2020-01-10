@@ -14,7 +14,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -37,7 +37,6 @@ namespace NuGet.Protocol
             new ConcurrentDictionary<string, AsyncLazy<SortedDictionary<NuGetVersion, PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly IReadOnlyList<Uri> _baseUris;
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
-        private readonly string _source;
 
         private const string ResourceTypeName = nameof(FindPackageByIdResource);
         private const string ThisTypeName = nameof(HttpFileSystemBasedFindPackageByIdResource);
@@ -50,24 +49,7 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="baseUris" /> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown if <paramref name="baseUris" /> is empty.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
-        [Obsolete("Use constructor with source")]
         public HttpFileSystemBasedFindPackageByIdResource(
-            IReadOnlyList<Uri> baseUris,
-            HttpSource httpSource)
-            : this(source: null, baseUris, httpSource)
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new <see cref="HttpFileSystemBasedFindPackageByIdResource" /> class.
-        /// </summary>
-        /// <param name="baseUris">Base URI's.</param>
-        /// <param name="httpSource">An HTTP source.</param>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="baseUris" /> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="baseUris" /> is empty.</exception>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="httpSource" /> is <c>null</c>.</exception>
-        public HttpFileSystemBasedFindPackageByIdResource(
-            string source,
             IReadOnlyList<Uri> baseUris,
             HttpSource httpSource)
         {
@@ -86,7 +68,6 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(httpSource));
             }
 
-            _source = source;
             _baseUris = baseUris
                 .Take(MaxRetries)
                 .Select(uri => uri.OriginalString.EndsWith("/", StringComparison.Ordinal) ? uri : new Uri(uri.OriginalString + "/"))
@@ -145,7 +126,7 @@ namespace NuGet.Protocol
             finally
             {
                 ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
-                    _source,
+                    _httpSource.PackageSource,
                     ResourceTypeName,
                     ThisTypeName,
                     nameof(GetAllVersionsAsync),
@@ -223,7 +204,7 @@ namespace NuGet.Protocol
             finally
             {
                 ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
-                    _source,
+                    _httpSource.PackageSource,
                     ResourceTypeName,
                     ThisTypeName,
                     nameof(GetDependencyInfoAsync),
@@ -308,7 +289,7 @@ namespace NuGet.Protocol
             finally
             {
                 ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
-                    _source,
+                    _httpSource.PackageSource,
                     ResourceTypeName,
                     ThisTypeName,
                     nameof(CopyNupkgToStreamAsync),
@@ -421,7 +402,7 @@ namespace NuGet.Protocol
             finally
             {
                 ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
-                    _source,
+                    _httpSource.PackageSource,
                     ResourceTypeName,
                     ThisTypeName,
                     nameof(DoesPackageExistAsync),

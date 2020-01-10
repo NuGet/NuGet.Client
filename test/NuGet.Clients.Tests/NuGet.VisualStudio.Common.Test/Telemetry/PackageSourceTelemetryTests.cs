@@ -10,7 +10,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 using NuGet.VisualStudio.Telemetry;
 using Xunit;
 

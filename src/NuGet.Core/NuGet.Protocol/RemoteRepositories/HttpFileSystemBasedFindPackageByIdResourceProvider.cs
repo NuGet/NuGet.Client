@@ -33,7 +33,6 @@ namespace NuGet.Protocol
                 var httpSourceResource = await sourceRepository.GetResourceAsync<HttpSourceResource>(token);
 
                 resource = new HttpFileSystemBasedFindPackageByIdResource(
-                    sourceRepository.PackageSource.Source,
                     packageBaseAddress,
                     httpSourceResource.HttpSource);
             }

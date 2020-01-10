@@ -10,8 +10,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 using NuGet.Protocol.Plugins;
-using NuGet.Protocol.Utility;
 
 namespace NuGet.Protocol
 {

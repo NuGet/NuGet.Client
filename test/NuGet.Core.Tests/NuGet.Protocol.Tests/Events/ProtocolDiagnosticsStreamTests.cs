@@ -5,10 +5,10 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Moq;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 using Xunit;
 
-namespace NuGet.Protocol.Tests.Utility
+namespace NuGet.Protocol.Tests.Events
 {
     public class ProtocolDiagnosticsStreamTests
     {

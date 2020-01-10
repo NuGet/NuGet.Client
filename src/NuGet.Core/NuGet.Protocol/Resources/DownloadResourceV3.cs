@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 
 namespace NuGet.Protocol
 {

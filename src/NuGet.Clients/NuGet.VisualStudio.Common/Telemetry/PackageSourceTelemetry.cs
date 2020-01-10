@@ -9,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 
 namespace NuGet.VisualStudio.Telemetry
 {
@@ -196,6 +197,7 @@ namespace NuGet.VisualStudio.Telemetry
                 string source = kvp.Key;
                 if (!_sources.TryGetValue(kvp.Key, out SourceRepository sourceRepository))
                 {
+                    // Should not be possible. This is just defensive programming to avoid an exception being thrown in case I'm wrong.
                     sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
@@ -215,32 +217,38 @@ namespace NuGet.VisualStudio.Telemetry
                 return null;
             }
 
-            var telemetry = new TelemetryEvent(EventName,
-                new Dictionary<string, object>()
-                {
+            FeedType feedType = await sourceRepository.GetFeedType(CancellationToken.None);
+
+            TelemetryEvent telemetry;
+            lock (data._lock)
+            {
+                telemetry = new TelemetryEvent(EventName,
+                    new Dictionary<string, object>()
+                    {
                     { PropertyNames.ParentId, parentId },
                     { PropertyNames.Action, actionName }
-                });
+                    });
 
-            await AddSourcePropertiesAsync(telemetry, sourceRepository);
-            telemetry[PropertyNames.Duration.Total] = data.Resources.Values.Sum(r => r.duration.TotalMilliseconds);
-            telemetry[PropertyNames.Nupkgs.Copied] = data.NupkgCount;
-            telemetry[PropertyNames.Nupkgs.Bytes] = data.NupkgSize;
-            AddResourceProperties(telemetry, data.Resources);
+                AddSourceProperties(telemetry, sourceRepository, feedType);
+                telemetry[PropertyNames.Duration.Total] = data.Resources.Values.Sum(r => r.duration.TotalMilliseconds);
+                telemetry[PropertyNames.Nupkgs.Copied] = data.NupkgCount;
+                telemetry[PropertyNames.Nupkgs.Bytes] = data.NupkgSize;
+                AddResourceProperties(telemetry, data.Resources);
 
-            if (data.Http.Requests > 0)
-            {
-                AddHttpProperties(telemetry, data.Http);
+                if (data.Http.Requests > 0)
+                {
+                    AddHttpProperties(telemetry, data.Http);
+                }
             }
 
             return telemetry;
         }
 
-        private static async Task AddSourcePropertiesAsync(TelemetryEvent telemetry, SourceRepository sourceRepository)
+        private static void AddSourceProperties(TelemetryEvent telemetry, SourceRepository sourceRepository, FeedType feedType)
         {
             telemetry.AddPiiData(PropertyNames.Source.Url, sourceRepository.PackageSource.Source);
 
-            telemetry[PropertyNames.Source.Type] = await sourceRepository.GetFeedType(CancellationToken.None);
+            telemetry[PropertyNames.Source.Type] = feedType;
 
             var msFeed = GetMsFeed(sourceRepository.PackageSource);
             if (msFeed != null)

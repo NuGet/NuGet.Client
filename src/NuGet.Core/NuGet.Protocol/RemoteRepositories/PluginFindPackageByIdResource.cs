@@ -14,8 +14,8 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
+using NuGet.Protocol.Events;
 using NuGet.Protocol.Plugins;
-using NuGet.Protocol.Utility;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol.Core.Types

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace NuGet.Protocol.Utility
+namespace NuGet.Protocol.Events
 {
     internal sealed class ProtocolDiagnosticInProgressHttpEvent : ProtocolDiagnosticHttpEventBase
     {

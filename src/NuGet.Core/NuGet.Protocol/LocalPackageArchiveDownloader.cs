@@ -10,7 +10,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol.Events;
 
 namespace NuGet.Protocol
 {
@@ -78,9 +78,9 @@ namespace NuGet.Protocol
         /// <exception cref="ArgumentException">Thrown if <paramref name="packageFilePath" />
         /// is either <c>null</c> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is <c>null</c>.</exception>
         public LocalPackageArchiveDownloader(
             string source,
             string packageFilePath,
