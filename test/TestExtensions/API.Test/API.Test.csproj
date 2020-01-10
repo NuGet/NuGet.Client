@@ -4,6 +4,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <SkipSigning>true</SkipSigning>
+    <NoWarn>$(NoWarn);1762</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

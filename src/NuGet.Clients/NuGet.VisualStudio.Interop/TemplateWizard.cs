@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.ComponentModel.Composition.Hosting;
 using System.Diagnostics.CodeAnalysis;
 using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
@@ -25,7 +26,7 @@ namespace NuGet.VisualStudio
             using (var serviceProvider = new ServiceProvider((IServiceProvider)automationObject))
             {
                 var componentModel = (IComponentModel)serviceProvider.GetService(typeof(SComponentModel));
-
+                Assumes.Present(componentModel);
                 using (var container = new CompositionContainer(componentModel.DefaultExportProvider))
                 {
                     container.ComposeParts(this);
