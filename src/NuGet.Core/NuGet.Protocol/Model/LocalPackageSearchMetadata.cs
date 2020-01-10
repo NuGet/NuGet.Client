@@ -112,28 +112,25 @@ namespace NuGet.Protocol
             {
                 if (_package.GetReader() is PackageArchiveReader reader) // This will never be anything else in reality. The search resource always uses a PAR
                 {
-                    using (reader)
+                    var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
+                    if (entry != null)
                     {
-                        var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
-                        if (entry != null)
+                        if (entry.Length >= FiveMegabytes)
                         {
-                            if (entry.Length >= FiveMegabytes)
-                            {
-                                fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
-                            }
-                            else
-                            {
-                                using (var licenseStream = entry.Open())
-                                using (TextReader textReader = new StreamReader(licenseStream))
-                                {
-                                    fileContent = textReader.ReadToEnd();
-                                }
-                            }
+                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
                         }
                         else
                         {
-                            fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileNotFound, path);
+                            using (var licenseStream = entry.Open())
+                            using (TextReader textReader = new StreamReader(licenseStream))
+                            {
+                                fileContent = textReader.ReadToEnd();
+                            }
                         }
+                    }
+                    else
+                    {
+                        fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileNotFound, path);
                     }
                 }
             }

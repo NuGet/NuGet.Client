@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        [Fact(Skip="Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -203,7 +203,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// </summary>
         /// <param name="path">Final path to the dummy .nupkg</param>
         /// <param name="iconName">Icon filename with .png extension</param>
-        private void CreateDummyPackage(string zipPath, string iconName = "icon.png")
+        private static void CreateDummyPackage(string zipPath, string iconName = "icon.png")
         {
             var dir =  Path.GetDirectoryName(zipPath);
             var holdDir = Path.GetRandomFileName();
@@ -226,7 +226,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// <param name="h">Image height in pixels</param>
         /// <param name="dpiX">Horizontal Dots (pixels) Per Inch in the image</param>
         /// /// <param name="dpiX">Vertical Dots (pixels) Per Inch in the image</param>
-        private void CreateNoisePngImage(string path, int w = 128, int h = 128, int dpiX = 96, int dpiY = 96)
+        private static void CreateNoisePngImage(string path, int w = 128, int h = 128, int dpiX = 96, int dpiY = 96)
         {
             // Create PNG image with noise
             var fmt = PixelFormats.Bgr32;

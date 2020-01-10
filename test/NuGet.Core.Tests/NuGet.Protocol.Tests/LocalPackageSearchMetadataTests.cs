@@ -3,8 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-using System.IO;
-using System.Xml.Linq;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
@@ -13,45 +11,13 @@ using Xunit;
 
 namespace NuGet.Protocol.Tests
 {
-    public class LocalPackageSearchMetadataTests : IDisposable
+    public class LocalPackageSearchMetadataTests : IClassFixture<LocalPackageSearchMetadataFixture>
     {
-        private readonly LocalPackageSearchMetadata _testInstance;
-        private readonly TestDirectory _packageDir;
+        private readonly LocalPackageSearchMetadataFixture _testData;
 
-        public LocalPackageSearchMetadataTests()
+        public LocalPackageSearchMetadataTests(LocalPackageSearchMetadataFixture testInstance)
         {
-            var pkgId = new PackageIdentity("nuget.lpsm.test", new NuGetVersion(0, 0, 1));
-
-            var nuspecBuilder = NuspecBuilder.Create()
-                .WithPackageId(pkgId.Id)
-                .WithPackageVersion(pkgId.Version.ToNormalizedString())
-                .WithIcon("icon.jpg");
-
-            var pkgCtx = new SimpleTestPackageContext(pkgId.Id, pkgId.Version.ToNormalizedString());
-            pkgCtx.Nuspec = XDocument.Parse(nuspecBuilder.Build().ToString());
-
-            _packageDir = TestDirectory.Create();
-            
-            SimpleTestPackageUtility.CreatePackagesAsync(_packageDir.Path, pkgCtx).Wait();
-
-            var pkgPath = Path.Combine(_packageDir.Path, $"{pkgId.Id}.{pkgId.Version.ToNormalizedString()}.nupkg");
-            var info = new LocalPackageInfo(
-                identity: pkgId,
-                path: pkgPath,
-                lastWriteTimeUtc: DateTime.UtcNow,
-                nuspec: new Lazy<Packaging.NuspecReader>(() =>
-                {
-                    var reader = new PackageArchiveReader(pkgPath);
-                    return reader.NuspecReader;
-                }),
-                getPackageReader: () => new PackageArchiveReader(pkgPath));
-
-            _testInstance = new LocalPackageSearchMetadata(info);            
-        }
-
-        public void Dispose()
-        {
-            _packageDir.Dispose();
+            _testData = testInstance;
         }
 
         [Fact]
@@ -72,16 +38,16 @@ namespace NuGet.Protocol.Tests
         [Fact]
         public void LocalPackageInfo_NotNull()
         {
-            Assert.NotNull(_testInstance.LocalPackageInfo);
+            Assert.NotNull(_testData.TestData.LocalPackageInfo);
         }
 
         [Fact]
         public void EmbeddedIcon_IconUrl_ReturnsFile()
         {
-            Assert.NotNull(_testInstance.IconUrl);
-            Assert.True(_testInstance.IconUrl.IsFile);
-            Assert.True(_testInstance.IconUrl.IsAbsoluteUri);
-            Assert.NotNull(_testInstance.IconUrl.Fragment);
+            Assert.NotNull(_testData.TestData.IconUrl);
+            Assert.True(_testData.TestData.IconUrl.IsFile);
+            Assert.True(_testData.TestData.IconUrl.IsAbsoluteUri);
+            Assert.NotNull(_testData.TestData.IconUrl.Fragment);
         }
     }
 }

@@ -8,54 +8,38 @@ using NuGet.Versioning;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Xunit;
 
 namespace NuGet.Protocol.Core.Types.Tests
 {
-    public class PackageSearchMetadataBuilderTests
+    public class PackageSearchMetadataBuilderTests : IClassFixture<LocalPackageSearchMetadataFixture>
     {
-        [Fact]        
-        public async Task LocalPacakgeSearchMetadata_ClonedPackageSearchMetadata_LocalPackageInfo_NotNull()
+        private readonly LocalPackageSearchMetadataFixture _testData;
+
+        public PackageSearchMetadataBuilderTests(LocalPackageSearchMetadataFixture testData)
         {
-            var pkgId = new PackageIdentity("nuget.psm.test", new NuGetVersion(0,0,1));
-            var pkg = new SimpleTestPackageContext(pkgId.Id, pkgId.Version.ToNormalizedString());
-            pkg.AddFile("lib/net45/a.dll");
+            _testData = testData;
+        }
 
-            using(var dir = TestDirectory.Create())
-            {
-                await SimpleTestPackageUtility.CreatePackagesAsync(dir.Path, pkg);
-                var pkgPath = Path.Combine(dir.Path, $"{pkgId.Id}.{pkgId.Version.ToNormalizedString()}.nupkg");
-                var info = new LocalPackageInfo(
-                    identity: pkgId,
-                    path: pkgPath,
-                    lastWriteTimeUtc: DateTime.UtcNow,
-                    nuspec: new Lazy<Packaging.NuspecReader>(() => {
-                        var reader = new PackageArchiveReader(pkgPath);
-                        return reader.NuspecReader;
-                    }),
-                    getPackageReader: () => new PackageArchiveReader(pkgPath));
-                var meta = new LocalPackageSearchMetadata(info);
+        [Fact]        
+        public void LocalPacakgeSearchMetadata_LocalPackageInfo_NotNull()
+        {
+            var copy1 = PackageSearchMetadataBuilder
+                .FromMetadata(_testData.TestData)
+                .Build();
+            Assert.True(copy1 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
 
-                Assert.NotNull(meta.LocalPackageInfo);
+            var clone1 = copy1 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
+            Assert.NotNull(clone1.LocalPackageInfo);
 
-                // act 1
-                var copy1 = PackageSearchMetadataBuilder
-                    .FromMetadata(meta)
-                    .Build();
-                Assert.True(copy1 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
-
-                var clone1 = copy1 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
-                Assert.NotNull(clone1.LocalPackageInfo);
-
-                // Act 2
-                var copy2 = PackageSearchMetadataBuilder
-                    .FromMetadata(copy1)
-                    .Build();
-                Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
-
-                var clone2 = copy2 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
-                Assert.NotNull(clone2.LocalPackageInfo);
-            }
+            var copy2 = PackageSearchMetadataBuilder
+                .FromMetadata(copy1)
+                .Build();
+            Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
+                
+            var clone2 = copy2 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
+            Assert.NotNull(clone2.LocalPackageInfo);
         }
     }
 }

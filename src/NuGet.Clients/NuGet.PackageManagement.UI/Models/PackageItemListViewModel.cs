@@ -421,7 +421,9 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                return LocalPackageInfo?.GetReader() as PackageArchiveReader;
+                var reader = LocalPackageInfo?.GetReader() as PackageArchiveReader;
+
+                return reader;
             }
         }
 
