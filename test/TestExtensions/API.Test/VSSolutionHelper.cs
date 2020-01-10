@@ -467,7 +467,7 @@ namespace API.Test
             return solution2
                 .Projects
                 .Cast<EnvDTE.Project>()
-                .FirstOrDefault(project => project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(project => { ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase); });
         }
 
         public static async Task<EnvDTE.Project> GetProjectAsync(
@@ -478,7 +478,7 @@ namespace API.Test
 
             var projectItem = solutionFolderProject.ProjectItems
                 .Cast<EnvDTE.ProjectItem>()
-                .FirstOrDefault(project => project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefault(project => { ThreadHelper.ThrowIfNotOnUIThread(); return project.Name.Equals(projectName, StringComparison.OrdinalIgnoreCase); });
 
             return projectItem?.Object as EnvDTE.Project;
         }
