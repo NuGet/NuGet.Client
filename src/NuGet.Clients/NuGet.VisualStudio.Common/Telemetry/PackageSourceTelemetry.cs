@@ -5,130 +5,203 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Protocol.Utility;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 
 namespace NuGet.VisualStudio.Telemetry
 {
     public sealed class PackageSourceTelemetry : IDisposable
     {
-        private readonly ConcurrentDictionary<string, Data> _data;
-        private readonly IDictionary<string, PackageSource> _sources;
+        private readonly IReadOnlyDictionary<string, Data> _data;
+        private readonly IDictionary<string, SourceRepository> _sources;
         private readonly Guid _parentId;
+        private readonly ConcurrentDictionary<string, ConcurrentDictionary<string, string>> _resourceStringTable;
+        private readonly string _actionName;
 
         internal static readonly string EventName = "PackageSourceDiagnostics";
 
-        public PackageSourceTelemetry(IEnumerable<PackageSource> sources, Guid parentId)
+        public enum TelemetryAction
+        {
+            Unknown = 0,
+            Restore,
+            Search
+        }
+
+        public PackageSourceTelemetry(IEnumerable<SourceRepository> sources, Guid parentId, TelemetryAction action)
         {
             if (sources == null)
             {
                 throw new ArgumentNullException(nameof(sources));
             }
 
-            _data = new ConcurrentDictionary<string, Data>();
-            ProtocolDiagnostics.Event += ProtocolDiagnostics_Event;
-            _parentId = parentId;
-
             // Multiple sources can use the same feed url. We can't know which one protocol events come from, so choose any.
-            _sources = new Dictionary<string, PackageSource>();
+            _sources = new Dictionary<string, SourceRepository>();
             foreach (var source in sources)
             {
-                _sources[source.Source] = source;
+                _sources[source.PackageSource.Source] = source;
+            }
+
+            var data = new Dictionary<string, Data>(_sources.Count);
+            foreach (var source in _sources.Keys)
+            {
+                data[source] = new Data();
+            }
+            _data = data;
+
+            _resourceStringTable = new ConcurrentDictionary<string, ConcurrentDictionary<string, string>>();
+            ProtocolDiagnostics.HttpEvent += ProtocolDiagnostics_HttpEvent;
+            ProtocolDiagnostics.ResourceEvent += ProtocolDiagnostics_ResourceEvent;
+            ProtocolDiagnostics.NupkgCopiedEvent += ProtocolDiagnostics_NupkgCopiedEvent;
+            _parentId = parentId;
+            _actionName = GetActionName(action);
+        }
+
+        private static string GetActionName(TelemetryAction action)
+        {
+            switch (action)
+            {
+                case TelemetryAction.Restore:
+                case TelemetryAction.Search:
+                    return action.ToString();
+
+                default:
+                    throw new ArgumentException("Unknown value of " + nameof(TelemetryAction), nameof(action));
             }
         }
 
-        private void ProtocolDiagnostics_Event(ProtocolDiagnosticEvent pdEvent)
+        private void ProtocolDiagnostics_ResourceEvent(ProtocolDiagnosticResourceEvent pdEvent)
         {
-            AddAggregateData(pdEvent, _data);
+            AddResourceData(pdEvent, _data, _resourceStringTable);
         }
 
-        internal static void AddAggregateData(ProtocolDiagnosticEvent pdEvent, ConcurrentDictionary<string, Data> allData)
+        internal static void AddResourceData(
+            ProtocolDiagnosticResourceEvent pdEvent,
+            IReadOnlyDictionary<string, Data> allData,
+            ConcurrentDictionary<string, ConcurrentDictionary<string, string>> resourceStringTable)
         {
-            var data = allData.GetOrAdd(pdEvent.Source, _ => new Data());
-
-            var resourceData = pdEvent.Url.OriginalString.EndsWith(".nupkg", StringComparison.OrdinalIgnoreCase)
-                ? data.Nupkg
-                : data.Metadata;
-
-            lock (resourceData.Lock)
+            if (!allData.TryGetValue(pdEvent.Source, out Data data))
             {
-                ApplyTiming(resourceData.EventTiming, pdEvent.EventDuration);
+                return;
+            }
 
-                if (pdEvent.HeaderDuration.HasValue)
+            var resourceMethodNameTable = resourceStringTable.GetOrAdd(pdEvent.ResourceType, t => new ConcurrentDictionary<string, string>());
+            var resourceTypeAndMethod = resourceMethodNameTable.GetOrAdd(pdEvent.Method, m => pdEvent.ResourceType + "." + m);
+
+            lock (data._lock)
+            {
+                if (data.Resources.TryGetValue(resourceTypeAndMethod, out var t))
                 {
-                    if (resourceData.HeaderTiming == null)
-                    {
-                        resourceData.HeaderTiming = new ResourceTimingData();
-                    }
-
-                    ApplyTiming(resourceData.HeaderTiming, pdEvent.HeaderDuration.Value);
+                    data.Resources[resourceTypeAndMethod] = (t.count + 1, t.duration + pdEvent.Duration);
                 }
+                else
+                {
+                    data.Resources[resourceTypeAndMethod] = (1, pdEvent.Duration);
+                }
+            }
+        }
+
+        private void ProtocolDiagnostics_HttpEvent(ProtocolDiagnosticHttpEvent pdEvent)
+        {
+            AddHttpData(pdEvent, _data);
+        }
+
+        internal static void AddHttpData(ProtocolDiagnosticHttpEvent pdEvent, IReadOnlyDictionary<string, Data> allData)
+        {
+            if (!allData.TryGetValue(pdEvent.Source, out Data data))
+            {
+                return;
+            }
+
+            lock (data._lock)
+            {
+                var httpData = data.Http;
+                httpData.Requests++;
+                httpData.TotalDuration += pdEvent.EventDuration;
+                // If any one event header duration is null, we want the HttpData value to be null,
+                // since the request count would otherwise be incorrect. C# nullable does this automatically for us.
+                httpData.HeaderDuration += pdEvent.HeaderDuration;
 
                 if (pdEvent.IsSuccess)
                 {
-                    resourceData.Successful++;
+                    httpData.Successful++;
                 }
 
                 if (pdEvent.IsRetry)
                 {
-                    resourceData.Retries++;
+                    httpData.Retries++;
                 }
 
                 if (pdEvent.IsCancelled)
                 {
-                    resourceData.Cancelled++;
+                    httpData.Cancelled++;
                 }
 
                 if (pdEvent.IsLastAttempt && !pdEvent.IsSuccess && !pdEvent.IsCancelled)
                 {
-                    resourceData.Failed++;
+                    httpData.Failed++;
                 }
 
                 if (pdEvent.Bytes > 0)
                 {
-                    resourceData.TotalBytes += pdEvent.Bytes;
-                    if (pdEvent.Bytes > resourceData.MaxBytes)
-                    {
-                        resourceData.MaxBytes = pdEvent.Bytes;
-                    }
+                    httpData.TotalBytes += pdEvent.Bytes;
                 }
 
                 if (pdEvent.HttpStatusCode.HasValue)
                 {
-                    if (!resourceData.StatusCodes.TryGetValue(pdEvent.HttpStatusCode.Value, out var count))
+                    if (!httpData.StatusCodes.TryGetValue(pdEvent.HttpStatusCode.Value, out var count))
                     {
                         count = 0;
                     }
-                    resourceData.StatusCodes[pdEvent.HttpStatusCode.Value] = count + 1;
+                    httpData.StatusCodes[pdEvent.HttpStatusCode.Value] = count + 1;
                 }
             }
         }
 
-        private static void ApplyTiming(ResourceTimingData timingData, TimeSpan duration)
+        private void ProtocolDiagnostics_NupkgCopiedEvent(ProtocolDiagnosticNupkgCopiedEvent ncEvent)
         {
-            timingData.Requests++;
-            timingData.TotalDuration += duration;
+            AddNupkgCopiedData(ncEvent, _data);
+        }
+
+        internal static void AddNupkgCopiedData(ProtocolDiagnosticNupkgCopiedEvent ncEvent, IReadOnlyDictionary<string, Data> allData)
+        {
+            if (!allData.TryGetValue(ncEvent.Source, out Data data))
+            {
+                return;
+            }
+
+            lock (data._lock)
+            {
+                data.NupkgCount++;
+                data.NupkgSize += ncEvent.FileSize;
+            }
         }
 
         public void Dispose()
         {
-            ProtocolDiagnostics.Event -= ProtocolDiagnostics_Event;
+            ProtocolDiagnostics.HttpEvent -= ProtocolDiagnostics_HttpEvent;
+            ProtocolDiagnostics.ResourceEvent -= ProtocolDiagnostics_ResourceEvent;
+            ProtocolDiagnostics.NupkgCopiedEvent -= ProtocolDiagnostics_NupkgCopiedEvent;
         }
 
-        public void SendTelemetry()
+        public async Task SendTelemetryAsync()
         {
             var parentId = _parentId.ToString();
             foreach (var kvp in _data)
             {
                 Data data = kvp.Value;
                 string source = kvp.Key;
-                if (!_sources.TryGetValue(kvp.Key, out PackageSource packageSource))
+                if (!_sources.TryGetValue(kvp.Key, out SourceRepository sourceRepository))
                 {
-                    packageSource = null;
+                    // Should not be possible. This is just defensive programming to avoid an exception being thrown in case I'm wrong.
+                    sourceRepository = new SourceRepository(new PackageSource(source), Repository.Provider.GetCoreV3());
                 }
 
-                var telemetry = ToTelemetry(data, source, packageSource, parentId);
+                var telemetry = await ToTelemetryAsync(data, sourceRepository, parentId, _actionName);
 
                 if (telemetry != null)
                 {
@@ -137,124 +210,94 @@ namespace NuGet.VisualStudio.Telemetry
             }
         }
 
-        internal static TelemetryEvent ToTelemetry(Data data, string source, PackageSource packageSource, string parentId)
+        internal static async Task<TelemetryEvent> ToTelemetryAsync(Data data, SourceRepository sourceRepository, string parentId, string actionName)
         {
-            if (data.Metadata.EventTiming.Requests == 0 && data.Nupkg.EventTiming.Requests == 0)
+            if (data.Resources.Count == 0)
             {
                 return null;
             }
 
-            var telemetry = new TelemetryEvent(EventName,
-                new Dictionary<string, object>()
-                {
+            FeedType feedType = await sourceRepository.GetFeedType(CancellationToken.None);
+
+            TelemetryEvent telemetry;
+            lock (data._lock)
+            {
+                telemetry = new TelemetryEvent(EventName,
+                    new Dictionary<string, object>()
+                    {
                     { PropertyNames.ParentId, parentId },
-                });
+                    { PropertyNames.Action, actionName }
+                    });
 
-            // source info
-            telemetry.AddPiiData(PropertyNames.Source.Url, source);
+                AddSourceProperties(telemetry, sourceRepository, feedType);
+                telemetry[PropertyNames.Duration.Total] = data.Resources.Values.Sum(r => r.duration.TotalMilliseconds);
+                telemetry[PropertyNames.Nupkgs.Copied] = data.NupkgCount;
+                telemetry[PropertyNames.Nupkgs.Bytes] = data.NupkgSize;
+                AddResourceProperties(telemetry, data.Resources);
 
-            if (packageSource == null)
-            {
-                packageSource = new PackageSource(source);
+                if (data.Http.Requests > 0)
+                {
+                    AddHttpProperties(telemetry, data.Http);
+                }
             }
-
-            if (packageSource.IsHttp)
-            {
-                telemetry[PropertyNames.Source.Type] = "http";
-                telemetry[PropertyNames.Source.Protocol] = TelemetryUtility.IsHttpV3(packageSource) ? 3 : packageSource.ProtocolVersion;
-            }
-            else
-            {
-                telemetry[PropertyNames.Source.Type] = "local";
-                telemetry[PropertyNames.Source.Protocol] = packageSource.ProtocolVersion;
-            }
-
-            var msFeed = GetMsFeed(packageSource);
-            if (msFeed != null)
-            {
-                telemetry[PropertyNames.Source.MSFeed] = msFeed;
-            }
-
-            AddResourceProperties(telemetry, data.Metadata, PropertyNames.Metadata);
-            AddResourceProperties(telemetry, data.Nupkg, PropertyNames.Nupkg);
-
-            ResourceData all = CalculateTotal(data.Metadata, data.Nupkg);
-            AddResourceProperties(telemetry, all, PropertyNames.All);
 
             return telemetry;
         }
 
-        private static void AddResourceProperties(TelemetryEvent telemetry, ResourceData data, PackageSourceDiagnosticsPropertyNames.ResourcePropertyNames propertyNames)
+        private static void AddSourceProperties(TelemetryEvent telemetry, SourceRepository sourceRepository, FeedType feedType)
         {
-            lock (data.Lock)
+            telemetry.AddPiiData(PropertyNames.Source.Url, sourceRepository.PackageSource.Source);
+
+            telemetry[PropertyNames.Source.Type] = feedType;
+
+            var msFeed = GetMsFeed(sourceRepository.PackageSource);
+            if (msFeed != null)
             {
-                telemetry[propertyNames.Requests] = data.EventTiming.Requests;
-                telemetry[propertyNames.Successful] = data.Successful;
-                telemetry[propertyNames.Retries] = data.Retries;
-                telemetry[propertyNames.Cancelled] = data.Cancelled;
-                telemetry[propertyNames.Failed] = data.Failed;
-                telemetry[propertyNames.Bytes.Total] = data.TotalBytes;
-                telemetry[propertyNames.Bytes.Max] = data.MaxBytes;
-
-                if (data.StatusCodes.Count > 0)
-                {
-                    telemetry.ComplexData[propertyNames.Http.StatusCodes] = ToStatusCodeTelemetry(data.StatusCodes);
-                }
-
-                if (data.EventTiming.Requests > 0)
-                {
-                    telemetry[propertyNames.Timing.Total] = data.EventTiming.TotalDuration.TotalMilliseconds;
-                }
-
-                if (data.HeaderTiming != null && data.HeaderTiming.Requests > 0)
-                {
-                    telemetry[propertyNames.Header.Timing.Total] = data.HeaderTiming.TotalDuration.TotalMilliseconds;
-                }
+                telemetry[PropertyNames.Source.MSFeed] = msFeed;
             }
         }
 
-        private static ResourceData CalculateTotal(params ResourceData[] data)
+        private static void AddResourceProperties(TelemetryEvent telemetry, Dictionary<string, (int count, TimeSpan duration)> resources)
         {
-            var all = new ResourceData();
+            telemetry[PropertyNames.Resources.Calls] = resources.Values.Sum(r => r.count);
+            telemetry.ComplexData[PropertyNames.Resources.Details] = ToResourceDetailsTelemetry(resources);
+        }
 
-            foreach (ResourceData resourceData in data)
+        private static void AddHttpProperties(TelemetryEvent telemetry, HttpData data)
+        {
+            telemetry[PropertyNames.Http.Requests] = data.Requests;
+            telemetry[PropertyNames.Http.Successful] = data.Successful;
+            telemetry[PropertyNames.Http.Retries] = data.Retries;
+            telemetry[PropertyNames.Http.Cancelled] = data.Cancelled;
+            telemetry[PropertyNames.Http.Failed] = data.Failed;
+            telemetry[PropertyNames.Http.Bytes] = data.TotalBytes;
+            telemetry[PropertyNames.Http.Duration.Total] = data.TotalDuration.TotalMilliseconds;
+
+            if (data.HeaderDuration != null)
             {
-                lock (resourceData.Lock)
-                {
-                    all.EventTiming.Requests += resourceData.EventTiming.Requests;
-                    all.EventTiming.TotalDuration += resourceData.EventTiming.TotalDuration;
-                    if (resourceData.HeaderTiming != null)
-                    {
-                        if (all.HeaderTiming == null)
-                        {
-                            all.HeaderTiming = new ResourceTimingData();
-                        }
-
-                        all.HeaderTiming.Requests += resourceData.HeaderTiming.Requests;
-                        all.HeaderTiming.TotalDuration += resourceData.HeaderTiming.TotalDuration;
-                    }
-
-                    all.TotalBytes += resourceData.TotalBytes;
-                    all.MaxBytes += resourceData.MaxBytes;
-
-                    foreach (var kvp in resourceData.StatusCodes)
-                    {
-                        if (!all.StatusCodes.TryGetValue(kvp.Key, out int count))
-                        {
-                            count = 0;
-                        }
-                        count += kvp.Value;
-                        all.StatusCodes[kvp.Key] = count;
-                    }
-
-                    all.Successful += resourceData.Successful;
-                    all.Retries += resourceData.Retries;
-                    all.Cancelled += resourceData.Cancelled;
-                    all.Failed += resourceData.Failed;
-                }
+                telemetry[PropertyNames.Http.Duration.Header] = data.HeaderDuration.Value.TotalMilliseconds;
             }
 
-            return all;
+            if (data.StatusCodes.Count > 0)
+            {
+                telemetry.ComplexData[PropertyNames.Http.StatusCodes] = ToStatusCodeTelemetry(data.StatusCodes);
+            }
+        }
+
+        private static TelemetryEvent ToResourceDetailsTelemetry(Dictionary<string, (int count, TimeSpan duration)> resources)
+        {
+            var subevent = new TelemetryEvent(eventName: null);
+
+            foreach (var resource in resources)
+            {
+                var details = new TelemetryEvent(eventName: null);
+                details["count"] = resource.Value.count;
+                details["duration"] = resource.Value.duration.TotalMilliseconds;
+
+                subevent.ComplexData[resource.Key] = details;
+            }
+
+            return subevent;
         }
 
         private static TelemetryEvent ToStatusCodeTelemetry(Dictionary<int, int> statusCodes)
@@ -302,7 +345,7 @@ namespace NuGet.VisualStudio.Telemetry
             return GetTotals(_data);
         }
 
-        internal static Totals GetTotals(ConcurrentDictionary<string, Data> data)
+        internal static Totals GetTotals(IReadOnlyDictionary<string, Data> data)
         {
             int requests = 0;
             long bytes = 0;
@@ -310,21 +353,19 @@ namespace NuGet.VisualStudio.Telemetry
 
             foreach (var source in data)
             {
-                Increment(source.Value.Metadata, ref requests, ref bytes, ref duration);
-                Increment(source.Value.Nupkg, ref requests, ref bytes, ref duration);
+                lock (source.Value._lock)
+                {
+                    foreach (var resource in source.Value.Resources.Values)
+                    {
+                        requests += resource.count;
+                        duration += resource.duration;
+                    }
+
+                    bytes += source.Value.NupkgSize;
+                }
             }
 
             return new Totals(requests, bytes, duration);
-
-            void Increment(ResourceData rd, ref int r, ref long b, ref TimeSpan d)
-            {
-                lock (rd.Lock)
-                {
-                    r += rd.EventTiming.Requests;
-                    b += rd.TotalBytes;
-                    d += rd.EventTiming.TotalDuration;
-                }
-            }
         }
 
         public class Totals
@@ -343,127 +384,82 @@ namespace NuGet.VisualStudio.Telemetry
 
         internal class Data
         {
-            internal ResourceData Metadata { get; }
-            internal ResourceData Nupkg { get; }
+            internal object _lock;
+            internal Dictionary<string, (int count, TimeSpan duration)> Resources { get; }
+            internal HttpData Http { get; }
+            internal int NupkgCount { get; set; }
+            internal long NupkgSize { get; set; }
 
             internal Data()
             {
-                Metadata = new ResourceData();
-                Nupkg = new ResourceData();
+                _lock = new object();
+                Resources = new Dictionary<string, (int count, TimeSpan duration)>();
+                Http = new HttpData();
             }
         }
 
-        internal class ResourceData
+        internal class HttpData
         {
-            public readonly object Lock = new object();
-            public readonly ResourceTimingData EventTiming = new ResourceTimingData();
-            public ResourceTimingData HeaderTiming;
+            public int Requests;
+            public TimeSpan TotalDuration;
+            public TimeSpan? HeaderDuration;
             public long TotalBytes;
-            public long MaxBytes;
             public readonly Dictionary<int, int> StatusCodes = new Dictionary<int, int>();
             public int Successful;
             public int Retries;
             public int Cancelled;
             public int Failed;
+
+            public HttpData()
+            {
+                HeaderDuration = TimeSpan.Zero;
+            }
         }
 
-        internal class ResourceTimingData
+        internal static class PropertyNames
         {
-            public int Requests;
-            public TimeSpan TotalDuration;
-        }
+            internal const string ParentId = "parentid";
+            internal const string Action = "action";
 
-        internal static PackageSourceDiagnosticsPropertyNames PropertyNames = new PackageSourceDiagnosticsPropertyNames();
-
-        internal class PackageSourceDiagnosticsPropertyNames
-        {
-            internal string ParentId { get; } = "parentid";
-            internal SourcePropertyNames Source { get; } = new SourcePropertyNames("source");
-            internal ResourcePropertyNames Metadata { get; } = new ResourcePropertyNames("metadata");
-            internal ResourcePropertyNames Nupkg { get; } = new ResourcePropertyNames("nupkg");
-            internal ResourcePropertyNames All { get; } = new ResourcePropertyNames("all");
-
-            internal class ResourcePropertyNames
+            internal static class Source
             {
-                internal ResourcePropertyNames(string prefix)
-                {
-                    Requests = prefix + ".requests";
-                    Successful = prefix + ".successful";
-                    Retries = prefix + ".retries";
-                    Cancelled = prefix + ".cancelled";
-                    Failed = prefix + ".failed";
-                    Bytes = new BytesPropertyNames(prefix + ".bytes");
-                    Http = new HttpPropertyNames(prefix + ".http");
-                    Timing = new TimingPropertyNames(prefix + ".timing");
-                    Header = new HeaderPropertyNames(prefix + ".header");
-                }
-
-                internal string Requests { get; }
-                internal string Successful { get; }
-                internal string Retries { get; }
-                internal string Cancelled { get; }
-                internal string Failed { get; }
-                internal BytesPropertyNames Bytes { get; }
-                internal HttpPropertyNames Http { get; }
-                internal TimingPropertyNames Timing { get; }
-                internal HeaderPropertyNames Header { get; }
+                internal const string Url = "source.url";
+                internal const string Type = "source.type";
+                internal const string MSFeed = "source.msfeed";
             }
 
-            internal class SourcePropertyNames
+            internal static class Duration
             {
-                public SourcePropertyNames(string prefix)
-                {
-                    Url = prefix + ".url";
-                    Type = prefix + ".type";
-                    Protocol = prefix + ".nugetprotocol";
-                    MSFeed = prefix + ".msfeed";
-                }
-
-                internal string Url { get; }
-                internal string Type { get; }
-                internal string Protocol { get; }
-                internal string MSFeed { get; }
+                internal const string Total = "duration.total";
             }
 
-            internal class TimingPropertyNames
+            internal static class Nupkgs
             {
-                public TimingPropertyNames(string prefix)
-                {
-                    Total = prefix + ".total";
-                }
-
-                internal string Total { get; }
+                internal const string Copied = "nupkgs.copied";
+                internal const string Bytes = "nupkgs.bytes";
             }
 
-            internal class HeaderPropertyNames
+            internal static class Resources
             {
-                internal HeaderPropertyNames(string prefix)
-                {
-                    Timing = new TimingPropertyNames(prefix + ".timing");
-                }
-
-                internal TimingPropertyNames Timing { get; }
+                internal const string Calls = "resources.calls";
+                internal const string Details = "resources.details";
             }
 
-            internal class HttpPropertyNames
+            internal static class Http
             {
-                internal HttpPropertyNames(string prefix)
-                {
-                    StatusCodes = prefix + ".statuscodes";
-                }
+                internal const string Requests = "http.requests";
+                internal const string Successful = "http.successful";
+                internal const string Retries = "http.retries";
+                internal const string Cancelled = "http.cancelled";
+                internal const string Failed = "http.failed";
+                internal const string Bytes = "http.bytes";
+                internal const string StatusCodes = "http.statuscodes";
 
-                internal string StatusCodes { get; }
-            }
-
-            internal class BytesPropertyNames
-            {
-                internal  BytesPropertyNames(string prefix)
+                internal static class Duration
                 {
-                    Total = prefix + ".total";
-                    Max = prefix + ".max";
+                    internal const string Total = "http.duration.total";
+                    internal const string Header = "http.duration.header";
                 }
-                internal string Total { get; }
-                internal string Max { get; }
             }
         }
     }

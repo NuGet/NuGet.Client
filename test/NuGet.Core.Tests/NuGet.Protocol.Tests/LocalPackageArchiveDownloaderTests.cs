@@ -7,12 +7,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
-namespace NuGet.Packaging.Test
+namespace NuGet.Protocol.Tests
 {
     public class LocalPackageArchiveDownloaderTests
     {

@@ -1087,6 +1087,15 @@ namespace NuGet.Protocol {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to String argument &apos;{0}&apos; cannot be null or empty.
+        /// </summary>
+        internal static string StringCannotBeNullOrEmpty {
+            get {
+                return ResourceManager.GetString("StringCannotBeNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to File does not exist ({0})..
         /// </summary>
         internal static string UnableToFindFile {

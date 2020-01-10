@@ -37,14 +37,14 @@ namespace NuGet.Protocol
 
                 if (packageBaseAddress != null)
                 {
-                    curResource = new DownloadResourceV3(client, packageBaseAddress);
+                    curResource = new DownloadResourceV3(source.PackageSource.Source, client, packageBaseAddress);
                 }
                 else
                 {
                     // If there is no flat container resource fall back to using the registration resource to find
                     // the download url.
                     var registrationResource = await source.GetResourceAsync<RegistrationResourceV3>(token);
-                    curResource = new DownloadResourceV3(client, registrationResource);
+                    curResource = new DownloadResourceV3(source.PackageSource.Source, client, registrationResource);
                 }
             }
 

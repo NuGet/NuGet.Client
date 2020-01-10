@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -15,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -40,6 +42,9 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, Task<IEnumerable<PackageInfo>>> _packageVersionsCache = new Dictionary<string, Task<IEnumerable<PackageInfo>>>(StringComparer.OrdinalIgnoreCase);
         private readonly FindPackagesByIdNupkgDownloader _nupkgDownloader;
         private readonly V2FeedQueryBuilder _queryBuilder;
+
+        private const string ResourceTypeName = nameof(FindPackageByIdResource);
+        private const string ThisTypeName = nameof(RemoteV2FindPackageByIdResource);
 
         /// <summary>
         /// Initializes a new <see cref="RemoteV2FindPackageByIdResource" /> class.
@@ -112,11 +117,24 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var result = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
+                var result = await EnsurePackagesAsync(id, cacheContext, logger, cancellationToken);
 
-            return result.Select(item => item.Identity.Version);
+                return result.Select(item => item.Identity.Version);
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    PackageSource.Source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetAllVersionsAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -164,23 +182,36 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
-            if (packageInfo == null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                logger.LogWarning($"Unable to find package {id}{version}");
-                return null;
+                cancellationToken.ThrowIfCancellationRequested();
+
+                var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
+                if (packageInfo == null)
+                {
+                    logger.LogWarning($"Unable to find package {id}{version}");
+                    return null;
+                }
+
+                var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+
+                return GetDependencyInfo(reader);
             }
-
-            var reader = await _nupkgDownloader.GetNuspecReaderFromNupkgAsync(
-                packageInfo.Identity,
-                packageInfo.ContentUri,
-                cacheContext,
-                logger,
-                cancellationToken);
-
-            return GetDependencyInfo(reader);
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    PackageSource.Source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetDependencyInfoAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -236,21 +267,34 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
-            if (packageInfo == null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                return false;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return await _nupkgDownloader.CopyNupkgToStreamAsync(
-                packageInfo.Identity,
-                packageInfo.ContentUri,
-                destination,
-                cacheContext,
-                logger,
-                cancellationToken);
+                var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
+                if (packageInfo == null)
+                {
+                    return false;
+                }
+
+                return await _nupkgDownloader.CopyNupkgToStreamAsync(
+                    packageInfo.Identity,
+                    packageInfo.ContentUri,
+                    destination,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    PackageSource.Source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(CopyNupkgToStreamAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -288,21 +332,34 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            var packageInfo = await GetPackageInfoAsync(
-                packageIdentity.Id,
-                packageIdentity.Version,
-                cacheContext,
-                logger,
-                cancellationToken);
-
-            if (packageInfo == null)
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                return null;
-            }
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return new RemotePackageArchiveDownloader(PackageSource.Source, this, packageInfo.Identity, cacheContext, logger);
+                var packageInfo = await GetPackageInfoAsync(
+                    packageIdentity.Id,
+                    packageIdentity.Version,
+                    cacheContext,
+                    logger,
+                    cancellationToken);
+
+                if (packageInfo == null)
+                {
+                    return null;
+                }
+
+                return new RemotePackageArchiveDownloader(PackageSource.Source, this, packageInfo.Identity, cacheContext, logger);
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    PackageSource.Source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetPackageDownloaderAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -350,11 +407,24 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
+                var packageInfo = await GetPackageInfoAsync(id, version, cacheContext, logger, cancellationToken);
 
-            return packageInfo != null;
+                return packageInfo != null;
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    PackageSource.Source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(DoesPackageExistAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         private async Task<PackageInfo> GetPackageInfoAsync(

@@ -7,17 +7,17 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace NuGet.Protocol.Utility
+namespace NuGet.Protocol.Events
 {
     internal sealed class ProtocolDiagnosticsStream : Stream
     {
         private readonly Stream _baseStream;
-        private ProtocolDiagnosticInProgressEvent _inProgressEvent;
+        private ProtocolDiagnosticInProgressHttpEvent _inProgressEvent;
         private readonly Stopwatch _stopwatch;
         private long _bytes;
-        private readonly Action<ProtocolDiagnosticEvent> _diagnosticEvent;
+        private readonly Action<ProtocolDiagnosticHttpEvent> _diagnosticEvent;
 
-        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticInProgressEvent inProgressEvent, Stopwatch stopwatch, Action<ProtocolDiagnosticEvent> diagnosticEvent)
+        internal ProtocolDiagnosticsStream(Stream baseStream, ProtocolDiagnosticInProgressHttpEvent inProgressEvent, Stopwatch stopwatch, Action<ProtocolDiagnosticHttpEvent> diagnosticEvent)
         {
             _baseStream = baseStream;
             _inProgressEvent = inProgressEvent;
@@ -113,7 +113,7 @@ namespace NuGet.Protocol.Utility
         {
             if (_inProgressEvent != null)
             {
-                var pde = new ProtocolDiagnosticEvent(
+                var pde = new ProtocolDiagnosticHttpEvent(
                     DateTime.UtcNow,
                     _stopwatch.Elapsed,
                     _bytes,

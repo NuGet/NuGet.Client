@@ -11,7 +11,13 @@
 
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
+    <Compile Remove="RemoteRepositories\NewFolder\**" />
     <EmbeddedResource Include="compiler\resources\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Remove="RemoteRepositories\NewFolder\**" />
+    <None Remove="RemoteRepositories\NewFolder\**" />
   </ItemGroup>
 
   <ItemGroup>

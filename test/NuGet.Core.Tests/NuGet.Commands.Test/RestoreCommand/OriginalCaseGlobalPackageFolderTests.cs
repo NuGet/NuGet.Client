@@ -23,6 +23,8 @@ using Xunit;
 
 namespace NuGet.Commands.Test
 {
+    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+
     public class OriginalCaseGlobalPackageFolderTests
     {
         [Fact]

@@ -534,4 +534,7 @@ The "ms" should be localized to the abbreviation for milliseconds.</comment>
   <data name="PushCommandSkipDuplicateAdvertiseDotnetExe" xml:space="preserve">
     <value>To skip already published packages, use the option --skip-duplicate</value>
   </data>
+  <data name="StringCannotBeNullOrEmpty" xml:space="preserve">
+    <value>String argument '{0}' cannot be null or empty</value>
+  </data>
 </root>

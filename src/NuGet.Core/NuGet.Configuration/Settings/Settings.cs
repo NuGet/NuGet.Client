@@ -715,7 +715,9 @@ namespace NuGet.Configuration
                 return path;
             }
 
-            return Path.Combine(originDirectoryPath, ResolvePath(Path.GetDirectoryName(originFilePath), path));
+            var rawPath = Path.Combine(originDirectoryPath, ResolvePath(Path.GetDirectoryName(originFilePath), path));
+            var normalizedPath = new DirectoryInfo(rawPath).FullName;
+            return normalizedPath;
         }
 
         private static string ResolvePath(string configDirectory, string value)

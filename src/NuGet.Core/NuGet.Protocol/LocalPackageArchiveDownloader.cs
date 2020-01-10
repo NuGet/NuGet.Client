@@ -7,15 +7,16 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Events;
 
-namespace NuGet.Packaging
+namespace NuGet.Protocol
 {
     /// <summary>
     /// A package downloader for local archive packages.
     /// </summary>
-    [Obsolete("Use NuGet.Protocol.LocalPackageArchiveDownloader")]
     public sealed class LocalPackageArchiveDownloader : IPackageDownloader
     {
         private Func<Exception, Task<bool>> _handleExceptionAsync;
@@ -77,9 +78,9 @@ namespace NuGet.Packaging
         /// <exception cref="ArgumentException">Thrown if <paramref name="packageFilePath" />
         /// is either <c>null</c> or an empty string.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="packageIdentity" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="logger" />
-        /// is either <c>null</c> or an empty string.</exception>
+        /// is <c>null</c>.</exception>
         public LocalPackageArchiveDownloader(
             string source,
             string packageFilePath,
@@ -185,6 +186,8 @@ namespace NuGet.Packaging
                     const int bufferSize = 8192;
 
                     await source.CopyToAsync(destination, bufferSize, cancellationToken);
+
+                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(Source, destination.Length));
 
                     return true;
                 }
