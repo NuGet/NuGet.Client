@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.OLE.Interop;
@@ -146,7 +147,7 @@ namespace NuGetVSExtension
 
                     // get the UI context cookie for the debugging mode
                     var vsMonitorSelection = await GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
-
+                    Assumes.Present(vsMonitorSelection);
                     // get the solution not building and not debugging cookie
                     var guidCmdUI = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
                     vsMonitorSelection.GetCmdUIContextCookie(
@@ -173,6 +174,7 @@ namespace NuGetVSExtension
             _initialized = true;
 
             var componentModel = await GetServiceAsync(typeof(SComponentModel)) as IComponentModel;
+            Assumes.Present(componentModel);
             componentModel.DefaultCompositionService.SatisfyImportsOnce(this);
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -182,6 +184,7 @@ namespace NuGetVSExtension
             Brushes.LoadVsBrushes();
 
             _dte = (DTE)await GetServiceAsync(typeof(SDTE));
+            Assumes.Present(_dte);
 
             _dteEvents = _dte.Events.DTEEvents;
             _dteEvents.OnBeginShutdown += OnBeginShutDown;
@@ -389,6 +392,7 @@ namespace NuGetVSExtension
             // Find existing hierarchy and item id of the document window if it's
             // already registered.
             var rdt = await GetServiceAsync(typeof(IVsRunningDocumentTable)) as IVsRunningDocumentTable;
+            Assumes.Present(rdt);
             IVsHierarchy hier;
             uint itemId;
             var docData = IntPtr.Zero;
@@ -478,7 +482,7 @@ namespace NuGetVSExtension
 
             IVsWindowFrame windowFrame;
             var uiShell = await GetServiceAsync(typeof(SVsUIShell)) as IVsUIShell;
-
+            Assumes.Present(uiShell);
             var ppunkDocView = IntPtr.Zero;
             var ppunkDocData = IntPtr.Zero;
             var hr = 0;

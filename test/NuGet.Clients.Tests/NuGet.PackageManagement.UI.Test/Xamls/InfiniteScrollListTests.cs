@@ -15,13 +15,21 @@ using Xunit;
 
 namespace NuGet.PackageManagement.UI.Test
 {
-    public class InfiniteScrollListTests
+    public class InfiniteScrollListTests : IDisposable
     {
+        private JoinableTaskContext _joinableTaskContext;
         public InfiniteScrollListTests()
         {
-            var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
+            _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
 
-            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(joinableTaskContext.Factory);
+            NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
+        }
+
+        public void Dispose()
+        {
+            _joinableTaskContext?.Dispose();
         }
 
         [WpfFact]
@@ -214,7 +222,9 @@ namespace NuGet.PackageManagement.UI.Test
             var logger = new Mock<INuGetUILogger>();
             var searchResultTask = Task.FromResult(new SearchResult<IPackageSearchMetadata>());
 
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
             using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
             {
                 var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => joinableTaskContext.Factory));
                 var taskCompletionSource = new TaskCompletionSource<string>();

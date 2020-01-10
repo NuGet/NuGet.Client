@@ -9,6 +9,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using Microsoft;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -607,7 +608,7 @@ namespace NuGet.Options
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
             var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
-
+            Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 
             // allocate a buffer in unmanaged memory for file name (string)

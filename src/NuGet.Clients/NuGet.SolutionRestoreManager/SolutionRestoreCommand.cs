@@ -77,6 +77,7 @@ namespace NuGet.SolutionRestoreManager
             commandService.AddCommand(menuItem);
 
             _vsMonitorSelection = await serviceProvider.GetServiceAsync(typeof(IVsMonitorSelection)) as IVsMonitorSelection;
+            Assumes.Present(_vsMonitorSelection);
 
             // get the solution not building and not debugging cookie
             var guidCmdUI = VSConstants.UICONTEXT.SolutionExistsAndFullyLoaded_guid;
