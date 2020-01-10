@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NuGet.Common;
@@ -314,6 +315,22 @@ namespace NuGet.Configuration
             }
 
             return GetPackageSource(name, LoadPackageSourceLookupByName(Settings));
+        }
+
+        public HashSet<string> GetPackageSourceNamesMatchingNamePrefix(string namePrefix)
+        {
+            HashSet<string> names = new HashSet<string>();
+
+            var packageSources = LoadPackageSources();
+            foreach (var packageSource in packageSources)
+            {
+                if (packageSource.Name.StartsWith(namePrefix))
+                {
+                    names.Add(packageSource.Name);
+                }
+            }
+
+            return names;
         }
 
         public PackageSource GetPackageSourceBySource(string source)

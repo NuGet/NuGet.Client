@@ -2,49 +2,48 @@
 <Commands>
   <Verb Name="add">
     <Noun Name="source">
-      <SingleValueOption Name="name" Shortcut="n" Required="true" />
-      <SingleValueOption Name="source" Shortcut="s" Required="true" />
-      <SingleValueOption Name="username" Shortcut="u" />
-      <SingleValueOption Name="password" Shortcut="p" />
-      <SwitchOption Name="store-Password-In-Clear-Text" />
-      <SingleValueOption Name="valid-Authentication-Types" />
-      <SingleValueOption Name="configfile" />
+      <Argument Name="Source" LongName="PackageSourcePath" Help="SourcesCommandSourceDescription" />
+      <SingleValueOption Name="name" Shortcut="n" Help="SourcesCommandNameDescription"/>
+      <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
+      <SingleValueOption Name="password" Shortcut="p" Help="SourcesCommandPasswordDescription"/>
+      <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
+      <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
   <Verb Name="disable">
     <Noun Name="source">
-      <SingleValueOption Name="name" Shortcut="n" Required="true" />
-      <SingleValueOption Name="configfile" />
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
     </Noun>
   </Verb>
   <Verb Name="enable">
     <Noun Name="source">
-      <SingleValueOption Name="name" Shortcut="n" Required="true" />
-      <SingleValueOption Name="configfile" />
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
     </Noun>
   </Verb>
   <Verb Name="list">
     <Noun Name="source">
-      <!-- TODO:shortcut?? -->
-      <SingleValueOption Name="format" />
-      <SingleValueOption Name="configfile" />
+      <SingleValueOption Name="format" Help="SourcesCommandFormatDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
     </Noun>
   </Verb>
   <Verb Name="remove">
     <Noun Name="source">
-      <SingleValueOption Name="name" Shortcut="n" Required="true" />
-      <SingleValueOption Name="configfile" />
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
     </Noun>
   </Verb>
   <Verb Name="update">
     <Noun Name="source">
-      <SingleValueOption Name="name" Shortcut="n" Required="true" />
-      <SingleValueOption Name="source" Shortcut="s" Required="true" />
-      <SingleValueOption Name="username" Shortcut="n" />
-      <SingleValueOption Name="password" Shortcut="s" />
-      <SwitchOption Name="store-Password-In-Clear-Text" />
-      <SingleValueOption Name="valid-Authentication-Types" />
-      <SingleValueOption Name="configfile" />
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="source" Shortcut="s" Help="SourcesCommandSourceDescription"/>
+      <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
+      <SingleValueOption Name="password" Shortcut="p" Help="SourcesCommandPasswordDescription"/>
+      <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
+      <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
 </Commands>

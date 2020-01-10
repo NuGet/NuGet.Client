@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -65,6 +65,11 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
+        public bool HidePrefixForInfoAndMinimal
+        {
+            get; set;
+        }
+
         protected virtual void LogInternal(LogLevel logLevel, string message)
         {
             if (logLevel < _logLevel)
@@ -78,22 +83,22 @@ namespace NuGet.CommandLine.XPlat
                 switch (logLevel)
                 {
                     case LogLevel.Debug:
-                        caption = "debug";
+                        caption = "debug: ";
                         break;
                     case LogLevel.Verbose:
-                        caption = "trace";
+                        caption = "trace: ";
                         break;
                     case LogLevel.Information:
-                        caption = "info ";
+                        caption = HidePrefixForInfoAndMinimal ? null : "info : ";
                         break;
                     case LogLevel.Minimal:
-                        caption = "log  ";
+                        caption = HidePrefixForInfoAndMinimal ? null : "log  : ";
                         break;
                     case LogLevel.Warning:
-                        caption = "warn ";
+                        caption = "warn : ";
                         break;
                     case LogLevel.Error:
-                        caption = "error";
+                        caption = "error: ";
                         break;
                 }
             }
@@ -108,7 +113,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                Console.WriteLine($"{caption}: {message}");
+                Console.WriteLine($"{caption}{message}");
             }
         }
 
@@ -122,7 +127,6 @@ namespace NuGet.CommandLine.XPlat
                 while ((line = reader.ReadLine()) != null)
                 {
                     builder.Append(caption);
-                    builder.Append(": ");
                     builder.AppendLine(line);
                 }
             }

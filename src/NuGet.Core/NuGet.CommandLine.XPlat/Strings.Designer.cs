@@ -61,6 +61,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a NuGet source..
+        /// </summary>
+        internal static string Add_Description {
+            get {
+                return ResourceManager.GetString("Add_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to all.
         /// </summary>
         internal static string AddPkg_All {
@@ -268,6 +277,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable a NuGet source..
+        /// </summary>
+        internal static string Disable_Description {
+            get {
+                return ResourceManager.GetString("Disable_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable buffering when pushing to an HTTP(S) server to decrease memory usage..
         /// </summary>
         internal static string DisableBuffering_Description {
@@ -279,9 +297,18 @@ namespace NuGet.CommandLine.XPlat {
         /// <summary>
         ///   Looks up a localized string similar to Disable a NuGet source..
         /// </summary>
-        internal static string DisableCommandDescription {
+        internal static string DisableSourceCommandDescription {
             get {
-                return ResourceManager.GetString("DisableCommandDescription", resourceCulture);
+                return ResourceManager.GetString("DisableSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable a NuGet source..
+        /// </summary>
+        internal static string Enable_Description {
+            get {
+                return ResourceManager.GetString("Enable_Description", resourceCulture);
             }
         }
         
@@ -507,6 +534,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string InputFile_Description {
             get {
                 return ResourceManager.GetString("InputFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List configured NuGet sources..
+        /// </summary>
+        internal static string List_Description {
+            get {
+                return ResourceManager.GetString("List_Description", resourceCulture);
             }
         }
         
@@ -1194,6 +1230,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove a NuGet source..
+        /// </summary>
+        internal static string Remove_Description {
+            get {
+                return ResourceManager.GetString("Remove_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removes a package reference from a project..
         /// </summary>
         internal static string RemovePkg_Description {
@@ -1338,11 +1383,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Actions Go Here - TODO.
+        ///   Looks up a localized string similar to The proper command is &apos;{0}&apos;..
         /// </summary>
-        internal static string Sources_Action {
+        internal static string Sources_Redirect {
             get {
-                return ResourceManager.GetString("Sources_Action", resourceCulture);
+                return ResourceManager.GetString("Sources_Redirect", resourceCulture);
             }
         }
         
@@ -1482,7 +1527,16 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Update a NuGet sources..
+        ///   Looks up a localized string similar to Update a NuGet source..
+        /// </summary>
+        internal static string Update_Description {
+            get {
+                return ResourceManager.GetString("Update_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update a NuGet source..
         /// </summary>
         internal static string UpdateSourceCommandDescription {
             get {

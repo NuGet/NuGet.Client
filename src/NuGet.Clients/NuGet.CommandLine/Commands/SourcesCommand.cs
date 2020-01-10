@@ -4,7 +4,6 @@
 using System;
 using System.Globalization;
 using System.Linq;
-using NuGet.CommandLine.XPlat;
 using NuGet.Commands;
 
 namespace NuGet.CommandLine

@@ -1754,6 +1754,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package source {0}.
+        /// </summary>
+        internal static string Source_DefaultNamePrefix {
+            get {
+                return ResourceManager.GetString("Source_DefaultNamePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to invalid value for --format: {0}. Allowed values: &apos;detailed&apos; or &apos;short&apos;.
+        /// </summary>
+        internal static string Source_InvalidFormatValue {
+            get {
+                return ResourceManager.GetString("Source_InvalidFormatValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package source name &apos;All&apos; is a reserved name..
         /// </summary>
         internal static string SourcesCommandAllNameIsReserved {

@@ -85,6 +85,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
         }
         foreach (var option in noun.Descendants()) {
             var optionName = option.Attribute(XName.Get("Name", "")).Value;
+            var optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
             var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
             var optionFormalName = optionName.Replace("-","");
 
@@ -93,7 +94,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                 
 #>
                     var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Argument(
-                        "<#= optionName #>", "<#= optionHelp != null ? optionHelp : "" #>");
+                        "<#= optionLongName != null ? optionLongName : optionName #>", <#= optionHelp != null ? "Strings."+optionHelp : "" #>);
 <#
             }
             else
@@ -102,14 +103,14 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
 #>
                     var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
                         "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName.ToLower() #>",
-                        "<#= optionHelp != null ? optionHelp : "" #>",
+                        <#= optionHelp != null ? "Strings."+optionHelp : "" #>,
                         CommandOptionType.<#= GetOptionType(option) #>);
 <#
             }
         }
 #>
                     <#= nounFormalName #>Cmd.HelpOption("-h|--help");
-
+                    <#= nounFormalName #>Cmd.Description = Strings.<#= commandFormalName #><#= nounFormalName #>CommandDescription;
                     <#= nounFormalName #>Cmd.OnExecute(() =>
                     {
                         var args = new <#= commandFormalName #><#= nounFormalName #>Args()
@@ -199,6 +200,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
         }
 #>
                 <#= commandFormalName #>Cmd.HelpOption("-h|--help");
+                <#= commandFormalName #>Cmd.Description = Strings.<#= commandFormalName #>_Description;
                 <#= commandFormalName #>Cmd.OnExecute(() => 
                 {
                     app.ShowHelp("<#= commandName #>");

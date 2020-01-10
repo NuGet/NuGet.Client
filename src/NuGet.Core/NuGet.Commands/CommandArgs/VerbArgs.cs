@@ -3,13 +3,13 @@ using System.Threading.Tasks;
 using NuGet.Common;
 
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.Commands
 {
 
     public partial class AddSourceArgs
     {
-        public string Name { get; set; }
         public string Source { get; set; }
+        public string Name { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public bool StorePasswordInClearText { get; set; }

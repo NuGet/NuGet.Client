@@ -6,16 +6,30 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 
-namespace NuGet.CommandLine.XPlat
+namespace NuGet.Commands
 {
     public partial class AddSourceRunner
     {
         static public void Run(AddSourceArgs args, Func<ILogger> getLogger)
         {
-            // TODO: remove debugging (or diagnostic?)
-            Output(args, getLogger);
+            var settings = RunnerHelper.GetSettings(args.Configfile);
+            var sourceProvider = RunnerHelper.GetSourceProvider(settings);
 
-            if (string.Equals(args.Name, Strings.ReservedPackageNameAll))
+            if (string.IsNullOrEmpty(args.Name))
+            {
+                // find first unused name of pattern: prefixN, where N is an integer.
+                string defaultNamePrefix = Strings.Source_DefaultNamePrefix;
+                var namesSet = sourceProvider.GetPackageSourceNamesMatchingNamePrefix(defaultNamePrefix);
+                for (int i = 1; i < 1000; i++)
+                {
+                    var defaultNameToUse = defaultNamePrefix + i.ToString();
+                    if (!namesSet.Contains(defaultNameToUse))
+                    {
+                        args.Name = defaultNameToUse;
+                    }
+                }
+            }
+            else if (string.Equals(args.Name, Strings.ReservedPackageNameAll))
             {
                 throw new CommandException(Strings.SourcesCommandAllNameIsReserved);
             }
@@ -27,9 +41,6 @@ namespace NuGet.CommandLine.XPlat
             }
 
             RunnerHelper.ValidateCredentials(args.Username, args.Password, args.ValidAuthenticationTypes);
-
-            var settings = RunnerHelper.GetSettings(args.Configfile);
-            var sourceProvider = RunnerHelper.GetSourceProvider(settings);
 
             // Check to see if we already have a registered source with the same name or source
             var existingSourceWithName = sourceProvider.GetPackageSourceByName(args.Name);
@@ -97,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-                Enum.TryParse<SourcesListFormat>(args.Format, out format);
+                Enum.TryParse<SourcesListFormat>(args.Format, ignoreCase:true, out format);
             }
 
             switch (format)
@@ -159,8 +170,8 @@ namespace NuGet.CommandLine.XPlat
                     }
                     break;
                 case SourcesListFormat.None:
-                    // TODO: which exception message?
-                    throw new NotImplementedException();
+                    // This validation could move to the Command or Args and be code-generated.
+                    throw new CommandException(string.Format(Strings.Source_InvalidFormatValue, args.Format));
             }
         }
     }
@@ -283,6 +294,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 throw new CommandException(Strings.SourcesCommandNoMatchingSourcesFound, name);
             }
+
+            // Use casing consistent with existing source.
+            name = packageSource.Name;
 
             if (enabled && !packageSource.IsEnabled)
             {

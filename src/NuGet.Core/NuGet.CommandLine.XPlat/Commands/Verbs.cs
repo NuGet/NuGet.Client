@@ -17,42 +17,40 @@ namespace NuGet.CommandLine.XPlat
             {
                 AddCmd.Command("source", SourceCmd =>
                 {
+                    var Source = SourceCmd.Argument(
+                        "PackageSourcePath", Strings.SourcesCommandSourceDescription);
                     var name = SourceCmd.Option(
                         "-n|--name",
-                        "",
-                        CommandOptionType.SingleValue);
-                    var source = SourceCmd.Option(
-                        "-s|--source",
-                        "",
+                        Strings.SourcesCommandNameDescription,
                         CommandOptionType.SingleValue);
                     var username = SourceCmd.Option(
                         "-u|--username",
-                        "",
+                        Strings.SourcesCommandUserNameDescription,
                         CommandOptionType.SingleValue);
                     var password = SourceCmd.Option(
                         "-p|--password",
-                        "",
+                        Strings.SourcesCommandPasswordDescription,
                         CommandOptionType.SingleValue);
                     var storePasswordInClearText = SourceCmd.Option(
                         "--store-password-in-clear-text",
-                        "",
+                        Strings.SourcesCommandStorePasswordInClearTextDescription,
                         CommandOptionType.NoValue);
                     var validAuthenticationTypes = SourceCmd.Option(
                         "--valid-authentication-types",
-                        "",
+                        Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.AddSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new AddSourceArgs()
                         {
+                            Source = Source.Value,
                             Name = name.Value(),
-                            Source = source.Value(),
                             Username = username.Value(),
                             Password = password.Value(),
                             StorePasswordInClearText = storePasswordInClearText.HasValue(),
@@ -60,14 +58,6 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
-                        if (args.Name == null)
-                        {
-                            throw new CommandException("'name' option is missing but required.");
-                        }
-                        if (args.Source == null)
-                        {
-                            throw new CommandException("'source' option is missing but required.");
-                        }
  
                         AddSourceRunner.Run(args, getLogger);
                         return 0;
@@ -75,6 +65,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 AddCmd.HelpOption("-h|--help");
+                AddCmd.Description = Strings.Add_Description;
                 AddCmd.OnExecute(() => 
                 {
                     app.ShowHelp("add");
@@ -93,28 +84,22 @@ namespace NuGet.CommandLine.XPlat
             {
                 DisableCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Option(
-                        "-n|--name",
-                        "",
-                        CommandOptionType.SingleValue);
+                    var name = SourceCmd.Argument(
+                        "name", Strings.SourcesCommandNameDescription);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.DisableSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new DisableSourceArgs()
                         {
-                            Name = name.Value(),
+                            Name = name.Value,
                             Configfile = configfile.Value(),
                         };
 
-                        if (args.Name == null)
-                        {
-                            throw new CommandException("'name' option is missing but required.");
-                        }
  
                         DisableSourceRunner.Run(args, getLogger);
                         return 0;
@@ -122,6 +107,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 DisableCmd.HelpOption("-h|--help");
+                DisableCmd.Description = Strings.Disable_Description;
                 DisableCmd.OnExecute(() => 
                 {
                     app.ShowHelp("disable");
@@ -140,28 +126,22 @@ namespace NuGet.CommandLine.XPlat
             {
                 EnableCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Option(
-                        "-n|--name",
-                        "",
-                        CommandOptionType.SingleValue);
+                    var name = SourceCmd.Argument(
+                        "name", Strings.SourcesCommandNameDescription);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.EnableSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new EnableSourceArgs()
                         {
-                            Name = name.Value(),
+                            Name = name.Value,
                             Configfile = configfile.Value(),
                         };
 
-                        if (args.Name == null)
-                        {
-                            throw new CommandException("'name' option is missing but required.");
-                        }
  
                         EnableSourceRunner.Run(args, getLogger);
                         return 0;
@@ -169,6 +149,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 EnableCmd.HelpOption("-h|--help");
+                EnableCmd.Description = Strings.Enable_Description;
                 EnableCmd.OnExecute(() => 
                 {
                     app.ShowHelp("enable");
@@ -189,14 +170,14 @@ namespace NuGet.CommandLine.XPlat
                 {
                     var format = SourceCmd.Option(
                         "--format",
-                        "",
+                        Strings.SourcesCommandFormatDescription,
                         CommandOptionType.SingleValue);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.ListSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new ListSourceArgs()
@@ -212,6 +193,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 ListCmd.HelpOption("-h|--help");
+                ListCmd.Description = Strings.List_Description;
                 ListCmd.OnExecute(() => 
                 {
                     app.ShowHelp("list");
@@ -230,28 +212,22 @@ namespace NuGet.CommandLine.XPlat
             {
                 RemoveCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Option(
-                        "-n|--name",
-                        "",
-                        CommandOptionType.SingleValue);
+                    var name = SourceCmd.Argument(
+                        "name", Strings.SourcesCommandNameDescription);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.RemoveSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new RemoveSourceArgs()
                         {
-                            Name = name.Value(),
+                            Name = name.Value,
                             Configfile = configfile.Value(),
                         };
 
-                        if (args.Name == null)
-                        {
-                            throw new CommandException("'name' option is missing but required.");
-                        }
  
                         RemoveSourceRunner.Run(args, getLogger);
                         return 0;
@@ -259,6 +235,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 RemoveCmd.HelpOption("-h|--help");
+                RemoveCmd.Description = Strings.Remove_Description;
                 RemoveCmd.OnExecute(() => 
                 {
                     app.ShowHelp("remove");
@@ -277,41 +254,39 @@ namespace NuGet.CommandLine.XPlat
             {
                 UpdateCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Option(
-                        "-n|--name",
-                        "",
-                        CommandOptionType.SingleValue);
+                    var name = SourceCmd.Argument(
+                        "name", Strings.SourcesCommandNameDescription);
                     var source = SourceCmd.Option(
                         "-s|--source",
-                        "",
+                        Strings.SourcesCommandSourceDescription,
                         CommandOptionType.SingleValue);
                     var username = SourceCmd.Option(
-                        "-n|--username",
-                        "",
+                        "-u|--username",
+                        Strings.SourcesCommandUserNameDescription,
                         CommandOptionType.SingleValue);
                     var password = SourceCmd.Option(
-                        "-s|--password",
-                        "",
+                        "-p|--password",
+                        Strings.SourcesCommandPasswordDescription,
                         CommandOptionType.SingleValue);
                     var storePasswordInClearText = SourceCmd.Option(
                         "--store-password-in-clear-text",
-                        "",
+                        Strings.SourcesCommandStorePasswordInClearTextDescription,
                         CommandOptionType.NoValue);
                     var validAuthenticationTypes = SourceCmd.Option(
                         "--valid-authentication-types",
-                        "",
+                        Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
                     var configfile = SourceCmd.Option(
                         "--configfile",
-                        "",
+                        Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
                     SourceCmd.HelpOption("-h|--help");
-
+                    SourceCmd.Description = Strings.UpdateSourceCommandDescription;
                     SourceCmd.OnExecute(() =>
                     {
                         var args = new UpdateSourceArgs()
                         {
-                            Name = name.Value(),
+                            Name = name.Value,
                             Source = source.Value(),
                             Username = username.Value(),
                             Password = password.Value(),
@@ -320,14 +295,6 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
-                        if (args.Name == null)
-                        {
-                            throw new CommandException("'name' option is missing but required.");
-                        }
-                        if (args.Source == null)
-                        {
-                            throw new CommandException("'source' option is missing but required.");
-                        }
  
                         UpdateSourceRunner.Run(args, getLogger);
                         return 0;
@@ -335,6 +302,7 @@ namespace NuGet.CommandLine.XPlat
                     });
                 });
                 UpdateCmd.HelpOption("-h|--help");
+                UpdateCmd.Description = Strings.Update_Description;
                 UpdateCmd.OnExecute(() => 
                 {
                     app.ShowHelp("update");

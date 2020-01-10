@@ -20,7 +20,6 @@ namespace NuGet.CommandLine.XPlat
     {
         private const string DebugOption = "--debug";
         private const string DotnetNuGetAppName = "dotnet nuget";
-        private const string DotnetNuGetSourcesAppName = "dotnet nuget sources";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
         public static int Main(string[] args)
@@ -110,20 +109,59 @@ namespace NuGet.CommandLine.XPlat
             }
             catch (Exception e)
             {
-                // Log the error
-                if (ExceptionLogger.Instance.ShowStack)
+                bool handled = false;
+                string verb = null;
+                if (args.Length > 1)
                 {
-                    log.LogError(e.ToString());
-                }
-                else
-                {
-                    log.LogError(ExceptionUtilities.DisplayMessage(e));
+                    // Redirect users nicely if they do 'dotnet nuget sources add' or 'dotnet nuget add sources'
+                    if (StringComparer.OrdinalIgnoreCase.Compare(args[0], "sources") == 0)
+                    {
+                        verb = args[1];
+                    }
+                    else if (StringComparer.OrdinalIgnoreCase.Compare(args[1], "sources") == 0)
+                    {
+                        verb = args[0];
+                    }
+
+                    if (verb != null)
+                    {
+                        switch (verb.ToLowerInvariant())
+                        {
+                            case "add":
+                            case "remove":
+                            case "update":
+                            case "enable":
+                            case "disable":
+                            case "list":
+                                log.LogMinimal(string.Format(CultureInfo.CurrentCulture,
+                                    Strings.Sources_Redirect, $"dotnet nuget {verb} source"));
+                                handled = true;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
                 }
 
-                // Log the stack trace as verbose output.
-                log.LogVerbose(e.ToString());
+                if (!handled)
+                {
+                    // Log the error
+                    if (ExceptionLogger.Instance.ShowStack)
+                    {
+                        log.LogError(e.ToString());
+                    }
+                    else
+                    {
+                        log.LogError(ExceptionUtilities.DisplayMessage(e));
+                    }
 
-                exitCode = 1;
+                    // Log the stack trace as verbose output.
+                    log.LogVerbose(e.ToString());
+
+                    exitCode = 1;
+
+                    ShowBestHelp(app, args);
+                }
             }
 
             // Limit the exit code range to 0-255 to support POSIX
@@ -135,8 +173,43 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
+        private static void ShowBestHelp(CommandLineApplication app, string[] args)
+        {
+            CommandLineApplication lastCommand = null;
+            var commands = app.Commands;
+            // tunnel down into the args, and show the best help possible.
+            foreach (var arg in args)
+            {
+                foreach (var command in commands)
+                {
+                    if (arg == command.Name)
+                    {
+                        lastCommand = command;
+                        commands = command.Commands;
+                        break;
+                    }
+                }
+            }
+
+            if (lastCommand != null)
+            {
+                lastCommand.ShowHelp();
+            }
+            else
+            {
+                app.ShowHelp();
+            }
+        }
+
         private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {
+            // Many commands don't want prefixes output. Use loggerFunc(log) instead of log to set the HidePrefix property first.
+            Func<CommandOutputLogger, Func<ILogger>> loggerFunc = (commandOutputLogger) =>
+             {
+                 commandOutputLogger.HidePrefixForInfoAndMinimal = true;
+                 return () => commandOutputLogger;
+             };
+
             var app = new CommandLineApplication();
 
             if (args.Any() && args[0] == "package")
@@ -149,7 +222,7 @@ namespace NuGet.CommandLine.XPlat
             else
             {
                 app.Name = DotnetNuGetAppName;
-                CommandParsers.Register(app, () => log);
+                CommandParsers.Register(app, loggerFunc(log));
                 DeleteCommand.Register(app, () => log);
                 PushCommand.Register(app, () => log);
                 LocalsCommand.Register(app, () => log);
