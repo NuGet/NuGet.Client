@@ -5,10 +5,11 @@
 # NuGet Client Tools
 
 This repo contains the following clients:
-  * [NuGet CLI](https://docs.microsoft.com/nuget/tools/nuget-exe-cli-reference)
-  * [NuGet Package Manager for Visual Studio](https://docs.microsoft.com/nuget/tools/package-manager-ui)
-  * [PowerShell CmdLets](https://docs.microsoft.com/nuget/tools/powershell-reference)
-  * [NuGet functionality for dotnet.exe](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet)
+
+- [NuGet CLI](https://docs.microsoft.com/nuget/tools/nuget-exe-cli-reference)
+- [NuGet Package Manager for Visual Studio](https://docs.microsoft.com/nuget/tools/package-manager-ui)
+- [PowerShell CmdLets](https://docs.microsoft.com/nuget/tools/powershell-reference)
+- [NuGet functionality for dotnet.exe](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet)
 
 ## Open Source Code of Conduct
 
@@ -18,13 +19,13 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 
 For how to contribute to this repo follow the [Contributing doc](CONTRIBUTING.md).
 
-## Home repo
+## NuGet/Home repo
 
-The https://github.com/nuget/Home repo is the starting point for all things NuGet. It has the [issue tracker](https://github.com/nuget/home/issues) and [basic information](https://github.com/nuget/home) about all things NuGet. Make sure to consult it before beginning your journey through NuGet code.
+The [NuGet/Home](https://github.com/nuget/Home) repo is the starting point for all things NuGet. It has the [issue tracker](https://github.com/nuget/home/issues) and [basic information](https://github.com/nuget/home) about all things NuGet. Make sure to consult it before beginning your journey through NuGet code.
 
 ## Feedback
 
-File NuGet.Client bugs on [NuGet Home](https://github.com/nuget/home/issues).
+File NuGet.Client bugs in the [NuGet/Home](https://github.com/nuget/home/issues).
 
 ## License
 

@@ -2,20 +2,20 @@
 
 Let's face it. No matter what coding guidelines we choose, we're not going to make everyone happy.
 In fact, some people out there might be downright angry at the choices we make.
-But the fact of the matter is that there is no "one true bracing style," despite [attempts to name a bracing style as such](http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS). 
+But the fact of the matter is that there is no "one true bracing style," despite [attempts to name a bracing style as such](http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS).
 
-While we would like to embrace everyone's individual style, working together on the same codebase would be utter chaos if we don't enforce some consistency. When it comes to coding guidelines, consistency can be even more important than being "right."
+While we would like to embrace everyone's individual style, working together on the same codebase would be utter chaos if we don't enforce some consistency. When it comes to coding guidelines, consistency can be even more important than being "right".
 
 ## Copyright header and license notice
 
-All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exact header (please do not make any changes to it):
+All source code files (mostly `src/**/*.cs` and `test/**/*.cs`) require this exact header at the beginning of the file, without any modifications:
 
 ```cs
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 ```
 
-It is ok to skip it on generated files, such as `*.designer.cs`.
+It is not mandatory to add the header to generated files, such as `*.designer.cs`.
 
 Every repo also needs the Apache 2.0 License in a file called LICENSE.txt in the root of the repo. 
 
@@ -71,7 +71,8 @@ For example the following are correct:
     The following are correct:
 
     ```cs
-    public string TrimString(string s) {
+    public string TrimString(string s) 
+    {
         return string.IsNullOrEmpty(s)
             ? null
             : s.Trim();
@@ -83,7 +84,8 @@ For example the following are correct:
     The following are incorrect:
 
     ```cs
-    public String TrimString(String s) {
+    public String TrimString(String s) 
+    {
         return String.IsNullOrEmpty(s)
             ? null
             : s.Trim();

@@ -24,20 +24,20 @@ Draft pull requests will be closed within 30 days.
 
 ### Branching strategy
 
-The active development branch in our repo is `dev`. What we ship comes from the `release-majorminorx` branches.
+The active development branch in our repo is `dev`. What we ship comes from the `release-major.minor.x` branches.
 
 ### Solution and project folder structure and naming
 
-The NuGet.Client repo currently has only one solution file named `NuGet.sln`. We do not want/need to have more than one solution file. 
+The NuGet.Client repo currently has only one solution file named `NuGet.sln`. We do not want/need to have more than one solution file.
 If deemed necessary by the team, we can consider solution filters at a future point.
 
-Every project in the NuGet.Client repo should be PackageReference based and if possible (read this as not .NET Framework WPF), an SDK based one. 
-The production source code is under the `src` folder.
-The test source code is under the `test` folder.
-The files affecting build are located under the `build` folder.
-The powershell files that are not part of the `Package Manager Console` are located under the `scripts` folder.
+- Every project in the NuGet.Client repo should be [PackageReference-based](https://docs.microsoft.com/en-us/nuget/consume-packages/package-references-in-project-files) based and if possible (read this as not .NET Framework WPF), an [SDK-based](https://docs.microsoft.com/en-us/visualstudio/msbuild/how-to-use-project-sdk) one.
+- The production source code is under the `src` folder.
+- The test source code is under the `test` folder.
+- The files affecting build are located under the `build` folder.
+- The PowerShell files that are not part of the `Package Manager Console` are located under the `scripts` folder.
 
-Follow the existing pattern for new project files (for example, if NuGet.Commands imports common.props at some point, so should NuGet.MyNewProject). 
+Follow the existing pattern for new project files (for example, if NuGet.Commands imports common.props at some point, so should NuGet.MyNewProject).
 Test projects have a different convention for the build customization files they import, so be mindful of that.
 
 ### Project naming pattern
