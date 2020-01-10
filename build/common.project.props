@@ -84,7 +84,7 @@
     <Prefer32Bit>false</Prefer32Bit>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <NoWarn>$(NoWarn);1762;VSSDK004;VSSDK005;VSSDK006</NoWarn>
+    <NoWarn>$(NoWarn);NU5105</NoWarn>
     <!-- Code Analysis is OFF by default -->
     <RunCodeAnalysis Condition=" '$(RunCodeAnalysis)' == ''">false</RunCodeAnalysis>
     <!--This property ensures that if you build the exact sources twice,
