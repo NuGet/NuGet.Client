@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -208,6 +209,7 @@ namespace NuGet.Protocol
                     using (var fileStream = File.OpenRead(packagePath))
                     {
                         await fileStream.CopyToAsync(destination, cancellationToken);
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_source, destination.Length));
                         return true;
                     }
                 }
