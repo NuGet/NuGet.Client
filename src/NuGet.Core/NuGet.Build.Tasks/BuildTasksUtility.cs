@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -88,7 +88,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="packageSpec">A <see cref="PackageSpec" /> for a project.</param>
         /// <returns><code>true</code> if the project supports restore, otherwise <code>false</code>.</returns>
-        internal static bool DoesProjectSupportRestore(PackageSpec packageSpec)
+        public static bool DoesProjectSupportRestore(PackageSpec packageSpec)
         {
             return RestorableTypes.Contains(packageSpec.RestoreMetadata.ProjectStyle);
         }
@@ -132,7 +132,7 @@ namespace NuGet.Build.Tasks
             ProjectStyle.ProjectJson
         };
 
-        internal static async Task<bool> RestoreAsync(
+        public static async Task<bool> RestoreAsync(
             DependencyGraphSpec dependencyGraphSpec,
             bool interactive,
             bool recursive,
@@ -283,9 +283,10 @@ namespace NuGet.Build.Tasks
         /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
-        internal static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
             ProjectStyle projectStyle;
+            string packagesConfigFilePath = null;
 
             // Allow a user to override by setting RestoreProjectStyle in the project.
             if (!string.IsNullOrWhiteSpace(restoreProjectStyle))
@@ -306,7 +307,7 @@ namespace NuGet.Build.Tasks
                 // If this is not a PackageReference project check if project.json or projectName.project.json exists.
                 projectStyle = ProjectStyle.ProjectJson;
             }
-            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName))
+            else if (ProjectHasPackagesConfigFile(projectDirectory, projectName, out packagesConfigFilePath))
             {
                 // If this is not a PackageReference or ProjectJson project check if packages.config or packages.ProjectName.config exists
                 projectStyle = ProjectStyle.PackagesConfig;
@@ -319,7 +320,7 @@ namespace NuGet.Build.Tasks
 
             bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
 
-            return (projectStyle, isPackageReferenceCompatibleProjectStyle);
+            return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigFilePath);
         }
 
         /// <summary>
@@ -327,8 +328,9 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="projectDirectory">The full path of the project directory.</param>
         /// <param name="projectName">The name of the project file.</param>
+        /// <param name="packagesConfigPath">Receives the full path to the packages.config file if one exists, otherwise <code>null</code>.</param>
         /// <returns><code>true</code> if a packages.config exists next to the project, otherwise <code>false</code>.</returns>
-        private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName)
+        private static bool ProjectHasPackagesConfigFile(string projectDirectory, string projectName, out string packagesConfigPath)
         {
             if (string.IsNullOrWhiteSpace(projectDirectory))
             {
@@ -340,7 +342,7 @@ namespace NuGet.Build.Tasks
                 throw new ArgumentException(Strings.Argument_Cannot_Be_Null_Or_Empty, nameof(projectName));
             }
 
-            string packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
+            packagesConfigPath = Path.Combine(projectDirectory, NuGetConstants.PackageReferenceFile);
 
             if (File.Exists(packagesConfigPath))
             {
@@ -353,6 +355,8 @@ namespace NuGet.Build.Tasks
             {
                 return true;
             }
+
+            packagesConfigPath = null;
 
             return false;
         }
@@ -582,5 +586,66 @@ namespace NuGet.Build.Tasks
             return result;
         }
 #endif
+
+        /// <summary>
+        /// Gets the package fallback folders for a project.
+        /// </summary>
+        /// <param name="projectDirectory">The full path to the directory of the project.</param>
+        /// <param name="fallbackFolders">A <see cref="T:string[]" /> containing the fallback folders for the project.</param>
+        /// <param name="fallbackFoldersOverride">A <see cref="T:string[]" /> containing overrides for the fallback folders for the project.</param>
+        /// <param name="additionalProjectFallbackFolders">An <see cref="IEnumerable{String}" /> containing additional fallback folders for the project.</param>
+        /// <param name="additionalProjectFallbackFoldersExcludes">An <see cref="IEnumerable{String}" /> containing fallback folders to exclude.</param>
+        /// <param name="settings">An <see cref="ISettings" /> object containing settings for the project.</param>
+        /// <returns>A <see cref="T:string[]" /> containing the package fallback folders for the project.</returns>
+        public static string[] GetFallbackFolders(string projectDirectory, string[] fallbackFolders, string[] fallbackFoldersOverride, IEnumerable<string> additionalProjectFallbackFolders, IEnumerable<string> additionalProjectFallbackFoldersExcludes, ISettings settings)
+        {
+            // Fallback folders
+            var currentFallbackFolders = RestoreSettingsUtils.GetValue(
+                () => fallbackFoldersOverride?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => MSBuildRestoreUtility.ContainsClearKeyword(fallbackFolders) ? Array.Empty<string>() : null,
+                () => fallbackFolders?.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => SettingsUtility.GetFallbackPackageFolders(settings).ToArray());
+
+            // Append additional fallback folders after removing excluded folders
+            var filteredAdditionalProjectFallbackFolders = MSBuildRestoreUtility.AggregateSources(
+                    values: additionalProjectFallbackFolders,
+                    excludeValues: additionalProjectFallbackFoldersExcludes)
+                .ToArray();
+
+            return AppendItems(projectDirectory, currentFallbackFolders, filteredAdditionalProjectFallbackFolders);
+        }
+
+        public static string[] GetSources(string projectDirectory, string[] sources, string[] sourcesOverride, IEnumerable<string> additionalProjectSources, ISettings settings)
+        {
+            // Sources
+            var currentSources = RestoreSettingsUtils.GetValue(
+                () => sourcesOverride?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => MSBuildRestoreUtility.ContainsClearKeyword(sources) ? Array.Empty<string>() : null,
+                () => sources?.Select(MSBuildRestoreUtility.FixSourcePath).Select(e => UriUtility.GetAbsolutePath(projectDirectory, e)).ToArray(),
+                () => (PackageSourceProvider.LoadPackageSources(settings)).Where(e => e.IsEnabled).Select(e => e.Source).ToArray());
+
+            // Append additional sources
+            // Escape strings to avoid xplat path issues with msbuild.
+            var filteredAdditionalProjectSources = MSBuildRestoreUtility.AggregateSources(
+                    values: additionalProjectSources,
+                    excludeValues: Enumerable.Empty<string>())
+                .Select(MSBuildRestoreUtility.FixSourcePath)
+                .ToArray();
+
+            return AppendItems(projectDirectory, currentSources, filteredAdditionalProjectSources);
+        }
+
+        private static string[] AppendItems(string projectDirectory, string[] current, string[] additional)
+        {
+            if (additional == null || additional.Length == 0)
+            {
+                // noop
+                return current;
+            }
+
+            var additionalAbsolute = additional.Select(e => UriUtility.GetAbsolutePath(projectDirectory, e));
+
+            return current.Concat(additionalAbsolute).ToArray();
+        }
     }
 }

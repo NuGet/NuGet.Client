@@ -4,11 +4,14 @@ package name=Microsoft.VisualStudio.NuGet.BuildTools
         version=$(MajorVSVersion).0.$(MajorNuGetVersion)0$(MinorNuGetVersion)0$(PatchNuGetVersion).$(BuildNumber)
 
 folder InstallDir:\Common7\IDE\CommonExtensions\Microsoft\NuGet 
-        file source=$(NuGetTargetsPath)
+        file source=$(NuGetTargetsBasePath)NuGet.targets
+        file source=$(NuGetTargetsBasePath)NuGet.RestoreEx.targets
         file source=$(ReferenceOutputPath)Microsoft.Web.XmlTransform.dll
         file source=$(ReferenceOutputPath)Microsoft.Build.NuGetSdkResolver.dll
         file source=$(NewtonsoftJsonPath)Newtonsoft.Json.dll
-        file source=$(ReferenceOutputPath)NuGet.Build.Tasks.dll  
+        file source=$(ReferenceOutputPath)NuGet.Build.Tasks.dll
+        file source=$(ReferenceOutputPath)NuGet.Build.Tasks.Console.exe
+        file source=$(ReferenceOutputPath)NuGet.Build.Tasks.Console.exe.config  
         file source=$(ReferenceOutputPath)NuGet.Commands.dll  
         file source=$(ReferenceOutputPath)NuGet.Common.dll  
         file source=$(ReferenceOutputPath)NuGet.Configuration.dll  
