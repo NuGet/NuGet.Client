@@ -32,10 +32,9 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "add",
                     "source",
+                    "http://test_source",
                     "--name",
                     "test_source",
-                    "--source",
-                    "http://test_source"
                 };
                 var root = Directory.GetDirectoryRoot(Directory.GetCurrentDirectory());
 
@@ -64,10 +63,9 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "add",
                     "source",
+                    "http://test_source",
                     "--name",
                     "test_source",
-                    "--source",
-                    "http://test_source",
                     "--username",
                     "test_user_name",
                     "--password",
@@ -112,10 +110,9 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "add",
                     "source",
+                    "http://test_source",
                     "--name",
                     "test_source",
-                    "--source",
-                    "http://test_source",
                     "--username",
                     "test_user_name",
                     "--password",
@@ -167,10 +164,9 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "add",
                     "source",
+                    "http://test_source",
                     "--name",
                     "test_source",
-                    "--source",
-                    "http://test_source",
                     "--username",
                     "test_user_name",
                     "--password",
@@ -240,7 +236,6 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "enable",
                     "source",
-                    "--name",
                     "TEST_source", // this should work in a case sensitive manner
                     "--configfile",
                     configFilePath
@@ -312,8 +307,7 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "disable",
                     "source",
-                    "--name",
-                    "test_source",
+                    "TEST_source",
                     "--configfile",
                     configFilePath
                 };
@@ -359,10 +353,10 @@ namespace Dotnet.Integration.Test
 
         [PlatformTheory(Platform.Windows)]
         [InlineData("list source --foo", 2)]
-        [InlineData("add source foo", 2)]
-        [InlineData("remove source a b", 2)]
+        [InlineData("add source foo bar", 3)]
+        [InlineData("remove source a b", 3)]
         [InlineData("remove a b c", 1)]
-        [InlineData("add source B a --configfile file.txt --name x --source y", 2)]
+        [InlineData("add source B a --configfile file.txt --name x --source y", 3)]
         [InlineData("list source --configfile file.txt B a", 4)]
         public void SourcesCommandTest_Failure_InvalidArguments(string cmd, int badParam)
         {
@@ -380,10 +374,9 @@ namespace Dotnet.Integration.Test
                     "nuget",
                     "add",
                     "source",
+                    "http://test_source",
                     "--name",
                     "test_source",
-                    "--source",
-                    "http://test_source",
                     "--verbosity",
                     "Quiet"
                 };
