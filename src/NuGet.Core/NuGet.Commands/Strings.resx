@@ -254,8 +254,9 @@
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailed" xml:space="preserve">
-    <value>Failed to restore {0}</value>
-    <comment>{0} is the path to the project file.</comment>
+    <value>Failed to restore {0} (in {1})</value>
+    <comment>{0} is the path to the project file.
+    {1} is the restore duration.</comment>
   </data>
   <data name="Log_RunningNonParallelRestore" xml:space="preserve">
     <value>Running non-parallel restore.</value>

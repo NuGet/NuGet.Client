@@ -24,6 +24,16 @@ namespace NuGet.Common
             if (time.TotalSeconds < 1)
             {
                 result = time.TotalMilliseconds;
+                // If less than 1 ms, show only 1 significant figure
+                if (result >= 1)
+                {
+                    result = Math.Round(result, 0);
+                }
+                else if (result >= 0.1) 
+                {
+                    result = Math.Round(result, 1);
+                }
+
                 type = "ms"; // milliseconds
             }
             else if (time.TotalMinutes < 1)

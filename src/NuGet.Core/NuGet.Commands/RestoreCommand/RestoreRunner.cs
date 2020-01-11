@@ -262,7 +262,7 @@ namespace NuGet.Commands
             log.LogInformation(Strings.Log_Committing);
             await result.CommitAsync(log, token);
 
-            if (summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference)
+            if (result.Success)
             {
                 // For no-op results, don't log a minimal message since a summary is logged at the end
                 // For regular results, log a minimal message so that users can see which projects were actually restored
@@ -280,10 +280,11 @@ namespace NuGet.Commands
             {
                 log.LogMinimal(string.Format(
                     CultureInfo.CurrentCulture,
-                    result.Success ?
-                    Strings.Log_RestoreComplete :
+                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
+                    Strings.Log_RestoreFailedDotnetTool :
                     Strings.Log_RestoreFailed,
-                    summaryRequest.InputPath));
+                    summaryRequest.InputPath,
+                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
 
             // Remote the summary messages from the assets file. This will be removed later.
