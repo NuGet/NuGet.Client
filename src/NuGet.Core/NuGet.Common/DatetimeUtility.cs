@@ -29,7 +29,7 @@ namespace NuGet.Common
                 {
                     result = Math.Round(result, 0);
                 }
-                else if (result >= 0.1) 
+                else if (result >= 0.1)
                 {
                     result = Math.Round(result, 1);
                 }
