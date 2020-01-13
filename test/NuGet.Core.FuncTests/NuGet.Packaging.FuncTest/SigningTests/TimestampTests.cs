@@ -44,7 +44,7 @@ namespace NuGet.Packaging.FuncTest
                 responders.Add(testServer.RegisterResponder(intermediateCa));
                 responders.Add(testServer.RegisterResponder(rootCa));
 
-                var storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+                StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
                 using (var trustedServerRoot = TrustedTestCert.Create(
                     new X509Certificate2(rootCa.Certificate.GetEncoded()),

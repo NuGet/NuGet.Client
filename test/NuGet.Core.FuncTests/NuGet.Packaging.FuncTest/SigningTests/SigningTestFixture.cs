@@ -197,7 +197,7 @@ namespace NuGet.Packaging.FuncTest
             var rootCa = CertificateAuthority.Create(testServer.Url);
             var intermediateCa = rootCa.CreateIntermediateCertificateAuthority();
             var rootCertificate = new X509Certificate2(rootCa.Certificate.GetEncoded());
-            var storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             _trustedServerRoot = TrustedTestCert.Create(
                 rootCertificate,

@@ -2301,7 +2301,7 @@ namespace NuGet.Packaging.FuncTest
         private static IDisposable TrustRootCertificate(IX509CertificateChain certificateChain)
         {
             var rootCertificate = certificateChain.Last();
-            var storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             return TrustedTestCert.Create(
                 new X509Certificate2(rootCertificate),
