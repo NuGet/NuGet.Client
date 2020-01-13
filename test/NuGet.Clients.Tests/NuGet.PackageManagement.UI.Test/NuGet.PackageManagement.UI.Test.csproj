@@ -29,7 +29,7 @@
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
-    <Compile Include="Models\PackageDetailControlModelTests.cs" />
+    <Compile Include="Models\DetailControlModelTests.cs" />
     <Compile Include="Models\PackageItemListViewModelTests.cs" />
     <Compile Include="Models\PreviewWindowModelTests.cs" />
     <Compile Include="Models\DetailedPackageMetadataTests.cs" />

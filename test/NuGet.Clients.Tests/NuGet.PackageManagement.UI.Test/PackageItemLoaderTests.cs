@@ -16,6 +16,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Core;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
+using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
 using Xunit;
@@ -226,6 +227,45 @@ namespace NuGet.PackageManagement.UI.Test
             loaded.AddRange(loader.GetCurrent());
 
             Assert.NotEmpty(loaded);
+        }
+
+        [Fact]
+        public async Task LocalPackageInfo_NotNull()
+        {
+            // Prepare
+            var solutionManager = Mock.Of<IVsSolutionManager>();
+            var uiContext = Mock.Of<INuGetUIContext>();
+            Mock.Get(uiContext)
+                .Setup(x => x.SolutionManager)
+                .Returns(solutionManager);
+
+            using (var localFeedDir = TestDirectory.Create()) // local feed
+            {
+                // create test package
+                var pkgId = new PackageIdentity("nuget.lpsm.test", new NuGetVersion(0, 0, 1));
+                var pkg = new SimpleTestPackageContext(pkgId.Id, pkgId.Version.ToNormalizedString());
+                await SimpleTestPackageUtility.CreatePackagesAsync(localFeedDir.Path, pkg);
+
+                // local test source
+                var localUri = new Uri(localFeedDir.Path, UriKind.Absolute);
+                var localSource = new PackageSource(localUri.ToString(), "LocalSource");
+
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(new[] { localSource });
+                var repositories = sourceRepositoryProvider.GetRepositories();
+
+                var context = new PackageLoadContext(repositories, false, uiContext);
+
+                var packageFeed = new MultiSourcePackageFeed(repositories, logger: null, telemetryService: null);
+                var loader = new PackageItemLoader(context, packageFeed, "nuget");
+
+                // Act
+                await loader.LoadNextAsync(null, CancellationToken.None);
+                var results = loader.GetCurrent();
+
+                // Assert
+                Assert.Single(results);
+                Assert.NotNull(results.First().LocalPackageInfo);
+            }
         }
 
         private class TestPackageFeed : IPackageFeed
