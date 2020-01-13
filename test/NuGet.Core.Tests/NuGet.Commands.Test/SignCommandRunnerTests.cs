@@ -8,6 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -108,15 +109,7 @@ namespace NuGet.Commands.Test
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
-                if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX)
-                {
-                    test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;
-                }
-                else if (RuntimeEnvironmentHelper.IsLinux)
-                {
-                    test.Args.CertificateStoreLocation = StoreLocation.CurrentUser;
-                }
-                
+                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();                
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(

@@ -147,7 +147,7 @@ namespace Test.Utility.Signing
                         IsCA = true
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.Root);
                     issuer = cert;
                 }
                 else if (i < length - 1) // intermediate CA cert
@@ -161,7 +161,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.CertificateAuthority);
                     issuer = cert;
                 }
                 else // leaf cert
@@ -175,7 +175,7 @@ namespace Test.Utility.Signing
                         Issuer = issuer.Source.Cert
                     };
 
-                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My, StoreLocation.LocalMachine);
+                    cert = TestCertificate.Generate(actionGenerator, chainCertificateRequest).WithPrivateKeyAndTrust(StoreName.My);
                 }
 
                 certChain.Add(cert);
@@ -243,7 +243,12 @@ namespace Test.Utility.Signing
 
             var keyUsage = X509KeyUsageFlags.DigitalSignature;
 
-            if (chainCertificateRequest != null)
+            if (chainCertificateRequest == null)
+            {
+                // Self-signed certificates should have this flag set.
+                keyUsage |= X509KeyUsageFlags.KeyCertSign;
+            }
+            else
             {
                 if (chainCertificateRequest.Issuer != null)
                 {
@@ -286,6 +291,7 @@ namespace Test.Utility.Signing
 
             var padding = paddingMode.ToPadding();
             var request = new CertificateRequest(subjectDN, rsa, hashAlgorithm.ConvertToSystemSecurityHashAlgorithmName(), padding);
+            bool isCa = isSelfSigned ? true : (chainCertificateRequest?.IsCA ?? false);
 
             certGen.NotAfter = notAfter ?? DateTime.UtcNow.Add(TimeSpan.FromMinutes(30));
             certGen.NotBefore = DateTime.UtcNow.Subtract(TimeSpan.FromMinutes(30));
@@ -301,7 +307,7 @@ namespace Test.Utility.Signing
             certGen.Extensions.Add(
                 new X509KeyUsageExtension(keyUsage, critical: false));
             certGen.Extensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: chainCertificateRequest?.IsCA ?? false, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: isCa, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
 
             // Allow changes
             modifyGenerator?.Invoke(certGen);
@@ -541,7 +547,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateExpired()
@@ -551,7 +557,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateNotYetValid()
@@ -561,7 +567,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static TrustedTestCert<TestCertificate> GenerateTrustedTestCertificateThatWillExpireSoon(TimeSpan expiresIn)
@@ -571,7 +577,7 @@ namespace Test.Utility.Signing
             // Code Sign EKU needs trust to a root authority
             // Add the cert to Root CA list in LocalMachine as it does not prompt a dialog
             // This makes all the associated tests to require admin privilege
-            return TestCertificate.Generate(actionGenerator).WithTrust(StoreName.Root, StoreLocation.LocalMachine);
+            return TestCertificate.Generate(actionGenerator).WithTrust();
         }
 
         public static bool AreVerifierSettingsEqual(SignedPackageVerifierSettings first, SignedPackageVerifierSettings second)
