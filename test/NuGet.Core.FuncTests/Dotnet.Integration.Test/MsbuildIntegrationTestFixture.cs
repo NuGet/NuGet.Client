@@ -292,15 +292,17 @@ namespace Dotnet.Integration.Test
                         frameworkArtifactsFolder.FullName.Contains("netcoreapp"))
                     {
                         var fileName = projectName + ".dll";
-                        OverwriteFile(
+                        File.Copy(
                                 sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, fileName),
-                                destFileName: Path.Combine(pathToSdkInCli, fileName));
+                                destFileName: Path.Combine(pathToSdkInCli, fileName),
+                                overwrite: true);
                         // Copy the restore targets.
                         if (projectName.Equals(restoreProjectName))
                         {
-                            OverwriteFile(
+                            File.Copy(
                                 sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
-                                destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName));
+                                destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
+                                overwrite: true);
                         }
                     }
                 }
@@ -335,24 +337,19 @@ namespace Dotnet.Integration.Test
                 {
                     foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
                     {
-                        OverwriteFile(
+                        File.Copy(
                             sourceFileName: assembly.FullName,
-                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name));
+                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
+                            overwrite: true);
                     }
                 }
                 // Copy the pack targets
                 var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
                 var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
                 var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
-                OverwriteFile(packTargetsSource, targetsDestination);
-                OverwriteFile(packTargetsSource, targetsDestinationCrossTargeting);
+                File.Copy(packTargetsSource, targetsDestination, overwrite: true);
+                File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
             }
-        }
-
-        private void OverwriteFile(string sourceFileName, string destFileName)
-        {
-            FileUtility.Delete(destFileName);
-            File.Copy(sourceFileName, destFileName);
         }
 
         public void Dispose()
