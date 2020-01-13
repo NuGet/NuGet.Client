@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -34,6 +34,7 @@ namespace NuGet.VisualStudio
 
         public static VsHierarchyItem FromDteProject(EnvDTE.Project project)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Assumes.Present(project);
             return new VsHierarchyItem(VsHierarchyUtility.ToVsHierarchy(project));
         }
@@ -60,6 +61,7 @@ namespace NuGet.VisualStudio
 
         internal bool IsExpandable()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             var o = GetProperty(__VSHPROPID.VSHPROPID_Expandable);
             if (o is bool)
             {
@@ -70,6 +72,7 @@ namespace NuGet.VisualStudio
 
         private object GetProperty(__VSHPROPID propid)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             object value = null;
             if (TryGetProperty((int)propid, out value))
             {
@@ -101,6 +104,7 @@ namespace NuGet.VisualStudio
 
         internal int WalkDepthFirst(bool fVisible, ProcessItemDelegate processCallback, object callerObject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             //
             // TODO Need to see what to do if this is a sub project
             //
@@ -154,6 +158,7 @@ namespace NuGet.VisualStudio
 
         internal VsHierarchyItem GetNextSibling(bool fVisible)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             uint childId = GetNextSiblingId(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
@@ -164,6 +169,7 @@ namespace NuGet.VisualStudio
 
         internal uint GetNextSiblingId(bool fVisible)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             object o = GetProperty(fVisible ? __VSHPROPID.VSHPROPID_NextVisibleSibling : __VSHPROPID.VSHPROPID_NextSibling);
 
             if (o is int)
@@ -179,6 +185,7 @@ namespace NuGet.VisualStudio
 
         internal VsHierarchyItem GetFirstChild(bool fVisible)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             uint childId = GetFirstChildId(fVisible);
             if (childId != VSConstants.VSITEMID_NIL)
             {
@@ -189,6 +196,7 @@ namespace NuGet.VisualStudio
 
         internal uint GetFirstChildId(bool fVisible)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             object o = GetProperty(fVisible ? __VSHPROPID.VSHPROPID_FirstVisibleChild : __VSHPROPID.VSHPROPID_FirstChild);
 
             if (o is int)

@@ -190,6 +190,7 @@ namespace NuGet.VisualStudio
 
         private static T GetPropertyValue<T>(EnvDTE.Project envDTEProject, string propertyName)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Debug.Assert(envDTEProject != null);
             if (envDTEProject.Properties == null)
             {
@@ -408,11 +409,13 @@ namespace NuGet.VisualStudio
 
         public static bool IsJavaScriptProject(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject != null && VsProjectTypes.JsProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsManagementPackProject(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject != null && VsProjectTypes.ManagementPackProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
@@ -426,12 +429,14 @@ namespace NuGet.VisualStudio
 
         private static bool IsNativeProject(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject != null
                 && VsProjectTypes.CppProjectTypeGuid.Equals(envDTEProject.Kind, StringComparison.OrdinalIgnoreCase);
         }
 
         private static bool IsWebProject(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
             return types.Contains(VsProjectTypes.WebSiteProjectTypeGuid, StringComparer.OrdinalIgnoreCase) ||
                    types.Contains(VsProjectTypes.WebApplicationProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
@@ -446,12 +451,14 @@ namespace NuGet.VisualStudio
 
         public static bool IsWindowsStoreApp(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             string[] types = VsHierarchyUtility.GetProjectTypeGuids(envDTEProject);
             return types.Contains(VsProjectTypes.WindowsStoreProjectTypeGuid, StringComparer.OrdinalIgnoreCase);
         }
 
         private static bool IsWixProject(EnvDTE.Project envDTEProject)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             return envDTEProject.Kind != null && envDTEProject.Kind.Equals(VsProjectTypes.WixProjectTypeGuid, StringComparison.OrdinalIgnoreCase);
         }
 

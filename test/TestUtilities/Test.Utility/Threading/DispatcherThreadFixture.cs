@@ -27,7 +27,9 @@ namespace Test.Utility.Threading
                 // Internally this calls ThreadHelper.SetUIThread(), which
                 // causes ThreadHelper to remember this thread for the
                 // lifetime of the process as the dispatcher thread.
+#pragma warning disable VSTHRD010 // Invoke single-threaded types on Main thread
                 var serviceProvider = ServiceProvider.GlobalProvider;
+#pragma warning restore VSTHRD010 // Invoke single-threaded types on Main thread
             });
 
             _joinableTaskContextNode = new JoinableTaskContextNode(

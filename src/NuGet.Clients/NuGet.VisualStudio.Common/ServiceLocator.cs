@@ -123,6 +123,7 @@ namespace NuGet.VisualStudio
 
         private static async Task<TService> GetDTEServiceAsync<TService>() where TService : class
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
             return dte != null ? QueryService(dte, typeof(TService)) as TService : null;
         }
@@ -135,12 +136,14 @@ namespace NuGet.VisualStudio
 
         private static async Task<IServiceProvider> GetServiceProviderAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var dte = await GetGlobalServiceAsync<SDTE, DTE>();
             return GetServiceProviderFromDTE(dte);
         }
 
         private static object QueryService(_DTE dte, Type serviceType)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             Guid guidService = serviceType.GUID;
             Guid riid = guidService;
             var serviceProvider = dte as VsServiceProvider;
@@ -168,6 +171,7 @@ namespace NuGet.VisualStudio
         [SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The caller is responsible for disposing this")]
         private static IServiceProvider GetServiceProviderFromDTE(_DTE dte)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             IServiceProvider serviceProvider = new ServiceProvider(dte as VsServiceProvider);
             Debug.Assert(serviceProvider != null, "Service provider is null");
             return serviceProvider;
