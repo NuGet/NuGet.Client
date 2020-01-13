@@ -27,7 +27,7 @@ namespace Dotnet.Integration.Test
 
         public PackCommandTests(MsbuildIntegrationTestFixture fixture)
         {
-            this.msbuildFixture = fixture;
+            msbuildFixture = fixture;
         }
 
         [PlatformFact(Platform.Windows)]
