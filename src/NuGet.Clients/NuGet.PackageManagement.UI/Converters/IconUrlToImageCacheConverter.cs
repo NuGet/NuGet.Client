@@ -94,7 +94,7 @@ namespace NuGet.PackageManagement.UI
                 {
                     try
                     {
-                        var par = values[1] as PackageArchiveReader;
+                        var par = (PackageArchiveReader)values[1];
                         var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                         iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
 
