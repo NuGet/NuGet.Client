@@ -3,12 +3,10 @@
 
 using System;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Cache;
 using System.Runtime.Caching;
-using System.Text;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
 using NuGet.Packaging;
@@ -35,10 +33,34 @@ namespace NuGet.PackageManagement.UI
 
         private static readonly ErrorFloodGate _errorFloodGate = new ErrorFloodGate();
 
-        // We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
-        // This leads to a memory savings.
+        /// <summary>
+        /// Converts IconUrl from PackageItemListViewModel to an image represented by a BitmapSource
+        /// </summary>
+        /// <remarks>
+        /// We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
+        /// This leads to a memory savings.
+        /// </remarks>
+        /// <param name="values">
+        /// <list type="bullet">
+        /// <item>
+        /// <description>values[0]: IconUrl that points to a URL o a local file</description>
+        /// </item>
+        /// <item>
+        /// <description>values[1]: An <c>PackageArchiveReader</c> to read from the local package for embedded icons</description>
+        /// </item>
+        /// </list>
+        /// </param>
+        /// <param name="targetType">unused</param>
+        /// <param name="parameter">A BitmapImage with the default package icon</param>
+        /// <param name="culture">unused</param>
+        /// <returns>A BitmapSource with the image</returns>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
+            if (values == null || values.Length == 0)
+            {
+                return null;
+            }
+
             var iconUrl = values[0] as Uri;
             var defaultPackageIcon = parameter as BitmapSource;
             if (iconUrl == null)
@@ -64,38 +86,45 @@ namespace NuGet.PackageManagement.UI
 
             BitmapSource imageResult;
 
-            if (values.Length > 1
-                && values[1] != null
-                && values[1] != System.Windows.DependencyProperty.UnsetValue
-                && iconUrl.IsFile
-                && !string.IsNullOrEmpty(iconUrl.Fragment)
-                && iconUrl.Fragment.Length > 1) // is it an embedded icon?
+            // Check if the URI is an Embedded Icon URI
+            if (IsEmbeddedIconUri(iconUrl))
             {
-                try
+                // Check if we have enough info to read the icon from the package
+                if (values.Length == 2 && values[1] is PackageArchiveReader)
                 {
-                    var par = values[1] as PackageArchiveReader;
-                    var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1);
-                    iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
+                    try
+                    {
+                        var par = values[1] as PackageArchiveReader;
+                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
+                        iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
 
-                    iconBitmapImage.DecodeFailed += (sender, args) =>
-                    {
-                        par.Dispose();
-                        IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                    };
-                    iconBitmapImage.DownloadFailed += (sender, args) =>
-                    {
-                        par.Dispose();
-                        IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                    };
-                    iconBitmapImage.DownloadCompleted += (sender, args) =>
-                    {
-                        par.Dispose();
-                        IconBitmapImage_DownloadCompleted(sender, args);
-                    };
+                        iconBitmapImage.DecodeFailed += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                        };
+                        iconBitmapImage.DownloadFailed += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                        };
+                        iconBitmapImage.DownloadCompleted += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadCompleted(sender, args);
+                        };
 
-                    imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                    }
+                    catch (Exception)
+                    {
+                        AddToCache(iconUrl, defaultPackageIcon);
+                        imageResult = defaultPackageIcon;
+                    }
                 }
-                catch (Exception)
+                // Identified an embedded icon URI but, we are unable to process it
+                // cache and return the default image
+                else
                 {
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
@@ -198,6 +227,20 @@ namespace NuGet.PackageManagement.UI
                     _errorFloodGate.ReportError();
                 }
             }
+        }
+
+        /// <summary>
+        /// NuGet Embedded Icon Uri verification
+        /// </summary>
+        /// <param name="iconUrl">An URI to test</param>
+        /// <returns><c>true</c> if <c>iconUrl</c> is an URI to an embedded icon in a NuGet package</returns>
+        public static bool IsEmbeddedIconUri(Uri iconUrl)
+        {
+            return iconUrl != null
+                && iconUrl.IsAbsoluteUri
+                && iconUrl.IsFile
+                && !string.IsNullOrEmpty(iconUrl.Fragment)
+                && iconUrl.Fragment.Length > 1;
         }
     }
 }

@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void EmbeddedIcon_IconUrl_ReturnsFile()
+        public void EmbeddedIcon_IconUrl_ReturnsEmbeddedIconUri()
         {
             Assert.NotNull(_testData.TestData.IconUrl);
             Assert.True(_testData.TestData.IconUrl.IsFile);

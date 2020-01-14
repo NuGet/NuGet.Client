@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Threading;
@@ -198,6 +200,62 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [MemberData(nameof(TestData))]
+        [Theory]
+        public void IsEmbeddedIconUri_Tests(Uri testUri, bool expectedResult)
+        {
+            var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void test3()
+        {
+            object x = null;
+            Assert.False(x is PackageArchiveReader);
+        }
+
+        public static IEnumerable<object[]> TestData()
+        {
+            Uri baseUri = new Uri(@"C:\path\to\package");
+            UriBuilder builder1 = new UriBuilder(baseUri)
+            {
+                Fragment = "    " // UriBuilder trims the string
+            };
+            UriBuilder builder2 = new UriBuilder(baseUri)
+            {
+                Fragment = "icon.png"
+            };
+            UriBuilder builder3 = new UriBuilder(baseUri)
+            {
+                Fragment = @"..\icon.png"
+            };
+            UriBuilder builder4 = new UriBuilder(baseUri)
+            {
+                Fragment = string.Empty // implies that there's a Tag, but no value
+            };
+            UriBuilder builder5 = new UriBuilder(baseUri)
+            {
+                Query = "aParam"
+            };
+
+            return new List<object[]>
+            {
+                new object[]{ builder1.Uri, false },
+                new object[]{ builder2.Uri, true },
+                new object[]{ builder3.Uri, true },
+                new object[]{ builder4.Uri, false },
+                new object[]{ builder5.Uri, false },
+                new object[]{ new Uri("https://sample.uri/"), false },
+                new object[]{ baseUri, false },
+                new object[]{ new Uri("https://another.uri/#"), false },
+                new object[]{ new Uri("https://complimentary.uri/#anchor"), false },
+                new object[]{ new Uri("https://complimentary.uri/?param"), false },
+                new object[]{ new Uri("relative/path", UriKind.Relative), false },
+            };
+        }
+
+
         /// <summary>
         /// Creates a dummy zip file with .nupkg extension and with a PNG image named "icon.png"
         /// </summary>
@@ -225,7 +283,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// <param name="w">Image width in pixels</param>
         /// <param name="h">Image height in pixels</param>
         /// <param name="dpiX">Horizontal Dots (pixels) Per Inch in the image</param>
-        /// /// <param name="dpiX">Vertical Dots (pixels) Per Inch in the image</param>
+        /// <param name="dpiY">Vertical Dots (pixels) Per Inch in the image</param>
         private static void CreateNoisePngImage(string path, int w = 128, int h = 128, int dpiX = 96, int dpiY = 96)
         {
             // Create PNG image with noise
@@ -244,13 +302,13 @@ namespace NuGet.PackageManagement.UI.Test
                 fmt,
                 null, data, stride);
 
-            BitmapEncoder enconder = new PngBitmapEncoder();
+            BitmapEncoder encoder = new PngBitmapEncoder();
 
-            enconder.Frames.Add(BitmapFrame.Create(bitmap));
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
 
             using(var fs = File.OpenWrite(path))
             {
-                enconder.Save(fs);
+                encoder.Save(fs);
             }
         }
     }

@@ -36,7 +36,7 @@ namespace NuGet.Protocol
         /// </remarks>
         public long? DownloadCount => 0;
 
-        public Uri IconUrl =>  GetIcon();
+        public Uri IconUrl =>  GetIconUri();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
 
@@ -151,11 +151,11 @@ namespace NuGet.Protocol
         /// <summary>
         /// Points to an Icon, either Embedded Icon or IconUrl
         /// </summary>
-        public Uri GetIcon()
+        private Uri GetIconUri()
         {
-            string embeddedIconPath = _nuspec.GetIcon();
+            string embeddedIcon = _nuspec.GetIcon();
 
-            if (embeddedIconPath == null)
+            if (embeddedIcon == null)
             {
                 return Convert(_nuspec.GetIconUrl());
             }
@@ -164,7 +164,7 @@ namespace NuGet.Protocol
 
             UriBuilder builder = new UriBuilder(baseUri)
             {
-                Fragment = embeddedIconPath
+                Fragment = embeddedIcon
             };
 
             // get the special icon url

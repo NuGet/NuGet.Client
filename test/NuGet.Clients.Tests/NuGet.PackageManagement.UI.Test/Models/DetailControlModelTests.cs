@@ -24,11 +24,12 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public DetailControlModelTestBase(LocalPackageSearchMetadataFixture testData)
         {
             _testData = testData;
+            var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
             {
                 LocalPackageInfo = _testData.TestData.LocalPackageInfo,
-                Version = new NuGetVersion(0, 0, 1),
-                InstalledVersion = new NuGetVersion(0, 0, 1)
+                Version = testVersion,
+                InstalledVersion = testVersion,
             };
 
 #pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
@@ -43,7 +44,6 @@ namespace NuGet.PackageManagement.UI.Test.Models
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects).
                     _joinableTaskContext?.Dispose();
                 }
 
@@ -61,17 +61,17 @@ namespace NuGet.PackageManagement.UI.Test.Models
 
     public class PackageDetailControlModelTests : DetailControlModelTestBase
     {
-        private readonly PackageDetailControlModel _testIntance;
+        private readonly PackageDetailControlModel _testInstance;
 
         public PackageDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
             var solMgr = new Mock<ISolutionManager>();
-            _testIntance = new PackageDetailControlModel(
+            _testInstance = new PackageDetailControlModel(
                 solutionManager: solMgr.Object,
                 nugetProjects: new List<NuGetProject>());
 
-            _testIntance.SetCurrentPackage(
+            _testInstance.SetCurrentPackage(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
@@ -80,24 +80,24 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void PackageArchiveReader_NotNull()
         {
-            Assert.NotNull(_testIntance.PackageArchiveReader);
+            Assert.NotNull(_testInstance.PackageArchiveReader);
         }
     }
 
     public class PackageSolutionDetailControlModelTests : DetailControlModelTestBase
     {
-        private readonly PackageSolutionDetailControlModel _testIntance;
+        private readonly PackageSolutionDetailControlModel _testInstance;
 
         public PackageSolutionDetailControlModelTests(LocalPackageSearchMetadataFixture testData)
             : base(testData)
         {
             var solMgr = new Mock<ISolutionManager>();
-            _testIntance = new PackageSolutionDetailControlModel(
+            _testInstance = new PackageSolutionDetailControlModel(
                 solutionManager: solMgr.Object,
                 projects: new List<NuGetProject>(),
                 packageManagerProviders: new List<IVsPackageManagerProvider>());
 
-            _testIntance.SetCurrentPackage(
+            _testInstance.SetCurrentPackage(
                 _testViewModel,
                 ItemFilter.All,
                 () => null).Wait();
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void PackageArchiveReader_NotNull()
         {
-            Assert.NotNull(_testIntance.PackageArchiveReader);
+            Assert.NotNull(_testInstance.PackageArchiveReader);
         }
     }
 }
