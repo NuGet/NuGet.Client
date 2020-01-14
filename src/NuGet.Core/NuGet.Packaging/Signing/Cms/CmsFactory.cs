@@ -13,7 +13,7 @@ namespace NuGet.Packaging.Signing
         {
             if (cmsBytes == null)
             {
-                throw new CryptographicException(Strings.InvalidAsn1);
+                throw new ArgumentNullException(nameof(cmsBytes));
             }
 #if IS_SIGNING_SUPPORTED
             ICms cms = null;

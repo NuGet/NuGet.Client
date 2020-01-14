@@ -17,6 +17,10 @@ namespace NuGet.Packaging.Signing
             bool requestSignerCertificates,
             X509ExtensionCollection extensions)
         {
+            if (messageHash == null)
+            {
+                throw new ArgumentNullException(nameof(messageHash));
+            }
 #if IS_SIGNING_SUPPORTED
             IRfc3161TimestampRequest iRfc3161TimestampRequest = null;
 #if IS_DESKTOP

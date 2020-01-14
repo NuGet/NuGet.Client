@@ -14,6 +14,25 @@ namespace NuGet.Packaging.Signing
             X509Certificate2Collection additionalCerts,
             byte[] encoded)
         {
+            if (tstInfo == null)
+            {
+                throw new ArgumentNullException(nameof(tstInfo));
+            }
+
+            if (signerCertificate == null)
+            {
+                throw new ArgumentNullException(nameof(signerCertificate));
+            }
+
+            if (additionalCerts == null)
+            {
+                throw new ArgumentNullException(nameof(additionalCerts));
+            }
+
+            if (encoded == null)
+            {
+                throw new ArgumentNullException(nameof(encoded));
+            }
 #if IS_SIGNING_SUPPORTED
             IRfc3161TimestampToken iRfc3161TimestampToken = null;
 #if IS_DESKTOP
