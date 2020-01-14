@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Security.Cryptography.X509Certificates;
-using NuGet.Common;
 
 
 namespace NuGet.Packaging.Signing
@@ -512,7 +511,10 @@ namespace NuGet.Packaging.Signing
 
         public void Dispose()
         {
-            _handle.Dispose();
+            if (!_handle.IsInvalid)
+            {
+                _handle.Dispose();
+            }
         }
     }
 }
