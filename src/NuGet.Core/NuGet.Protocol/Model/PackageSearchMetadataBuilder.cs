@@ -102,12 +102,10 @@ namespace NuGet.Protocol.Core.Types
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
                 LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
-                LocalPackageInfo = _metadata is LocalPackageSearchMetadata
-                        ? (_metadata as LocalPackageSearchMetadata).LocalPackageInfo
-                        : _metadata is ClonedPackageSearchMetadata
-                        ? (_metadata as ClonedPackageSearchMetadata).LocalPackageInfo
-                        : null
-        };
+                LocalPackageInfo =
+                    (_metadata as LocalPackageSearchMetadata)?.LocalPackageInfo ??
+                    (_metadata as ClonedPackageSearchMetadata)?.LocalPackageInfo
+            };
 
             return clonedMetadata;
         }
