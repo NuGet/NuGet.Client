@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
-using Microsoft.Build.Evaluation;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
