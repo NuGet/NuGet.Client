@@ -650,4 +650,4 @@ namespace NuGet.PackageManagement.UI
             _loadingStatusBar.Visibility = Visibility.Hidden;
         }
     }
-}
+}
