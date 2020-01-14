@@ -37,6 +37,8 @@ namespace NuGet.Packaging.Signing
             System.Security.Cryptography.Pkcs.Rfc3161TimestampToken rfc3161TimestampToken)
         {
             _rfc3161TimestampToken = rfc3161TimestampToken;
+
+            TokenInfo = new Rfc3161TimestampTokenInfoNetstandard21Wrapper(_rfc3161TimestampToken.TokenInfo);
         }
 
         public SignedCms AsSignedCms()
