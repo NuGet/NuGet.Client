@@ -12,7 +12,7 @@ namespace NuGet.Packaging.Signing
     internal sealed class Rfc3161TimestampTokenNetstandard21Wrapper : IRfc3161TimestampToken
     {
         private readonly System.Security.Cryptography.Pkcs.Rfc3161TimestampToken _rfc3161TimestampToken;
-        private readonly Lazy<IRfc3161TimestampTokenInfo> _tokenInfo;
+        public IRfc3161TimestampTokenInfo TokenInfo { get; }
 
         public Rfc3161TimestampTokenNetstandard21Wrapper(
             IRfc3161TimestampTokenInfo tstInfo,
@@ -23,15 +23,14 @@ namespace NuGet.Packaging.Signing
             bool success = System.Security.Cryptography.Pkcs.Rfc3161TimestampToken.TryDecode(
                 new ReadOnlyMemory<byte>(encoded),
                 out _rfc3161TimestampToken,
-                out int bytesConsumed);
+                out var _);
 
             if (!success)
             {
                 throw new CryptographicException(Strings.InvalidAsn1);
             }
 
-            _tokenInfo = new Lazy<IRfc3161TimestampTokenInfo>(
-                () => new Rfc3161TimestampTokenInfoNetstandard21Wrapper(_rfc3161TimestampToken.TokenInfo));
+            TokenInfo = new Rfc3161TimestampTokenInfoNetstandard21Wrapper(_rfc3161TimestampToken.TokenInfo);
         }
 
         public Rfc3161TimestampTokenNetstandard21Wrapper(
@@ -39,8 +38,6 @@ namespace NuGet.Packaging.Signing
         {
             _rfc3161TimestampToken = rfc3161TimestampToken;
         }
-
-        public IRfc3161TimestampTokenInfo TokenInfo => _tokenInfo.Value;
 
         public SignedCms AsSignedCms()
         {

@@ -24,13 +24,7 @@ namespace NuGet.Packaging.Signing
                 encoded);
         }
 
-        public IRfc3161TimestampTokenInfo TokenInfo
-        {
-            get
-            {
-                return _rfc3161TimestampToken.TokenInfo;
-            }
-        }
+        public IRfc3161TimestampTokenInfo TokenInfo => _rfc3161TimestampToken.TokenInfo;
 
         public SignedCms AsSignedCms()
         {

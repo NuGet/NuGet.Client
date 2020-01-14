@@ -23,29 +23,11 @@ namespace NuGet.Packaging.Signing
 
         public string PolicyId => _rfc3161TimestampTokenInfo.PolicyId;
 
-        public DateTimeOffset Timestamp
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.Timestamp;
-            }
-        }
+        public DateTimeOffset Timestamp => _rfc3161TimestampTokenInfo.Timestamp;
 
-        public long? AccuracyInMicroseconds
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.AccuracyInMicroseconds;
-            }
-        }
+        public long? AccuracyInMicroseconds => _rfc3161TimestampTokenInfo.AccuracyInMicroseconds;
 
-        public Oid HashAlgorithmId
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.HashAlgorithmId;
-            }
-        }
+        public Oid HashAlgorithmId => _rfc3161TimestampTokenInfo.HashAlgorithmId;
 
         public bool HasMessageHash(byte[] hash)
         {

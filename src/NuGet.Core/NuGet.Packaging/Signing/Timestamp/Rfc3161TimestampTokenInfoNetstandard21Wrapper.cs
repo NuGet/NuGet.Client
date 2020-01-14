@@ -17,7 +17,7 @@ namespace NuGet.Packaging.Signing
             bool success = System.Security.Cryptography.Pkcs.Rfc3161TimestampTokenInfo.TryDecode(
                 new ReadOnlyMemory<byte>(timestampTokenInfo),
                 out _rfc3161TimestampTokenInfo,
-                out int bytesConsumed);
+                out var _);
 
             if (!success)
             {
@@ -30,37 +30,13 @@ namespace NuGet.Packaging.Signing
             _rfc3161TimestampTokenInfo = timestampTokenInfo;
         }
 
-        public string PolicyId
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.PolicyId.ToString();
-            }
-        }
+        public string PolicyId => _rfc3161TimestampTokenInfo.PolicyId.ToString();
 
-        public DateTimeOffset Timestamp
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.Timestamp;
-            }
-        }
+        public DateTimeOffset Timestamp => _rfc3161TimestampTokenInfo.Timestamp;
 
-        public long? AccuracyInMicroseconds
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.AccuracyInMicroseconds;
-            }
-        }
+        public long? AccuracyInMicroseconds => _rfc3161TimestampTokenInfo.AccuracyInMicroseconds;
 
-        public Oid HashAlgorithmId
-        {
-            get
-            {
-                return _rfc3161TimestampTokenInfo.HashAlgorithmId;
-            }
-        }
+        public Oid HashAlgorithmId => _rfc3161TimestampTokenInfo.HashAlgorithmId;
 
         public bool HasMessageHash(byte[] hash)
         {
