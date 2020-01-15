@@ -27,7 +27,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
             var testVersion = new NuGetVersion(0, 0, 1);
             _testViewModel = new PackageItemListViewModel()
             {
-                LocalPackageInfo = _testData.TestData.LocalPackageInfo,
+                PackageReader= _testData.TestData.PackageReader,
                 Version = testVersion,
                 InstalledVersion = testVersion,
             };
@@ -78,9 +78,9 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageArchiveReader_NotNull()
+        public void PackageReader_NotNull()
         {
-            Assert.NotNull(_testInstance.PackageArchiveReader);
+            Assert.NotNull(_testInstance.PackageReader);
         }
     }
 
@@ -106,7 +106,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         [Fact]
         public void PackageArchiveReader_NotNull()
         {
-            Assert.NotNull(_testInstance.PackageArchiveReader);
+            Assert.NotNull(_testInstance.PackageReader);
         }
     }
 }

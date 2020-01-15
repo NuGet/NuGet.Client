@@ -1,14 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
-using System;
-using System.IO;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Xunit;
 
 namespace NuGet.Protocol.Core.Types.Tests
@@ -23,23 +16,23 @@ namespace NuGet.Protocol.Core.Types.Tests
         }
 
         [Fact]        
-        public void LocalPacakgeSearchMetadata_LocalPackageInfo_NotNull()
+        public void LocalPackageInfo_NotNull()
         {
             var copy1 = PackageSearchMetadataBuilder
                 .FromMetadata(_testData.TestData)
                 .Build();
             Assert.True(copy1 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
 
-            var clone1 = copy1 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
-            Assert.NotNull(clone1.LocalPackageInfo);
+            var clone1 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy1;
+            Assert.NotNull(clone1.PackageReader);
 
             var copy2 = PackageSearchMetadataBuilder
                 .FromMetadata(copy1)
                 .Build();
             Assert.True(copy2 is PackageSearchMetadataBuilder.ClonedPackageSearchMetadata);
                 
-            var clone2 = copy2 as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata;
-            Assert.NotNull(clone2.LocalPackageInfo);
+            var clone2 = (PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)copy2;
+            Assert.NotNull(clone2.PackageReader);
         }
     }
 }

@@ -18,7 +18,7 @@ namespace NuGet.PackageManagement.UI
         private const int DecodePixelWidth = 32;
 
         // same URIs can reuse the bitmapImage that we've already used.
-        private static readonly ObjectCache _bitmapImageCache = MemoryCache.Default;
+        private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 
         private static readonly WebExceptionStatus[] FatalErrors = new[]
         {
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI
 
         private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
 
-        private static readonly ErrorFloodGate _errorFloodGate = new ErrorFloodGate();
+        private static readonly ErrorFloodGate ErrorFloodGate = new ErrorFloodGate();
 
         /// <summary>
         /// Converts IconUrl from PackageItemListViewModel to an image represented by a BitmapSource
@@ -68,7 +68,7 @@ namespace NuGet.PackageManagement.UI
                 return null;
             }
 
-            var cachedBitmapImage = _bitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
+            var cachedBitmapImage = BitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
             if (cachedBitmapImage != null)
             {
                 return cachedBitmapImage;
@@ -76,7 +76,7 @@ namespace NuGet.PackageManagement.UI
 
             // Some people run on networks with internal NuGet feeds, but no access to the package images on the internet.
             // This is meant to detect that kind of case, and stop spamming the network, so the app remains responsive.
-            if (_errorFloodGate.IsOpen)
+            if (ErrorFloodGate.IsOpen)
             {
                 return defaultPackageIcon;
             }
@@ -90,11 +90,12 @@ namespace NuGet.PackageManagement.UI
             if (IsEmbeddedIconUri(iconUrl))
             {
                 // Check if we have enough info to read the icon from the package
-                if (values.Length == 2 && values[1] is PackageArchiveReader)
+                if (values.Length == 2 && values[1] is Lazy<PackageReaderBase>)
                 {
                     try
                     {
-                        var par = (PackageArchiveReader)values[1];
+                        var lazyPar = (Lazy<PackageReaderBase>)values[1];
+                        var par = lazyPar.Value as PackageArchiveReader;
                         var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                         iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
 
@@ -171,7 +172,7 @@ namespace NuGet.PackageManagement.UI
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
                 var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
                 AddToCache(iconUrl, cachedBitmapImage);
-                _errorFloodGate.ReportAttempt();
+                ErrorFloodGate.ReportAttempt();
 
                 image = cachedBitmapImage;
             }
@@ -186,7 +187,7 @@ namespace NuGet.PackageManagement.UI
                 SlidingExpiration = TimeSpan.FromMinutes(10),
                 RemovedCallback = CacheEntryRemoved
             };
-            _bitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
+            BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
@@ -216,7 +217,7 @@ namespace NuGet.PackageManagement.UI
 
             string cacheKey = uri != null ? uri.ToString() : string.Empty;
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
-            var cachedBitmapImage = _bitmapImageCache.Get(cacheKey) as BitmapSource;
+            var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
                 AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
@@ -224,7 +225,7 @@ namespace NuGet.PackageManagement.UI
                 var webex = e.ErrorException as WebException;
                 if (webex != null && FatalErrors.Any(c => webex.Status == c))
                 {
-                    _errorFloodGate.ReportError();
+                    ErrorFloodGate.ReportError();
                 }
             }
         }

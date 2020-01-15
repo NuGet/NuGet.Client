@@ -10,13 +10,12 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
-using System.IO;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
-using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -295,11 +294,6 @@ namespace NuGet.PackageManagement.UI
         private Lazy<Task<NuGetVersion>> _backgroundLatestVersionLoader;
         private Lazy<Task<PackageDeprecationMetadata>> _backgroundDeprecationMetadataLoader;
 
-        /// <summary>
-        /// Information related to the package on disk
-        /// </summary>
-        public LocalPackageInfo LocalPackageInfo { get; set; }
-
         private void TriggerStatusLoader()
         {
             if (!_backgroundLatestVersionLoader.IsValueCreated)
@@ -414,18 +408,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        /// <summary>
-        /// Gets an instance of a package reader. <see cref="LocalPackageInfo"/>
-        /// </summary>
-        public PackageArchiveReader PackageArchiveReader
-        {
-            get
-            {
-                var reader = LocalPackageInfo?.GetReader() as PackageArchiveReader;
-
-                return reader;
-            }
-        }
+        public Lazy<PackageReaderBase> PackageReader { get; set; }
 
         public override string ToString()
         {

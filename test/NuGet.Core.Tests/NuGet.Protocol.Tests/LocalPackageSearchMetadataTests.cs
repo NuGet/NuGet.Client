@@ -36,13 +36,13 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
-        public void LocalPackageInfo_NotNull()
+        public void PackageReader_NotNull()
         {
-            Assert.NotNull(_testData.TestData.LocalPackageInfo);
+            Assert.NotNull(_testData.TestData.PackageReader);
         }
 
         [Fact]
-        public void EmbeddedIcon_IconUrl_ReturnsEmbeddedIconUri()
+        public void IconUrl_ReturnsEmbeddedIconUri()
         {
             Assert.NotNull(_testData.TestData.IconUrl);
             Assert.True(_testData.TestData.IconUrl.IsFile);

@@ -22,20 +22,14 @@ namespace NuGet.PackageManagement.UI.Test
             _testData = testData;
             _testInstance = new PackageItemListViewModel()
             {
-                LocalPackageInfo = _testData.TestData.LocalPackageInfo
+                PackageReader = _testData.TestData.PackageReader,
             };
         }
 
         [Fact]
-        public void LocalSources_LocalPackageInfo_NotNull()
+        public void LocalSources_PackageReader_NotNull()
         {
-            Assert.NotNull(_testInstance.LocalPackageInfo);
-        }
-
-        [Fact]
-        public void LocalSources_PackageArchiveReader_NotNull()
-        {
-            Assert.NotNull(_testInstance.PackageArchiveReader);
+            Assert.NotNull(_testInstance.PackageReader);
         }
     }
 }

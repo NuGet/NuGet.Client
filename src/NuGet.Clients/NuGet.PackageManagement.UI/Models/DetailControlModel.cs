@@ -633,7 +633,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public PackageArchiveReader PackageArchiveReader => _searchResultPackage?.PackageArchiveReader;
+        public Lazy<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
         protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
         {

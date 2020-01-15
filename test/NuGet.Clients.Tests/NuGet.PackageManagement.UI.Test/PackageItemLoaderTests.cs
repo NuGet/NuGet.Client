@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [Fact]
-        public async Task LocalPackageInfo_NotNull()
+        public async Task PackageReader_NotNull()
         {
             // Prepare
             var solutionManager = Mock.Of<IVsSolutionManager>();
@@ -264,7 +264,7 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Assert
                 Assert.Single(results);
-                Assert.NotNull(results.First().LocalPackageInfo);
+                Assert.NotNull(results.First().PackageReader);
             }
         }
 
