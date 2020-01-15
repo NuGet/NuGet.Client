@@ -99,15 +99,18 @@ namespace NuGet.PackageManagement.UI
                         var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                         iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
 
+
                         iconBitmapImage.DecodeFailed += (sender, args) =>
                         {
                             par.Dispose();
                             IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            AddToCache(iconUrl, defaultPackageIcon);
                         };
                         iconBitmapImage.DownloadFailed += (sender, args) =>
                         {
                             par.Dispose();
                             IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            AddToCache(iconUrl, defaultPackageIcon);
                         };
                         iconBitmapImage.DownloadCompleted += (sender, args) =>
                         {
