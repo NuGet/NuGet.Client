@@ -11,7 +11,6 @@ using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Packaging;
-using TaskCanceledException = System.Threading.Tasks.TaskCanceledException;
 
 namespace NuGet.Build.Tasks
 {
@@ -91,6 +90,11 @@ namespace NuGet.Build.Tasks
         /// Gets or sets the full path to the solution file (if any) that is being built.
         /// </summary>
         public string SolutionPath { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.
+        /// </summary>
+        private bool IsSolutionPathDefined => !string.IsNullOrWhiteSpace(SolutionPath) && !string.Equals(SolutionPath, "*Undefined*", StringComparison.OrdinalIgnoreCase);
 
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
@@ -199,7 +203,7 @@ namespace NuGet.Build.Tasks
 #endif
             // Full path to the entry project.  If its a solution file, it will be the full path to solution, otherwise SolutionPath is either empty
             // or is the value "*Undefined*" and ProjectFullPath is set instead.
-            yield return !string.IsNullOrWhiteSpace(SolutionPath) && !string.Equals(SolutionPath, "*Undefined*", StringComparison.OrdinalIgnoreCase)
+            yield return IsSolutionPathDefined
                     ? SolutionPath
                     : ProjectFullPath;
 
@@ -243,7 +247,11 @@ namespace NuGet.Build.Tasks
             }
 #endif
             msBuildGlobalProperties["ExcludeRestorePackageImports"] = "true";
-            msBuildGlobalProperties["SolutionPath"] = SolutionPath;
+
+            if (IsSolutionPathDefined)
+            {
+                msBuildGlobalProperties["SolutionPath"] = SolutionPath;
+            }
 
             return msBuildGlobalProperties;
         }
