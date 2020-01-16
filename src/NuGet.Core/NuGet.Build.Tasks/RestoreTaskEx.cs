@@ -19,7 +19,7 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public sealed class RestoreTaskEx : Task, ICancelableTask, IDisposable
     {
-        public readonly CancellationTokenSource CancellationTokenSource = new CancellationTokenSource();
+        internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// Gets the full path to this assembly.
@@ -97,12 +97,12 @@ namespace NuGet.Build.Tasks
         public string SolutionPath { get; set; }
 
         /// <inheritdoc cref="ICancelableTask.Cancel" />
-        public void Cancel() => CancellationTokenSource.Cancel();
+        public void Cancel() => _cancellationTokenSource.Cancel();
 
         /// <inheritdoc cref="IDisposable.Dispose" />
         public void Dispose()
         {
-            CancellationTokenSource.Dispose();
+            _cancellationTokenSource.Dispose();
         }
 
         /// <inheritdoc cref="Task.Execute()" />
@@ -138,7 +138,7 @@ namespace NuGet.Build.Tasks
 
                         process.BeginOutputReadLine();
 
-                        semaphore.Wait(CancellationTokenSource.Token);
+                        semaphore.Wait(_cancellationTokenSource.Token);
 
                         if (!process.HasExited)
                         {
@@ -171,7 +171,7 @@ namespace NuGet.Build.Tasks
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{String}" /> containing the command-line arguments that need to separated by spaces and surrounded by quotes.</returns>
-        public IEnumerable<string> GetCommandLineArguments()
+        internal IEnumerable<string> GetCommandLineArguments()
         {
 #if IS_CORECLR
             // The full path to the executable for dotnet core
@@ -215,7 +215,7 @@ namespace NuGet.Build.Tasks
         /// Gets the file name of the process.
         /// </summary>
         /// <returns>The full path to the file for the process.</returns>
-        public string GetProcessFileName()
+        internal string GetProcessFileName()
         {
 #if IS_CORECLR
             // In .NET Core, the path to dotnet is the file to run

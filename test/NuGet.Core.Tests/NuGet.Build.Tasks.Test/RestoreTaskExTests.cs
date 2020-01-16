@@ -15,11 +15,12 @@ namespace NuGet.Build.Tasks.Test
         [Fact]
         public void Cancel_WhenCanceled_CancellationTokenSourceIsCancellationRequestedIsTrue()
         {
-            var task = new RestoreTaskEx();
+            using (var task = new RestoreTaskEx())
+            {
+                task.Cancel();
 
-            task.Cancel();
-
-            task.CancellationTokenSource.IsCancellationRequested.Should().BeTrue();
+                task._cancellationTokenSource.IsCancellationRequested.Should().BeTrue();
+            }
         }
 
         [Fact]
@@ -38,7 +39,7 @@ namespace NuGet.Build.Tasks.Test
 
                 var buildEngine = new TestBuildEngine(globalProperties);
 
-                var task = new RestoreTaskEx
+                using (var task = new RestoreTaskEx
                 {
                     BuildEngine = buildEngine,
                     DisableParallel = true,
@@ -52,9 +53,9 @@ namespace NuGet.Build.Tasks.Test
                     ProjectFullPath = projectPath,
                     Recursive = true,
                     RestorePackagesConfig = true
-                };
-
-                task.GetCommandLineArguments().ToList().Should().BeEquivalentTo(
+                })
+                {
+                    task.GetCommandLineArguments().ToList().Should().BeEquivalentTo(
 #if IS_CORECLR
                     Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.dll"),
 #endif
@@ -65,7 +66,8 @@ namespace NuGet.Build.Tasks.Test
                     Path.Combine(msbuildBinPath, "MSBuild.exe"),
 #endif
                     projectPath,
-                    "Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true");
+                        "Property1=Value1;Property2=  Value2  ;ExcludeRestorePackageImports=true");
+                }
             }
         }
 
@@ -76,15 +78,17 @@ namespace NuGet.Build.Tasks.Test
             {
                 string msbuildBinPath = Path.Combine(testDirectory, "MSBuild", "Current", "Bin");
 
-                var task = new RestoreTaskEx
+                using (var task = new RestoreTaskEx
                 {
                     MSBuildBinPath = msbuildBinPath
-                };
+                })
+                {
 #if IS_CORECLR
-                task.GetProcessFileName().Should().Be(Path.Combine(testDirectory, "MSBuild", "dotnet"));
+                    task.GetProcessFileName().Should().Be(Path.Combine(testDirectory, "MSBuild", "dotnet"));
 #else
-                task.GetProcessFileName().Should().Be(Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.exe"));
+                    task.GetProcessFileName().Should().Be(Path.ChangeExtension(typeof(RestoreTaskEx).Assembly.Location, ".Console.exe"));
 #endif
+                }
             }
         }
 
@@ -94,18 +98,19 @@ namespace NuGet.Build.Tasks.Test
         [InlineData(@"C:\foo\bar.sln", true)]
         public void IsSolutionPathDefined_WhenDifferentValuesSpecified_CorrectValueReturned(string value, bool expected)
         {
-            var task = new RestoreTaskEx
+            using (var task = new RestoreTaskEx
             {
                 SolutionPath = value
-            };
-
-            if (expected)
+            })
             {
-                task.IsSolutionPathDefined.Should().BeTrue();
-            }
-            else
-            {
-                task.IsSolutionPathDefined.Should().BeFalse();
+                if (expected)
+                {
+                    task.IsSolutionPathDefined.Should().BeTrue();
+                }
+                else
+                {
+                    task.IsSolutionPathDefined.Should().BeFalse();
+                }
             }
         }
     }
