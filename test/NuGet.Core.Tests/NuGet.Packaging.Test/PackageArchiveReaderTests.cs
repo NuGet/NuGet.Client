@@ -1956,18 +1956,11 @@ namespace NuGet.Packaging.Test
                 // Act
                 var result = packageArchiveReader.CanVerifySignedPackages(null);
                 // Assert
-#if IS_DESKTOP
-                // Verify package signature when running in full frameworks
-                if (RuntimeEnvironmentHelper.IsWindows && !RuntimeEnvironmentHelper.IsMono)
-                {
-                    Assert.True(result);
-                }
-                else
-                {
-                    Assert.False(result);
-                }
+#if IS_SIGNING_SUPPORTED
+                // Verify package signature when signing is supported
+                Assert.True(result);
 #else
-                // Cannot verify package signature in not-full frameworks
+                // Cannot verify package signature when signing is not supported
                 Assert.False(result);
 #endif
             }
