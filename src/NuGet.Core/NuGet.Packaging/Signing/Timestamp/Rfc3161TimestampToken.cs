@@ -26,12 +26,12 @@ namespace NuGet.Packaging.Signing
 
         private readonly byte[] _encoded;
 
-        public Rfc3161TimestampTokenInfo TokenInfo { get; }
+        public IRfc3161TimestampTokenInfo TokenInfo { get; }
         public X509Certificate2 SignerCertificate { get; }
         public X509Certificate2Collection AdditionalCerts { get; }
 
         internal Rfc3161TimestampToken(
-            Rfc3161TimestampTokenInfo tstInfo,
+            IRfc3161TimestampTokenInfo tstInfo,
             X509Certificate2 signerCertificate,
             X509Certificate2Collection additionalCerts,
             byte[] encoded)
@@ -121,7 +121,7 @@ namespace NuGet.Packaging.Signing
                     throw new CryptographicException(Marshal.GetLastWin32Error());
                 }
 
-                Rfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfo(pTsContext);
+                IRfc3161TimestampTokenInfo tstInfo = new Rfc3161TimestampTokenInfoNet472Wrapper(new Rfc3161TimestampTokenInfo(pTsContext));
                 X509Certificate2 signerCert = new X509Certificate2(pTsSigner);
 
                 using (X509Store extraCerts = new X509Store(hStore))

@@ -9,7 +9,7 @@ namespace Test.Utility.Signing
     {
         Uri Url { get; }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         IDisposable RegisterResponder(IHttpResponder responder);
 #endif
     }

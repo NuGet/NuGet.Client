@@ -8,7 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 using System.Security.Cryptography.Pkcs;
 #endif
 using System.Text;
@@ -226,7 +226,7 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Removes repository primary signature (if it exists) or any repository countersignature (if it exists).
         /// </summary>
@@ -407,8 +407,6 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Verifies that a signed package archive's signature is valid and it has not been tampered with.
         ///
-        /// TODO: When we work to support signing for netcore then we should use GetPackageContentHash api to calculate package hash
-        /// which works for desktop as well as netcore.
         /// </summary>
         /// <param name="reader">Signed package to verify</param>
         /// <param name="hashAlgorithm">Hash algorithm to be used to hash data.</param>
