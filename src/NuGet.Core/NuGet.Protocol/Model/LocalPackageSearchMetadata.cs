@@ -18,6 +18,7 @@ namespace NuGet.Protocol
     {
         private readonly NuspecReader _nuspec;
         private readonly LocalPackageInfo _package;
+        private Lazy<PackageReaderBase> _reader;
 
         public LocalPackageSearchMetadata(LocalPackageInfo package)
         {
@@ -36,7 +37,7 @@ namespace NuGet.Protocol
         /// </remarks>
         public long? DownloadCount => 0;
 
-        public Uri IconUrl => Convert(_nuspec.GetIconUrl());
+        public Uri IconUrl =>  GetIconUri();
 
         public PackageIdentity Identity => _nuspec.GetIdentity();
 
@@ -69,6 +70,18 @@ namespace NuGet.Protocol
         }
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
+
+        public Lazy<PackageReaderBase> PackageReader
+        {
+            get
+            {
+                if (_reader == null)
+                {
+                    _reader = new Lazy<PackageReaderBase>(() => _package.GetReader() );
+                }
+                return _reader;
+            }
+        }
 
         public Task<IEnumerable<VersionInfo>> GetVersionsAsync() => Task.FromResult(Enumerable.Empty<VersionInfo>());
 
@@ -113,7 +126,7 @@ namespace NuGet.Protocol
                     var entry = reader.GetEntry(PathUtility.StripLeadingDirectorySeparators(path));
                     if (entry != null)
                     {
-                        if (entry.Length >= FiveMegabytes) 
+                        if (entry.Length >= FiveMegabytes)
                         {
                             fileContent = string.Format(CultureInfo.CurrentCulture, Strings.LoadFileFromNupkg_FileTooLarge, path, "5");
                         }
@@ -144,6 +157,29 @@ namespace NuGet.Protocol
                 }
             }
             return fileContent;
+        }
+
+        /// <summary>
+        /// Points to an Icon, either Embedded Icon or IconUrl
+        /// </summary>
+        private Uri GetIconUri()
+        {
+            string embeddedIcon = _nuspec.GetIcon();
+
+            if (embeddedIcon == null)
+            {
+                return Convert(_nuspec.GetIconUrl());
+            }
+
+            var baseUri = Convert(_package.Path);
+
+            UriBuilder builder = new UriBuilder(baseUri)
+            {
+                Fragment = embeddedIcon
+            };
+
+            // get the special icon url
+            return builder.Uri;
         }
     }
 }

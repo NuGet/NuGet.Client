@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -406,6 +407,8 @@ namespace NuGet.PackageManagement.UI
                 PropertyChanged(this, e);
             }
         }
+
+        public Lazy<PackageReaderBase> PackageReader { get; set; }
 
         public override string ToString()
         {

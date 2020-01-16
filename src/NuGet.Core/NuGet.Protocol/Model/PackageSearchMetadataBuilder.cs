@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Packaging.Core;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 
 namespace NuGet.Protocol.Core.Types
 {
@@ -52,8 +52,8 @@ namespace NuGet.Protocol.Core.Types
 
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
-
             public bool IsListed { get; set; }
+            public Lazy<PackageReaderBase> PackageReader { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)
@@ -101,7 +101,10 @@ namespace NuGet.Protocol.Core.Types
                 IsListed = _metadata.IsListed,
                 PrefixReserved = _metadata.PrefixReserved,
                 LicenseMetadata = _metadata.LicenseMetadata,
-                LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync)
+                LazyDeprecationFactory = _lazyDeprecationFactory ?? AsyncLazy.New(_metadata.GetDeprecationMetadataAsync),
+                PackageReader =
+                    (_metadata as LocalPackageSearchMetadata)?.PackageReader ??
+                    (_metadata as ClonedPackageSearchMetadata)?.PackageReader,
             };
 
             return clonedMetadata;
