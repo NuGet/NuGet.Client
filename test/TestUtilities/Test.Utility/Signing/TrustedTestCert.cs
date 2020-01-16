@@ -109,11 +109,16 @@ namespace Test.Utility.Signing
         {
             var certFile = new FileInfo(Path.Combine("/tmp", $"{TrustedCert.Thumbprint}.cer"));
 
-            string removeFromKeyChainCmd = $"sudo security delete-certificate -Z {TrustedCert.Thumbprint} -t {KeychainForMac}";
+            string removeFromKeyChainCmd = $"sudo security delete-certificate -Z {TrustedCert.Thumbprint}  \"{KeychainForMac}\"";
 
-            RunMacCommand(removeFromKeyChainCmd);
-
-            certFile.Delete();
+            try
+            {
+                RunMacCommand(removeFromKeyChainCmd);
+            }
+            finally
+            {
+                certFile.Delete();
+            } 
         }
 
         private static void RunMacCommand(string cmd)
