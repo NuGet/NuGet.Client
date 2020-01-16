@@ -20,6 +20,7 @@ using NuGet.Versioning;
 using NuGet.Packaging.Signing;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Resolver;
 
 namespace NuGet.CommandLine
 {
@@ -50,6 +51,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "UpdateCommandPrerelease")]
         public bool Prerelease { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandDependencyBehavior")]
+        public string DependencyVersion { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandFileConflictAction")]
         public ProjectManagement.FileConflictAction FileConflictAction { get; set; }
@@ -278,11 +282,12 @@ namespace NuGet.CommandLine
                 VersionConstraints.None;
 
             var projectActions = new List<NuGetProjectAction>();
+            var dependencyBehavior = GetDependencyBehavior();
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
                 var resolutionContext = new ResolutionContext(
-                               Resolver.DependencyBehavior.Highest,
+                               dependencyBehavior,
                                Prerelease,
                                includeUnlisted: false,
                                versionConstraints: versionConstraints,
@@ -414,6 +419,39 @@ namespace NuGet.CommandLine
 
             throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocatePackagesFolder"));
         }
+
+        private DependencyBehavior TryGetDependencyBehavior(string behaviorStr)
+        {
+            DependencyBehavior dependencyBehavior;
+
+            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
+            {
+                throw new CommandLineException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
+            }
+
+            return dependencyBehavior;
+        }
+
+        private DependencyBehavior GetDependencyBehavior()
+        {
+            // If dependencyVersion is not set by either the config or commandline, default dependency behavior is 'Highest'.
+            DependencyBehavior dependencyBehavior = DependencyBehavior.Highest;
+
+            string settingsDependencyVersion = SettingsUtility.GetConfigValue(Settings, "dependencyVersion");
+
+            // Check to see if commandline flag is set. Else check for dependencyVersion in .config.
+            if (!string.IsNullOrEmpty(DependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(DependencyVersion);
+            }
+            else if (!string.IsNullOrEmpty(settingsDependencyVersion))
+            {
+                dependencyBehavior = TryGetDependencyBehavior(settingsDependencyVersion);
+            }
+
+            return dependencyBehavior;
+        }
+
 
         private MSBuildProjectSystem GetMSBuildProject(string packageReferenceFilePath, INuGetProjectContext projectContext)
         {
