@@ -298,13 +298,13 @@ namespace Dotnet.Integration.Test
             {
                 var projectArtifactsFolder = new DirectoryInfo(Path.Combine(artifactsDirectory, projectName, toolsetVersion, "bin", configuration));
 
-                var artifactDirectories = projectArtifactsFolder.EnumerateDirectories();
+                IEnumerable<DirectoryInfo> frameworkArtifactFolders = projectArtifactsFolder.EnumerateDirectories().Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp5.0"));
 
-                IEnumerable<DirectoryInfo> frameworkArtifactFolders = artifactDirectories.Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp5.0"));
                 if (!frameworkArtifactFolders.Any())
                 {
-                    frameworkArtifactFolders = frameworkArtifactFolders.Where(folder => folder.FullName.Contains("netstandard2.0"));
+                    frameworkArtifactFolders = projectArtifactsFolder.EnumerateDirectories().Where(folder => folder.FullName.Contains("netstandard2.0"));
                 }
+
                 foreach (var frameworkArtifactsFolder in frameworkArtifactFolders)
                 {
                     var fileName = projectName + ".dll";
