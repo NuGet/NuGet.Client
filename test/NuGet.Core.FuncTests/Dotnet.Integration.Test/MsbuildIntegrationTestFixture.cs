@@ -329,7 +329,8 @@ namespace Dotnet.Integration.Test
             const string packProjectName = "NuGet.Build.Tasks.Pack";
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
             // Copy the pack SDK.
-            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").Single();
+            //Order by fullname so that we can get the latest nestandard version. E.g. if we have both netstandard2.0 and netstandard2.1, netstandard2.1 will be selected.
+            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").OrderBy(x => x.FullName).Last();
             var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
             // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
             // In VisualStudio, simply use the non il merged version.
