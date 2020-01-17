@@ -161,7 +161,7 @@ function Get-TestRun {
         Authorization = 'Basic {0}' -f $Base64Token;
     }
     
-    $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
+    $testRuns = Invoke-RestMethod -Uri $url -Method HEAD -Headers $Headers
     Write-Host $testRuns
     $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
     if(-not $matchingRun)
@@ -181,9 +181,8 @@ function CheckVstsPersonalAccessToken {
         [Parameter(Mandatory = $True)]
         [string]$VstsPersonalAccessToken
     )
-    Write-Output 'starting!'
     $url = "$env:VSTSTESTRUNSRESTAPI$env:BUILD_BUILDID"
-    Write-Host $url
+    Write-Host "Checking $url"
     $Token = ":$VstsPersonalAccessToken"
     $Base64Token = [System.Convert]::ToBase64String([char[]]$Token)
 
@@ -195,12 +194,11 @@ function CheckVstsPersonalAccessToken {
         # Basic Parsing prevents the need for Internet Explorer availability.
         $response = Invoke-WebRequest -Uri $url -Method GET -Headers $Headers -UseBasicParsing
 
-        # This will only execute if the Invoke-WebRequest is successful.
         $StatusCode = $response.StatusCode
 
         if ($StatusCode -ne 200)
         {
-            throw $StatusCode
+            throw "The remote server returned HTTP status code $StatusCode"
         }
 
         Write-Host 'VstsPersonalAccessToken Valid! (HTTP Status Code: ' $StatusCode ')'
@@ -209,6 +207,4 @@ function CheckVstsPersonalAccessToken {
         $exceptionMessage = 'Invalid HTTP Status Code for VstsPersonalAccessToken ! ' + $PSItem.Exception.Message
         throw $exceptionMessage
     }
-
-    return 0
 }
