@@ -104,7 +104,7 @@ namespace NuGet.PackageManagement.UI.Test.Models
         }
 
         [Fact]
-        public void PackageArchiveReader_NotNull()
+        public void PackageReader_NotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
         }

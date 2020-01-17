@@ -636,7 +636,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Lazy<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
+        public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
         protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
         {

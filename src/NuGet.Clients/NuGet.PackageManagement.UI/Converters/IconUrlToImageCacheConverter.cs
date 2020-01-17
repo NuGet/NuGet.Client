@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -90,38 +91,46 @@ namespace NuGet.PackageManagement.UI
             if (IsEmbeddedIconUri(iconUrl))
             {
                 // Check if we have enough info to read the icon from the package
-                if (values.Length == 2 && values[1] is Lazy<PackageReaderBase>)
+                if (values.Length == 2 && values[1] is Func<PackageReaderBase>)
                 {
                     try
                     {
-                        var lazyPar = (Lazy<PackageReaderBase>)values[1];
-                        var par = lazyPar.Value as PackageArchiveReader;
-                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
-                        iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
-
-
-                        iconBitmapImage.DecodeFailed += (sender, args) =>
+                        var lazyPar = (Func<PackageReaderBase>)values[1];
+                        if (lazyPar() is PackageArchiveReader par)
                         {
-                            par.Dispose();
-                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
+                            iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
+
+                            iconBitmapImage.DecodeFailed += (sender, args) =>
+                            {
+                                par.Dispose();
+                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                                AddToCache(iconUrl, defaultPackageIcon);
+                            };
+                            iconBitmapImage.DownloadFailed += (sender, args) =>
+                            {
+                                par.Dispose();
+                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                                AddToCache(iconUrl, defaultPackageIcon);
+                            };
+                            iconBitmapImage.DownloadCompleted += (sender, args) =>
+                            {
+                                par.Dispose();
+                                IconBitmapImage_DownloadCompleted(sender, args);
+                            };
+
+                            imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                        }
+                        else
+                        {
+                            // we cannot use the packagearchive reader
                             AddToCache(iconUrl, defaultPackageIcon);
-                        };
-                        iconBitmapImage.DownloadFailed += (sender, args) =>
-                        {
-                            par.Dispose();
-                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                            AddToCache(iconUrl, defaultPackageIcon);
-                        };
-                        iconBitmapImage.DownloadCompleted += (sender, args) =>
-                        {
-                            par.Dispose();
-                            IconBitmapImage_DownloadCompleted(sender, args);
-                        };
-
-                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                            imageResult = defaultPackageIcon;
+                        }
                     }
-                    catch (Exception)
+                    catch (Exception ex)
                     {
+                        Debug.WriteLine(ex.Message);
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
                     }
@@ -187,7 +196,7 @@ namespace NuGet.PackageManagement.UI
         {
             var policy = new CacheItemPolicy
             {
-                SlidingExpiration = TimeSpan.FromMinutes(10),
+                SlidingExpiration = TimeSpan.FromSeconds(50),
                 RemovedCallback = CacheEntryRemoved
             };
             BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);

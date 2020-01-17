@@ -18,7 +18,6 @@ namespace NuGet.Protocol
     {
         private readonly NuspecReader _nuspec;
         private readonly LocalPackageInfo _package;
-        private Lazy<PackageReaderBase> _reader;
 
         public LocalPackageSearchMetadata(LocalPackageInfo package)
         {
@@ -71,15 +70,12 @@ namespace NuGet.Protocol
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
 
-        public Lazy<PackageReaderBase> PackageReader
+        public Func<PackageReaderBase> PackageReader
         {
             get
             {
-                if (_reader == null)
-                {
-                    _reader = new Lazy<PackageReaderBase>(() => _package.GetReader() );
-                }
-                return _reader;
+                //return _package.GetReader();
+                return new Func<PackageReaderBase>(() => _package.GetReader());
             }
         }
 
