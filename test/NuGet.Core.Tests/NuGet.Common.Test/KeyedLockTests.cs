@@ -39,7 +39,7 @@ namespace NuGet.Common.Test
         public async Task EnterAsync_WhenCancellationTokenIsCancelled_Throws()
         {
             await Assert.ThrowsAsync<TaskCanceledException>(
-              () => _mutex.EnterAsync(Key, new CancellationToken(canceled: true)));
+                () => _mutex.EnterAsync(Key, new CancellationToken(canceled: true)));
         }
 
         [Fact]
