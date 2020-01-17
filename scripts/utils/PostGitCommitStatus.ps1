@@ -161,7 +161,7 @@ function Get-TestRun {
         Authorization = 'Basic {0}' -f $Base64Token;
     }
     
-    $testRuns = Invoke-RestMethod -Uri $url -Method HEAD -Headers $Headers
+    $testRuns = Invoke-RestMethod -Uri $url -Method GET -Headers $Headers
     Write-Host $testRuns
     $matchingRun = $testRuns.value | where { $_.name -ieq $TestName }
     if(-not $matchingRun)
@@ -192,7 +192,7 @@ function CheckVstsPersonalAccessToken {
 
     try {
         # Basic Parsing prevents the need for Internet Explorer availability.
-        $response = Invoke-WebRequest -Uri $url -Method GET -Headers $Headers -UseBasicParsing
+        $response = Invoke-WebRequest -Uri $url -Method HEAD -Headers $Headers -UseBasicParsing
 
         $StatusCode = $response.StatusCode
 
