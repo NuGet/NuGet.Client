@@ -42,7 +42,8 @@ namespace NuGet.Build.Tasks.Console
         {
             "CollectPackageReferences",
             "CollectPackageDownloads",
-            "CollectFrameworkReferences"
+            "CollectFrameworkReferences",
+            "CollectCentralPackageVersions"
         };
 
         private readonly Lazy<ConsoleLoggingQueue> _loggingQueueLazy;
@@ -135,7 +136,7 @@ namespace NuGet.Build.Tasks.Console
         internal static List<FrameworkDependency> GetFrameworkReferences(IMSBuildProject project)
         {
             // Get the unique FrameworkReference items, ignoring duplicates
-            var frameworkReferenceItems = project.GetItems("FrameworkReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
+            var frameworkReferenceItems = GetDistinctItemsOrEmpty(project, "FrameworkReference").ToList();
 
             // For best performance, its better to create a list with the exact number of items needed rather than using a LINQ statement or AddRange.  This is because if the list
             // is not allocated with enough items, the list has to be grown which can slow things down
@@ -186,7 +187,7 @@ namespace NuGet.Build.Tasks.Console
         internal static IEnumerable<DownloadDependency> GetPackageDownloads(IMSBuildProject project)
         {
             // Get the distinct PackageDownload items, ignoring duplicates
-            foreach (var projectItemInstance in project.GetItems("PackageDownload").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance))
+            foreach (var projectItemInstance in GetDistinctItemsOrEmpty(project, "PackageDownload"))
             {
                 string id = projectItemInstance.Identity;
 
@@ -207,15 +208,43 @@ namespace NuGet.Build.Tasks.Console
         }
 
         /// <summary>
+        /// Gets the centrally defined package version information.
+        /// </summary>
+        /// <param name="project">The <see cref="ProjectInstance" /> to get PackageVersion for.</param>
+        /// <param name="skippedPackageIds">An <see cref="IEnumerable{string}" /> of package ids that were already added as package references. These will be excluded from the resulted list.</param>
+        /// <returns>An <see cref="IEnumerable{CentralVersionDependency}" /> containing the package versions for the specified project.</returns>
+        internal static IEnumerable<CentralVersionDependency> GetCentralPackageVersions(IMSBuildProject project, IEnumerable<string> skippedPackageIds)
+        {
+            var skippedPackageIdsHashSet = skippedPackageIds.Select(id=>id.ToLowerInvariant()).ToHashSet();
+            var packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion")
+                .Where(item=>!skippedPackageIdsHashSet.Contains(item.Identity.ToLowerInvariant()))
+                .ToList();
+
+            foreach (var projectItemInstance in packageVersionItems)
+            {
+                string id = projectItemInstance.Identity;
+                string version = projectItemInstance.GetProperty("Version");
+                VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
+
+                yield return new CentralVersionDependency(id, versionRange);
+            }
+        }
+
+        /// <summary>
         /// Gets the package references for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get package references for.</param>
+        /// <param name="cpvmEnabled">A flag for cpvmEnabled status.</param>
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
-        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project)
+        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool cpvmEnabled)
         {
             // Get the distinct PackageReference items, ignoring duplicates
-            var packageReferenceItems = project.GetItems("PackageReference").Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance).ToList();
-
+            var packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
+            if(cpvmEnabled)
+            {
+                MergeCentralPackageVersionsInPackageReferences(packageReferenceItems, GetDistinctItemsOrEmpty(project, "PackageVersion").ToList());
+            }
+ 
             var libraryDependencies = new List<LibraryDependency>(packageReferenceItems.Count);
 
             foreach (var packageReferenceItem in packageReferenceItems)
@@ -507,8 +536,9 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the target framework information for the specified project.  This includes the package references, package downloads, and framework references.
         /// </summary>
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
+        /// <param name="cpvmEnabled">A flag for cpvm enabled status.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        private static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes, bool cpvmEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
@@ -530,11 +560,16 @@ namespace NuGet.Build.Tasks.Console
 
                 AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInformation, packageTargetFallback, assetTargetFallback);
 
-                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance));
+                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance, cpvmEnabled));
 
                 targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(msBuildProjectInstance));
 
                 targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
+
+                if (cpvmEnabled)
+                {
+                    targetFrameworkInformation.CentralVersionDependencies.AddRange(GetCentralPackageVersions(msBuildProjectInstance, targetFrameworkInformation.Dependencies.Select(d=>d.Name)));
+                }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
             }
@@ -701,7 +736,9 @@ namespace NuGet.Build.Tasks.Console
 
             var outputPath = GetRestoreOutputPath(project);
 
-            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework);
+            var cpvmEnabled = IsCentralVersionsManagementEnabled(project, MSBuildLogger);
+
+            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, cpvmEnabled);
 
             var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
                 restoreProjectStyle: project.GetProperty("RestoreProjectStyle"),
@@ -738,7 +775,8 @@ namespace NuGet.Build.Tasks.Console
                         innerNodes.SelectMany(i => MSBuildStringUtility.Split(i.GetProperty("RestoreAdditionalProjectFallbackFoldersExcludes"))),
                         settings),
                     SkipContentFileWrite = IsLegacyProject(project),
-                    ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility")
+                    ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
+                    CentralPackageVersionsEnabled = cpvmEnabled
                 };
             }
 
@@ -909,6 +947,100 @@ namespace NuGet.Build.Tasks.Console
 
             // Just return the projects not the whole dictionary as it was just used to group the projects together
             return projects.Values;
+        }
+
+        /// <summary>
+        /// It evaluates the project and returns true if the project has CentralPackageVersionManagement enabled.
+        /// </summary>
+        /// <param name="project">The <see cref="IMSBuildProject"/> for which the CentralPackageVersionManagement will be evaluated.</param>
+        /// <param name="log">A <see cref="ILogger"/> instance.</param>
+        /// <returns>True if the project has CentralPackageVersionManagement enabled.</returns>
+        internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, Common.ILogger log)
+        {
+            var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
+                restoreProjectStyle: project.GetProperty("RestoreProjectStyle"),
+                hasPackageReferenceItems: project.GetItems("PackageReference")?.Any()??false,
+                projectJsonPath: project.GetProperty("_CurrentProjectJsonPath"),
+                projectDirectory: project.Directory,
+                projectName: project.GetProperty("MSBuildProjectName"),
+                log: log);
+
+            return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString) &&
+                projectStyleResult.ProjectStyle == ProjectStyle.PackageReference;
+        }
+
+        /// <summary>
+        /// It merges the Versions defined by <paramref name="centralPackageVersions"/> into the metadata of the <paramref name="packageReferences"/>. 
+        /// </summary>
+        /// <param name="packageReferences">The PackageReferences list.</param>
+        /// <param name="centralPackageVersions">The CentralPackageVersion list.</param>
+        internal static void MergeCentralPackageVersionsInPackageReferences(IList<IMSBuildProjectItem> packageReferences,
+            IList<IMSBuildProjectItem> centralPackageVersions)
+        {
+            if (packageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+
+            if (centralPackageVersions == null)
+            {
+                throw new ArgumentNullException(nameof(centralPackageVersions));
+            }
+
+            // Do not touch the IsImplicitlyDefined package references. 
+            var explicitlyReferencedPackages = packageReferences
+                   .Where(item => !IsPropertyTrue(item, "IsImplicitlyDefined"))
+                   .ToList();
+
+            var implicitlyReferencedPackages = packageReferences
+                   .Where(item => IsPropertyTrue(item, "IsImplicitlyDefined"))
+                   .ToList();
+
+            var prWithVersions = string.Join(";", explicitlyReferencedPackages
+                .Where(pr => pr.Properties.Contains("Version") || pr.Properties.Contains("VersionRange"))
+                .Select(pr => pr.Identity));
+            if(!string.IsNullOrEmpty(prWithVersions))
+            {
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, prWithVersions));
+            }
+
+            var centralVersionAsDictionary = centralPackageVersions
+                .ToDictionary(g => g.Identity.ToLowerInvariant(), g => g);
+
+            foreach (var item in explicitlyReferencedPackages)
+            {
+                var itemId = item.Identity.ToLowerInvariant();
+
+                if (centralVersionAsDictionary.ContainsKey(itemId))
+                {
+                    var versionString = centralVersionAsDictionary[itemId].GetProperty("Version");
+                    item.AddOrUpdateProperties("Version", versionString);
+                }              
+            }
+        }
+
+        /// <summary>
+        /// It evaluates the <paramref name="item"/> metadata and search for the <paramref name="propertyName"/> metadata key.
+        /// If the metadata exists and has the value "true" the method will return <see cref="true"/>, otherwise it wil return <see cref="false"/>.
+        /// </summary>
+        /// <param name="item">The item to be evaluated.</param>
+        /// <param name="propertyName">The property name.</param>
+        /// <returns>Returns true only if the metadata with the <paramref name="propertyName"/> key exists and its value is <see cref="true"/>.</returns>
+        private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
+        {
+            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
+        }
+
+        /// <summary>
+        /// Returns the list of distinct items with the <paramref name="itemName"/> name.
+        /// Two items are equal if they have the same <see cref="IMSBuildItem.Identity"/>.
+        /// </summary>
+        /// <param name="project">The project.</param>
+        /// <param name="itemName">The item name.</param>
+        /// <returns>Returns the list of items with the <paramref name="itemName"/>. If the item does not exist it will return an empty list.</returns>
+        private static IEnumerable<IMSBuildProjectItem> GetDistinctItemsOrEmpty(IMSBuildProject project, string itemName)
+        {
+            return project.GetItems(itemName)?.Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance) ?? new List<IMSBuildProjectItem>();
         }
     }
 }

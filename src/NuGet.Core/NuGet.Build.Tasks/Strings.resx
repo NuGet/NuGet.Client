@@ -166,4 +166,7 @@
   <data name="ProjectEvaluationSummary" xml:space="preserve">
     <value>Evaluated {0} project(s) in {1:D2}ms ({2} builds, {3} failures).</value>
   </data>
+  <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
+    <value>The project is opted-in CentralPackageVersionsManagement and its package references {0} have Version defined when not allowed.</value>
+  </data>
 </root>

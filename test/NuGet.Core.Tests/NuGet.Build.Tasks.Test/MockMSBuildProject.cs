@@ -9,7 +9,7 @@ using NuGet.Test.Utility;
 
 namespace NuGet.Build.Tasks.Test
 {
-    public class MockMSBuildProject : MSBuildItem, IMSBuildProject
+    internal class MockMSBuildProject : MSBuildItem, IMSBuildProject
     {
         public MockMSBuildProject(TestDirectory directory)
             : this(Path.Combine(directory, "ProjectA.csproj"))
@@ -36,10 +36,10 @@ namespace NuGet.Build.Tasks.Test
         {
         }
 
-        public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildItem>> items)
+        public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildProjectItem>> items)
             : base(Path.GetFileName(fullPath), properties ?? new Dictionary<string, string>())
         {
-            Items = items ?? new Dictionary<string, IList<IMSBuildItem>>();
+            Items = items ?? new Dictionary<string, IList<IMSBuildProjectItem>>();
 
             Directory = Path.GetDirectoryName(fullPath);
 
@@ -50,9 +50,9 @@ namespace NuGet.Build.Tasks.Test
 
         public string FullPath { get; }
 
-        public IDictionary<string, IList<IMSBuildItem>> Items { get; set; }
+        public IDictionary<string, IList<IMSBuildProjectItem>> Items { get; set; }
 
-        public IEnumerable<IMSBuildItem> GetItems(string name)
+        public IEnumerable<IMSBuildProjectItem> GetItems(string name)
         {
             return Items.TryGetValue(name, out var items) ? items : null;
         }

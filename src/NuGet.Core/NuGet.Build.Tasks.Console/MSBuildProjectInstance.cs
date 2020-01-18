@@ -43,7 +43,7 @@ namespace NuGet.Build.Tasks.Console
             return new MSBuildProjectInstance(projectInstance);
         }
 
-        public IEnumerable<IMSBuildItem> GetItems(string name)
+        public IEnumerable<IMSBuildProjectItem> GetItems(string name)
         {
             return _projectInstance.GetItems(name).Select(i => new MSBuildProjectItemInstance(i));
         }

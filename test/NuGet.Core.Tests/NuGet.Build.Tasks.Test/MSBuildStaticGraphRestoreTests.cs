@@ -5,9 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Xml;
 using FluentAssertions;
 using NuGet.Build.Tasks.Console;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -16,6 +16,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Moq;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Test
@@ -29,16 +30,16 @@ namespace NuGet.Build.Tasks.Test
             {
                 var project = new MockMSBuildProject(testDirectory)
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                     {
-                        ["FrameworkReference"] = new List<IMSBuildItem>
+                        ["FrameworkReference"] = new List<IMSBuildProjectItem>
                         {
-                            new MSBuildItem("FrameworkA", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.None}" }),
-                            new MSBuildItem("FrameworkA", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.All}" }),
-                            new MSBuildItem("FrameworkB", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.All}" }),
-                            new MSBuildItem("FrameworkC", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.None}" }),
-                            new MSBuildItem("FrameworkD", new Dictionary<string, string> { ["PrivateAssets"] = "Invalid" }),
-                            new MSBuildItem("FrameworkE", new Dictionary<string, string>() )
+                            new MockMSBuildProjectItem("FrameworkA", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.None}" }),
+                            new MockMSBuildProjectItem("FrameworkA", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.All}" }),
+                            new MockMSBuildProjectItem("FrameworkB", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.All}" }),
+                            new MockMSBuildProjectItem("FrameworkC", new Dictionary<string, string> { ["PrivateAssets"] = $"{FrameworkDependencyFlags.None}" }),
+                            new MockMSBuildProjectItem("FrameworkD", new Dictionary<string, string> { ["PrivateAssets"] = "Invalid" }),
+                            new MockMSBuildProjectItem("FrameworkE", new Dictionary<string, string>() )
                         }
                     }
                 };
@@ -95,13 +96,13 @@ namespace NuGet.Build.Tasks.Test
             {
                 var project = new MockMSBuildProject(testDirectory)
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                     {
-                        ["PackageDownload"] = new List<IMSBuildItem>
+                        ["PackageDownload"] = new List<IMSBuildProjectItem>
                         {
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "[1.1.1]" }),
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "[2.0.0]" }),
-                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "[1.2.3];[4.5.6]" }),
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "[1.1.1]" }),
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "[2.0.0]" }),
+                            new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "[1.2.3];[4.5.6]" }),
                         }
                     }
                 };
@@ -128,11 +129,11 @@ namespace NuGet.Build.Tasks.Test
             {
                 var project = new MockMSBuildProject(testDirectory)
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                     {
-                        ["PackageDownload"] = new List<IMSBuildItem>
+                        ["PackageDownload"] = new List<IMSBuildProjectItem>
                         {
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = version }),
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = version }),
                         }
                     }
                 };
@@ -153,25 +154,25 @@ namespace NuGet.Build.Tasks.Test
             {
                 var project = new MockMSBuildProject(testDirectory)
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                     {
-                        ["PackageReference"] = new List<IMSBuildItem>
+                        ["PackageReference"] = new List<IMSBuildProjectItem>
                         {
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "1.1.1" }),
-                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
-                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IsImplicitlyDefined"] = bool.TrueString }),
-                            new MSBuildItem("PackageC", new Dictionary<string, string> { ["Version"] = "4.5.6", ["GeneratePathProperty"] = bool.TrueString }),
-                            new MSBuildItem("PackageD", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
-                            new MSBuildItem("PackageE", new Dictionary<string, string> { ["Version"] = "1.2.3", ["PrivateAssets"] = $"{LibraryIncludeFlags.Runtime};{LibraryIncludeFlags.Compile}" }),
-                            new MSBuildItem("PackageF", new Dictionary<string, string> { ["Version"] = "1.2.3", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
-                            new MSBuildItem("PackageG", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers};{LibraryIncludeFlags.Compile}", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Analyzers}" }),
-                            new MSBuildItem("PackageH", new Dictionary<string, string> { ["Version"] = "1.2.3", ["NoWarn"] = "NU1001;\tNU1006 ; NU3017 " }),
-                            new MSBuildItem("PackageI", new Dictionary<string, string> { ["Version"] = null }),
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "1.1.1" }),
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                            new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IsImplicitlyDefined"] = bool.TrueString }),
+                            new MockMSBuildProjectItem("PackageC", new Dictionary<string, string> { ["Version"] = "4.5.6", ["GeneratePathProperty"] = bool.TrueString }),
+                            new MockMSBuildProjectItem("PackageD", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageE", new Dictionary<string, string> { ["Version"] = "1.2.3", ["PrivateAssets"] = $"{LibraryIncludeFlags.Runtime};{LibraryIncludeFlags.Compile}" }),
+                            new MockMSBuildProjectItem("PackageF", new Dictionary<string, string> { ["Version"] = "1.2.3", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageG", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers};{LibraryIncludeFlags.Compile}", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageH", new Dictionary<string, string> { ["Version"] = "1.2.3", ["NoWarn"] = "NU1001;\tNU1006 ; NU3017 " }),
+                            new MockMSBuildProjectItem("PackageI", new Dictionary<string, string> { ["Version"] = null }),
                         }
                     }
                 };
 
-                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project);
+                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, false);
 
                 actual.ShouldBeEquivalentTo(new List<LibraryDependency>
                 {
@@ -285,16 +286,16 @@ namespace NuGet.Build.Tasks.Test
 
                 var project = new MockMSBuildProject(testDirectory)
                 {
-                    Items = new Dictionary<string, IList<IMSBuildItem>>
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                     {
-                        ["ProjectReference"] = new List<IMSBuildItem>
+                        ["ProjectReference"] = new List<IMSBuildProjectItem>
                         {
-                            new MSBuildItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
-                            new MSBuildItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = "ShouldBeDeduped" }),
-                            new MSBuildItem(@"ProjectB\ProjectB.csproj", new Dictionary<string, string> { ["FullPath"] = projectB.FullPath, ["ExcludeAssets"] = $"{LibraryIncludeFlags.Compile};{LibraryIncludeFlags.Runtime}"}),
-                            new MSBuildItem(@"ProjectC\ProjectC.csproj", new Dictionary<string, string> { ["FullPath"] = projectC.FullPath, ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.BuildTransitive}"}),
-                            new MSBuildItem(@"ProjectD\ProjectD.csproj", new Dictionary<string, string> { ["FullPath"] = projectD.FullPath, ["PrivateAssets"] = $"{LibraryIncludeFlags.Runtime};{LibraryIncludeFlags.ContentFiles}"}),
-                            new MSBuildItem(@"ProjectE\ProjectE.csproj", new Dictionary<string, string> { ["ReferenceOutputAssembly"] = bool.FalseString }),
+                            new MockMSBuildProjectItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
+                            new MockMSBuildProjectItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = "ShouldBeDeduped" }),
+                            new MockMSBuildProjectItem(@"ProjectB\ProjectB.csproj", new Dictionary<string, string> { ["FullPath"] = projectB.FullPath, ["ExcludeAssets"] = $"{LibraryIncludeFlags.Compile};{LibraryIncludeFlags.Runtime}"}),
+                            new MockMSBuildProjectItem(@"ProjectC\ProjectC.csproj", new Dictionary<string, string> { ["FullPath"] = projectC.FullPath, ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.BuildTransitive}"}),
+                            new MockMSBuildProjectItem(@"ProjectD\ProjectD.csproj", new Dictionary<string, string> { ["FullPath"] = projectD.FullPath, ["PrivateAssets"] = $"{LibraryIncludeFlags.Runtime};{LibraryIncludeFlags.ContentFiles}"}),
+                            new MockMSBuildProjectItem(@"ProjectE\ProjectE.csproj", new Dictionary<string, string> { ["ReferenceOutputAssembly"] = bool.FalseString }),
                         }
                     }
                 };
@@ -342,22 +343,22 @@ namespace NuGet.Build.Tasks.Test
                 {
                     [FrameworkConstants.CommonFrameworks.Net45] = new MockMSBuildProject(testDirectory)
                     {
-                        Items = new Dictionary<string, IList<IMSBuildItem>>
+                        Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                         {
-                            ["ProjectReference"] = new List<IMSBuildItem>
+                            ["ProjectReference"] = new List<IMSBuildProjectItem>
                             {
-                                new MSBuildItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
-                                new MSBuildItem(@"ProjectB\ProjectB.csproj", new Dictionary<string, string> { ["FullPath"] = projectB.FullPath }),
+                                new MockMSBuildProjectItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
+                                new MockMSBuildProjectItem(@"ProjectB\ProjectB.csproj", new Dictionary<string, string> { ["FullPath"] = projectB.FullPath }),
                             }
                         }
                     },
                     [FrameworkConstants.CommonFrameworks.NetStandard20] = new MockMSBuildProject(testDirectory)
                     {
-                        Items = new Dictionary<string, IList<IMSBuildItem>>
+                        Items = new Dictionary<string, IList<IMSBuildProjectItem>>
                         {
-                            ["ProjectReference"] = new List<IMSBuildItem>
+                            ["ProjectReference"] = new List<IMSBuildProjectItem>
                             {
-                                new MSBuildItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
+                                new MockMSBuildProjectItem(@"ProjectA\ProjectA.csproj", new Dictionary<string, string> { ["FullPath"] = projectA.FullPath }),
                             }
                         }
                     }
@@ -700,6 +701,258 @@ namespace NuGet.Build.Tasks.Test
                     actual.Should().BeFalse();
                 }
             }
+        }
+
+        [Fact]
+        public void IsCentralVersionsManagementEnabled_OnlyPackageReferenceWithProjectCPVMEnabledProperty()
+        {
+            // Arrange
+            List<KeyValuePair<bool, IMSBuildProject>> data = new List<KeyValuePair<bool, IMSBuildProject>>()
+            {
+                new KeyValuePair<bool, IMSBuildProject>(true, new MockMSBuildProject(new Dictionary<string, string>{
+                    ["_CentralPackageVersionsEnabled"] = "true",
+                    ["RestoreProjectStyle"] = "PackageReference"})),
+                new KeyValuePair<bool, IMSBuildProject>(false, new MockMSBuildProject(new Dictionary<string, string>{
+                    ["_CentralPackageVersionsEnabled"] = "false",
+                    ["RestoreProjectStyle"] = "PackageReference"})),
+                new KeyValuePair<bool, IMSBuildProject>(false, new MockMSBuildProject(new Dictionary<string, string>{
+                    ["_CentralPackageVersionsEnabled"] = "",
+                    ["RestoreProjectStyle"] = "PackageReference"})),
+                 new KeyValuePair<bool, IMSBuildProject>(false, new MockMSBuildProject(new Dictionary<string, string>{
+                    ["RestoreProjectStyle"] = "PackageReference"})),
+                 new KeyValuePair<bool, IMSBuildProject>(false, new MockMSBuildProject(new Dictionary<string, string>{
+                    ["_CentralPackageVersionsEnabled"] = "true",
+                    ["RestoreProjectStyle"] = "Dummy"}))
+            };
+
+            // Act + Assert
+            foreach (var keyValuePair in data)
+            {
+                var result = MSBuildStaticGraphRestore.IsCentralVersionsManagementEnabled(keyValuePair.Value, new Mock<NuGet.Common.ILogger>().Object);
+                Assert.Equal(keyValuePair.Key, result);
+            }
+        }
+
+        [Fact]
+        public void MergeCentralPackageVersionsInPackageReferences_ThrowsWhenPackageReferencesHaveVersion()
+        {
+            // Arrange
+            var packagereference = new List<IMSBuildProjectItem>()
+            {
+                 new MockMSBuildProjectItem("PackageA", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "1.1.1"
+                 })
+            };
+
+            var centralPackageVersions = new List<IMSBuildProjectItem>()
+            {
+                 new MockMSBuildProjectItem("PackageA", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "2.2.2"
+                 })
+            };
+
+
+            // Act + Assert
+            Assert.Throws(typeof(ArgumentException), ()=>MSBuildStaticGraphRestore.MergeCentralPackageVersionsInPackageReferences(packagereference, centralPackageVersions));
+        }
+
+        [Fact]
+        public void MergeCentralPackageVersionsInPackageReferences_CorrectlyMergeExplicitellyDefinedPackageReferences()
+        {
+            // Arrange
+            var packagereference = new List<IMSBuildProjectItem>()
+            {
+                 new MockMSBuildProjectItem("PackageA", new Dictionary<string,string>()
+                 {
+                     ["IncludeAssets"] = "runtime"
+                 }),
+                 new MockMSBuildProjectItem("PackageB", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "1.1.1",
+                     ["IsImplicitlyDefined"] = "true"
+                 })
+
+            };
+
+            var centralPackageVersions = new List<IMSBuildProjectItem>()
+            {
+                 new MockMSBuildProjectItem("PackageA", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "2.2.2"
+                 }),
+                 new MockMSBuildProjectItem("PackageB", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "2.2.2"
+                 }),
+                 new MockMSBuildProjectItem("PackageC", new Dictionary<string,string>()
+                 {
+                     ["Version"] = "2.2.2"
+                 })
+            };
+
+            // Act
+            MSBuildStaticGraphRestore.MergeCentralPackageVersionsInPackageReferences(packagereference, centralPackageVersions);
+
+            // Assert
+            Assert.Equal(2, packagereference.Count);
+            Assert.Equal(1, packagereference.Where( item=>item.Identity == "PackageA").Count());
+            Assert.Equal("runtime", packagereference.Where( item=>item.Identity == "PackageA").First().GetProperty("IncludeAssets"));
+            Assert.Equal("2.2.2", packagereference.Where(item => item.Identity == "PackageA").First().GetProperty("Version"));
+
+
+            Assert.Equal(1, packagereference.Where(item => item.Identity == "PackageB").Count());
+            Assert.Equal("1.1.1", packagereference.Where(item => item.Identity == "PackageB").First().GetProperty("Version"));
+            Assert.Equal("true", packagereference.Where(item => item.Identity == "PackageB").First().GetProperty("IsImplicitlyDefined"));
+        }
+
+        [Fact]
+        public void GetPackageReferences_WhenCPVMEnabledTheVersionsAreMerged()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var project = new MockMSBuildProject(testDirectory)
+                {
+                    Items = new Dictionary<string, IList<IMSBuildProjectItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildProjectItem>
+                        {
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                            new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IsImplicitlyDefined"] = bool.TrueString }),
+                            new MockMSBuildProjectItem("PackageC", new Dictionary<string, string> { ["GeneratePathProperty"] = bool.TrueString }),
+                            new MockMSBuildProjectItem("PackageD", new Dictionary<string, string> { ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageE", new Dictionary<string, string> { ["PrivateAssets"] = $"{LibraryIncludeFlags.Runtime};{LibraryIncludeFlags.Compile}" }),
+                            new MockMSBuildProjectItem("PackageF", new Dictionary<string, string> { ["ExcludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageG", new Dictionary<string, string> { ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers};{LibraryIncludeFlags.Compile}", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Analyzers}" }),
+                            new MockMSBuildProjectItem("PackageH", new Dictionary<string, string> { ["NoWarn"] = "NU1001;\tNU1006 ; NU3017 " }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildProjectItem>
+                        {
+                            new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.2.1" }),
+                            new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "2.2.2" }),
+                            new MockMSBuildProjectItem("PackageC", new Dictionary<string, string> { ["Version"] = "2.2.3" }),
+                            new MockMSBuildProjectItem("PackageD", new Dictionary<string, string> { ["Version"] = "2.2.4" }),
+                            new MockMSBuildProjectItem("PackageE", new Dictionary<string, string> { ["Version"] = "2.2.5" }),
+                            new MockMSBuildProjectItem("PackageF", new Dictionary<string, string> { ["Version"] = "2.2.6" }),
+                            new MockMSBuildProjectItem("PackageG", new Dictionary<string, string> { ["Version"] = "2.2.7" }),
+                            new MockMSBuildProjectItem("PackageH", new Dictionary<string, string> { ["Version"] = "2.2.8" }),
+                        }
+                    }
+                };
+
+                // Act
+                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, true);
+
+                // Assert
+                actual.ShouldBeEquivalentTo(new List<LibraryDependency>
+                {
+                    new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange("PackageA", VersionRange.Parse("2.2.1"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        AutoReferenced = true,
+                        LibraryRange = new LibraryRange("PackageB", VersionRange.Parse("1.2.3"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        GeneratePathProperty = true,
+                        LibraryRange = new LibraryRange("PackageC", VersionRange.Parse("2.2.3"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        IncludeType = LibraryIncludeFlags.Build | LibraryIncludeFlags.Analyzers,
+                        LibraryRange = new LibraryRange("PackageD", VersionRange.Parse("2.2.4"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        SuppressParent = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile,
+                        LibraryRange = new LibraryRange("PackageE", VersionRange.Parse("2.2.5"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        IncludeType = LibraryIncludeFlags.Runtime | LibraryIncludeFlags.Compile | LibraryIncludeFlags.Native | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.BuildTransitive,
+                        LibraryRange = new LibraryRange("PackageF", VersionRange.Parse("2.2.6"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        IncludeType = LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build,
+                        LibraryRange = new LibraryRange("PackageG", VersionRange.Parse("2.2.7"), LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange("PackageH", VersionRange.Parse("2.2.8"), LibraryDependencyTarget.Package),
+                        NoWarn = new List<NuGetLogCode> { NuGetLogCode.NU1001, NuGetLogCode.NU1006, NuGetLogCode.NU3017 }
+                    }
+                });
+            }
+        }
+
+
+        [Fact]
+        public void GetTargetFrameworkInfos_CPVMEnabledAddsTheCentralVersionInformation()
+        {
+            // Arrange
+            NuGetFramework netstandard22 = new NuGetFramework("netstandard2.2");
+            NuGetFramework netstandard20 = new NuGetFramework("netstandard2.0");
+
+            var innerNodes = new Dictionary<NuGetFramework, IMSBuildProject>
+            {
+                [netstandard20] = new MockMSBuildProject("Project-netstandard2.0",
+                new Dictionary<string, string>(),
+                new Dictionary<string, IList<IMSBuildProjectItem>>
+                {
+                    ["PackageReference"] = new List<IMSBuildProjectItem>
+                    {
+                        new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                    },
+                    ["PackageVersion"] = new List<IMSBuildProjectItem>
+                    {
+                        new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                        new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                    },
+                }),
+                [netstandard22] = new MockMSBuildProject("Project-netstandard2.2",
+                new Dictionary<string, string>(),
+                new Dictionary<string, IList<IMSBuildProjectItem>>
+                {
+                    ["PackageReference"] = new List<IMSBuildProjectItem>
+                    {
+                        new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                    },
+                    ["PackageVersion"] = new List<IMSBuildProjectItem>
+                    {
+                        new MockMSBuildProjectItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.2.2" }),
+                        new MockMSBuildProjectItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.2.0" }),
+                    },
+                }),
+            };
+
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, true);
+
+            // Assert
+            Assert.Equal(2, targetFrameworkInfos.Count);
+            var framework20 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.0,Version=v0.0").ToList();
+            var framework22 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.2,Version=v0.0").ToList();
+
+            Assert.Equal(1, framework20.Count);
+            Assert.Equal(1, framework20.First().Dependencies.Count);
+            Assert.Equal("PackageA", framework20.First().Dependencies.First().Name);
+            Assert.Equal("2.0.0", framework20.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Equal(1, framework20.First().CentralVersionDependencies.Count);
+            Assert.Equal("PackageB", framework20.First().CentralVersionDependencies.First().Name);
+            Assert.Equal("3.0.0", framework20.First().CentralVersionDependencies.First().VersionRange.OriginalString);
+
+            Assert.Equal(1, framework22.Count);
+            Assert.Equal(1, framework22.First().Dependencies.Count);
+            Assert.Equal("PackageA", framework22.First().Dependencies.First().Name);
+            Assert.Equal("2.2.2", framework22.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Equal(1, framework22.First().CentralVersionDependencies.Count);
+            Assert.Equal("PackageB", framework22.First().CentralVersionDependencies.First().Name);
+            Assert.Equal("3.2.0", framework22.First().CentralVersionDependencies.First().VersionRange.OriginalString);
         }
     }
 }

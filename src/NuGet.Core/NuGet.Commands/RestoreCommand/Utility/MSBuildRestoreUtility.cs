@@ -941,35 +941,52 @@ namespace NuGet.Commands
             return logger.LogMessagesAsync(logMessages);
         }
 
-        private static IEnumerable<IMSBuildItem> MergeCentralPackageVersionsInPackageReferences(IEnumerable<IMSBuildItem> items)
+        /// <summary>
+        /// Merge the information from the PackageVersion items to the PackageReferences items.
+        /// </summary>
+        /// <param name="packageReferences"></param>
+        /// <param name="centralPackageVersions"></param>
+        /// <returns></returns>
+        static IEnumerable<IMSBuildItem> MergeCentralPackageVersionsInPackageReferences(IList<IMSBuildItem> packageReferences,
+            IList<IMSBuildItem> centralPackageVersions)
         {
+            if (packageReferences == null)
+            {
+                throw new ArgumentNullException(nameof(packageReferences));
+            }
+
+            if (centralPackageVersions == null)
+            {
+                throw new ArgumentNullException(nameof(centralPackageVersions));
+            }
+
             // Do not touch the IsImplicitlyDefined package references. 
-            var explicitlyReferencedPackages = GetItemByType(items, "Dependency")
+            var explicitlyReferencedPackages = packageReferences
                    .Where(item => !IsPropertyTrue(item, "IsImplicitlyDefined"))
                    .ToList();
 
-            var implicitlyReferencedPackages = GetItemByType(items, "Dependency")
+            var implicitlyReferencedPackages = packageReferences
                    .Where(item => IsPropertyTrue(item, "IsImplicitlyDefined"))
                    .ToList();
 
             ThrowIfItemsHaveVersion(explicitlyReferencedPackages);
 
-            var centralPackageVersions = GetItemByType(items, "CentralVersionDependency").ToList();
+            var centralVersionAsDictionary = centralPackageVersions
+                .GroupBy(item => item.GetProperty("Id").ToLowerInvariant())
+                .ToDictionary(g => g.Key.ToLowerInvariant(), g => g.ToList());
 
             foreach (var item in explicitlyReferencedPackages)
             {
-                var itemTargetedFrameworksStrings = GetFrameworksStrings(item);
-
-                var currentCentralPackageVersions = centralPackageVersions
-                    .Where(x => StringComparer.OrdinalIgnoreCase.Equals(x.GetProperty("Id"), item.GetProperty("Id")))
-                    .ToList();
-
-                if (centralPackageVersions.Any())
+                var itemId = item.GetProperty("Id").ToLowerInvariant();
+               
+                if (centralVersionAsDictionary.ContainsKey(itemId))
                 {
+                    var itemTargetedFrameworksStrings = GetFrameworksStrings(item);
+
                     // Legacy projects do not have TargetFrameworks.
                     if (itemTargetedFrameworksStrings.Count == 0)
                     {
-                        var centralVersionItemOnTFM = currentCentralPackageVersions
+                        var centralVersionItemOnTFM = centralVersionAsDictionary[itemId]
                             .Where(gi =>
                             {
                                 var globalItemsTFMs = GetFrameworksStrings(gi);
@@ -986,7 +1003,7 @@ namespace NuGet.Commands
                     {
                         foreach (var projectTFM in itemTargetedFrameworksStrings)
                         {
-                            var centralVersionItemOnTFM = currentCentralPackageVersions
+                            var centralVersionItemOnTFM = centralVersionAsDictionary[itemId]
                                 .Where(gi =>
                                 {
                                     var globalItemsTFMs = GetFrameworksStrings(gi);
@@ -1076,7 +1093,7 @@ namespace NuGet.Commands
         private static IMSBuildItem MergeCentralVersionInformation(IMSBuildItem item, IMSBuildItem centralVersionItem)
         {
             var metadata = item.Properties
-                .Where(p => !StringComparer.Ordinal.Equals("Version") && !StringComparer.Ordinal.Equals("VersionRange"))
+                .Where(p => !StringComparer.Ordinal.Equals("Version") && !StringComparer.Ordinal.Equals("VersionRange"))              
                 .Select(p => new KeyValuePair<string, string>(p, item.GetProperty(p)))
                 .ToDictionary( kvp=>kvp.Key, kvp=>kvp.Value);
 
@@ -1131,7 +1148,8 @@ namespace NuGet.Commands
         {
             if (cpvmEnabled)
             {        
-                return MergeCentralPackageVersionsInPackageReferences(items);
+                return MergeCentralPackageVersionsInPackageReferences(packageReferences: GetItemByType(items, "Dependency").ToList(),
+                    centralPackageVersions: GetItemByType(items, "CentralVersionDependency").ToList());
             }
 
             return GetItemByType(items, "Dependency");

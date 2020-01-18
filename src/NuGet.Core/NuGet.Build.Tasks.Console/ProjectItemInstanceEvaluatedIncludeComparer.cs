@@ -12,7 +12,7 @@ namespace NuGet.Build.Tasks.Console
     /// Represents a comparer of MSBuild items which considers any item with the same Include value (case-insensitive) to be identical, regardless of its metadata.
     /// This is used to ignore duplicate items specified by users since NuGet needs to only consider the first one specified.
     /// </summary>
-    internal sealed class ProjectItemInstanceEvaluatedIncludeComparer : IEqualityComparer<IMSBuildItem>
+    internal sealed class ProjectItemInstanceEvaluatedIncludeComparer : IEqualityComparer<IMSBuildProjectItem>
     {
         /// <summary>
         /// A singleton to be used by callers.
@@ -33,11 +33,11 @@ namespace NuGet.Build.Tasks.Console
         /// <param name="x">The first <see cref="ProjectItemInstance" /> to compare, or <code>null</code>.</param>
         /// <param name="y">The second <see cref="ProjectItemInstance" /> to compare, or <code>null</code>.</param>
         /// <returns><code>true</code> if the specified <see cref="ProjectItemInstance" /> objects have the same Include value, otherwise <code>false</code>.</returns>
-        public bool Equals(IMSBuildItem x, IMSBuildItem y)
+        public bool Equals(IMSBuildProjectItem x, IMSBuildProjectItem y)
         {
             return string.Equals(x?.Identity, y?.Identity, StringComparison.OrdinalIgnoreCase);
         }
 
-        public int GetHashCode(IMSBuildItem obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity);
+        public int GetHashCode(IMSBuildProjectItem obj) => StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity);
     }
 }
