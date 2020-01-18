@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using FluentAssertions;
-using NuGet.Build.Tasks.Console;
 using NuGet.Commands;
 using Xunit;
 
-namespace NuGet.Build.Tasks.Test
+namespace NuGet.Build.Tasks.Console.Test
 {
     public class ProjectItemInstanceEvaluatedIncludeComparerTests
     {

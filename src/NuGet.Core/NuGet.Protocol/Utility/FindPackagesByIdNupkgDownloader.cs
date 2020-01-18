@@ -12,6 +12,7 @@ using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 
 namespace NuGet.Protocol
 {
@@ -114,7 +115,11 @@ namespace NuGet.Protocol
             return await ProcessNupkgStreamAsync(
                 identity,
                 url,
-                stream => stream.CopyToAsync(destination, token),
+                async stream => 
+                {
+                    await stream.CopyToAsync(destination, token);
+                    ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_httpSource.PackageSource, destination.Length));
+                },
                 cacheContext,
                 logger,
                 token);

@@ -1,14 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using NuGet.Versioning;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.IO;
 using FluentAssertions;
+using NuGet.Test.Utility;
+using NuGet.Versioning;
 using Xunit;
-
 using SdkResolverContextBase = Microsoft.Build.Framework.SdkResolverContext;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
@@ -24,14 +22,11 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 {"bar", "2.0.0"}
             };
 
-            using (var testEnvironment = TestEnvironment.Create())
+            using (var testDirectory = TestDirectory.Create())
             {
-                var testFolder = testEnvironment.CreateFolder();
-                var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
+                GlobalJsonReaderTests.WriteGlobalJson(testDirectory, expectedVersions);
 
-                GlobalJsonReaderTests.WriteGlobalJson(testFolder.FolderPath, expectedVersions);
-
-                var context = new MockSdkResolverContext(projectFile.Path);
+                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
 
                 VerifyTryGetNuGetVersionForSdk(
                     version: null,

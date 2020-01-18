@@ -149,19 +149,17 @@ namespace NuGet.XPlat.FuncTest
         }
 
         /// <summary>
-        /// Provides the path to Nupkgs directory in the root of repo on the test machine.
+        /// Provides the path to artifacts directory in the root of repo on the test machine.
         /// </summary>
         /// <returns>
         /// <code>String</code> containing the path to the nupkg directory in the local repository.
         /// </returns>
-        public static string GetNupkgDirectoryInRepo()
+        public static string GetArtifactsDirectoryInRepo()
         {
             var repositoryRootDir = ParentDirectoryLookup()
                 .FirstOrDefault(d => DirectoryContains(d, "artifacts"));
 
-            var artifactsDir = Path.Combine(repositoryRootDir?.FullName, "artifacts");
-
-            return Path.Combine(artifactsDir, "Nupkgs");
+            return Path.Combine(repositoryRootDir?.FullName, "artifacts");
         }
 
         /// <summary>

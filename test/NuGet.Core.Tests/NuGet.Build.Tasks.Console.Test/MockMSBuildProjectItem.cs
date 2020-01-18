@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using NuGet.Build.Tasks.Console;
 using NuGet.Commands;
 
-namespace NuGet.Build.Tasks.Test
+namespace NuGet.Build.Tasks.Console.Test
 {
     internal class MockMSBuildProjectItem : IMSBuildProjectItem
     {

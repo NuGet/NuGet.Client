@@ -18,6 +18,8 @@ using NuGet.Repositories;
 
 namespace NuGet.Commands
 {
+    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+
     public class OriginalCaseGlobalPackageFolder
     {
         private readonly List<NuGetv3LocalRepository> _localRepositories;

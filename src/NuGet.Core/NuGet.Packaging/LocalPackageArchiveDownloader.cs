@@ -15,6 +15,7 @@ namespace NuGet.Packaging
     /// <summary>
     /// A package downloader for local archive packages.
     /// </summary>
+    [Obsolete("Use NuGet.Protocol.LocalPackageArchiveDownloader")]
     public sealed class LocalPackageArchiveDownloader : IPackageDownloader
     {
         private Func<Exception, Task<bool>> _handleExceptionAsync;

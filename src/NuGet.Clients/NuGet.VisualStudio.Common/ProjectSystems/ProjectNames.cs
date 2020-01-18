@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -59,8 +59,7 @@ namespace NuGet.VisualStudio
         public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject)
         {
             Assumes.Present(dteProject);
-
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             return new ProjectNames(
                 fullName: dteProject.FullName,

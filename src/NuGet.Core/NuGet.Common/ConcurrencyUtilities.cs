@@ -16,6 +16,7 @@ namespace NuGet.Common
     {
         private const int NumberOfRetries = 3000;
         private static readonly TimeSpan SleepDuration = TimeSpan.FromMilliseconds(10);
+        private static readonly KeyedLock PerFileLock = new KeyedLock();
 
         public async static Task<T> ExecuteWithFileLockedAsync<T>(string filePath,
             Func<CancellationToken, Task<T>> action,
@@ -26,76 +27,84 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            // limit the number of unauthorized, this should be around 30 seconds.
-            var unauthorizedAttemptsLeft = NumberOfRetries;
-
-            while (true)
+            await PerFileLock.EnterAsync(filePath, token);
+            try
             {
-                FileStream fs = null;
-                var lockPath = string.Empty;
+                // limit the number of unauthorized, this should be around 30 seconds.
+                var unauthorizedAttemptsLeft = NumberOfRetries;
 
-                try
+                while (true)
                 {
+                    FileStream fs = null;
+                    var lockPath = string.Empty;
+
                     try
                     {
-                        lockPath = FileLockPath(filePath);
-
-                        fs = AcquireFileStream(lockPath);
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        throw;
-                    }
-                    catch(PathTooLongException)
-                    {
-                        throw;
-                    }
-                    catch(UnauthorizedAccessException)
-                    {
-                        token.ThrowIfCancellationRequested();
-
-                        if (unauthorizedAttemptsLeft < 1)
+                        try
                         {
-                            if (string.IsNullOrEmpty(lockPath))
+                            lockPath = FileLockPath(filePath);
+
+                            fs = AcquireFileStream(lockPath);
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            throw;
+                        }
+                        catch (PathTooLongException)
+                        {
+                            throw;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            if (unauthorizedAttemptsLeft < 1)
                             {
-                                lockPath = BasePath;
+                                if (string.IsNullOrEmpty(lockPath))
+                                {
+                                    lockPath = BasePath;
+                                }
+
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.UnauthorizedLockFail,
+                                    lockPath,
+                                    filePath);
+
+                                throw new InvalidOperationException(message);
                             }
 
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.UnauthorizedLockFail,
-                                lockPath,
-                                filePath);
+                            unauthorizedAttemptsLeft--;
 
-                            throw new InvalidOperationException(message);
+                            // This can occur when the file is being deleted
+                            // Or when an admin user has locked the file
+                            await Task.Delay(SleepDuration);
+                            continue;
+                        }
+                        catch (IOException)
+                        {
+                            token.ThrowIfCancellationRequested();
+
+                            await Task.Delay(SleepDuration);
+                            continue;
                         }
 
-                        unauthorizedAttemptsLeft--;
-
-                        // This can occur when the file is being deleted
-                        // Or when an admin user has locked the file
-                        await Task.Delay(SleepDuration);
-                        continue;
+                        // Run the action within the lock
+                        return await action(token);
                     }
-                    catch (IOException)
+                    finally
                     {
-                        token.ThrowIfCancellationRequested();
-
-                        await Task.Delay(SleepDuration);
-                        continue;
-                    }
-
-                    // Run the action within the lock
-                    return await action(token);
-                }
-                finally
-                {
-                    if (fs != null)
-                    {
-                        // Dispose of the stream, this will cause a delete
-                        fs.Dispose();
+                        if (fs != null)
+                        {
+                            // Dispose of the stream, this will cause a delete
+                            fs.Dispose();
+                        }
                     }
                 }
+            }
+            finally
+            {
+                await PerFileLock.ExitAsync(filePath);
             }
         }
 
@@ -107,73 +116,81 @@ namespace NuGet.Common
                 throw new ArgumentNullException(nameof(filePath));
             }
 
-            // limit the number of unauthorized, this should be around 30 seconds.
-            var unauthorizedAttemptsLeft = NumberOfRetries;
-
-            while (true)
+            PerFileLock.Enter(filePath);
+            try
             {
-                FileStream fs = null;
-                var lockPath = string.Empty;
-                try
+                // limit the number of unauthorized, this should be around 30 seconds.
+                var unauthorizedAttemptsLeft = NumberOfRetries;
+
+                while (true)
                 {
+                    FileStream fs = null;
+                    var lockPath = string.Empty;
                     try
                     {
-                        lockPath = FileLockPath(filePath);
-
-                        fs = AcquireFileStream(lockPath);
-                    }
-                    catch (DirectoryNotFoundException)
-                    {
-                        throw;
-                    }
-                    catch(PathTooLongException)
-                    {
-                        throw;
-                    }
-                    catch(UnauthorizedAccessException)
-                    {
-                        if (unauthorizedAttemptsLeft < 1)
+                        try
                         {
-                            if (string.IsNullOrEmpty(lockPath))
+                            lockPath = FileLockPath(filePath);
+
+                            fs = AcquireFileStream(lockPath);
+                        }
+                        catch (DirectoryNotFoundException)
+                        {
+                            throw;
+                        }
+                        catch (PathTooLongException)
+                        {
+                            throw;
+                        }
+                        catch (UnauthorizedAccessException)
+                        {
+                            if (unauthorizedAttemptsLeft < 1)
                             {
-                                lockPath = BasePath;
+                                if (string.IsNullOrEmpty(lockPath))
+                                {
+                                    lockPath = BasePath;
+                                }
+
+                                var message = string.Format(
+                                    CultureInfo.CurrentCulture,
+                                    Strings.UnauthorizedLockFail,
+                                    lockPath,
+                                    filePath);
+
+                                throw new InvalidOperationException(message);
                             }
 
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Strings.UnauthorizedLockFail,
-                                lockPath,
-                                filePath);
+                            unauthorizedAttemptsLeft--;
 
-                            throw new InvalidOperationException(message);
+                            // This can occur when the file is being deleted
+                            // Or when an admin user has locked the file
+                            Thread.Sleep(SleepDuration);
+                            continue;
+                        }
+                        catch (FileLoadException)
+                        {
+                            throw;
+                        }
+                        catch (IOException)
+                        {
+                            Thread.Sleep(SleepDuration);
+                            continue;
                         }
 
-                        unauthorizedAttemptsLeft--;
-
-                        // This can occur when the file is being deleted
-                        // Or when an admin user has locked the file
-                        Thread.Sleep(SleepDuration);
-                        continue;
+                        // Run the action within the lock
+                        action();
+                        return;
                     }
-                    catch (FileLoadException)
+                    finally
                     {
-                        throw;
+                        // Dispose of the stream, this will cause a delete
+                        fs?.Dispose();
                     }
-                    catch (IOException)
-                    {
-                        Thread.Sleep(SleepDuration);
-                        continue;
-                    }
-
-                    // Run the action within the lock
-                    action();
-                    return;
                 }
-                finally
-                {
-                    // Dispose of the stream, this will cause a delete
-                    fs?.Dispose();
-                }
+            }
+            finally
+            {
+                PerFileLock.Exit(filePath);
             }
         }
 

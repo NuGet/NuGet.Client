@@ -64,7 +64,7 @@ namespace NuGet.Build.Tasks.Console
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
 
             // Only wire up an AssemblyResolve event handler if being debugged.
-            if (IsDebug())
+            if (debug)
             {
                 // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
                 // handler is used in order to locate the MSBuild assemblies
@@ -108,7 +108,7 @@ namespace NuGet.Build.Tasks.Console
                 .Split(Semicolon, StringSplitOptions.RemoveEmptyEntries)
                 .Where(i => !string.IsNullOrWhiteSpace(i))
                 .Select(i => i.Split(EqualSign, 2))
-                .Where(i => i.Length == 2 && !string.IsNullOrWhiteSpace(i[0])))
+                .Where(i => i.Length == 2 && !string.IsNullOrWhiteSpace(i[0]) && !string.IsNullOrWhiteSpace(i[1])))
             {
                 properties[pair[0].Trim()] = pair[1].Trim();
             }

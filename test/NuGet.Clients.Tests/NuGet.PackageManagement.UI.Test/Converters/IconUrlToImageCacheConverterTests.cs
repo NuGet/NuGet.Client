@@ -1,19 +1,36 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Threading;
+using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using NuGet.Packaging;
+using NuGet.Test.Utility;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
     public class IconUrlToImageCacheConverterTests
     {
         private static readonly ImageSource DefaultPackageIcon;
+        private readonly ITestOutputHelper output;
 
         static IconUrlToImageCacheConverterTests()
         {
             DefaultPackageIcon = BitmapSource.Create(1, 1, 96, 96, PixelFormats.Bgr24, null, new byte[3] { 0, 0, 0 }, 3);
             DefaultPackageIcon.Freeze();
+        }
+
+        public IconUrlToImageCacheConverterTests(ITestOutputHelper output)
+        {
+            this.output = output;
         }
 
         [Fact]
@@ -24,7 +41,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -40,7 +57,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture);
@@ -56,7 +73,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -74,7 +91,7 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                iconUrl,
+                new object[] { iconUrl, DependencyProperty.UnsetValue },
                 typeof(ImageSource),
                 DefaultPackageIcon,
                 Thread.CurrentThread.CurrentCulture) as BitmapImage;
@@ -82,6 +99,217 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.NotNull(image);
             Assert.NotSame(DefaultPackageIcon, image);
             Assert.Equal(iconUrl, image.UriSource);
+        }
+
+        [Fact(Skip = "Runs only on Windows Desktop with WPF support")]
+        public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
+        {
+            using (var testDir = TestDirectory.Create())
+            {
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(zipPath);
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = "icon.png"
+                };
+
+                output.WriteLine($"ZipPath {zipPath}");
+                output.WriteLine($"File Exists {File.Exists(zipPath)}");
+                output.WriteLine($"Url {builder.Uri.ToString()}");
+
+                // Act
+                var result = converter.Convert(
+                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture);
+
+                var image = result as BitmapImage;
+
+                output.WriteLine($"result {result.ToString()}");
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+                Assert.Equal(32, image.PixelWidth);
+            }
+        }
+
+        [Fact]
+        public void Convert_FileUri_LoadsImage()
+        {
+            // Prepare
+            var converter = new IconUrlToImageCacheConverter();
+
+            using (var testDir = TestDirectory.Create())
+            {
+                var imagePath = Path.Combine(testDir, "image.png");
+                CreateNoisePngImage(path: imagePath);
+
+                var uri = new Uri(imagePath, UriKind.Absolute);
+
+                // Act
+                var result = converter.Convert(
+                    new object[] { uri, DependencyProperty.UnsetValue },
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture);
+
+                var image = result as BitmapImage;
+                
+                // Assert
+                Assert.NotNull(result);
+                Assert.NotSame(DefaultPackageIcon, result);
+                Assert.Equal(32, image.PixelWidth);
+            }
+        }
+
+        [InlineData(@"/")]
+        [InlineData(@"\")]
+        [Theory]
+        public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault(string separator)
+        {
+            using (var testDir = TestDirectory.Create())
+            {
+                // Create decoy nuget package
+                var zipPath = Path.Combine(testDir.Path, "file.nupkg");
+                CreateDummyPackage(zipPath);
+
+                // prepare test
+                var converter = new IconUrlToImageCacheConverter();
+                UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
+                {
+                    Fragment = $@"..{separator}icon.png"
+                };
+
+                // Act
+                var result = converter.Convert(
+                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
+                    typeof(ImageSource),
+                    DefaultPackageIcon,
+                    Thread.CurrentThread.CurrentCulture);
+
+                // Assert
+                Assert.NotNull(result);
+                Assert.Same(DefaultPackageIcon, result);
+            }
+        }
+
+        [MemberData(nameof(TestData))]
+        [Theory]
+        public void IsEmbeddedIconUri_Tests(Uri testUri, bool expectedResult)
+        {
+            var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
+            Assert.Equal(expectedResult, result);
+        }
+
+        [Fact]
+        public void test3()
+        {
+            object x = null;
+            Assert.False(x is PackageArchiveReader);
+        }
+
+        public static IEnumerable<object[]> TestData()
+        {
+            Uri baseUri = new Uri(@"C:\path\to\package");
+            UriBuilder builder1 = new UriBuilder(baseUri)
+            {
+                Fragment = "    " // UriBuilder trims the string
+            };
+            UriBuilder builder2 = new UriBuilder(baseUri)
+            {
+                Fragment = "icon.png"
+            };
+            UriBuilder builder3 = new UriBuilder(baseUri)
+            {
+                Fragment = @"..\icon.png"
+            };
+            UriBuilder builder4 = new UriBuilder(baseUri)
+            {
+                Fragment = string.Empty // implies that there's a Tag, but no value
+            };
+            UriBuilder builder5 = new UriBuilder(baseUri)
+            {
+                Query = "aParam"
+            };
+
+            return new List<object[]>
+            {
+                new object[]{ builder1.Uri, false },
+                new object[]{ builder2.Uri, true },
+                new object[]{ builder3.Uri, true },
+                new object[]{ builder4.Uri, false },
+                new object[]{ builder5.Uri, false },
+                new object[]{ new Uri("https://sample.uri/"), false },
+                new object[]{ baseUri, false },
+                new object[]{ new Uri("https://another.uri/#"), false },
+                new object[]{ new Uri("https://complimentary.uri/#anchor"), false },
+                new object[]{ new Uri("https://complimentary.uri/?param"), false },
+                new object[]{ new Uri("relative/path", UriKind.Relative), false },
+            };
+        }
+
+
+        /// <summary>
+        /// Creates a dummy zip file with .nupkg extension and with a PNG image named "icon.png"
+        /// </summary>
+        /// <param name="path">Final path to the dummy .nupkg</param>
+        /// <param name="iconName">Icon filename with .png extension</param>
+        private static void CreateDummyPackage(string zipPath, string iconName = "icon.png")
+        {
+            var dir =  Path.GetDirectoryName(zipPath);
+            var holdDir = Path.GetRandomFileName();
+            var folderPath = Path.Combine(dir, holdDir);
+
+            Directory.CreateDirectory(folderPath);
+
+            var iconPath = Path.Combine(folderPath, iconName);
+            CreateNoisePngImage(iconPath);
+
+            // Create decoy nuget package
+            ZipFile.CreateFromDirectory(folderPath, zipPath);
+        }
+
+        /// <summary>
+        /// Creates a PNG image with random pixels
+        /// </summary>
+        /// <param name="path">Filename in which the image is created</param>
+        /// <param name="w">Image width in pixels</param>
+        /// <param name="h">Image height in pixels</param>
+        /// <param name="dpiX">Horizontal Dots (pixels) Per Inch in the image</param>
+        /// <param name="dpiY">Vertical Dots (pixels) Per Inch in the image</param>
+        private static void CreateNoisePngImage(string path, int w = 128, int h = 128, int dpiX = 96, int dpiY = 96)
+        {
+            // Create PNG image with noise
+            var fmt = PixelFormats.Bgr32;
+
+            // a row of pixels
+            int stride = (w * fmt.BitsPerPixel);
+            var data = new byte[stride * h];
+
+            // Random pixels
+            Random rnd = new Random();
+            rnd.NextBytes(data);
+
+            BitmapSource bitmap = BitmapSource.Create(w, h,
+                dpiX, dpiY,
+                fmt,
+                null, data, stride);
+
+            BitmapEncoder encoder = new PngBitmapEncoder();
+
+            encoder.Frames.Add(BitmapFrame.Create(bitmap));
+
+            using(var fs = File.OpenWrite(path))
+            {
+                encoder.Save(fs);
+            }
         }
     }
 }

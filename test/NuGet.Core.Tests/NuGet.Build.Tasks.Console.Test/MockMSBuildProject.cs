@@ -3,11 +3,10 @@
 
 using System.Collections.Generic;
 using System.IO;
-using NuGet.Build.Tasks.Console;
 using NuGet.Commands;
 using NuGet.Test.Utility;
 
-namespace NuGet.Build.Tasks.Test
+namespace NuGet.Build.Tasks.Console.Test
 {
     internal class MockMSBuildProject : MSBuildItem, IMSBuildProject
     {

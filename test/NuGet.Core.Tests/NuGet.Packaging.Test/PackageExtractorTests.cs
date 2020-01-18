@@ -27,6 +27,8 @@ using Xunit;
 
 namespace NuGet.Packaging.Test
 {
+    using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
+
     public class PackageExtractorTests
     {
         private static ClientPolicyContext _defaultContext = ClientPolicyContext.GetClientPolicy(NullSettings.Instance, NullLogger.Instance);

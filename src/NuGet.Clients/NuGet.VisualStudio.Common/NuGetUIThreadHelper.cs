@@ -61,32 +61,6 @@ namespace NuGet.VisualStudio
             }
         }
 
-        /// <summary>
-        /// Set a non-Visual Studio JTF. This is used for standalone mode.
-        /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-        public static void SetCustomJoinableTaskFactory(Thread mainThread, SynchronizationContext synchronizationContext)
-        {
-            if (mainThread == null)
-            {
-                throw new ArgumentNullException(nameof(mainThread));
-            }
-
-            if (synchronizationContext == null)
-            {
-                throw new ArgumentNullException(nameof(synchronizationContext));
-            }
-
-            // This method is not thread-safe and does not have it to be
-            // This is really just a test-hook to be used by test standalone UI and only 1 thread will call into this
-            // And, note that this method throws, when running inside VS, and ThreadHelper.JoinableTaskContext is not null
-            _joinableTaskFactory = new Lazy<JoinableTaskFactory>(() =>
-            {
-                var joinableTaskContext = new JoinableTaskContext(mainThread, synchronizationContext);
-                return joinableTaskContext.Factory;
-            });
-        }
-
         public static void SetCustomJoinableTaskFactory(JoinableTaskFactory joinableTaskFactory)
         {
             Assumes.Present(joinableTaskFactory);

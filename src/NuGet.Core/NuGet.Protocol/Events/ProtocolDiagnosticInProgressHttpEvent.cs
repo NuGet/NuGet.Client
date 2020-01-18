@@ -3,11 +3,11 @@
 
 using System;
 
-namespace NuGet.Protocol.Utility
+namespace NuGet.Protocol.Events
 {
-    internal sealed class ProtocolDiagnosticInProgressEvent : ProtocolDiagnosticEventBase
+    internal sealed class ProtocolDiagnosticInProgressHttpEvent : ProtocolDiagnosticHttpEventBase
     {
-        internal ProtocolDiagnosticInProgressEvent(
+        internal ProtocolDiagnosticInProgressHttpEvent(
             string source,
             Uri url,
             TimeSpan? headerDuration,

@@ -5,9 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Xml;
 using FluentAssertions;
-using NuGet.Build.Tasks.Console;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -19,7 +17,7 @@ using Test.Utility;
 using Moq;
 using Xunit;
 
-namespace NuGet.Build.Tasks.Test
+namespace NuGet.Build.Tasks.Console.Test
 {
     public class MSBuildStaticGraphRestoreTests
     {

@@ -1,19 +1,24 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Globalization;
 using System.Linq;
 using System.Net;
+using System.Net.Cache;
 using System.Runtime.Caching;
 using System.Windows.Data;
 using System.Windows.Media.Imaging;
+using NuGet.Packaging;
 
 namespace NuGet.PackageManagement.UI
 {
-    internal class IconUrlToImageCacheConverter : IValueConverter
+    internal class IconUrlToImageCacheConverter : IMultiValueConverter
     {
         private const int DecodePixelWidth = 32;
 
         // same URIs can reuse the bitmapImage that we've already used.
-        private static readonly ObjectCache _bitmapImageCache = System.Runtime.Caching.MemoryCache.Default;
+        private static readonly ObjectCache BitmapImageCache = MemoryCache.Default;
 
         private static readonly WebExceptionStatus[] FatalErrors = new[]
         {
@@ -24,22 +29,46 @@ namespace NuGet.PackageManagement.UI
             WebExceptionStatus.UnknownError
         };
 
-        private static readonly System.Net.Cache.RequestCachePolicy RequestCacheIfAvailable = new System.Net.Cache.RequestCachePolicy(System.Net.Cache.RequestCacheLevel.CacheIfAvailable);
+        private static readonly RequestCachePolicy RequestCacheIfAvailable = new RequestCachePolicy(RequestCacheLevel.CacheIfAvailable);
 
-        private static readonly ErrorFloodGate _errorFloodGate = new ErrorFloodGate();
+        private static readonly ErrorFloodGate ErrorFloodGate = new ErrorFloodGate();
 
-        // We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
-        // This leads to a memory savings.
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        /// <summary>
+        /// Converts IconUrl from PackageItemListViewModel to an image represented by a BitmapSource
+        /// </summary>
+        /// <remarks>
+        /// We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
+        /// This leads to a memory savings.
+        /// </remarks>
+        /// <param name="values">
+        /// <list type="bullet">
+        /// <item>
+        /// <description>values[0]: IconUrl that points to a URL o a local file</description>
+        /// </item>
+        /// <item>
+        /// <description>values[1]: An <c>PackageArchiveReader</c> to read from the local package for embedded icons</description>
+        /// </item>
+        /// </list>
+        /// </param>
+        /// <param name="targetType">unused</param>
+        /// <param name="parameter">A BitmapImage with the default package icon</param>
+        /// <param name="culture">unused</param>
+        /// <returns>A BitmapSource with the image</returns>
+        public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
-            var iconUrl = value as Uri;
+            if (values == null || values.Length == 0)
+            {
+                return null;
+            }
+
+            var iconUrl = values[0] as Uri;
             var defaultPackageIcon = parameter as BitmapSource;
             if (iconUrl == null)
             {
                 return null;
             }
 
-            var cachedBitmapImage = _bitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
+            var cachedBitmapImage = BitmapImageCache.Get(iconUrl.ToString()) as BitmapSource;
             if (cachedBitmapImage != null)
             {
                 return cachedBitmapImage;
@@ -47,15 +76,80 @@ namespace NuGet.PackageManagement.UI
 
             // Some people run on networks with internal NuGet feeds, but no access to the package images on the internet.
             // This is meant to detect that kind of case, and stop spamming the network, so the app remains responsive.
-            if (_errorFloodGate.IsOpen)
+            if (ErrorFloodGate.IsOpen)
             {
                 return defaultPackageIcon;
             }
 
             var iconBitmapImage = new BitmapImage();
             iconBitmapImage.BeginInit();
-            iconBitmapImage.UriSource = iconUrl;
 
+            BitmapSource imageResult;
+
+            // Check if the URI is an Embedded Icon URI
+            if (IsEmbeddedIconUri(iconUrl))
+            {
+                // Check if we have enough info to read the icon from the package
+                if (values.Length == 2 && values[1] is Lazy<PackageReaderBase>)
+                {
+                    try
+                    {
+                        var lazyPar = (Lazy<PackageReaderBase>)values[1];
+                        var par = lazyPar.Value as PackageArchiveReader;
+                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
+                        iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
+
+
+                        iconBitmapImage.DecodeFailed += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            AddToCache(iconUrl, defaultPackageIcon);
+                        };
+                        iconBitmapImage.DownloadFailed += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            AddToCache(iconUrl, defaultPackageIcon);
+                        };
+                        iconBitmapImage.DownloadCompleted += (sender, args) =>
+                        {
+                            par.Dispose();
+                            IconBitmapImage_DownloadCompleted(sender, args);
+                        };
+
+                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                    }
+                    catch (Exception)
+                    {
+                        AddToCache(iconUrl, defaultPackageIcon);
+                        imageResult = defaultPackageIcon;
+                    }
+                }
+                // Identified an embedded icon URI but, we are unable to process it
+                // cache and return the default image
+                else
+                {
+                    AddToCache(iconUrl, defaultPackageIcon);
+                    imageResult = defaultPackageIcon;
+                }
+            }
+            else
+            {
+                iconBitmapImage.UriSource = iconUrl;
+
+                iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
+                iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
+                iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
+
+                imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+            }
+
+            return imageResult;
+        }
+
+        public BitmapSource FinishImageProcessing(BitmapImage iconBitmapImage, Uri iconUrl, BitmapSource defaultPackageIcon)
+        {
             // Default cache policy: Per MSDN, satisfies a request for a resource either by using the cached copy of the resource or by sending a request
             // for the resource to the server. The action taken is determined by the current cache policy and the age of the content in the cache.
             // This is the cache level that should be used by most applications.
@@ -65,10 +159,7 @@ namespace NuGet.PackageManagement.UI
             // Only need to set this on one dimension, to preserve aspect ratio
             iconBitmapImage.DecodePixelWidth = DecodePixelWidth;
 
-            iconBitmapImage.DecodeFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadFailed += IconBitmapImage_DownloadOrDecodeFailed;
-            iconBitmapImage.DownloadCompleted += IconBitmapImage_DownloadCompleted;
-
+            BitmapSource image = null;
             try
             {
                 iconBitmapImage.EndInit();
@@ -82,13 +173,14 @@ namespace NuGet.PackageManagement.UI
             finally
             {
                 // store this bitmapImage in the bitmap image cache, so that other occurances can reuse the BitmapImage
-                cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
+                var cachedBitmapImage = iconBitmapImage ?? defaultPackageIcon;
                 AddToCache(iconUrl, cachedBitmapImage);
+                ErrorFloodGate.ReportAttempt();
 
-                _errorFloodGate.ReportAttempt();
+                image = cachedBitmapImage;
             }
 
-            return cachedBitmapImage;
+            return image;
         }
 
         private static void AddToCache(Uri iconUrl, BitmapSource iconBitmapImage)
@@ -98,7 +190,7 @@ namespace NuGet.PackageManagement.UI
                 SlidingExpiration = TimeSpan.FromMinutes(10),
                 RemovedCallback = CacheEntryRemoved
             };
-            _bitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
+            BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
         }
 
         private static void CacheEntryRemoved(CacheEntryRemovedArguments arguments)
@@ -106,7 +198,7 @@ namespace NuGet.PackageManagement.UI
 
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object[] ConvertBack(object value, Type[] targetTypes, object parameter, CultureInfo culture)
         {
             throw new NotSupportedException();
         }
@@ -124,8 +216,11 @@ namespace NuGet.PackageManagement.UI
         {
             var bitmapImage = sender as BitmapImage;
 
-            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.
-            var cachedBitmapImage = _bitmapImageCache.Get(bitmapImage.UriSource.ToString()) as BitmapSource;
+            var uri = bitmapImage.UriSource;
+
+            string cacheKey = uri != null ? uri.ToString() : string.Empty;
+            // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
+            var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
             {
                 AddToCache(bitmapImage.UriSource, Images.DefaultPackageIcon);
@@ -133,9 +228,23 @@ namespace NuGet.PackageManagement.UI
                 var webex = e.ErrorException as WebException;
                 if (webex != null && FatalErrors.Any(c => webex.Status == c))
                 {
-                    _errorFloodGate.ReportError();
+                    ErrorFloodGate.ReportError();
                 }
             }
+        }
+
+        /// <summary>
+        /// NuGet Embedded Icon Uri verification
+        /// </summary>
+        /// <param name="iconUrl">An URI to test</param>
+        /// <returns><c>true</c> if <c>iconUrl</c> is an URI to an embedded icon in a NuGet package</returns>
+        public static bool IsEmbeddedIconUri(Uri iconUrl)
+        {
+            return iconUrl != null
+                && iconUrl.IsAbsoluteUri
+                && iconUrl.IsFile
+                && !string.IsNullOrEmpty(iconUrl.Fragment)
+                && iconUrl.Fragment.Length > 1;
         }
     }
 }

@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
@@ -14,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Events;
 using NuGet.Versioning;
 
 namespace NuGet.Protocol
@@ -32,6 +35,9 @@ namespace NuGet.Protocol
         private LocalPackageFileCache _packageFileCache;
         private readonly Lazy<bool> _rootExists;
         private bool _isFallbackFolder;
+
+        private const string ResourceTypeName = nameof(FindPackageByIdResource);
+        private const string ThisTypeName = nameof(LocalV3FindPackageByIdResource);
 
         /// <summary>
         /// Nuspec files read from disk.
@@ -120,9 +126,22 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult<IEnumerable<NuGetVersion>>(GetVersions(id, cacheContext, logger));
+                return Task.FromResult<IEnumerable<NuGetVersion>>(GetVersions(id, cacheContext, logger));
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetAllVersionsAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -178,20 +197,34 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            if (DoesVersionExist(id, version))
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                var packagePath = _resolver.GetPackageFilePath(id, version);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                using (var fileStream = File.OpenRead(packagePath))
+                if (DoesVersionExist(id, version))
                 {
-                    await fileStream.CopyToAsync(destination, cancellationToken);
-                    return true;
-                }
-            }
+                    var packagePath = _resolver.GetPackageFilePath(id, version);
 
-            return false;
+                    using (var fileStream = File.OpenRead(packagePath))
+                    {
+                        await fileStream.CopyToAsync(destination, cancellationToken);
+                        ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticNupkgCopiedEvent(_source, destination.Length));
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(CopyNupkgToStreamAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -239,23 +272,36 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            FindPackageByIdDependencyInfo dependencyInfo = null;
-            if (DoesVersionExist(id, version))
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                var identity = new PackageIdentity(id, version);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                dependencyInfo = ProcessNuspecReader(
-                    id,
-                    version,
-                    nuspecReader =>
-                    {
-                        return GetDependencyInfo(nuspecReader);
-                    });
+                FindPackageByIdDependencyInfo dependencyInfo = null;
+                if (DoesVersionExist(id, version))
+                {
+                    var identity = new PackageIdentity(id, version);
+
+                    dependencyInfo = ProcessNuspecReader(
+                        id,
+                        version,
+                        nuspecReader =>
+                        {
+                            return GetDependencyInfo(nuspecReader);
+                        });
+                }
+
+                return Task.FromResult(dependencyInfo);
             }
-
-            return Task.FromResult(dependencyInfo);
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetDependencyInfoAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -293,19 +339,32 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
-
-            IPackageDownloader packageDependency = null;
-
-            if (DoesVersionExist(packageIdentity.Id, packageIdentity.Version))
+            var stopwatch = Stopwatch.StartNew();
+            try
             {
-                var packagePath = _resolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
-                var matchedPackageIdentity = new PackageIdentity(packageIdentity.Id, packageIdentity.Version);
+                cancellationToken.ThrowIfCancellationRequested();
 
-                packageDependency = new LocalPackageArchiveDownloader(_source, packagePath, matchedPackageIdentity, logger);
+                IPackageDownloader packageDependency = null;
+
+                if (DoesVersionExist(packageIdentity.Id, packageIdentity.Version))
+                {
+                    var packagePath = _resolver.GetPackageFilePath(packageIdentity.Id, packageIdentity.Version);
+                    var matchedPackageIdentity = new PackageIdentity(packageIdentity.Id, packageIdentity.Version);
+
+                    packageDependency = new LocalPackageArchiveDownloader(_source, packagePath, matchedPackageIdentity, logger);
+                }
+
+                return Task.FromResult(packageDependency);
             }
-
-            return Task.FromResult(packageDependency);
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(GetPackageDownloaderAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         /// <summary>
@@ -353,9 +412,22 @@ namespace NuGet.Protocol
                 throw new ArgumentNullException(nameof(logger));
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
+            var stopwatch = Stopwatch.StartNew();
+            try
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            return Task.FromResult(DoesVersionExist(id, version));
+                return Task.FromResult(DoesVersionExist(id, version));
+            }
+            finally
+            {
+                ProtocolDiagnostics.RaiseEvent(new ProtocolDiagnosticResourceEvent(
+                    _source,
+                    ResourceTypeName,
+                    ThisTypeName,
+                    nameof(DoesPackageExistAsync),
+                    stopwatch.Elapsed));
+            }
         }
 
         private T ProcessNuspecReader<T>(string id, NuGetVersion version, Func<NuspecReader, T> process)

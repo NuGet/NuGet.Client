@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
@@ -631,6 +632,8 @@ namespace NuGet.PackageManagement.UI
                 return _nugetProjects;
             }
         }
+
+        public Lazy<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
         protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
         {

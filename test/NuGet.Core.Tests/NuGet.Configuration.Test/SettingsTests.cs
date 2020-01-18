@@ -348,7 +348,7 @@ namespace NuGet.Configuration.Test
                 var result = item.GetValueAsPath();
 
                 // Assert
-                result.Should().Be(Path.Combine(mockBaseDirectory, value));
+                result.Should().Be(new DirectoryInfo(Path.Combine(mockBaseDirectory, value)).FullName);
             }
         }
 
