@@ -57,7 +57,7 @@ namespace NuGet.VisualStudio
             IAsyncServiceProvider asyncServiceProvider,
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
-            Lazy<NuGet.Common.ILogger> logger)
+            Lazy<ILogger> logger)
         {
             _asyncServiceprovider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -66,16 +66,14 @@ namespace NuGet.VisualStudio
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
 
             _projectContext = new Lazy<INuGetProjectContext>(() => {
-                var projectContext = new VSAPIProjectContext();
-
-                var adapterLogger = new LoggerAdapter(projectContext);
-                projectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
-                    adapterLogger);
-
-                return projectContext;
+                return new VSAPIProjectContext
+                {
+                    PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
+                        NullLogger.Instance)
+                };
             });
         }
 
@@ -105,20 +103,18 @@ namespace NuGet.VisualStudio
 
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
-            _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
+            _logger = new Lazy<ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
 
             _projectContext = new Lazy<INuGetProjectContext>(() => {
-                var projectContext = new VSAPIProjectContext();
-
-                var adapterLogger = new LoggerAdapter(projectContext);
-                projectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
-                    adapterLogger);
-
-                return projectContext;
+                return new VSAPIProjectContext
+                {
+                    PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
+                        NullLogger.Instance)
+                };
             });
         }
 
