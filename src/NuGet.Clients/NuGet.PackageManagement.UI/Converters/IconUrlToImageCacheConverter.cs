@@ -90,32 +90,45 @@ namespace NuGet.PackageManagement.UI
             // Check if the URI is an Embedded Icon URI
             if (IsEmbeddedIconUri(iconUrl))
             {
+                var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                 // Check if we have enough info to read the icon from the package
-                if (values.Length == 2 && values[1] is Func<PackageReaderBase>)
+                if (values.Length == 2 && values[1] is Func<PackageReaderBase> lazyPar)
                 {
                     try
                     {
-                        var lazyPar = (Func<PackageReaderBase>)values[1];
-                        if (lazyPar() is PackageArchiveReader par)
-                        {
-                            var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
-                            iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
+                        var reader = lazyPar(); // This reader is closed in BitmapImage events
+                        bool iconRead = true;
 
+                        switch (reader)
+                        {
+                            case PackageArchiveReader par:
+                                iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
+                                break;
+                            case PackageFolderReader pfr:
+                                iconBitmapImage.StreamSource = pfr.GetStream(iconEntry);
+                                break;
+                            default:
+                                iconRead = false;
+                                break;
+                        }
+
+                        if (iconRead)
+                        {
                             iconBitmapImage.DecodeFailed += (sender, args) =>
                             {
-                                par.Dispose();
+                                reader.Dispose();
                                 IconBitmapImage_DownloadOrDecodeFailed(sender, args);
                                 AddToCache(iconUrl, defaultPackageIcon);
                             };
                             iconBitmapImage.DownloadFailed += (sender, args) =>
                             {
-                                par.Dispose();
+                                reader.Dispose();
                                 IconBitmapImage_DownloadOrDecodeFailed(sender, args);
                                 AddToCache(iconUrl, defaultPackageIcon);
                             };
                             iconBitmapImage.DownloadCompleted += (sender, args) =>
                             {
-                                par.Dispose();
+                                reader.Dispose();
                                 IconBitmapImage_DownloadCompleted(sender, args);
                             };
 
@@ -128,9 +141,8 @@ namespace NuGet.PackageManagement.UI
                             imageResult = defaultPackageIcon;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        Debug.WriteLine(ex.Message);
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
                     }
@@ -196,7 +208,7 @@ namespace NuGet.PackageManagement.UI
         {
             var policy = new CacheItemPolicy
             {
-                SlidingExpiration = TimeSpan.FromSeconds(50),
+                SlidingExpiration = TimeSpan.FromMinutes(10),
                 RemovedCallback = CacheEntryRemoved
             };
             BitmapImageCache.Set(iconUrl.ToString(), iconBitmapImage, policy);
