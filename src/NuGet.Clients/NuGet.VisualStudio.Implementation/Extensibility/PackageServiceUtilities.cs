@@ -23,7 +23,7 @@ namespace NuGet.VisualStudio
         /// <exception cref="ArgumentException"> if <paramref name="packageId"/> is null or empty</exception>
         internal static bool IsPackageInList(IEnumerable<PackageReference> installedPackageReferences, string packageId, NuGetVersion nugetVersion)
         {
-            if(installedPackageReferences == null)
+            if (installedPackageReferences == null)
             {
                 throw new ArgumentNullException(nameof(installedPackageReferences));
             }
