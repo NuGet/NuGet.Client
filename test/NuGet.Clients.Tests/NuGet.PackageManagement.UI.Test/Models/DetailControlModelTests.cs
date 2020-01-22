@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 using System.Threading;
 using System;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI.Test.Models
@@ -81,6 +82,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public void PackageReader_NotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
+
+            Func<PackageReaderBase> lazyReader = _testInstance.PackageReader;
+
+            PackageReaderBase reader = lazyReader();
+            Assert.IsType(typeof(PackageArchiveReader), reader);
         }
     }
 
@@ -107,6 +113,11 @@ namespace NuGet.PackageManagement.UI.Test.Models
         public void PackageReader_NotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
+
+            Func<PackageReaderBase> lazyReader = _testInstance.PackageReader;
+
+            PackageReaderBase reader = lazyReader();
+            Assert.IsType(typeof(PackageArchiveReader), reader);
         }
     }
 }

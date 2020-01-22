@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -124,8 +123,10 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
-                    typeof(ImageSource),
+                    new object[] {
+                        builder.Uri,
+                        new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath)) },
+                    null,
                     DefaultPackageIcon,
                     Thread.CurrentThread.CurrentCulture);
 
@@ -206,13 +207,6 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
             Assert.Equal(expectedResult, result);
-        }
-
-        [Fact]
-        public void test3()
-        {
-            object x = null;
-            Assert.False(x is PackageArchiveReader);
         }
 
         public static IEnumerable<object[]> TestData()
