@@ -471,9 +471,12 @@ namespace NuGet.PackageManagement.UI
                 (_versions.Any(v => v != null && !v.IsValidVersion) &&
                     _versions.IndexOf(SelectedVersion) > _versions.IndexOf(_versions.FirstOrDefault(v => v != null && !v.IsValidVersion))))
             {
-                // it should always select the top version from versions list to install or update
-                // which has a valid version. If find none, then just set to null.
-                SelectedVersion = _versions.FirstOrDefault(v => v != null && v.IsValidVersion);
+                // Select the installed version by default.
+                // Otherwise, select the first version in the version list.
+                var possibleVersions = _versions.Where(v => v != null);
+                SelectedVersion =
+                    possibleVersions.FirstOrDefault(v => v.Version.Equals(_searchResultPackage.InstalledVersion))
+                    ?? possibleVersions.FirstOrDefault(v => v.IsValidVersion);
             }
         }
 
