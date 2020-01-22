@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Thumb.
+        ///   Looks up a localized string similar to splitter for Packages list.
         /// </summary>
         public static string Accessibility_ThumbName {
             get {

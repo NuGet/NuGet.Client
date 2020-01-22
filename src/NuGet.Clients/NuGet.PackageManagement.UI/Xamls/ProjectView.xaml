@@ -48,6 +48,7 @@
 
     <!-- row 0 -->
     <TextBlock
+      Name="_InstalledVersion"
       Grid.Row="0"
       Grid.Column="0"
       FontWeight="Bold"
@@ -66,7 +67,7 @@
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}"
         VerticalAlignment="Center"
-        AutomationProperties.AutomationId="InstalledVersion"
+        AutomationProperties.LabeledBy="{Binding ElementName=_InstalledVersion}"
         Margin="4,0,0,0"
         Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, Mode=OneWay}" />
     </Border>
