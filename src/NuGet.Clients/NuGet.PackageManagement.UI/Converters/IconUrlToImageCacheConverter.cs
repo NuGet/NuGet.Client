@@ -86,7 +86,6 @@ namespace NuGet.PackageManagement.UI
 
             BitmapSource imageResult;
 
-            // Check if the URI is an Embedded Icon URI
             if (IsEmbeddedIconUri(iconUrl))
             {
                 var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
@@ -238,7 +237,7 @@ namespace NuGet.PackageManagement.UI
 
             var uri = bitmapImage.UriSource;
 
-            string cacheKey = uri != null ? uri.ToString() : string.Empty;
+            string cacheKey = uri == null ? string.Empty : uri.ToString();
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)
