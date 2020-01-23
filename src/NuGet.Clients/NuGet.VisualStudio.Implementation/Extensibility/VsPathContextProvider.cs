@@ -35,7 +35,7 @@ namespace NuGet.VisualStudio
         private readonly IAsyncServiceProvider _asyncServiceprovider;
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
-        private readonly Lazy<NuGet.Common.ILogger> _logger;
+        private readonly Lazy<ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext;
@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<NuGet.Common.ILogger> logger)
+            Lazy<ILogger> logger)
             : this(AsyncServiceProvider.GlobalProvider,
                   settings,
                   solutionManager,
@@ -57,7 +57,7 @@ namespace NuGet.VisualStudio
             IAsyncServiceProvider asyncServiceProvider,
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
-            Lazy<NuGet.Common.ILogger> logger)
+            Lazy<ILogger> logger)
         {
             _asyncServiceprovider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
@@ -65,17 +65,13 @@ namespace NuGet.VisualStudio
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
 
-            _projectContext = new Lazy<INuGetProjectContext>(() => {
-                var projectContext = new VSAPIProjectContext();
-
-                var adapterLogger = new LoggerAdapter(projectContext);
-                projectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
-                    adapterLogger);
-
-                return projectContext;
+            _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext
+            {
+                PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
+                        NullLogger.Instance)
             });
         }
 
@@ -85,7 +81,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
-            NuGet.Common.ILogger logger,
+            ILogger logger,
             Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)
@@ -105,20 +101,18 @@ namespace NuGet.VisualStudio
 
             _settings = new Lazy<ISettings>(() => settings);
             _solutionManager = new Lazy<IVsSolutionManager>(() => solutionManager);
-            _logger = new Lazy<NuGet.Common.ILogger>(() => logger);
+            _logger = new Lazy<ILogger>(() => logger);
             _getLockFileOrNullAsync = getLockFileOrNullAsync ?? BuildIntegratedProjectUtility.GetLockFileOrNull;
 
             _projectContext = new Lazy<INuGetProjectContext>(() => {
-                var projectContext = new VSAPIProjectContext();
-
-                var adapterLogger = new LoggerAdapter(projectContext);
-                projectContext.PackageExtractionContext = new PackageExtractionContext(
-                    PackageSaveMode.Defaultv2,
-                    PackageExtractionBehavior.XmlDocFileSaveMode,
-                    ClientPolicyContext.GetClientPolicy(_settings.Value, adapterLogger),
-                    adapterLogger);
-
-                return projectContext;
+                return new VSAPIProjectContext
+                {
+                    PackageExtractionContext = new PackageExtractionContext(
+                        PackageSaveMode.Defaultv2,
+                        PackageExtractionBehavior.XmlDocFileSaveMode,
+                        ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
+                        NullLogger.Instance)
+                };
             });
         }
 
