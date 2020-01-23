@@ -691,10 +691,19 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static JObject CreateSinglePackageRegistrationBlob(MockServer server, string id, string version)
         {
+            return CreatePackageRegistrationBlob(server, id, new KeyValuePair<string, bool>[] { new KeyValuePair<string, bool>(version, true) });
+        }
+
+        /// <summary>
+        /// Create a registration blob for a package
+        /// </summary>
+        public static JObject CreatePackageRegistrationBlob(MockServer server, string id, IEnumerable<KeyValuePair<string, bool>> versionToListedMap)
+        {
             var indexUrl = string.Format(CultureInfo.InvariantCulture,
                                     "{0}reg/{1}/index.json", server.Uri, id);
-
-            JObject regBlob = new JObject();
+            var lowerBound = "0.0.0";
+            var upperBound = "9.0.0";
+            var regBlob = new JObject();
             regBlob.Add(new JProperty("@id", indexUrl));
             var typeArray = new JArray();
             regBlob.Add(new JProperty("@type", typeArray));
@@ -712,20 +721,28 @@ namespace NuGet.CommandLine.Test
             var page = new JObject();
             pages.Add(page);
 
-            page.Add(new JProperty("@id", indexUrl + "#page/0.0.0/9.0.0"));
+            page.Add(new JProperty("@id", indexUrl + $"#page/{lowerBound}/{upperBound}"));
             page.Add(new JProperty("@type", indexUrl + "catalog:CatalogPage"));
             page.Add(new JProperty("commitId", Guid.NewGuid()));
             page.Add(new JProperty("commitTimeStamp", "2015-06-22T22:30:00.1487642Z"));
-            page.Add(new JProperty("count", "1"));
+            page.Add(new JProperty("count", versionToListedMap.Count()));
             page.Add(new JProperty("parent", indexUrl));
-            page.Add(new JProperty("lower", "0.0.0"));
-            page.Add(new JProperty("upper", "9.0.0"));
+            page.Add(new JProperty("lower", lowerBound));
+            page.Add(new JProperty("upper", upperBound));
 
             var items = new JArray();
             page.Add(new JProperty("items", items));
+            foreach (var versionToListed in versionToListedMap)
+            {
+                var item = GetPackageRegistrationItem(server, id, version: versionToListed.Key, listed: versionToListed.Value, indexUrl);
+                items.Add(item);
+            }
+            return regBlob;
+        }
 
+        private static JObject GetPackageRegistrationItem(MockServer server, string id, string version, bool listed, string indexUrl)
+        {
             var item = new JObject();
-            items.Add(item);
 
             item.Add(new JProperty("@id",
                     string.Format("{0}reg/{1}/{2}.json", server.Uri, id, version)));
@@ -749,7 +766,7 @@ namespace NuGet.CommandLine.Test
             catalogEntry.Add(new JProperty("id", id));
             catalogEntry.Add(new JProperty("language", "en-us"));
             catalogEntry.Add(new JProperty("licenseUrl", ""));
-            catalogEntry.Add(new JProperty("listed", true));
+            catalogEntry.Add(new JProperty("listed", listed));
             catalogEntry.Add(new JProperty("minClientVersion", ""));
             catalogEntry.Add(new JProperty("projectUrl", ""));
             catalogEntry.Add(new JProperty("published", "2015-06-22T22:30:00.1487642Z"));
@@ -759,7 +776,7 @@ namespace NuGet.CommandLine.Test
             catalogEntry.Add(new JProperty("version", version));
             catalogEntry.Add(new JProperty("tags", new JArray()));
 
-            return regBlob;
+            return item;
         }
 
         public static string CreateProjFileContent(

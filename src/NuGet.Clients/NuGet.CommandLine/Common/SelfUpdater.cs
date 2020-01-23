@@ -1,19 +1,20 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-extern alias CoreV2;
-
 using System;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using NuGet.Configuration;
+using System.Threading;
+using System.Threading.Tasks;
+using NuGet.Common;
+using NuGet.PackageManagement;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 
-using static CoreV2.NuGet.PackageRepositoryExtensions;
-using static CoreV2.NuGet.CustomAttributeProviderExtensions;
-
-//TODO: This can be reworked with V3 APIs - tracked in https://github.com/NuGet/Home/issues/4197
 namespace NuGet.CommandLine
 {
     /// <summary>
@@ -27,27 +28,25 @@ namespace NuGet.CommandLine
         private string _assemblyLocation;
         private readonly Lazy<string> _lazyAssemblyLocation = new Lazy<string>(() =>
         {
-            var assembly = typeof(SelfUpdater).Assembly;
-            return assembly.Location;
+            return typeof(SelfUpdater).Assembly.Location;
         });
-        private readonly CoreV2.NuGet.IPackageRepositoryFactory _repositoryFactory;
 
-        public SelfUpdater(CoreV2.NuGet.IPackageRepositoryFactory repositoryFactory)
+        private readonly IConsole _console;
+
+        public SelfUpdater(IConsole console)
         {
-            if (repositoryFactory == null)
+            if (console == null)
             {
-                throw new ArgumentNullException("repositoryFactory");
+                throw new ArgumentNullException(nameof(console));
             }
-            _repositoryFactory = repositoryFactory;
+            _console = console;
         }
-
-        public IConsole Console { get; set; }
 
         /// <summary>
         /// This property is used only for testing (so that the self updater does not replace the running test
         /// assembly).
         /// </summary>
-        public string AssemblyLocation
+        internal string AssemblyLocation
         {
             get
             {
@@ -59,96 +58,95 @@ namespace NuGet.CommandLine
             }
         }
 
-        public void UpdateSelf(bool prerelease)
+        public async Task UpdateSelfAsync(bool prerelease, string updateFeed)
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
-            CoreV2.NuGet.SemanticVersion version = GetNuGetVersion(assembly) ?? new CoreV2.NuGet.SemanticVersion(assembly.GetName().Version);
-            SelfUpdate(AssemblyLocation, prerelease, version);
+            var version = GetNuGetVersion(assembly) ?? new NuGetVersion(assembly.GetName().Version);
+            await SelfUpdateAsync(AssemblyLocation, prerelease, version, updateFeed, CancellationToken.None);
         }
 
-        internal void SelfUpdate(string exePath, bool prerelease, CoreV2.NuGet.SemanticVersion version)
+        internal async Task SelfUpdateAsync(string exePath, bool prerelease, NuGetVersion currentVersion, string source, CancellationToken cancellationToken)
         {
-            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCheckingForUpdates"), NuGetConstants.V2FeedUrl);
+            var sourceCacheContext = new SourceCacheContext();
+            _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCheckingForUpdates"), source);
 
-            // Get the nuget command line package from the specified repository
-            CoreV2.NuGet.IPackageRepository packageRepository = _repositoryFactory.CreateRepository(NuGetConstants.V2FeedUrl);
-            CoreV2.NuGet.IPackage package = packageRepository.GetUpdates(
-                new [] { new CoreV2.NuGet.PackageName(NuGetCommandLinePackageId, version) },
-                includePrerelease: prerelease, 
-                includeAllVersions: false, 
-                targetFrameworks: null,
-                versionConstraints: null).FirstOrDefault();
- 
-            Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), version); // SemanticVersion is the problem
+            var sourceRepository = Repository.Factory.GetCoreV3(source);
+            var metadataResource = await sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
+            var latestVersion = await metadataResource.GetLatestVersion(NuGetCommandLinePackageId, prerelease, includeUnlisted: false, sourceCacheContext, _console, cancellationToken);
+
+            _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCurrentlyRunningNuGetExe"), currentVersion);
 
             // Check to see if an update is needed
-            if (package == null || version >= package.Version)
+            if (latestVersion == null || currentVersion >= latestVersion)
             {
-                Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandNuGetUpToDate"));
+                _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandNuGetUpToDate"));
             }
             else
             {
-                Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandUpdatingNuGet"), package.Version);
+                _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandUpdatingNuGet"), latestVersion);
 
-                // Get NuGet.exe file from the package
-                CoreV2.NuGet.IPackageFile file = package.GetFiles().FirstOrDefault(f => Path.GetFileName(f.Path).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
+                var packageIdentity = new PackageIdentity(NuGetCommandLinePackageId, latestVersion);
 
-                // If for some reason this package doesn't have NuGet.exe then we don't want to use it
-                if (file == null)
+                var tempDir = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), "updateSelf");
+                var nupkgPath = FileUtility.GetTempFilePath(tempDir);
+                try
                 {
-                    throw new CommandLineException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
+                    DirectoryUtility.CreateSharedDirectory(tempDir);
+
+                    var downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                                        sourceRepository,
+                                        packageIdentity,
+                                        new PackageDownloadContext(sourceCacheContext),
+                                        tempDir,
+                                        _console,
+                                        cancellationToken);
+
+                    // Get the exe path and move it to a temp file (NuGet.exe.old) so we can replace the running exe with the bits we got 
+                    // from the package repository
+                    var nugetExeFile = (await downloadResourceResult.PackageReader.GetFilesAsync(CancellationToken.None)).FirstOrDefault(f => Path.GetFileName(f).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
+
+                    // If for some reason this package doesn't have NuGet.exe then we don't want to use it
+                    if (nugetExeFile == null)
+                    {
+                        throw new CommandLineException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
+                    }
+
+                    string renamedPath = exePath + ".old";
+
+                    FileUtility.Move(exePath, renamedPath);
+
+                    using (Stream fromStream = await downloadResourceResult.PackageReader.GetStreamAsync(nugetExeFile, cancellationToken), toStream = File.Create(exePath))
+                    {
+                        fromStream.CopyTo(toStream);
+                    }
                 }
-
-                // Get the exe path and move it to a temp file (NuGet.exe.old) so we can replace the running exe with the bits we got 
-                // from the package repository
-                string renamedPath = exePath + ".old";
-                Move(exePath, renamedPath);
-
-                // Update the file
-                UpdateFile(exePath, file);
-
-                Console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandUpdateSuccessful"));
+                finally
+                {
+                    // Delete the temporary directory
+                    try
+                    {
+                        Directory.Delete(tempDir, recursive: true);
+                    }
+                    catch
+                    {
+                    }
+                }
             }
+            _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandUpdateSuccessful"));
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "We don't want this method to throw.")]
-        internal static CoreV2.NuGet.SemanticVersion GetNuGetVersion(ICustomAttributeProvider assembly)
+        internal static NuGetVersion GetNuGetVersion(Assembly assembly)
         {
             try
             {
                 var assemblyInformationalVersion = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
-                return new CoreV2.NuGet.SemanticVersion(assemblyInformationalVersion.InformationalVersion);
+                return new NuGetVersion(assemblyInformationalVersion.InformationalVersion);
             }
             catch
             {
                 // Don't let GetCustomAttributes throw.
             }
             return null;
-        }
-
-        protected virtual void UpdateFile(string exePath, CoreV2.NuGet.IPackageFile file)
-        {
-            using (Stream fromStream = file.GetStream(), toStream = File.Create(exePath))
-            {
-                fromStream.CopyTo(toStream);
-            }
-        }
-
-        protected virtual void Move(string oldPath, string newPath)
-        {
-            try
-            {
-                if (File.Exists(newPath))
-                {
-                    File.Delete(newPath);
-                }
-            }
-            catch (FileNotFoundException)
-            {
-
-            }
-
-            File.Move(oldPath, newPath);
         }
     }
 }

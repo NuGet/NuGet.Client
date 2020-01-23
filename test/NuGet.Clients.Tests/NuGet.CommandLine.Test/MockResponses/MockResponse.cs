@@ -1,4 +1,4 @@
-﻿namespace NuGet.CommandLine.Test.Caching
+namespace NuGet.CommandLine.Test
 {
     public class MockResponse
     {
