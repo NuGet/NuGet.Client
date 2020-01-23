@@ -35,7 +35,7 @@ namespace NuGet.VisualStudio
         private readonly IAsyncServiceProvider _asyncServiceprovider;
         private readonly Lazy<ISettings> _settings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
-        private readonly Lazy<NuGet.Common.ILogger> _logger;
+        private readonly Lazy<ILogger> _logger;
         private readonly Func<BuildIntegratedNuGetProject, Task<LockFile>> _getLockFileOrNullAsync;
 
         private readonly Lazy<INuGetProjectContext> _projectContext;
@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio
             Lazy<ISettings> settings,
             Lazy<IVsSolutionManager> solutionManager,
             [Import("VisualStudioActivityLogger")]
-            Lazy<NuGet.Common.ILogger> logger)
+            Lazy<ILogger> logger)
             : this(AsyncServiceProvider.GlobalProvider,
                   settings,
                   solutionManager,
@@ -65,7 +65,8 @@ namespace NuGet.VisualStudio
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
 
-            _projectContext = new Lazy<INuGetProjectContext>(() => {
+            _projectContext = new Lazy<INuGetProjectContext>(() =>
+            {
                 return new VSAPIProjectContext
                 {
                     PackageExtractionContext = new PackageExtractionContext(
@@ -83,7 +84,7 @@ namespace NuGet.VisualStudio
         public VsPathContextProvider(
             ISettings settings,
             IVsSolutionManager solutionManager,
-            NuGet.Common.ILogger logger,
+            ILogger logger,
             Func<BuildIntegratedNuGetProject, Task<LockFile>> getLockFileOrNullAsync)
         {
             if (settings == null)

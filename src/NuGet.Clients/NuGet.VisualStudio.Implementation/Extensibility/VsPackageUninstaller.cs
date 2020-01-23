@@ -52,7 +52,7 @@ namespace NuGet.VisualStudio
 
             if (string.IsNullOrEmpty(packageId))
             {
-                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
             }
 
             PumpingJTF.Run(async delegate
@@ -64,14 +64,14 @@ namespace NuGet.VisualStudio
                            _solutionManager,
                            _deleteOnRestartManager);
 
-                    var uninstallContext = new UninstallationContext(removeDependencies, false);
+                    var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
                     var projectContext = new VSAPIProjectContext
                     {
                         PackageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                        NullLogger.Instance)
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                            NullLogger.Instance)
                     };
 
                     // find the project

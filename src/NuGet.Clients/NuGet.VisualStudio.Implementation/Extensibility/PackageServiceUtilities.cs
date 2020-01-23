@@ -34,11 +34,10 @@ namespace NuGet.VisualStudio
             }
 
             return installedPackageReferences.Any(p =>
-                    StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId) &&
-                    nugetVersion != null ?
-                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, nugetVersion) :
-                        true
-                    );
+                StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId) &&
+                nugetVersion != null ?
+                    VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, nugetVersion) :
+                    true);
         }
     }
 }
