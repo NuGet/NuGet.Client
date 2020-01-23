@@ -185,7 +185,6 @@
           Margin="0,12"
           Content="{x:Static nuget:Resources.Button_IAccept}"
           AutomationProperties.AutomationId="AcceptButton"
-          AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
           Click="OnAcceptButtonClick" />
       <Button
           Grid.Column="2"
