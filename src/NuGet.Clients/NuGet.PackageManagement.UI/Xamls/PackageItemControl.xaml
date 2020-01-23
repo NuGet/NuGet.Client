@@ -247,6 +247,7 @@
                         Visibility="Visible"
                         VerticalAlignment="Center"
                         ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+                        AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
 
                       <!-- installed version -->

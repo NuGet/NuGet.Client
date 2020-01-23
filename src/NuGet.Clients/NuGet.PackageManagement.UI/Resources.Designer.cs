@@ -799,6 +799,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Deprecation Reasons.
+        /// </summary>
+        public static string Label_DeprecationReasons {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to This package has been deprecated as it has critical bugs..
         /// </summary>
         public static string Label_DeprecationReasons_CriticalBugs {

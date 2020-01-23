@@ -27,11 +27,12 @@
             Margin="0,0,5,0"
             Width="13"
             Height="13"
+            AutomationProperties.LabeledBy="{Binding ElementName=_deprecationLabel}"
             ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
             Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
         <TextBlock
+            Name="_deprecationLabel"
             FontWeight="Bold"
-            AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
             Text="{x:Static nuget:Resources.Label_Deprecated}"/>
       </StackPanel>
         <TextBox
@@ -39,7 +40,7 @@
           Margin="0,8,0,0"
           TextWrapping="WrapWithOverflow"
           Text="{Binding Path=PackageDeprecationReasons}"
-          AutomationProperties.Name="{Binding Path=PackageDeprecationReasons}"/>
+          AutomationProperties.Name="{x:Static nuget:Resources.Label_DeprecationReasons}"/>
         <StackPanel
           Margin="0,8,0,0"
           Orientation="Vertical"
@@ -47,8 +48,7 @@
           <TextBlock
             Text="{x:Static nuget:Resources.Label_DeprecationAlternatePackage}"
             FontWeight="Bold"
-            x:Name="_alternatePackageLabel"
-            AutomationProperties.Name="{Binding Text}"/>
+            x:Name="_alternatePackageLabel" />
           <StackPanel
             Orientation="Horizontal"
             VerticalAlignment="Center">
@@ -56,7 +56,6 @@
               Style="{DynamicResource SelectableTextBlockStyle}" 
               TextWrapping="Wrap"
               VerticalAlignment="Center"
-              AutomationProperties.Name="{Binding Path=PackageDeprecationAlternatePackageText}"
               AutomationProperties.LabeledBy="{Binding ElementName=_alternatePackageLabel}"
               Text="{Binding Path=PackageDeprecationAlternatePackageText}"/>
           </StackPanel>
