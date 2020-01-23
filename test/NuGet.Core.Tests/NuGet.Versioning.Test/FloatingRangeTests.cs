@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -8,6 +8,24 @@ namespace NuGet.Versioning.Test
 {
     public class FloatingRangeTests
     {
+        [Fact]
+        public void FloatRange_Float()
+        {
+            var range = new VersionRange(NuGetVersion.Parse("2.2.0"), true, null, false, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0-pre"),
+                };
+
+            Assert.Equal(NuGetVersion.Parse("3.0.0-pre"), range.FindBestMatch(versions));
+        }
+
+
         [Fact]
         public void FloatRange_OutsideOfRange()
         {
@@ -328,17 +346,723 @@ namespace NuGet.Versioning.Test
             Assert.Equal("[1.*, )", range.ToNormalizedString());
         }
 
-        [Fact]
-        public void FloatingRange_FloatMetadata_Invalid()
+        [Theory]
+        [InlineData("1.0.0+*")]
+        [InlineData("1.0.**")]
+        [InlineData("1.*.0")]
+        [InlineData("1.0.*-*bla")]
+        [InlineData("1.0.*-*bla+*")]
+        [InlineData("**")]
+        [InlineData("1.0.0-preview.*+blabla")]
+        [InlineData("1.0.*--")]
+        [InlineData("1.0.*-alpha*+")]
+        [InlineData("1.0.*-")]
+        public void FloatingRange_Parse_Invalid(string floatVersionString)
         {
             // Arrange
             FloatRange range;
 
             // Act
-            var valid = FloatRange.TryParse("1.0.0+*", out range);
+            var valid = FloatRange.TryParse(floatVersionString, out range);
 
             // Assert
             Assert.False(valid);
+        }
+
+        [Theory]
+        [InlineData("1.0.0-preview.*")]
+        [InlineData("1.0.*-bla*")]
+        [InlineData("1.0.*-*")]
+        [InlineData("1.0.*-preview.1.*")]
+        [InlineData("1.0.*-preview.1*")]
+        [InlineData("1.0.0--")]
+        [InlineData("1.0.0-bla*")]
+        [InlineData("1.0.*--*")]
+        [InlineData("1.0.0--*")]
+        public void FloatingRange_Parse_Valid(string floatVersionString)
+        {
+            // Arrange
+            FloatRange range;
+
+            // Act
+            var valid = FloatRange.TryParse(floatVersionString, out range);
+
+            // Assert
+            Assert.True(valid);
+        }
+
+        [Fact]
+        public void FloatingRange_ToStringRevPrefix()
+        {
+            var range = VersionRange.Parse("1.1.1.*-*");
+
+            Assert.Equal("[1.1.1.*-*, )", range.ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatingRange_ToStringPatchPrefix()
+        {
+            var range = VersionRange.Parse("1.1.*-*");
+
+            Assert.Equal("[1.1.*-*, )", range.ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatingRange_ToStringMinorPrefix()
+        {
+            var range = VersionRange.Parse("1.*-*");
+
+            Assert.Equal("[1.*-*, )", range.ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatingRange_ToStringAbsoluteLatest()
+        {
+            var range = VersionRange.Parse("*-*");
+
+            Assert.Equal("[*-*, )", range.ToNormalizedString());
+            Assert.Equal("0.0.0-0", range.MinVersion.ToNormalizedString());
+            Assert.Equal("0.0.0-0", range.Float.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range.Float.FloatBehavior);
+        }
+
+        [Fact]
+        public void FloatingRange_FloatPrereleaseRev()
+        {
+            var range = FloatRange.Parse("1.0.0.*-*");
+
+            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseRevision, range.FloatBehavior);
+        }
+
+        [Fact]
+        public void FloatingRange_FloatPrereleasePatch()
+        {
+            var range = FloatRange.Parse("1.0.*-*");
+
+            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleasePatch, range.FloatBehavior);
+        }
+
+        [Fact]
+        public void FloatingRange_FloatPrereleaseMinor()
+        {
+            var range = FloatRange.Parse("1.*-*");
+
+            Assert.Equal("1.0.0-0", range.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMinor, range.FloatBehavior);
+        }
+
+        [Fact]
+        public void FloatingRange_FloatAbsoluteLatest()
+        {
+            var range = FloatRange.Parse("*-*");
+
+            Assert.Equal("0.0.0-0", range.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range.FloatBehavior);
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_OutsideOfRange()
+        {
+            var range = VersionRange.Parse("[1.0.0.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_NotMatchingPrefix_OutsideOfRange()
+        {
+            var range = VersionRange.Parse("[1.0.0.*-beta*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_OutsideOfRange_Lower()
+        {
+            var range = VersionRange.Parse("[1.1.1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.8.0"),
+                    NuGetVersion.Parse("0.9.0"),
+                    NuGetVersion.Parse("1.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_OutsideOfRange_Higher()
+        {
+            var range = VersionRange.Parse("[1.1.1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_OnlyMatching()
+        {
+            var range = VersionRange.Parse("[1.0.1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.1-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.1-alpha.2", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_BestMatching()
+        {
+            var range = VersionRange.Parse("[1.0.1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.1.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.1.9-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_BestMatchingStable()
+        {
+            var range = VersionRange.Parse("[1.0.1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.1.9"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.1.9", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_BestMatchingFloating()
+        {
+            var range = VersionRange.Parse("[1.0.1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.1.8"),
+                    NuGetVersion.Parse("1.0.1.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.1.9-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_OutsideOfRange()
+        {
+            var range = VersionRange.Parse("[1.0.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_NotMatchingPrefix_OutsideOfRange()
+        {
+            var range = VersionRange.Parse("[1.0.*-beta*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_OutsideOfRange_Lower()
+        {
+            var range = VersionRange.Parse("[1.1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.8.0"),
+                    NuGetVersion.Parse("0.9.0"),
+                    NuGetVersion.Parse("1.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_OutsideOfRange_Higher()
+        {
+            var range = VersionRange.Parse("[1.1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_OnlyMatching()
+        {
+            var range = VersionRange.Parse("[1.0.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.0-alpha.2", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_BestMatching()
+        {
+            var range = VersionRange.Parse("[1.0.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.9-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_BestMatchingStable()
+        {
+            var range = VersionRange.Parse("[1.0.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.0.9"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.9", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_BestMatchingPrerelease()
+        {
+            var range = VersionRange.Parse("[1.0.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.8"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.9-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_NotMatchingPrefix_OutsideOfRange()
+        {
+            var range = VersionRange.Parse("[1.*-beta*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_OutsideOfRange_Lower()
+        {
+            var range = VersionRange.Parse("[1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.8.0"),
+                    NuGetVersion.Parse("0.9.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_OutsideOfRange_Higher()
+        {
+            var range = VersionRange.Parse("[1.*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Null(range.FindBestMatch(versions));
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_OnlyMatching()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.0.0-alpha.2", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_BestMatching()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.1.0-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_BestMatchingStable()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("1.10.1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.10.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_BestMatchingPrerelease()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.9-alpha.1"),
+                    NuGetVersion.Parse("1.1.0-alpha.1"),
+                    NuGetVersion.Parse("1.10.1"),
+                    NuGetVersion.Parse("1.99.1-alpha1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("2.2.0"),
+                    NuGetVersion.Parse("3.0.0"),
+                };
+
+            Assert.Equal("1.99.1-alpha1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseRevision_RangeOpen()
+        {
+            var range = VersionRange.Parse("[1.0.0.*-*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.0.1-alpha.1"),
+                    NuGetVersion.Parse("1.0.1-alpha.1"),
+                    NuGetVersion.Parse("101.0.0")
+                };
+
+            Assert.Equal("1.0.0.1-alpha.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleasePatch_RangeOpen()
+        {
+            var range = VersionRange.Parse("[1.0.*-*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.0.1-beta.2")
+                };
+
+            Assert.Equal("1.0.1-beta.2", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseMinor_RangeOpen()
+        {
+            var range = VersionRange.Parse("[1.*-*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.9.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0-alpha.2"),
+                    NuGetVersion.Parse("101.0.0")
+                };
+
+            Assert.Equal("1.9.0-alpha.2", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseMinor_IgnoresPartialPrereleaseMatches()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.9.0"),
+                    NuGetVersion.Parse("1.20.0-alph.3"),
+                    NuGetVersion.Parse("101.0.0")
+                };
+
+            Assert.Equal("1.9.0", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseMinor_NotMatching_SelectsFirstInRange()
+        {
+            var range = VersionRange.Parse("[1.*-alpha*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alph3.2"),
+                    NuGetVersion.Parse("1.20.0-alph.3"),
+                    NuGetVersion.Parse("101.0.0")
+                };
+
+            Assert.Equal("1.20.0-alph.3", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseRevision_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1.1.1*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.1.10"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.1.1.10", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingRevision_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1.1.1*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.1.10"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.1.1.10", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleasePatch_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1.1*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.10"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.1.10", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPatch_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1.1*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.10"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.1.10", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1*-*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.10.1"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.10.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingMinor_WithPartialMatch()
+        {
+            var range = VersionRange.Parse("[1.1*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.10.1"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.10.1", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrerelease_WithExtraDashes()
+        {
+            var range = VersionRange.Parse("[1.0.0--*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0--alpha"),
+                    NuGetVersion.Parse("1.0.0--beta"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.0.0--beta", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_FloatingPrereleaseMinor_WithExtraDashes()
+        {
+            var range = VersionRange.Parse("[1.*--*, 2.0.0)");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.0.0--alpha"),
+                    NuGetVersion.Parse("1.0.0--beta"),
+                    NuGetVersion.Parse("1.9.0--beta"),
+                    NuGetVersion.Parse("3.1.0"),
+                };
+
+            Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
         }
     }
 }

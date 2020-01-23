@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 namespace NuGet.Versioning
@@ -41,6 +41,21 @@ namespace NuGet.Versioning
         /// <summary>
         /// Float major and pre-release
         /// </summary>
-        AbsoluteLatest
+        AbsoluteLatest,
+
+        /// <summary>
+        /// Float revision and pre-release x.y.z.*-*
+        /// </summary>
+        PrereleaseRevision,
+
+        /// <summary>
+        /// Float patch and pre-release x.y.*-*
+        /// </summary>
+        PrereleasePatch,
+
+        /// <summary>
+        /// Float minor and pre-release x.*-*
+        /// </summary>
+        PrereleaseMinor,
     }
 }
