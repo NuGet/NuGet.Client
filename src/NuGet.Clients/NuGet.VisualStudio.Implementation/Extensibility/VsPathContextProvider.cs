@@ -65,16 +65,13 @@ namespace NuGet.VisualStudio
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
 
-            _projectContext = new Lazy<INuGetProjectContext>(() =>
+            _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext
             {
-                return new VSAPIProjectContext
-                {
-                    PackageExtractionContext = new PackageExtractionContext(
+                PackageExtractionContext = new PackageExtractionContext(
                         PackageSaveMode.Defaultv2,
                         PackageExtractionBehavior.XmlDocFileSaveMode,
                         ClientPolicyContext.GetClientPolicy(_settings.Value, NullLogger.Instance),
                         NullLogger.Instance)
-                };
             });
         }
 
