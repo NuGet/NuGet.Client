@@ -70,7 +70,7 @@ namespace NuGet.Versioning
             if (!TryParse(value, allowFloating, out versionInfo))
             {
                 throw new ArgumentException(
-                    String.Format(CultureInfo.CurrentCulture,
+                    string.Format(CultureInfo.CurrentCulture,
                         Resources.Invalidvalue, value));
             }
 
@@ -101,7 +101,7 @@ namespace NuGet.Versioning
 
             var charArray = trimmedValue.ToCharArray();
 
-            // * is the only range below 3 chars
+            // * is the only 1 char range
             if (allowFloating
                 && charArray.Length == 1
                 && charArray[0] == '*')
@@ -114,6 +114,17 @@ namespace NuGet.Versioning
             if (charArray.Length < 3)
             {
                 return false;
+            }
+
+            // Special case *-*
+            if (allowFloating
+                && charArray.Length == 3
+                && charArray[0] == '*'
+                && charArray[0] == '-'
+                && charArray[0] == '*')
+            {
+                versionRange = new VersionRange(new NuGetVersion(0, 0, 0, releaseLabel: "0"), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
+                return true;
             }
 
             string minVersionString = null;
@@ -195,7 +206,7 @@ namespace NuGet.Versioning
                 minVersionString = trimmedValue;
             }
 
-            if (!String.IsNullOrWhiteSpace(minVersionString))
+            if (!string.IsNullOrWhiteSpace(minVersionString))
             {
                 // parse the min version string
                 if (allowFloating && minVersionString.Contains("*"))
@@ -224,7 +235,7 @@ namespace NuGet.Versioning
             }
 
             // parse the max version string, the max cannot float
-            if (!String.IsNullOrWhiteSpace(maxVersionString))
+            if (!string.IsNullOrWhiteSpace(maxVersionString))
             {
                 if (!NuGetVersion.TryParse(maxVersionString, out maxVersion))
                 {
