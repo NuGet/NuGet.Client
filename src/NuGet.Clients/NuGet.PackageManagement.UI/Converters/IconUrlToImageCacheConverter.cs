@@ -95,23 +95,10 @@ namespace NuGet.PackageManagement.UI
                     try
                     {
                         var reader = lazyPar(); // This reader is closed in BitmapImage events
-                        bool iconRead = true;
-
-                        switch (reader)
+                        if (reader is PackageArchiveReader par)
                         {
-                            case PackageArchiveReader par:
-                                iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
-                                break;
-                            case PackageFolderReader pfr:
-                                iconBitmapImage.StreamSource = pfr.GetStream(iconEntry);
-                                break;
-                            default:
-                                iconRead = false;
-                                break;
-                        }
+                            iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
 
-                        if (iconRead)
-                        {
                             iconBitmapImage.DecodeFailed += (sender, args) =>
                             {
                                 reader.Dispose();
@@ -132,9 +119,8 @@ namespace NuGet.PackageManagement.UI
 
                             imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
                         }
-                        else
+                        else // we cannot use the reader object
                         {
-                            // we cannot use the packagearchive reader
                             AddToCache(iconUrl, defaultPackageIcon);
                             imageResult = defaultPackageIcon;
                         }
@@ -145,9 +131,7 @@ namespace NuGet.PackageManagement.UI
                         imageResult = defaultPackageIcon;
                     }
                 }
-                // Identified an embedded icon URI but, we are unable to process it
-                // cache and return the default image
-                else
+                else // Identified an embedded icon URI but, we are unable to process it
                 {
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
