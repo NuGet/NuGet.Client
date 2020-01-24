@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Xml.Linq;
@@ -9,7 +10,7 @@ using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace NuGet.CommandLine.Test.Caching
+namespace NuGet.CommandLine.Test
 {
     public class MockResponseBuilder
     {
@@ -169,12 +170,23 @@ namespace NuGet.CommandLine.Test.Caching
             }
         }
 
-        public MockResponse BuildRegistrationIndexResponse(MockServer mockServer, PackageIdentity identity)
+        public MockResponse BuildRegistrationIndexResponse(MockServer mockServer, PackageIdentity[] packageIdentities)
         {
-            var id = identity.Id.ToLowerInvariant();
-            var version = identity.Version.ToNormalizedString().ToLowerInvariant();
+            return BuildRegistrationIndexResponse(mockServer,
+                packageIdentities.Select(e =>
+                    new KeyValuePair<PackageIdentity, bool>(
+                        e,
+                        true)).ToArray());
+        }
 
-            var registrationIndex = Util.CreateSinglePackageRegistrationBlob(mockServer, id, version);
+        public MockResponse BuildRegistrationIndexResponse(MockServer mockServer, KeyValuePair<PackageIdentity, bool>[] packageIdentityToListed)
+        {
+            var id = packageIdentityToListed[0].Key.Id.ToLowerInvariant();
+            var versions = packageIdentityToListed.Select(
+                e => new KeyValuePair<string, bool>(
+                    e.Key.Version.ToNormalizedString().ToLowerInvariant(),
+                    e.Value));
+            var registrationIndex = Util.CreatePackageRegistrationBlob(mockServer, id, versions);
 
             return new MockResponse
             {

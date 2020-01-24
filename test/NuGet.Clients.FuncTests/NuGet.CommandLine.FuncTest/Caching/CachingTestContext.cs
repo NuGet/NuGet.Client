@@ -176,7 +176,7 @@ namespace NuGet.CommandLine.Test.Caching
                             return;
                         }
 
-                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer, identity);
+                        var mockResponse = builder.BuildRegistrationIndexResponse(MockServer, new PackageIdentity[] { identity });
 
                         response.ContentType = mockResponse.ContentType;
                         MockServer.SetResponseContent(response, mockResponse.Content);
