@@ -1804,7 +1804,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9100")]
         public async Task RestoreNetCore_MultipleProjects_SameToolDifferentVersions_NoOp_FailsAsync()
         {
             // Arrange
