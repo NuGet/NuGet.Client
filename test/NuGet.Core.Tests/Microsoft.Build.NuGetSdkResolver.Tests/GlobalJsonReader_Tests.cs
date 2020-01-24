@@ -60,6 +60,39 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
+        public void GlobalJsonWithComments()
+        {
+            using (var testEnvironment = TestEnvironment.Create())
+            {
+                TransientTestFolder folder = testEnvironment.CreateFolder();
+
+                try
+                {
+                    File.WriteAllText(
+                        Path.Combine(folder.FolderPath, GlobalJsonReader.GlobalJsonFileName),
+                        @"{
+  // This is a comment
+  ""msbuild-sdks"": {
+    /* This is another comment */
+    ""foo"": ""1.0.0""
+  }
+}");
+
+                    var context = new MockSdkResolverContext(Path.Combine(folder.FolderPath, "foo.proj"));
+
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).ShouldAllBeEquivalentTo(new Dictionary<string, string>
+                    {
+                        ["foo"] = "1.0.0"
+                    });
+                }
+                finally
+                {
+                    folder.Revert();
+                }
+            }
+        }
+
+        [Fact]
         public void InvalidJsonLogsMessage()
         {
             var expectedVersions = new Dictionary<string, string>
