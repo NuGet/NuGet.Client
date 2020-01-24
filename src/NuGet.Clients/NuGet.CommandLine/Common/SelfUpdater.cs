@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -58,11 +60,11 @@ namespace NuGet.CommandLine
             }
         }
 
-        public async Task UpdateSelfAsync(bool prerelease, string updateFeed)
+        public Task UpdateSelfAsync(bool prerelease, string updateFeed)
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
             var version = GetNuGetVersion(assembly) ?? new NuGetVersion(assembly.GetName().Version);
-            await UpdateSelfFromVersionAsync(AssemblyLocation, prerelease, version, updateFeed, CancellationToken.None);
+            return UpdateSelfFromVersionAsync(AssemblyLocation, prerelease, version, updateFeed, CancellationToken.None);
         }
 
         internal async Task UpdateSelfFromVersionAsync(string exePath, bool prerelease, NuGetVersion currentVersion, string source, CancellationToken cancellationToken)
@@ -93,7 +95,7 @@ namespace NuGet.CommandLine
                 {
                     DirectoryUtility.CreateSharedDirectory(tempDir);
 
-                    var downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
+                    DownloadResourceResult downloadResourceResult = await PackageDownloader.GetDownloadResourceResultAsync(
                                         sourceRepository,
                                         packageIdentity,
                                         new PackageDownloadContext(sourceCacheContext),
@@ -103,10 +105,11 @@ namespace NuGet.CommandLine
 
                     // Get the exe path and move it to a temp file (NuGet.exe.old) so we can replace the running exe with the bits we got 
                     // from the package repository
-                    var nugetExeFile = (await downloadResourceResult.PackageReader.GetFilesAsync(CancellationToken.None)).FirstOrDefault(f => Path.GetFileName(f).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
+                    IEnumerable<string> packageFiles = await downloadResourceResult.PackageReader.GetFilesAsync(CancellationToken.None);
+                    string nugetExeInPackageFilePath = packageFiles.FirstOrDefault(f => Path.GetFileName(f).Equals(NuGetExe, StringComparison.OrdinalIgnoreCase));
 
                     // If for some reason this package doesn't have NuGet.exe then we don't want to use it
-                    if (nugetExeFile == null)
+                    if (nugetExeInPackageFilePath == null)
                     {
                         throw new CommandLineException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
                     }
@@ -115,7 +118,7 @@ namespace NuGet.CommandLine
 
                     FileUtility.Move(exePath, renamedPath);
 
-                    using (Stream fromStream = await downloadResourceResult.PackageReader.GetStreamAsync(nugetExeFile, cancellationToken), toStream = File.Create(exePath))
+                    using (Stream fromStream = await downloadResourceResult.PackageReader.GetStreamAsync(nugetExeInPackageFilePath, cancellationToken), toStream = File.Create(exePath))
                     {
                         fromStream.CopyTo(toStream);
                     }
