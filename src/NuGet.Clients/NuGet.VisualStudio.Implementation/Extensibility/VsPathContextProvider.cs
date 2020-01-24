@@ -8,6 +8,9 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
+using EnvDTE80;
+using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -169,7 +172,7 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
+            var supportedProjects = GetProjectsInSolution(dte);
 
             foreach (var solutionProject in supportedProjects)
             {
@@ -309,6 +312,64 @@ namespace NuGet.VisualStudio
                 pathContext.UserPackageFolder,
                 pathContext.FallbackPackageFolders.Cast<string>(),
                 trie);
+        }
+
+        private IList<Project> GetProjectsInSolution(DTE dte)
+        {
+            var supportedProjects = dte.Solution.Projects; // dte.Solution.Projects.Cast<EnvDTE.Project>();
+            Projects projects = dte.Solution.Projects;
+
+            List<Project> projectList = new List<Project>();
+            var item = projects.GetEnumerator();
+            while (item.MoveNext())
+            {
+                var project = item.Current as Project;
+                if (project == null)
+                {
+                    continue;
+                }
+
+                if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+                {
+                    IEnumerable<Project> solutionFolderProjects = GetSolutionFolderProjects(project);
+                    projectList.AddRange(solutionFolderProjects);
+                }
+                else
+                {
+                    projectList.Add(project);
+                }
+            }
+
+            return projectList;
+        }
+
+        /// <summary>
+        /// Gets all projects that are not solution folders within the given solutionFolder.
+        /// (i.e. If the heirarchy is src\a\b.xproj, src\c.xproj; the resulting list will contain b.xproj and c.xproj)
+        /// </summary>
+        private IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
+        {
+            List<Project> projectList = new List<Project>();
+            for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
+            {
+                var subProject = solutionFolder.ProjectItems.Item(i).SubProject;
+                if (subProject == null)
+                {
+                    continue;
+                }
+
+                if (subProject.Kind == ProjectKinds.vsProjectKindSolutionFolder)
+                {
+                    IEnumerable<Project> solutionFolderProjects = GetSolutionFolderProjects(subProject);
+                    projectList.AddRange(solutionFolderProjects);
+                }
+                else
+                {
+                    projectList.Add(subProject);
+                }
+            }
+
+            return projectList;
         }
     }
 }
