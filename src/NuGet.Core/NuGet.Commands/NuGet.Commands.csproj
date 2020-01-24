@@ -47,16 +47,6 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>VerbArgs.tt</DependentUpon>
     </Compile>
-    <Compile Update="CommandRunners\CommandRunners.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CommandRunners.tt</DependentUpon>
-    </Compile>
-    <Compile Update="CommandRunners\VerbRunners.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>VerbRunners.tt</DependentUpon>
-    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -114,14 +104,6 @@
     </None>
     <None Update="CommandArgs\VerbArgs.tt">
       <LastGenOutput>VerbArgs.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-    <None Update="CommandRunners\CommandRunners.tt">
-      <LastGenOutput>CommandRunners.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-    <None Update="CommandRunners\VerbRunners.tt">
-      <LastGenOutput>VerbRunners.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
   </ItemGroup>
