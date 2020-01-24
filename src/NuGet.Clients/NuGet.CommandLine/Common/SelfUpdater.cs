@@ -62,10 +62,10 @@ namespace NuGet.CommandLine
         {
             Assembly assembly = typeof(SelfUpdater).Assembly;
             var version = GetNuGetVersion(assembly) ?? new NuGetVersion(assembly.GetName().Version);
-            await SelfUpdateAsync(AssemblyLocation, prerelease, version, updateFeed, CancellationToken.None);
+            await UpdateSelfFromVersionAsync(AssemblyLocation, prerelease, version, updateFeed, CancellationToken.None);
         }
 
-        internal async Task SelfUpdateAsync(string exePath, bool prerelease, NuGetVersion currentVersion, string source, CancellationToken cancellationToken)
+        internal async Task UpdateSelfFromVersionAsync(string exePath, bool prerelease, NuGetVersion currentVersion, string source, CancellationToken cancellationToken)
         {
             var sourceCacheContext = new SourceCacheContext();
             _console.WriteLine(LocalizedResourceManager.GetString("UpdateCommandCheckingForUpdates"), source);

@@ -33,7 +33,7 @@ namespace NuGet.CommandLine.Test
                     mockServer.Start();
 
                     // Act
-                    await tc.Target.SelfUpdateAsync(
+                    await tc.Target.UpdateSelfFromVersionAsync(
                         tc.Target.AssemblyLocation,
                         prerelease: false,
                         currentVersion: new NuGetVersion("5.5.0"),
@@ -60,7 +60,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act & Assert
                 await Assert.ThrowsAsync<CommandLineException>(() =>
-                    tc.Target.SelfUpdateAsync(
+                    tc.Target.UpdateSelfFromVersionAsync(
                            tc.Target.AssemblyLocation,
                            prerelease: false,
                            currentVersion,
@@ -85,7 +85,7 @@ namespace NuGet.CommandLine.Test
                     mockServer.Start();
 
                     // Act
-                    await tc.Target.SelfUpdateAsync(
+                    await tc.Target.UpdateSelfFromVersionAsync(
                         tc.Target.AssemblyLocation,
                         prerelease: false,
                         currentVersion: new NuGetVersion("5.5.0"),
@@ -117,7 +117,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var currentVersion = new NuGetVersion(5, 5, 0);
-                await tc.Target.SelfUpdateAsync(
+                await tc.Target.UpdateSelfFromVersionAsync(
                     tc.Target.AssemblyLocation,
                     prerelease,
                     currentVersion,
@@ -150,7 +150,7 @@ namespace NuGet.CommandLine.Test
 
                 // Act
                 var currentVersion = new NuGetVersion(4, 0, 0);
-                await tc.Target.SelfUpdateAsync(
+                await tc.Target.UpdateSelfFromVersionAsync(
                     tc.Target.AssemblyLocation,
                     prerelease,
                     currentVersion,

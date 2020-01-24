@@ -59,7 +59,7 @@ namespace NuGet.CommandLine.Test
                 {
                     return new Action<HttpListenerResponse>(response =>
                     {
-                        response.ContentType = "text/javascript";
+                        response.ContentType = "application/javascript";
 
                         var versionsJson = JObject.Parse(@"{ ""versions"": [] }");
                         var array = versionsJson["versions"] as JArray;
