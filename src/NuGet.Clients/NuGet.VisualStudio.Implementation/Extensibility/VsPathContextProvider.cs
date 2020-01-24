@@ -315,7 +315,7 @@ namespace NuGet.VisualStudio
 
         private IList<Project> GetProjectsInSolution(DTE dte)
         {
-            var supportedProjects = dte.Solution.Projects; // dte.Solution.Projects.Cast<EnvDTE.Project>();
+            var supportedProjects = dte.Solution.Projects;
             Projects projects = dte.Solution.Projects;
 
             List<Project> projectList = new List<Project>();
