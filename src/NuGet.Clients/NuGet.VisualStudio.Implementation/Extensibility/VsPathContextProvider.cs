@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using EnvDTE80;
-using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -345,7 +344,7 @@ namespace NuGet.VisualStudio
 
         /// <summary>
         /// Gets all projects that are not solution folders within the given solutionFolder.
-        /// (i.e. If the heirarchy is src\a\b.xproj, src\c.xproj; the resulting list will contain b.xproj and c.xproj)
+        /// (i.e. If the hierarchy is src\a\b.xproj, src\c.xproj; the resulting list will contain b.xproj and c.xproj).
         /// </summary>
         private IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
         {
