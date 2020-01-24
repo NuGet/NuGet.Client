@@ -36,10 +36,10 @@ namespace NuGet.CommandLine
 
         public override void ExecuteCommand()
         {
-            //if (SourceProvider == null)
-            //{
-            //    throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
-            //}
+            if (SourceProvider == null)
+            {
+                throw new InvalidOperationException(LocalizedResourceManager.GetString("Error_SourceProviderIsNull"));
+            }
 
             SourcesAction action = SourcesAction.None;
             var actionArg = Arguments.FirstOrDefault();
@@ -88,24 +88,6 @@ namespace NuGet.CommandLine
                     //TODO: implement
                     throw new NotImplementedException();
             }
-
-            //var sourcesArgs = new SourcesArgs()
-            //{
-            //    Settings = Settings,
-            //    SourceProvider = SourceProvider,
-            //    Action = action,
-            //    Name = Name,
-            //    Source = Source,
-            //    Username = Username,
-            //    Password = Password,
-            //    StorePasswordInClearText = StorePasswordInClearText,
-            //    ValidAuthenticationTypes = ValidAuthenticationTypes,
-            //    Format = Format,
-            //    IsQuiet = (Verbosity == Verbosity.Quiet),
-            //    Logger = Console,
-            //};
-
-            //SourcesRunner.Run(sourcesArgs);
         }
     }
 }

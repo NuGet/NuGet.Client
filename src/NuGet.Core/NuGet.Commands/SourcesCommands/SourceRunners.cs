@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Globalization;
 using System.IO;
@@ -20,13 +23,16 @@ namespace NuGet.Commands
                 // find first unused name of pattern: prefixN, where N is an integer.
                 string defaultNamePrefix = Strings.Source_DefaultNamePrefix;
                 var namesSet = sourceProvider.GetPackageSourceNamesMatchingNamePrefix(defaultNamePrefix);
-                for (int i = 1; i < 1000; i++)
+                int i = 1;
+                while (true)
                 {
                     var defaultNameToUse = defaultNamePrefix + i.ToString();
                     if (!namesSet.Contains(defaultNameToUse))
                     {
                         args.Name = defaultNameToUse;
+                        break;
                     }
+                    i++;
                 }
             }
             else if (string.Equals(args.Name, Strings.ReservedPackageNameAll))

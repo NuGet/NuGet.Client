@@ -37,11 +37,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Compile Update="CommandArgs\CommandArgs.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>CommandArgs.tt</DependentUpon>
-    </Compile>
     <Compile Update="CommandArgs\VerbArgs.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -98,10 +93,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CommandArgs\CommandArgs.tt">
-      <LastGenOutput>CommandArgs.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
     <None Update="CommandArgs\VerbArgs.tt">
       <LastGenOutput>VerbArgs.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>

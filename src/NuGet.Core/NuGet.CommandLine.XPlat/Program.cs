@@ -76,7 +76,7 @@ namespace NuGet.CommandLine.XPlat
 
             var app = InitializeApp(args, log);
 
-            // Remove the right item in array for "package" commands.
+            // Remove the correct item in array for "package" commands. Only do this when "add package", "remove package", etc... are being run.
             if (app.Name == DotnetPackageAppName)
             {
                 // package add ...
@@ -96,6 +96,7 @@ namespace NuGet.CommandLine.XPlat
             app.OnExecute(() =>
             {
                 app.ShowHelp();
+
                 return 0;
             });
 
@@ -173,33 +174,6 @@ namespace NuGet.CommandLine.XPlat
             return exitCode;
         }
 
-        private static void ShowBestHelp(CommandLineApplication app, string[] args)
-        {
-            CommandLineApplication lastCommand = null;
-            var commands = app.Commands;
-            // tunnel down into the args, and show the best help possible.
-            foreach (var arg in args)
-            {
-                foreach (var command in commands)
-                {
-                    if (arg == command.Name)
-                    {
-                        lastCommand = command;
-                        commands = command.Commands;
-                        break;
-                    }
-                }
-            }
-
-            if (lastCommand != null)
-            {
-                lastCommand.ShowHelp();
-            }
-            else
-            {
-                app.ShowHelp();
-            }
-        }
 
         private static CommandLineApplication InitializeApp(string[] args, CommandOutputLogger log)
         {
@@ -214,6 +188,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (args.Any() && args[0] == "package")
             {
+			    // "dotnet * package" commands
                 app.Name = DotnetPackageAppName;
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
@@ -221,6 +196,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
+			    // "dotnet nuget *" commands
                 app.Name = DotnetNuGetAppName;
                 CommandParsers.Register(app, loggerFunc(log));
                 DeleteCommand.Register(app, () => log);
@@ -288,6 +264,34 @@ namespace NuGet.CommandLine.XPlat
             verbosity.Values.Clear();
 
             return found;
+        }
+		
+		private static void ShowBestHelp(CommandLineApplication app, string[] args)
+        {
+            CommandLineApplication lastCommand = null;
+            var commands = app.Commands;
+            // tunnel down into the args, and show the best help possible.
+            foreach (var arg in args)
+            {
+                foreach (var command in commands)
+                {
+                    if (arg == command.Name)
+                    {
+                        lastCommand = command;
+                        commands = command.Commands;
+                        break;
+                    }
+                }
+            }
+
+            if (lastCommand != null)
+            {
+                lastCommand.ShowHelp();
+            }
+            else
+            {
+                app.ShowHelp();
+            }
         }
     }
 }

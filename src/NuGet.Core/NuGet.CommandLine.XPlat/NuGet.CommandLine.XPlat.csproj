@@ -39,11 +39,6 @@
   </Choose>
 
   <ItemGroup>
-    <Compile Update="Commands\Commands.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Commands.tt</DependentUpon>
-    </Compile>
     <Compile Update="Commands\Verbs.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -86,10 +81,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Commands\Commands.tt">
-      <LastGenOutput>Commands.cs</LastGenOutput>
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
     <None Update="Commands\Verbs.tt">
       <LastGenOutput>Verbs.cs</LastGenOutput>
       <Generator>TextTemplatingFileGenerator</Generator>

@@ -1,3 +1,4 @@
+
 namespace NuGet.CommandLine
 {
     public enum Verbosity
