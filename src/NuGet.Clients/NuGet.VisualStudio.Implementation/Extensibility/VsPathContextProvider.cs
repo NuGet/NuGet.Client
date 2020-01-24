@@ -171,7 +171,7 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            var supportedProjects = GetProjectsInSolution(dte);
+            IList<Project> supportedProjects = GetProjectsInSolution(dte);
 
             foreach (var solutionProject in supportedProjects)
             {
@@ -315,14 +315,14 @@ namespace NuGet.VisualStudio
 
         private IList<Project> GetProjectsInSolution(DTE dte)
         {
-            var supportedProjects = dte.Solution.Projects;
             Projects projects = dte.Solution.Projects;
 
-            List<Project> projectList = new List<Project>();
-            var item = projects.GetEnumerator();
-            while (item.MoveNext())
+            var projectList = new List<Project>();
+
+            foreach (var item in projects)
             {
-                var project = item.Current as Project;
+                Project project = item as Project;
+
                 if (project == null)
                 {
                     continue;
@@ -348,10 +348,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         private IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
         {
-            List<Project> projectList = new List<Project>();
+            var projectList = new List<Project>();
             for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
             {
-                var subProject = solutionFolder.ProjectItems.Item(i).SubProject;
+                Project subProject = solutionFolder.ProjectItems.Item(i).SubProject;
                 if (subProject == null)
                 {
                     continue;
