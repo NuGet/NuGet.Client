@@ -162,7 +162,6 @@
       Grid.Column="0"
       Margin="12,0,12,12"
       x:Name="_licenseText"
-      AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_LicenseText}"
       TextWrapping="Wrap" />
     <Grid

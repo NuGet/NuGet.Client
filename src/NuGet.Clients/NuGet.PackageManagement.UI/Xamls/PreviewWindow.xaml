@@ -10,7 +10,6 @@
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   WindowStartupLocation="CenterOwner"
   Title="{Binding Title}"
-  AutomationProperties.LabeledBy="{Binding ElementName=_changesText}"
   Height="500"
   Width="500"
   MinWidth="{Binding WindowMinwidth}"
