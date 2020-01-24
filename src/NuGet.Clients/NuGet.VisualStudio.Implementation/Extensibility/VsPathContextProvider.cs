@@ -321,7 +321,7 @@ namespace NuGet.VisualStudio
 
             foreach (var item in projects)
             {
-                Project project = item as Project;
+                var project = item as Project;
 
                 if (project == null)
                 {
