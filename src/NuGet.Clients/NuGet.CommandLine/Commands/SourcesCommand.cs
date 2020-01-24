@@ -56,8 +56,6 @@ namespace NuGet.CommandLine
                 }
             }
 
-            //TODO: validate addSourceArgs - should that be in the command or in the runner - likely runner, so we can share it.
-            //TODO: how do you ensure that invalid params (like username), isn't passed into disable.
             switch (action)
             {
                 case SourcesAction.Add:
@@ -84,9 +82,6 @@ namespace NuGet.CommandLine
                     var listSourceArgs = new ListSourceArgs() { Configfile = ConfigFile, Format = Format.ToString() };
                     ListSourceRunner.Run(listSourceArgs, () => Console);
                     break;
-                default:
-                    //TODO: implement
-                    throw new NotImplementedException();
             }
         }
     }
