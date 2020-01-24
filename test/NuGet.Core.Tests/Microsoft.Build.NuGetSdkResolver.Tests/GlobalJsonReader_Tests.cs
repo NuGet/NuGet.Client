@@ -69,7 +69,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
-                    $"Failed to parse \"{globalJsonPath}\". Encountered unexpected character 'a'.");
+                    $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path 'msbuild-sdks', line 6, position 5.");
             }
         }
 
