@@ -313,7 +313,7 @@ namespace NuGet.VisualStudio
                 trie);
         }
 
-        private IList<Project> GetProjectsInSolution(DTE dte)
+        private IReadOnlyList<Project> GetProjectsInSolution(DTE dte)
         {
             Projects projects = dte.Solution.Projects;
 
@@ -330,7 +330,7 @@ namespace NuGet.VisualStudio
 
                 if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
                 {
-                    IEnumerable<Project> solutionFolderProjects = GetSolutionFolderProjects(project);
+                    IReadOnlyList<Project> solutionFolderProjects = GetSolutionFolderProjects(project);
                     projectList.AddRange(solutionFolderProjects);
                 }
                 else
@@ -346,7 +346,7 @@ namespace NuGet.VisualStudio
         /// Gets all projects that are not solution folders within the given solutionFolder.
         /// (i.e. If the hierarchy is src\a\b.xproj, src\c.xproj; the resulting list will contain b.xproj and c.xproj).
         /// </summary>
-        private IEnumerable<Project> GetSolutionFolderProjects(Project solutionFolder)
+        private IReadOnlyList<Project> GetSolutionFolderProjects(Project solutionFolder)
         {
             var projectList = new List<Project>();
             for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
