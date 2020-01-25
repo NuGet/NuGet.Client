@@ -542,7 +542,7 @@ namespace NuGet.Build.Tasks
             {
                 try
                 {
-                    var xDocument = XDocument.Load(projectConfigFilePath);
+                    var xDocument = Common.XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }

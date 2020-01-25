@@ -7,10 +7,10 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
-using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
+using NuGet.Common;
 
 namespace NuGet.CommandLine
 {
@@ -75,7 +75,7 @@ namespace NuGet.CommandLine
                     }
                     else
                     {
-                        string message = String.Format(
+                        string message = string.Format(
                             CultureInfo.CurrentCulture,
                             LocalizedResourceManager.GetString("Warning_InvalidPackageSaveMode"),
                             v);
@@ -98,7 +98,7 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    var xDocument = XDocument.Load(projectConfigFilePath);
+                    var xDocument = Common.XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
