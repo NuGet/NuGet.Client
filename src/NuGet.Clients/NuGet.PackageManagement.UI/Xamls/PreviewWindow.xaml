@@ -47,7 +47,6 @@
       Margin="12,12,12,0"
       TextWrapping="Wrap"
       x:Name="_changesText"
-      AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_Changes}" />
       <Button
         Grid.Column="1"
