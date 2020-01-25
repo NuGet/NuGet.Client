@@ -171,7 +171,7 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            IList<Project> supportedProjects = GetProjectsInSolution(dte);
+            IReadOnlyList<Project> supportedProjects = GetProjectsInSolution(dte);
 
             foreach (var solutionProject in supportedProjects)
             {
