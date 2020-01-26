@@ -126,7 +126,7 @@ namespace Msbuild.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public async Task MsbuildRestore_PackagesConfigDependencyAsync_WithInvalidPC_Throws()
+        public async Task MsbuildRestore_InsecurePackagesConfigDependencyAsync_Throws()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
