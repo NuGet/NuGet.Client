@@ -174,7 +174,6 @@ namespace Msbuild.Integration.Test
                 // Act
                 var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true",ignoreExitCode:true);
 
-
                 // Assert
                 Assert.True(result.ExitCode == 1);
                 Assert.Contains("Error parsing packages.config file", result.AllOutput);

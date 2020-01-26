@@ -553,7 +553,7 @@ namespace NuGet.Build.Tasks
                        projectConfigFilePath,
                        ex.Message);
 
-                    log.LogError(message);
+                    throw new XmlException(message);
                 }
             }
 
