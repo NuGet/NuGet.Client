@@ -13,9 +13,6 @@ namespace NuGet.Common
         /// <returns>An <see cref="System.Xml.Linq.XDocument"/> contains the contents of the specified Xml file.</returns>
         public static XDocument Load(string filePath)
         {
-            if (string.IsNullOrEmpty(filePath))
-                throw new ArgumentNullException(nameof(filePath));
-
             //This overloaded method of XmlReader.Create creates an instance of
             //XmlReaderSettings with default values that are safe
             using (var reader = XmlReader.Create(filePath))
