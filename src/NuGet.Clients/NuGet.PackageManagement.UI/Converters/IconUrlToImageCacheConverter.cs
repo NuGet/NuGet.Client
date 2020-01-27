@@ -43,15 +43,15 @@ namespace NuGet.PackageManagement.UI
         /// <param name="values">
         /// <list type="bullet">
         /// <item>
-        /// <description>values[0]: IconUrl that points to a URL o a local file</description>
+        /// <description><c>values[0]</c>: IconUrl that points to a URL o a local file</description>
         /// </item>
         /// <item>
-        /// <description>values[1]: An <c>PackageArchiveReader</c> to read from the local package for embedded icons</description>
+        /// <description><c>values[1]</c>: An <c>Lazy&lt;PackageReaderBase&gt;</c> to read the icon from the local package</description>
         /// </item>
         /// </list>
         /// </param>
         /// <param name="targetType">unused</param>
-        /// <param name="parameter">A BitmapImage with the default package icon</param>
+        /// <param name="parameter">A <c>BitmapImage<c> that will be used as the default package icon</param>
         /// <param name="culture">unused</param>
         /// <returns>A BitmapSource with the image</returns>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
@@ -94,8 +94,8 @@ namespace NuGet.PackageManagement.UI
                 {
                     try
                     {
-                        var reader = lazyPar(); // This reader is closed in BitmapImage events
-                        if (reader is PackageArchiveReader par)
+                        var reader = lazyPar(); // Always returns a new reader. That avoids using an already disposed one
+                        if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
                         {
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
 

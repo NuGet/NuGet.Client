@@ -70,11 +70,16 @@ namespace NuGet.Protocol
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
 
+        /// <summary>
+        /// Gets a function that provides <c>PackageReaderBase</c>-like objects, for reading package content
+        /// </summary>
+        /// <remarks>
+        /// This property depends from the reader contained in the <c>LocalPackageInfo</c> specified at object creation time
+        /// </remarks>
         public Func<PackageReaderBase> PackageReader
         {
             get
             {
-                //return _package.GetReader();
                 return new Func<PackageReaderBase>(() => _package.GetReader());
             }
         }
