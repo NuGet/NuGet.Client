@@ -43,10 +43,10 @@ namespace NuGet.PackageManagement.UI
         /// <param name="values">
         /// <list type="bullet">
         /// <item>
-        /// <description><c>values[0]</c>: IconUrl that points to a URL o a local file</description>
+        /// <description><c>values[0]</c>: Icon URI that points to a URL o a local file</description>
         /// </item>
         /// <item>
-        /// <description><c>values[1]</c>: An <c>Lazy&lt;PackageReaderBase&gt;</c> to read the icon from the local package</description>
+        /// <description><c>values[1]</c>: An <c>Lazy&lt;PackageReaderBase&gt;</c> function to read the icon from the local package</description>
         /// </item>
         /// </list>
         /// </param>
