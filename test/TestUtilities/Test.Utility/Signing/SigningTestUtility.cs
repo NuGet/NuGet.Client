@@ -496,7 +496,7 @@ namespace Test.Utility.Signing
 
             return cms;
         }
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// Generates a SignedCMS object for some content.
         /// </summary>
