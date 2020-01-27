@@ -36,24 +36,15 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Converts IconUrl from PackageItemListViewModel to an image represented by a BitmapSource
         /// </summary>
+        /// <param name="values">An array of two elements containing the IconUri and a generator function of PackageReaderBase objects</param>
+        /// <param name="targetType">unused</param>
+        /// <param name="parameter">A BitmapImage that will be used as the default package icon</param>
+        /// <param name="culture">unused</param>
+        /// <returns>A BitmapSource with the image</returns>
         /// <remarks>
         /// We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
         /// This leads to a memory savings.
         /// </remarks>
-        /// <param name="values">
-        /// <list type="bullet">
-        /// <item>
-        /// <description><c>values[0]</c>: Icon URI that points to a URL o a local file</description>
-        /// </item>
-        /// <item>
-        /// <description><c>values[1]</c>: An <c>Lazy&lt;PackageReaderBase&gt;</c> function to read the icon from the local package</description>
-        /// </item>
-        /// </list>
-        /// </param>
-        /// <param name="targetType">unused</param>
-        /// <param name="parameter">A <c>BitmapImage<c> that will be used as the default package icon</param>
-        /// <param name="culture">unused</param>
-        /// <returns>A BitmapSource with the image</returns>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length == 0)
