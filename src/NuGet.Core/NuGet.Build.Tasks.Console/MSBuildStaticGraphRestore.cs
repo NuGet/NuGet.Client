@@ -214,7 +214,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>An <see cref="IEnumerable{CentralVersionDependency}" /> containing the package versions for the specified project.</returns>
         internal static IEnumerable<CentralVersionDependency> GetCentralPackageVersions(IMSBuildProject project)
         {
-            var packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion");
+            IEnumerable<IMSBuildProjectItem> packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion");
 
             foreach (var projectItemInstance in packageVersionItems)
             {

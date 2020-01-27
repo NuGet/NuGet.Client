@@ -121,7 +121,7 @@
     <value>Argument cannot be null or empty.</value>
   </data>
   <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
-    <value>Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items {0}:{1}.</value>
+    <value>Projects that use central packge version management should not define the version on the PackageReference items but on the PackageVersion items. The following projects violate this rule.  {0}:{1}.</value>
   </data>
   <data name="InvalidDependencyTarget" xml:space="preserve">
     <value>Invalid dependency target value '{0}'.</value>

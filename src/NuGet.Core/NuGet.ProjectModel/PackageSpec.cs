@@ -227,7 +227,7 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Communicate any error from PackageSpec
+        /// PackageSpec related errors.
         /// </summary>
         internal ConcurrentBag<(NuGetLogCode nugetErrorCode, string message)> ErrorLog { get; private set; }
 
