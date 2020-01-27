@@ -86,10 +86,5 @@ namespace NuGet.PackageManagement.VisualStudio
         /// </summary>
         /// <returns></returns>
         Task<string> GetSolutionFilePathAsync();
-
-        /// <summary>
-        /// Returns whether the solution is open.
-        /// </summary>
-        Task<bool> IsSolutionOpenAsync();
     }
 }
