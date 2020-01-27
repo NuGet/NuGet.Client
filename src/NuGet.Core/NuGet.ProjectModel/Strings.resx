@@ -120,6 +120,9 @@
   <data name="ArgumentNullOrEmpty" xml:space="preserve">
     <value>Argument cannot be null or empty.</value>
   </data>
+  <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
+    <value>Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items {0}:{1}.</value>
+  </data>
   <data name="InvalidDependencyTarget" xml:space="preserve">
     <value>Invalid dependency target value '{0}'.</value>
   </data>

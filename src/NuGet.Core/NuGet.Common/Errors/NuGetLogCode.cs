@@ -826,6 +826,11 @@ namespace NuGet.Common
         NU5131 = 5131,
 
         /// <summary>
+        /// Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items.
+        /// </summary>
+        NU5200 = 5200,
+
+        /// <summary>
         /// Undefined package warning
         /// </summary>
         NU5500 = 5500,

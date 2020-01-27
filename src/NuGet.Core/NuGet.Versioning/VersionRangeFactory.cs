@@ -14,6 +14,19 @@ namespace NuGet.Versioning
     public partial class VersionRange
     {
         /// <summary>
+        /// The same Version range as <see cref="VersionRange.All"/> but the userDefined flag is false. 
+        /// </summary>
+        public static readonly VersionRange AllDefault = new VersionRange(
+            minVersion:null,
+            includeMinVersion:true,
+            maxVersion: null,
+            includeMaxVersion: true,
+            floatRange: null,
+            originalString: null,
+            isDefault: true
+            );
+
+        /// <summary>
         /// A range that accepts all versions, prerelease and stable.
         /// </summary>
         public static readonly VersionRange All = new VersionRange(null, true, null, true);

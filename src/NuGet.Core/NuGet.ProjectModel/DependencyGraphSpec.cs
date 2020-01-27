@@ -197,14 +197,15 @@ namespace NuGet.ProjectModel
         }
 
         public void AddProject(PackageSpec projectSpec)
-        {
+        {          
             // Find the unique name in the spec, otherwise generate a new one.
             var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                _projects.Add(projectUniqueName, projectSpec);
+                var projectSpecToAdd = projectSpec.ToCentralPackageVersionPackageSpec();
+                _projects.Add(projectUniqueName, projectSpecToAdd);
             }
         }
 
@@ -417,6 +418,26 @@ namespace NuGet.ProjectModel
                 .Select(r => r.ProjectUniqueName)
                 .Distinct(PathUtility.GetStringComparerBasedOnOS())
                 .ToArray();
+        }
+
+        /// <summary>
+        /// Validate if the <see cref="PackageSpec"/> projects in the current <see cref="DependencyGraphSpec"/> have any errors.
+        /// </summary>
+        /// <param name="errors">List of collected errors for all the projects.</param>
+        /// <returns>True if no error found.</returns>
+        public bool ValidateProjects(out List<(NuGetLogCode nugetErrorCode, string message)> errors)
+        {
+            errors = new List<(NuGetLogCode nugetErrorCode, string message)>();
+
+            foreach (var p in _projects.Values)
+            {
+                if(p.ErrorLog.Any())
+                {
+                    errors.AddRange(p.ErrorLog);
+                }
+            }
+
+            return !errors.Any();
         }
     }
 }

@@ -133,15 +133,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project is opted-in CentralPackageVersionsManagement and its package references {0} have Version defined when not allowed..
-        /// </summary>
-        internal static string Error_CentralPackageVersions_VersionsNotAllowed {
-            get {
-                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Could not add the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotAdd {

@@ -10,7 +10,6 @@
 
 namespace NuGet.ProjectModel {
     using System;
-    using System.Reflection;
     
     
     /// <summary>
@@ -20,7 +19,7 @@ namespace NuGet.ProjectModel {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -40,7 +39,7 @@ namespace NuGet.ProjectModel {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).GetTypeInfo().Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.ProjectModel.Strings", typeof(Strings).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -67,6 +66,15 @@ namespace NuGet.ProjectModel {
         internal static string ArgumentNullOrEmpty {
             get {
                 return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items {0}:{1}..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_VersionsNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
             }
         }
         

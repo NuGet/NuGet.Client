@@ -2853,7 +2853,7 @@ namespace NuGet.Commands.Test
                 });
 
                 // Act + Assert
-                Assert.False(MSBuildRestoreUtility.IsCentralVersionsManagementEnabled(projectSpec));
+                Assert.False(MSBuildRestoreUtility.IsCentralVersionsManagementEnabled(projectSpec, projectStyle));
             }
         }
 

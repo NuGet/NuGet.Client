@@ -79,15 +79,6 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The project is opted-in CentralPackageVersionsManagement and its package references {0} have Version defined when not allowed..
-        /// </summary>
-        public static string Error_CentralPackageVersions_VersionsNotAllowed {
-            get {
-                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
         public static string Error_PackageDownload_OnlyExactVersionsAreAllowed {

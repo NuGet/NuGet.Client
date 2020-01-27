@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,6 +14,7 @@ namespace NuGet.Versioning
         private readonly bool _includeMaxVersion;
         private readonly NuGetVersion _minVersion;
         private readonly NuGetVersion _maxVersion;
+        private readonly bool _default = false;
 
         /// <summary>
         /// Creates a VersionRange with the given min and max.
@@ -22,16 +23,19 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
+        /// <param name="isDefault">True if the version range was set as a default.</param>
         public VersionRangeBase(
             NuGetVersion minVersion = null,
             bool includeMinVersion = true,
             NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false)
+            bool includeMaxVersion = false,
+            bool isDefault = true)
         {
             _minVersion = minVersion;
             _maxVersion = maxVersion;
             _includeMinVersion = includeMinVersion;
             _includeMaxVersion = includeMaxVersion;
+            _default = isDefault;
         }
 
         /// <summary>
@@ -152,6 +156,26 @@ namespace NuGet.Versioning
             }
 
             return condition;
+        }
+
+        /// <summary>
+        /// True if the version was defined through the project and not by a default value. 
+        /// </summary>
+        public bool Default
+        {
+            get
+            {
+                return _default;
+            }
+        }
+
+        /// <summary>
+        /// True if defined in the Central Package Version Management
+        /// </summary>
+        public bool IsCentral
+        {
+            get;
+            set;
         }
 
         /// <summary>
