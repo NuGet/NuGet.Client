@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
 namespace NuGet.RuntimeModel
 {
@@ -13,19 +12,36 @@ namespace NuGet.RuntimeModel
     ///
     /// This is non-private only to facilitate unit testing.
     /// </summary>
-    public sealed class JsonObjectWriter : IObjectWriter
+    public sealed class JsonObjectWriter : IObjectWriter, IDisposable
     {
-        private readonly Stack<JContainer> _containers;
-        private JContainer _currentContainer;
-        private bool _isReadOnly;
-        private readonly JObject _root;
+        private readonly JsonWriter _writer;
+        private bool _isDisposed;
 
-        public JsonObjectWriter()
+        public JsonObjectWriter(JsonWriter writer)
         {
-            _containers = new Stack<JContainer>();
-            _root = new JObject();
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
 
-            _currentContainer = _root;
+            _writer = writer;
+        }
+
+        public void Dispose()
+        {
+            if (!_isDisposed)
+            {
+                ((IDisposable)_writer).Dispose();
+
+                _isDisposed = true;
+            }
+        }
+
+        public void WriteObjectStart()
+        {
+            ThrowIfDisposed();
+
+            _writer.WriteStartObject();
         }
 
         public void WriteObjectStart(string name)
@@ -35,26 +51,10 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            _containers.Push(_currentContainer);
-
-            var newContainer = new JObject();
-
-            _currentContainer[name] = newContainer;
-            _currentContainer = newContainer;
-        }
-
-        public void WriteObjectInArrayStart()
-        {
-            ThrowIfReadOnly();
-
-            _containers.Push(_currentContainer);
-
-            var newContainer = new JObject();
-
-            _currentContainer.Add(newContainer);
-            _currentContainer = newContainer;
+            _writer.WritePropertyName(name);
+            _writer.WriteStartObject();
         }
 
         public void WriteArrayStart(string name)
@@ -64,38 +64,24 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            _containers.Push(_currentContainer);
-
-            var newContainer = new JArray();
-
-            _currentContainer[name] = newContainer;
-            _currentContainer = newContainer;
+            _writer.WritePropertyName(name);
+            _writer.WriteStartArray();
         }
 
         public void WriteObjectEnd()
         {
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            if (_currentContainer == _root)
-            {
-                throw new InvalidOperationException();
-            }
-
-            _currentContainer = GetPreviousContainer();
+            _writer.WriteEndObject();
         }
 
         public void WriteArrayEnd()
         {
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            if (_currentContainer == _root)
-            {
-                throw new InvalidOperationException();
-            }
-
-            _currentContainer = GetPreviousContainer();
+            _writer.WriteEndArray();
         }
 
         public void WriteNameValue(string name, int value)
@@ -105,9 +91,10 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            _currentContainer[name] = value;
+            _writer.WritePropertyName(name);
+            _writer.WriteValue(value);
         }
 
         public void WriteNameValue(string name, bool value)
@@ -117,9 +104,10 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            _currentContainer[name] = value;
+            _writer.WritePropertyName(name);
+            _writer.WriteValue(value);
         }
 
         public void WriteNameValue(string name, string value)
@@ -129,9 +117,10 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
+            ThrowIfDisposed();
 
-            _currentContainer[name] = value;
+            _writer.WritePropertyName(name);
+            _writer.WriteValue(value);
         }
 
         public void WriteNameArray(string name, IEnumerable<string> values)
@@ -141,68 +130,29 @@ namespace NuGet.RuntimeModel
                 throw new ArgumentNullException(nameof(name));
             }
 
-            ThrowIfReadOnly();
-
-            _currentContainer[name] = new JArray(values);
-        }
-
-        /// <summary>
-        /// Gets the JSON for the object.
-        ///
-        /// Once <see cref="GetJson"/> is called, no further writing is allowed.
-        /// </summary>
-        public string GetJson()
-        {
-            _isReadOnly = true;
-
-            return _root.ToString();
-        }
-
-        /// <summary>
-        /// Gets the JObject (in-memory JSON model) for the object.
-        /// 
-        /// Once <see cref="GetJObject"/> is called, no further writing is allowed.
-        /// </summary>
-        /// <returns></returns>
-        public JObject GetJObject()
-        {
-            _isReadOnly = true;
-
-            return _root;
-        }
-
-        /// <summary>
-        /// Writes the result to a <c>JsonTextWriter</c>.
-        ///
-        /// Once WriteTo is called, no further writing is allowed.
-        /// </summary>
-        public void WriteTo(JsonTextWriter writer)
-        {
-            if (writer == null)
+            if (values == null)
             {
-                throw new ArgumentNullException(nameof(writer));
+                throw new ArgumentNullException(nameof(values));
             }
 
-            _isReadOnly = true;
+            ThrowIfDisposed();
 
-            _root.WriteTo(writer);
-        }
+            _writer.WritePropertyName(name);
+            _writer.WriteStartArray();
 
-        private JContainer GetPreviousContainer()
-        {
-            if (_containers.Count == 0)
+            foreach (string value in values)
             {
-                return null;
+                _writer.WriteValue(value);
             }
 
-            return _containers.Pop();
+            _writer.WriteEndArray();
         }
 
-        private void ThrowIfReadOnly()
+        private void ThrowIfDisposed()
         {
-            if (_isReadOnly)
+            if (_isDisposed)
             {
-                throw new InvalidOperationException();
+                throw new ObjectDisposedException(nameof(JsonObjectWriter));
             }
         }
     }

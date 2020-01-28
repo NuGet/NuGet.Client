@@ -19,7 +19,7 @@ namespace NuGet.ProjectModel
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
 
-        private const int _version = 1;
+        private const int Version = 1;
 
         private readonly bool _isReadOnly;
 
@@ -238,22 +238,15 @@ namespace NuGet.ProjectModel
 
         public void Save(string path)
         {
-            var json = GetJson();
-
             using (var fileStream = new FileStream(path, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var writer = new RuntimeModel.JsonObjectWriter(jsonWriter))
             {
-                textWriter.Write(json);
+                jsonWriter.Formatting = Formatting.Indented;
+
+                Write(writer, PackageSpecWriter.Write);
             }
-        }
-
-        private string GetJson()
-        {
-            var writer = new RuntimeModel.JsonObjectWriter();
-
-            Write(writer, PackageSpecWriter.Write);
-
-            return writer.GetJson();
         }
 
         private void ParseJson(JObject json)
@@ -309,7 +302,8 @@ namespace NuGet.ProjectModel
 
         private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {
-            writer.WriteNameValue("format", _version);
+            writer.WriteObjectStart();
+            writer.WriteNameValue("format", Version);
 
             writer.WriteObjectStart("restore");
 
@@ -334,6 +328,7 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectEnd();
             }
 
+            writer.WriteObjectEnd();
             writer.WriteObjectEnd();
         }
 
