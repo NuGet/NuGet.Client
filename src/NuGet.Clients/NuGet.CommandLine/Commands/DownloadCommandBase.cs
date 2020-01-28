@@ -7,10 +7,11 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Xml;
+using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
-using NuGet.Common;
+using XmlUtility = NuGet.Common.XmlUtility;
 
 namespace NuGet.CommandLine
 {
@@ -98,7 +99,7 @@ namespace NuGet.CommandLine
             {
                 try
                 {
-                    var xDocument = Common.XmlUtility.Load(projectConfigFilePath);
+                    XDocument xDocument = XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }

@@ -29,6 +29,7 @@ using NuGet.Packaging.Signing;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
+using XmlUtility = NuGet.Common.XmlUtility;
 #endif
 
 namespace NuGet.Build.Tasks
@@ -542,7 +543,7 @@ namespace NuGet.Build.Tasks
             {
                 try
                 {
-                    var xDocument = Common.XmlUtility.Load(projectConfigFilePath);
+                    XDocument xDocument = XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
@@ -551,9 +552,9 @@ namespace NuGet.Build.Tasks
                     var message = string.Format(
                        Strings.Error_PackagesConfigParseError,
                        projectConfigFilePath,
-                       ex.Message);
-
-                    throw new XmlException(message);
+                       ex.Message);                    
+                    
+                    throw new XmlException(message,ex);
                 }
             }
 

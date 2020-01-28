@@ -134,7 +134,7 @@ namespace Msbuild.Integration.Test
                 // Set up solution, project, and packages
                 var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
 
-                var net461 = NuGetFramework.Parse("net461");
+                NuGetFramework net461 = NuGetFramework.Parse("net461");
 
                 var projectA = new SimpleTestProjectContext(
                     "a",
@@ -172,10 +172,10 @@ namespace Msbuild.Integration.Test
                     packageX);
 
                 // Act
-                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true",ignoreExitCode:true);
+                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode:true);
 
                 // Assert
-                Assert.True(result.ExitCode == 1);
+                Assert.Equal(1, result.ExitCode);
                 Assert.Contains("Error parsing packages.config file", result.AllOutput);
             }
         }

@@ -2352,6 +2352,8 @@ EndProject";
             using (var workingPath = TestDirectory.Create())
             {
                 var repositoryPath = Path.Combine(workingPath, "Repository");
+                var outputDir = "outputDir";
+                var outputPath = Path.Combine(workingPath, outputDir);
                 Directory.CreateDirectory(repositoryPath);
                 Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
                 Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
@@ -2367,19 +2369,18 @@ EndProject";
     <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
 </packages>");
 
-                string[] args = new string[] { "restore", "-PackagesDirectory", "outputDir", "-Source", repositoryPath };
+                string[] args = new string[] { "restore", "-PackagesDirectory", outputDir, "-Source", repositoryPath };
 
                 // Act
-                var r = CommandRunner.Run(
+                CommandRunnerResult result = CommandRunner.Run(
                     nugetexe,
                     workingPath,
                     string.Join(" ", args),
                     waitForExit: true);
 
                 // Assert
-                Assert.Equal(_failureCode, r.Item1);
-                Assert.Contains("Error parsing packages.config file", r.AllOutput);
-                var outputPath = Path.Combine(workingPath, @"outputDir");                
+                Assert.False(result.Success);
+                Assert.Contains("Error parsing packages.config file", result.AllOutput);                                
                 Assert.False(Directory.Exists(outputPath));
             }
         }
