@@ -81,11 +81,11 @@ namespace NuGet.PackageManagement.UI
             {
                 var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                 // Check if we have enough info to read the icon from the package
-                if (values.Length == 2 && values[1] is Func<PackageReaderBase> lazyPar)
+                if (values.Length == 2 && values[1] is Func<PackageReaderBase> lazyReader)
                 {
                     try
                     {
-                        var reader = lazyPar(); // Always returns a new reader. That avoids using an already disposed one
+                        PackageReaderBase reader = lazyReader(); // Always returns a new reader. That avoids using an already disposed one
                         if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
                         {
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
@@ -112,6 +112,7 @@ namespace NuGet.PackageManagement.UI
                         }
                         else // we cannot use the reader object
                         {
+                            reader?.Dispose();
                             AddToCache(iconUrl, defaultPackageIcon);
                             imageResult = defaultPackageIcon;
                         }
@@ -122,7 +123,7 @@ namespace NuGet.PackageManagement.UI
                         imageResult = defaultPackageIcon;
                     }
                 }
-                else // Identified an embedded icon URI but, we are unable to process it
+                else // Identified an embedded icon URI, but we are unable to process it
                 {
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
