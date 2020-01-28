@@ -351,10 +351,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    using (var output = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
-                    {
-                        result = XDocument.Load(output);
-                    }
+                    result = Common.XmlUtility.Load(path);
                 }
                 catch (Exception ex)
                 {
