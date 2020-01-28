@@ -171,9 +171,9 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            IReadOnlyList<Project> supportedProjects = GetProjectsInSolution(dte);
+            IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte);
 
-            foreach (var solutionProject in supportedProjects)
+            foreach (Project solutionProject in supportedProjects)
             {
                 var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(solutionProject);
 
@@ -313,62 +313,11 @@ namespace NuGet.VisualStudio
                 trie);
         }
 
-        private IReadOnlyList<Project> GetProjectsInSolution(DTE dte)
+        private async Task<IEnumerable<Project>> GetProjectsInSolutionAsync(DTE dte)
         {
-            Projects projects = dte.Solution.Projects;
-
-            var projectList = new List<Project>();
-
-            foreach (var item in projects)
-            {
-                var project = item as Project;
-
-                if (project == null)
-                {
-                    continue;
-                }
-
-                if (project.Kind == ProjectKinds.vsProjectKindSolutionFolder)
-                {
-                    IReadOnlyList<Project> solutionFolderProjects = GetSolutionFolderProjects(project);
-                    projectList.AddRange(solutionFolderProjects);
-                }
-                else
-                {
-                    projectList.Add(project);
-                }
-            }
-
-            return projectList;
-        }
-
-        /// <summary>
-        /// Gets all projects that are not solution folders within the given solutionFolder.
-        /// (i.e. If the hierarchy is src\a\b.xproj, src\c.xproj; the resulting list will contain b.xproj and c.xproj).
-        /// </summary>
-        private IReadOnlyList<Project> GetSolutionFolderProjects(Project solutionFolder)
-        {
-            var projectList = new List<Project>();
-            for (var i = 1; i <= solutionFolder.ProjectItems.Count; i++)
-            {
-                Project subProject = solutionFolder.ProjectItems.Item(i).SubProject;
-                if (subProject == null)
-                {
-                    continue;
-                }
-
-                if (subProject.Kind == ProjectKinds.vsProjectKindSolutionFolder)
-                {
-                    IEnumerable<Project> solutionFolderProjects = GetSolutionFolderProjects(subProject);
-                    projectList.AddRange(solutionFolderProjects);
-                }
-                else
-                {
-                    projectList.Add(subProject);
-                }
-            }
-
-            return projectList;
+            IEnumerable<Project> allProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
+            IEnumerable<Project> supportedProjects = allProjects.Where(EnvDTEProjectUtility.IsSupported);
+            return supportedProjects;
         }
     }
 }
