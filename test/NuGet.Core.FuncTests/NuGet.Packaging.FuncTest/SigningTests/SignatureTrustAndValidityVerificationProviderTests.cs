@@ -23,6 +23,8 @@ using Test.Utility.Signing;
 using Xunit;
 using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
+using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
+
 
 namespace NuGet.Packaging.FuncTest
 {
@@ -115,7 +117,7 @@ namespace NuGet.Packaging.FuncTest
                     packageContext,
                     directory,
                     timestampService.Url,
-                    signatureHashAlgorithm: NuGet.Common.HashAlgorithmName.SHA512);
+                    signatureHashAlgorithm: HashAlgorithmName.SHA512);
 
                 var verifier = new PackageSignatureVerifier(_trustProviders);
                 using (var packageReader = new PackageArchiveReader(signedPackagePath))
@@ -715,7 +717,7 @@ namespace NuGet.Packaging.FuncTest
 
             using (var package = new PackageArchiveReader(await nupkg.CreateAsStreamAsync(), leaveStreamOpen: false))
             using (var testCertificate = new X509Certificate2(_trustedTestCert.Source.Cert))
-            using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, NuGet.Common.HashAlgorithmName.SHA256))
+            using (var signatureRequest = new AuthorSignPackageRequest(testCertificate, HashAlgorithmName.SHA256))
             {
                 var signature = await SignedArchiveTestUtility.CreatePrimarySignatureForPackageAsync(package, signatureRequest);
                 var timestampedSignature = await SignedArchiveTestUtility.TimestampSignature(timestampProvider, signature, signatureRequest.TimestampHashAlgorithm, SignaturePlacement.PrimarySignature, testLogger);
@@ -929,7 +931,7 @@ namespace NuGet.Packaging.FuncTest
                 var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
                 var provider = new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList:
-                    new List<KeyValuePair<string, NuGet.Common.HashAlgorithmName>>() { new KeyValuePair<string, NuGet.Common.HashAlgorithmName>("abc", NuGet.Common.HashAlgorithmName.SHA256) });
+                    new List<KeyValuePair<string, HashAlgorithmName>>() { new KeyValuePair<string, HashAlgorithmName>("abc", HashAlgorithmName.SHA256) });
 
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
@@ -968,7 +970,7 @@ namespace NuGet.Packaging.FuncTest
                 var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
                 var provider = new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList:
-                    new List<KeyValuePair<string, NuGet.Common.HashAlgorithmName>>() { new KeyValuePair<string, NuGet.Common.HashAlgorithmName>("abc", NuGet.Common.HashAlgorithmName.SHA256) });
+                    new List<KeyValuePair<string, HashAlgorithmName>>() { new KeyValuePair<string, HashAlgorithmName>("abc", HashAlgorithmName.SHA256) });
 
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
@@ -996,7 +998,7 @@ namespace NuGet.Packaging.FuncTest
            revocationMode: RevocationMode.Online);
 
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
-            var untrustedCertFingerprint = SignatureTestUtility.GetFingerprint(_testFixture.UntrustedTestCertificate.Cert, NuGet.Common.HashAlgorithmName.SHA256);
+            var untrustedCertFingerprint = SignatureTestUtility.GetFingerprint(_testFixture.UntrustedTestCertificate.Cert, HashAlgorithmName.SHA256);
 
             using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
                 _testFixture.UntrustedTestCertificate.Cert,
@@ -1006,7 +1008,7 @@ namespace NuGet.Packaging.FuncTest
                 var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
                 var provider = new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList:
-                    new List<KeyValuePair<string, NuGet.Common.HashAlgorithmName>>() { new KeyValuePair<string, NuGet.Common.HashAlgorithmName>(untrustedCertFingerprint, NuGet.Common.HashAlgorithmName.SHA256) });
+                    new List<KeyValuePair<string, HashAlgorithmName>>() { new KeyValuePair<string, HashAlgorithmName>(untrustedCertFingerprint, HashAlgorithmName.SHA256) });
 
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
@@ -1034,7 +1036,7 @@ namespace NuGet.Packaging.FuncTest
                revocationMode: RevocationMode.Online);
 
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
-            var untrustedCertFingerprint = SignatureTestUtility.GetFingerprint(_testFixture.UntrustedTestCertificate.Cert, NuGet.Common.HashAlgorithmName.SHA256);
+            var untrustedCertFingerprint = SignatureTestUtility.GetFingerprint(_testFixture.UntrustedTestCertificate.Cert, HashAlgorithmName.SHA256);
 
             using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
                 _testFixture.TrustedTestCertificate.Source.Cert,
@@ -1046,7 +1048,7 @@ namespace NuGet.Packaging.FuncTest
                 var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
                 var provider = new SignatureTrustAndValidityVerificationProvider(allowUntrustedRootList:
-                    new List<KeyValuePair<string, NuGet.Common.HashAlgorithmName>>() { new KeyValuePair<string, NuGet.Common.HashAlgorithmName>(untrustedCertFingerprint, NuGet.Common.HashAlgorithmName.SHA256) });
+                    new List<KeyValuePair<string, HashAlgorithmName>>() { new KeyValuePair<string, HashAlgorithmName>(untrustedCertFingerprint, HashAlgorithmName.SHA256) });
 
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
