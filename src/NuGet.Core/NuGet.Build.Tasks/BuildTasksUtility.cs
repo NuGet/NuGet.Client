@@ -552,8 +552,8 @@ namespace NuGet.Build.Tasks
                     var message = string.Format(
                        Strings.Error_PackagesConfigParseError,
                        projectConfigFilePath,
-                       ex.Message);                    
-                    
+                       ex.Message);
+
                     throw new XmlException(message,ex);
                 }
             }
