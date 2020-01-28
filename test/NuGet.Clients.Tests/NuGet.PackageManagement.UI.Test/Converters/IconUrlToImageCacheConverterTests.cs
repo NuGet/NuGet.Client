@@ -2,11 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Threading;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -41,10 +39,10 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl, DependencyProperty.UnsetValue },
-                typeof(ImageSource),
-                DefaultPackageIcon,
-                Thread.CurrentThread.CurrentCulture);
+                values: new object[] { iconUrl, DependencyProperty.UnsetValue },
+                targetType: null,
+                parameter: DefaultPackageIcon,
+                culture: null);
 
             Assert.Same(DefaultPackageIcon, image);
         }
@@ -57,10 +55,10 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl, DependencyProperty.UnsetValue },
-                typeof(ImageSource),
-                DefaultPackageIcon,
-                Thread.CurrentThread.CurrentCulture);
+                values: new object[] { iconUrl, DependencyProperty.UnsetValue },
+                targetType: null,
+                parameter: DefaultPackageIcon,
+                culture: null);
 
             Assert.Same(DefaultPackageIcon, image);
         }
@@ -73,10 +71,10 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl, DependencyProperty.UnsetValue },
-                typeof(ImageSource),
-                DefaultPackageIcon,
-                Thread.CurrentThread.CurrentCulture) as BitmapImage;
+                values: new object[] { iconUrl, DependencyProperty.UnsetValue },
+                targetType: null,
+                parameter: DefaultPackageIcon,
+                culture: null) as BitmapImage;
 
             Assert.NotNull(image);
             Assert.NotSame(DefaultPackageIcon, image);
@@ -91,10 +89,10 @@ namespace NuGet.PackageManagement.UI.Test
             var converter = new IconUrlToImageCacheConverter();
 
             var image = converter.Convert(
-                new object[] { iconUrl, DependencyProperty.UnsetValue },
-                typeof(ImageSource),
-                DefaultPackageIcon,
-                Thread.CurrentThread.CurrentCulture) as BitmapImage;
+                values: new object[] { iconUrl, DependencyProperty.UnsetValue },
+                targetType: null,
+                parameter: DefaultPackageIcon,
+                culture: null) as BitmapImage;
 
             Assert.NotNull(image);
             Assert.NotSame(DefaultPackageIcon, image);
@@ -124,10 +122,10 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
-                    typeof(ImageSource),
-                    DefaultPackageIcon,
-                    Thread.CurrentThread.CurrentCulture);
+                    values: new object[] { builder.Uri, new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath)) },
+                    targetType: null,
+                    parameter: DefaultPackageIcon,
+                    culture: null);
 
                 var image = result as BitmapImage;
 
@@ -155,10 +153,10 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { uri, DependencyProperty.UnsetValue },
-                    typeof(ImageSource),
-                    DefaultPackageIcon,
-                    Thread.CurrentThread.CurrentCulture);
+                    values: new object[] { uri, DependencyProperty.UnsetValue },
+                    targetType: null,
+                    parameter: DefaultPackageIcon,
+                    culture: null);
 
                 var image = result as BitmapImage;
                 
@@ -189,10 +187,10 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    new object[] { builder.Uri, new PackageArchiveReader(zipPath) },
-                    typeof(ImageSource),
-                    DefaultPackageIcon,
-                    Thread.CurrentThread.CurrentCulture);
+                    values: new object[] { builder.Uri, new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath)) },
+                    targetType: null,
+                    parameter: DefaultPackageIcon,
+                    culture: null);
 
                 // Assert
                 Assert.NotNull(result);
@@ -206,13 +204,6 @@ namespace NuGet.PackageManagement.UI.Test
         {
             var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
             Assert.Equal(expectedResult, result);
-        }
-
-        [Fact]
-        public void test3()
-        {
-            object x = null;
-            Assert.False(x is PackageArchiveReader);
         }
 
         public static IEnumerable<object[]> TestData()

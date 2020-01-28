@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
             _searchResultPackage = searchResultPackage;
             _filter = filter;
             OnPropertyChanged(nameof(Id));
-            OnPropertyChanged(nameof(IconUrl));
+            OnPropertyChanged(nameof(PackageReader));
             OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
@@ -636,7 +636,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Lazy<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
+        public Func<PackageReaderBase> PackageReader => _searchResultPackage?.PackageReader;
 
         protected void AddBlockedVersions(NuGetVersion[] blockedVersions)
         {
