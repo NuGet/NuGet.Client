@@ -27,7 +27,7 @@ namespace NuGet.Packaging.FuncTest
 #if IS_DESKTOP
         private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
 #else
-        private const string ArgumentNullExceptionMessage = "Value cannot be null. (Parameter name: '{0}')";
+        private const string ArgumentNullExceptionMessage = "Value cannot be null. (Parameter '{0}')";
 #endif
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
