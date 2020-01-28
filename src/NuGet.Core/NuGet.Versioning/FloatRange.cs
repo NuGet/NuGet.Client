@@ -218,17 +218,12 @@ namespace NuGet.Versioning
                         var releaseVersion = versionString.Substring(dashPosition + 1);
                         releasePrefix = releaseVersion.Substring(0, releaseVersion.Length - 1);
                         var releasePart = releasePrefix;
-                        // For numeric labels 0 is the lowest. For alpha-numeric - is the lowest.
                         if (releasePrefix.Length == 0 || releasePrefix.EndsWith("."))
                         {
                             // 1.0.0-* scenario, an empty label is not a valid version.
                             releasePart += "0";
                         }
-                        else if (releasePrefix.EndsWith("-"))
-                        {
-                            // Append a dash to allow floating on the next character.
-                            releasePart += "-";
-                        }
+
                         actualVersion = stablePart + "-" + releasePart;
                     }
 
