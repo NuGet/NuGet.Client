@@ -215,6 +215,19 @@ function ResumeVSInstall {
         [int]$ProcessExitTimeoutInSeconds
     )
 
+    # Ensure we have the latest VS_Installer
+    
+    $VSBootstrapperUrl = "https://aka.ms/vs/16/intpreview/vs_enterprise.exe"
+    $tempdir = [System.IO.Path]::GetTempPath()
+    $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe"
+    Write-Host "Downloading [$VSBootstrapperUrl]`nSaving at [$VSBootstrapperPath]" 
+    $client = new-object System.Net.WebClient 
+    $client.DownloadFile($VSBootstrapperUrl, $VSBootstrapperPath)
+
+    Write-Host "Running bootstrapper to update the locally installed VS Installer"
+    Start-Process -FilePath "$VSBootstrapperPath" -ArgumentList "--update", "--quiet"
+
+
     $ProgramFilesPath = ${env:ProgramFiles}
     if (Test-Path ${env:ProgramFiles(x86)}) {
         $ProgramFilesPath = ${env:ProgramFiles(x86)}
