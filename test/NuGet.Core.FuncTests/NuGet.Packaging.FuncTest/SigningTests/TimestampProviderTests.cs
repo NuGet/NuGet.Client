@@ -219,7 +219,7 @@ namespace NuGet.Packaging.FuncTest
                );
 
                 // Assert
-                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                var exception = await Assert.ThrowsAsync<OperationCanceledException>(
                     () => timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true)));
 
                 Assert.Equal(OperationCancelledExceptionMessage, exception.Message);
