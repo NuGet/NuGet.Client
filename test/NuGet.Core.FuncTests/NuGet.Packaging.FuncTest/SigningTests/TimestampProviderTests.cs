@@ -165,7 +165,7 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        [Fact]
+        [CIOnlyFact]
         public async Task GetTimestampAsync_WhenLoggerNull_ThrowsAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
