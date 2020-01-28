@@ -225,8 +225,8 @@ function ResumeVSInstall {
     $client.DownloadFile($VSBootstrapperUrl, $VSBootstrapperPath)
 
     Write-Host "Running bootstrapper to update the locally installed VS Installer"
+    Write-Host "$VSBootstrapperPath --update --quiet"
     Start-Process -FilePath "$VSBootstrapperPath" -ArgumentList "--update", "--quiet"
-
 
     $ProgramFilesPath = ${env:ProgramFiles}
     if (Test-Path ${env:ProgramFiles(x86)}) {

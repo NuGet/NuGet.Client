@@ -743,7 +743,9 @@ phases:
   queue:
     timeoutInMinutes: 90
     name: DDNuGet-Windows
-    demands: DotNetFramework
+    demands:
+    - DotNetFramework
+    - Agent.Name -equals DDNuGetW001
 
   steps:
   - task: PowerShell@1
@@ -839,7 +841,9 @@ phases:
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   queue:
     name: DDNuGet-Windows
-    demands: DotNetFramework
+    demands:
+    - DotNetFramework
+    - Agent.Name -equals DDNuGetW001
 
   steps:
   - checkout: self
