@@ -13,9 +13,9 @@ namespace NuGet.PackageManagement.UI.TestContract
     {
         private PackageManagerControl _packageManagerControl;
 
-        internal ApexTestUIProject(PackageManagerControl pmc)
+        internal ApexTestUIProject(PackageManagerControl packageManagerControl)
         {
-            _packageManagerControl = pmc ?? throw new ArgumentNullException(nameof(pmc));
+            _packageManagerControl = packageManagerControl ?? throw new ArgumentNullException(nameof(packageManagerControl));
         }
 
         public IEnumerable<PackageItemListViewModel> PackageItems
