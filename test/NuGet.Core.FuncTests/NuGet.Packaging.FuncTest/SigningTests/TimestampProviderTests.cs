@@ -24,7 +24,11 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
+#if IS_DESKTOP
         private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
+#else
+        private const string ArgumentNullExceptionMessage = "Value cannot be null. (Parameter name: '{0}')";
+#endif
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
