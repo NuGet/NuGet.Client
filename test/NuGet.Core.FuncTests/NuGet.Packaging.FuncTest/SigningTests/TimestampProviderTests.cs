@@ -70,7 +70,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_AssertCompleteChain_SuccessAsync()
+        public async Task GetTimestampAsync_AssertCompleteChain_SuccessAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -157,16 +157,15 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(null, logger, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, nameof(request)));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(null, logger, CancellationToken.None));
+
+                Assert.Equal(string.Format(ArgumentNullExceptionMessage, nameof(request)), exception.Message);
             }
         }
 
-        [CIOnlyFact]
+        [Fact]
         public async Task GetTimestampAsync_WhenLoggerNull_ThrowsAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
@@ -188,12 +187,11 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(request, null, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, "logger"));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request, null, CancellationToken.None));
+
+                Assert.Equal(string.Format(ArgumentNullExceptionMessage, "logger"), exception.Message);
             }
         }
 
@@ -220,12 +218,11 @@ namespace NuGet.Packaging.FuncTest
                    target: SignaturePlacement.PrimarySignature
                );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true));
-
                 // Assert
-                timestampAction.ShouldThrow<OperationCanceledException>()
-                    .WithMessage(OperationCancelledExceptionMessage);
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true)));
+
+                Assert.Equal(OperationCancelledExceptionMessage, exception.Message);
             }
         }
 
