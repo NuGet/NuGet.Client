@@ -1064,5 +1064,31 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
         }
+
+
+        [Theory]
+        [InlineData("*", "0.0.0")]
+        [InlineData("*-*", "0.0.0-0")]
+        [InlineData("1.*", "1.0.0")]
+        [InlineData("1.1.*", "1.1.0")]
+        [InlineData("1.1.*-*", "1.1.0-0")]
+        [InlineData("1.1.1-*", "1.1.1-0")]
+        [InlineData("1.1.1-beta*", "1.1.1-beta")]
+        [InlineData("1.1.1-1*", "1.1.1-1")]
+        [InlineData("1.1.*-beta*", "1.1.0-beta")]
+        [InlineData("1.1.*-1*", "1.1.0-1")]
+        [InlineData("1.0.0-beta.1*", "1.0.0-beta.1")]
+        [InlineData("1.0.*-beta.1*", "1.0.0-beta.1")]
+        [InlineData("1.0.0-b-*", "1.0.0-b-")]
+        [InlineData("1.0.*-b-*", "1.0.0-b-")]
+        [InlineData("1.1.0-beta.*", "1.1.0-beta.0")]
+        [InlineData("1.1.*-beta.*", "1.1.0-beta.0")]
+
+        public void FloatRange_ParsesCorrectMinVersion(string versionRange, string normalizedMinVersion)
+        {
+            var range = FloatRange.Parse(versionRange);
+
+            Assert.Equal(normalizedMinVersion, range.MinVersion.ToNormalizedString());
+        }
     }
 }
