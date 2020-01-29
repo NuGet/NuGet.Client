@@ -59,7 +59,7 @@ namespace NuGet.Packaging.FuncTest
                 Assert.Equal(SignatureVerificationStatus.Disallowed, result.Status);
                 Assert.Equal(1, result.Issues.Count(issue => issue.Level == LogLevel.Error));
 
-                AssertUntrustedRoot(result.Issues, LogLevel.Error);
+                SigningTestUtility.AssertUntrustedRoot(result.Issues, LogLevel.Error);
             }
         }
 
@@ -231,14 +231,6 @@ namespace NuGet.Packaging.FuncTest
 
             Assert.Equal(expectedAttributesCount, attributesCount);
             Assert.Equal(expectedValuesCount, valuesCount);
-        }
-
-        private static void AssertUntrustedRoot(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
         }
 
         private static SignerInformation GetFirstSignerInfo(SignerInformationStore store)
