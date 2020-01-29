@@ -5,7 +5,6 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -13,7 +12,7 @@ namespace NuGet.Commands
 {
     public partial class AddSourceRunner
     {
-        static public void Run(AddSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(AddSourceArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
@@ -80,10 +79,9 @@ namespace NuGet.Commands
         }
     }
 
-
     public partial class DisableSourceRunner
     {
-        static public void Run(DisableSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(DisableSourceArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
@@ -91,10 +89,9 @@ namespace NuGet.Commands
         }
     }
 
-
     public partial class EnableSourceRunner
     {
-        static public void Run(EnableSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(EnableSourceArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
@@ -102,10 +99,9 @@ namespace NuGet.Commands
         }
     }
 
-
     public partial class ListSourceRunner
     {
-        static public void Run(ListSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(ListSourceArgs args, Func<ILogger> getLogger)
         {
             SourcesListFormat format;
             if (string.IsNullOrEmpty(args.Format))
@@ -114,7 +110,7 @@ namespace NuGet.Commands
             }
             else
             {
-                Enum.TryParse<SourcesListFormat>(args.Format, ignoreCase:true, out format);
+                Enum.TryParse<SourcesListFormat>(args.Format, ignoreCase: true, out format);
             }
 
             switch (format)
@@ -182,10 +178,9 @@ namespace NuGet.Commands
         }
     }
 
-
     public partial class RemoveSourceRunner
     {
-        static public void Run(RemoveSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(RemoveSourceArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
@@ -203,10 +198,9 @@ namespace NuGet.Commands
         }
     }
 
-
     public partial class UpdateSourceRunner
     {
-        static public void Run(UpdateSourceArgs args, Func<ILogger> getLogger)
+        public static void Run(UpdateSourceArgs args, Func<ILogger> getLogger)
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
@@ -261,7 +255,7 @@ namespace NuGet.Commands
         }
     }
 
-        internal static class RunnerHelper
+    internal static class RunnerHelper
     {
         public static ISettings GetSettings(string configfile)
         {

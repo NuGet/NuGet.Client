@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Commands;
 using NuGet.Common;
-
 
 namespace NuGet.CommandLine.XPlat
 {
-
-    internal class CommandParsers
+    internal static class CommandParsers
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
@@ -21,9 +17,6 @@ namespace NuGet.CommandLine.XPlat
             ListVerbParser.Register(app, getLogger);
             RemoveVerbParser.Register(app, getLogger);
             UpdateVerbParser.Register(app, getLogger);
-
         }
     }
-
-
 }

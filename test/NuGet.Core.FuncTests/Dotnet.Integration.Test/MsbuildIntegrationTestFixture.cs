@@ -26,7 +26,6 @@ namespace Dotnet.Integration.Test
         internal readonly string MsBuildSdksPath;
         private readonly Dictionary<string, string> _processEnvVars = new Dictionary<string, string>();
 
-
         public MsbuildIntegrationTestFixture()
         {
             _cliDirectory = CopyLatestCliForPack();

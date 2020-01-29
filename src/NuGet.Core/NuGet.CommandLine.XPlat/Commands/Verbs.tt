@@ -51,15 +51,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 
-
 namespace NuGet.CommandLine.XPlat
 {
-
 <#
 // ********************** Verb-Parser Template
 foreach (var verb in commands.Descendants(XName.Get("Verb","")))
@@ -193,10 +190,8 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                     }     
                 }
             }
-#> 
-                        <#= commandFormalName #><#= nounFormalName #>Runner.Run(args, getLogger);
+#>                        <#= commandFormalName #><#= nounFormalName #>Runner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
 <#
@@ -215,5 +210,4 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
 
 <#
 }
-#>
-}
+#>}

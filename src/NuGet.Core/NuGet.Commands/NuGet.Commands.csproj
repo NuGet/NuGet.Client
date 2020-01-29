@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -103,6 +103,6 @@
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

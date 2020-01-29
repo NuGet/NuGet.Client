@@ -51,16 +51,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
-using NuGet.Commands;
 using NuGet.Common;
-
 
 namespace NuGet.CommandLine.XPlat
 {
-
-    internal class CommandParsers
+    internal static class CommandParsers
     {
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
@@ -74,7 +70,6 @@ namespace NuGet.CommandLine.XPlat
 <#
  }
 #>
-
 <#
  foreach (var command in commands.Descendants(XName.Get("Command","")))
  {
@@ -84,10 +79,8 @@ namespace NuGet.CommandLine.XPlat
             <#= commandFormalName #>CommandParser.Register(app, getLogger);
 <#
  }
-#>
-        }
+#>        }
     }
-
 <#
  foreach (var command in commands.Descendants(XName.Get("Command","")))
  {
@@ -222,5 +215,4 @@ namespace NuGet.CommandLine.XPlat
 <#
 } // End of CommandParser class
 #>
-
 }

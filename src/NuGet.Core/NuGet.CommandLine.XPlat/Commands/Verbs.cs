@@ -2,15 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Commands;
 using NuGet.Common;
 
-
 namespace NuGet.CommandLine.XPlat
 {
-
     internal partial class AddVerbParser
     {
         internal static void Register(CommandLineApplication app,
@@ -61,10 +58,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         AddSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 AddCmd.HelpOption("-h|--help");
@@ -103,10 +98,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         DisableSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 DisableCmd.HelpOption("-h|--help");
@@ -145,10 +138,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         EnableSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 EnableCmd.HelpOption("-h|--help");
@@ -189,10 +180,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         ListSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 ListCmd.HelpOption("-h|--help");
@@ -231,10 +220,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         RemoveSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 RemoveCmd.HelpOption("-h|--help");
@@ -298,10 +285,8 @@ namespace NuGet.CommandLine.XPlat
                             Configfile = configfile.Value(),
                         };
 
- 
                         UpdateSourceRunner.Run(args, getLogger);
                         return 0;
-
                     });
                 });
                 UpdateCmd.HelpOption("-h|--help");

@@ -5,7 +5,6 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Test.Utility;
 using Xunit;

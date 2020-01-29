@@ -1,15 +1,16 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
+using System.Text;
+using Moq;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Test.Utility;
 using Xunit;
-using System.Text;
-using System.Security.Permissions;
-using System.Security;
-using Moq;
 
 namespace NuGet.CommandLine.Test
 {

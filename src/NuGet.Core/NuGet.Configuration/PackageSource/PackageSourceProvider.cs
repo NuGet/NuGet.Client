@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Text.RegularExpressions;
 using NuGet.Common;
@@ -319,10 +318,10 @@ namespace NuGet.Configuration
 
         public HashSet<string> GetPackageSourceNamesMatchingNamePrefix(string namePrefix)
         {
-            HashSet<string> names = new HashSet<string>();
+            var names = new HashSet<string>();
 
-            var packageSources = LoadPackageSources();
-            foreach (var packageSource in packageSources)
+            IEnumerable<PackageSource> packageSources = LoadPackageSources();
+            foreach (PackageSource packageSource in packageSources)
             {
                 if (packageSource.Name.StartsWith(namePrefix))
                 {

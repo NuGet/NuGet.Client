@@ -8,7 +8,6 @@ using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using NuGet.Common;
-using NuGet.Commands;
 
 #if DEBUG
 using Microsoft.Build.Locator;
