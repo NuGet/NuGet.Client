@@ -16,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.Versioning;
+using XmlUtility = NuGet.Common.XmlUtility;
 
 namespace NuGet.Commands
 {
@@ -351,10 +352,7 @@ namespace NuGet.Commands
             {
                 try
                 {
-                    using (var output = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.None))
-                    {
-                        result = XDocument.Load(output);
-                    }
+                    result = XmlUtility.Load(path);
                 }
                 catch (Exception ex)
                 {
