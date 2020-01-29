@@ -123,7 +123,7 @@ namespace NuGet.Versioning
                 && charArray[0] == '-'
                 && charArray[0] == '*')
             {
-                versionRange = new VersionRange(new NuGetVersion(0, 0, 0, releaseLabel: "0"), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
+                versionRange = new VersionRange(new NuGetVersion("0.0.0-0"), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
                 return true;
             }
 
