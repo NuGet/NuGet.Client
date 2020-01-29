@@ -24,7 +24,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddSource()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
                 var args = new string[] {
@@ -55,7 +55,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePassword()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
                 var args = new string[] {
@@ -102,7 +102,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
                 var args = new string[] {
@@ -366,7 +366,7 @@ namespace Dotnet.Integration.Test
         [Fact(Skip = "cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.")]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
-            using (var preserver = new DefaultConfigurationFilePreserver())
+            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
                 var args = new string[] {

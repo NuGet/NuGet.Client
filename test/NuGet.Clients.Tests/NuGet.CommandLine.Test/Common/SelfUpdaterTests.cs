@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
-using NuGet.Common;
+using NuGet.Commands;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
