@@ -1855,8 +1855,6 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-#if IS_DESKTOP
-        // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
         [Fact]
         public void RestoreCommand_PathTooLongException()
         {
@@ -1866,9 +1864,9 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            using(var cacheContext = new SourceCacheContext())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1884,7 +1882,18 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir + new string('_', 300), cacheContext, logger)
+                string longPath = packagesDir + new string('_', 300);
+                try
+                {
+                    // This test is pointless if the machine has long paths enabled.
+                    Path.GetFullPath(longPath);
+                    return;
+                }
+                catch (PathTooLongException)
+                {
+                }
+
+                var request = new TestRestoreRequest(spec, sources, longPath, cacheContext, logger)
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
@@ -1895,7 +1904,6 @@ namespace NuGet.Commands.FuncTest
                 new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
             }
         }
-#endif
 
         [Fact]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
