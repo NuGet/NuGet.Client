@@ -6,47 +6,89 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using FluentAssertions;
-using NuGet.Test.Utility;
 using Xunit;
 
 namespace Microsoft.Build.NuGetSdkResolver.Test
 {
     public class GlobalJsonReaderTests
     {
+        public static string WriteGlobalJson(string directory, Dictionary<string, string> sdkVersions, string additionalcontent = "")
+        {
+            var path = Path.Combine(directory, GlobalJsonReader.GlobalJsonFileName);
+
+            using (var writer = File.CreateText(path))
+            {
+                writer.WriteLine("{");
+                if (sdkVersions != null)
+                {
+                    writer.WriteLine("    \"msbuild-sdks\": {");
+                    writer.WriteLine(string.Join($",{Environment.NewLine}        ", sdkVersions.Select(i => $"\"{i.Key}\": \"{i.Value}\"")));
+                    writer.WriteLine("    }");
+                }
+
+                if (!string.IsNullOrWhiteSpace(additionalcontent))
+                {
+                    writer.Write(additionalcontent);
+                }
+
+                writer.WriteLine("}");
+            }
+
+            return path;
+        }
+
         [Fact]
         public void EmptyGlobalJson()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testEnvironment = TestEnvironment.Create())
             {
-                File.WriteAllText(Path.Combine(testDirectory.Path, GlobalJsonReader.GlobalJsonFileName), @" { } ");
+                TransientTestFolder folder = testEnvironment.CreateFolder();
 
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
+                try
+                {
+                    File.WriteAllText(Path.Combine(folder.FolderPath, GlobalJsonReader.GlobalJsonFileName), @" { } ");
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+                    var context = new MockSdkResolverContext(Path.Combine(folder.FolderPath, "foo.proj"));
+
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+                }
+                finally
+                {
+                    folder.Revert();
+                }
             }
         }
 
         [Fact]
-        public void EmptyVersionsAreIgnored()
+        public void GlobalJsonWithComments()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testEnvironment = TestEnvironment.Create())
             {
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
+                TransientTestFolder folder = testEnvironment.CreateFolder();
 
-                WriteGlobalJson(
-                    testDirectory,
-                    new Dictionary<string, string>
-                    {
-                        ["foo"] = "1.0.0",
-                        ["bar"] = "",
-                        ["baz"] = "  ",
-                        ["bax"] = null
-                    });
-
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(new Dictionary<string, string>
+                try
                 {
-                    ["foo"] = "1.0.0"
-                });
+                    File.WriteAllText(
+                        Path.Combine(folder.FolderPath, GlobalJsonReader.GlobalJsonFileName),
+                        @"{
+  // This is a comment
+  ""msbuild-sdks"": {
+    /* This is another comment */
+    ""foo"": ""1.0.0""
+  }
+}");
+
+                    var context = new MockSdkResolverContext(Path.Combine(folder.FolderPath, "foo.proj"));
+
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).ShouldAllBeEquivalentTo(new Dictionary<string, string>
+                    {
+                        ["foo"] = "1.0.0"
+                    });
+                }
+                finally
+                {
+                    folder.Revert();
+                }
             }
         }
 
@@ -59,17 +101,27 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 {"bar", "2.0.0"}
             };
 
-            using (var testDirectory = TestDirectory.Create())
+            using (var testEnvironment = TestEnvironment.Create())
             {
-                var globalJsonPath = WriteGlobalJson(testDirectory, expectedVersions, additionalContent: ", abc");
+                var testFolder = testEnvironment.CreateFolder();
 
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
+                try
+                {
+                    var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
+                    var globalJsonPath = WriteGlobalJson(testFolder.FolderPath, expectedVersions, additionalcontent: ", abc");
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+                    var context = new MockSdkResolverContext(projectFile.Path);
 
-                context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
-                context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
-                    $"Failed to parse \"{globalJsonPath}\". Encountered unexpected character 'a'.");
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().BeNull();
+
+                    context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
+                    context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
+                        $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path \'msbuild-sdks\', line 6, position 5.");
+                }
+                finally
+                {
+                    testFolder.Revert();
+                }
             }
         }
 
@@ -82,70 +134,25 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 {"bar", "2.0.0"}
             };
 
-            using (var testDirectory = TestDirectory.Create())
+            using (var testEnvironment = TestEnvironment.Create())
             {
-                WriteGlobalJson(testDirectory, expectedVersions);
+                var testFolder = testEnvironment.CreateFolder();
 
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
-
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(expectedVersions);
-            }
-        }
-
-        [Theory]
-        [InlineData("one")]
-        [InlineData("one", "two")]
-        [InlineData("one", "two", "three")]
-        public void TryGetPathOfFileAboveRecursive(params string[] directories)
-        {
-            const string filename = "test.txt";
-
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var paths = new List<string>
+                try
                 {
-                    testDirectory.Path
-                };
+                    var projectFile = testEnvironment.CreateFile(testFolder, ".proj");
 
-                paths.AddRange(directories);
+                    WriteGlobalJson(testFolder.FolderPath, expectedVersions);
 
-                var directory = new DirectoryInfo(Path.Combine(paths.ToArray()));
+                    var context = new MockSdkResolverContext(projectFile.Path);
 
-                directory.Create();
-
-                var expected = Path.Combine(testDirectory.Path, filename);
-
-                File.WriteAllText(expected, string.Empty);
-
-                GlobalJsonReader.TryGetPathOfFileAbove(filename, directory, out string result).Should().BeTrue();
-
-                result.Should().Be(expected);
-            }
-        }
-
-        internal static string WriteGlobalJson(TestDirectory testDirectory, Dictionary<string, string> sdkVersions, string additionalContent = "")
-        {
-            var path = Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName);
-
-            using (var writer = File.CreateText(path))
-            {
-                writer.WriteLine("{");
-                if (sdkVersions != null)
-                {
-                    writer.WriteLine("    \"msbuild-sdks\": {");
-                    writer.WriteLine(string.Join($",{Environment.NewLine}        ", sdkVersions.Select(i => $"\"{i.Key}\": {(i.Value == null ? "null" : $"\"{i.Value}\"")}")));
-                    writer.WriteLine("    }");
+                    GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(expectedVersions);
                 }
-
-                if (!string.IsNullOrWhiteSpace(additionalContent))
+                finally
                 {
-                    writer.Write(additionalContent);
+                    testFolder.Revert();
                 }
-
-                writer.WriteLine("}");
             }
-
-            return path;
         }
     }
 }
