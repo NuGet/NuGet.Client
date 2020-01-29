@@ -9,6 +9,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
+using Xunit;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
 namespace Test.Utility.Signing
@@ -41,14 +42,17 @@ namespace Test.Utility.Signing
 
         public static X509Certificate2 GetCertificateWithPrivateKey(X509Certificate bcCertificate, AsymmetricCipherKeyPair keyPair)
         {
+            Assert.IsType<RsaPrivateCrtKeyParameters>(keyPair.Private);
+
+            var privateKeyParameters = (RsaPrivateCrtKeyParameters)keyPair.Private;
 #if IS_DESKTOP
-            RSA privateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
+            RSA privateKey = DotNetUtilities.ToRSA(privateKeyParameters);
 
             var certificate = new X509Certificate2(bcCertificate.GetEncoded());
 
             certificate.PrivateKey = privateKey;
 #else
-            RSAParameters rsaParameters = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
+            RSAParameters rsaParameters = DotNetUtilities.ToRSAParameters(privateKeyParameters);
 
             var privateKey = new RSACryptoServiceProvider();
 
