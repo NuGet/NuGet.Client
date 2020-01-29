@@ -12,7 +12,7 @@ namespace NuGet.PackageManagement.UI
     /// <summary>
     /// Represents the filter label. E.g. Browse, Installed, Update Available.
     /// </summary>
-    public partial class FilterLabel : UserControl
+    public partial class FilterLabel : TabItem
     {
         public FilterLabel()
         {
