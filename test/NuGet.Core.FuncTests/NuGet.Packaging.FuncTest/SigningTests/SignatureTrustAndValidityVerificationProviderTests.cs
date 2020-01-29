@@ -25,7 +25,6 @@ using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
 using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
-
 namespace NuGet.Packaging.FuncTest
 {
     [Collection(SigningTestCollection.Name)]
@@ -1654,8 +1653,8 @@ namespace NuGet.Packaging.FuncTest
 
                 using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
                 using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                certificate,
-                timestampService.Url))
+                    certificate,
+                    timestampService.Url))
                 using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
                     await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);

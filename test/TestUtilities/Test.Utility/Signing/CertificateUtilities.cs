@@ -50,15 +50,16 @@ namespace Test.Utility.Signing
 #else
             RSAParameters rsaParameters = DotNetUtilities.ToRSAParameters(keyPair.Private as RsaPrivateCrtKeyParameters);
 
-            var rsaCsp = new RSACryptoServiceProvider();
+            var privateKey = new RSACryptoServiceProvider();
 
-            rsaCsp.ImportParameters(rsaParameters);
+            privateKey.ImportParameters(rsaParameters);
 
-            var privateKey = rsaCsp;
+            X509Certificate2 certificate;
 
-            var certificateTmp = new X509Certificate2(bcCertificate.GetEncoded());
-
-            X509Certificate2 certificate = RSACertificateExtensions.CopyWithPrivateKey(certificateTmp, privateKey);
+            using (var certificateTmp = new X509Certificate2(bcCertificate.GetEncoded()))
+            {
+                certificate = RSACertificateExtensions.CopyWithPrivateKey(certificateTmp, privateKey);
+            } 
 #endif
             return certificate;
         }
