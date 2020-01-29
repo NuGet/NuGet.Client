@@ -79,6 +79,7 @@ namespace NuGet.PackageManagement.UI
             _filter = filter;
             OnPropertyChanged(nameof(Id));
             OnPropertyChanged(nameof(PackageReader));
+            OnPropertyChanged(nameof(IconUrl));
             OnPropertyChanged(nameof(PrefixReserved));
 
             var getVersionsTask = searchResultPackage.GetVersionsAsync();
