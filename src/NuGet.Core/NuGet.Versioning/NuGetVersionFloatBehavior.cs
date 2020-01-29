@@ -39,7 +39,7 @@ namespace NuGet.Versioning
         Major,
 
         /// <summary>
-        /// Float major and pre-release
+        /// Float major and pre-release, *-*
         /// </summary>
         AbsoluteLatest,
 
@@ -57,5 +57,11 @@ namespace NuGet.Versioning
         /// Float minor and pre-release x.*-*
         /// </summary>
         PrereleaseMinor,
+
+        /// <summary>
+        /// Float major and prerelease, but only with partial prerelease *-rc.*.
+        /// *-* is captured by <see cref="AbsoluteLatest"/>
+        /// </summary>
+        PrereleaseMajor,
     }
 }

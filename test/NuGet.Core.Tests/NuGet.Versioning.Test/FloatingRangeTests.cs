@@ -9,24 +9,6 @@ namespace NuGet.Versioning.Test
     public class FloatingRangeTests
     {
         [Fact]
-        public void FloatRange_Float()
-        {
-            var range = new VersionRange(NuGetVersion.Parse("2.2.0"), true, null, false, new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest));
-
-            var versions = new List<NuGetVersion>()
-                {
-                    NuGetVersion.Parse("0.1.0"),
-                    NuGetVersion.Parse("1.0.0-alpha.2"),
-                    NuGetVersion.Parse("2.0.0"),
-                    NuGetVersion.Parse("2.2.0"),
-                    NuGetVersion.Parse("3.0.0-pre"),
-                };
-
-            Assert.Equal(NuGetVersion.Parse("3.0.0-pre"), range.FindBestMatch(versions));
-        }
-
-
-        [Fact]
         public void FloatRange_OutsideOfRange()
         {
             var range = VersionRange.Parse("[1.0.*, 2.0.0)");
@@ -274,7 +256,6 @@ namespace NuGet.Versioning.Test
         [Fact]
         public void FloatingRange_FloatPrereleaseNotFoundBest()
         {
-            // "1.0.0-*"
             var range = VersionRange.Parse("1.0.0-*");
 
             var versions = new List<NuGetVersion>()
@@ -427,6 +408,17 @@ namespace NuGet.Versioning.Test
         }
 
         [Fact]
+        public void FloatingRange_ToStringPrereleaseMajor()
+        {
+            var range = VersionRange.Parse("*-rc.*");
+
+            Assert.Equal("[*-rc.*, )", range.ToNormalizedString());
+            Assert.Equal("0.0.0-rc.0", range.MinVersion.ToNormalizedString());
+            Assert.Equal("0.0.0-rc.0", range.Float.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMajor, range.Float.FloatBehavior);
+        }
+
+        [Fact]
         public void FloatingRange_FloatPrereleaseRev()
         {
             var range = FloatRange.Parse("1.0.0.*-*");
@@ -454,6 +446,15 @@ namespace NuGet.Versioning.Test
         }
 
         [Fact]
+        public void FloatingRange_FloatMajorPrerelease()
+        {
+            var range = FloatRange.Parse("*-rc.*");
+
+            Assert.Equal("0.0.0-rc.0", range.MinVersion.ToNormalizedString());
+            Assert.Equal(NuGetVersionFloatBehavior.PrereleaseMajor, range.FloatBehavior);
+        }
+
+        [Fact]
         public void FloatingRange_FloatAbsoluteLatest()
         {
             var range = FloatRange.Parse("*-*");
@@ -461,6 +462,34 @@ namespace NuGet.Versioning.Test
             Assert.Equal("0.0.0-0", range.MinVersion.ToNormalizedString());
             Assert.Equal(NuGetVersionFloatBehavior.AbsoluteLatest, range.FloatBehavior);
         }
+
+        [Theory]
+        [InlineData("*", "0.0.0")]
+        [InlineData("*-*", "0.0.0-0")]
+        [InlineData("1.*", "1.0.0")]
+        [InlineData("1.1.*", "1.1.0")]
+        [InlineData("1.1.*-*", "1.1.0-0")]
+        [InlineData("1.1.1-*", "1.1.1-0")]
+        [InlineData("1.1.1-beta*", "1.1.1-beta")]
+        [InlineData("1.1.1-1*", "1.1.1-1")]
+        [InlineData("1.1.*-beta*", "1.1.0-beta")]
+        [InlineData("1.1.*-1*", "1.1.0-1")]
+        [InlineData("1.0.0-beta.1*", "1.0.0-beta.1")]
+        [InlineData("1.0.*-beta.1*", "1.0.0-beta.1")]
+        [InlineData("1.0.0-b-*", "1.0.0-b-")]
+        [InlineData("1.0.*-b-*", "1.0.0-b-")]
+        [InlineData("1.1.0-beta.*", "1.1.0-beta.0")]
+        [InlineData("1.1.*-beta.*", "1.1.0-beta.0")]
+        [InlineData("*-beta.*", "0.0.0-beta.0")]
+
+        public void FloatRange_ParsesCorrectMinVersion(string versionRange, string normalizedMinVersion)
+        {
+            var range = FloatRange.Parse(versionRange);
+
+            Assert.Equal(normalizedMinVersion, range.MinVersion.ToNormalizedString());
+        }
+
+        /// TODO NK - From here on below, the tests can probably be moved to VersionRangeFloatParsing_FindsBestMatch
 
         [Fact]
         public void FloatRange_FloatingPrereleaseRevision_OutsideOfRange()
@@ -951,6 +980,57 @@ namespace NuGet.Versioning.Test
         }
 
         [Fact]
+        public void FloatRange_PrereleaseMajor_IgnoresPartialPrereleaseMatches()
+        {
+            var range = VersionRange.Parse("[*-alpha*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0"),
+                    NuGetVersion.Parse("0.2.0"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.9.0"),
+                    NuGetVersion.Parse("1.20.0-alph.3"),
+                };
+
+            Assert.Equal("1.9.0", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseMajor_NotMatching_SelectsFirstInRange()
+        {
+            var range = VersionRange.Parse("[*-rc*, )");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("0.1.0-beta"),
+                    NuGetVersion.Parse("1.0.0-alpha.2"),
+                    NuGetVersion.Parse("1.9.0-alpha.2"),
+                    NuGetVersion.Parse("2.0.0-alpha.2"),
+                };
+
+            Assert.Equal("0.1.0-beta", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
+        public void FloatRange_PrereleaseMajor_BestMatching()
+        {
+            var range = VersionRange.Parse("*-rc*");
+
+            var versions = new List<NuGetVersion>()
+                {
+                    NuGetVersion.Parse("1.1.0"),
+                    NuGetVersion.Parse("1.2.0-rc.1"),
+                    NuGetVersion.Parse("1.2.0-rc.2"),
+                    NuGetVersion.Parse("1.2.0-rc1"),
+                    NuGetVersion.Parse("2.0.0"),
+                    NuGetVersion.Parse("3.0.0-beta.1")
+                };
+
+            Assert.Equal("2.0.0", range.FindBestMatch(versions).ToNormalizedString());
+        }
+
+        [Fact]
         public void FloatRange_FloatingPrereleaseRevision_WithPartialMatch()
         {
             var range = VersionRange.Parse("[1.1.1.1*-*, 2.0.0)");
@@ -1063,32 +1143,6 @@ namespace NuGet.Versioning.Test
                 };
 
             Assert.Equal("1.9.0--beta", range.FindBestMatch(versions).ToNormalizedString());
-        }
-
-
-        [Theory]
-        [InlineData("*", "0.0.0")]
-        [InlineData("*-*", "0.0.0-0")]
-        [InlineData("1.*", "1.0.0")]
-        [InlineData("1.1.*", "1.1.0")]
-        [InlineData("1.1.*-*", "1.1.0-0")]
-        [InlineData("1.1.1-*", "1.1.1-0")]
-        [InlineData("1.1.1-beta*", "1.1.1-beta")]
-        [InlineData("1.1.1-1*", "1.1.1-1")]
-        [InlineData("1.1.*-beta*", "1.1.0-beta")]
-        [InlineData("1.1.*-1*", "1.1.0-1")]
-        [InlineData("1.0.0-beta.1*", "1.0.0-beta.1")]
-        [InlineData("1.0.*-beta.1*", "1.0.0-beta.1")]
-        [InlineData("1.0.0-b-*", "1.0.0-b-")]
-        [InlineData("1.0.*-b-*", "1.0.0-b-")]
-        [InlineData("1.1.0-beta.*", "1.1.0-beta.0")]
-        [InlineData("1.1.*-beta.*", "1.1.0-beta.0")]
-
-        public void FloatRange_ParsesCorrectMinVersion(string versionRange, string normalizedMinVersion)
-        {
-            var range = FloatRange.Parse(versionRange);
-
-            Assert.Equal(normalizedMinVersion, range.MinVersion.ToNormalizedString());
         }
     }
 }

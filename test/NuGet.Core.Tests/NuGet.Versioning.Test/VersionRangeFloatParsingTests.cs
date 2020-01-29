@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace NuGet.Versioning.Test
@@ -23,6 +22,11 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0--*", "1.0.0--")]
         [InlineData("1.0.0-a-*", "1.0.0-a-")]
         [InlineData("1.0.0-a.*", "1.0.0-a.0")]
+        [InlineData("1.*-*", "1.0.0-0")]
+        [InlineData("1.0.*-0*", "1.0.0-0")]
+        [InlineData("1.0.*--*", "1.0.0--")]
+        [InlineData("1.0.*-a-*", "1.0.0-a-")]
+        [InlineData("1.0.*-a.*", "1.0.0-a.0")]
         public void VersionRangeFloatParsing_PrereleaseWithNumericOnlyLabelVerifyMinVersion(string rangeString, string expected)
         {
             var range = VersionRange.Parse(rangeString);
@@ -46,6 +50,9 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-a*", "1.0.0-a.0")]
         [InlineData("1.0.0-a*", "1.0.0-a-0")]
         [InlineData("1.0.0-a*", "1.0.0-a")]
+        [InlineData("1.0.*-a*", "1.0.0-a")]
+        [InlineData("1.*-a*", "1.0.0-a")]
+        [InlineData("*-a*", "1.0.0-a")]
         public void VersionRangeFloatParsing_VerifySatisfiesForFloatingRange(string rangeString, string version)
         {
             var range = VersionRange.Parse(rangeString);
@@ -59,6 +66,21 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0-a-*", "a-", "a-")]
         [InlineData("1.0.0-a.*", "a.0", "a.")]
         [InlineData("1.0.0-0*", "0", "0")]
+        [InlineData("1.0.*-0*", "0", "0")]
+        [InlineData("1.*-0*", "0", "0")]
+        [InlineData("*-0*", "0", "0")]
+        [InlineData("1.0.*-*", "0", "")]
+        [InlineData("1.*-*", "0", "")]
+        [InlineData("*-*", "0", "")]
+        [InlineData("1.0.*-a*", "a", "a")]
+        [InlineData("1.*-a*", "a", "a")]
+        [InlineData("*-a*", "a", "a")]
+        [InlineData("1.0.*-a-*", "a-", "a-")]
+        [InlineData("1.*-a-*", "a-", "a-")]
+        [InlineData("*-a-*", "a-", "a-")]
+        [InlineData("1.0.*-a.*", "a.0", "a.")]
+        [InlineData("1.*-a.*", "a.0", "a.")]
+        [InlineData("*-a.*", "a.0", "a.")]
         public void VersionRangeFloatParsing_VerifyReleaseLabels(string rangeString, string versionLabel, string originalLabel)
         {
             var range = VersionRange.Parse(rangeString);
@@ -164,8 +186,16 @@ namespace NuGet.Versioning.Test
         [InlineData("1.*.0-beta-*")]
         [InlineData("1.*.0-beta")]
         [InlineData("1.0.0.0.*")]
-        //[InlineData("1.0.0*")]
         [InlineData("=1.0.*")]
+        [InlineData("1.0.0+*")]
+        [InlineData("1.0.**")]
+        [InlineData("1.0.*-*bla")]
+        [InlineData("1.0.*-*bla+*")]
+        [InlineData("**")]
+        [InlineData("1.0.0-preview.*+blabla")]
+        [InlineData("1.0.*--")]
+        [InlineData("1.0.*-alpha*+")]
+        [InlineData("1.0.*-")]
         public void VersionRangeFloatParsing_Invalid(string rangeString)
         {
             VersionRange range = null;
@@ -185,6 +215,14 @@ namespace NuGet.Versioning.Test
         [InlineData("[1.0.0-beta.*, 2.0.0)")]
         [InlineData("1.0.0-beta.*")]
         [InlineData("1.0.0-beta-*")]
+        [InlineData("1.0.*-bla*")]
+        [InlineData("1.0.*-*")]
+        [InlineData("1.0.*-preview.1.*")]
+        [InlineData("1.0.*-preview.1*")]
+        [InlineData("1.0.0--")]
+        [InlineData("1.0.0-bla*")]
+        [InlineData("1.0.*--*")]
+        [InlineData("1.0.0--*")]
         public void VersionRangeFloatParsing_Valid(string rangeString)
         {
             VersionRange range = null;
@@ -218,13 +256,20 @@ namespace NuGet.Versioning.Test
             Assert.Equal(rangeString, range.Float.ToString());
         }
 
-
         [Theory]
         [InlineData("1.0.0;2.0.0", "*", "2.0.0")]
         [InlineData("1.0.0;2.0.0", "0.*", "1.0.0")]
         [InlineData("1.0.0;2.0.0", "[*, )", "2.0.0")]
         [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, )", "2.0.0")]
         [InlineData("1.0.0;2.0.0;3.0.0", "(1.0.*, 2.0.0)", null)]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "*", "2.0.0")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "1.*", "1.1.0")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "1.2.0-*", "1.2.0-rc.2")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "*-*", "3.0.0-beta.1")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "1.*-*", "1.2.0-rc.2")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;2.0.0;3.0.0-beta.1", "*-rc.*", "2.0.0")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;1.2.0-rc1;2.0.0;3.0.0-beta.1", "1.*-rc*", "1.2.0-rc1")]
+        [InlineData("1.1.0;1.2.0-rc.1;1.2.0-rc.2;1.2.0-rc1;1.10.0;2.0.0;3.0.0-beta.1", "1.1*-*", "1.10.0")]
         public void VersionRangeFloatParsing_FindsBestMatch(string availableVersions, string declaredRange, string expectedVersion)
         {
             var range = VersionRange.Parse(declaredRange);

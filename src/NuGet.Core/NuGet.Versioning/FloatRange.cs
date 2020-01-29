@@ -123,6 +123,12 @@ namespace NuGet.Versioning
                        && ((version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
                            || !version.IsPrerelease);
                 }
+                else if (FloatBehavior == NuGetVersionFloatBehavior.PrereleaseMajor)
+                {
+                    // allow the stable version to match
+                    return (version.IsPrerelease && version.Release.StartsWith(_releasePrefix, StringComparison.OrdinalIgnoreCase))
+                           || !version.IsPrerelease;
+                }
                 else if (_floatBehavior == NuGetVersionFloatBehavior.Prerelease)
                 {
                     // allow the stable version to match
@@ -184,7 +190,7 @@ namespace NuGet.Versioning
                 else if (versionString.Length == 3
                     && firstStarPosition == 0 && lastStarPosition == 2 && versionString[1] == '-')
                 {
-                    range = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest, new NuGetVersion("0.0.0-0"));
+                    range = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest, new NuGetVersion("0.0.0-0"), releasePrefix: string.Empty);
                 }
                 else if (firstStarPosition != lastStarPosition && lastStarPosition != -1 && versionString.IndexOf('+') == -1)
                 {
@@ -202,17 +208,22 @@ namespace NuGet.Versioning
                         var stablePart = versionString.Substring(0, dashPosition - 1); // Get the part without the *
                         stablePart += "0";
                         var versionParts = stablePart.Split('.').Length;
-                        if (versionParts == 2)
+                        switch (versionParts)
                         {
-                            behavior = NuGetVersionFloatBehavior.PrereleaseMinor;
-                        }
-                        else if (versionParts == 3)
-                        {
-                            behavior = NuGetVersionFloatBehavior.PrereleasePatch;
-                        }
-                        else if (versionParts == 4)
-                        {
-                            behavior = NuGetVersionFloatBehavior.PrereleaseRevision;
+                            case 1:
+                                behavior = NuGetVersionFloatBehavior.PrereleaseMajor;
+                                break;
+                            case 2:
+                                behavior = NuGetVersionFloatBehavior.PrereleaseMinor;
+                                break;
+                            case 3:
+                                behavior = NuGetVersionFloatBehavior.PrereleasePatch;
+                                break;
+                            case 4:
+                                behavior = NuGetVersionFloatBehavior.PrereleaseRevision;
+                                break;
+                            default:
+                                break;
                         }
 
                         var releaseVersion = versionString.Substring(dashPosition + 1);
@@ -338,6 +349,9 @@ namespace NuGet.Versioning
                     break;
                 case NuGetVersionFloatBehavior.PrereleaseMinor:
                     result = string.Format(CultureInfo.InvariantCulture, "{0}.*-{1}*", MinVersion.Major, _releasePrefix);
+                    break;
+                case NuGetVersionFloatBehavior.PrereleaseMajor:
+                    result = string.Format(CultureInfo.InvariantCulture, "*-{1}*", MinVersion.Major, _releasePrefix);
                     break;
                 case NuGetVersionFloatBehavior.AbsoluteLatest:
                     result = "*-*";
