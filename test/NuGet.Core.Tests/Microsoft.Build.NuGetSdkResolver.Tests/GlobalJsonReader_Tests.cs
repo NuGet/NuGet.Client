@@ -27,23 +27,23 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
         }
 
         [Fact]
-        public void EmptyVersionsAreIgnored()
+        public void GlobalJsonWithComments()
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var context = new MockSdkResolverContext(Path.Combine(testDirectory.Path, "foo.proj"));
+                File.WriteAllText(
+                    Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName),
+                    @"{
+  // This is a comment
+  ""msbuild-sdks"": {
+    /* This is another comment */
+    ""foo"": ""1.0.0""
+  }
+}");
 
-                WriteGlobalJson(
-                    testDirectory,
-                    new Dictionary<string, string>
-                    {
-                        ["foo"] = "1.0.0",
-                        ["bar"] = "",
-                        ["baz"] = "  ",
-                        ["bax"] = null
-                    });
+                var context = new MockSdkResolverContext(Path.Combine(testDirectory, "foo.proj"));
 
-                GlobalJsonReader.GetMSBuildSdkVersions(context).Should().Equal(new Dictionary<string, string>
+                GlobalJsonReader.GetMSBuildSdkVersions(context).ShouldAllBeEquivalentTo(new Dictionary<string, string>
                 {
                     ["foo"] = "1.0.0"
                 });
@@ -69,7 +69,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
 
                 context.MockSdkLogger.LoggedMessages.Count.Should().Be(1);
                 context.MockSdkLogger.LoggedMessages.First().Key.Should().Be(
-                    $"Failed to parse \"{globalJsonPath}\". Encountered unexpected character 'a'.");
+                    $"Failed to parse \"{globalJsonPath}\". Invalid JavaScript property identifier character: }}. Path 'msbuild-sdks', line 6, position 5.");
             }
         }
 
@@ -92,40 +92,9 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
             }
         }
 
-        [Theory]
-        [InlineData("one")]
-        [InlineData("one", "two")]
-        [InlineData("one", "two", "three")]
-        public void TryGetPathOfFileAboveRecursive(params string[] directories)
+        internal static string WriteGlobalJson(string directory, Dictionary<string, string> sdkVersions, string additionalContent = "")
         {
-            const string filename = "test.txt";
-
-            using (var testDirectory = TestDirectory.Create())
-            {
-                var paths = new List<string>
-                {
-                    testDirectory.Path
-                };
-
-                paths.AddRange(directories);
-
-                var directory = new DirectoryInfo(Path.Combine(paths.ToArray()));
-
-                directory.Create();
-
-                var expected = Path.Combine(testDirectory.Path, filename);
-
-                File.WriteAllText(expected, string.Empty);
-
-                GlobalJsonReader.TryGetPathOfFileAbove(filename, directory, out string result).Should().BeTrue();
-
-                result.Should().Be(expected);
-            }
-        }
-
-        internal static string WriteGlobalJson(TestDirectory testDirectory, Dictionary<string, string> sdkVersions, string additionalContent = "")
-        {
-            var path = Path.Combine(testDirectory, GlobalJsonReader.GlobalJsonFileName);
+            var path = Path.Combine(directory, GlobalJsonReader.GlobalJsonFileName);
 
             using (var writer = File.CreateText(path))
             {
@@ -133,7 +102,7 @@ namespace Microsoft.Build.NuGetSdkResolver.Test
                 if (sdkVersions != null)
                 {
                     writer.WriteLine("    \"msbuild-sdks\": {");
-                    writer.WriteLine(string.Join($",{Environment.NewLine}        ", sdkVersions.Select(i => $"\"{i.Key}\": {(i.Value == null ? "null" : $"\"{i.Value}\"")}")));
+                    writer.WriteLine(string.Join($",{Environment.NewLine}        ", sdkVersions.Select(i => $"\"{i.Key}\": \"{i.Value}\"")));
                     writer.WriteLine("    }");
                 }
 

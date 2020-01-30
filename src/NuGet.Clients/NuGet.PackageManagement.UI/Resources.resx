@@ -824,7 +824,7 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Use arrow keys to change the size of the sections</value>
   </data>
   <data name="Accessibility_ThumbName" xml:space="preserve">
-    <value>Thumb</value>
+    <value>splitter for Packages list</value>
   </data>
   <data name="ImageCaption_HelpIcon" xml:space="preserve">
     <value>Help icon</value>
@@ -870,5 +870,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Label_Installed_DeprecatedWarning" xml:space="preserve">
     <value>You have {0} deprecated package(s) installed.</value>
+  </data>
+  <data name="Label_DeprecationReasons" xml:space="preserve">
+    <value>Deprecation reason</value>
   </data>
 </root>

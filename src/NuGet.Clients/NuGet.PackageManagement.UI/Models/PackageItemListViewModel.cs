@@ -408,7 +408,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public Lazy<PackageReaderBase> PackageReader { get; set; }
+        public Func<PackageReaderBase> PackageReader { get; set; }
 
         public override string ToString()
         {

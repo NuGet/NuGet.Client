@@ -196,6 +196,7 @@ Function Install-DotnetCLI {
         New-Item -ItemType Directory -Force -Path $cli.Root | Out-Null
 
         Invoke-WebRequest 'https://dot.net/v1/dotnet-install.ps1' -OutFile $DotNetInstall
+        Trace-Log "$DotNetInstall -Channel $($cli.Channel) -i $($cli.Root) -Version $($cli.Version) -Architecture $arch"
         & $DotNetInstall -Channel $cli.Channel -i $cli.Root -Version $cli.Version -Architecture $arch
     }
 
@@ -204,6 +205,7 @@ Function Install-DotnetCLI {
     }
 
     # Install the 2.x runtime because our tests target netcoreapp2x
+    Trace-Log "$DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath"
     & $DotNetInstall -Runtime dotnet -Channel 2.2 -i $CLIRoot -NoPath
     # Display build info
     & $DotNetExe --info

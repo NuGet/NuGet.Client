@@ -19,12 +19,12 @@ namespace NuGet.Build.Tasks
     /// </summary>
     public sealed class RestoreTaskEx : Task, ICancelableTask, IDisposable
     {
+        internal readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
         /// <summary>
         /// Gets the full path to this assembly.
         /// </summary>
         private static readonly Lazy<FileInfo> ThisAssemblyLazy = new Lazy<FileInfo>(() => new FileInfo(typeof(RestoreTaskEx).Assembly.Location));
-
-        private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
 
         /// <summary>
         /// Gets or sets a value indicating whether or not parallel restore should be enabled.
@@ -60,6 +60,11 @@ namespace NuGet.Build.Tasks
         public bool Interactive { get; set; }
 
         /// <summary>
+        /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.
+        /// </summary>
+        public bool IsSolutionPathDefined => !string.IsNullOrWhiteSpace(SolutionPath) && !string.Equals(SolutionPath, "*Undefined*", StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
         /// Gets or sets the full path to the directory containing MSBuild.
         /// </summary>
         [Required]
@@ -90,11 +95,6 @@ namespace NuGet.Build.Tasks
         /// Gets or sets the full path to the solution file (if any) that is being built.
         /// </summary>
         public string SolutionPath { get; set; }
-
-        /// <summary>
-        /// Gets a value indicating whether or not <see cref="SolutionPath" /> contains a value.
-        /// </summary>
-        private bool IsSolutionPathDefined => !string.IsNullOrWhiteSpace(SolutionPath) && !string.Equals(SolutionPath, "*Undefined*", StringComparison.OrdinalIgnoreCase);
 
         /// <inheritdoc cref="ICancelableTask.Cancel" />
         public void Cancel() => _cancellationTokenSource.Cancel();
@@ -171,7 +171,7 @@ namespace NuGet.Build.Tasks
         /// Gets the command-line arguments to use when launching the process that executes the restore.
         /// </summary>
         /// <returns>An <see cref="IEnumerable{String}" /> containing the command-line arguments that need to separated by spaces and surrounded by quotes.</returns>
-        private IEnumerable<string> GetCommandLineArguments()
+        internal IEnumerable<string> GetCommandLineArguments()
         {
 #if IS_CORECLR
             // The full path to the executable for dotnet core
@@ -209,6 +209,20 @@ namespace NuGet.Build.Tasks
 
             // Semicolon delimited list of MSBuild global properties
             yield return string.Join(";", GetGlobalProperties().Select(i => $"{i.Key}={i.Value}"));
+        }
+
+        /// <summary>
+        /// Gets the file name of the process.
+        /// </summary>
+        /// <returns>The full path to the file for the process.</returns>
+        internal string GetProcessFileName()
+        {
+#if IS_CORECLR
+            // In .NET Core, the path to dotnet is the file to run
+            return Path.GetFullPath(Path.Combine(MSBuildBinPath, "..", "..", "dotnet"));
+#else
+            return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.exe"));
+#endif
         }
 
         private Dictionary<string, string> GetGlobalProperties()
@@ -254,20 +268,6 @@ namespace NuGet.Build.Tasks
             }
 
             return msBuildGlobalProperties;
-        }
-
-        /// <summary>
-        /// Gets the file name of the process.
-        /// </summary>
-        /// <returns>The full path to the file for the process.</returns>
-        private string GetProcessFileName()
-        {
-#if IS_CORECLR
-            // In .NET Core, the path to dotnet is the file to run
-            return Path.GetFullPath(Path.Combine(MSBuildBinPath, "..", "..", "dotnet"));
-#else
-            return Path.Combine(ThisAssemblyLazy.Value.DirectoryName, Path.ChangeExtension(ThisAssemblyLazy.Value.Name, ".Console.exe"));
-#endif
         }
     }
 }

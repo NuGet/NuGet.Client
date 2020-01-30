@@ -109,6 +109,7 @@
                     </Grid.RowDefinitions>
                     <Image
                       Grid.Row="0"
+                      AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageIcon}"
                       Style="{StaticResource PackageIconImageStyle}"
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
@@ -247,6 +248,7 @@
                         Visibility="Visible"
                         VerticalAlignment="Center"
                         ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
+                        AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
 
                       <!-- installed version -->

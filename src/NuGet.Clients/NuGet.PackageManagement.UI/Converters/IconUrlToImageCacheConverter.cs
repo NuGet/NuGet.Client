@@ -36,24 +36,15 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// Converts IconUrl from PackageItemListViewModel to an image represented by a BitmapSource
         /// </summary>
+        /// <param name="values">An array of two elements containing the IconUri and a generator function of PackageReaderBase objects</param>
+        /// <param name="targetType">unused</param>
+        /// <param name="parameter">A BitmapImage that will be used as the default package icon</param>
+        /// <param name="culture">unused</param>
+        /// <returns>A BitmapSource with the image</returns>
         /// <remarks>
         /// We bind to a BitmapImage instead of a Uri so that we can control the decode size, since we are displaying 32x32 images, while many of the images are 128x128 or larger.
         /// This leads to a memory savings.
         /// </remarks>
-        /// <param name="values">
-        /// <list type="bullet">
-        /// <item>
-        /// <description>values[0]: IconUrl that points to a URL o a local file</description>
-        /// </item>
-        /// <item>
-        /// <description>values[1]: An <c>PackageArchiveReader</c> to read from the local package for embedded icons</description>
-        /// </item>
-        /// </list>
-        /// </param>
-        /// <param name="targetType">unused</param>
-        /// <param name="parameter">A BitmapImage with the default package icon</param>
-        /// <param name="culture">unused</param>
-        /// <returns>A BitmapSource with the image</returns>
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
         {
             if (values == null || values.Length == 0)
@@ -86,39 +77,45 @@ namespace NuGet.PackageManagement.UI
 
             BitmapSource imageResult;
 
-            // Check if the URI is an Embedded Icon URI
             if (IsEmbeddedIconUri(iconUrl))
             {
+                var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
                 // Check if we have enough info to read the icon from the package
-                if (values.Length == 2 && values[1] is Lazy<PackageReaderBase>)
+                if (values.Length == 2 && values[1] is Func<PackageReaderBase> lazyReader)
                 {
                     try
                     {
-                        var lazyPar = (Lazy<PackageReaderBase>)values[1];
-                        var par = lazyPar.Value as PackageArchiveReader;
-                        var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
-                        iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open(); // This stream is closed in BitmapImage events
-
-
-                        iconBitmapImage.DecodeFailed += (sender, args) =>
+                        PackageReaderBase reader = lazyReader(); // Always returns a new reader. That avoids using an already disposed one
+                        if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
                         {
-                            par.Dispose();
-                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                            iconBitmapImage.StreamSource = par.GetEntry(iconEntry).Open();
+
+                            iconBitmapImage.DecodeFailed += (sender, args) =>
+                            {
+                                reader.Dispose();
+                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                                AddToCache(iconUrl, defaultPackageIcon);
+                            };
+                            iconBitmapImage.DownloadFailed += (sender, args) =>
+                            {
+                                reader.Dispose();
+                                IconBitmapImage_DownloadOrDecodeFailed(sender, args);
+                                AddToCache(iconUrl, defaultPackageIcon);
+                            };
+                            iconBitmapImage.DownloadCompleted += (sender, args) =>
+                            {
+                                reader.Dispose();
+                                IconBitmapImage_DownloadCompleted(sender, args);
+                            };
+
+                            imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                        }
+                        else // we cannot use the reader object
+                        {
+                            reader?.Dispose();
                             AddToCache(iconUrl, defaultPackageIcon);
-                        };
-                        iconBitmapImage.DownloadFailed += (sender, args) =>
-                        {
-                            par.Dispose();
-                            IconBitmapImage_DownloadOrDecodeFailed(sender, args);
-                            AddToCache(iconUrl, defaultPackageIcon);
-                        };
-                        iconBitmapImage.DownloadCompleted += (sender, args) =>
-                        {
-                            par.Dispose();
-                            IconBitmapImage_DownloadCompleted(sender, args);
-                        };
-
-                        imageResult = FinishImageProcessing(iconBitmapImage, iconUrl, defaultPackageIcon);
+                            imageResult = defaultPackageIcon;
+                        }
                     }
                     catch (Exception)
                     {
@@ -126,9 +123,7 @@ namespace NuGet.PackageManagement.UI
                         imageResult = defaultPackageIcon;
                     }
                 }
-                // Identified an embedded icon URI but, we are unable to process it
-                // cache and return the default image
-                else
+                else // Identified an embedded icon URI, but we are unable to process it
                 {
                     AddToCache(iconUrl, defaultPackageIcon);
                     imageResult = defaultPackageIcon;
@@ -218,7 +213,7 @@ namespace NuGet.PackageManagement.UI
 
             var uri = bitmapImage.UriSource;
 
-            string cacheKey = uri != null ? uri.ToString() : string.Empty;
+            string cacheKey = uri == null ? string.Empty : uri.ToString();
             // Fix the bitmap image cache to have default package icon, if some other failure didn't already do that.            
             var cachedBitmapImage = BitmapImageCache.Get(cacheKey) as BitmapSource;
             if (cachedBitmapImage != Images.DefaultPackageIcon)

@@ -169,7 +169,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Thumb.
+        ///   Looks up a localized string similar to splitter for Packages list.
         /// </summary>
         public static string Accessibility_ThumbName {
             get {
@@ -795,6 +795,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Label_DeprecationAlternatePackage {
             get {
                 return ResourceManager.GetString("Label_DeprecationAlternatePackage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Deprecation Reasons.
+        /// </summary>
+        public static string Label_DeprecationReasons {
+            get {
+                return ResourceManager.GetString("Label_DeprecationReasons", resourceCulture);
             }
         }
         
