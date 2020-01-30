@@ -173,6 +173,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+            SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
         }
 
 
@@ -498,6 +499,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
+                    SetCentralDependencies(writer, framework.CentralVersionDependencies.Values); ;
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
@@ -525,6 +527,23 @@ namespace NuGet.ProjectModel
                 }
                 writer.WriteObjectEnd();
             }
+        }
+
+        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralVersionDependency> centralDependencies)
+        {
+            if (!centralDependencies.Any())
+            {
+                return;
+            }
+
+            writer.WriteObjectStart("centralDependencies");
+
+            foreach (var dependency in centralDependencies.OrderBy(dep => dep.Name))
+            {
+                writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
+
+            }
+            writer.WriteObjectEnd();
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)

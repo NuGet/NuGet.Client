@@ -2744,8 +2744,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
                 Assert.Equal("[1.2.1, )", project1Spec.TargetFrameworks.First().Dependencies[1].LibraryRange.VersionRange.ToNormalizedString());
 
-                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralVersionDependencies[0].Name);
-                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies[0].VersionRange.ToNormalizedString());
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralVersionDependencies.First().Value.Name);
+                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies.First().Value.VersionRange.ToNormalizedString());
                
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
@@ -2817,8 +2817,8 @@ namespace NuGet.Commands.Test
                 Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
 
-                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralVersionDependencies[0].Name);
-                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies[0].VersionRange.ToNormalizedString());
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralVersionDependencies.First().Value.Name);
+                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies.First().Value.VersionRange.ToNormalizedString());
 
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }

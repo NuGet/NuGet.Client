@@ -70,15 +70,6 @@ namespace NuGet.ProjectModel {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Projects that use central packge version management should not define the version on the PackageReference items but on the PackageVersion items. The following projects violate this rule.  {0}:{1}..
-        /// </summary>
-        internal static string Error_CentralPackageVersions_VersionsNotAllowed {
-            get {
-                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Invalid dependency target value &apos;{0}&apos;..
         /// </summary>
         internal static string InvalidDependencyTarget {

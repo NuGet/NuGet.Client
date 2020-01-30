@@ -110,32 +110,34 @@ namespace NuGet.Commands
 
                 // Validate DGSpec
                 // Log and return if any error
-                if (!_request.DependencyGraphSpec.ValidateProjects(out var projectErrors))
+                if (_request.Project.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
-                    var errorTasks = projectErrors.Select( error => _logger.LogAsync(RestoreLogMessage.CreateError(error.nugetErrorCode, error.message))).ToArray();
+                    var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.LibraryRange.VersionRange.IsCentral && !d.AutoReferenced));
+                    if (dependenciesWithDefinedVersion.Any())
+                    {
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU5200, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, _request.Project.Name, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
 
-                    Task.WaitAll(errorTasks);
+                        // Replay Warnings and Errors from an existing lock file
+                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
 
-                    // Replay Warnings and Errors from an existing lock file
-                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
+                        restoreTime.Stop();
+                        _success = false;
 
-                    restoreTime.Stop();
-                    _success = false;
-
-                    return new RestoreResult(
-                        success: _success,
-                        restoreGraphs: new List<RestoreTargetGraph>(),
-                        compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                        msbuildFiles: new List<MSBuildOutputFile>(),
-                        lockFile: _request.ExistingLockFile,
-                        previousLockFile: _request.ExistingLockFile,
-                        lockFilePath: _request.ExistingLockFile?.Path,
-                        cacheFile: null,
-                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                        packagesLockFilePath: null,
-                        packagesLockFile: null,
-                        projectStyle: _request.ProjectStyle,
-                        elapsedTime: restoreTime.Elapsed);
+                        return new RestoreResult(
+                            success: _success,
+                            restoreGraphs: new List<RestoreTargetGraph>(),
+                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
+                            msbuildFiles: new List<MSBuildOutputFile>(),
+                            lockFile: _request.ExistingLockFile,
+                            previousLockFile: _request.ExistingLockFile,
+                            lockFilePath: _request.ExistingLockFile?.Path,
+                            cacheFile: null,
+                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                            packagesLockFilePath: null,
+                            packagesLockFile: null,
+                            projectStyle: _request.ProjectStyle,
+                            elapsedTime: restoreTime.Elapsed);
+                    }
                 }
 
                 // Local package folders (non-sources)

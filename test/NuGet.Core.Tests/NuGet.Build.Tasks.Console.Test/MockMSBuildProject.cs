@@ -35,10 +35,10 @@ namespace NuGet.Build.Tasks.Console.Test
         {
         }
 
-        public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildProjectItem>> items)
+        public MockMSBuildProject(string fullPath, IDictionary<string, string> properties, IDictionary<string, IList<IMSBuildItem>> items)
             : base(Path.GetFileName(fullPath), properties ?? new Dictionary<string, string>())
         {
-            Items = items ?? new Dictionary<string, IList<IMSBuildProjectItem>>();
+            Items = items ?? new Dictionary<string, IList<IMSBuildItem>>();
 
             Directory = Path.GetDirectoryName(fullPath);
 
@@ -49,9 +49,9 @@ namespace NuGet.Build.Tasks.Console.Test
 
         public string FullPath { get; }
 
-        public IDictionary<string, IList<IMSBuildProjectItem>> Items { get; set; }
+        public IDictionary<string, IList<IMSBuildItem>> Items { get; set; }
 
-        public IEnumerable<IMSBuildProjectItem> GetItems(string name)
+        public IEnumerable<IMSBuildItem> GetItems(string name)
         {
             return Items.TryGetValue(name, out var items) ? items : null;
         }

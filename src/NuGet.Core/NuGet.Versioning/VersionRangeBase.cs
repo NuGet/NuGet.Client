@@ -14,7 +14,7 @@ namespace NuGet.Versioning
         private readonly bool _includeMaxVersion;
         private readonly NuGetVersion _minVersion;
         private readonly NuGetVersion _maxVersion;
-        private readonly bool _default = false;
+        private readonly bool _isCentral = false;
 
         /// <summary>
         /// Creates a VersionRange with the given min and max.
@@ -23,19 +23,19 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        /// <param name="isDefault">True if the version range was set as a default.</param>
+        /// <param name="isCentral">True if the version range was set for a central version.</param>
         public VersionRangeBase(
             NuGetVersion minVersion = null,
             bool includeMinVersion = true,
             NuGetVersion maxVersion = null,
             bool includeMaxVersion = false,
-            bool isDefault = true)
+            bool isCentral = false)
         {
             _minVersion = minVersion;
             _maxVersion = maxVersion;
             _includeMinVersion = includeMinVersion;
             _includeMaxVersion = includeMaxVersion;
-            _default = isDefault;
+            _isCentral = isCentral;
         }
 
         /// <summary>
@@ -159,23 +159,14 @@ namespace NuGet.Versioning
         }
 
         /// <summary>
-        /// True if the version was defined through the project and not by a default value. 
-        /// </summary>
-        public bool Default
-        {
-            get
-            {
-                return _default;
-            }
-        }
-
-        /// <summary>
         /// True if defined in the Central Package Version Management
         /// </summary>
         public bool IsCentral
         {
-            get;
-            set;
+            get
+            {
+                return _isCentral;
+            }
         }
 
         /// <summary>

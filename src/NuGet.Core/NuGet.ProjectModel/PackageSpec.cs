@@ -27,7 +27,6 @@ namespace NuGet.ProjectModel
         public PackageSpec(IList<TargetFrameworkInformation> frameworks)
         {
             TargetFrameworks = frameworks;
-            ErrorLog = new ConcurrentBag<(NuGetLogCode nugetErrorCode, string message)>();
         }
 
         public PackageSpec() : this(new List<TargetFrameworkInformation>())
@@ -224,32 +223,6 @@ namespace NuGet.ProjectModel
             spec.RestoreSettings = RestoreSettings?.Clone();
             spec.RestoreMetadata = RestoreMetadata?.Clone();
             return spec;
-        }
-
-        /// <summary>
-        /// PackageSpec related errors.
-        /// </summary>
-        internal ConcurrentBag<(NuGetLogCode nugetErrorCode, string message)> ErrorLog { get; private set; }
-
-        /// <summary>
-        /// Updates the <see cref="PackageSpec.TargetFrameworks"/> to account for the CentralPackageVersion management. 
-        /// </summary>
-        /// <returns></returns>
-        internal PackageSpec ToCentralPackageVersionPackageSpec()
-        {
-            if (RestoreMetadata.CentralPackageVersionsEnabled)
-            {
-                TargetFrameworks = TargetFrameworks?.Select((item) =>
-                {
-                    if(!item.TryArrangeCentralPackageVersions(Name, out var error))
-                    {
-                        ErrorLog.Add((NuGetLogCode.NU5200, error));
-                    }
-                    return item;
-                }).ToList();
-            }
-
-            return this;
         }
 
         private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)

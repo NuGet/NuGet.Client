@@ -25,7 +25,7 @@ namespace NuGet.Build.Tasks.Console
         /// Gets items in the project with the specified name.
         /// </summary>
         /// <param name="name">The name of the item to get.</param>
-        /// <returns>An <see cref="IEnumerable{IMSBuildProjectItem}" /> containing the items if any were found.</returns>
-        IEnumerable<IMSBuildProjectItem> GetItems(string name);
+        /// <returns>An <see cref="IEnumerable{IMSBuildItem}" /> containing the items if any were found.</returns>
+        IEnumerable<IMSBuildItem> GetItems(string name);
     }
 }

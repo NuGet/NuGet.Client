@@ -16,8 +16,8 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             ProjectItemInstanceEvaluatedIncludeComparer.Instance
                 .Equals(
-                    new MockMSBuildProjectItem("one", new Dictionary<string, string>()),
-                    new MockMSBuildProjectItem("oNE", new Dictionary<string, string>()))
+                    new MSBuildItem("one", new Dictionary<string, string>()),
+                    new MSBuildItem("oNE", new Dictionary<string, string>()))
                 .Should()
                 .BeTrue();
         }
@@ -27,11 +27,11 @@ namespace NuGet.Build.Tasks.Console.Test
         {
             Action act = () =>
             {
-                var items = new HashSet<IMSBuildProjectItem>(ProjectItemInstanceEvaluatedIncludeComparer.Instance);
+                var items = new HashSet<IMSBuildItem>(ProjectItemInstanceEvaluatedIncludeComparer.Instance);
 
-                items.Add(new MockMSBuildProjectItem("one", new Dictionary<string, string>()));
-                items.Add(new MockMSBuildProjectItem("oNe", new Dictionary<string, string>()));
-                items.Add(new MockMSBuildProjectItem("ONE", new Dictionary<string, string>()));
+                items.Add(new MSBuildItem("one", new Dictionary<string, string>()));
+                items.Add(new MSBuildItem("oNe", new Dictionary<string, string>()));
+                items.Add(new MSBuildItem("ONE", new Dictionary<string, string>()));
 
                 items.Count.Should().Be(1);
             };

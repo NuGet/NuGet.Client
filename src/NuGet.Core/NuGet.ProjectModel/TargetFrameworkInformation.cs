@@ -14,8 +14,6 @@ namespace NuGet.ProjectModel
 {
     public class TargetFrameworkInformation : IEquatable<TargetFrameworkInformation>
     {
-        private IEnumerable<CentralVersionDependency> _centralVersionDependecies = new List<CentralVersionDependency>();
-
         public NuGetFramework FrameworkName { get; set; }
 
         public IList<LibraryDependency> Dependencies { get; set; } = new List<LibraryDependency>();
@@ -44,7 +42,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// List of the package versions defined in the Central package versions management file. 
         /// </summary>
-        public IReadOnlyList<CentralVersionDependency> CentralVersionDependencies { get { return _centralVersionDependecies.ToList(); } }
+        public IDictionary<string, CentralVersionDependency> CentralVersionDependencies { get; } = new Dictionary<string, CentralVersionDependency>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// A set of unique FrameworkReferences
@@ -99,7 +97,7 @@ namespace NuGet.ProjectModel
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
                    FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
-                   CentralVersionDependencies.OrderedEquals(other.CentralVersionDependencies, centralVersion => centralVersion) &&
+                   CentralVersionDependencies.OrderedEquals(other.CentralVersionDependencies, centralVersion => centralVersion.Value) &&
                    string.Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath);
         }
 
@@ -114,42 +112,8 @@ namespace NuGet.ProjectModel
             clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
             clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
             clonedObject.RuntimeIdentifierGraphPath = RuntimeIdentifierGraphPath;
-            clonedObject._centralVersionDependecies = CentralVersionDependencies.Select(item => item.Clone());
+            clonedObject.CentralVersionDependencies.AddRange(CentralVersionDependencies.ToDictionary(item => item.Key, item => item.Value));
             return clonedObject;
-        }
-
-        /// <summary>
-        /// It merges the Central Version information to the PackageVersion information.
-        /// It removes the duplication between the CentralVersions and the PackageReferences.
-        /// </summary>
-        internal bool TryArrangeCentralPackageVersions(string projectName, out string error)
-        {
-            var indexedCPVMInfo = CentralVersionDependencies.ToDictionary(x => x.Name, StringComparer.InvariantCultureIgnoreCase);
-            error = null;
-
-            foreach (var d in Dependencies.Where(d => !d.AutoReferenced && !d.LibraryRange.VersionRange.IsCentral))
-            {
-                // The PackagereReference item should not have an explicit version defined. 
-                if(!d.LibraryRange.VersionRange.Default)
-                {
-                    error = string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, projectName, d.Name);
-                    return false;
-                }
-                if (indexedCPVMInfo.ContainsKey(d.Name))
-                {
-                    d.LibraryRange = indexedCPVMInfo[d.Name];
-                    d.LibraryRange.VersionRange.IsCentral = true;
-                    indexedCPVMInfo.Remove(d.Name);
-                }              
-            }
-
-            _centralVersionDependecies = indexedCPVMInfo.Values.ToList();
-            return true;
-        }
-
-        public void AddCentralPackageVersionInformation(IEnumerable<CentralVersionDependency> centralVersionDependencies)
-        {
-            _centralVersionDependecies = centralVersionDependencies;
         }
     }
 }

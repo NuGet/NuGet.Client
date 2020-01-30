@@ -6,12 +6,12 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -613,7 +613,7 @@ namespace NuGet.Commands
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
-                        versionRange: GetVersionRange(item),
+                        versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? VersionRange.Empty : VersionRange.All),
                         typeConstraint: LibraryDependencyTarget.Package),
 
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
@@ -662,7 +662,7 @@ namespace NuGet.Commands
 
                 foreach (var version in versions)
                 {
-                    var versionRange = GetVersionRange(version);
+                    var versionRange = GetVersionRange(version, defaultValue: VersionRange.All);
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
@@ -731,20 +731,20 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static VersionRange GetVersionRange(IMSBuildItem item)
+        private static VersionRange GetVersionRange(IMSBuildItem item, VersionRange defaultValue)
         {
             var rangeString = item.GetProperty("VersionRange");
-            return GetVersionRange(rangeString);
+            return GetVersionRange(rangeString, defaultValue);
         }
 
-        private static VersionRange GetVersionRange(string rangeString)
+        private static VersionRange GetVersionRange(string rangeString, VersionRange defaultValue)
         {
             if (!string.IsNullOrEmpty(rangeString))
             {
                 return VersionRange.Parse(rangeString);
             }
 
-            return VersionRange.AllDefault;
+            return defaultValue;
         }
 
         private static PackageSpec GetProjectJsonSpec(IMSBuildItem specItem)
@@ -940,16 +940,17 @@ namespace NuGet.Commands
             return logger.LogMessagesAsync(logMessages);
         }
 
-        private static Dictionary<NuGetFramework, List<CentralVersionDependency>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
+        private static Dictionary<NuGetFramework, Dictionary<string, CentralVersionDependency>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
             IList<TargetFrameworkInformation> specFrameworks)
         {
             var centralVersionDependencies = GetItemByType(items, "CentralVersionDependency")?.Distinct(new MSBuildItemComparer()).ToList();
-            var result = new Dictionary<NuGetFramework, List<CentralVersionDependency>>();
+            var result = new Dictionary<NuGetFramework, Dictionary<string, CentralVersionDependency>>();
 
             foreach (var cvd in centralVersionDependencies)
             {
                 var tfms = GetFrameworks(cvd);
-                var dependency = new CentralVersionDependency(cvd.GetProperty("Id"), GetVersionRange(cvd));
+                var version = cvd.GetProperty("VersionRange");
+                var dependency = new CentralVersionDependency(cvd.GetProperty("Id"), !string.IsNullOrWhiteSpace(version) ? VersionRange.ParseCentral(version) : VersionRange.AllCentral);
 
                 if (tfms.Count > 0)
                 {
@@ -957,14 +958,14 @@ namespace NuGet.Commands
                 }
                 else
                 {
-                    AddCentralVersionDependency(result, dependency, specFrameworks.Select(f=>f.FrameworkName));
+                    AddCentralVersionDependency(result, dependency, specFrameworks.Select(f => f.FrameworkName));
                 }
             }
 
             return result;
         }
 
-        private static void AddCentralVersionDependency(Dictionary<NuGetFramework, List<CentralVersionDependency>> centralDependencies,
+        private static void AddCentralVersionDependency(Dictionary<NuGetFramework, Dictionary<string, CentralVersionDependency>> centralDependencies,
             CentralVersionDependency centralDependency,
             IEnumerable<NuGetFramework> frameworks)
         {
@@ -972,11 +973,11 @@ namespace NuGet.Commands
             {
                 if (centralDependencies.ContainsKey(framework))
                 {
-                    centralDependencies[framework].Add(centralDependency);
+                    centralDependencies[framework].Add(centralDependency.Name, centralDependency);
                 }
                 else
                 {
-                    var deps = new List<CentralVersionDependency>() { centralDependency };
+                    var deps = new Dictionary<string, CentralVersionDependency>() { [centralDependency.Name] = centralDependency };
                     centralDependencies.Add(framework, deps);
                 }
             }
@@ -1006,7 +1007,7 @@ namespace NuGet.Commands
             foreach (var framework in centralVersionsDependencies.Keys)
             {
                 var frameworkInfo = spec.GetTargetFramework(framework);
-                frameworkInfo.AddCentralPackageVersionInformation(centralVersionsDependencies[framework]);
+                frameworkInfo.CentralVersionDependencies.AddRange(centralVersionsDependencies[framework]);
             }
         }
     }

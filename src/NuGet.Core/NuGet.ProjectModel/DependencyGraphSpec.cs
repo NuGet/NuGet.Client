@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -204,9 +205,30 @@ namespace NuGet.ProjectModel
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                var projectSpecToAdd = projectSpec.ToCentralPackageVersionPackageSpec();
-                _projects.Add(projectUniqueName, projectSpecToAdd);
+                var projectToRestore = projectSpec;
+                if (projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                {
+                    projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
+                }
+                _projects.Add(projectUniqueName, projectToRestore);
             }
+        }
+
+        internal PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
+        {
+            var newSpec = spec.Clone();
+            foreach(var tfm in newSpec.TargetFrameworks)
+            {
+                foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange is EmptyVersionRange))
+                { 
+                    if (tfm.CentralVersionDependencies.ContainsKey(d.Name))
+                    {
+                        d.LibraryRange = tfm.CentralVersionDependencies[d.Name];
+                    }
+                }
+            }
+
+            return newSpec;
         }
 
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)
@@ -418,26 +440,6 @@ namespace NuGet.ProjectModel
                 .Select(r => r.ProjectUniqueName)
                 .Distinct(PathUtility.GetStringComparerBasedOnOS())
                 .ToArray();
-        }
-
-        /// <summary>
-        /// Validate if the <see cref="PackageSpec"/> projects in the current <see cref="DependencyGraphSpec"/> have any errors.
-        /// </summary>
-        /// <param name="errors">List of collected errors for all the projects.</param>
-        /// <returns>True if no error found.</returns>
-        public bool ValidateProjects(out List<(NuGetLogCode nugetErrorCode, string message)> errors)
-        {
-            errors = new List<(NuGetLogCode nugetErrorCode, string message)>();
-
-            foreach (var p in _projects.Values)
-            {
-                if(p.ErrorLog.Any())
-                {
-                    errors.AddRange(p.ErrorLog);
-                }
-            }
-
-            return !errors.Any();
         }
     }
 }

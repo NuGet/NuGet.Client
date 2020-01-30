@@ -100,10 +100,5 @@ namespace NuGet.LibraryModel
                 Name.Equals(other.Name, StringComparison.OrdinalIgnoreCase) &&
                 EqualityUtility.EqualsWithNullCheck(VersionRange, other.VersionRange);
         }
-
-        public CentralVersionDependency Clone()
-        {
-            return new CentralVersionDependency(Name, VersionRange);
-        }
     }
 }
