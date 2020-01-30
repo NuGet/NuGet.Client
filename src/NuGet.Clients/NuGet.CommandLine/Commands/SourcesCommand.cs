@@ -51,8 +51,7 @@ namespace NuGet.CommandLine
             {
                 if (!Enum.TryParse<SourcesAction>(actionArg, ignoreCase: true, out action))
                 {
-                    Console.WriteLine(string.Format(CultureInfo.CurrentCulture,
-                        NuGetCommand.SourcesCommandUsageSummary));
+                    Console.WriteLine(LocalizedResourceManager.GetString("SourcesCommandUsageSummary"));
                 }
             }
 
