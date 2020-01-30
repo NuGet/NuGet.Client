@@ -94,7 +94,7 @@ namespace Test.Utility.Signing
             return byteList.ToArray();
         }
 #endif
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         /// <summary>
         /// unsigns a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
