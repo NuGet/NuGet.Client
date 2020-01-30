@@ -21,12 +21,22 @@ namespace NuGet.Common
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            //This overloaded method of XmlReader.Create creates an instance of
-            //XmlReaderSettings with default values that are safe
-            using (var reader = XmlReader.Create(filePath))
+            using (var reader = XmlReader.Create(filePath,GetXmlReaderSettings()))
             {
                 return XDocument.Load(reader);
             }
+        }
+
+        private static XmlReaderSettings GetXmlReaderSettings()
+        {
+            return new XmlReaderSettings()
+            {
+                IgnoreWhitespace = true,
+                IgnoreProcessingInstructions = true,
+                IgnoreComments = true,
+                DtdProcessing = DtdProcessing.Prohibit,
+                XmlResolver = null                
+            };
         }
     }
 }

@@ -554,7 +554,7 @@ namespace NuGet.Build.Tasks
                        projectConfigFilePath,
                        ex.Message);
 
-                    throw new XmlException(message,ex);
+                    throw new XmlException(message, ex);
                 }
             }
 
