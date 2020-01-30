@@ -277,7 +277,7 @@ namespace NuGet.Build.Tasks
         /// </summary>
         /// <param name="restoreProjectStyleProperty">The value of the RestoreProjectStyle property value. It can be null.</param>
         /// <returns>The <see cref="ProjectStyle"/>. If the <paramref name="restoreProjectStyleProperty"/> is null the return vale will be null. </returns>
-        public static ProjectStyle? TryGetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty)
+        public static ProjectStyle? GetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty)
         {
             ProjectStyle projectStyle;
             // Allow a user to override by setting RestoreProjectStyle in the project.
@@ -354,7 +354,7 @@ namespace NuGet.Build.Tasks
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
         public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
-            return GetProjectRestoreStyle(TryGetProjectRestoreStyleFromProjectProperty(restoreProjectStyle), hasPackageReferenceItems, projectJsonPath, projectDirectory, projectName, log);
+            return GetProjectRestoreStyle(GetProjectRestoreStyleFromProjectProperty(restoreProjectStyle), hasPackageReferenceItems, projectJsonPath, projectDirectory, projectName, log);
         }
 
         /// <summary>

@@ -731,10 +731,8 @@ namespace NuGet.Build.Tasks.Console
 
             var outputPath = GetRestoreOutputPath(project);
 
-            var projectStyleOrNull = BuildTasksUtility.TryGetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
-
+            var projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
             var cpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);
-
             var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, cpvmEnabled);
 
             var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
@@ -744,8 +742,8 @@ namespace NuGet.Build.Tasks.Console
                 projectDirectory: project.Directory,
                 projectName: project.GetProperty("MSBuildProjectName"),
                 log: MSBuildLogger);
-           
-            var projectStyle = projectStyleResult.ProjectStyle;          
+
+            var projectStyle = projectStyleResult.ProjectStyle;     
 
             var innerNodes = projectsByTargetFramework.Values.ToList();
 
