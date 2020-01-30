@@ -14,6 +14,7 @@ namespace NuGet.CommandLine.Test
     {
         private const string MutexName = "DefaultConfigurationFilePreserver";
         private readonly Mutex _mutex;
+        private bool _disposed = false;
 
         public DefaultConfigurationFilePreserver()
         {
@@ -28,9 +29,28 @@ namespace NuGet.CommandLine.Test
 
         public void Dispose()
         {
-            RestoreDefaultConfigurationFile();
-            _mutex.ReleaseMutex();
-            _mutex.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    RestoreDefaultConfigurationFile();
+                    _mutex.ReleaseMutex();
+                    _mutex.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        ~DefaultConfigurationFilePreserver()
+        {
+            Dispose(false);
         }
 
         private static void BackupAndDeleteDefaultConfigurationFile()
