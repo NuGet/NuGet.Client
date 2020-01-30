@@ -104,13 +104,14 @@ namespace NuGet.Commands
             using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 _operationId = telemetry.OperationId;
+
+                var cpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
+                telemetry.TelemetryEvent[CentralVersionManagementEnabled] = cpvmEnabled;
+
                 var restoreTime = Stopwatch.StartNew();
 
-                telemetry.TelemetryEvent[CentralVersionManagementEnabled] = _request.Project.RestoreMetadata.CentralPackageVersionsEnabled;
-
-                // Validate DGSpec
-                // Log and return if any error
-                if (_request.Project.RestoreMetadata.CentralPackageVersionsEnabled)
+                // The dependencies should not have versions explicitelly defined if cpvm is enabled.
+                if (cpvmEnabled)
                 {
                     var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.LibraryRange.VersionRange.IsCentral && !d.AutoReferenced));
                     if (dependenciesWithDefinedVersion.Any())

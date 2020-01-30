@@ -776,10 +776,8 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal("1.0.0", framework20.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
             Assert.Equal(2, framework20.First().CentralVersionDependencies.Count);
-            Assert.Equal("PackageA", framework20.First().CentralVersionDependencies.First().Value.Name);
-            Assert.Equal("2.0.0", framework20.First().CentralVersionDependencies.First().Value.VersionRange.OriginalString);
-            Assert.Equal("PackageB", framework20.First().CentralVersionDependencies.First().Value.Name);
-            Assert.Equal("3.0.0", framework20.First().CentralVersionDependencies.First().Value.VersionRange.OriginalString);
+            Assert.Equal("2.0.0", framework20.First().CentralVersionDependencies["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework20.First().CentralVersionDependencies["PackageB"].VersionRange.OriginalString);
 
             Assert.Equal(1, framework22.Count);
             Assert.Equal(1, framework22.First().Dependencies.Count);
@@ -787,10 +785,8 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal("11.0.0", framework22.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
             Assert.Equal(2, framework22.First().CentralVersionDependencies.Count);
-            Assert.Equal("PackageA", framework22.First().CentralVersionDependencies.First().Value.Name);
-            Assert.Equal("2.2.2", framework22.First().CentralVersionDependencies.First().Value.VersionRange.OriginalString);
-            Assert.Equal("PackageB", framework22.First().CentralVersionDependencies.First().Value.Name);
-            Assert.Equal("3.2.0", framework22.First().CentralVersionDependencies.First().Value.VersionRange.OriginalString);
+            Assert.Equal("2.2.2", framework22.First().CentralVersionDependencies["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.2.0", framework22.First().CentralVersionDependencies["PackageB"].VersionRange.OriginalString);
         }
     }
 }
