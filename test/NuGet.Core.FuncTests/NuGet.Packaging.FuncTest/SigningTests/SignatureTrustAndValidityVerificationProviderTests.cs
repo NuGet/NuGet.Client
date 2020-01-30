@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ using Test.Utility.Signing;
 using Xunit;
 using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
+using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.FuncTest
 {
@@ -144,10 +146,9 @@ namespace NuGet.Packaging.FuncTest
             };
             var bcCertificate = ca.IssueCertificate(issueOptions);
 
-            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
+            using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, keyPair))
             {
-                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
                 var notAfter = certificate.NotAfter.ToUniversalTime();
 
                 var packageContext = new SimpleTestPackageContext();
@@ -200,11 +201,9 @@ namespace NuGet.Packaging.FuncTest
             var bcCertificate = ca.IssueCertificate(issueOptions);
 
             using (testServer.RegisterResponder(timestampService))
-            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
+            using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, keyPair))
             {
-                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-
                 var packageContext = new SimpleTestPackageContext();
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     certificate,
@@ -1377,28 +1376,24 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateAuthorSignedPackageAsync(
-                        certificate,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
@@ -1656,28 +1651,24 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                        certificate,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
@@ -2017,30 +2008,26 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    _fixture.TrustedTestCertificate.Source.Cert,
+                    certificate,
+                    timestampService.Url,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
-                        _fixture.TrustedTestCertificate.Source.Cert,
-                        certificate,
-                        timestampService.Url,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
