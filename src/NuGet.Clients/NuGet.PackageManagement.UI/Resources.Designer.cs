@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package changes.
+        /// </summary>
+        public static string Accessibility_PackageChanges {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageChanges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package deprecation.
         /// </summary>
         public static string Accessibility_PackageDeprecation {
@@ -799,7 +808,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deprecation Reasons.
+        ///   Looks up a localized string similar to Deprecation reason.
         /// </summary>
         public static string Label_DeprecationReasons {
             get {

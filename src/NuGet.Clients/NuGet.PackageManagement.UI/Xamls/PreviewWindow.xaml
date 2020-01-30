@@ -64,7 +64,8 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        IsTabStop="True">
+        IsTabStop="True"
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageChanges}">
         <ItemsControl
           x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
