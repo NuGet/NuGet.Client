@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -56,7 +57,7 @@ namespace NuGet.PackageManagement.UI
             var model = new PreviewWindowModel(allResults);
 
             var sb = new StringBuilder();
-            sb.AppendLine("Unknown Project");
+            sb.AppendLine(Resources.Preview_UnknownProject);
             sb.AppendLine();
             sb.AppendLine(Resources.Label_UninstalledPackages);
             sb.AppendLine();

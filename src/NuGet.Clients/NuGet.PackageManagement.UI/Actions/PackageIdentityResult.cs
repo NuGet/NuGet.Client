@@ -12,7 +12,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public class PackageIdentityResult : PackageIdentity
     {
-
         public PackageIdentityResult(string id, NuGetVersion version)
             : base(id, version)
         {
@@ -21,19 +20,12 @@ namespace NuGet.PackageManagement.UI
         public PackageIdentityResult(PackageIdentity id)
             : base(id.Id, id.Version)
         {
-
         }
 
-
-        public string AutomationName => GetAccesiblePackageIdentity(this);
-
-        internal static string GetAccesiblePackageIdentity(PackageIdentity pkgId)
-        {
-            return string.Format(
+        public string AutomationName => string.Format(
                 CultureInfo.CurrentUICulture,
                 Resources.Accesibility_PackageIdentity,
-                pkgId.Id,
-                pkgId.Version.ToNormalizedString());
-        }
+                Id,
+                Version.ToNormalizedString());
     }
 }
