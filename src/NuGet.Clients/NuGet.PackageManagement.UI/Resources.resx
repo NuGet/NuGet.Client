@@ -877,4 +877,15 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PackageChanges" xml:space="preserve">
     <value>Package changes</value>
   </data>
+  <data name="Accesibility_PackageIdentity" xml:space="preserve">
+    <value>{0} version {1}</value>
+    <comment>{1} = package id, {2} = package version</comment>
+  </data>
+  <data name="Preview_PackageUpdate" xml:space="preserve">
+    <value>{0} version {1} to {2} version {3}</value>
+    <comment>{0} = Old package Id, {1} = Old package version, {2} = New package version, {2} = New package version</comment>
+  </data>
+  <data name="Preview_UnknownProject" xml:space="preserve">
+    <value>Unknown Project</value>
+  </data>
 </root>

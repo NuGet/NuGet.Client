@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to {0} version {1}.
+        /// </summary>
+        public static string Accesibility_PackageIdentity {
+            get {
+                return ResourceManager.GetString("Accesibility_PackageIdentity", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package changes.
         /// </summary>
         public static string Accessibility_PackageChanges {
@@ -1337,6 +1346,24 @@ namespace NuGet.PackageManagement.UI {
         public static string PackageRestoreWaitMessage {
             get {
                 return ResourceManager.GetString("PackageRestoreWaitMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1} to {2} version {3}.
+        /// </summary>
+        public static string Preview_PackageUpdate {
+            get {
+                return ResourceManager.GetString("Preview_PackageUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown Project.
+        /// </summary>
+        public static string Preview_UnknownProject {
+            get {
+                return ResourceManager.GetString("Preview_UnknownProject", resourceCulture);
             }
         }
         

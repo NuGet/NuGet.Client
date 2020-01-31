@@ -38,12 +38,12 @@ namespace NuGet.PackageManagement.UI
         [Fact]
         public void PreviewWindowModelToString_Test()
         {
-            var added = new List<PackageIdentity>();
-            var deleted = new List<PackageIdentity>();
+            var added = new List<PackageIdentityResult>();
+            var deleted = new List<PackageIdentityResult>();
             var updated = new List<UpdatePreviewResult>();
 
-            added.Add(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3")));
-            deleted.Add(new PackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1")));
+            added.Add(new PackageIdentityResult("PkgA", new Versioning.NuGetVersion("1.2.3")));
+            deleted.Add(new PackageIdentityResult("PkgB", new Versioning.NuGetVersion("3.2.1")));
             updated.Add(new UpdatePreviewResult(
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("1.0.0")),
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("2.0.0"))

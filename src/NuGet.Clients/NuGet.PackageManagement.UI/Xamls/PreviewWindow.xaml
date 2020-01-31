@@ -93,6 +93,11 @@
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=Deleted}"
                     IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
 
@@ -130,6 +135,11 @@
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=Added}"
                     IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
               </StackPanel>

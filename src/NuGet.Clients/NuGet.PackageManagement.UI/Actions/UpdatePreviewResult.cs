@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
+using NuGet.PackageManagement.UI;
 using NuGet.Packaging.Core;
 
 namespace NuGet.PackageManagement.UI
@@ -21,6 +23,10 @@ namespace NuGet.PackageManagement.UI
             return Old + " -> " + New;
         }
 
-        public string AutomationName => $"{Old} to {New}";
+        public string AutomationName => string.Format(
+            CultureInfo.CurrentUICulture,
+            Resources.Preview_PackageUpdate,
+            Old.Id, Old.Version.ToNormalizedString(),
+            New.Id, New.Version.ToNormalizedString());
     }
 }
