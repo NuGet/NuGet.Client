@@ -18,8 +18,7 @@ namespace Test.Utility.Signing
 #if IS_SIGNING_SUPPORTED
         // Central Directory file header size excluding signature, file name, extra field and file comment
         private const uint CentralDirectoryFileHeaderSizeWithoutSignature = 46;
-#endif
-#if IS_SIGNING_SUPPORTED
+
         /// <summary>
         /// Get the certificate fingerprint for a given hash algorithm
         /// </summary>
@@ -30,8 +29,7 @@ namespace Test.Utility.Signing
         {
             return CertificateUtility.GetHashString(cert, hashAlgorithm);
         }
-#endif
-#if IS_SIGNING_SUPPORTED
+
         public static Task WaitForCertificateExpirationAsync(X509Certificate2 certificate)
         {
             DateTimeOffset notAfter = DateTime.SpecifyKind(certificate.NotAfter, DateTimeKind.Local);
@@ -57,8 +55,7 @@ namespace Test.Utility.Signing
 
             return PrimarySignature.Load(newBytes);
         }
-#endif
-#if IS_SIGNING_SUPPORTED
+
         public static byte[] FindAndReplaceSequence(byte[] bytes, byte[] find, byte[] replace)
         {
             var found = false;
@@ -93,8 +90,7 @@ namespace Test.Utility.Signing
 
             return byteList.ToArray();
         }
-#endif
-#if IS_SIGNING_SUPPORTED
+
         /// <summary>
         /// unsigns a package for test purposes.
         /// This does not timestamp a signature and can be used outside corp network.
