@@ -179,9 +179,27 @@ namespace NuGet.Tests.Apex
             }
         }
 
+        /// <summary>
+        /// Get the UI window from the project.
+        /// Note that the UI window is initialized asynchronously, so we have to poll until it loads. 
+        /// </summary>
+        /// <param name="project">project for which we want to load a UI window</param>
+        /// <param name="timeout">Max time to wait for the UI window to load</param>
+        /// <param name="interval">Interval time for checking whether the control is available</param>
+        /// <returns></returns>
+        public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project, TimeSpan timeout, TimeSpan interval)
+        {
+            var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, timeout, interval);
+            return new NuGetUIProjectTestExtension(uiproject);
+        }
+
+        /// <summary>
+        /// Get the UI window from the project.
+        /// Note that the UI window is initialized asynchronously, so we have to poll until it loads. This method will take max 1 minute.
+        /// </summary>
         public NuGetUIProjectTestExtension GetUIWindowfromProject(ProjectTestExtension project)
         {
-            var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name);
+            var uiproject = NuGetApexUITestService.GetApexTestUIProject(project.Name, TimeSpan.FromSeconds(60), TimeSpan.FromSeconds(1));
             return new NuGetUIProjectTestExtension(uiproject);
         }
 
