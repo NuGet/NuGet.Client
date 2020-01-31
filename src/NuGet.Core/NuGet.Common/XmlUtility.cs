@@ -27,6 +27,10 @@ namespace NuGet.Common
             }
         }
 
+        /// <summary>
+        /// Creates an instance of System.Xml.XmlReaderSettings with safe settings
+        /// </summary>
+        /// <returns></returns>
         private static XmlReaderSettings GetXmlReaderSettings()
         {
             return new XmlReaderSettings()
