@@ -1,0 +1,28 @@
+﻿<!--
+***********************************************************************************************
+Microsoft.Common.props
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (C) Microsoft Corporation. All rights reserved.
+***********************************************************************************************
+-->
+
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <!-- 
+        Import Directory.Packages.props.
+    -->
+  <PropertyGroup Condition="'$(DirectoryPackagesPropsPath)' == ''">
+    <_DirectoryPackagesPropsFile Condition="'$(_DirectoryPackagesPropsFile)' == ''">Directory.Packages.props</_DirectoryPackagesPropsFile>
+    <_DirectoryPackagesPropsBasePath Condition="'$(_DirectoryPackagesPropsBasePath)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_DirectoryPackagesPropsFile)'))</_DirectoryPackagesPropsBasePath>
+    <DirectoryPackagesPropsPath Condition="'$(_DirectoryPackagesPropsBasePath)' != '' and '$(_DirectoryPackagesPropsFile)' != ''">$([System.IO.Path]::Combine('$(_DirectoryPackagesPropsBasePath)', '$(_DirectoryPackagesPropsFile)'))</DirectoryPackagesPropsPath>
+  </PropertyGroup>
+
+  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')"/>
+
+  <PropertyGroup Condition="'$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')">
+    <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+  </PropertyGroup>
+</Project>
