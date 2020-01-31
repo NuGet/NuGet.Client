@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml;
 using System.Xml.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -83,6 +84,95 @@ namespace NuGet.Commands.Test
 
                 Assert.Equal("'$(TargetFramework)' == 'net462' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
                 Assert.Equal("'$(TargetFramework)' == 'netstandard1.6' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+            }
+        }
+
+        [Fact]
+        public async Task RestoreBuildTargetsAndProps_VerifyPropsAndTargetsGeneratedAsyncWithFilesModifiedAfterRestore_Success()
+        {
+            // Arrange
+            using (var cacheContext = new SourceCacheContext())
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+
+                var spec = GetProject("projectA", "net462", "netstandard1.6");
+
+                spec.RestoreMetadata.CrossTargeting = true;
+                spec.Dependencies.Add(new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange("x", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package)
+                });
+
+                // Create fake projects, the real data is in the specs
+                var projects = CreateProjectsFromSpecs(pathContext, spec);
+
+                // Create dg file
+                var dgFile = new DependencyGraphSpec();
+                dgFile.AddProject(spec);
+                dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+                dgFile.Save(Path.Combine(pathContext.WorkingDirectory, "out.dg"));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.AddFile("build/x.targets");
+                packageX.AddFile("build/x.props");
+                packageX.AddFile("contentFiles/any/any/_._");
+
+                await SimpleTestPackageUtility.CreatePackagesAsync(pathContext.PackageSource, packageX);
+
+                var project = projects[0];
+                var importGroup = "ImportGroup";
+                var condition = "Condition";
+                var internalSubset = @"<!ENTITY greeting ""Hello"">
+   <!ENTITY name ""NuGet Client "">
+   <!ENTITY sayhello ""&greeting; &name;"">";
+                var newValue = "&sayhello;";
+
+                var summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
+
+                var targetsXML = XDocument.Parse(File.ReadAllText(project.TargetsOutput));
+                targetsXML.AddFirst(new XDocumentType(importGroup, null, null, internalSubset));
+                XAttribute targetsConditionAttribute = targetsXML.Root.Elements().Where(e => e.Name.LocalName == importGroup).Attributes(XName.Get(condition)).FirstOrDefault();
+                targetsConditionAttribute.Value = newValue;
+                targetsXML.Save(project.TargetsOutput);
+                string targets = File.ReadAllText(project.TargetsOutput);
+                File.WriteAllText(project.TargetsOutput, targets.Replace("&amp;", "&"));
+
+                var propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+                propsXML.AddFirst(new XDocumentType(importGroup, null, null, internalSubset));
+                XAttribute propsConditionAttribute = propsXML.Root.Elements().Where(e => e.Name.LocalName == importGroup).Attributes(XName.Get(condition)).FirstOrDefault();
+                propsConditionAttribute.Value = newValue;
+                propsXML.Save(project.PropsOutput);
+                string props = File.ReadAllText(project.PropsOutput);
+                File.WriteAllText(project.PropsOutput, props.Replace("&amp;", "&"));
+
+                // Act
+                summaries = await RunRestoreAsync(pathContext, logger, sources, dgFile, cacheContext);
+
+                targetsXML = XDocument.Parse(File.ReadAllText(project.TargetsOutput));
+                propsXML = XDocument.Parse(File.ReadAllText(project.PropsOutput));
+
+                var success = summaries.All(s => s.Success);
+                var targetItemGroups = targetsXML.Root.Elements().Where(e => e.Name.LocalName == importGroup).ToList();
+                var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == importGroup).ToList();
+
+                // Assert
+                Assert.True(success, "Failed: " + string.Join(Environment.NewLine, logger.Messages));
+
+                Assert.Equal("'$(TargetFramework)' == 'net462' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[0].Attribute(XName.Get(condition)).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.6' AND '$(ExcludeRestorePackageImports)' != 'true'", targetItemGroups[1].Attribute(XName.Get(condition)).Value.Trim());
+
+                Assert.Equal("'$(TargetFramework)' == 'net462' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get(condition)).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.6' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get(condition)).Value.Trim());
             }
         }
 
