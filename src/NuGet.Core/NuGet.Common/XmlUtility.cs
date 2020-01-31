@@ -21,7 +21,7 @@ namespace NuGet.Common
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            using (var reader = XmlReader.Create(filePath,GetXmlReaderSettings()))
+            using (var reader = XmlReader.Create(filePath, GetXmlReaderSettings()))
             {
                 return XDocument.Load(reader);
             }
@@ -38,7 +38,7 @@ namespace NuGet.Common
                 IgnoreProcessingInstructions = true,
                 IgnoreComments = true,
                 DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null                
+                XmlResolver = null
             };
         }
     }
