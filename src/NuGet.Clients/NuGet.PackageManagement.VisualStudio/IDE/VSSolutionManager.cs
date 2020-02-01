@@ -306,21 +306,26 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    var dte = await _asyncServiceProvider.GetDTEAsync();
-                    return dte != null &&
-                           dte.Solution != null &&
-                           dte.Solution.IsOpen;
+                    return await IsSolutionOpenAsync();
                 });
             }
+        }
+
+        public async Task<bool> IsSolutionOpenAsync()
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var dte = await _asyncServiceProvider.GetDTEAsync();
+            return dte != null &&
+                   dte.Solution != null &&
+                   dte.Solution.IsOpen;
         }
 
         public async Task<bool> IsSolutionAvailableAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            if (!IsSolutionOpen)
+            if (!await IsSolutionOpenAsync())
             {
                 // Solution is not open. Return false.
                 return false;
@@ -389,13 +394,12 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             get
             {
-                if (!IsSolutionOpen)
-                {
-                    return null;
-                }
-
                 return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
+                    if (!await IsSolutionOpenAsync())
+                    {
+                        return null;
+                    }
                     var solutionFilePath = await GetSolutionFilePathAsync();
 
                     if (string.IsNullOrEmpty(solutionFilePath))
@@ -473,7 +477,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // although the SolutionOpened event fires, the solution may be only in memory (e.g. when
             // doing File - New File). In that case, we don't want to act on the event.
-            if (!IsSolutionOpen)
+            if (!await IsSolutionOpenAsync())
             {
                 return;
             }
@@ -534,13 +538,13 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        private void OnEnvDTEProjectRenamed(EnvDTE.Project envDTEProject, string oldName)
+        private void OnEnvDTEProjectRenamed(Project envDTEProject, string oldName)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (!string.IsNullOrEmpty(oldName) && IsSolutionOpen && _solutionOpenedRaised)
+                if (!string.IsNullOrEmpty(oldName) && await IsSolutionOpenAsync() && _solutionOpenedRaised)
                 {
                     await EnsureNuGetAndVsProjectAdapterCacheAsync();
 
@@ -589,13 +593,13 @@ namespace NuGet.PackageManagement.VisualStudio
             NuGetProjectRemoved?.Invoke(this, new NuGetProjectEventArgs(nuGetProject));
         }
 
-        private void OnEnvDTEProjectAdded(EnvDTE.Project envDTEProject)
+        private void OnEnvDTEProjectAdded(Project envDTEProject)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (IsSolutionOpen
+                if (await IsSolutionOpenAsync()
                     && EnvDTEProjectUtility.IsSupported(envDTEProject)
                     && !EnvDTEProjectUtility.IsParentProjectExplicitlyUnsupported(envDTEProject)
                     && _solutionOpenedRaised)
@@ -648,7 +652,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                if (!_cacheInitialized && IsSolutionOpen)
+                if (!_cacheInitialized && await IsSolutionOpenAsync())
                 {
                     try
                     {
