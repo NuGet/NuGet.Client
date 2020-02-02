@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.IO;
 using System.Linq;
@@ -11,25 +14,29 @@ namespace NuGet.Common.Test
     public class XmlUtilityTests
     {
         [Fact]
-        public void XmlUtility_Load_NullFilePathParameter_Throws()
+        public void Load_WhenFilePathIsNull_Throws()
         {
-            //Act & Assert
-            Assert.Throws(typeof(ArgumentException), () => XmlUtility.Load(null));
+            //Act
+            var exception = Assert.Throws<ArgumentException>(() => XmlUtility.Load(filePath: null));
+           
+            //Assert
+            Assert.Equal("filePath", exception.ParamName);
         }
 
         [Fact]
-        public void XmlUtility_Load_SecureXml_Success()
+        public void Load_WhenFileWithSecureXmlIsPassedAsArgument_Success()
         {
             using (var root = TestDirectory.Create())
             {
                 //Arrange
                 string path = Path.Combine(Path.GetDirectoryName(root), "packages.config");
+
                 using (var writer = new StreamWriter(path))
                 {
                     writer.Write(
 @"<packages>
-    <package id=""x"" version=""1.1.0"" targetFramework=""net45"" /> 
-    <package id=""y"" version=""1.0.0"" targetFramework=""net45"" />
+<package id=""x"" version=""1.1.0"" targetFramework=""net45"" /> 
+<package id=""y"" version=""1.0.0"" targetFramework=""net45"" />
 </packages>");
                 }
 
@@ -43,7 +50,7 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void XmlUtility_Load_InSecureXml_Throws()
+        public void Load_WhenFileWithInSecureXmlIsPassedAsArgument_Throws()
         {
             using (var root = TestDirectory.Create())
             {
@@ -64,7 +71,7 @@ namespace NuGet.Common.Test
                 }
 
                 //Act & Assert
-                Assert.Throws(typeof(XmlException), () => XmlUtility.Load(path));
+                Assert.Throws<XmlException>(() => XmlUtility.Load(path));
             }
         }
     }
