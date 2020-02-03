@@ -41,6 +41,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly string _projectFullPath;
 
         private readonly IProjectSystemCache _projectSystemCache;
+        private readonly IVsProjectAdapter _vsProjectAdapter;
         private readonly UnconfiguredProject _unconfiguredProject;
 
         public NetCorePackageReferenceProject(
@@ -48,6 +49,7 @@ namespace NuGet.PackageManagement.VisualStudio
             string projectUniqueName,
             string projectFullPath,
             IProjectSystemCache projectSystemCache,
+            IVsProjectAdapter vsProjectAdapter,
             UnconfiguredProject unconfiguredProject,
             INuGetProjectServices projectServices,
             string projectId)
@@ -63,6 +65,7 @@ namespace NuGet.PackageManagement.VisualStudio
             ProjectStyle = ProjectStyle.PackageReference;
 
             _projectSystemCache = projectSystemCache;
+            _vsProjectAdapter = vsProjectAdapter;
             _unconfiguredProject = unconfiguredProject;
             ProjectServices = projectServices;
 

@@ -10,7 +10,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
@@ -33,13 +32,15 @@ namespace NuGet.VisualStudio
         private readonly IVsSolutionManager _solutionManager;
         private readonly ISourceRepositoryProvider _sourceRepositoryProvider;
         private readonly IDeleteOnRestartManager _deleteOnRestartManager;
-        private readonly ISettings _settings;
+        private readonly Configuration.ISettings _settings;
+        private NuGetPackageManager _packageManager;
+        private string _packageFolderPath = string.Empty;
 
         [ImportingConstructor]
         public VsPackageInstallerServices(
             IVsSolutionManager solutionManager,
             ISourceRepositoryProvider sourceRepositoryProvider,
-            ISettings settings,
+            Configuration.ISettings settings,
             IDeleteOnRestartManager deleteOnRestartManager)
         {
             _solutionManager = solutionManager;
@@ -62,7 +63,7 @@ namespace NuGet.VisualStudio
                         //switch to background thread
                         await TaskScheduler.Default;
 
-                        NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
+                        InitializePackageManagerAndPackageFolderPath();
                         
                         foreach (var project in (await _solutionManager.GetNuGetProjectsAsync()))
                         {
@@ -94,7 +95,7 @@ namespace NuGet.VisualStudio
                                 }
                                 else
                                 {
-                                    installPath = nuGetPackageManager
+                                    installPath = _packageManager
                                         .PackagesFolderNuGetProject
                                         .GetInstalledPath(identity);
                                 }
@@ -125,7 +126,7 @@ namespace NuGet.VisualStudio
             return new FallbackPackagePathResolver(packagesPath, VSRestoreSettingsUtilities.GetFallbackFolders(_settings, packageSpec));
         }
 
-        private async Task<IEnumerable<PackageReference>> GetInstalledPackageReferencesAsync(
+        private async Task<IEnumerable<Packaging.PackageReference>> GetInstalledPackageReferencesAsync(
             Project project)
         {
             if (project == null)
@@ -133,19 +134,20 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            var packages = new List<PackageReference>();
+            var packages = new List<Packaging.PackageReference>();
 
             if (_solutionManager != null
                 && !string.IsNullOrEmpty(_solutionManager.SolutionDirectory))
             {
-                var projectContext = new VSAPIProjectContext
-                {
-                    PackageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                        NullLogger.Instance)
-                };
+                InitializePackageManagerAndPackageFolderPath();
+
+                var projectContext = new VSAPIProjectContext();
+                var logger = new LoggerAdapter(projectContext);
+                projectContext.PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    ClientPolicyContext.GetClientPolicy(_settings, logger),
+                    logger);
 
                 var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                     project,
@@ -175,16 +177,15 @@ namespace NuGet.VisualStudio
                         //switch to background thread
                         await TaskScheduler.Default;
 
-                        NuGetPackageManager nuGetPackageManager = CreateNuGetPackageManager();
+                        InitializePackageManagerAndPackageFolderPath();
 
-                        var projectContext = new VSAPIProjectContext
-                        {
-                            PackageExtractionContext = new PackageExtractionContext(
-                                PackageSaveMode.Defaultv2,
-                                PackageExtractionBehavior.XmlDocFileSaveMode,
-                                ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
-                                NullLogger.Instance)
-                        };
+                        var projectContext = new VSAPIProjectContext();
+                        var logger = new LoggerAdapter(projectContext);
+                        projectContext.PackageExtractionContext = new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            ClientPolicyContext.GetClientPolicy(_settings, logger),
+                            logger);
 
                         var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(
                                             project,
@@ -218,7 +219,7 @@ namespace NuGet.VisualStudio
                                 else
                                 {
                                     // Get the install path for package
-                                    installPath = nuGetPackageManager.PackagesFolderNuGetProject.GetInstalledPath(
+                                    installPath = _packageManager.PackagesFolderNuGetProject.GetInstalledPath(
                                                             package.PackageIdentity);
 
                                     if (!string.IsNullOrEmpty(installPath))
@@ -239,14 +240,20 @@ namespace NuGet.VisualStudio
                 });
         }
 
-        private NuGetPackageManager CreateNuGetPackageManager()
+        private void InitializePackageManagerAndPackageFolderPath()
         {
             // Initialize package manager here since _solutionManager may be targeting different project now.
-            return new NuGetPackageManager(
+            _packageManager = new NuGetPackageManager(
                 _sourceRepositoryProvider,
                 _settings,
                 _solutionManager,
                 _deleteOnRestartManager);
+
+            if (_packageManager != null
+                && _packageManager.PackagesFolderSourceRepository != null)
+            {
+                _packageFolderPath = _packageManager.PackagesFolderSourceRepository.PackageSource.Source;
+            }
         }
 
         public bool IsPackageInstalled(Project project, string packageId)
@@ -300,11 +307,19 @@ namespace NuGet.VisualStudio
             // pipeline execution thread and they might try to access DTE. Doing that under
             // ThreadHelper.JoinableTaskFactory.Run will consistently result in a hang
             return NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                IEnumerable<PackageReference> installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
+                {
+                    var installedPackageReferences = await GetInstalledPackageReferencesAsync(project);
+                    var packages = installedPackageReferences.Where(p =>
+                                        StringComparer.OrdinalIgnoreCase.Equals(p.PackageIdentity.Id, packageId));
 
-                return PackageServiceUtilities.IsPackageInList(installedPackageReferences, packageId, nugetVersion);
-            });
+                    if (nugetVersion != null)
+                    {
+                        packages = packages.Where(p =>
+                                        VersionComparer.VersionRelease.Equals(p.PackageIdentity.Version, nugetVersion));
+                    }
+
+                    return packages.Any();
+                });
         }
     }
 }
