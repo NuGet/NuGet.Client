@@ -552,8 +552,7 @@ namespace NuGet.Build.Tasks.Console
         {
             try
             {
-                // TODO: Use a localized resource from https://github.com/NuGet/NuGet.Client/pull/3111
-                MSBuildLogger.LogMinimal("Determining projects to restore...");
+                MSBuildLogger.LogMinimal(Strings.DeterminingProjectsToRestore);
 
                 var entryProjects = GetProjectGraphEntryPoints(entryProjectPath, globalProperties);
 

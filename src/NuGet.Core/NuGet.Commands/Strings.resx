@@ -230,6 +230,14 @@
   <data name="Log_InstalledSummary" xml:space="preserve">
     <value>Installed:</value>
   </data>
+  <data name="Log_AllProjectsUpToDate" xml:space="preserve">
+    <value>All projects are up-to-date for restore.</value>
+  </data>
+  <data name="Log_ProjectUpToDateSummary" xml:space="preserve">
+    <value>{0} of {1} projects are up-to-date for restore.</value>
+    <comment>0 - number of projects that were up-to-date
+1 - Total number of projects</comment>
+  </data>
   <data name="Log_InstalledSummaryCount" xml:space="preserve">
     <value>{0} package(s) to {1}</value>
     <comment>0 - installed package count

@@ -264,13 +264,17 @@ namespace NuGet.Commands
 
             if (result.Success)
             {
-                log.LogMinimal(string.Format(
-                    CultureInfo.CurrentCulture,
-                    summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
-                    Strings.Log_RestoreCompleteDotnetTool :
-                    Strings.Log_RestoreComplete,
-                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
-                    summaryRequest.InputPath));
+                // For no-op results, don't log a minimal message since a summary is logged at the end
+                // For regular results, log a minimal message so that users can see which projects were actually restored
+                log.Log(
+                    result is NoOpRestoreResult ? LogLevel.Information : LogLevel.Minimal,
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
+                            Strings.Log_RestoreCompleteDotnetTool :
+                            Strings.Log_RestoreComplete,
+                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
+                        summaryRequest.InputPath));
             }
             else
             {
