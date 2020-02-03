@@ -896,5 +896,54 @@ namespace NuGet.Commands.Test
                 Assert.Equal("$(MSBuildThisFileDirectory)project.assets.json".Replace('/', Path.DirectorySeparatorChar), props["ProjectAssetsFile"]);
             }
         }
+
+        [Fact]
+        public void HasChanges_WhenXDocumentDoesNotMatchFileContent_Success()
+        {
+            // Arrange
+            using (var randomProjectDirectory = TestDirectory.Create())
+            {
+                var filePath = Path.Combine(randomProjectDirectory, "propsXML.xml");
+                var internalSubset = @"<!ENTITY greeting ""Hello"">	
+   <!ENTITY name ""NuGet Client "">	
+   <!ENTITY sayhello ""&greeting; &name;"">";
+                var newValue = "&sayhello;";
+
+                XDocument doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                doc.Save(filePath);
+
+                //add insecure content to xml
+                XDocument newdoc = XDocument.Load(filePath);
+                newdoc.AddFirst(new XDocumentType("Project", null, null, internalSubset));
+                XAttribute attribute = newdoc.Root.Attributes(XName.Get("ToolsVersion")).FirstOrDefault();
+                attribute.Value = newValue;
+                newdoc.Save(filePath);
+
+                string newxml = File.ReadAllText(filePath);
+                File.WriteAllText(filePath, newxml.Replace("&amp;", "&"));
+
+                //Act
+                bool result = BuildAssetsUtils.HasChanges(doc, filePath, NullLogger.Instance);
+                
+                Assert.True(result);
+            }
+        }
+
+        [Fact]
+        public void HasChanges_WhenXDocumentMatchesFileContent_Fails()
+        {
+            // Arrange
+            using (var randomProjectDirectory = TestDirectory.Create())
+            {
+                var filePath = Path.Combine(randomProjectDirectory, "propsXML.xml");
+                XDocument doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+                doc.Save(filePath);
+
+                //Act
+                bool result = BuildAssetsUtils.HasChanges(doc, filePath, NullLogger.Instance);
+
+                Assert.False(result);
+            }
+        }
     }
 }

@@ -36,9 +36,7 @@ namespace NuGet.Common
             {
                 IgnoreWhitespace = true,
                 IgnoreProcessingInstructions = true,
-                IgnoreComments = true,
-                DtdProcessing = DtdProcessing.Prohibit,
-                XmlResolver = null
+                IgnoreComments = true
             };
         }
     }
