@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -12,10 +12,6 @@
   <ItemGroup>
     <Compile Remove="compiler\resources\*" />
     <EmbeddedResource Include="compiler\resources\*" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="compiler\resources\DependencyGraphSpec_Save_SerializesMembersAsJson_CentralVersionDependencies.json" />
   </ItemGroup>
 
   <ItemGroup>

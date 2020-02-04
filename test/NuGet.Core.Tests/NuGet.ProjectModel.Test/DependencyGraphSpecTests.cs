@@ -404,7 +404,7 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_Save_SerializesMembersAsJson_CentralVersionDependencies()
         {
             // Arrange
-            var expectedJson = ResourceTestUtility.GetResource("DependencyGraphSpec_Save_SerializesMembersAsJson_CentralVersionDependencies.json", typeof(DependencyGraphSpecTests));
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_CentralVersionDependencies.json", typeof(DependencyGraphSpecTests));
 
             // Act
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies();
@@ -563,6 +563,7 @@ namespace NuGet.ProjectModel.Test
                 AssetTargetFallback = true,
                 Warn = false,
                 FrameworkName = nugetFramework,
+                Dependencies = dependencies,
             };
 
             foreach (var cvd in centralVersionsDependencies)
