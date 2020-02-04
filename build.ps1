@@ -119,7 +119,7 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
-    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
+    $args = 'build\build.proj', "/t:$VSTarget", "/p:ILMergeNuGetExeBeforeCommandLinePack=true", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
 
     If ($SkipDelaySigning)
     {

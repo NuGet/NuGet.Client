@@ -370,8 +370,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -Source http://example.com/
     <value>&lt;API key&gt; [options]</value>
   </data>
   <data name="SourcesCommandDescription" xml:space="preserve">
-    <value>Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config</value>
-    <comment>Please don't localize " %AppData%\NuGet\NuGet.config"</comment>
+    <value>Provides the ability to manage list of sources located in NuGet.config files.</value>
   </data>
   <data name="SourcesCommandNameDescription" xml:space="preserve">
     <value>Name of the source.</value>

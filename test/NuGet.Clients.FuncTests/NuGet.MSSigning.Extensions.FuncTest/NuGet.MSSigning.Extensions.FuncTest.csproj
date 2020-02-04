@@ -17,11 +17,10 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <PropertyGroup>
-    <PostBuildEvent>
-      xcopy /diy $(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe $(OutputPath)NuGet\
-    </PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="CopyFinalNuGetExeToOutputPath">
+      <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
+            DestinationFolder="$(OutputPath)NuGet\" />
+  </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

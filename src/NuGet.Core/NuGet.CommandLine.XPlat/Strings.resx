@@ -595,7 +595,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>If a package and version already exists, skip it and continue with the next package in the push, if any.</value>
   </data>
   <data name="SourcesCommandDescription" xml:space="preserve">
-    <value>Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config</value>
+    <value>Provides the ability to manage list of sources located in NuGet.config files.</value>
   </data>
   <data name="AddSourceCommandDescription" xml:space="preserve">
     <value>Add a NuGet source.</value>

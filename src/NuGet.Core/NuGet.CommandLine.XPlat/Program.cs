@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
@@ -23,7 +24,6 @@ namespace NuGet.CommandLine.XPlat
 
         public static int Main(string[] args)
         {
-            // Start with a default logger, this will be updated according to the passed in verbosity
             var log = new CommandOutputLogger(LogLevel.Information);
             return MainInternal(args, log);
         }
@@ -187,7 +187,7 @@ namespace NuGet.CommandLine.XPlat
 
             if (args.Any() && args[0] == "package")
             {
-			    // "dotnet * package" commands
+                // "dotnet * package" commands
                 app.Name = DotnetPackageAppName;
                 AddPackageReferenceCommand.Register(app, () => log, () => new AddPackageReferenceCommandRunner());
                 RemovePackageReferenceCommand.Register(app, () => log, () => new RemovePackageReferenceCommandRunner());
@@ -195,7 +195,7 @@ namespace NuGet.CommandLine.XPlat
             }
             else
             {
-			    // "dotnet nuget *" commands
+                // "dotnet nuget *" commands
                 app.Name = DotnetNuGetAppName;
                 CommandParsers.Register(app, loggerFunc(log));
                 DeleteCommand.Register(app, () => log);
@@ -209,70 +209,15 @@ namespace NuGet.CommandLine.XPlat
 
             return app;
         }
-
-        /// <summary>
-        /// Attempts to parse the desired log verbosity from the arguments. Returns true if the
-        /// arguments contains a valid verbosity option. If no valid verbosity option was
-        /// specified, the log level is set to a default log level and false is returned.
-        /// </summary>
-        private static bool TryParseVerbosity(string[] args, CommandOption verbosity, out LogLevel logLevel)
-        {
-            bool found = false;
-
-            for (var index = 0; index < args.Length; index++)
-            {
-                var arg = args[index];
-                string[] option;
-                if (arg.StartsWith("--"))
-                {
-                    option = arg.Substring(2).Split(new[] { ':', '=' }, 2);
-                    if (!string.Equals(option[0], verbosity.LongName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-                }
-                else if (arg.StartsWith("-"))
-                {
-                    option = arg.Substring(1).Split(new[] { ':', '=' }, 2);
-                    if (!string.Equals(option[0], verbosity.ShortName, StringComparison.Ordinal))
-                    {
-                        continue;
-                    }
-                }
-                else
-                {
-                    continue;
-                }
-
-                if (option.Length == 2)
-                {
-                    found = verbosity.TryParse(option[1]);
-                }
-                else if (index < args.Length - 1)
-                {
-                    found = verbosity.TryParse(args[index + 1]);
-                }
-
-                break;
-            }
-
-            logLevel = XPlatUtility.GetLogLevel(verbosity);
-
-            // Reset the parsed value since the application execution expects the option to not be
-            // populated yet, as this is a single-valued option.
-            verbosity.Values.Clear();
-
-            return found;
-        }
 		
 		private static void ShowBestHelp(CommandLineApplication app, string[] args)
         {
             CommandLineApplication lastCommand = null;
-            var commands = app.Commands;
+            List<CommandLineApplication> commands = app.Commands;
             // tunnel down into the args, and show the best help possible.
-            foreach (var arg in args)
+            foreach (string arg in args)
             {
-                foreach (var command in commands)
+                foreach (CommandLineApplication command in commands)
                 {
                     if (arg == command.Name)
                     {
