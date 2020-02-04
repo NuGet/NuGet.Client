@@ -456,7 +456,7 @@ namespace Dotnet.Integration.Test
         {
             Assert.True(
                 result.Item1 != 0,
-                "dotnet.ext nuget DID NOT FAIL: Ouput is " + result.Item2 + ". Error is " + result.Item3);
+                "dotnet.exe nuget DID NOT FAIL: Output is " + result.Item2 + ". Error is " + result.Item3);
 
             Assert.True(
                 // TODO: Item2 in dotnet, vs Item3 in nuget.exe -- switched
