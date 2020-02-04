@@ -192,6 +192,37 @@ phases:
     condition: "succeeded()"
 
   - task: MSBuild@1
+    displayName: "Run unit tests"
+    continueOnError: "true"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+
+  - task: PublishTestResults@2
+    displayName: "Publish Test Results"
+    inputs:
+      testRunner: "XUnit"
+      testResultsFiles: "*.xml"
+      testRunTitle: "NuGet.Client Unit Tests On Windows"
+      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
+      mergeTestResults: "true"
+      publishRunAttachments: "false"
+    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
+
+  - task: PowerShell@1
+    displayName: "Initialize Git Commit Status on GitHub"
+    inputs:
+      scriptType: "inlineScript"
+      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
+      inlineScript: |
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
+        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
+    condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
+    
+  - task: MSBuild@1
     displayName: "Localize Assemblies"
     inputs:
       solution: "build\\loc.proj"
@@ -230,37 +261,6 @@ phases:
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
-
-  - task: MSBuild@1
-    displayName: "Run unit tests"
-    continueOnError: "true"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
-    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
-
-  - task: PublishTestResults@2
-    displayName: "Publish Test Results"
-    inputs:
-      testRunner: "XUnit"
-      testResultsFiles: "*.xml"
-      testRunTitle: "NuGet.Client Unit Tests On Windows"
-      searchFolder: "$(Build.Repository.LocalPath)\\build\\TestResults"
-      mergeTestResults: "true"
-      publishRunAttachments: "false"
-    condition: "and(succeededOrFailed(),eq(variables['BuildRTM'], 'true'))"
-
-  - task: PowerShell@1
-    displayName: "Initialize Git Commit Status on GitHub"
-    inputs:
-      scriptType: "inlineScript"
-      arguments: "-VstsPersonalAccessToken $(VstsPersonalAccessToken)"
-      inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
-        SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
-    condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishBuildArtifacts@1
     displayName: "Publish NuGet.CommandLine.Test as artifact"

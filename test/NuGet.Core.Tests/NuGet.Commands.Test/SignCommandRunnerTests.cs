@@ -34,7 +34,7 @@ namespace NuGet.Commands.Test
                     () => test.Runner.ExecuteCommandAsync(test.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal($"Certificate file '{certificateFilePath}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                Assert.Equal($"Certificate file '{certificateFilePath}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
             }
         }
 
@@ -59,7 +59,7 @@ namespace NuGet.Commands.Test
                     () => test.Runner.ExecuteCommandAsync(test.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal($"Certificate file '{certificateFilePath}' is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                Assert.Equal($"Certificate file '{certificateFilePath}' is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
             }
         }
 
@@ -76,7 +76,7 @@ namespace NuGet.Commands.Test
                     () => test.Runner.ExecuteCommandAsync(test.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal("No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
+                Assert.Equal("No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference", exception.Message);
             }
         }
 
@@ -98,7 +98,7 @@ namespace NuGet.Commands.Test
                     () => test.Runner.ExecuteCommandAsync(test.Args));
 
                 Assert.Equal(NuGetLogCode.NU3001, exception.AsLogMessage().Code);
-                Assert.Equal($"Invalid password was provided for the certificate file '{certificateFilePath}'. Please provide a valid password using the '-CertificatePassword' option", exception.Message);
+                Assert.Equal($"Invalid password was provided for the certificate file '{certificateFilePath}'. Provide a valid password using the '-CertificatePassword' option", exception.Message);
             }
         }
 
