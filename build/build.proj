@@ -138,10 +138,11 @@
     ============================================================
     ILMergeNuGetExeBeforeCommandLinePack
     ============================================================
+    CI will do this before Pack after localization. On dev machine, we need to do this before Pack. This target does that.
   -->
-  <Target Name="ILMergeNuGetExeBeforeCommandLinePack" BeforeTargets="Pack" Condition="'$(ILMergeNuGetExeBeforeCommandLinePack)'=='true'">
+  <Target Name="ILMergeNuGetExeBeforeCommandLinePack" BeforeTargets="Pack" Condition="!Exists('$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe')">
     <Message Text="ILMerging NuGetExe before packing NuGet.CommandLine" Importance="high" />
-    <MsBuild Projects="src\NuGet.Clients\Nuget.CommandLine\NuGet.CommandLine.csproj" Targets="ILMergeNuGetExe" />
+    <MsBuild Projects="..\src\NuGet.Clients\Nuget.CommandLine\NuGet.CommandLine.csproj" Targets="ILMergeNuGetExe" />
   </Target>
 
   <!--
