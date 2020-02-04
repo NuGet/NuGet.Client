@@ -144,8 +144,6 @@
     <MsBuild Projects="src\NuGet.Clients\Nuget.CommandLine\NuGet.CommandLine.csproj" Targets="ILMergeNuGetExe" />
   </Target>
 
-ILMergeNuGetExeBeforeCommandLinePack
-
   <!--
     ============================================================
     Build 
