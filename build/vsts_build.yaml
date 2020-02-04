@@ -221,7 +221,7 @@ phases:
         . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
         SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -CommitSha $(Build.SourceVersion) -TestName "Unit Tests On Windows"
     condition: "and(always(),eq(variables['BuildRTM'], 'true'))"
-    
+
   - task: MSBuild@1
     displayName: "Localize Assemblies"
     inputs:
@@ -236,7 +236,7 @@ phases:
       solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount))"
+      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
   - task: MSBuild@1
     displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test"
