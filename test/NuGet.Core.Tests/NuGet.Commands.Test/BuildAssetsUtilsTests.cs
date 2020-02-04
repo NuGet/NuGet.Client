@@ -912,7 +912,6 @@ namespace NuGet.Commands.Test
                 XDocument doc = BuildAssetsUtils.GenerateEmptyImportsFile();
                 doc.Save(filePath);
 
-                //add insecure content to xml
                 XDocument newdoc = XDocument.Load(filePath);
                 newdoc.AddFirst(new XDocumentType("Project", null, null, internalSubset));
                 XAttribute attribute = newdoc.Root.Attributes(XName.Get("ToolsVersion")).FirstOrDefault();
@@ -922,10 +921,8 @@ namespace NuGet.Commands.Test
                 string newxml = File.ReadAllText(filePath);
                 File.WriteAllText(filePath, newxml.Replace("&amp;", "&"));
 
-                //Act
-                bool result = BuildAssetsUtils.HasChanges(doc, filePath, NullLogger.Instance);
-                
-                Assert.True(result);
+                //Act & Assert
+                Assert.True(BuildAssetsUtils.HasChanges(doc, filePath, NullLogger.Instance));
             }
         }
 
