@@ -113,10 +113,10 @@ namespace NuGet.Commands
                 // The dependencies should not have versions explicitelly defined if cpvm is enabled.
                 if (cpvmEnabled)
                 {
-                    var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.LibraryRange.VersionRange.IsCentral && !d.AutoReferenced));
+                    var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.Type.Contains(LibraryDependencyTypeFlag.Central) && !d.AutoReferenced));
                     if (dependenciesWithDefinedVersion.Any())
                     {
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU5200, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, _request.Project.Name, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
+                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, _request.Project.Name, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
 
                         // Replay Warnings and Errors from an existing lock file
                         await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);

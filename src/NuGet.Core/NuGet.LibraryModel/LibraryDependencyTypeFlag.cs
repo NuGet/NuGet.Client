@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -21,6 +21,8 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeFlag DevComponent = Declare("DevComponent");
         public static readonly LibraryDependencyTypeFlag PreprocessComponent = Declare("PreprocessComponent");
         public static readonly LibraryDependencyTypeFlag BecomesNupkgDependency = Declare("BecomesNupkgDependency");
+
+        public static readonly LibraryDependencyTypeFlag Central = Declare("Central");
 
         private LibraryDependencyTypeFlag(string value)
         {

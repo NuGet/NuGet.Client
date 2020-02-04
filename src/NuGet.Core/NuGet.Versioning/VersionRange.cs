@@ -58,10 +58,9 @@ namespace NuGet.Versioning
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
         /// <param name="floatRange">The floating range subset used to find the best version match.</param>
         /// <param name="originalString">The original string being parsed to this object.</param>
-        /// <param name="isCentral">A flag to signal that the version range is central defined.</param>
         public VersionRange(NuGetVersion minVersion = null, bool includeMinVersion = true, NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false, FloatRange floatRange = null, string originalString = null, bool isCentral = false)
-            : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion, isCentral)
+            bool includeMaxVersion = false, FloatRange floatRange = null, string originalString = null)
+            : base(minVersion, includeMinVersion, maxVersion, includeMaxVersion)
         {
             _floatRange = floatRange;
             _originalString = originalString;

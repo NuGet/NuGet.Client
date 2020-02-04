@@ -951,7 +951,7 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
 
-                    centralversions.Add(depName, new CentralVersionDependency(depName, VersionRange.ParseCentral(depVersion)));
+                    centralversions.Add(depName, new CentralVersionDependency(depName, VersionRange.Parse(depVersion)));
                 }
             }
 

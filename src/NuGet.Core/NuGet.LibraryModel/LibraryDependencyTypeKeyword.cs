@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,6 +18,7 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeKeyword Preprocess;
         public static readonly LibraryDependencyTypeKeyword Private;
         public static readonly LibraryDependencyTypeKeyword Dev;
+        public static readonly LibraryDependencyTypeKeyword Central;
 
         private readonly string _value;
         private readonly IEnumerable<LibraryDependencyTypeFlag> _flagsToAdd;
@@ -95,6 +96,14 @@ namespace NuGet.LibraryModel
                 flagsToAdd: new[]
                     {
                         LibraryDependencyTypeFlag.PreprocessReference,
+                    },
+                flagsToRemove: emptyFlags);
+
+            Preprocess = Declare(
+                "central",
+                flagsToAdd: new[]
+                    {
+                        LibraryDependencyTypeFlag.Central,
                     },
                 flagsToRemove: emptyFlags);
 

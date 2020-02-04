@@ -613,7 +613,7 @@ namespace NuGet.Commands
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
-                        versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? VersionRange.Empty : VersionRange.All),
+                        versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? null : VersionRange.All),
                         typeConstraint: LibraryDependencyTarget.Package),
 
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
@@ -950,7 +950,7 @@ namespace NuGet.Commands
             {
                 var tfms = GetFrameworks(cvd);
                 var version = cvd.GetProperty("VersionRange");
-                var dependency = new CentralVersionDependency(cvd.GetProperty("Id"), !string.IsNullOrWhiteSpace(version) ? VersionRange.ParseCentral(version) : VersionRange.AllCentral);
+                var dependency = new CentralVersionDependency(cvd.GetProperty("Id"), !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All);
 
                 if (tfms.Count > 0)
                 {

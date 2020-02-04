@@ -739,7 +739,7 @@ namespace NuGet.Build.Tasks.Console.Test
                 {
                     ["PackageReference"] = new List<IMSBuildItem>
                     {
-                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "1.0.0", ["IsImplicitlyDefined"] = bool.FalseString }),
+                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
                     },
                     ["PackageVersion"] = new List<IMSBuildItem>
                     {
@@ -773,7 +773,7 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal(1, framework20.Count);
             Assert.Equal(1, framework20.First().Dependencies.Count);
             Assert.Equal("PackageA", framework20.First().Dependencies.First().Name);
-            Assert.Equal("1.0.0", framework20.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
+            Assert.Null(framework20.First().Dependencies.First().LibraryRange.VersionRange);
 
             Assert.Equal(2, framework20.First().CentralVersionDependencies.Count);
             Assert.Equal("2.0.0", framework20.First().CentralVersionDependencies["PackageA"].VersionRange.OriginalString);

@@ -136,7 +136,7 @@ namespace NuGet.Build.Tasks.Console
         internal static List<FrameworkDependency> GetFrameworkReferences(IMSBuildProject project)
         {
             // Get the unique FrameworkReference items, ignoring duplicates
-            var frameworkReferenceItems = GetDistinctItemsOrEmpty(project, "FrameworkReference").ToList();
+            List<IMSBuildItem> frameworkReferenceItems = GetDistinctItemsOrEmpty(project, "FrameworkReference").ToList();
 
             // For best performance, its better to create a list with the exact number of items needed rather than using a LINQ statement or AddRange.  This is because if the list
             // is not allocated with enough items, the list has to be grown which can slow things down
@@ -187,7 +187,7 @@ namespace NuGet.Build.Tasks.Console
         internal static IEnumerable<DownloadDependency> GetPackageDownloads(IMSBuildProject project)
         {
             // Get the distinct PackageDownload items, ignoring duplicates
-            foreach (var projectItemInstance in GetDistinctItemsOrEmpty(project, "PackageDownload"))
+            foreach (IMSBuildItem projectItemInstance in GetDistinctItemsOrEmpty(project, "PackageDownload"))
             {
                 string id = projectItemInstance.Identity;
 
@@ -221,7 +221,7 @@ namespace NuGet.Build.Tasks.Console
             {
                 string id = projectItemInstance.Identity;
                 string version = projectItemInstance.GetProperty("Version");
-                VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.ParseCentral(version) : VersionRange.AllCentral;
+                VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
 
                 result.Add(id, new CentralVersionDependency(id, versionRange));
             }
@@ -238,7 +238,7 @@ namespace NuGet.Build.Tasks.Console
         internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool centralPackageVersionManagementEnabled)
         {
             // Get the distinct PackageReference items, ignoring duplicates
-            var packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
+            List<IMSBuildItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
  
             var libraryDependencies = new List<LibraryDependency>(packageReferenceItems.Count);
 
@@ -253,7 +253,7 @@ namespace NuGet.Build.Tasks.Console
                     IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     LibraryRange = new LibraryRange(
                         packageReferenceItem.Identity,
-                        !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : centralPackageVersionManagementEnabled ? VersionRange.Empty : VersionRange.All,
+                        !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : centralPackageVersionManagementEnabled ? null : VersionRange.All,
                         LibraryDependencyTarget.Package),
                     NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)

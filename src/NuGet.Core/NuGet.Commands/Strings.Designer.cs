@@ -133,7 +133,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items. The following projects violate this rule.  {0}:{1}..
+        ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items {0}:{1}..
         /// </summary>
         internal static string Error_CentralPackageVersions_VersionsNotAllowed {
             get {

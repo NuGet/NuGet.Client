@@ -14,7 +14,6 @@ namespace NuGet.Versioning
         private readonly bool _includeMaxVersion;
         private readonly NuGetVersion _minVersion;
         private readonly NuGetVersion _maxVersion;
-        private readonly bool _isCentral = false;
 
         /// <summary>
         /// Creates a VersionRange with the given min and max.
@@ -23,19 +22,16 @@ namespace NuGet.Versioning
         /// <param name="includeMinVersion">True if minVersion satisfies the condition.</param>
         /// <param name="maxVersion">Upper bound of the version range.</param>
         /// <param name="includeMaxVersion">True if maxVersion satisfies the condition.</param>
-        /// <param name="isCentral">True if the version range was set for a central version.</param>
         public VersionRangeBase(
             NuGetVersion minVersion = null,
             bool includeMinVersion = true,
             NuGetVersion maxVersion = null,
-            bool includeMaxVersion = false,
-            bool isCentral = false)
+            bool includeMaxVersion = false)
         {
             _minVersion = minVersion;
             _maxVersion = maxVersion;
             _includeMinVersion = includeMinVersion;
             _includeMaxVersion = includeMaxVersion;
-            _isCentral = isCentral;
         }
 
         /// <summary>
@@ -156,17 +152,6 @@ namespace NuGet.Versioning
             }
 
             return condition;
-        }
-
-        /// <summary>
-        /// True if defined in the Central Package Version Management
-        /// </summary>
-        public bool IsCentral
-        {
-            get
-            {
-                return _isCentral;
-            }
         }
 
         /// <summary>

@@ -80,6 +80,11 @@ namespace NuGet.Common
         NU1007 = 1007,
 
         /// <summary>
+        /// Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items.
+        /// </summary>
+        NU1008 = 1008,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -824,11 +829,6 @@ namespace NuGet.Common
         /// References in the nuspec don't match up with the ref folder in the package
         /// </summary>
         NU5131 = 5131,
-
-        /// <summary>
-        /// Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items.
-        /// </summary>
-        NU5200 = 5200,
 
         /// <summary>
         /// Undefined package warning

@@ -14,24 +14,6 @@ namespace NuGet.Versioning
     public partial class VersionRange
     {
         /// <summary>
-        /// An empty VersionRange.
-        /// </summary>
-        public static readonly VersionRange Empty = new EmptyVersionRange();
-
-        /// <summary>
-        /// A range that accepts all versions, prerelease and stable and is central defiend version ranges. 
-        /// </summary>
-        public static readonly VersionRange AllCentral = new VersionRange(
-            minVersion:null,
-            includeMinVersion:true,
-            maxVersion: null,
-            includeMaxVersion: true,
-            floatRange: null,
-            originalString: null,
-            isCentral: true
-            );
-
-        /// <summary>
         /// A range that accepts all versions, prerelease and stable.
         /// </summary>
         public static readonly VersionRange All = new VersionRange(null, true, null, true);
@@ -93,15 +75,6 @@ namespace NuGet.Versioning
             }
 
             return versionInfo;
-        }
-
-        /// <summary>
-        /// Parses a VersionRange from its string representation.
-        /// </summary>
-        public static VersionRange ParseCentral(string value)
-        {
-            var versionRange = Parse(value);
-            return new VersionRange(versionRange.MinVersion, versionRange.IsMinInclusive, versionRange.MaxVersion, versionRange.IsMaxInclusive, versionRange.Float, versionRange.OriginalString, true);
         }
 
         /// <summary>

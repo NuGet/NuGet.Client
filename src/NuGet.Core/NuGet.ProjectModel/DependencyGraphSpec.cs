@@ -215,17 +215,15 @@ namespace NuGet.ProjectModel
             }
         }
 
-        internal PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
+        private PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
         {
             var newSpec = spec.Clone();
             foreach(var tfm in newSpec.TargetFrameworks)
             {
-                foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange is EmptyVersionRange))
-                { 
-                    if (tfm.CentralVersionDependencies.ContainsKey(d.Name))
-                    {
-                        d.LibraryRange = tfm.CentralVersionDependencies[d.Name];
-                    }
+                foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null))
+                {
+                    d.LibraryRange.VersionRange = tfm.CentralVersionDependencies.ContainsKey(d.Name) ? tfm.CentralVersionDependencies[d.Name].VersionRange : VersionRange.All;                   
+                    d.Type = d.Type.Combine(add: new List<LibraryModel.LibraryDependencyTypeFlag>(){ LibraryModel.LibraryDependencyTypeFlag.Central}, remove: new List<LibraryModel.LibraryDependencyTypeFlag>());
                 }
             }
 
