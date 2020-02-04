@@ -445,7 +445,7 @@ namespace Dotnet.Integration.Test
         }
 
         /// <summary>
-        /// Utility for asserting faulty executions of nuget.exe
+        /// Utility for asserting faulty executions of dotnet.exe
         /// 
         /// Asserts a non-zero status code and a message on stderr.
         /// </summary>
