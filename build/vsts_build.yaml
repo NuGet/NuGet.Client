@@ -175,20 +175,12 @@ phases:
       msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber) /p:BuildRTM=$(BuildRTM) /v:m"
 
   - task: MSBuild@1
-    displayName: "Localize Assemblies"
-    inputs:
-      solution: "build\\loc.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild"
-
-  - task: MSBuild@1
     displayName: "Build for VS2019"
     inputs:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true"
 
   - task: MSBuild@1
     displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -198,6 +190,22 @@ phases:
       msbuildVersion: "16.0"
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
+
+  - task: MSBuild@1	
+    displayName: "Localize Assemblies"	
+    inputs:	
+      solution: "build\\loc.proj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:AfterBuild"	
+
+  - task: MSBuild@1	
+    displayName: "Build Final NuGet.exe (via ILMerge)"	
+    inputs:	
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
   - task: MSBuild@1
     displayName: "Run unit tests"
