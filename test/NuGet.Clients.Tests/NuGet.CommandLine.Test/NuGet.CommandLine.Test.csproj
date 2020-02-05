@@ -56,13 +56,9 @@
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)NuGet\
+      xcopy /diy $(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe $(OutputPath)NuGet\
     </PostBuildEvent>
   </PropertyGroup>
-
-  <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'" >
-      <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
-            DestinationFolder="$(OutputPath)NuGet\" />
-  </Target>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
