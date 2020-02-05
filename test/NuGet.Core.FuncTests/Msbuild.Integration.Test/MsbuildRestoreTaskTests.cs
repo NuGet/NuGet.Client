@@ -126,6 +126,61 @@ namespace Msbuild.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public async Task MsbuildRestore_InsecurePackagesConfigDependencyAsync_Throws()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                NuGetFramework net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackagesConfig,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                using (var writer = new StreamWriter(Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "packages.config")))
+                {
+                    writer.Write(
+@"<!DOCTYPE package [
+   <!ENTITY greeting ""Hello"">
+   <!ENTITY name ""NuGet Client "">
+   <!ENTITY sayhello ""&greeting; &name;"">
+]>
+<packages>
+    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" /> 
+    <package id=""x"" version=""1.0.0"" targetFramework=""net45"" />
+</packages>");
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // Act
+                CommandRunnerResult result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore {pathContext.SolutionRoot} /p:RestorePackagesConfig=true", ignoreExitCode:true);
+
+                // Assert
+                Assert.Equal(1, result.ExitCode);
+                Assert.Contains("Error parsing packages.config file", result.AllOutput);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public async Task MsbuildRestore_PackageReferenceDependencyAsync()
         {
             // Arrange
