@@ -52,7 +52,7 @@
   </ItemGroup>
     
   <PropertyGroup>
-    <PostBuildEvent>
+    <PostBuildEvent Condition="'$(SkipILMergeOfNuGetExe)'' != 'true'">
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\CredentialProvider.Testable.exe $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)TestableCredentialProvider\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\*.dll $(OutputPath)TestableCredentialProvider\
       xcopy /diy $(ArtifactsDirectory)SampleCommandLineExtensions\$(BuildVariationFolder)\bin\$(Configuration)\$(TargetFramework)\SampleCommandLineExtensions.dll $(OutputPath)NuGet\
