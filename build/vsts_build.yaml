@@ -78,6 +78,7 @@ phases:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
+    DesktopTargetFramework: "net472"
 
   queue:
     name: VSEng-MicroBuildVS2019
@@ -214,6 +215,7 @@ phases:
       msbuildVersion: "16.0"	
       configuration: "$(BuildConfiguration)"	
       msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: MSBuild@1
     displayName: "Run unit tests"
