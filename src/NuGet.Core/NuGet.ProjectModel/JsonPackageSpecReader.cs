@@ -927,8 +927,8 @@ namespace NuGet.ProjectModel
            TargetFrameworkInformation targetFrameworkInformation,
            JObject properties)
         {
-            var centralversions = new Dictionary<string, CentralVersionDependency>();
-            var ventralVersionDependenciesProperty = properties["centralDependencies"] as JObject;
+            var centralversions = new Dictionary<string, CentralPackageVersion>();
+            var ventralVersionDependenciesProperty = properties["centralPackageVersions"] as JObject;
             if (ventralVersionDependenciesProperty != null)
             {
                 foreach (var dependency in ventralVersionDependenciesProperty.Values<JToken>())
@@ -939,7 +939,7 @@ namespace NuGet.ProjectModel
                     if (depName == null)
                     {
                         throw FileFormatException.Create(
-                            "Unable to resolve centralDependency ''.",
+                            "Unable to resolve central version ''.",
                             dependency,
                             packageSpecPath);
                     }
@@ -951,11 +951,11 @@ namespace NuGet.ProjectModel
                             packageSpecPath);
                     }
 
-                    centralversions.Add(depName, new CentralVersionDependency(depName, VersionRange.Parse(depVersion)));
+                    centralversions.Add(depName, new CentralPackageVersion(depName, VersionRange.Parse(depVersion)));
                 }
             }
 
-            targetFrameworkInformation.CentralVersionDependencies.AddRange(centralversions);
+            targetFrameworkInformation.CentralPackageVersions.AddRange(centralversions);
         }
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)

@@ -38,8 +38,8 @@ namespace NuGet.ProjectModel.Test
         public void Equals_WithDifferentObject_CentralDependency_ReturnsFalse()
         {
             // Arrange
-            var tfiFoo = CreateTargetFrameworkInformation(new List<CentralVersionDependency>() { new CentralVersionDependency("foo", VersionRange.All) });
-            var tfiBar = CreateTargetFrameworkInformation(new List<CentralVersionDependency>() { new CentralVersionDependency("bar", VersionRange.All) });
+            var tfiFoo = CreateTargetFrameworkInformation(new List<CentralPackageVersion>() { new CentralPackageVersion("foo", VersionRange.All) });
+            var tfiBar = CreateTargetFrameworkInformation(new List<CentralPackageVersion>() { new CentralPackageVersion("bar", VersionRange.All) });
 
             // Act & Assert
             tfiFoo.Equals(tfiBar).Should().BeFalse();
@@ -58,10 +58,10 @@ namespace NuGet.ProjectModel.Test
 
         private TargetFrameworkInformation CreateTargetFrameworkInformation()
         {
-            return CreateTargetFrameworkInformation(new List<CentralVersionDependency>(){ new CentralVersionDependency("foo", VersionRange.All), new CentralVersionDependency("bar", VersionRange.AllStable) });
+            return CreateTargetFrameworkInformation(new List<CentralPackageVersion>(){ new CentralPackageVersion("foo", VersionRange.All), new CentralPackageVersion("bar", VersionRange.AllStable) });
         }
 
-        private TargetFrameworkInformation CreateTargetFrameworkInformation(List<CentralVersionDependency> centralVersionDependencies)
+        private TargetFrameworkInformation CreateTargetFrameworkInformation(List<CentralPackageVersion> centralVersionDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
@@ -86,7 +86,7 @@ namespace NuGet.ProjectModel.Test
 
             foreach (var cdep in centralVersionDependencies)
             {
-                tfi.CentralVersionDependencies.Add(cdep.Name, cdep);
+                tfi.CentralPackageVersions.Add(cdep.Name, cdep);
             }
 
             tfi.DownloadDependencies.Add(downloadDependency);

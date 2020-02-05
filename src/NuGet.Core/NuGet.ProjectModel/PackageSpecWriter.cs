@@ -499,7 +499,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
-                    SetCentralDependencies(writer, framework.CentralVersionDependencies.Values); ;
+                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values); ;
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
@@ -529,16 +529,16 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralVersionDependency> centralDependencies)
+        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions)
         {
-            if (!centralDependencies.Any())
+            if (!centralPackageVersions.Any())
             {
                 return;
             }
 
-            writer.WriteObjectStart("centralDependencies");
+            writer.WriteObjectStart("centralPackageVersions");
 
-            foreach (var dependency in centralDependencies.OrderBy(dep => dep.Name))
+            foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
             {
                 writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
 

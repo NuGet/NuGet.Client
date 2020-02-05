@@ -57,7 +57,7 @@ namespace NuGet.Build.Tasks
 
                 var properties = new Dictionary<string, string>();
                 properties.Add("ProjectUniqueName", ProjectUniqueName);
-                properties.Add("Type", "CentralVersionDependency");
+                properties.Add("Type", "CentralPackageVersion");
                 properties.Add("Id", packageId);
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Version", "VersionRange");
 

@@ -432,10 +432,10 @@ namespace NuGet.ProjectModel.Test
                new List<Common.NuGetLogCode>(),
                true,
                true);
-            var centralVersionFoo = new CentralVersionDependency("foo", VersionRange.Parse("1.0.0"));
-            var centralVersionBar = new CentralVersionDependency("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralVersionDependency>() { centralVersionFoo, centralVersionBar });
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
 
             // Act
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
@@ -475,9 +475,9 @@ namespace NuGet.ProjectModel.Test
 
             // only a central dependency for bar not for foo
             // foo will be set to VersionRange.All
-            var centralVersionBar = new CentralVersionDependency("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralVersionDependency>() { centralVersionBar });
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralPackageVersion>() { centralVersionBar });
 
             // Act
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
@@ -533,8 +533,8 @@ namespace NuGet.ProjectModel.Test
                 true,
                 true);
 
-            var centralVersionFoo = new CentralVersionDependency("foo", VersionRange.Parse("1.0.0"));
-            var centralVersionBar = new CentralVersionDependency("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
             var dependencies = new List<LibraryDependency>() { dependencyFoo };
             var assetTargetFallback = true;
@@ -548,13 +548,13 @@ namespace NuGet.ProjectModel.Test
                 FrameworkName = nugetFramework,
             };
 
-            tfi.CentralVersionDependencies.Add(centralVersionFoo.Name, centralVersionFoo);
-            tfi.CentralVersionDependencies.Add(centralVersionBar.Name, centralVersionBar);
+            tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
+            tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
 
             return tfi;
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralVersionDependency> centralVersionsDependencies)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
                    
@@ -568,7 +568,7 @@ namespace NuGet.ProjectModel.Test
 
             foreach (var cvd in centralVersionsDependencies)
             {
-                tfi.CentralVersionDependencies.Add(cvd.Name, cvd);
+                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
 
             return tfi;

@@ -775,18 +775,18 @@ namespace NuGet.Build.Tasks.Console.Test
             Assert.Equal("PackageA", framework20.First().Dependencies.First().Name);
             Assert.Null(framework20.First().Dependencies.First().LibraryRange.VersionRange);
 
-            Assert.Equal(2, framework20.First().CentralVersionDependencies.Count);
-            Assert.Equal("2.0.0", framework20.First().CentralVersionDependencies["PackageA"].VersionRange.OriginalString);
-            Assert.Equal("3.0.0", framework20.First().CentralVersionDependencies["PackageB"].VersionRange.OriginalString);
+            Assert.Equal(2, framework20.First().CentralPackageVersions.Count);
+            Assert.Equal("2.0.0", framework20.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework20.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
 
             Assert.Equal(1, framework22.Count);
             Assert.Equal(1, framework22.First().Dependencies.Count);
             Assert.Equal("PackageA", framework22.First().Dependencies.First().Name);
             Assert.Equal("11.0.0", framework22.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
 
-            Assert.Equal(2, framework22.First().CentralVersionDependencies.Count);
-            Assert.Equal("2.2.2", framework22.First().CentralVersionDependencies["PackageA"].VersionRange.OriginalString);
-            Assert.Equal("3.2.0", framework22.First().CentralVersionDependencies["PackageB"].VersionRange.OriginalString);
+            Assert.Equal(2, framework22.First().CentralPackageVersions.Count);
+            Assert.Equal("2.2.2", framework22.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.2.0", framework22.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
         }
     }
 }

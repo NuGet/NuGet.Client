@@ -2705,7 +2705,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
@@ -2713,7 +2713,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2721,7 +2721,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "z" },
                     { "VersionRange", "3.0.0" },
@@ -2737,7 +2737,7 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(1, project1Spec.TargetFrameworks.Count());
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().Dependencies.Count);
-                Assert.Equal(3, project1Spec.TargetFrameworks.First().CentralVersionDependencies.Count);
+                Assert.Equal(3, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
                 var dependencyX = project1Spec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "x").First();
                 var dependencyY = project1Spec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "y").First();
@@ -2746,9 +2746,9 @@ namespace NuGet.Commands.Test
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, dependencyX.IncludeType);
                 Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
 
-                var centralDependencyX = project1Spec.TargetFrameworks.First().CentralVersionDependencies["x"];
-                var centralDependencyY = project1Spec.TargetFrameworks.First().CentralVersionDependencies["y"];
-                var centralDependencyZ = project1Spec.TargetFrameworks.First().CentralVersionDependencies["Z"];
+                var centralDependencyX = project1Spec.TargetFrameworks.First().CentralPackageVersions["x"];
+                var centralDependencyY = project1Spec.TargetFrameworks.First().CentralPackageVersions["y"];
+                var centralDependencyZ = project1Spec.TargetFrameworks.First().CentralPackageVersions["Z"];
 
                 Assert.Equal("x", centralDependencyX.Name);
                 Assert.Equal("[1.0.0-beta.*, )", centralDependencyX.VersionRange.ToNormalizedString());
@@ -2802,14 +2802,14 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2824,16 +2824,16 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(1, project1Spec.TargetFrameworks.Count());
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
-                Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralVersionDependencies.Count);
+                Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
                 Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
 
-                Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralVersionDependencies["x"].Name);
-                Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies["x"].VersionRange.ToNormalizedString());
+                Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].Name);
+                Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
 
-                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralVersionDependencies["y"].Name);
-                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralVersionDependencies["y"].VersionRange.ToNormalizedString());
+                Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].Name);
+                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
 
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
@@ -2911,7 +2911,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2919,7 +2919,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "3.0.0-beta.*" },
@@ -2936,7 +2936,7 @@ namespace NuGet.Commands.Test
                 // Dependency counts
                 Assert.Equal(1, project1Spec.TargetFrameworks.Count());
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
-                Assert.Equal(0, project1Spec.TargetFrameworks.First().CentralVersionDependencies.Count);
+                Assert.Equal(0, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
                 Assert.Equal("(, )", project1Spec.TargetFrameworks.First().Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
             }
         }
@@ -2991,7 +2991,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "" },
@@ -2999,7 +2999,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersionDependency" },
+                    { "Type", "CentralVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "TargetFrameworks", "netcoreapp3.0" },
@@ -3016,8 +3016,8 @@ namespace NuGet.Commands.Test
                 var dependencyX = packSpec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "x").First();
                 var dependencyY = packSpec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "y").First();
 
-                var centralDependencyX = packSpec.TargetFrameworks.First().CentralVersionDependencies["x"];
-                var centralDependencyY = packSpec.TargetFrameworks.First().CentralVersionDependencies["Y"];
+                var centralDependencyX = packSpec.TargetFrameworks.First().CentralPackageVersions["x"];
+                var centralDependencyY = packSpec.TargetFrameworks.First().CentralPackageVersions["Y"];
 
                 Assert.Null(dependencyX.LibraryRange.VersionRange);
                 Assert.Null(dependencyY.LibraryRange.VersionRange);

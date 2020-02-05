@@ -42,7 +42,7 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// List of the package versions defined in the Central package versions management file. 
         /// </summary>
-        public IDictionary<string, CentralVersionDependency> CentralVersionDependencies { get; } = new Dictionary<string, CentralVersionDependency>(StringComparer.OrdinalIgnoreCase);
+        public IDictionary<string, CentralPackageVersion> CentralPackageVersions { get; } = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
 
         /// <summary>
         /// A set of unique FrameworkReferences
@@ -70,7 +70,7 @@ namespace NuGet.ProjectModel
             hashCode.AddSequence(DownloadDependencies);
             hashCode.AddSequence(FrameworkReferences);
             hashCode.AddObject(RuntimeIdentifierGraphPath);
-            hashCode.AddSequence(CentralVersionDependencies);
+            hashCode.AddSequence(CentralPackageVersions);
             return hashCode.CombinedHash;
         }
 
@@ -97,7 +97,7 @@ namespace NuGet.ProjectModel
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
                    FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
-                   CentralVersionDependencies.OrderedEquals(other.CentralVersionDependencies, centralVersion => centralVersion.Value) &&
+                   CentralPackageVersions.OrderedEquals(other.CentralPackageVersions, centralVersion => centralVersion.Value) &&
                    string.Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath);
         }
 
@@ -112,7 +112,7 @@ namespace NuGet.ProjectModel
             clonedObject.DownloadDependencies.AddRange(DownloadDependencies.Select(item => item.Clone()));
             clonedObject.FrameworkReferences.AddRange(FrameworkReferences);
             clonedObject.RuntimeIdentifierGraphPath = RuntimeIdentifierGraphPath;
-            clonedObject.CentralVersionDependencies.AddRange(CentralVersionDependencies.ToDictionary(item => item.Key, item => item.Value));
+            clonedObject.CentralPackageVersions.AddRange(CentralPackageVersions.ToDictionary(item => item.Key, item => item.Value));
             return clonedObject;
         }
     }

@@ -49,12 +49,12 @@ namespace NuGet.Build.Tasks.Test
 
             Assert.Equal("x", graphItems[0].GetMetadata("Id"));
             Assert.Equal(task.ProjectUniqueName, task.RestoreGraphItems[0].GetMetadata("ProjectUniqueName"));
-            Assert.Equal("CentralVersionDependency", graphItems[0].GetMetadata("Type"));
+            Assert.Equal("CentralPackageVersion", graphItems[0].GetMetadata("Type"));
             Assert.Equal("[1.0.0]", graphItems[0].GetMetadata("VersionRange"));
             Assert.Equal("netstandard2.0", graphItems[0].GetMetadata("TargetFrameworks"));
 
             Assert.Equal("y", graphItems[1].GetMetadata("Id"));
-            Assert.Equal("CentralVersionDependency", graphItems[1].GetMetadata("Type"));
+            Assert.Equal("CentralPackageVersion", graphItems[1].GetMetadata("Type"));
             Assert.Equal("2.0.0", graphItems[1].GetMetadata("VersionRange"));
             Assert.Equal("netstandard2.0", graphItems[1].GetMetadata("TargetFrameworks"));
             Assert.Equal(task.ProjectUniqueName, task.RestoreGraphItems[1].GetMetadata("ProjectUniqueName"));
@@ -98,7 +98,7 @@ namespace NuGet.Build.Tasks.Test
 
             Assert.Equal("x", graphItems[0].GetMetadata("Id"));
             Assert.Equal(task.ProjectUniqueName, task.RestoreGraphItems[0].GetMetadata("ProjectUniqueName"));
-            Assert.Equal("CentralVersionDependency", graphItems[0].GetMetadata("Type"));
+            Assert.Equal("CentralPackageVersion", graphItems[0].GetMetadata("Type"));
             Assert.Equal("[1.0.0]", graphItems[0].GetMetadata("VersionRange"));
             Assert.Equal("netstandard2.0", graphItems[0].GetMetadata("TargetFrameworks"));
         }

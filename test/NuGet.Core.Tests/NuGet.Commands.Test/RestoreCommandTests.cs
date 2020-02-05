@@ -1356,10 +1356,10 @@ namespace NuGet.Commands.Test
                new List<Common.NuGetLogCode>(),
                autoReferenced: false,
                generatePathProperty: true);
-            var centralVersionFoo = new CentralVersionDependency("foo", VersionRange.Parse("1.0.0"));
-            var centralVersionBar = new CentralVersionDependency("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralVersionDependency>() { centralVersionFoo, centralVersionBar });
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
             var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
             var sources = new List<PackageSource>();
@@ -1379,7 +1379,7 @@ namespace NuGet.Commands.Test
             Assert.True(errorMessage.Contains("bar"));
         }
 
-        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralVersionDependency> centralVersionsDependencies)
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
             TargetFrameworkInformation tfi = new TargetFrameworkInformation()
@@ -1392,7 +1392,7 @@ namespace NuGet.Commands.Test
 
             foreach (var cvd in centralVersionsDependencies)
             {
-                tfi.CentralVersionDependencies.Add(cvd.Name, cvd);
+                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
 
             return tfi;

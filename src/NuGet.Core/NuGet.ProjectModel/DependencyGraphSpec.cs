@@ -198,7 +198,7 @@ namespace NuGet.ProjectModel
         }
 
         public void AddProject(PackageSpec projectSpec)
-        {        
+        {  
             // Find the unique name in the spec, otherwise generate a new one.
             var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
@@ -222,7 +222,7 @@ namespace NuGet.ProjectModel
             {
                 foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null))
                 {
-                    d.LibraryRange.VersionRange = tfm.CentralVersionDependencies.ContainsKey(d.Name) ? tfm.CentralVersionDependencies[d.Name].VersionRange : VersionRange.All;                   
+                    d.LibraryRange.VersionRange = tfm.CentralPackageVersions.ContainsKey(d.Name) ? tfm.CentralPackageVersions[d.Name].VersionRange : VersionRange.All;                   
                     d.Type = d.Type.Combine(add: new List<LibraryModel.LibraryDependencyTypeFlag>(){ LibraryModel.LibraryDependencyTypeFlag.Central}, remove: new List<LibraryModel.LibraryDependencyTypeFlag>());
                 }
             }

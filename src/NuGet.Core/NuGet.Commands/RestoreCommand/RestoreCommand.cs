@@ -70,7 +70,7 @@ namespace NuGet.Commands
         private const string LockFileEvaluationResult = "LockFileEvaluationResult";
 
         // names for central package management version information
-        private const string CentralVersionManagementEnabled = "CentralVersionManagementEnabled";
+        private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
 
         public RestoreCommand(RestoreRequest request)
         {
@@ -106,40 +106,9 @@ namespace NuGet.Commands
                 _operationId = telemetry.OperationId;
 
                 var cpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
-                telemetry.TelemetryEvent[CentralVersionManagementEnabled] = cpvmEnabled;
+                telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = cpvmEnabled;
 
                 var restoreTime = Stopwatch.StartNew();
-
-                // The dependencies should not have versions explicitelly defined if cpvm is enabled.
-                if (cpvmEnabled)
-                {
-                    var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.Type.Contains(LibraryDependencyTypeFlag.Central) && !d.AutoReferenced));
-                    if (dependenciesWithDefinedVersion.Any())
-                    {
-                        await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, _request.Project.Name, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
-
-                        // Replay Warnings and Errors from an existing lock file
-                        await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
-
-                        restoreTime.Stop();
-                        _success = false;
-
-                        return new RestoreResult(
-                            success: _success,
-                            restoreGraphs: new List<RestoreTargetGraph>(),
-                            compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                            msbuildFiles: new List<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile,
-                            previousLockFile: _request.ExistingLockFile,
-                            lockFilePath: _request.ExistingLockFile?.Path,
-                            cacheFile: null,
-                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                            packagesLockFilePath: null,
-                            packagesLockFile: null,
-                            projectStyle: _request.ProjectStyle,
-                            elapsedTime: restoreTime.Elapsed);
-                    }
-                }
 
                 // Local package folders (non-sources)
                 var localRepositories = new List<NuGetv3LocalRepository>
@@ -195,6 +164,29 @@ namespace NuGet.Commands
                             }
                         }
                     }
+                }
+
+                if(!await ValidateCentralVersionRequirementsAsync(cpvmEnabled))
+                {
+                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
+
+                    restoreTime.Stop();
+                    _success = false;
+
+                    return new RestoreResult(
+                        success: _success,
+                        restoreGraphs: new List<RestoreTargetGraph>(),
+                        compatibilityCheckResults: new List<CompatibilityCheckResult>(),
+                        msbuildFiles: new List<MSBuildOutputFile>(),
+                        lockFile: _request.ExistingLockFile,
+                        previousLockFile: _request.ExistingLockFile,
+                        lockFilePath: _request.ExistingLockFile?.Path,
+                        cacheFile: null,
+                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                        packagesLockFilePath: null,
+                        packagesLockFile: null,
+                        projectStyle: _request.ProjectStyle,
+                        elapsedTime: restoreTime.Elapsed);
                 }
 
                 // evaluate packages.lock.json file
@@ -404,6 +396,23 @@ namespace NuGet.Commands
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
             }
+        }
+
+        private async Task<bool> ValidateCentralVersionRequirementsAsync(bool cpvmEnabled)
+        {
+            // The dependencies should not have versions explicitelly defined if cpvm is enabled.
+            if (cpvmEnabled)
+            {
+                var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.Type.Contains(LibraryDependencyTypeFlag.Central) && !d.AutoReferenced));
+                if (dependenciesWithDefinedVersion.Any())
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
+
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         private string ConcatAsString<T>(IEnumerable<T> enumerable)

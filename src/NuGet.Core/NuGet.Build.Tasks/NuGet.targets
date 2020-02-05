@@ -58,7 +58,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
     <!-- Flag if the Central package file is enabled -->
-    <_CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true' AND '$(_CentralPackageVersionsFeatureFlagEnabled)' == 'true'">true</_CentralPackageVersionsEnabled>
+    <DisableCentralPackageVersions Condition="'$(DisableCentralPackageVersions)' == ' '">true</DisableCentralPackageVersions>
+    <CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</CentralPackageVersionsEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -715,7 +716,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
-        <CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
+        <CentralPackageVersionsEnabled>$(CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -844,7 +845,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GenerateProjectRestoreGraphPerFramework"
-    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectCentralPackageVersions;CollectPackageDownloads;CollectFrameworkReferences"
+    DependsOnTargets="_GetRestoreProjectStyle;CollectPackageReferences;CollectPackageDownloads;CollectFrameworkReferences;CollectCentralPackageVersions"
     Returns="@(_RestoreGraphEntry)">
 
     <!-- Write out project references -->
@@ -874,7 +875,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out central package versions -->
     <GetCentralPackageVersionsTask
-      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(_CentralPackageVersionsEnabled)' == 'true' "
+      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(CentralPackageVersionsEnabled)' == 'true' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       CentralPackageVersions="@(PackageVersion)"
       TargetFrameworks="$(TargetFramework)"

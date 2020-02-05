@@ -211,10 +211,10 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the centrally defined package version information.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get PackageVersion for.</param>
-        /// <returns>An <see cref="IEnumerable{CentralVersionDependency}" /> containing the package versions for the specified project.</returns>
-        internal static Dictionary<string, CentralVersionDependency> GetCentralPackageVersions(IMSBuildProject project)
+        /// <returns>An <see cref="IEnumerable{CentralPackageVersion}" /> containing the package versions for the specified project.</returns>
+        internal static Dictionary<string, CentralPackageVersion> GetCentralPackageVersions(IMSBuildProject project)
         {
-            var result = new Dictionary<string, CentralVersionDependency>();
+            var result = new Dictionary<string, CentralPackageVersion>();
             IEnumerable<IMSBuildItem> packageVersionItems = GetDistinctItemsOrEmpty(project, "PackageVersion");
 
             foreach (var projectItemInstance in packageVersionItems)
@@ -223,7 +223,7 @@ namespace NuGet.Build.Tasks.Console
                 string version = projectItemInstance.GetProperty("Version");
                 VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
 
-                result.Add(id, new CentralVersionDependency(id, versionRange));
+                result.Add(id, new CentralPackageVersion(id, versionRange));
             }
 
             return result;
@@ -563,7 +563,7 @@ namespace NuGet.Build.Tasks.Console
 
                 if (cpvmEnabled && targetFrameworkInformation.Dependencies.Any())
                 {
-                    targetFrameworkInformation.CentralVersionDependencies.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
+                    targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
                 }
 
                 targetFrameworkInfos.Add(targetFrameworkInformation);
@@ -952,7 +952,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>True if the project has CentralPackageVersionManagement enabled and the project is PackageReference or the projectStyle is null.</returns>
         internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, ProjectStyle? projectStyle)
         {
-            var cpvmEnabledProperty = StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString);
+            var cpvmEnabledProperty = StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("CentralPackageVersionsEnabled"), bool.TrueString);
 
             return (cpvmEnabledProperty && (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference)));
         }      

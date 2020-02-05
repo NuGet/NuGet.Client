@@ -8,56 +8,18 @@ using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
 {
-    public class CentralVersionDependency : IEquatable<CentralVersionDependency>, IComparable<CentralVersionDependency>
+    public class CentralPackageVersion : IEquatable<CentralPackageVersion>
     {
         public string Name { get; }
 
         public VersionRange VersionRange { get; }
 
-        public CentralVersionDependency(
+        public CentralPackageVersion(
             string name,
             VersionRange versionRange)
         {
             Name = name;
             VersionRange = versionRange;
-        }
-
-        public static implicit operator LibraryRange(CentralVersionDependency library)
-        {
-            return new LibraryRange
-            {
-                Name = library.Name,
-                TypeConstraint = LibraryDependencyTarget.Package,
-                VersionRange = library.VersionRange
-            };
-        }
-
-        public int CompareTo(CentralVersionDependency other)
-        {
-
-            var compare = string.Compare(Name, other.Name, StringComparison.OrdinalIgnoreCase);
-            if (compare == 0)
-            {
-
-                if (VersionRange == null
-                    && other.VersionRange == null)
-                {
-                    // NOOP;
-                }
-                else if (VersionRange == null)
-                {
-                    compare = -1;
-                }
-                else if (other.VersionRange == null)
-                {
-                    compare = 1;
-                }
-                else
-                {
-                    compare = VersionRange.GetHashCode().CompareTo(other.VersionRange.GetHashCode());
-                }
-            }
-            return compare;
         }
 
         public override string ToString()
@@ -81,10 +43,10 @@ namespace NuGet.LibraryModel
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as CentralVersionDependency);
+            return Equals(obj as CentralPackageVersion);
         }
 
-        public bool Equals(CentralVersionDependency other)
+        public bool Equals(CentralPackageVersion other)
         {
             if (other == null)
             {

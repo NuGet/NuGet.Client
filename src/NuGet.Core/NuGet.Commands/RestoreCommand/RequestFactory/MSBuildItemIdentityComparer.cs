@@ -9,7 +9,7 @@ namespace NuGet.Commands
     /// <summary>
     /// A comparer for the <see cref="IMSBuildItem"/> based on the <see cref="IMSBuildItem.Identity"/>.
     /// </summary>
-    public class MSBuildItemComparer : IEqualityComparer<IMSBuildItem>
+    internal class MSBuildItemIdentityComparer : IEqualityComparer<IMSBuildItem>
     {
         public bool Equals(IMSBuildItem x, IMSBuildItem y)
         {
