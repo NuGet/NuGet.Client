@@ -124,7 +124,7 @@
   <!-- 	Since we are moving some code and strings from NuGet.CommandLine to NuGet.Commands, we opted to go through normal localization process
         (build .resources.dll) and then add them to the ILMerged nuget.exe -->
   <!-- This will also be called from CI build, after assemblies are localized, since our test infra takes nuget.exe before Localization  -->
-  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe) != 'true'">
+  <Target Name="ILMergeNuGetExe" AfterTargets="Build" Condition="'$(BuildingInsideVisualStudio)' != 'true' and '$(SkipILMergeOfNuGetExe)' != 'true'">
     <PropertyGroup>
       <!-- when done after build, no localizedartifacts are built yet, so expected localized artifact count is 0. -->
       <ExpectedLocalizedArtifactCount Condition="'$(ExpectedLocalizedArtifactCount)' == ''">0</ExpectedLocalizedArtifactCount>
