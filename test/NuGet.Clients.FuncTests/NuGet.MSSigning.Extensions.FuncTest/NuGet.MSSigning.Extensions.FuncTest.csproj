@@ -17,7 +17,7 @@
     <Reference Include="System.Net.Http" />
   </ItemGroup>
 
-  <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" >
+  <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'">
       <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
             DestinationFolder="$(OutputPath)NuGet\" />
   </Target>

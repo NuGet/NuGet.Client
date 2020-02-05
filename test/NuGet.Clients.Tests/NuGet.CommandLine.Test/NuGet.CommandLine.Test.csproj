@@ -59,7 +59,7 @@
     </PostBuildEvent>
   </PropertyGroup>
 
-  <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build">
+  <Target Name="CopyFinalNuGetExeToOutputPath" AfterTargets="Build" Condition="'$(SkipILMergeOfNuGetExe)' != 'true'" >
       <Copy SourceFiles="$(ArtifactsDirectory)$(VsixOutputDirName)\NuGet.exe"
             DestinationFolder="$(OutputPath)NuGet\" />
   </Target>
