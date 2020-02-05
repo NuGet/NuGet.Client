@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using NuGet.Packaging;
 using NuGet.Protocol;
 using NuGet.Test.Utility;
 using Xunit;
@@ -30,6 +31,11 @@ namespace NuGet.PackageManagement.UI.Test
         public void LocalSources_PackageReader_NotNull()
         {
             Assert.NotNull(_testInstance.PackageReader);
+
+            Func<PackageReaderBase> func = _testInstance.PackageReader;
+
+            PackageReaderBase reader = func();
+            Assert.IsType(typeof(PackageArchiveReader), reader);
         }
     }
 }

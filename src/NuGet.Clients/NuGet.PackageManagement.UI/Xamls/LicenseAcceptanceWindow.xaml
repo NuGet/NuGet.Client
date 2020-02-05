@@ -162,7 +162,6 @@
       Grid.Column="0"
       Margin="12,0,12,12"
       x:Name="_licenseText"
-      AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Text_LicenseText}"
       TextWrapping="Wrap" />
     <Grid
@@ -185,7 +184,6 @@
           Margin="0,12"
           Content="{x:Static nuget:Resources.Button_IAccept}"
           AutomationProperties.AutomationId="AcceptButton"
-          AutomationProperties.LabeledBy="{Binding ElementName=_licenseText}"
           Click="OnAcceptButtonClick" />
       <Button
           Grid.Column="2"

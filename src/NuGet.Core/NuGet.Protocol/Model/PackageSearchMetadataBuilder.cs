@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Core.Types
             internal AsyncLazy<PackageDeprecationMetadata> LazyDeprecationFactory { get; set; }
             public async Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => await (LazyDeprecationFactory ?? LazyNullDeprecationMetadata);
             public bool IsListed { get; set; }
-            public Lazy<PackageReaderBase> PackageReader { get; set; }
+            public Func<PackageReaderBase> PackageReader { get; set; }
         }
 
         private PackageSearchMetadataBuilder(IPackageSearchMetadata metadata)

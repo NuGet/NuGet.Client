@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -169,9 +170,9 @@ namespace NuGet.VisualStudio
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceprovider.GetDTEAsync();
-            var supportedProjects = dte.Solution.Projects.Cast<EnvDTE.Project>();
+            IEnumerable<Project> supportedProjects = await GetProjectsInSolutionAsync(dte);
 
-            foreach (var solutionProject in supportedProjects)
+            foreach (Project solutionProject in supportedProjects)
             {
                 var solutionProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(solutionProject);
 
@@ -309,6 +310,13 @@ namespace NuGet.VisualStudio
                 pathContext.UserPackageFolder,
                 pathContext.FallbackPackageFolders.Cast<string>(),
                 trie);
+        }
+
+        private async Task<IEnumerable<Project>> GetProjectsInSolutionAsync(DTE dte)
+        {
+            IEnumerable<Project> allProjects = await EnvDTESolutionUtility.GetAllEnvDTEProjectsAsync(dte);
+            IEnumerable<Project> supportedProjects = allProjects.Where(EnvDTEProjectUtility.IsSupported);
+            return supportedProjects;
         }
     }
 }
