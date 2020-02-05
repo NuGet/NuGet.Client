@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
@@ -176,9 +177,22 @@ namespace NuGet.VisualStudio.Common
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                // Give the error list focus.
-                var vsErrorList = _errorList as IVsErrorList;
-                vsErrorList?.BringToFront();
+                IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell>();
+                object propertyShowTaskListOnBuildEnd;
+                int getPropertyReturnCode = vsShell.GetProperty((int)__VSSPROPID.VSSPROPID_ShowTasklistOnBuildEnd, out propertyShowTaskListOnBuildEnd);
+                bool showErrorListOnBuildEnd = true; //Default to showing the Error List.
+
+                if (getPropertyReturnCode == VSConstants.S_OK)
+                {
+                    bool.TryParse(propertyShowTaskListOnBuildEnd?.ToString(), out showErrorListOnBuildEnd);
+                }
+               
+                if (showErrorListOnBuildEnd)
+                {
+                    // Give the error list focus.
+                    var vsErrorList = _errorList as IVsErrorList;
+                    vsErrorList?.BringToFront();
+                }
             });
         }
 
