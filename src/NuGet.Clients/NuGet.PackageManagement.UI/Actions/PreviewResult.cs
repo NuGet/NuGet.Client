@@ -8,9 +8,9 @@ namespace NuGet.PackageManagement.UI
 {
     public class PreviewResult
     {
-        public IEnumerable<PackageIdentityResult> Deleted { get; }
+        public IEnumerable<AccessiblePackageIdentity> Deleted { get; }
 
-        public IEnumerable<PackageIdentityResult> Added { get; }
+        public IEnumerable<AccessiblePackageIdentity> Added { get; }
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
@@ -20,8 +20,8 @@ namespace NuGet.PackageManagement.UI
 
         public PreviewResult(
             NuGetProject target,
-            IEnumerable<PackageIdentityResult> added,
-            IEnumerable<PackageIdentityResult> deleted,
+            IEnumerable<AccessiblePackageIdentity> added,
+            IEnumerable<AccessiblePackageIdentity> deleted,
             IEnumerable<UpdatePreviewResult> updated)
         {
             string s = null;

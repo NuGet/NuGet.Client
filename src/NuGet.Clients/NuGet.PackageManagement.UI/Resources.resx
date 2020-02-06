@@ -879,13 +879,13 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Accesibility_PackageIdentity" xml:space="preserve">
     <value>{0} version {1}</value>
-    <comment>{1} = package id, {2} = package version</comment>
+    <comment>{1} = Package ID, {2} = Package version</comment>
   </data>
   <data name="Preview_PackageUpdate" xml:space="preserve">
     <value>{0} version {1} to {2} version {3}</value>
-    <comment>{0} = Old package Id, {1} = Old package version, {2} = New package version, {2} = New package version</comment>
+    <comment>{0} = Old package ID, {1} = Old package version, {2} = New package ID, {2} = New package version</comment>
   </data>
   <data name="Preview_UnknownProject" xml:space="preserve">
-    <value>Unknown Project</value>
+    <value>Unknown project</value>
   </data>
 </root>

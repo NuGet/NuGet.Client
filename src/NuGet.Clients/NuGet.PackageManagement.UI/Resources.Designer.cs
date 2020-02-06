@@ -1359,7 +1359,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unknown Project.
+        ///   Looks up a localized string similar to Unknown project.
         /// </summary>
         public static string Preview_UnknownProject {
             get {

@@ -24,7 +24,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Actions\PackageIdentityResultTests.cs" />
+    <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />
     <Compile Include="Converters\IconUrlToImageCacheConverterTests.cs" />
     <Compile Include="Converters\DateTimeConverterTests.cs" />
     <Compile Include="Converters\VersionToStringConverterTests.cs" />

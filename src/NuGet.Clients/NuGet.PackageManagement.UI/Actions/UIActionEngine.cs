@@ -889,8 +889,8 @@ namespace NuGet.PackageManagement.UI
                     }
                 }
 
-                var added = new List<PackageIdentityResult>();
-                var deleted = new List<PackageIdentityResult>();
+                var added = new List<AccessiblePackageIdentity>();
+                var deleted = new List<AccessiblePackageIdentity>();
                 var updated = new List<UpdatePreviewResult>();
                 foreach (var packageId in packageIds)
                 {
@@ -906,12 +906,12 @@ namespace NuGet.PackageManagement.UI
                     else if (isInstalled && !isUninstalled)
                     {
                         // the package is added
-                        added.Add(new PackageIdentityResult(installed[packageId]));
+                        added.Add(new AccessiblePackageIdentity(installed[packageId]));
                     }
                     else if (!isInstalled && isUninstalled)
                     {
                         // the package is deleted
-                        deleted.Add(new PackageIdentityResult(uninstalled[packageId]));
+                        deleted.Add(new AccessiblePackageIdentity(uninstalled[packageId]));
                     }
                 }
 
