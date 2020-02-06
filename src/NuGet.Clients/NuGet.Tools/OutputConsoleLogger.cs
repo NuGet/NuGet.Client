@@ -91,7 +91,7 @@ namespace NuGetVSExtension
                 OutputConsole.WriteLine(string.Empty);
 
                 // Give the error list focus
-                ErrorListTableDataSource.Value.BringToFront();
+                ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
             });
         }
 

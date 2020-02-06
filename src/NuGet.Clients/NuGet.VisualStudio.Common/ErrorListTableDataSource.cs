@@ -169,7 +169,7 @@ namespace NuGet.VisualStudio.Common
         /// <summary>
         /// Show error window.
         /// </summary>
-        public void BringToFront()
+        public void BringToFrontIfSettingsPermit()
         {
             EnsureInitialized();
 
