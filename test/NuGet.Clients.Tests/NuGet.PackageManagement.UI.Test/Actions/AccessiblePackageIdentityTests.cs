@@ -12,17 +12,21 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void AutomationName_WhenCultureIsNeutral_IdVersionConstructor_ReturnsMessage()
         {
-            var result = new AccessiblePackageIdentity("test.package", new NuGetVersion(0, 0, 1));
+            var version = new NuGetVersion(0, 0, 1);
+            var result = new AccessiblePackageIdentity("test.package", version);
 
             Assert.Equal("test.package version 0.0.1", result.AutomationName);
+            Assert.Equal($"test.package version {version.ToNormalizedString()}", result.AutomationName);
         }
 
         [Fact]
         public void AutomationName_WhenCultureIsNeutral_PackageIdentityConstructor_ReturnsMessage()
         {
-            var result = new AccessiblePackageIdentity(new PackageIdentity("test.package", new NuGetVersion(0, 0, 1)));
+            var version = new NuGetVersion(0, 0, 1);
+            var result = new AccessiblePackageIdentity(new PackageIdentity("test.package", version));
 
             Assert.Equal("test.package version 0.0.1", result.AutomationName);
+            Assert.Equal($"test.package version {version.ToNormalizedString()}", result.AutomationName);
         }
     }
 }
