@@ -1,10 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using NuGet.Packaging.Core;
-using NuGet.Versioning;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -13,13 +11,12 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class AccessiblePackageIdentity : PackageIdentity
     {
-        private readonly string _automationName;
-        public string AutomationName => _automationName;
+        public string AutomationName { get; }
 
         public AccessiblePackageIdentity(PackageIdentity id)
             : base(id.Id, id.Version)
         {
-            _automationName = string.Format(
+            AutomationName = string.Format(
                CultureInfo.CurrentUICulture,
                Resources.Accessibility_PackageIdentity,
                Id,

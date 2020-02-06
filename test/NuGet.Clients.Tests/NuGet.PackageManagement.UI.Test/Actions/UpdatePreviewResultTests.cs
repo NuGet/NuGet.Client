@@ -12,15 +12,15 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void AutomationName_WhenCultureIsNeutral_ReturnsMessage()
         {
+            var oldPkgId = "updated.package";
+            var newPkgId = "updated.package";
             var oldVersion = new NuGetVersion(0, 0, 1);
             var newVersion = new NuGetVersion(0, 0, 2);
             var previewResult = new UpdatePreviewResult(
-                new PackageIdentity("updated.package", oldVersion),
-                new PackageIdentity("updated.package", newVersion));
+                new PackageIdentity(oldPkgId, oldVersion),
+                new PackageIdentity(newPkgId, newVersion));
 
-            Assert.Equal("updated.package version 0.0.1 to updated.package version 0.0.2",
-                previewResult.AutomationName);
-            Assert.Equal($"updated.package version {oldVersion.ToNormalizedString()} to updated.package version {newVersion.ToNormalizedString()}",
+            Assert.Equal($"{oldPkgId} version {oldVersion.ToNormalizedString()} to {newPkgId} version {newVersion.ToNormalizedString()}",
                 previewResult.AutomationName);
         }
     }

@@ -12,11 +12,11 @@ namespace NuGet.PackageManagement.UI.Test
         [Fact]
         public void AutomationName_WhenCultureIsNeutral_ReturnsMessage()
         {
+            var pkgId = "test.package";
             var version = new NuGetVersion(0, 0, 1);
-            var result = new AccessiblePackageIdentity(new PackageIdentity("test.package", version));
+            var result = new AccessiblePackageIdentity(new PackageIdentity(pkgId, version));
 
-            Assert.Equal("test.package version 0.0.1", result.AutomationName);
-            Assert.Equal($"test.package version {version.ToNormalizedString()}", result.AutomationName);
+            Assert.Equal($"{pkgId} version {version.ToNormalizedString()}", result.AutomationName);
         }
     }
 }

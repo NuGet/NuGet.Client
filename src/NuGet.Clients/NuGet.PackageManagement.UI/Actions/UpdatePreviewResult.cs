@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Globalization;
 using NuGet.Packaging.Core;
 
@@ -11,13 +10,13 @@ namespace NuGet.PackageManagement.UI
     {
         public PackageIdentity Old { get; }
         public PackageIdentity New { get; }
-        private readonly string _automationName;
+        public string AutomationName { get; }
 
         public UpdatePreviewResult(PackageIdentity oldPackage, PackageIdentity newPackage)
         {
             Old = oldPackage;
             New = newPackage;
-            _automationName = string.Format(
+            AutomationName = string.Format(
                 CultureInfo.CurrentUICulture,
                 Resources.Preview_PackageUpdate,
                 Old.Id, Old.Version.ToNormalizedString(),
@@ -28,7 +27,5 @@ namespace NuGet.PackageManagement.UI
         {
             return Old + " -> " + New;
         }
-
-        public string AutomationName => _automationName;
     }
 }
