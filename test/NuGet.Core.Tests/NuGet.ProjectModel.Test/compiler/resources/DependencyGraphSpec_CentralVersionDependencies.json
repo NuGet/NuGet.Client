@@ -22,7 +22,7 @@
               "generatePathProperty": true
             }
           },
-          "centralDependencies": {
+          "centralPackageVersions": {
             "bar": "[2.0.0, )",
             "foo": "[1.0.0, )"
           },
