@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading;
 using EnvDTE;
 using Microsoft.VisualStudio.Threading;
+using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
@@ -49,9 +50,9 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException("project");
             }
 
-            if (String.IsNullOrEmpty(packageId))
+            if (string.IsNullOrEmpty(packageId))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, "packageId"));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(packageId)));
             }
 
             PumpingJTF.Run(async delegate
@@ -63,15 +64,15 @@ namespace NuGet.VisualStudio
                            _solutionManager,
                            _deleteOnRestartManager);
 
-                    UninstallationContext uninstallContext = new UninstallationContext(removeDependencies, false);
-                    VSAPIProjectContext projectContext = new VSAPIProjectContext();
-
-                    var logger = new LoggerAdapter(projectContext);
-                    projectContext.PackageExtractionContext = new PackageExtractionContext(
-                        PackageSaveMode.Defaultv2,
-                        PackageExtractionBehavior.XmlDocFileSaveMode,
-                        ClientPolicyContext.GetClientPolicy(_settings, logger),
-                        logger);
+                    var uninstallContext = new UninstallationContext(removeDependencies, forceRemove: false);
+                    var projectContext = new VSAPIProjectContext
+                    {
+                        PackageExtractionContext = new PackageExtractionContext(
+                            PackageSaveMode.Defaultv2,
+                            PackageExtractionBehavior.XmlDocFileSaveMode,
+                            ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                            NullLogger.Instance)
+                    };
 
                     // find the project
                     NuGetProject nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, projectContext);
