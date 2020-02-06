@@ -1864,7 +1864,7 @@ namespace NuGet.CommandLine.Test
                 Assert.True(
                     result.Item3.Contains(
                         string.Format(
-                            "The specified source '{0}' is invalid. Please provide a valid source.",
+                            "The specified source '{0}' is invalid. Provide a valid source.",
                             invalidInput)),
                     "Expected error message not found in " + result.Item3
                     );

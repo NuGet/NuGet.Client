@@ -77,6 +77,9 @@ phases:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+    LocalizedLanguageCount: "13"
+    DesktopTargetFramework: "net472"
+
   queue:
     name: VSEng-MicroBuildVS2019
     timeoutInMinutes: 90
@@ -178,7 +181,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true"
 
   - task: MSBuild@1
     displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -189,6 +192,31 @@ phases:
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
 
+  - task: MSBuild@1	
+    displayName: "Localize Assemblies"	
+    inputs:	
+      solution: "build\\loc.proj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:AfterBuild"	
+
+  - task: MSBuild@1	
+    displayName: "Build Final NuGet.exe (via ILMerge)"	
+    inputs:	
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
+
+  - task: MSBuild@1	
+    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"	
+    inputs:	
+      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+
   - task: MSBuild@1
     displayName: "Run unit tests"
     continueOnError: "true"
@@ -196,7 +224,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -227,15 +255,6 @@ phases:
       ArtifactName: "NuGet.CommandLine.Test"
       ArtifactType: "Container"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
-
-  - task: MSBuild@1
-    displayName: "Localize Assemblies"
-    inputs:
-      solution: "build\\loc.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: MSBuild@1
     displayName: "Sign Assemblies"

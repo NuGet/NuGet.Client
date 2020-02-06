@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Xml;
 using System.Xml.Linq;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
@@ -111,7 +112,7 @@ namespace NuGet.CommandLine
                         projectConfigFilePath,
                         ex.Message);
 
-                    throw new CommandLineException(message);
+                    throw new CommandException(message);
                 }
             }
 

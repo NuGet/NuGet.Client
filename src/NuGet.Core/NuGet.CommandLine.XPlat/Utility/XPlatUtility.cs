@@ -28,17 +28,6 @@ namespace NuGet.CommandLine.XPlat
                 machineWideSettings: new XPlatMachineWideSetting());
         }
 
-        public static LogLevel GetLogLevel(CommandOption verbosity)
-        {
-            LogLevel level;
-            if (!Enum.TryParse(value: verbosity.Value(), ignoreCase: true, result: out level))
-            {
-                level = LogLevel.Information;
-            }
-
-            return level;
-        }
-
         public static void ConfigureProtocol()
         {
             // Set connection limit

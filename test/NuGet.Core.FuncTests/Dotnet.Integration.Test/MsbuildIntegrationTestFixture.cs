@@ -29,7 +29,6 @@ namespace Dotnet.Integration.Test
             _cliDirectory = CopyLatestCliForPack();
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
-
             MsBuildSdksPath = Path.Combine(Directory.GetDirectories
                 (Path.Combine(_cliDirectory, "sdk"))
                 .First(), "Sdks");
@@ -173,7 +172,6 @@ namespace Dotnet.Integration.Test
         /// </summary>
         internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 args,

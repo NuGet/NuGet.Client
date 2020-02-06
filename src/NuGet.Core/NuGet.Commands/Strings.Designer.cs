@@ -520,6 +520,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Property SourceProvider is null..
+        /// </summary>
+        internal static string Error_SourceProviderIsNull {
+            get {
+                return ResourceManager.GetString("Error_SourceProviderIsNull", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid tools package {0} {1}. Tools packages cannot contain more than one PackageType..
         /// </summary>
         internal static string Error_ToolsPackageWithExtraPackageTypes {
@@ -1610,6 +1619,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All.
+        /// </summary>
+        internal static string ReservedPackageNameAll {
+            get {
+                return ResourceManager.GetString("ReservedPackageNameAll", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} (via {1}).
         /// </summary>
         internal static string ResolverRequest_ToStringFormat {
@@ -1732,6 +1750,195 @@ namespace NuGet.Commands {
         internal static string SignCommandSuccess {
             get {
                 return ResourceManager.GetString("SignCommandSuccess", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source {0}.
+        /// </summary>
+        internal static string Source_DefaultNamePrefix {
+            get {
+                return ResourceManager.GetString("Source_DefaultNamePrefix", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to invalid value for --format: {0}. Allowed values: &apos;detailed&apos; or &apos;short&apos;.
+        /// </summary>
+        internal static string Source_InvalidFormatValue {
+            get {
+                return ResourceManager.GetString("Source_InvalidFormatValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source name &apos;All&apos; is a reserved name..
+        /// </summary>
+        internal static string SourcesCommandAllNameIsReserved {
+            get {
+                return ResourceManager.GetString("SourcesCommandAllNameIsReserved", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Clearing existing authentication types settings for package source &apos;{0}&apos;..
+        /// </summary>
+        internal static string SourcesCommandClearingExistingAuthTypes {
+            get {
+                return ResourceManager.GetString("SourcesCommandClearingExistingAuthTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both UserName and Password must be specified..
+        /// </summary>
+        internal static string SourcesCommandCredentialsRequired {
+            get {
+                return ResourceManager.GetString("SourcesCommandCredentialsRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Both UserName and Password must be specified if ValidAuthenticationTypes is specified..
+        /// </summary>
+        internal static string SourcesCommandCredentialsRequiredWithAuthTypes {
+            get {
+                return ResourceManager.GetString("SourcesCommandCredentialsRequiredWithAuthTypes", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disabled.
+        /// </summary>
+        internal static string SourcesCommandDisabled {
+            get {
+                return ResourceManager.GetString("SourcesCommandDisabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enabled.
+        /// </summary>
+        internal static string SourcesCommandEnabled {
+            get {
+                return ResourceManager.GetString("SourcesCommandEnabled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
+        /// </summary>
+        internal static string SourcesCommandInvalidSource {
+            get {
+                return ResourceManager.GetString("SourcesCommandInvalidSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name specified cannot be empty. Please provide a valid name..
+        /// </summary>
+        internal static string SourcesCommandNameRequired {
+            get {
+                return ResourceManager.GetString("SourcesCommandNameRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unable to find any package source(s) matching name: {0}..
+        /// </summary>
+        internal static string SourcesCommandNoMatchingSourcesFound {
+            get {
+                return ResourceManager.GetString("SourcesCommandNoMatchingSourcesFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No sources found..
+        /// </summary>
+        internal static string SourcesCommandNoSources {
+            get {
+                return ResourceManager.GetString("SourcesCommandNoSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Registered Sources:.
+        /// </summary>
+        internal static string SourcesCommandRegisteredSources {
+            get {
+                return ResourceManager.GetString("SourcesCommandRegisteredSources", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source with Name: {0} added successfully..
+        /// </summary>
+        internal static string SourcesCommandSourceAddedSuccessfully {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceAddedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source with Name: {0} disabled successfully..
+        /// </summary>
+        internal static string SourcesCommandSourceDisabledSuccessfully {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceDisabledSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source with Name: {0} enabled successfully..
+        /// </summary>
+        internal static string SourcesCommandSourceEnabledSuccessfully {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceEnabledSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source with Name: {0} removed successfully..
+        /// </summary>
+        internal static string SourcesCommandSourceRemovedSuccessfully {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceRemovedSuccessfully", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified cannot be empty. Please provide a valid source..
+        /// </summary>
+        internal static string SourcesCommandSourceRequired {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceRequired", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
+        /// </summary>
+        internal static string SourcesCommandUniqueName {
+            get {
+                return ResourceManager.GetString("SourcesCommandUniqueName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
+        /// </summary>
+        internal static string SourcesCommandUniqueSource {
+            get {
+                return ResourceManager.GetString("SourcesCommandUniqueSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source &quot;{0}&quot; was successfully updated..
+        /// </summary>
+        internal static string SourcesCommandUpdateSuccessful {
+            get {
+                return ResourceManager.GetString("SourcesCommandUpdateSuccessful", resourceCulture);
             }
         }
         

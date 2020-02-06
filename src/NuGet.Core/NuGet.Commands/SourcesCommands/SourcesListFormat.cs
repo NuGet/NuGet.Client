@@ -1,12 +1,12 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace NuGet.CommandLine
+namespace NuGet.Commands
 {
-    public enum Verbosity
+    public enum SourcesListFormat
     {
-        Normal,
-        Quiet,
-        Detailed
+        None = 0,
+        Detailed,
+        Short
     }
 }

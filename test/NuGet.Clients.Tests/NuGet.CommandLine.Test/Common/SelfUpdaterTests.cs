@@ -5,6 +5,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
+using NuGet.Commands;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -59,7 +60,7 @@ namespace NuGet.CommandLine.Test
                     new SimpleTestPackageContext("NuGet.CommandLine", "6.0.0"));
 
                 // Act & Assert
-                await Assert.ThrowsAsync<CommandLineException>(() =>
+                await Assert.ThrowsAsync<CommandException>(() =>
                     tc.Target.UpdateSelfFromVersionAsync(
                            tc.Target.AssemblyLocation,
                            prerelease: false,

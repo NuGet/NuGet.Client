@@ -61,6 +61,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a NuGet source..
+        /// </summary>
+        internal static string Add_Description {
+            get {
+                return ResourceManager.GetString("Add_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to all.
         /// </summary>
         internal static string AddPkg_All {
@@ -169,6 +178,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Add a NuGet source..
+        /// </summary>
+        internal static string AddSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("AddSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string ApiKey_Description {
@@ -259,11 +277,47 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Disable a NuGet source..
+        /// </summary>
+        internal static string Disable_Description {
+            get {
+                return ResourceManager.GetString("Disable_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Disable buffering when pushing to an HTTP(S) server to decrease memory usage..
         /// </summary>
         internal static string DisableBuffering_Description {
             get {
                 return ResourceManager.GetString("DisableBuffering_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Disable a NuGet source..
+        /// </summary>
+        internal static string DisableSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("DisableSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable a NuGet source..
+        /// </summary>
+        internal static string Enable_Description {
+            get {
+                return ResourceManager.GetString("Enable_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enable a NuGet source..
+        /// </summary>
+        internal static string EnableSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("EnableSourceCommandDescription", resourceCulture);
             }
         }
         
@@ -480,6 +534,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string InputFile_Description {
             get {
                 return ResourceManager.GetString("InputFile_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to List configured NuGet sources..
+        /// </summary>
+        internal static string List_Description {
+            get {
+                return ResourceManager.GetString("List_Description", resourceCulture);
             }
         }
         
@@ -808,6 +871,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Lists all configured NuGet sources..
+        /// </summary>
+        internal static string ListSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("ListSourceCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the cache location(s) to list or clear.
         ///&lt;all | http-cache | global-packages | temp&gt;.
         /// </summary>
@@ -1032,6 +1104,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior..
+        /// </summary>
+        internal static string Option_ConfigFile {
+            get {
+                return ResourceManager.GetString("Option_ConfigFile", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
         internal static string OutputDirectory_Description {
@@ -1149,6 +1230,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Remove a NuGet source..
+        /// </summary>
+        internal static string Remove_Description {
+            get {
+                return ResourceManager.GetString("Remove_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Removes a package reference from a project..
         /// </summary>
         internal static string RemovePkg_Description {
@@ -1172,6 +1262,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string RemovePkg_ProjectPathDescription {
             get {
                 return ResourceManager.GetString("RemovePkg_ProjectPathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Remove a NuGet source..
+        /// </summary>
+        internal static string RemoveSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("RemoveSourceCommandDescription", resourceCulture);
             }
         }
         
@@ -1284,6 +1383,96 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The proper command is &apos;{0}&apos;..
+        /// </summary>
+        internal static string Sources_Redirect {
+            get {
+                return ResourceManager.GetString("Sources_Redirect", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string SourcesCommandDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Applies to the list action. Accepts two values: Detailed (the default) and Short..
+        /// </summary>
+        internal static string SourcesCommandFormatDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandFormatDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Name of the source..
+        /// </summary>
+        internal static string SourcesCommandNameDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password to be used when connecting to an authenticated source..
+        /// </summary>
+        internal static string SourcesCommandPasswordDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandPasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to the package(s) source..
+        /// </summary>
+        internal static string SourcesCommandSourceDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing portable package source credentials by disabling password encryption..
+        /// </summary>
+        internal static string SourcesCommandStorePasswordInClearTextDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandStorePasswordInClearTextDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Remove|Enable|Disable|Update&gt; -Name [name] -Source [source].
+        /// </summary>
+        internal static string SourcesCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("SourcesCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to UserName to be used when connecting to an authenticated source..
+        /// </summary>
+        internal static string SourcesCommandUserNameDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandUserNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate.
+        /// </summary>
+        internal static string SourcesCommandValidAuthenticationTypesDescription {
+            get {
+                return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Appends a pre-release suffix to the internally generated version number..
         /// </summary>
         internal static string Suffix_Description {
@@ -1334,6 +1523,24 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Tool_Description {
             get {
                 return ResourceManager.GetString("Tool_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update a NuGet source..
+        /// </summary>
+        internal static string Update_Description {
+            get {
+                return ResourceManager.GetString("Update_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Update a NuGet source..
+        /// </summary>
+        internal static string UpdateSourceCommandDescription {
+            get {
+                return ResourceManager.GetString("UpdateSourceCommandDescription", resourceCulture);
             }
         }
         

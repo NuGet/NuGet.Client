@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!-- Copyright (c) .NET Foundation. All rights reserved.
+     Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. -->
+<Commands>
+  <Verb Name="add">
+    <Noun Name="source">
+      <Argument Name="Source" LongName="PackageSourcePath" Help="SourcesCommandSourceDescription" />
+      <SingleValueOption Name="name" Shortcut="n" Help="SourcesCommandNameDescription"/>
+      <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
+      <SingleValueOption Name="password" Shortcut="p" Help="SourcesCommandPasswordDescription"/>
+      <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
+      <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+    </Noun>
+  </Verb>
+  <Verb Name="disable">
+    <Noun Name="source">
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+    </Noun>
+  </Verb>
+  <Verb Name="enable">
+    <Noun Name="source">
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+    </Noun>
+  </Verb>
+  <Verb Name="list">
+    <Noun Name="source">
+      <SingleValueOption Name="format" Help="SourcesCommandFormatDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+    </Noun>
+  </Verb>
+  <Verb Name="remove">
+    <Noun Name="source">
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+    </Noun>
+  </Verb>
+  <Verb Name="update">
+    <Noun Name="source">
+      <Argument Name="name" Help="SourcesCommandNameDescription" />
+      <SingleValueOption Name="source" Shortcut="s" Help="SourcesCommandSourceDescription"/>
+      <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
+      <SingleValueOption Name="password" Shortcut="p" Help="SourcesCommandPasswordDescription"/>
+      <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
+      <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+    </Noun>
+  </Verb>
+</Commands>

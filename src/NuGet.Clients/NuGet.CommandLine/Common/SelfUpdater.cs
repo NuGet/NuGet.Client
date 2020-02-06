@@ -9,6 +9,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
@@ -111,7 +112,7 @@ namespace NuGet.CommandLine
                     // If for some reason this package doesn't have NuGet.exe then we don't want to use it
                     if (nugetExeInPackageFilePath == null)
                     {
-                        throw new CommandLineException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
+                        throw new CommandException(LocalizedResourceManager.GetString("UpdateCommandUnableToLocateNuGetExe"));
                     }
 
                     string renamedPath = exePath + ".old";

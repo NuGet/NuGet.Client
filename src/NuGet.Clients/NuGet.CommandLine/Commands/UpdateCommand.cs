@@ -10,6 +10,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.PackageManagement;
@@ -77,7 +78,7 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(inputFile))
             {
-                throw new CommandLineException(NuGetResources.InvalidFile);
+                throw new CommandException(NuGetResources.InvalidFile);
             }
 
             _msbuildDirectory = MsBuildUtility.GetMsBuildDirectoryFromMsBuildPath(MSBuildPath, MSBuildVersion, Console).Value.Path;
@@ -105,7 +106,7 @@ namespace NuGet.CommandLine
             {
                 if (!File.Exists(inputFile))
                 {
-                    throw new CommandLineException(NuGetResources.UnableToFindProject, inputFile);
+                    throw new CommandException(NuGetResources.UnableToFindProject, inputFile);
                 }
 
                 var projectSystem = new MSBuildProjectSystem(
@@ -118,7 +119,7 @@ namespace NuGet.CommandLine
 
             if (!File.Exists(inputFile))
             {
-                throw new CommandLineException(NuGetResources.UnableToFindSolution, inputFile);
+                throw new CommandException(NuGetResources.UnableToFindSolution, inputFile);
             }
 
             // update with solution as parameter
@@ -188,7 +189,7 @@ namespace NuGet.CommandLine
             {
                 return GetMSBuildProject(path, projectContext);
             }
-            catch (CommandLineException e)
+            catch (CommandException e)
             {
                 if (Console.Verbosity == Verbosity.Detailed || ExceptionLogger.Instance.ShowStack)
                 {
@@ -270,7 +271,7 @@ namespace NuGet.CommandLine
             var nugetProject = new MSBuildNuGetProject(project, packagesDirectory, project.ProjectFullPath);
             if (!nugetProject.PackagesConfigNuGetProject.PackagesConfigExists())
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("NoPackagesConfig"));
+                throw new CommandException(LocalizedResourceManager.GetString("NoPackagesConfig"));
             }
 
             var versionConstraints = Safe ?
@@ -412,7 +413,7 @@ namespace NuGet.CommandLine
                 }
             }
 
-            throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocatePackagesFolder"));
+            throw new CommandException(LocalizedResourceManager.GetString("UnableToLocatePackagesFolder"));
         }
 
         private MSBuildProjectSystem GetMSBuildProject(string packageReferenceFilePath, INuGetProjectContext projectContext)
@@ -423,12 +424,12 @@ namespace NuGet.CommandLine
 
             if (projectFiles.Length == 0)
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("UnableToLocateProjectFile"), packageReferenceFilePath);
+                throw new CommandException(LocalizedResourceManager.GetString("UnableToLocateProjectFile"), packageReferenceFilePath);
             }
 
             if (projectFiles.Length > 1)
             {
-                throw new CommandLineException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
+                throw new CommandException(LocalizedResourceManager.GetString("MultipleProjectFilesFound"), packageReferenceFilePath);
             }
 
             return new MSBuildProjectSystem(_msbuildDirectory, projectFiles[0], projectContext);
