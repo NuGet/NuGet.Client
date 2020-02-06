@@ -2753,7 +2753,7 @@ namespace ClassLibrary
                 {
                     var xml = XDocument.Load(stream);
 
-                    ProjectFileUtils.AddProperty(xml, "ProjectUrl", "http://project_url_here_or_delete_this_line/");
+                    ProjectFileUtils.AddProperty(xml, "PackageProjectUrl", "http://project_url_here_or_delete_this_line/");
                     ProjectFileUtils.AddProperty(xml, property, value);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -2767,8 +2767,10 @@ namespace ClassLibrary
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-                Assert.Equal(result.AllOutput.Contains(string.Format("error " + NuGetLogCode.NU5105 + ": " + NuGet.Packaging.Rules.AnalysisResources.LegacyVersionWarning, semver2Version)), expectToError);
-
+                if (expectToError)
+                {
+                    result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                }
             }
         }
 
