@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Packaging.PackageExtraction;
+using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 
 namespace NuGet.VisualStudio
@@ -26,7 +28,7 @@ namespace NuGet.VisualStudio
             BindingRedirectsDisabled = bindingRedirectsDisabled;
         }
 
-        public void Log(MessageLevel level, string message, params object[] args)
+        public void Log(ProjectManagement.MessageLevel level, string message, params object[] args)
         {
             // No logging needed when using the API
         }

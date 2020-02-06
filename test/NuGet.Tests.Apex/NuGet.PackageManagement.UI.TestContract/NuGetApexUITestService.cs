@@ -1,12 +1,11 @@
 using System;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.TeamFoundation.WorkItemTracking.Process.WebApi.Models;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.ProjectManagement;
-using NuGet.Versioning;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI.TestContract
@@ -18,9 +17,28 @@ namespace NuGet.PackageManagement.UI.TestContract
         {
         }
 
-        public ApexTestUIProject GetApexTestUIProject(string project)
+        public ApexTestUIProject GetApexTestUIProject(string project, TimeSpan timeout, TimeSpan interval)
         {
-            return new ApexTestUIProject(GetProjectPackageManagerControl(project));
+            PackageManagerControl packageManagerControl = null;
+
+            var timer = Stopwatch.StartNew();
+
+            while (packageManagerControl == null && timer.Elapsed < timeout)
+            {
+                packageManagerControl = GetProjectPackageManagerControl(project);
+
+                if (packageManagerControl == null)
+                {
+                    System.Threading.Thread.Sleep(interval);
+                }
+            }
+
+            if (packageManagerControl == null)
+            {
+                throw new TimeoutException($"The package manager control did not load within {timeout}");
+            }
+
+            return new ApexTestUIProject(packageManagerControl);
         }
 
         private PackageManagerControl GetProjectPackageManagerControl(string projectUniqueName)

@@ -122,7 +122,7 @@
   </data>
   <data name="ConfigCommandExamples" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
     <comment>Please don't localize this string</comment>
   </data>
   <data name="ConfigCommandSetDesc" xml:space="preserve">
@@ -546,55 +546,55 @@ nuget update -Self</value>
   </data>
   <data name="ConfigCommandExamples_csy" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_deu" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_esp" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_fra" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_ita" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_jpn" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_kor" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_plk" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_ptb" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_rus" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_trk" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_chs" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandExamples_cht" xml:space="preserve">
     <value>nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-nuget.config HTTP_PROXY</value>
+nuget config HTTP_PROXY</value>
   </data>
   <data name="ConfigCommandSetDesc_csy" xml:space="preserve">
     <value>Jedna nebo více dvojic klíč/hodnota, které mají být nastaveny v konfiguračním souboru</value>
@@ -621,7 +621,7 @@ nuget.config HTTP_PROXY</value>
     <value>W konfiguracji należy ustawić co najmniej jedną parę klucz-wartość.</value>
   </data>
   <data name="ConfigCommandSetDesc_ptb" xml:space="preserve">
-    <value>nuget.config HTTP_PROXY "</value>
+    <value>nuget config HTTP_PROXY "</value>
   </data>
   <data name="ConfigCommandSetDesc_rus" xml:space="preserve">
     <value>Одна или несколько пар ключ-значение, задаваемых в конфигурации.</value>

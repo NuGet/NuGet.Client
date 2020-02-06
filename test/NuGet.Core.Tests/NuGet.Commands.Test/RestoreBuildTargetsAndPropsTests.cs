@@ -443,6 +443,7 @@ namespace NuGet.Commands.Test
                 CacheContext = cacheContext,
                 DisableParallel = true,
                 GlobalPackagesFolder = pathContext.UserPackagesFolder,
+                AllowNoOp = true,
                 Sources = new List<string>() { pathContext.PackageSource },
                 Log = logger,
                 CachingSourceProvider = new CachingSourceProvider(new TestPackageSourceProvider(sources)),

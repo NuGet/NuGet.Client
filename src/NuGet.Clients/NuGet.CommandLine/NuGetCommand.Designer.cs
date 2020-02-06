@@ -1045,7 +1045,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples {
             get {
@@ -1055,7 +1055,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_chs {
             get {
@@ -1065,7 +1065,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_cht {
             get {
@@ -1075,7 +1075,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_csy {
             get {
@@ -1085,7 +1085,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_deu {
             get {
@@ -1095,7 +1095,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_esp {
             get {
@@ -1105,7 +1105,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_fra {
             get {
@@ -1115,7 +1115,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_ita {
             get {
@@ -1125,7 +1125,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_jpn {
             get {
@@ -1135,7 +1135,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_kor {
             get {
@@ -1145,7 +1145,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_plk {
             get {
@@ -1155,7 +1155,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_ptb {
             get {
@@ -1165,7 +1165,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_rus {
             get {
@@ -1175,7 +1175,7 @@ namespace NuGet.CommandLine {
         
         /// <summary>
         ///   Looks up a localized string similar to nuget config -Set HTTP_PROXY=http://127.0.0.1 -Set HTTP_PROXY.USER=domain\user
-        ///nuget.config HTTP_PROXY.
+        ///nuget config HTTP_PROXY.
         /// </summary>
         internal static string ConfigCommandExamples_trk {
             get {
@@ -1283,7 +1283,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to nuget.config HTTP_PROXY &quot;.
+        ///   Looks up a localized string similar to nuget config HTTP_PROXY &quot;.
         /// </summary>
         internal static string ConfigCommandSetDesc_ptb {
             get {

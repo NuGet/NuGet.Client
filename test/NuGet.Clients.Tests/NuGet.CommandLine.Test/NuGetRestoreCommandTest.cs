@@ -2343,6 +2343,47 @@ EndProject";
             }
         }
 
+        [Fact]
+        public void RestoreCommand_FromInvalidPackagesConfigFile_ThrowsException()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingPath = TestDirectory.Create())
+            {
+                var repositoryPath = Path.Combine(workingPath, "Repository");
+                var outputDir = "outputDir";
+                var outputPath = Path.Combine(workingPath, outputDir);
+                Directory.CreateDirectory(repositoryPath);
+                Util.CreateTestPackage("packageA", "1.1.0", repositoryPath);
+                Util.CreateTestPackage("packageB", "2.2.0", repositoryPath);
+                Util.CreateFile(workingPath, "packages.config",
+@"<?xml version=""1.0"" encoding=""utf-8"" ?>
+<!DOCTYPE package [
+   <!ENTITY greeting ""Hello"">
+   <!ENTITY name ""NuGet Client "">
+   <!ENTITY sayhello ""&greeting; &name;"">
+]>
+<packages>
+    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" /> 
+    <package id=""packageB"" version=""2.2.0"" targetFramework=""net45"" />
+</packages>");
+
+                string[] args = new string[] { "restore", "-PackagesDirectory", outputDir, "-Source", repositoryPath };
+
+                // Act
+                CommandRunnerResult result = CommandRunner.Run(
+                    nugetexe,
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Contains("Error parsing packages.config file", result.AllOutput);                                
+                Assert.False(Directory.Exists(outputPath));
+            }
+        }
 
         [Theory]
         [InlineData("restore a b -PackagesDirectory x")]
