@@ -2,24 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml.Linq;
-using NuGet.Client;
 using NuGet.Common;
-using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
-using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules
 {
-    class ReferencesInNuspecMatchRefAssetsRule : IPackageRule
+    internal class ReferencesInNuspecMatchRefAssetsRule : IPackageRule
     {
         private string _addToRefFormat = AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarningAddToRefListItemFormat;
         private string _addToNuspecFormat = AnalysisResources.ReferencesInNuspecAndRefFilesDontMatchWarningAddToNuspecListItemFormat;

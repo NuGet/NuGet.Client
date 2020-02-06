@@ -4568,6 +4568,7 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     <OutputPath>out</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <{property}>{value}</{property}>
+    <PackageLicenseExpression>expression</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />

@@ -6,7 +6,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    class InstallScriptInPackageReferenceProjectRule : IPackageRule
+    internal class InstallScriptInPackageReferenceProjectRule : IPackageRule
     {
         public string MessageFormat { get; }
 
