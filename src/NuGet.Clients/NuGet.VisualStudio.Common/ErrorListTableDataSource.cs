@@ -167,7 +167,7 @@ namespace NuGet.VisualStudio.Common
         }
 
         /// <summary>
-        /// Show error window.
+        /// Show error window if settings permit.
         /// </summary>
         public void BringToFrontIfSettingsPermit()
         {
@@ -180,11 +180,14 @@ namespace NuGet.VisualStudio.Common
                 IVsShell vsShell = await _asyncServiceProvider.GetServiceAsync<IVsShell>();
                 object propertyShowTaskListOnBuildEnd;
                 int getPropertyReturnCode = vsShell.GetProperty((int)__VSSPROPID.VSSPROPID_ShowTasklistOnBuildEnd, out propertyShowTaskListOnBuildEnd);
-                bool showErrorListOnBuildEnd = true; //Default to showing the Error List.
+                bool showErrorListOnBuildEnd = true;
 
                 if (getPropertyReturnCode == VSConstants.S_OK)
                 {
-                    bool.TryParse(propertyShowTaskListOnBuildEnd?.ToString(), out showErrorListOnBuildEnd);
+                    if (bool.TryParse(propertyShowTaskListOnBuildEnd?.ToString(), out bool result))
+                    {
+                        showErrorListOnBuildEnd = result;
+                    }
                 }
                
                 if (showErrorListOnBuildEnd)
