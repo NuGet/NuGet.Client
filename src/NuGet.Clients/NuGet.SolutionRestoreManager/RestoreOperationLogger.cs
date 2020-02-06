@@ -130,7 +130,7 @@ namespace NuGet.SolutionRestoreManager
             if (_showErrorList)
             {
                 // Give the error list focus
-                _errorListDataSource.Value.BringToFront();
+                _errorListDataSource.Value.BringToFrontIfSettingsPermit();
             }
         }
 
@@ -324,7 +324,7 @@ namespace NuGet.SolutionRestoreManager
             var entry = new ErrorListTableEntry(errorText, LogLevel.Error);
 
             _errorListDataSource.Value.AddNuGetEntries(entry);
-            _errorListDataSource.Value.BringToFront();
+            _errorListDataSource.Value.BringToFrontIfSettingsPermit();
         }
 
         public Task WriteHeaderAsync()
