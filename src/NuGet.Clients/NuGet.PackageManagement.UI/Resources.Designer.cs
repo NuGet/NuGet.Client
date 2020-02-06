@@ -61,15 +61,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to {0} version {1}.
-        /// </summary>
-        public static string Accesibility_PackageIdentity {
-            get {
-                return ResourceManager.GetString("Accesibility_PackageIdentity", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package changes.
         /// </summary>
         public static string Accessibility_PackageChanges {
@@ -111,6 +102,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Accessibility_PackageIcon {
             get {
                 return ResourceManager.GetString("Accessibility_PackageIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1}.
+        /// </summary>
+        public static string Accessibility_PackageIdentity {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageIdentity", resourceCulture);
             }
         }
         

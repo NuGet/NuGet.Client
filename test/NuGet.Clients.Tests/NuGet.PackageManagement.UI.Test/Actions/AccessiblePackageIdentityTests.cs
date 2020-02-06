@@ -10,17 +10,7 @@ namespace NuGet.PackageManagement.UI.Test
     public class AccessiblePackageIdentityTests
     {
         [Fact]
-        public void AutomationName_WhenCultureIsNeutral_IdVersionConstructor_ReturnsMessage()
-        {
-            var version = new NuGetVersion(0, 0, 1);
-            var result = new AccessiblePackageIdentity("test.package", version);
-
-            Assert.Equal("test.package version 0.0.1", result.AutomationName);
-            Assert.Equal($"test.package version {version.ToNormalizedString()}", result.AutomationName);
-        }
-
-        [Fact]
-        public void AutomationName_WhenCultureIsNeutral_PackageIdentityConstructor_ReturnsMessage()
+        public void AutomationName_WhenCultureIsNeutral_ReturnsMessage()
         {
             var version = new NuGetVersion(0, 0, 1);
             var result = new AccessiblePackageIdentity(new PackageIdentity("test.package", version));

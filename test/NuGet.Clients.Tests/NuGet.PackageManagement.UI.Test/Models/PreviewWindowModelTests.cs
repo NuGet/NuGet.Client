@@ -41,8 +41,8 @@ namespace NuGet.PackageManagement.UI
             var deleted = new List<AccessiblePackageIdentity>();
             var updated = new List<UpdatePreviewResult>();
 
-            added.Add(new AccessiblePackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3")));
-            deleted.Add(new AccessiblePackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1")));
+            added.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3"))));
+            deleted.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1"))));
             updated.Add(new UpdatePreviewResult(
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("1.0.0")),
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("2.0.0"))

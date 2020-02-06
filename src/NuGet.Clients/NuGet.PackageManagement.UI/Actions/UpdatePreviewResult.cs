@@ -11,17 +11,17 @@ namespace NuGet.PackageManagement.UI
     {
         public PackageIdentity Old { get; }
         public PackageIdentity New { get; }
-        private Lazy<string> _automationNameLazy;
+        private readonly string _automationName;
 
         public UpdatePreviewResult(PackageIdentity oldPackage, PackageIdentity newPackage)
         {
             Old = oldPackage;
             New = newPackage;
-            _automationNameLazy = new Lazy<string>(() => string.Format(
+            _automationName = string.Format(
                 CultureInfo.CurrentUICulture,
                 Resources.Preview_PackageUpdate,
                 Old.Id, Old.Version.ToNormalizedString(),
-                New.Id, New.Version.ToNormalizedString()));
+                New.Id, New.Version.ToNormalizedString());
         }
 
         public override string ToString()
@@ -29,6 +29,6 @@ namespace NuGet.PackageManagement.UI
             return Old + " -> " + New;
         }
 
-        public string AutomationName => _automationNameLazy.Value;
+        public string AutomationName => _automationName;
     }
 }

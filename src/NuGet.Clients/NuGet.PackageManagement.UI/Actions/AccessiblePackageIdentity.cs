@@ -13,23 +13,17 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     public sealed class AccessiblePackageIdentity : PackageIdentity
     {
-        private Lazy<string> _automationNameLazy;
-
-        public AccessiblePackageIdentity(string id, NuGetVersion version)
-            : base(id, version)
-        {
-            _automationNameLazy = new Lazy<string>(() => string.Format(
-               CultureInfo.CurrentUICulture,
-               Resources.Accesibility_PackageIdentity,
-               Id,
-               Version.ToNormalizedString()));
-        }
+        private readonly string _automationName;
+        public string AutomationName => _automationName;
 
         public AccessiblePackageIdentity(PackageIdentity id)
-            : this(id.Id, id.Version)
+            : base(id.Id, id.Version)
         {
+            _automationName = string.Format(
+               CultureInfo.CurrentUICulture,
+               Resources.Accessibility_PackageIdentity,
+               Id,
+               Version.ToNormalizedString());
         }
-
-        public string AutomationName => _automationNameLazy.Value;
     }
 }
