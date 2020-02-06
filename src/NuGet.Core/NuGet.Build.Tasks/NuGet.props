@@ -1,4 +1,4 @@
-﻿<!--
+<!--
 ***********************************************************************************************
 NuGet.props
 
@@ -10,19 +10,22 @@ Copyright (C) Microsoft Corporation. All rights reserved.
 ***********************************************************************************************
 -->
 
-<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project>
+  <PropertyGroup>
+    <ImportDirectoryPackagesProps Condition="'$(ImportDirectoryPackagesProps)' == ''">true</ImportDirectoryPackagesProps>
+  </PropertyGroup>
   <!-- 
         Import Directory.Packages.props.
     -->
-  <PropertyGroup Condition="'$(DirectoryPackagesPropsPath)' == ''">
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' == ''">
     <_DirectoryPackagesPropsFile Condition="'$(_DirectoryPackagesPropsFile)' == ''">Directory.Packages.props</_DirectoryPackagesPropsFile>
     <_DirectoryPackagesPropsBasePath Condition="'$(_DirectoryPackagesPropsBasePath)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_DirectoryPackagesPropsFile)'))</_DirectoryPackagesPropsBasePath>
-    <DirectoryPackagesPropsPath Condition="'$(_DirectoryPackagesPropsBasePath)' != '' and '$(_DirectoryPackagesPropsFile)' != ''">$([System.IO.Path]::Combine('$(_DirectoryPackagesPropsBasePath)', '$(_DirectoryPackagesPropsFile)'))</DirectoryPackagesPropsPath>
+    <DirectoryPackagesPropsPath Condition="'$(_DirectoryPackagesPropsBasePath)' != '' and '$(_DirectoryPackagesPropsFile)' != ''">$([MSBuild]::GetPathOfFileAbove('$(_DirectoryPackagesPropsFile)', '$(MSBuildProjectDirectory)'))</DirectoryPackagesPropsPath>
   </PropertyGroup>
 
-  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')"/>
+  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')"/>
 
-  <PropertyGroup Condition="'$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')">
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')">
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
 </Project>
