@@ -4175,7 +4175,7 @@ namespace ClassLibrary
                 {
                     var xml = XDocument.Load(stream);
 
-                    ProjectFileUtils.AddProperty(xml, "PackageVersion", "1.0.0-rtm+mySpecialSemver2Metadata");
+                    ProjectFileUtils.AddProperty(xml, "PackageVersion", "1.0.0+mySpecialSemver2Metadata");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -4186,8 +4186,8 @@ namespace ClassLibrary
 
                 var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
-                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place. {result.AllOutput}");
+                Assert.True(File.Exists(nuspecPath), $"The intermediate nuspec file is not in the expected place. {result.AllOutput}");
                 result.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
             }
         }

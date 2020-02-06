@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using FluentAssertions;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -4484,7 +4485,7 @@ namespace Proj1
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("NU5105", false)]
+        [InlineData("NU5115", false)]
         [InlineData("NU5106", true)]
         public void PackCommand_NoWarn_SuppressesWarnings(string value, bool expectToWarn)
         {
@@ -4492,7 +4493,6 @@ namespace Proj1
 
             using (var workingDirectory = TestDirectory.Create())
             {
-                var semver2Version = "1.0.0-rtm+asdassd";
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
                 // create project 1
@@ -4536,16 +4536,18 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("WARNING: " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToWarn);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                if (expectToWarn)
+                {
+                    r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
+                }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("WarningsAsErrors", "NU5105", true)]
+        [InlineData("WarningsAsErrors", "NU5115", true)]
         [InlineData("WarningsAsErrors", "NU5106", false)]
         [InlineData("TreatWarningsAsErrors", "true", true)]
         public void PackCommand_WarnAsError_PrintsWarningsAsErrors(string property, string value, bool expectToError)
@@ -4554,7 +4556,6 @@ namespace Proj1
 
             using (var workingDirectory = TestDirectory.Create())
             {
-                var semver2Version = "1.0.0-rtm+asdassd";
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
                 // create project 1
@@ -4568,7 +4569,6 @@ $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     <OutputPath>out</OutputPath>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <{property}>{value}</{property}>
-    <PackageLicenseExpression>expression</PackageLicenseExpression>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include='proj1_file1.cs' />
@@ -4600,11 +4600,13 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("Error " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToError);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                if (expectToError)
+                {
+                    r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
+                }
             }
         }
 
