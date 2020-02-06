@@ -213,8 +213,8 @@ namespace NuGet.VisualStudio
                     // Skip assembly references and disable binding redirections should be done together
                     var disableBindingRedirects = skipAssemblyReferences;
 
-                    var projectContext = new VSAPIProjectContext
-                    {
+                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
+                    {                        
                         PackageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
                             PackageExtractionBehavior.XmlDocFileSaveMode,
@@ -271,7 +271,7 @@ namespace NuGet.VisualStudio
                     // Skip assembly references and disable binding redirections should be done together
                     var disableBindingRedirects = skipAssemblyReferences;
 
-                    var projectContext = new VSAPIProjectContext
+                    var projectContext = new VSAPIProjectContext(skipAssemblyReferences, disableBindingRedirects)
                     {
                         PackageExtractionContext = new PackageExtractionContext(
                             PackageSaveMode.Defaultv2,
