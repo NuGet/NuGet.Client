@@ -715,7 +715,7 @@ namespace NuGet.Build.Tasks.Console.Test
             // Arrange
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
-                ["_CentralPackageVersionsEnabled"] = centralPackageVersionsEnabled,
+                ["CentralPackageVersionsEnabled"] = centralPackageVersionsEnabled,
             });
 
             // Act + Assert

@@ -97,7 +97,7 @@ namespace NuGet.ProjectModel
                    AssetTargetFallback == other.AssetTargetFallback &&
                    DownloadDependencies.OrderedEquals(other.DownloadDependencies, dep => dep) &&
                    FrameworkReferences.OrderedEquals(other.FrameworkReferences, fr => fr) &&
-                   CentralPackageVersions.OrderedEquals(other.CentralPackageVersions, centralVersion => centralVersion.Value) &&
+                   CentralPackageVersions.Values.SequenceEqualWithNullCheck(other.CentralPackageVersions.Values) &&
                    string.Equals(RuntimeIdentifierGraphPath, other.RuntimeIdentifierGraphPath);
         }
 

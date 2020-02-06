@@ -2705,7 +2705,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
@@ -2713,7 +2713,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2721,7 +2721,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "z" },
                     { "VersionRange", "3.0.0" },
@@ -2802,14 +2802,14 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "1.0.0-beta.*" },
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2911,7 +2911,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "2.0.0-beta.*" },
@@ -2919,7 +2919,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "VersionRange", "3.0.0-beta.*" },
@@ -2991,7 +2991,7 @@ namespace NuGet.Commands.Test
                 // Central Version for the package above and another one for a package y
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
                     { "VersionRange", "" },
@@ -2999,7 +2999,7 @@ namespace NuGet.Commands.Test
                 });
                 items.Add(new Dictionary<string, string>()
                 {
-                    { "Type", "CentralVersion" },
+                    { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
                     { "TargetFrameworks", "netcoreapp3.0" },
