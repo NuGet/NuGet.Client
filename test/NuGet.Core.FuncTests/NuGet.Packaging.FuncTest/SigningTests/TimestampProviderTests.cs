@@ -163,7 +163,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                    () => timestampProvider.GetTimestampAsync(request : null, logger, CancellationToken.None));
+                    () => timestampProvider.GetTimestampAsync(request: null, logger, CancellationToken.None));
 
                 Assert.Equal(string.Format(ArgumentNullExceptionMessage, nameof(request)), exception.Message);
             }
@@ -193,7 +193,7 @@ namespace NuGet.Packaging.FuncTest
 
                 // Assert
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
-                    () => timestampProvider.GetTimestampAsync(request, logger : null, CancellationToken.None));
+                    () => timestampProvider.GetTimestampAsync(request, logger: null, CancellationToken.None));
 
                 Assert.Equal(string.Format(ArgumentNullExceptionMessage, "logger"), exception.Message);
             }
