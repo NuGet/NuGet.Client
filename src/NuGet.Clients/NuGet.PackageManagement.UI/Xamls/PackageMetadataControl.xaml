@@ -315,7 +315,11 @@
         LostFocus="TreeView_LostFocus"
         AutomationProperties.Name="{x:Static nuget:Resources.Label_Dependencies}">
       <TreeView.Template>
-        <!-- remove srollviewer so that mousewheel over treeview content work while over treeview -->
+        <!--
+          Replaces default control template for this treeview with a slimmer control template.
+          Specifically, this one has no ScrollViewer...which wasn't being used, and was making mousewheel not work for
+          the larget detail scrollable area while the mouse was over the treeview.
+        -->
         <ControlTemplate TargetType="TreeView">
           <ItemsPresenter />
         </ControlTemplate>

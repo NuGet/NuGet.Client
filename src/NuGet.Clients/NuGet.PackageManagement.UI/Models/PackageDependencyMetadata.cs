@@ -22,7 +22,7 @@ namespace NuGet.PackageManagement.UI
 
         public VersionRange Range { get; }
 
-        public bool IsNoDependencyPlaceHolder {get; set;}
+        public bool IsNoDependencyPlaceHolder { get; internal set; }
 
         public PackageDependencyMetadata(string id, VersionRange range)
         {
@@ -36,7 +36,8 @@ namespace NuGet.PackageManagement.UI
             {
                 return Resources.Text_NoDependencies;
             }
-            else if (Range == null)
+
+            if (Range == null)
             {
                 return Id;
             }

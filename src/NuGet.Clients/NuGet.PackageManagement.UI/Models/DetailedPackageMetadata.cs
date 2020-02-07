@@ -33,8 +33,8 @@ namespace NuGet.PackageManagement.UI
             DownloadCount = downloadCount;
             Published = serverData.Published;
 
-            var dependencySets = serverData.DependencySets;
-            if (dependencySets.Any())
+            IEnumerable<PackageDependencyGroup> dependencySets = serverData.DependencySets;
+            if (dependencySets != null && dependencySets.Any())
             {
                 DependencySets = dependencySets.OrderBy((ds) => ds.TargetFramework.DotNetFrameworkName)
                     .OrderByDescending((ds) => ds.TargetFramework.Version)
@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                DependencySets = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(null) }; //placeholder "No Dependencies"
+                DependencySets = NoDependenciesPlaceholder;
             }
 
             PrefixReserved = serverData.PrefixReserved;
@@ -111,6 +111,8 @@ namespace NuGet.PackageManagement.UI
         public PackageDeprecationMetadata DeprecationMetadata { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
+
+        private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
         public string LoadFileAsText(string path)
         {

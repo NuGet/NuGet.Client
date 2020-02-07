@@ -14,11 +14,13 @@ namespace NuGet.PackageManagement.UI
         {
             if (dependencyGroup == null)
             {
-                IsNoDependencyPlaceHolder = true;
+                TargetFrameworkDisplay = Resources.Text_NoDependencies;
             }
             else
             {
                 TargetFramework = dependencyGroup.TargetFramework;
+                TargetFrameworkDisplay = TargetFramework.ToString();
+
                 if (dependencyGroup.Packages.Any())
                 {
                     Dependencies = dependencyGroup.Packages
@@ -28,31 +30,14 @@ namespace NuGet.PackageManagement.UI
                 }
                 else
                 {
-                    // There are no dependencies, instead return a collection with a special place holder, so UI can easily display "No Dependencies"
-                    var dependencyPlaceHolder = new PackageDependencyMetadata() { IsNoDependencyPlaceHolder = true };
-                    var dependenciesList = new List<PackageDependencyMetadata>();
-                    dependenciesList.Add(dependencyPlaceHolder);
-                    Dependencies = dependenciesList.AsReadOnly();
+                    Dependencies = NoDependenciesPlaceholder;
                 }
             }
         }
 
         public NuGetFramework TargetFramework { get; private set; }
+        public string TargetFrameworkDisplay { get; private set; }
         public IReadOnlyCollection<PackageDependencyMetadata> Dependencies { get; private set; }
-        public bool IsNoDependencyPlaceHolder { get; set; }
-        public string TargetFrameworkDisplay
-        {
-            get
-            {
-                if (IsNoDependencyPlaceHolder)
-                {
-                    return Resources.Text_NoDependencies;
-                }
-                else
-                {
-                    return TargetFramework.ToString();
-                }    
-            }
-        }
+        private static readonly IReadOnlyCollection<PackageDependencyMetadata> NoDependenciesPlaceholder = new PackageDependencyMetadata[] { new PackageDependencyMetadata() { IsNoDependencyPlaceHolder = true } };
     }
 }
