@@ -15,12 +15,17 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                if (CollapseEmptyString && value.GetType() == typeof(string))
+                if (value == null)
                 {
-                    return string.IsNullOrEmpty((string)value) ? Visibility.Collapsed : Visibility.Visible;
+                    return Visibility.Collapsed;
                 }
 
-                return value == null ? Visibility.Collapsed : Visibility.Visible;
+                if (CollapseEmptyString && value.GetType() == typeof(string))
+                {
+                    return (string)value == string.Empty ? Visibility.Collapsed : Visibility.Visible;
+                }
+
+                return Visibility.Visible;
             }
             return value;
         }
