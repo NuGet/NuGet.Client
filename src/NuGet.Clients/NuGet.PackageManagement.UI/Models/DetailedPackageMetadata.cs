@@ -32,11 +32,19 @@ namespace NuGet.PackageManagement.UI
             Tags = serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
-            DependencySets = serverData.DependencySets?
-                .Select(e => new PackageDependencySetMetadata(e))
-                ?? new PackageDependencySetMetadata[] { };
-            HasDependencies = DependencySets.Any(
-                dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
+
+            var dependencySets = serverData.DependencySets;
+            if (dependencySets.Any())
+            {
+                DependencySets = dependencySets.OrderBy((ds) => ds.TargetFramework.DotNetFrameworkName)
+                    .OrderByDescending((ds) => ds.TargetFramework.Version)
+                    .Select(e => new PackageDependencySetMetadata(e));
+            }
+            else
+            {
+                DependencySets = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(null) }; //placeholder "No Dependencies"
+            }
+
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
             DeprecationMetadata = deprecationMetadata;
@@ -97,9 +105,6 @@ namespace NuGet.PackageManagement.UI
         public IEnumerable<PackageDependencySetMetadata> DependencySets { get; set; }
 
         public bool PrefixReserved { get; set; }
-
-        // This property is used by data binding to display text "No dependencies"
-        public bool HasDependencies { get; set; }
 
         public LicenseMetadata LicenseMetadata { get; set; }
 

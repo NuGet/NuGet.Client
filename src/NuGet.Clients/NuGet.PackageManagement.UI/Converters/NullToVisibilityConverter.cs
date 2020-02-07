@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,7 +15,14 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                return value == null ? Visibility.Collapsed : Visibility.Visible;
+                if (CollapseEmptyString && value.GetType() == typeof(string))
+                {
+                    return string.IsNullOrEmpty((string)value) ? Visibility.Collapsed : Visibility.Visible;
+                }
+                else
+                {
+                    return value == null ? Visibility.Collapsed : Visibility.Visible;
+                }
             }
             return value;
         }
@@ -26,5 +33,10 @@ namespace NuGet.PackageManagement.UI
             Debug.Fail("Not Implemented");
             return null;
         }
+
+        /// <summary>
+        /// If a string is null or empty, collapse it. By default, it will only collapse null values (including for strings)
+        /// </summary>
+        public bool CollapseEmptyString { get; set; }
     }
 }
