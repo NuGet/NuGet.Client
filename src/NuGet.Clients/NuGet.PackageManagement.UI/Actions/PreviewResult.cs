@@ -1,17 +1,16 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.UI
 {
     public class PreviewResult
     {
-        public IEnumerable<PackageIdentity> Deleted { get; }
+        public IEnumerable<AccessiblePackageIdentity> Deleted { get; }
 
-        public IEnumerable<PackageIdentity> Added { get; }
+        public IEnumerable<AccessiblePackageIdentity> Added { get; }
 
         public IEnumerable<UpdatePreviewResult> Updated { get; }
 
@@ -21,8 +20,8 @@ namespace NuGet.PackageManagement.UI
 
         public PreviewResult(
             NuGetProject target,
-            IEnumerable<PackageIdentity> added,
-            IEnumerable<PackageIdentity> deleted,
+            IEnumerable<AccessiblePackageIdentity> added,
+            IEnumerable<AccessiblePackageIdentity> deleted,
             IEnumerable<UpdatePreviewResult> updated)
         {
             string s = null;
@@ -32,7 +31,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                Name = "Unknown Project";
+                Name = Resources.Preview_UnknownProject;
             }
 
             Target = target;

@@ -61,6 +61,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Package changes.
+        /// </summary>
+        public static string Accessibility_PackageChanges {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageChanges", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package deprecation.
         /// </summary>
         public static string Accessibility_PackageDeprecation {
@@ -93,6 +102,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Accessibility_PackageIcon {
             get {
                 return ResourceManager.GetString("Accessibility_PackageIcon", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1}.
+        /// </summary>
+        public static string Accessibility_PackageIdentity {
+            get {
+                return ResourceManager.GetString("Accessibility_PackageIdentity", resourceCulture);
             }
         }
         
@@ -799,7 +817,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Deprecation Reasons.
+        ///   Looks up a localized string similar to Deprecation reason.
         /// </summary>
         public static string Label_DeprecationReasons {
             get {
@@ -1328,6 +1346,24 @@ namespace NuGet.PackageManagement.UI {
         public static string PackageRestoreWaitMessage {
             get {
                 return ResourceManager.GetString("PackageRestoreWaitMessage", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} version {1} to {2} version {3}.
+        /// </summary>
+        public static string Preview_PackageUpdate {
+            get {
+                return ResourceManager.GetString("Preview_PackageUpdate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Unknown project.
+        /// </summary>
+        public static string Preview_UnknownProject {
+            get {
+                return ResourceManager.GetString("Preview_UnknownProject", resourceCulture);
             }
         }
         
