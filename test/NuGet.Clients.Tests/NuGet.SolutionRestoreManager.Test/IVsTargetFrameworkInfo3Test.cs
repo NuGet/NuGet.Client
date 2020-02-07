@@ -25,6 +25,5 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(targetFrameworkInfo3 is IVsTargetFrameworkInfo2);
             Assert.Equal(0, ((IVsTargetFrameworkInfo3)targetFrameworkInfo3).CentralPackageVersions.Count);
         }
-
     }
 }
