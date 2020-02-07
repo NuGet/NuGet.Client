@@ -24,11 +24,6 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
-#if IS_DESKTOP
-        private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
-#else
-        private const string ArgumentNullExceptionMessage = "Value cannot be null. (Parameter '{0}')";
-#endif
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
@@ -165,7 +160,8 @@ namespace NuGet.Packaging.FuncTest
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => timestampProvider.GetTimestampAsync(request: null, logger, CancellationToken.None));
 
-                Assert.Equal(string.Format(ArgumentNullExceptionMessage, nameof(request)), exception.Message);
+                Assert.Equal("request", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
@@ -195,7 +191,8 @@ namespace NuGet.Packaging.FuncTest
                 var exception = await Assert.ThrowsAsync<ArgumentNullException>(
                     () => timestampProvider.GetTimestampAsync(request, logger: null, CancellationToken.None));
 
-                Assert.Equal(string.Format(ArgumentNullExceptionMessage, "logger"), exception.Message);
+                Assert.Equal("logger", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
