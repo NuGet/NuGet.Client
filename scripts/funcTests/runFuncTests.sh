@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+echo "Starting runFuncTests at `date -u +"%Y-%m-%dT%H:%M:%S"`"
+
 env | sort
 
 while true ; do
@@ -34,12 +36,16 @@ scripts/funcTests/dotnet-install.sh -i cli -c 2.2
 
 DOTNET="$(pwd)/cli/dotnet"
 
+echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
+
 #restore solution packages
 $DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
+
+echo "bootstrap project restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 echo "$DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
 DOTNET_BRANCH="$($DOTNET msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
@@ -57,12 +63,15 @@ $DOTNET --version
 echo "Deleting .NET Core temporary files"
 rm -rf "/tmp/"dotnet.*
 
+echo "second dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 echo "================="
 
 # init the repo
 
 git submodule init
 git submodule update
+
+echo "git submodules updated finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # clear caches
 if [ "$CLEAR_CACHE" == "1" ]
@@ -81,6 +90,8 @@ if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
 fi
+
+echo "Restore finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Unit tests
 echo "$DOTNET msbuild build/build.proj /t:CoreUnitTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
@@ -101,6 +112,8 @@ then
 else
 	echo "$DIR/$RESULTFILE not found."
 fi
+
+echo "Core tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 # Func tests
 echo "$DOTNET msbuild build/build.proj /t:CoreFuncTests /p:VisualStudioVersion=16.0 /p:Configuration=Release /p:BuildNumber=1 /p:ReleaseLabel=beta"
@@ -157,6 +170,7 @@ case "$(uname -s)" in
 		*) ;;
 esac
 
+echo "Func tests finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 popd
 
