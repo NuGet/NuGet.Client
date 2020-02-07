@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -38,12 +37,12 @@ namespace NuGet.PackageManagement.UI
         [Fact]
         public void PreviewWindowModelToString_Test()
         {
-            var added = new List<PackageIdentity>();
-            var deleted = new List<PackageIdentity>();
+            var added = new List<AccessiblePackageIdentity>();
+            var deleted = new List<AccessiblePackageIdentity>();
             var updated = new List<UpdatePreviewResult>();
 
-            added.Add(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3")));
-            deleted.Add(new PackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1")));
+            added.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgA", new Versioning.NuGetVersion("1.2.3"))));
+            deleted.Add(new AccessiblePackageIdentity(new PackageIdentity("PkgB", new Versioning.NuGetVersion("3.2.1"))));
             updated.Add(new UpdatePreviewResult(
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("1.0.0")),
                 new PackageIdentity("PkgC", new Versioning.NuGetVersion("2.0.0"))
@@ -56,7 +55,7 @@ namespace NuGet.PackageManagement.UI
             var model = new PreviewWindowModel(allResults);
 
             var sb = new StringBuilder();
-            sb.AppendLine("Unknown Project");
+            sb.AppendLine(Resources.Preview_UnknownProject);
             sb.AppendLine();
             sb.AppendLine(Resources.Label_UninstalledPackages);
             sb.AppendLine();
