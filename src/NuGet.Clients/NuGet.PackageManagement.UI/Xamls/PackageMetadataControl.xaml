@@ -20,10 +20,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <nuget:DateTimeConverter x:Key="DateFormatConverter" />
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Label_License}"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                     ToolTip="{Binding Link}"
@@ -35,10 +35,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Label_License}"
                     Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
@@ -190,7 +190,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_License}"/>
 
-      <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}">
+      <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}" IsTabStop="False">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
             <WrapPanel Margin="8,8,0,0" Orientation="Horizontal" />
@@ -257,12 +257,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
         Grid.Row="6"
-        Grid.Column="1"
-        AutomationProperties.LabeledBy="{Binding ElementName=_projectUrlLabel}">
+        Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.Name="{x:Static nuget:Resources.Label_ProjectUrl}">
           <Run Text="{Binding Path=ProjectUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -275,7 +275,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_reportAbuseLabel"
-        AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_ReportAbuse}" />
 
       <TextBlock
@@ -283,12 +282,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
         Grid.Row="7"
-        Grid.Column="1"
-        AutomationProperties.LabeledBy="{Binding ElementName=_reportAbuseLabel}">
+        Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.Name="{x:Static nuget:Resources.Label_ReportAbuse}">
           <Run Text="{Binding Path=ReportAbuseUrl}" />
         </Hyperlink>
       </TextBlock>
