@@ -23,7 +23,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
-                    AutomationProperties.Name="{x:Static nuget:Resources.Label_License}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_License}"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                     ToolTip="{Binding Link}"
@@ -38,7 +38,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
-                    AutomationProperties.Name="{x:Static nuget:Resources.Label_License}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_License}"
                     Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
@@ -262,7 +262,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-          AutomationProperties.Name="{x:Static nuget:Resources.Label_ProjectUrl}">
+          AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ProjectUrl}">
           <Run Text="{Binding Path=ProjectUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -287,7 +287,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
           Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
-          AutomationProperties.Name="{x:Static nuget:Resources.Label_ReportAbuse}">
+          AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ReportAbuse}">
           <Run Text="{Binding Path=ReportAbuseUrl}" />
         </Hyperlink>
       </TextBlock>
