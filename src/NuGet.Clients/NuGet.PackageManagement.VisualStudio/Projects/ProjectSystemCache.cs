@@ -80,17 +80,24 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo)
         {
+            return TryGetProjectRestoreInfo(name, out projectRestoreInfo, out _);
+        }
+
+        public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> additionalMessages)
+        {
             if (string.IsNullOrEmpty(name))
             {
                 throw new ArgumentException(CommonResources.Argument_Cannot_Be_Null_Or_Empty, nameof(name));
             }
 
             projectRestoreInfo = null;
+            additionalMessages = null;
 
             CacheEntry cacheEntry;
             if (TryGetCacheEntry(name, out cacheEntry))
             {
                 projectRestoreInfo = cacheEntry.ProjectRestoreInfo;
+                additionalMessages = cacheEntry.AdditionalMessages;
             }
 
             return projectRestoreInfo != null;
@@ -268,7 +275,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return true;
         }
 
-        public bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo)
+        public bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo, IReadOnlyList<IAssetsLogMessage> additionalMessages)
         {
             if (projectNames == null)
             {
@@ -293,11 +300,13 @@ namespace NuGet.PackageManagement.VisualStudio
                     projectNames.FullName,
                     addEntryFactory: k => new CacheEntry
                     {
-                        ProjectRestoreInfo = projectRestoreInfo
+                        ProjectRestoreInfo = projectRestoreInfo,
+                        AdditionalMessages = additionalMessages
                     },
                     updateEntryFactory: (k, e) =>
                     {
                         e.ProjectRestoreInfo = projectRestoreInfo;
+                        e.AdditionalMessages = additionalMessages;
                         return e;
                     });
             }
@@ -479,6 +488,7 @@ namespace NuGet.PackageManagement.VisualStudio
             public IVsProjectAdapter VsProjectAdapter { get; set; }
             public DependencyGraphSpec ProjectRestoreInfo { get; set; }
             public ProjectNames ProjectNames { get; set; }
+            public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
         }
 
         private void FireCacheUpdatedEvent(string projectFullName)

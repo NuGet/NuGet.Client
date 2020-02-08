@@ -50,7 +50,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Returns(true);
 
             var completedRestoreTask = Task.FromResult(true);
@@ -1702,7 +1703,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Returns(true);
 
             var completedRestoreTask = Task.FromResult(true);
@@ -1725,7 +1727,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var cache = new Mock<IProjectSystemCache>();
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Returns(true);
 
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
@@ -1769,7 +1772,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var cache = new Mock<IProjectSystemCache>();
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Returns(true);
 
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
@@ -1819,7 +1823,8 @@ namespace NuGet.SolutionRestoreManager.Test
             var cache = new Mock<IProjectSystemCache>();
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Returns(true);
 
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
@@ -1974,7 +1979,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Callback<ProjectNames, DependencyGraphSpec>(
                     (_, dg) => { capturedRestoreSpec = dg; })
                 .Returns(true);
@@ -2006,7 +2012,8 @@ namespace NuGet.SolutionRestoreManager.Test
             Mock.Get(cache)
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>()))
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
                 .Callback<ProjectNames, DependencyGraphSpec>(
                     (_, dg) => { capturedRestoreSpec = dg; })
                 .Returns(true);

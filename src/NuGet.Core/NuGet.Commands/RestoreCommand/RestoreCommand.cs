@@ -128,12 +128,12 @@ namespace NuGet.Commands
                     {
                         noOpTelemetry.StartIntervalMeasure();
 
-                        var cacheFileAndStatus = EvaluateCacheFile();
+                        bool noOp;
+                        (cacheFile, noOp) = EvaluateCacheFile();
 
                         noOpTelemetry.EndIntervalMeasure(CacheFileEvaluateDuration);
 
-                        cacheFile = cacheFileAndStatus.Key;
-                        if (cacheFileAndStatus.Value)
+                        if (noOp)
                         {
                             noOpTelemetry.StartIntervalMeasure();
 
@@ -198,16 +198,8 @@ namespace NuGet.Commands
                 {
                     lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
-                    var packagesLockFileResult = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
-
-                    // result of packages.lock.json file evaluation where
-                    // Item1 is the status of evaluating packages lock file if false, then bail restore
-                    // Item2 is also a tuple which has 2 parts -
-                    //      Item1 tells whether lock file is still valid to be consumed for this restore
-                    //      Item2 is the PackagesLockFile instance
-                    var result = packagesLockFileResult.Item1;
-                    isLockFileValid = packagesLockFileResult.Item2.Item1;
-                    packagesLockFile = packagesLockFileResult.Item2.Item2;
+                    bool result;
+                    (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
 
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
@@ -348,8 +340,13 @@ namespace NuGet.Commands
                     }
 
                     // Write the logs into the assets file
-                    var logs = _logger.Errors
-                        .Select(l => AssetsLogMessage.Create(l))
+                    var logsEnumerable = _logger.Errors
+                        .Select(l => AssetsLogMessage.Create(l));
+                    if (_request.AdditionalMessages != null)
+                    {
+                        logsEnumerable = logsEnumerable.Concat(_request.AdditionalMessages);
+                    }
+                    var logs = logsEnumerable
                         .ToList();
 
                     _success &= !logs.Any(l => l.Level == LogLevel.Error);
@@ -499,7 +496,7 @@ namespace NuGet.Commands
         ///     Item1 tells whether lock file is still valid to be consumed for this restore
         ///     Item2 is the PackagesLockFile instance
         /// </returns>
-        private async Task<Tuple<bool, Tuple<bool, PackagesLockFile>>> EvaluatePackagesLockFileAsync(
+        private async Task<(bool success, bool isLockFileValid, PackagesLockFile packagesLockFile)> EvaluatePackagesLockFileAsync(
             string packagesLockFilePath,
             RemoteWalkContext contextForProject,
             TelemetryActivity lockFileTelemetry)
@@ -521,7 +518,7 @@ namespace NuGet.Commands
                 // be skipped for netcore projects.
                 await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
-                return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+                return (success, isLockFileValid, packagesLockFile);
             }
 
             // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true
@@ -564,10 +561,10 @@ namespace NuGet.Commands
                 }
             }
 
-            return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+            return (success, isLockFileValid, packagesLockFile);
         }
 
-        private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
+        private (CacheFile cacheFile, bool noOp) EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var noOp = false;
@@ -618,7 +615,7 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return new KeyValuePair<CacheFile, bool>(cacheFile, noOp);
+            return (cacheFile, noOp);
         }
 
         private string GetAssetsFilePath(LockFile lockFile)

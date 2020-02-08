@@ -326,9 +326,10 @@ namespace NuGet.SolutionRestoreManager
                 var pathContext = NuGetPathContext.Create(_settings);
 
                 // Get full dg spec
-                var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
+                var (dgSpec, additionalMessages) = await DependencyGraphRestoreUtility.GetSolutionRestoreSpecAndAdditionalMessages(_solutionManager, cacheContext);
                 intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation);
                 intervalTracker.StartIntervalMeasure();
+
                 // Avoid restoring solutions with zero potential PackageReference projects.
                 if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
                 {
@@ -359,6 +360,7 @@ namespace NuGet.SolutionRestoreManager
                                 _nuGetProjectContext.OperationId,
                                 forceRestore,
                                 isRestoreOriginalAction,
+                                additionalMessages,
                                 l,
                                 t);
 

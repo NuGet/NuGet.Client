@@ -106,8 +106,13 @@ namespace NuGet.PackageManagement.VisualStudio
         #region IDependencyGraphProject
 
         public override string MSBuildProjectPath => _projectFullPath;
-
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        {
+            var (dgSpec, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
+            return dgSpec;
+        }
+
+        public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
             PackageSpec packageSpec;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
@@ -121,7 +126,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 context?.PackageSpecCache.Add(_projectFullPath, packageSpec);
             }
 
-            return new[] { packageSpec };
+            return (new[] { packageSpec }, null);
         }
 
         #endregion

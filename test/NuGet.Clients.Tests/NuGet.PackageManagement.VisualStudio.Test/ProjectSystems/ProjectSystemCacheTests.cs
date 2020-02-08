@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
 
             // Assert
             var getPackageSpecSuccess = target.TryGetProjectRestoreInfo(projectNames.FullName, out var actual);
@@ -177,7 +177,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectNamesFromFullPath = ProjectNames.FromFullProjectPath(@"C:\src\project\project.csproj");
             var projectRestoreInfo = new DependencyGraphSpec();
 
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
 
             // Act
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
@@ -209,7 +209,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var projectRestoreInfo = new DependencyGraphSpec();
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
@@ -248,7 +248,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);            
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
@@ -284,8 +284,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
             target.AddProject(projectNames, vsProjectAdapter: null, nuGetProject: null);
 
             // Assert
@@ -326,10 +326,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             };
 
             // Act
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
-            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
+            target.AddProjectRestoreInfo(projectNamesFromFullPath, projectRestoreInfo, additionalMessages: null);
 
             // Assert
             Assert.Equal(target.IsCacheDirty, 0);

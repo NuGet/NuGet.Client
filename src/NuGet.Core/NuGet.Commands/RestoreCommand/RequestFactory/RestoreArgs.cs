@@ -66,6 +66,8 @@ namespace NuGet.Commands
 
         public bool RestoreForceEvaluate { get; set; }
 
+        public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
+
         // Cache directory -> ISettings
         private ConcurrentDictionary<string, ISettings> _settingsCache
             = new ConcurrentDictionary<string, ISettings>(StringComparer.Ordinal);
