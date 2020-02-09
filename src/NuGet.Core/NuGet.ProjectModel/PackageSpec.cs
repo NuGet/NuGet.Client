@@ -223,6 +223,23 @@ namespace NuGet.ProjectModel
             return spec;
         }
 
+        /// <summary>
+        /// Create a minimal PackageSpec that will pass restore. Typically used for error handling.
+        /// </summary>
+        /// <param name="projectPath">Full path to the project file.</param>
+        /// <returns>PackageSpec</returns>
+        public static PackageSpec CreateMinimal(string projectPath, string outputPath)
+        {
+            var packageSpec = new PackageSpec();
+            packageSpec.FilePath = projectPath;
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
+            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.OutputPath = outputPath;
+
+            return packageSpec;
+        }
+
         private IDictionary<string, IEnumerable<string>> CloneScripts(IDictionary<string, IEnumerable<string>> toBeCloned)
         {
             if (toBeCloned != null)

@@ -28,7 +28,7 @@ namespace NuGet.Commands
 
         private readonly RestoreRequest _request;
 
-        private bool _success = true;
+        private bool _success;
 
         private Guid _operationId;
 
@@ -92,6 +92,8 @@ namespace NuGet.Commands
 
             _logger = collectorLogger;
             ParentId = request.ParentId;
+
+            _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -236,15 +238,28 @@ namespace NuGet.Commands
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
-                using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
+                if (_success)
                 {
-                    // Restore
-                    graphs = await ExecuteRestoreAsync(
-                    _request.DependencyProviders.GlobalPackages,
-                    _request.DependencyProviders.FallbackPackageFolders,
-                    contextForProject,
-                    token,
-                    restoreGraphTelemetry);
+                    using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
+                    {
+                        // Restore
+                        graphs = await ExecuteRestoreAsync(
+                        _request.DependencyProviders.GlobalPackages,
+                        _request.DependencyProviders.FallbackPackageFolders,
+                        contextForProject,
+                        token,
+                        restoreGraphTelemetry);
+                    }
+                }
+                else
+                {
+                    // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
+                    // project. For example, project TFM or package versions couldn't be parsed. Although the minimal
+                    // fake package spec generated has no packages requested, it also doesn't have any project TFMs
+                    // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
+                    // incorrect validation messages, don't try to restore. It is however, the responsibility for the
+                    // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
+                    graphs = Enumerable.Empty<RestoreTargetGraph>();
                 }
 
                 LockFile assetsFile = null;
@@ -581,9 +596,11 @@ namespace NuGet.Commands
 
             // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
+            // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+                File.Exists(_request.Project.RestoreMetadata.CacheFilePath) &&
+                _request.AdditionalMessages?.Count > 0)
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
