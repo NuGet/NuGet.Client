@@ -19,8 +19,6 @@
     x:Key="NuGetFrameworkToVisibilityConverter" />
   <nuget:NullToVisibilityConverter
     x:Key="NullToVisibilityConverter" />
-  <nuget:NullToVisibilityConverter CollapseEmptyString="True"
-    x:Key="NullOrEmptyToVisibilityConverter" />
   <nuget:InverseNullToVisibilityConverter
     x:Key="InverseNullToVisibilityConverter" />
   <nuget:EnumerableToVisibilityConverter

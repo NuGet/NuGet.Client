@@ -15,17 +15,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (targetType == typeof(Visibility))
             {
-                if (value == null)
-                {
-                    return Visibility.Collapsed;
-                }
-
-                if (CollapseEmptyString && value.GetType() == typeof(string))
-                {
-                    return (string)value == string.Empty ? Visibility.Collapsed : Visibility.Visible;
-                }
-
-                return Visibility.Visible;
+                return value == null ? Visibility.Collapsed : Visibility.Visible;
             }
             return value;
         }
@@ -36,10 +26,5 @@ namespace NuGet.PackageManagement.UI
             Debug.Fail("Not Implemented");
             return null;
         }
-
-        /// <summary>
-        /// If a string is null or empty, collapse it. By default, it will only collapse null values (including for strings)
-        /// </summary>
-        public bool CollapseEmptyString { get; set; }
     }
 }

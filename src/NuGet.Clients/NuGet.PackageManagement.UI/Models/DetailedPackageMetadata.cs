@@ -29,16 +29,16 @@ namespace NuGet.PackageManagement.UI
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
             ReportAbuseUrl = serverData.ReportAbuseUrl;
-            Tags = serverData.Tags;
+            // Some server implementations send down an array with an empty string, which ends up as an empty string.
+            // In PM UI, we want Tags to work like most other properties from the server (Authors/Owners), and be null, if there is no value.
+            Tags = string.IsNullOrEmpty(serverData.Tags) ? null : serverData.Tags ;
             DownloadCount = downloadCount;
             Published = serverData.Published;
 
             IEnumerable<PackageDependencyGroup> dependencySets = serverData.DependencySets;
             if (dependencySets != null && dependencySets.Any())
             {
-                DependencySets = dependencySets.OrderBy((ds) => ds.TargetFramework.DotNetFrameworkName)
-                    .OrderByDescending((ds) => ds.TargetFramework.Version)
-                    .Select(e => new PackageDependencySetMetadata(e));
+                DependencySets = dependencySets.Select(e => new PackageDependencySetMetadata(e)).ToArray();
             }
             else
             {

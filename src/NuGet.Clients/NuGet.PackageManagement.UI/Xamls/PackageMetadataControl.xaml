@@ -286,7 +286,7 @@
 
       <!-- Tags -->
       <TextBlock
-        Visibility="{Binding Path=Tags,Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
+        Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
         Grid.Row="8"
         Grid.Column="0"
         FontWeight="Bold"
@@ -295,7 +295,7 @@
         Text="{x:Static nuget:Resources.Label_Tags}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
-        Visibility="{Binding Path=Tags,Converter={StaticResource NullOrEmptyToVisibilityConverter}}"
+        Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
         AutomationProperties.LabeledBy="{Binding ElementName=_tagsLabel}"
         Text="{Binding Path=Tags}"
         Margin="8,8,0,0"
