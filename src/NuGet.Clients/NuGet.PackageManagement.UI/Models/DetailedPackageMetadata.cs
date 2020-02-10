@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI
             ReportAbuseUrl = serverData.ReportAbuseUrl;
             // Some server implementations send down an array with an empty string, which ends up as an empty string.
             // In PM UI, we want Tags to work like most other properties from the server (Authors/Owners), and be null, if there is no value.
-            Tags = string.IsNullOrEmpty(serverData.Tags) ? null : serverData.Tags ;
+            Tags = string.IsNullOrEmpty(serverData.Tags) ? null : serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
 

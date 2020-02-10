@@ -335,11 +335,10 @@
           <TextBlock Text="{Binding TargetFrameworkDisplay}" Padding="0,2,0,0" />
         </HierarchicalDataTemplate>
         <DataTemplate DataType="{x:Type nuget:PackageDependencyMetadata}">
-          <TextBlock Text="{Binding }" ToolTip="{Binding }" />
+          <TextBlock Text="{Binding}" ToolTip="{Binding}" />
         </DataTemplate >
       </TreeView.Resources>
       <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}" ItemsSource="{Binding Path=DependencySets}" FontWeight="bold" />
     </TreeView>
-
   </Grid>
 </UserControl>
