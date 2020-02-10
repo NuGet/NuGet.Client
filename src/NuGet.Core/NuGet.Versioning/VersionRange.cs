@@ -15,7 +15,7 @@ namespace NuGet.Versioning
     {
         private readonly FloatRange _floatRange;
         private readonly string _originalString;
-       
+
         /// <summary>
         /// Creates a range that is greater than or equal to the minVersion.
         /// </summary>

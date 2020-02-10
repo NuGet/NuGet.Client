@@ -743,7 +743,7 @@ namespace NuGet.Build.Tasks.Console
                 projectName: project.GetProperty("MSBuildProjectName"),
                 log: MSBuildLogger);
 
-            var projectStyle = projectStyleResult.ProjectStyle;     
+            var projectStyle = projectStyleResult.ProjectStyle;
 
             var innerNodes = projectsByTargetFramework.Values.ToList();
 

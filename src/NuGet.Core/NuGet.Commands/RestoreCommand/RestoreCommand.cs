@@ -166,7 +166,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                if(!await ValidateCentralVersionRequirementsAsync(cpvmEnabled))
+                if(!await AreCentralVersionRequirementsSatisfiedAsync(cpvmEnabled))
                 {
                     await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
 
@@ -398,7 +398,7 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<bool> ValidateCentralVersionRequirementsAsync(bool cpvmEnabled)
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(bool cpvmEnabled)
         {
             // The dependencies should not have versions explicitelly defined if cpvm is enabled.
             if (cpvmEnabled)
