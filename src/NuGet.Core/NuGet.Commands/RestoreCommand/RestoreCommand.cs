@@ -403,7 +403,7 @@ namespace NuGet.Commands
             // The dependencies should not have versions explicitelly defined if cpvm is enabled.
             if (cpvmEnabled)
             {
-                var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.Type.Contains(LibraryDependencyTypeFlag.Central) && !d.AutoReferenced));
+                var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
                 if (dependenciesWithDefinedVersion.Any())
                 {
                     await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));

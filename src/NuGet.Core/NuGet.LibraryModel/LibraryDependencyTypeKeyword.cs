@@ -18,7 +18,6 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeKeyword Preprocess;
         public static readonly LibraryDependencyTypeKeyword Private;
         public static readonly LibraryDependencyTypeKeyword Dev;
-        public static readonly LibraryDependencyTypeKeyword Central;
 
         private readonly string _value;
         private readonly IEnumerable<LibraryDependencyTypeFlag> _flagsToAdd;
@@ -96,14 +95,6 @@ namespace NuGet.LibraryModel
                 flagsToAdd: new[]
                     {
                         LibraryDependencyTypeFlag.PreprocessReference,
-                    },
-                flagsToRemove: emptyFlags);
-
-            Preprocess = Declare(
-                "central",
-                flagsToAdd: new[]
-                    {
-                        LibraryDependencyTypeFlag.Central,
                     },
                 flagsToRemove: emptyFlags);
 

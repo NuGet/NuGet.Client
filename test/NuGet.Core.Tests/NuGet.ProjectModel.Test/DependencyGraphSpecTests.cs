@@ -448,10 +448,10 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, tfms.Count);
             Assert.Equal(2, tfms[0].Dependencies.Count);
             Assert.Equal("[1.0.0, )", tfms[0].Dependencies.Where( d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().Type.Contains(LibraryDependencyTypeFlag.Central));
+            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
 
             Assert.Equal("[3.0.0, )", tfms[0].Dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.False(tfms[0].Dependencies.Where(d => d.Name == "bar").First().Type.Contains(LibraryDependencyTypeFlag.Central));
+            Assert.False(tfms[0].Dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
         }
 
         [Fact]
@@ -489,7 +489,7 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(1, tfms.Count);
             Assert.Equal(2, tfms[0].Dependencies.Count);
             Assert.Equal("(, )", tfms[0].Dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().Type.Contains(LibraryDependencyTypeFlag.Central));
+            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpec()

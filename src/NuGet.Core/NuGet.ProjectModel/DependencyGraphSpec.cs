@@ -223,7 +223,7 @@ namespace NuGet.ProjectModel
                 foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null))
                 {
                     d.LibraryRange.VersionRange = tfm.CentralPackageVersions.ContainsKey(d.Name) ? tfm.CentralPackageVersions[d.Name].VersionRange : VersionRange.All;                   
-                    d.Type = d.Type.Combine(add: new List<LibraryModel.LibraryDependencyTypeFlag>(){ LibraryModel.LibraryDependencyTypeFlag.Central}, remove: new List<LibraryModel.LibraryDependencyTypeFlag>());
+                    d.VersionCentrallyManaged = true;
                 }
             }
 

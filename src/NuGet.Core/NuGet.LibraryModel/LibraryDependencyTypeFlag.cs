@@ -22,8 +22,6 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeFlag PreprocessComponent = Declare("PreprocessComponent");
         public static readonly LibraryDependencyTypeFlag BecomesNupkgDependency = Declare("BecomesNupkgDependency");
 
-        public static readonly LibraryDependencyTypeFlag Central = Declare("Central");
-
         private LibraryDependencyTypeFlag(string value)
         {
             _value = value;
