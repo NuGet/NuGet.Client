@@ -727,6 +727,33 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to License.
+        /// </summary>
+        public static string Hyperlink_License {
+            get {
+                return ResourceManager.GetString("Hyperlink_License", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Project URL.
+        /// </summary>
+        public static string Hyperlink_ProjectUrl {
+            get {
+                return ResourceManager.GetString("Hyperlink_ProjectUrl", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Report Abuse.
+        /// </summary>
+        public static string Hyperlink_ReportAbuse {
+            get {
+                return ResourceManager.GetString("Hyperlink_ReportAbuse", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Ignore for now.
         /// </summary>
         public static string IgnoreUpgrade {
