@@ -2708,7 +2708,7 @@ namespace NuGet.Commands.Test
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
-                    { "VersionRange", "1.0.0-beta.*" },
+                    { "VersionRange", "1.0.0" },
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
                 items.Add(new Dictionary<string, string>()
@@ -2716,7 +2716,7 @@ namespace NuGet.Commands.Test
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
-                    { "VersionRange", "2.0.0-beta.*" },
+                    { "VersionRange", "2.0.0" },
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
                 items.Add(new Dictionary<string, string>()
@@ -2742,7 +2742,7 @@ namespace NuGet.Commands.Test
                 var dependencyX = project1Spec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "x").First();
                 var dependencyY = project1Spec.TargetFrameworks.First().Dependencies.Where(d => d.Name == "y").First();
 
-                Assert.Equal("[1.0.0-beta.*, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal("[1.0.0, )", dependencyX.LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, dependencyX.IncludeType);
                 Assert.Equal("[1.2.1, )", dependencyY.LibraryRange.VersionRange.ToNormalizedString());
 
@@ -2751,10 +2751,10 @@ namespace NuGet.Commands.Test
                 var centralDependencyZ = project1Spec.TargetFrameworks.First().CentralPackageVersions["Z"];
 
                 Assert.Equal("x", centralDependencyX.Name);
-                Assert.Equal("[1.0.0-beta.*, )", centralDependencyX.VersionRange.ToNormalizedString());
+                Assert.Equal("[1.0.0, )", centralDependencyX.VersionRange.ToNormalizedString());
 
                 Assert.Equal("y", centralDependencyY.Name);
-                Assert.Equal("[2.0.0-beta.*, )", centralDependencyY.VersionRange.ToNormalizedString());
+                Assert.Equal("[2.0.0, )", centralDependencyY.VersionRange.ToNormalizedString());
 
                 Assert.Equal("z", centralDependencyZ.Name);
                 Assert.Equal("[3.0.0, )", centralDependencyZ.VersionRange.ToNormalizedString());
@@ -2805,14 +2805,14 @@ namespace NuGet.Commands.Test
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
-                    { "VersionRange", "1.0.0-beta.*" },
+                    { "VersionRange", "1.0.0" },
                 });
                 items.Add(new Dictionary<string, string>()
                 {
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
-                    { "VersionRange", "2.0.0-beta.*" },
+                    { "VersionRange", "2.0.0" },
                 });
                 
                 var wrappedItems = items.Select(CreateItems).ToList();
@@ -2826,14 +2826,14 @@ namespace NuGet.Commands.Test
                 Assert.Equal(1, project1Spec.TargetFrameworks.First().Dependencies.Count);
                 Assert.Equal(2, project1Spec.TargetFrameworks.First().CentralPackageVersions.Count);
 
-                Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().Dependencies[0].LibraryRange.VersionRange.ToNormalizedString());
                 Assert.Equal(LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build, project1Spec.TargetFrameworks.First().Dependencies[0].IncludeType);
 
                 Assert.Equal("x", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].Name);
-                Assert.Equal("[1.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
+                Assert.Equal("[1.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["x"].VersionRange.ToNormalizedString());
 
                 Assert.Equal("y", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].Name);
-                Assert.Equal("[2.0.0-beta.*, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
+                Assert.Equal("[2.0.0, )", project1Spec.TargetFrameworks.First().CentralPackageVersions["y"].VersionRange.ToNormalizedString());
 
                 Assert.True(project1Spec.RestoreMetadata.CentralPackageVersionsEnabled);
             }
@@ -2914,7 +2914,7 @@ namespace NuGet.Commands.Test
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "x" },
-                    { "VersionRange", "2.0.0-beta.*" },
+                    { "VersionRange", "2.0.0" },
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
                 items.Add(new Dictionary<string, string>()
@@ -2922,7 +2922,7 @@ namespace NuGet.Commands.Test
                     { "Type", "CentralPackageVersion" },
                     { "ProjectUniqueName", projectUniqueName },
                     { "Id", "y" },
-                    { "VersionRange", "3.0.0-beta.*" },
+                    { "VersionRange", "3.0.0" },
                     { "TargetFrameworks", "netcoreapp3.0" },
                 });
 
