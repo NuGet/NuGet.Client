@@ -106,6 +106,15 @@ namespace NuGet.SolutionRestoreManager {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to read the project information: {0}.
+        /// </summary>
+        internal static string NU1010 {
+            get {
+                return ResourceManager.GetString("NU1010", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to ========== Finished ==========.
         /// </summary>
         internal static string Operation_Finished {

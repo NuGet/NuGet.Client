@@ -125,7 +125,7 @@ namespace NuGet.SolutionRestoreManager
                 }
                 catch (Exception e)
                 {
-                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1000, "Unable to read project information: " + e.Message);
+                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(Resources.NU1010, e.Message));
                     restoreLogMessage.ProjectPath = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()

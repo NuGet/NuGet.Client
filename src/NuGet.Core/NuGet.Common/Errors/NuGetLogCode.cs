@@ -93,6 +93,11 @@ namespace NuGet.Common
         NU1009 = 1009,
 
         /// <summary>
+        /// Unable to parse project information.
+        /// </summary>
+        NU1010 = 1010,
+
+        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
