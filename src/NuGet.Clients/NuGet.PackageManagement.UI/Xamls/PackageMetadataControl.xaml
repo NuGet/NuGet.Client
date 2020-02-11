@@ -331,7 +331,7 @@
         </HierarchicalDataTemplate>
         <DataTemplate DataType="{x:Type nuget:PackageDependencyMetadata}">
           <TextBlock Text="{Binding}" ToolTip="{Binding}" />
-        </DataTemplate >
+        </DataTemplate>
       </TreeView.Resources>
       <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}"
                     ItemsSource="{Binding Path=DependencySets}"
