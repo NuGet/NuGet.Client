@@ -18,6 +18,11 @@ namespace NuGet.ProjectModel
 
         public bool HandleIncludeExcludeFiles(JObject jsonObject)
         {
+            if (jsonObject == null)
+            {
+                throw new ArgumentNullException(nameof(jsonObject));
+            }
+
             var rawInclude = jsonObject["include"];
             var rawExclude = jsonObject["exclude"];
             var rawIncludeFiles = jsonObject["includeFiles"];
@@ -81,10 +86,10 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return Include.SequenceEqualWithNullCheck(Include) &&
-                   Exclude.SequenceEqualWithNullCheck(Exclude) &&
-                   IncludeFiles.SequenceEqualWithNullCheck(IncludeFiles) &&
-                   ExcludeFiles.SequenceEqualWithNullCheck(ExcludeFiles);
+            return Include.SequenceEqualWithNullCheck(other.Include) &&
+                Exclude.SequenceEqualWithNullCheck(other.Exclude) &&
+                IncludeFiles.SequenceEqualWithNullCheck(other.IncludeFiles) &&
+                ExcludeFiles.SequenceEqualWithNullCheck(other.ExcludeFiles);
         }
 
         public IncludeExcludeFiles Clone()
