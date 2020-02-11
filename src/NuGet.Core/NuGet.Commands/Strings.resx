@@ -899,4 +899,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
     <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}.</value>
   </data>
+  <data name="Warning_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
+    <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
+  </data>
 </root>

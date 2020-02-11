@@ -410,6 +410,13 @@ namespace NuGet.Commands
 
                     return false;
                 }
+                var autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
+                if (autoReferencedAndDefinedInCentralFile.Any())
+                {
+                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Warning_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+
+                    return false;
+                }
             }
 
             return true;

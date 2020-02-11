@@ -80,9 +80,14 @@ namespace NuGet.Common
         NU1007 = 1007,
 
         /// <summary>
-        /// Projects that use central packge version management should not define the verison on the PackageReference items but on the PackageVersion items.
+        /// Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items.
         /// </summary>
         NU1008 = 1008,
+
+        /// <summary>
+        /// Projects that use central package version management should not define SDK implicit referenced packages. For more information, see https://aka.ms/sdkimplicitrefs
+        /// </summary>
+        NU1009 = 1009,
 
         /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
