@@ -423,19 +423,27 @@ namespace NuGet.ProjectModel.Test
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
                new List<Common.NuGetLogCode>(),
-               true,
-               true);
+               autoReferenced: false,
+               generatePathProperty: true);
             var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
                new List<Common.NuGetLogCode>(),
-               true,
-               true);
+               autoReferenced: true,
+               generatePathProperty: true);
+            var dependencyBoom = new LibraryDependency(new LibraryRange("boom", null, LibraryDependencyTarget.All),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: true,
+                generatePathProperty: true);
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionBoom = new CentralPackageVersion("boom", VersionRange.Parse("4.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar, dependencyBoom }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar, centralVersionBoom });
 
             // Act
             var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
@@ -446,12 +454,14 @@ namespace NuGet.ProjectModel.Test
             var tfms = packSpec.TargetFrameworks;
 
             Assert.Equal(1, tfms.Count);
-            Assert.Equal(2, tfms[0].Dependencies.Count);
+            Assert.Equal(3, tfms[0].Dependencies.Count);
             Assert.Equal("[1.0.0, )", tfms[0].Dependencies.Where( d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
             Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
 
             Assert.Equal("[3.0.0, )", tfms[0].Dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
             Assert.False(tfms[0].Dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
+
+            Assert.Null(tfms[0].Dependencies.Where(d => d.Name == "boom").First().LibraryRange.VersionRange);
         }
 
         [Fact]
@@ -463,15 +473,15 @@ namespace NuGet.ProjectModel.Test
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
                new List<Common.NuGetLogCode>(),
-               true,
-               true);
+               autoReferenced: false,
+               generatePathProperty: true);
             var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
                new List<Common.NuGetLogCode>(),
-               true,
-               true);
+               autoReferenced: false,
+               generatePathProperty: true);
 
             // only a central dependency for bar not for foo
             // foo will be set to VersionRange.All
@@ -530,8 +540,8 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
-                true,
-                true);
+                autoReferenced: false,
+                generatePathProperty: true);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));

@@ -17,7 +17,6 @@
               "suppressParent": "All",
               "target": "All",
               "version": "[1.0.0, )",
-              "autoReferenced": true,
               "generatePathProperty": true,
               "versionCentrallyManaged": true
             }

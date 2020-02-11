@@ -220,7 +220,7 @@ namespace NuGet.ProjectModel
             var newSpec = spec.Clone();
             foreach(var tfm in newSpec.TargetFrameworks)
             {
-                foreach (var d in tfm.Dependencies.Where(d => d.LibraryRange.VersionRange == null))
+                foreach (var d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
                     d.LibraryRange.VersionRange = tfm.CentralPackageVersions.ContainsKey(d.Name) ? tfm.CentralPackageVersions[d.Name].VersionRange : VersionRange.All;                   
                     d.VersionCentrallyManaged = true;
