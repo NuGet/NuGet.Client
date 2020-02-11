@@ -443,6 +443,7 @@ namespace NuGet.ProjectModel
                     }
 
                     SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
+                    SetValueIfTrue(writer, "versionCentrallyManaged", dependency.VersionCentrallyManaged);
 
                     writer.WriteObjectEnd();
                 }

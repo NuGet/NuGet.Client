@@ -15,11 +15,11 @@
           "dependencies": {
             "foo": {
               "suppressParent": "All",
-              "type": "MainReference,MainSource,MainExport,RuntimeComponent,BecomesNupkgDependency,Central",
               "target": "All",
               "version": "[1.0.0, )",
               "autoReferenced": true,
-              "generatePathProperty": true
+              "generatePathProperty": true,
+              "versionCentrallyManaged": true
             }
           },
           "centralPackageVersions": {

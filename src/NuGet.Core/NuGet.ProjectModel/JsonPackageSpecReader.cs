@@ -496,6 +496,7 @@ namespace NuGet.ProjectModel
 
                     var autoReferenced = false;
                     var generatePathProperty = false;
+                    var versionCentrallyManaged = false;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
@@ -577,6 +578,7 @@ namespace NuGet.ProjectModel
                         }
 
                         autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
+                        versionCentrallyManaged = GetBoolOrFalse(dependencyValue, "versionCentrallyManaged", packageSpecPath);
 
                         generatePathProperty = GetBoolOrFalse(dependencyValue, "generatePathProperty", packageSpecPath);
                     }
@@ -631,7 +633,8 @@ namespace NuGet.ProjectModel
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
                         NoWarn = noWarn.ToList(),
-                        GeneratePathProperty = generatePathProperty
+                        GeneratePathProperty = generatePathProperty,
+                        VersionCentrallyManaged = versionCentrallyManaged
                     });
                 }
             }
