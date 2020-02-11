@@ -336,6 +336,7 @@
       <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}"
                     ItemsSource="{Binding Path=DependencySets}"
                     IsExpanded="true"
+                    Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
                     FontWeight="Bold">
         <TreeViewItem.ItemContainerStyle>
           <Style TargetType="TreeViewItem">
