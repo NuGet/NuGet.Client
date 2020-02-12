@@ -4543,6 +4543,10 @@ namespace Proj1
                 {
                     r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
                 }
+                else
+                {
+                    r.AllOutput.Should().NotContain(NuGetLogCode.NU5115.ToString());
+                }
             }
         }
 
@@ -4603,9 +4607,14 @@ namespace Proj1
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
                 r.Success.Should().BeTrue(because: r.AllOutput);
+
                 if (expectToError)
                 {
                     r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
+                }
+                else
+                {
+                    r.AllOutput.Should().NotContain(NuGetLogCode.NU5115.ToString());
                 }
             }
         }

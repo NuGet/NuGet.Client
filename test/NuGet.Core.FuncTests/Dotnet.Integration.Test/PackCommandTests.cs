@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -12,6 +13,8 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2727,9 +2730,14 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);
+
                 if (expectToWarn)
                 {
                     result.AllOutput.Should().Contain(expectedWarning);
+                }
+                else
+                {
+                    result.AllOutput.Should().NotContain(expectedWarning);
                 }
             }
         }
