@@ -274,6 +274,27 @@ namespace NuGet.Build.Tasks
         }
 
         /// <summary>
+        /// Try to parse the <paramref name="restoreProjectStyleProperty"/> and return the <see cref="ProjectStyle"/> value.
+        /// </summary>
+        /// <param name="restoreProjectStyleProperty">The value of the RestoreProjectStyle property value. It can be null.</param>
+        /// <returns>The <see cref="ProjectStyle"/>. If the <paramref name="restoreProjectStyleProperty"/> is null the return vale will be null. </returns>
+        public static ProjectStyle? GetProjectRestoreStyleFromProjectProperty(string restoreProjectStyleProperty)
+        {
+            ProjectStyle projectStyle;
+            // Allow a user to override by setting RestoreProjectStyle in the project.
+            if (!string.IsNullOrWhiteSpace(restoreProjectStyleProperty))
+            {
+                if(!Enum.TryParse(restoreProjectStyleProperty, ignoreCase: true, out projectStyle))
+                {
+                    projectStyle = ProjectStyle.Unknown;
+                }
+                return projectStyle;
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Determines the restore style of a project.
         /// </summary>
         /// <param name="restoreProjectStyle">An optional user supplied restore style.</param>
@@ -284,19 +305,15 @@ namespace NuGet.Build.Tasks
         /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
         /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
         /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
-        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(ProjectStyle? restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
         {
             ProjectStyle projectStyle;
             string packagesConfigFilePath = null;
 
             // Allow a user to override by setting RestoreProjectStyle in the project.
-            if (!string.IsNullOrWhiteSpace(restoreProjectStyle))
+            if (restoreProjectStyle.HasValue)
             {
-                if (!Enum.TryParse(restoreProjectStyle, ignoreCase: true, out projectStyle))
-                {
-                    // Any value that is not recognized is treated as Unknown
-                    projectStyle = ProjectStyle.Unknown;
-                }
+                projectStyle = restoreProjectStyle.Value;
             }
             else if (hasPackageReferenceItems)
             {
@@ -322,6 +339,23 @@ namespace NuGet.Build.Tasks
             bool isPackageReferenceCompatibleProjectStyle = projectStyle == ProjectStyle.PackageReference || projectStyle == ProjectStyle.DotnetToolReference;
 
             return (projectStyle, isPackageReferenceCompatibleProjectStyle, packagesConfigFilePath);
+        }
+
+
+        /// <summary>
+        /// Determines the restore style of a project.
+        /// </summary>
+        /// <param name="restoreProjectStyle">An optional user supplied restore style.</param>
+        /// <param name="hasPackageReferenceItems">A <see cref="bool"/> indicating whether or not the project has any PackageReference items.</param>
+        /// <param name="projectJsonPath">An optional path to the project's project.json file.</param>
+        /// <param name="projectDirectory">The full path to the project directory.</param>
+        /// <param name="projectName">The name of the project file.</param>
+        /// <param name="log">An <see cref="NuGet.Common.ILogger"/> object used to log messages.</param>
+        /// <returns>A <see cref="Tuple{ProjectStyle, Boolean}"/> containing the project style and a value indicating if the project is using a style that is compatible with PackageReference.
+        /// If the value of <paramref name="restoreProjectStyle"/> is not empty and could not be parsed, <code>null</code> is returned.</returns>
+        public static (ProjectStyle ProjectStyle, bool IsPackageReferenceCompatibleProjectStyle, string PackagesConfigFilePath) GetProjectRestoreStyle(string restoreProjectStyle, bool hasPackageReferenceItems, string projectJsonPath, string projectDirectory, string projectName, Common.ILogger log)
+        {
+            return GetProjectRestoreStyle(GetProjectRestoreStyleFromProjectProperty(restoreProjectStyle), hasPackageReferenceItems, projectJsonPath, projectDirectory, projectName, log);
         }
 
         /// <summary>

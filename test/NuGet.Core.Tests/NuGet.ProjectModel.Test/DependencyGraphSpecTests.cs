@@ -427,6 +427,108 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expectedJson, actualJson);
         }
 
+        [Fact]
+        public void DependencyGraphSpec_Save_SerializesMembersAsJson_CentralVersionDependencies()
+        {
+            // Arrange
+            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_CentralVersionDependencies.json", typeof(DependencyGraphSpecTests));
+
+            // Act
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies();
+            var actualJson = GetJson(dependencyGraphSpec);
+
+            // Assert
+            Assert.Equal(expectedJson, actualJson);
+        }
+
+        [Fact]
+        public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreMergedWhenNullVersion()
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+            var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: true,
+               generatePathProperty: true);
+            var dependencyBoom = new LibraryDependency(new LibraryRange("boom", null, LibraryDependencyTarget.All),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: true,
+                generatePathProperty: true);
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+            var centralVersionBoom = new CentralPackageVersion("boom", VersionRange.Parse("4.0.0"));
+
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar, dependencyBoom }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar, centralVersionBoom });
+
+            // Act
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
+
+            // Assert
+            Assert.Equal(1, dependencyGraphSpec.Projects.Count);
+            var packSpec = dependencyGraphSpec.Projects[0];
+            var tfms = packSpec.TargetFrameworks;
+
+            Assert.Equal(1, tfms.Count);
+            Assert.Equal(3, tfms[0].Dependencies.Count);
+            Assert.Equal("[1.0.0, )", tfms[0].Dependencies.Where( d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
+
+            Assert.Equal("[3.0.0, )", tfms[0].Dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.False(tfms[0].Dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
+
+            Assert.Null(tfms[0].Dependencies.Where(d => d.Name == "boom").First().LibraryRange.VersionRange);
+        }
+
+        [Fact]
+        public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreVersionAllWhenNotInCentralVersion()
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+            var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+
+            // only a central dependency for bar not for foo
+            // foo will be set to VersionRange.All
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralPackageVersion>() { centralVersionBar });
+
+            // Act
+            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
+
+            // Assert
+            var packSpec = dependencyGraphSpec.Projects[0];
+            var tfms = packSpec.TargetFrameworks;
+
+            Assert.Equal(1, tfms.Count);
+            Assert.Equal(2, tfms[0].Dependencies.Count);
+            Assert.Equal("(, )", tfms[0].Dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
+        }
+
         private static DependencyGraphSpec CreateDependencyGraphSpec()
         {
             var dgSpec = new DependencyGraphSpec();
@@ -440,6 +542,73 @@ namespace NuGet.ProjectModel.Test
             dgSpec.AddProject(new PackageSpec() { RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "c" } });
 
             return dgSpec;
+        }
+
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
+        {
+            return CreateDependencyGraphSpecWithCentralDependencies( CreateTargetFrameworkInformation() );
+        }
+
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies( params TargetFrameworkInformation[] tfis)
+        {
+            var packageSpec = new PackageSpec(tfis);
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore("a");
+            dgSpec.AddProject(packageSpec);
+            return dgSpec;
+        }
+
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation()
+        {
+            NuGetFramework nugetFramework = new NuGetFramework("net40");
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+
+            var dependencies = new List<LibraryDependency>() { dependencyFoo };
+            var assetTargetFallback = true;
+            var warn = false;
+
+            TargetFrameworkInformation tfi = new TargetFrameworkInformation()
+            {
+                AssetTargetFallback = assetTargetFallback,
+                Dependencies = dependencies,
+                Warn = warn,
+                FrameworkName = nugetFramework,
+            };
+
+            tfi.CentralPackageVersions.Add(centralVersionFoo.Name, centralVersionFoo);
+            tfi.CentralPackageVersions.Add(centralVersionBar.Name, centralVersionBar);
+
+            return tfi;
+        }
+
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
+        {
+            NuGetFramework nugetFramework = new NuGetFramework("net40");
+                   
+            TargetFrameworkInformation tfi = new TargetFrameworkInformation()
+            {
+                AssetTargetFallback = true,
+                Warn = false,
+                FrameworkName = nugetFramework,
+                Dependencies = dependencies,
+            };
+
+            foreach (var cvd in centralVersionsDependencies)
+            {
+                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
+            }
+
+            return tfi;
         }
 
         private static string GetJson(DependencyGraphSpec dgSpec)

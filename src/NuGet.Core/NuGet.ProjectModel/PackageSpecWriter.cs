@@ -173,6 +173,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+            SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
         }
 
 
@@ -442,6 +443,7 @@ namespace NuGet.ProjectModel
                     }
 
                     SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
+                    SetValueIfTrue(writer, "versionCentrallyManaged", dependency.VersionCentrallyManaged);
 
                     writer.WriteObjectEnd();
                 }
@@ -498,6 +500,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
+                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values); ;
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
@@ -525,6 +528,23 @@ namespace NuGet.ProjectModel
                 }
                 writer.WriteObjectEnd();
             }
+        }
+
+        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions)
+        {
+            if (!centralPackageVersions.Any())
+            {
+                return;
+            }
+
+            writer.WriteObjectStart("centralPackageVersions");
+
+            foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
+            {
+                writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
+
+            }
+            writer.WriteObjectEnd();
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)

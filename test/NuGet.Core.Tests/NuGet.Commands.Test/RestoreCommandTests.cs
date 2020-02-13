@@ -11,6 +11,7 @@ using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.Signing;
@@ -1342,6 +1343,105 @@ namespace NuGet.Commands.Test
                 Assert.True(result.Success);
                 Assert.Equal(0, lockFile.Libraries.Count);
             }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_CentralVersion_ErrorWhenDependenciesHaveVersion()
+        {
+            // Arrange
+            var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
+            var sources = new List<PackageSource>();
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, sources, "", logger);
+
+            var restoreCommand = new RestoreCommand(request);
+
+            var result = await restoreCommand.ExecuteAsync();
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(1, logger.ErrorMessages.Count);
+            logger.ErrorMessages.TryDequeue(out var errorMessage);
+            Assert.True(errorMessage.Contains("Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion"));
+            Assert.True(errorMessage.Contains("bar"));
+        }
+
+        [Theory]
+        [InlineData("bar")]
+        [InlineData("Bar")]
+
+        public async Task RestoreCommand_CentralVersion_ErrorWhenCentralPackageVersionFileContainsAutoReferencedReferences(string autoreferencedpackageId)
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+
+            var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: true,
+               generatePathProperty: true);
+
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
+            var centralVersionBar = new CentralPackageVersion(autoreferencedpackageId.ToLowerInvariant(), VersionRange.Parse("2.0.0"));
+
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyBar }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
+            var sources = new List<PackageSource>();
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, sources, "", logger);
+
+            var restoreCommand = new RestoreCommand(request);
+
+            var result = await restoreCommand.ExecuteAsync();
+
+            // Assert
+            Assert.False(result.Success);
+            Assert.Equal(1, logger.ErrorMessages.Count);
+            logger.ErrorMessages.TryDequeue(out var errorMessage);
+            Assert.True(errorMessage.Contains("You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs"));
+            Assert.True(errorMessage.Contains(autoreferencedpackageId));
+        }
+
+        private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
+        {
+            NuGetFramework nugetFramework = new NuGetFramework("net40");
+            TargetFrameworkInformation tfi = new TargetFrameworkInformation()
+            {
+                AssetTargetFallback = true,
+                Warn = false,
+                FrameworkName = nugetFramework,
+                Dependencies = dependencies,
+            };
+
+            foreach (var cvd in centralVersionsDependencies)
+            {
+                tfi.CentralPackageVersions.Add(cvd.Name, cvd);
+            }
+
+            return tfi;
         }
     }
 }

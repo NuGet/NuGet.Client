@@ -613,7 +613,7 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("FrameworkReference", FrameworkDependencyFlags.None));
             originalTargetFrameworkInformation.RuntimeIdentifierGraphPath = @"path/to/dotnet/sdk/3.0.100/runtime.json";
-
+            originalTargetFrameworkInformation.CentralPackageVersions.Add("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")));
             return originalTargetFrameworkInformation;
         }
 

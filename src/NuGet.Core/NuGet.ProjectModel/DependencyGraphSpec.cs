@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging;
+using NuGet.Versioning;
 
 namespace NuGet.ProjectModel
 {
@@ -197,15 +198,36 @@ namespace NuGet.ProjectModel
         }
 
         public void AddProject(PackageSpec projectSpec)
-        {
+        {  
             // Find the unique name in the spec, otherwise generate a new one.
             var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                _projects.Add(projectUniqueName, projectSpec);
+                var projectToRestore = projectSpec;
+                if (projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                {
+                    projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
+                }
+
+                _projects.Add(projectUniqueName, projectToRestore);
             }
+        }
+
+        private PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
+        {
+            var newSpec = spec.Clone();
+            foreach(var tfm in newSpec.TargetFrameworks)
+            {
+                foreach (var d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                {
+                    d.LibraryRange.VersionRange = tfm.CentralPackageVersions.ContainsKey(d.Name) ? tfm.CentralPackageVersions[d.Name].VersionRange : VersionRange.All;                   
+                    d.VersionCentrallyManaged = true;
+                }
+            }
+
+            return newSpec;
         }
 
         public static DependencyGraphSpec Union(IEnumerable<DependencyGraphSpec> dgSpecs)

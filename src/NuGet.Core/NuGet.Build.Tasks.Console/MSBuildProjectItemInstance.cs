@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Build.Execution;
 
 namespace NuGet.Build.Tasks.Console
@@ -26,6 +28,8 @@ namespace NuGet.Build.Tasks.Console
         }
 
         public override string Identity => _projectItemInstance.EvaluatedInclude;
+
+        public override IReadOnlyList<string> Properties => _projectItemInstance.MetadataNames.ToList();
 
         /// <inheritdoc cref="MSBuildItemBase.GetPropertyValue(string)" />
         protected override string GetPropertyValue(string name) => _projectItemInstance.GetMetadataValue(name);

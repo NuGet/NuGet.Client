@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.ProjectModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -157,13 +158,8 @@ namespace NuGet.Commands
 
             if (specItem != null)
             {
-                var typeString = specItem.GetProperty("ProjectStyle");
-                var restoreType = ProjectStyle.Unknown;
-
-                if (!string.IsNullOrEmpty(typeString))
-                {
-                    Enum.TryParse(typeString, ignoreCase: true, result: out restoreType);
-                }
+                var restoreType = GetProjectStyle(specItem);
+                var cpvmEnabled = IsCentralVersionsManagementEnabled(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -226,7 +222,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddPackageReferences(result, items);
+                    AddPackageReferences(result, items, cpvmEnabled);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
 
@@ -298,20 +294,7 @@ namespace NuGet.Commands
                     result.RestoreMetadata.ValidateRuntimeAssets = true;
                 }
 
-                // File assets
-                if (restoreType == ProjectStyle.PackageReference
-                    || restoreType == ProjectStyle.ProjectJson
-                    || restoreType == ProjectStyle.Unknown
-                    || restoreType == ProjectStyle.PackagesConfig
-                    || restoreType == ProjectStyle.DotnetToolReference)
-                {
-                    var projectDir = string.Empty;
-
-                    if (result.RestoreMetadata.ProjectPath != null)
-                    {
-                        projectDir = Path.GetDirectoryName(result.RestoreMetadata.ProjectPath);
-                    }
-                }
+                result.RestoreMetadata.CentralPackageVersionsEnabled = cpvmEnabled;
             }
 
             return result;
@@ -622,7 +605,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items, bool cpvmEnabled)
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
@@ -630,7 +613,7 @@ namespace NuGet.Commands
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
-                        versionRange: GetVersionRange(item),
+                        versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? null : VersionRange.All),
                         typeConstraint: LibraryDependencyTarget.Package),
 
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
@@ -660,6 +643,11 @@ namespace NuGet.Commands
                     }
                 }
             }
+
+            if (cpvmEnabled)
+            {
+                AddCentralPackageVersions(spec, items);
+            }
         }
 
         internal static void AddPackageDownloads(PackageSpec spec, IEnumerable<IMSBuildItem> items)
@@ -674,7 +662,7 @@ namespace NuGet.Commands
 
                 foreach (var version in versions)
                 {
-                    var versionRange = GetVersionRange(version);
+                    var versionRange = GetVersionRange(version, defaultValue: VersionRange.All);
 
                     if (!(versionRange.HasLowerAndUpperBounds && versionRange.MinVersion.Equals(versionRange.MaxVersion)))
                     {
@@ -743,20 +731,20 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static VersionRange GetVersionRange(IMSBuildItem item)
+        private static VersionRange GetVersionRange(IMSBuildItem item, VersionRange defaultValue)
         {
             var rangeString = item.GetProperty("VersionRange");
-            return GetVersionRange(rangeString);
+            return GetVersionRange(rangeString, defaultValue);
         }
 
-        private static VersionRange GetVersionRange(string rangeString)
+        private static VersionRange GetVersionRange(string rangeString, VersionRange defaultValue)
         {
             if (!string.IsNullOrEmpty(rangeString))
             {
                 return VersionRange.Parse(rangeString);
             }
 
-            return VersionRange.All;
+            return defaultValue;
         }
 
         private static PackageSpec GetProjectJsonSpec(IMSBuildItem specItem)
@@ -950,6 +938,77 @@ namespace NuGet.Commands
                               Enumerable.Empty<RestoreLogMessage>();
 
             return logger.LogMessagesAsync(logMessages);
+        }
+
+        private static Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
+            IList<TargetFrameworkInformation> specFrameworks)
+        {
+            var centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(new MSBuildItemIdentityComparer()).ToList();
+            var result = new Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>>();
+
+            foreach (IMSBuildItem cv in centralVersions)
+            {
+                var tfms = GetFrameworks(cv);
+                var version = cv.GetProperty("VersionRange");
+                var dependency = new CentralPackageVersion(cv.GetProperty("Id"), !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All);
+
+                if (tfms.Count > 0)
+                {
+                    AddCentralPackageVersion(result, dependency, tfms);
+                }
+                else
+                {
+                    AddCentralPackageVersion(result, dependency, specFrameworks.Select(f => f.FrameworkName));
+                }
+            }
+
+            return result;
+        }
+
+        private static void AddCentralPackageVersion(Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> centralPackageVersions,
+            CentralPackageVersion centralPackageVersion,
+            IEnumerable<NuGetFramework> frameworks)
+        {
+            foreach (var framework in frameworks)
+            {
+                if (centralPackageVersions.ContainsKey(framework))
+                {
+                    centralPackageVersions[framework].Add(centralPackageVersion.Name, centralPackageVersion);
+                }
+                else
+                {
+                    var deps = new Dictionary<string, CentralPackageVersion>() { [centralPackageVersion.Name] = centralPackageVersion };
+                    centralPackageVersions.Add(framework, deps);
+                }
+            }
+        }
+
+        private static ProjectStyle GetProjectStyle(IMSBuildItem projectSpecItem)
+        {
+            var typeString = projectSpecItem.GetProperty("ProjectStyle");
+            var restoreType = ProjectStyle.Unknown;
+
+            if (!string.IsNullOrEmpty(typeString))
+            {
+                Enum.TryParse(typeString, ignoreCase: true, result: out restoreType);
+            }
+
+            return restoreType;
+        }
+
+        internal static bool IsCentralVersionsManagementEnabled(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
+        {
+            return IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference;
+        }
+
+        private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)
+        {
+            var centralVersionsDependencies = CreateCentralVersionDependencies(items, spec.TargetFrameworks);
+            foreach (var framework in centralVersionsDependencies.Keys)
+            {
+                var frameworkInfo = spec.GetTargetFramework(framework);
+                frameworkInfo.CentralPackageVersions.AddRange(centralVersionsDependencies[framework]);
+            }
         }
     }
 }

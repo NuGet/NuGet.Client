@@ -13,6 +13,7 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -231,6 +232,7 @@ namespace NuGet.ProjectModel
             msbuildMetadata.LegacyPackagesDirectory = GetBoolOrFalse(rawMSBuildMetadata, "legacyPackagesDirectory", packageSpec.FilePath);
             msbuildMetadata.ValidateRuntimeAssets = GetBoolOrFalse(rawMSBuildMetadata, "validateRuntimeAssets", packageSpec.FilePath);
             msbuildMetadata.SkipContentFileWrite = GetBoolOrFalse(rawMSBuildMetadata, "skipContentFileWrite", packageSpec.FilePath);
+            msbuildMetadata.CentralPackageVersionsEnabled = GetBoolOrFalse(rawMSBuildMetadata, "centralPackageVersionsManagementEnabled", packageSpec.FilePath);
 
             msbuildMetadata.Sources = new List<PackageSource>();
 
@@ -493,6 +495,7 @@ namespace NuGet.ProjectModel
 
                     var autoReferenced = false;
                     var generatePathProperty = false;
+                    var versionCentrallyManaged = false;
 
                     string dependencyVersionValue = null;
                     var dependencyVersionToken = dependencyValue;
@@ -574,6 +577,7 @@ namespace NuGet.ProjectModel
                         }
 
                         autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
+                        versionCentrallyManaged = GetBoolOrFalse(dependencyValue, "versionCentrallyManaged", packageSpecPath);
 
                         generatePathProperty = GetBoolOrFalse(dependencyValue, "generatePathProperty", packageSpecPath);
                     }
@@ -628,7 +632,8 @@ namespace NuGet.ProjectModel
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
                         NoWarn = noWarn.ToList(),
-                        GeneratePathProperty = generatePathProperty
+                        GeneratePathProperty = generatePathProperty,
+                        VersionCentrallyManaged = versionCentrallyManaged
                     });
                 }
             }
@@ -799,6 +804,11 @@ namespace NuGet.ProjectModel
                 properties,
                 packageSpec.FilePath);
 
+            PopulateCentralDependencies(
+               packageSpec.FilePath,
+               targetFrameworkInformation,
+               properties);
+
             var frameworkAssemblies = new List<LibraryDependency>();
             PopulateDependencies(
                 packageSpec.FilePath,
@@ -914,6 +924,42 @@ namespace NuGet.ProjectModel
                     }
                 }
             }
+        }
+
+        internal static void PopulateCentralDependencies(
+           string packageSpecPath,
+           TargetFrameworkInformation targetFrameworkInformation,
+           JObject properties)
+        {
+            var centralversions = new Dictionary<string, CentralPackageVersion>();
+            var ventralVersionDependenciesProperty = properties["centralPackageVersions"] as JObject;
+            if (ventralVersionDependenciesProperty != null)
+            {
+                foreach (var dependency in ventralVersionDependenciesProperty.Values<JToken>())
+                {
+                    var depName = ((JProperty)dependency).Name;
+                    var depVersion = (string)((JProperty)dependency).Value;
+
+                    if (depName == null)
+                    {
+                        throw FileFormatException.Create(
+                            "Unable to resolve central version ''.",
+                            dependency,
+                            packageSpecPath);
+                    }
+                    if (depVersion == null)
+                    {
+                        throw FileFormatException.Create(
+                            "The version cannot be null ''.",
+                            depName,
+                            packageSpecPath);
+                    }
+
+                    centralversions.Add(depName, new CentralPackageVersion(depName, VersionRange.Parse(depVersion)));
+                }
+            }
+
+            targetFrameworkInformation.CentralPackageVersions.AddRange(centralversions);
         }
 
         private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
