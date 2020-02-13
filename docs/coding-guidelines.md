@@ -170,21 +170,6 @@ For example the following are correct:
     }
     ```
 
-1. Don't inline calls to methods that have more than 1 parameter.
-
-    This is correct:
-    ```cs
-    string value = GetSomeValue(arg1, arg2);
-    DoSomething(value, arg3);
-    ```
-  
-    This is incorrect:
-    ```cs
-    DoSomething(GetSomeValue(arg1, arg2), arg3);
-    ```
-  
-    Consider using temporary variables even when the inline method call takes zero or one arguments, as it helps debugging, in addition to readability.
-
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
 ### When to use internals vs. public and when to use InternalsVisibleTo
