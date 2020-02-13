@@ -149,6 +149,42 @@ For example the following are correct:
 
 1. Adding TODOs is not recommended and should be avoided whenever possible. In cases in which they do get added each TODO needs to be linked to an issue. Use the full url to the GitHub issue.
 
+1. Do not having trailing whitespace at the end of lines.
+
+1. When using `this` or `base` to call other constructors, put the colon and call to the constructor on a new line.
+
+    This is correct:
+    ```cs
+    public MyClass(string arg)
+      : this(arg, arg2: false)
+    {
+       ...
+    }
+    ```
+  
+    This is incorrect:
+    ```cs
+    public MyClass(string arg) : this(arg, arg2: false)
+    {
+      ...
+    }
+    ```
+
+1. Don't inline calls to methods that have more than 1 parameter.
+
+    This is correct:
+    ```cs
+    string value = GetSomeValue(arg1, arg2);
+    DoSomething(value, arg3);
+    ```
+  
+    This is incorrect:
+    ```cs
+    DoSomething(GetSomeValue(arg1, arg2), arg3);
+    ```
+  
+    Consider using temporary variables even when the inline method call takes zero or one arguments, as it helps debugging, in addition to readability.
+
 Many of the guidelines, wherever possible, and potentially some not listed here, are enforced by an [EditorConfig](https://editorconfig.org "EditorConfig homepage") file (`.editorconfig`) at the root of the repository.
 
 ### When to use internals vs. public and when to use InternalsVisibleTo
