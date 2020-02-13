@@ -972,6 +972,5 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Source_InvalidFormatValue" xml:space="preserve">
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
     <comment>don't localize 'format', 'detailed' or 'short'</comment>
->>>>>>> dev-feature-cpvm
   </data>
 </root>
