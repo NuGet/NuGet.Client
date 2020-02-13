@@ -166,7 +166,7 @@ namespace NuGet.Commands
                     }
                 }
 
-                if(!await AreCentralVersionRequirementsSatisfiedAsync(cpvmEnabled))
+                if(cpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
                 {
                     restoreTime.Stop();
                     _success = false;
@@ -396,25 +396,22 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync(bool cpvmEnabled)
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync( )
         {
             // The dependencies should not have versions explicitelly defined if cpvm is enabled.
-            if (cpvmEnabled)
+            var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
+            if (dependenciesWithDefinedVersion.Any())
             {
-                var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
-                if (dependenciesWithDefinedVersion.Any())
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
 
-                    return false;
-                }
-                var autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
-                if (autoReferencedAndDefinedInCentralFile.Any())
-                {
-                    await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+                return false;
+            }
+            var autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
+            if (autoReferencedAndDefinedInCentralFile.Any())
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
 
-                    return false;
-                }
+                return false;
             }
 
             return true;

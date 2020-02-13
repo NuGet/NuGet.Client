@@ -998,7 +998,7 @@ namespace NuGet.Commands
 
         internal static bool IsCentralVersionsManagementEnabled(IMSBuildItem projectSpecItem, ProjectStyle projectStyle)
         {
-            return IsPropertyTrue(projectSpecItem, "CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference;
+            return IsPropertyTrue(projectSpecItem, "_CentralPackageVersionsEnabled") && projectStyle == ProjectStyle.PackageReference;
         }
 
         private static void AddCentralPackageVersions(PackageSpec spec, IEnumerable<IMSBuildItem> items)

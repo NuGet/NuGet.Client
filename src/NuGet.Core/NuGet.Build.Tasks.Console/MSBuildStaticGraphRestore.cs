@@ -954,7 +954,7 @@ namespace NuGet.Build.Tasks.Console
         {
             if(!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
-                return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("CentralPackageVersionsEnabled"), bool.TrueString);
+                return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString);
             }
             return false;
         }      

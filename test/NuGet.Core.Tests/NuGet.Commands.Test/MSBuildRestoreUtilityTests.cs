@@ -2677,7 +2677,7 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
-                    { "CentralPackageVersionsEnabled", "true"}
+                    { "_CentralPackageVersionsEnabled", "true"}
                 });
 
                 // Package reference
@@ -2784,7 +2784,7 @@ namespace NuGet.Commands.Test
                     { "ProjectUniqueName", projectUniqueName },
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", ".NETFramework,Version=v4.7.2" },
-                    { "CentralPackageVersionsEnabled", "true"}
+                    { "_CentralPackageVersionsEnabled", "true"}
                 });
 
                 // Package reference
@@ -2864,7 +2864,7 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
-                    { "CentralPackageVersionsEnabled", "true"}
+                    { "_CentralPackageVersionsEnabled", "true"}
                 });
 
                 // Act + Assert
@@ -2894,7 +2894,7 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
-                    { "CentralPackageVersionsEnabled", "false"}
+                    { "_CentralPackageVersionsEnabled", "false"}
                 });
 
                 // Package reference
@@ -2963,7 +2963,7 @@ namespace NuGet.Commands.Test
                     { "ProjectPath", project1Path },
                     { "TargetFrameworks", "netcoreapp3.0" },
                     { "CrossTargeting", "true" },
-                    { "CentralPackageVersionsEnabled", "true"}
+                    { "_CentralPackageVersionsEnabled", "true"}
                 });
 
                 // Package reference

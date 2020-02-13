@@ -59,7 +59,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PackageDownloadSupported>true</PackageDownloadSupported>
     <!-- Flag if the Central package file is enabled -->
     <DisableCentralPackageVersions Condition="'$(DisableCentralPackageVersions)' == ''">true</DisableCentralPackageVersions>
-    <CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</CentralPackageVersionsEnabled>
+    <_CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -716,7 +716,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
-        <CentralPackageVersionsEnabled>$(CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
+        <CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 
