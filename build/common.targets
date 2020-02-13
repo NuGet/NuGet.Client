@@ -135,7 +135,7 @@
           TaskParameter="TargetOutputs"
           ItemName="DllsToSign" />
     </MSBuild>
-    <MsBuild Condition="'$(BuildRTM)' != 'true'"
+    <MsBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GetLocalizedDllsForSigning"
       Properties="BuildProjectReferences=false;">

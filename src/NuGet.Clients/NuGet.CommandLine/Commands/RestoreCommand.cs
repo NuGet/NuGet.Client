@@ -475,7 +475,7 @@ namespace NuGet.CommandLine
                         LocalizedResourceManager.GetString("InstallCommandPackageRestoreConsentNotFound"),
                         NuGetResources.PackageRestoreConsentCheckBoxText.Replace("&", ""));
 
-                    throw new CommandLineException(message);
+                    throw new CommandException(message);
                 }
             }
         }

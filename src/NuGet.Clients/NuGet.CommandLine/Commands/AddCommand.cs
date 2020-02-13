@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using NuGet.Commands;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
@@ -29,7 +30,7 @@ namespace NuGet.CommandLine
 
             if (string.IsNullOrEmpty(Source))
             {
-                throw new CommandLineException(
+                throw new CommandException(
                     LocalizedResourceManager.GetString(nameof(NuGetResources.AddCommand_SourceNotProvided)));
             }
 

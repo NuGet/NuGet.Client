@@ -279,7 +279,7 @@
     <value>Added file '{0}'.</value>
   </data>
   <data name="InvalidSource" xml:space="preserve">
-    <value>The specified source '{0}' is invalid. Please provide a valid source.</value>
+    <value>The specified source '{0}' is invalid. Provide a valid source.</value>
   </data>
   <data name="Warning_PackageCommandIssueDescription" xml:space="preserve">
     <value>Description: {0}</value>
@@ -390,7 +390,7 @@
     <value>One or more projects are incompatible with {0}.</value>
   </data>
   <data name="Error_InputFileNotSpecified" xml:space="preserve">
-    <value>Please specify a nuspec, project.json, or project file to use</value>
+    <value>Specify a nuspec, project.json, or project file to use</value>
   </data>
   <data name="Error_BuildFailed" xml:space="preserve">
     <value>Failed to build using '{0} {1}'.</value>
@@ -432,7 +432,7 @@
     <comment>{0} : Path to be deleted</comment>
   </data>
   <data name="LocalsCommand_InvalidLocalResourceName" xml:space="preserve">
-    <value>An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all.</value>
+    <value>An invalid local resource name was provided. Provide one of the following values: http-cache, temp, global-packages, all.</value>
   </data>
   <data name="LocalsCommand_LocalResourcePathNotSet" xml:space="preserve">
     <value>The location of local resource '{0}' is undefined.</value>
@@ -564,7 +564,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Unable to find project '{0}'. Check that the project reference is valid and that the project file exists.</value>
   </data>
   <data name="Error_UnableToFindProjectInfo" xml:space="preserve">
-    <value>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so please run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</value>
+    <value>Unable to find project information for '{0}'. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore.</value>
   </data>
   <data name="FoundVersionsInSource" xml:space="preserve">
     <value>Found {0} version(s) in {1} [ Nearest version: {2} ]</value>
@@ -603,7 +603,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Signing package(s) with certificate:</value>
   </data>
   <data name="SignCommandDialogMessage" xml:space="preserve">
-    <value>Please select a valid certificate</value>
+    <value>Select a valid certificate</value>
   </data>
   <data name="SignCommandDialogTitle" xml:space="preserve">
     <value>NuGet Sign Certificate Selection</value>
@@ -613,21 +613,21 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - CertificateFingerprint option</comment>
   </data>
   <data name="SignCommandNoCertException" xml:space="preserve">
-    <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
   </data>
   <data name="SignCommandSuccess" xml:space="preserve">
     <value>Package(s) signed successfully.</value>
   </data>
   <data name="SignCommandCertificateFileNotFound" xml:space="preserve">
-    <value>Certificate file '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>Certificate file '{0}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} is the certificate file path</comment>
   </data>
   <data name="SignCommandInvalidCertException" xml:space="preserve">
-    <value>Certificate file '{0}' is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>Certificate file '{0}' is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>0 - certificate file path</comment>
   </data>
   <data name="SignCommandInvalidPasswordException" xml:space="preserve">
-    <value>Invalid password was provided for the certificate file '{0}'. Please provide a valid password using the '-{1}' option</value>
+    <value>Invalid password was provided for the certificate file '{0}'. Provide a valid password using the '-{1}' option</value>
     <comment>0 - certificate file path
 1 - certificate password option</comment>
   </data>
@@ -645,7 +645,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>'{0}' is not a valid package file.</value>
   </data>
   <data name="VerifyCommand_VerificationTypeNotSupported" xml:space="preserve">
-    <value>Verification type not supported. Please use only one of the following supported types: -All, -Signatures</value>
+    <value>Verification type not supported. Use only one of the following supported types: -All, -Signatures</value>
   </data>
   <data name="SignCommandOutputPath" xml:space="preserve">
     <value>Signed package(s) output path:</value>
@@ -669,7 +669,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Package signature validation failed.</value>
   </data>
   <data name="SignCommandCertificateStoreNotFound" xml:space="preserve">
-    <value>Certificate store '{0}' not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference</value>
+    <value>Certificate store '{0}' not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference</value>
     <comment>{0} is the certificate store name</comment>
   </data>
   <data name="Error_ProjectWithIncorrectDependenciesCount" xml:space="preserve">
@@ -726,7 +726,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Invalid combination of arguments.</value>
   </data>
   <data name="Error_NoSignatureTrustedForPackage" xml:space="preserve">
-    <value>No signature to be trusted was specified for the package '{0}'. Please specify either Author or Repository.</value>
+    <value>No signature to be trusted was specified for the package '{0}'. Specify either Author or Repository.</value>
     <comment>0 - Package path</comment>
   </data>
   <data name="Error_NoSourcesInformation" xml:space="preserve">
@@ -899,7 +899,79 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
     <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}.</value>
   </data>
-  <data name="Warning_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
+  <data name="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
     <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
+  </data>
+  <data name="Error_SourceProviderIsNull" xml:space="preserve">
+    <value>Property SourceProvider is null.</value>
+  </data>
+  <data name="SourcesCommandNameRequired" xml:space="preserve">
+    <value>The name specified cannot be empty. Provide a valid name.</value>
+  </data>
+  <data name="SourcesCommandNoMatchingSourcesFound" xml:space="preserve">
+    <value>Unable to find any package source(s) matching name: {0}.</value>
+  </data>
+  <data name="SourcesCommandSourceDisabledSuccessfully" xml:space="preserve">
+    <value>Package source with Name: {0} disabled successfully.</value>
+  </data>
+  <data name="SourcesCommandSourceEnabledSuccessfully" xml:space="preserve">
+    <value>Package source with Name: {0} enabled successfully.</value>
+  </data>
+  <data name="SourcesCommandSourceRemovedSuccessfully" xml:space="preserve">
+    <value>Package source with Name: {0} removed successfully.</value>
+  </data>
+  <data name="ReservedPackageNameAll" xml:space="preserve">
+    <value>All</value>
+  </data>
+  <data name="SourcesCommandAllNameIsReserved" xml:space="preserve">
+    <value>Package source name 'All' is a reserved name.</value>
+  </data>
+  <data name="SourcesCommandSourceRequired" xml:space="preserve">
+    <value>The source specified cannot be empty. Provide a valid source.</value>
+  </data>
+  <data name="SourcesCommandInvalidSource" xml:space="preserve">
+    <value>The source specified is invalid. Provide a valid source.</value>
+  </data>
+  <data name="SourcesCommandUniqueName" xml:space="preserve">
+    <value>The name specified has already been added to the list of available package sources. Provide a unique name.</value>
+  </data>
+  <data name="SourcesCommandUniqueSource" xml:space="preserve">
+    <value>The source specified has already been added to the list of available package sources. Provide a unique source.</value>
+  </data>
+  <data name="SourcesCommandSourceAddedSuccessfully" xml:space="preserve">
+    <value>Package source with Name: {0} added successfully.</value>
+  </data>
+  <data name="SourcesCommandClearingExistingAuthTypes" xml:space="preserve">
+    <value>Clearing existing authentication types settings for package source '{0}'.</value>
+  </data>
+  <data name="SourcesCommandUpdateSuccessful" xml:space="preserve">
+    <value>Package source "{0}" was successfully updated.</value>
+  </data>
+  <data name="SourcesCommandCredentialsRequired" xml:space="preserve">
+    <value>Both UserName and Password must be specified.</value>
+  </data>
+  <data name="SourcesCommandCredentialsRequiredWithAuthTypes" xml:space="preserve">
+    <value>Both UserName and Password must be specified if ValidAuthenticationTypes is specified.</value>
+  </data>
+  <data name="SourcesCommandNoSources" xml:space="preserve">
+    <value>No sources found.</value>
+  </data>
+  <data name="SourcesCommandRegisteredSources" xml:space="preserve">
+    <value>Registered Sources:</value>
+  </data>
+  <data name="SourcesCommandDisabled" xml:space="preserve">
+    <value>Disabled</value>
+  </data>
+  <data name="SourcesCommandEnabled" xml:space="preserve">
+    <value>Enabled</value>
+  </data>
+  <data name="Source_DefaultNamePrefix" xml:space="preserve">
+    <value>Package source {0}</value>
+    <comment>{0} will be a number</comment>
+  </data>
+  <data name="Source_InvalidFormatValue" xml:space="preserve">
+    <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
+    <comment>don't localize 'format', 'detailed' or 'short'</comment>
+>>>>>>> dev-feature-cpvm
   </data>
 </root>

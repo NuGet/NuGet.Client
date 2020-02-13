@@ -316,6 +316,22 @@ namespace NuGet.Configuration
             return GetPackageSource(name, LoadPackageSourceLookupByName(Settings));
         }
 
+        public HashSet<string> GetPackageSourceNamesMatchingNamePrefix(string namePrefix)
+        {
+            var names = new HashSet<string>();
+
+            IEnumerable<PackageSource> packageSources = LoadPackageSources();
+            foreach (PackageSource packageSource in packageSources)
+            {
+                if (packageSource.Name.StartsWith(namePrefix))
+                {
+                    names.Add(packageSource.Name);
+                }
+            }
+
+            return names;
+        }
+
         public PackageSource GetPackageSourceBySource(string source)
         {
             if (string.IsNullOrEmpty(source))

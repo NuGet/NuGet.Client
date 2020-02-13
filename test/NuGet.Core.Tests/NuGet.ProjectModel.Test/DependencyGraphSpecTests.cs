@@ -142,6 +142,33 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(0, dg.Projects.Count);
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("[]")]
+        public void Load_WithPath_WhenJsonIsInvalid_Throws(string json)
+        {
+            using (var test = Test.Create(json))
+            {
+                Assert.Throws<InvalidDataException>(() => DependencyGraphSpec.Load(test.FilePath));
+            }
+        }
+
+        [Fact]
+        public void Load_WithPath_WhenJsonStartsWithComment_SkipsComment()
+        {
+            var json = @"/*
+*/
+{
+}";
+
+            using (var test = Test.Create(json))
+            { 
+                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
+
+                Assert.NotNull(dgSpec);
+            }
+        }
+
         [Fact]
         public void DependencyGraphSpec_ReadMSBuildMetadata()
         {
@@ -593,6 +620,40 @@ namespace NuGet.ProjectModel.Test
                 dgSpec.Save(filePath);
 
                 return File.ReadAllText(filePath);
+            }
+        }
+
+        private sealed class Test : IDisposable
+        {
+            private readonly TestDirectory _directory;
+            private bool _isDisposed;
+
+            internal string FilePath { get; }
+
+            private Test(TestDirectory directory, string filePath)
+            {
+                _directory = directory;
+                FilePath = filePath;
+            }
+
+            internal static Test Create(string json = null)
+            {
+                TestDirectory directory = TestDirectory.Create();
+                string filePath = Path.Combine(directory.Path, "dg.spec");
+
+                File.WriteAllText(filePath, json ?? string.Empty);
+
+                return new Test(directory, filePath);
+            }
+
+            public void Dispose()
+            {
+                if (!_isDisposed)
+                {
+                    _directory.Dispose();
+
+                    _isDisposed = true;
+                }
             }
         }
     }

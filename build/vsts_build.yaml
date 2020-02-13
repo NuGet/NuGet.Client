@@ -1,10 +1,10 @@
 name: $(SourceBranchName)-$(Date:yyyyMMdd)-$(rev:rr)
-phases:
+jobs:
 
-- phase: Initialize_Build
-  queue:
+- job: Initialize_Build
+  timeoutInMinutes: 10
+  pool:
     name: VSEng-MicroBuildVS2019
-    timeoutInMinutes: 60
     demands:
       - DotNetFramework
       - msbuild
@@ -70,25 +70,28 @@ phases:
         Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEVERSIONAUTHOR}"
         Write-Host "##vso[build.addbuildtag]${env:BUILD_SOURCEBRANCHNAME}"
 
-- phase: Build_and_UnitTest
+- job: Build_and_UnitTest
   dependsOn: Initialize_Build
+  timeoutInMinutes: 90
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
-  queue:
+    LocalizedLanguageCount: "13"
+    DesktopTargetFramework: "net472"
+
+  pool:
     name: VSEng-MicroBuildVS2019
-    timeoutInMinutes: 90
-    parallel: 2
+    demands: 
+      - DotNetFramework
+      - msbuild
+  strategy:
     matrix:
       RTM:
         BuildRTM: "true"
       NonRTM:
         BuildRTM: "false"
-    demands: 
-      - DotNetFramework
-      - msbuild
 
   steps:
   - task: PowerShell@1
@@ -178,7 +181,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber)"
+      msbuildArguments: "/t:BuildNoVSIX /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:SkipILMergeOfNuGetExe=true"
 
   - task: MSBuild@1
     displayName: "Ensure msbuild.exe can parse nuget.sln"
@@ -189,6 +192,31 @@ phases:
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
 
+  - task: MSBuild@1	
+    displayName: "Localize Assemblies"	
+    inputs:	
+      solution: "build\\loc.proj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:AfterBuild"	
+
+  - task: MSBuild@1	
+    displayName: "Build Final NuGet.exe (via ILMerge)"	
+    inputs:	
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
+
+  - task: MSBuild@1	
+    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"	
+    inputs:	
+      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"	
+      msbuildVersion: "16.0"	
+      configuration: "$(BuildConfiguration)"	
+      msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
+    condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
+
   - task: MSBuild@1
     displayName: "Run unit tests"
     continueOnError: "true"
@@ -196,7 +224,7 @@ phases:
       solution: "build\\build.proj"
       msbuildVersion: "16.0"
       configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml"
+      msbuildArguments: "/t:CoreUnitTests;UnitTestsVS /p:BuildRTM=$(BuildRTM) /p:BuildNumber=$(BuildNumber) /p:TestResultOutputFormat=xml /p:SkipILMergeOfNuGetExe=true"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
   - task: PublishTestResults@2
@@ -227,15 +255,6 @@ phases:
       ArtifactName: "NuGet.CommandLine.Test"
       ArtifactType: "Container"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
-
-  - task: MSBuild@1
-    displayName: "Localize Assemblies"
-    inputs:
-      solution: "build\\loc.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:AfterBuild"
-    condition: " and(succeeded(),eq(variables['BuildRTM'], 'false')) "
 
   - task: MSBuild@1
     displayName: "Sign Assemblies"
@@ -542,18 +561,19 @@ phases:
         Remove-Item -Path $(BuildOutputTargetPath) -Force -Recurse -ErrorAction SilentlyContinue
     condition: "eq(variables['Agent.JobStatus'], 'Failed')"
 
-- phase: Functional_Tests_On_Windows
+- job: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
+  timeoutInMinutes: 90
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
-  queue:
+  pool:
     name: VSEng-MicroBuildSxS
-    timeoutInMinutes: 150
     demands: 
         - DotNetFramework
         - msbuild
+  strategy:
     matrix:
       IsDesktop:
         SkipCoreAssemblies: "true"
@@ -624,15 +644,15 @@ phases:
         SetCommitStatusForTestResult -PersonalAccessToken $(NuGetLurkerPersonalAccessToken) -CommitSha $(Build.SourceVersion) -VstsPersonalAccessToken $(VstsPersonalAccessToken) -TestName "$env:AGENT_JOBNAME"
     condition: "always()"
 
-- phase: Tests_On_Linux
+- job: Tests_On_Linux
   dependsOn: Initialize_Build
+  timeoutInMinutes: 15
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
-  queue:
-    name: DDNuGet-Linux
-    timeoutInMinutes: 60
+  pool:
+    vmImage: ubuntu-latest
     demands: sh
 
   steps:
@@ -673,20 +693,20 @@ phases:
       failOnStderr: "true"
     condition: "always()"
 
-- phase: Tests_On_Mac
+- job: Tests_On_Mac
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
+  timeoutInMinutes: 75
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
-  queue:
+  pool:
     name: VSEng-MicroBuildMacCustom
-    timeoutInMinutes: 75
     demands: 
     - sh
     - VSTS_OS -equals Mac_Mojave_10.14
-    - Mono -equals 6.4.0 
+    - Mono -equals 6.4.0
 
   steps:
   - task: PowerShell@2
@@ -733,15 +753,15 @@ phases:
       failOnStderr: "true"
     condition: "always()"
 
-- phase: End_To_End_Tests_On_Windows
+- job: End_To_End_Tests_On_Windows
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
+  timeoutInMinutes: 90
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
-  queue:
-    timeoutInMinutes: 90
+  pool:
     name: DDNuGet-Windows
     demands: DotNetFramework
 
@@ -829,15 +849,16 @@ phases:
         KillRunningInstancesOfVS
     condition: "always()"
 
-- phase: Apex_Tests_On_Windows
+- job: Apex_Tests_On_Windows
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
+  timeoutInMinutes: 45
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
-  queue:
+  pool:
     name: DDNuGet-Windows
     demands: DotNetFramework
 

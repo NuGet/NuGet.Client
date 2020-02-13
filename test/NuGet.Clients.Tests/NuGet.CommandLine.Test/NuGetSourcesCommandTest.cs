@@ -2,17 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using NuGet.Test.Utility;
-using Test.Utility;
-using Xunit;
-using Xunit.Extensions;
-using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
+using Xunit;
 
 namespace NuGet.CommandLine.Test
 {
@@ -143,7 +137,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact(Skip = "This scenario does not work as desired. Created a github issue")]
+        [Fact]
         public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
         {
             // Arrange
@@ -154,8 +148,7 @@ namespace NuGet.CommandLine.Test
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
 
                 Util.CreateFile(configFileDirectory, configFileName,
-                    @"
-<?xml version=""1.0"" encoding=""utf-8""?>
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
 </configuration>");
 

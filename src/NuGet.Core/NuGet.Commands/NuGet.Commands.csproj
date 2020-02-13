@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -37,6 +37,11 @@
   </ItemGroup>
   
   <ItemGroup>
+    <Compile Update="CommandArgs\VerbArgs.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VerbArgs.tt</DependentUpon>
+    </Compile>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
@@ -85,6 +90,17 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
       <_Parameter1>NuGet.PackageManagement.VisualStudio.Test</_Parameter1>
     </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CommandArgs\VerbArgs.tt">
+      <LastGenOutput>VerbArgs.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

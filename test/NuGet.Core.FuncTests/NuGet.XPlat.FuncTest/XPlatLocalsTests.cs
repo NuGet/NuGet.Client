@@ -242,7 +242,7 @@ namespace NuGet.XPlat.FuncTest
 
             // Arrange
             var expectedResult = string.Concat("error: An invalid local resource name was provided. " +
-                                               "Please provide one of the following values: http-cache, temp, global-packages, all.");
+                                               "Provide one of the following values: http-cache, temp, global-packages, all.");
 
             // Act
             var result = CommandRunner.Run(

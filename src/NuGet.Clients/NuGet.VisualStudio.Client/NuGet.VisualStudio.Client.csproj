@@ -53,6 +53,10 @@
       <Link>NuGet.RestoreEx.targets</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="$(NuGetCoreSrcDirectory)NuGet.Build.Tasks\NuGet.props">
+      <Link>NuGet.props</Link>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="source.extension.vsixmanifest" />
   </ItemGroup>
   <ItemGroup>

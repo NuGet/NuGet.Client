@@ -15,7 +15,7 @@
     <IntermediateOutputPath>$(ArtifactsDirectory)</IntermediateOutputPath>
   </PropertyGroup>
 
-  <Target Name="LocalizeNonProjectFiles"  Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="LocalizeNonProjectFiles">
     <ItemGroup>
       <NonProjectFilesToMove Include="$(SolutionPackagesFolder)microsoft.web.xdt\2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll">
         <DestinationDir>$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll</DestinationDir>
@@ -37,7 +37,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="BatchLocalize" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="BatchLocalize">
     <MSBuild
       Projects="@(SolutionProjectsWithoutVSIX)"
       Properties="BuildProjectReferences=false;"
@@ -50,7 +50,7 @@
     <Message Text="Files to localize : @(FilesToLocalize, '%0a')" Importance="High"/>
   </Target>
 
-  <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="MoveLocalizedFilesToProjectSpecificArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_MoveLocalizedFiles Include="@(LocalizedUserFiles)">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedUserFiles.lang), %(LocalizedUserFiles.RootDir)%(LocalizedUserFiles.Directory)))%(LocalizedUserFiles.Culture)\%(LocalizedUserFiles.Filename)%(LocalizedUserFiles.Extension)</DestinationDir>
@@ -60,7 +60,7 @@
     <Delete Files="$(ArtifactsDirectory)vsixlangpack\extension.vsixlangpack"/>
   </Target>
 
-  <Target Name="MoveEulasToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="MoveEulasToArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <!-- SupportedCultures is defined in MicroBuild.Plugins.Localization.targets which is installed as a plugin
       in VSTS MicroBuild -->
@@ -72,7 +72,7 @@
     <Copy SourceFiles="@(EulaFiles->'%(Identity)')" DestinationFiles="@(EulaFiles->'%(DestinationDir)')"/>
   </Target>
 
-  <Target Name="MoveLcgFilesToArtifacts" AfterTargets="Localize" Condition="'$(BuildRTM)' != 'true'">
+  <Target Name="MoveLcgFilesToArtifacts" AfterTargets="Localize">
     <ItemGroup>
       <_MoveLcgFiles Include="@(LocalizedToolFiles)" Condition="'%(LocalizedToolFiles.Extension)'== '.lcg'">
         <DestinationDir>$(ArtifactsDirectory)$([MSBuild]::MakeRelative($(ArtifactsDirectory)localize\%(LocalizedToolFiles.lang), %(LocalizedToolFiles.RootDir)%(LocalizedToolFiles.Directory)))%(LocalizedToolFiles.Culture)\%(LocalizedToolFiles.Filename)%(LocalizedToolFiles.Extension)</DestinationDir>

@@ -48,6 +48,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Actions\AccessiblePackageIdentity.cs" />
     <Compile Include="Actions\PackagesConfigToPackageReferenceMigrator.cs" />
     <Compile Include="Actions\UIActionEngine.cs" />
     <Compile Include="Actions\UpdatePreviewResult.cs" />

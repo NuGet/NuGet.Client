@@ -64,7 +64,8 @@
       BorderThickness="1">
       <ScrollViewer
         HorizontalScrollBarVisibility="Auto"
-        IsTabStop="True">
+        IsTabStop="True"
+        AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageChanges}">
         <ItemsControl
           x:Name="_changesItems"
           ItemsSource="{Binding Path=PreviewResults}"
@@ -92,6 +93,11 @@
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=Deleted}"
                     IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
 
@@ -129,6 +135,11 @@
                     Margin="10,0,0,0"
                     ItemsSource="{Binding Path=Added}"
                     IsTabStop="False">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate>
+                        <TextBlock Text="{Binding}" AutomationProperties.Name="{Binding AutomationName}" />
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
                   </ItemsControl>
                 </StackPanel>
               </StackPanel>

@@ -1,4 +1,7 @@
-﻿using System;
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.IO;
 using System.Threading;
 
@@ -7,15 +10,15 @@ namespace NuGet.CommandLine.Test
     /// <summary>
     /// Helps ensuring only one unit-test can backup/restore the global nuget.config at a time.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
-    public class DefaultConfigurationFilePreserver : IDisposable
+    public sealed class DefaultConfigurationFilePreserver : IDisposable
     {
         private const string MutexName = "DefaultConfigurationFilePreserver";
         private readonly Mutex _mutex;
+        private bool _disposed = false;
 
         public DefaultConfigurationFilePreserver()
         {
-            _mutex = new Mutex(false, MutexName);
+            _mutex = new Mutex(initiallyOwned: false, MutexName);
             var owner = _mutex.WaitOne(TimeSpan.FromMinutes(2));
             if (!owner)
             {
@@ -24,12 +27,30 @@ namespace NuGet.CommandLine.Test
             BackupAndDeleteDefaultConfigurationFile();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1063:ImplementIDisposableCorrectly")]
         public void Dispose()
         {
-            RestoreDefaultConfigurationFile();
-            _mutex.ReleaseMutex();
-            _mutex.Dispose();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        void Dispose(bool disposing)
+        {
+            if (!_disposed)
+            {
+                if (disposing)
+                {
+                    RestoreDefaultConfigurationFile();
+                    _mutex.ReleaseMutex();
+                    _mutex.Dispose();
+                }
+
+                _disposed = true;
+            }
+        }
+
+        ~DefaultConfigurationFilePreserver()
+        {
+            Dispose(false);
         }
 
         private static void BackupAndDeleteDefaultConfigurationFile()
@@ -57,6 +78,5 @@ namespace NuGet.CommandLine.Test
                 File.Delete(backupFileName);
             }
         }
-
     }
 }

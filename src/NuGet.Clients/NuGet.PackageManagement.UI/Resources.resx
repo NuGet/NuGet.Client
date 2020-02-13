@@ -874,4 +874,27 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Label_DeprecationReasons" xml:space="preserve">
     <value>Deprecation reason</value>
   </data>
+  <data name="Accessibility_PackageChanges" xml:space="preserve">
+    <value>Package changes</value>
+  </data>
+  <data name="Accessibility_PackageIdentity" xml:space="preserve">
+    <value>{0} version {1}</value>
+    <comment>{1} = Package ID, {2} = Package version</comment>
+  </data>
+  <data name="Preview_PackageUpdate" xml:space="preserve">
+    <value>{0} version {1} to {2} version {3}</value>
+    <comment>{0} = Old package ID, {1} = Old package version, {2} = New package ID, {3} = New package version</comment>
+  </data>
+  <data name="Preview_UnknownProject" xml:space="preserve">
+    <value>Unknown project</value>
+  </data>
+  <data name="Hyperlink_License" xml:space="preserve">
+    <value>License</value>
+  </data>
+  <data name="Hyperlink_ProjectUrl" xml:space="preserve">
+    <value>Project URL</value>
+  </data>
+  <data name="Hyperlink_ReportAbuse" xml:space="preserve">
+    <value>Report Abuse</value>
+  </data>
 </root>
