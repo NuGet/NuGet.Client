@@ -257,7 +257,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task RemoveRepositorySignaturesAsync_WithNullInput_Throws()
         {
@@ -542,7 +542,7 @@ namespace NuGet.Packaging.Test
             }
         }
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
         private sealed class RemoveTest : IDisposable
         {
             private bool _isDisposed;
