@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -24,7 +24,6 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class TimestampProviderTests
     {
-        private const string ArgumentNullExceptionMessage = "Value cannot be null.\r\nParameter name: {0}";
         private const string OperationCancelledExceptionMessage = "The operation was canceled.";
 
         private SigningTestFixture _testFixture;
@@ -70,7 +69,7 @@ namespace NuGet.Packaging.FuncTest
         }
 
         [CIOnlyFact]
-        public async Task GetTimestamp_AssertCompleteChain_SuccessAsync()
+        public async Task GetTimestampAsync_AssertCompleteChain_SuccessAsync()
         {
             var timestampService = await _testFixture.GetDefaultTrustedTimestampServiceAsync();
             var timestampProvider = new Rfc3161TimestampProvider(timestampService.Url);
@@ -157,12 +156,12 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(null, logger, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, nameof(request)));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request: null, logger, CancellationToken.None));
+
+                Assert.Equal("request", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
@@ -188,12 +187,12 @@ namespace NuGet.Packaging.FuncTest
                     target: SignaturePlacement.PrimarySignature
                 );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(request, null, CancellationToken.None);
-
                 // Assert
-                timestampAction.ShouldThrow<ArgumentNullException>()
-                    .WithMessage(string.Format(ArgumentNullExceptionMessage, "logger"));
+                var exception = await Assert.ThrowsAsync<ArgumentNullException>(
+                    () => timestampProvider.GetTimestampAsync(request, logger: null, CancellationToken.None));
+
+                Assert.Equal("logger", exception.ParamName);
+                Assert.StartsWith("Value cannot be null.", exception.Message);
             }
         }
 
@@ -220,12 +219,11 @@ namespace NuGet.Packaging.FuncTest
                    target: SignaturePlacement.PrimarySignature
                );
 
-                // Act
-                Action timestampAction = async () => await timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true));
-
                 // Assert
-                timestampAction.ShouldThrow<OperationCanceledException>()
-                    .WithMessage(OperationCancelledExceptionMessage);
+                var exception = await Assert.ThrowsAsync<OperationCanceledException>(
+                    () => timestampProvider.GetTimestampAsync(request, logger, new CancellationToken(canceled: true)));
+
+                Assert.Equal(OperationCancelledExceptionMessage, exception.Message);
             }
         }
 
