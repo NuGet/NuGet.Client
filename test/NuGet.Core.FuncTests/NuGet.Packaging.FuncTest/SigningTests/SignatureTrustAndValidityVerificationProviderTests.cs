@@ -30,7 +30,6 @@ namespace NuGet.Packaging.FuncTest
     [Collection(SigningTestCollection.Name)]
     public class SignatureTrustAndValidityVerificationProviderTests
     {
-        private const string _untrustedChainCertError = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
         private readonly SignedPackageVerifierSettings _verifyCommandSettings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
         private readonly SigningTestFixture _testFixture;
@@ -819,8 +818,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -857,8 +855,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -894,8 +891,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -933,8 +929,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -971,8 +966,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
-                Assert.False(status.Issues.Where(i => i.Level >= Common.LogLevel.Warning)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Warning);
             }
         }
 
@@ -1011,8 +1005,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Valid, status.Trust);
-                Assert.False(status.Issues.Where(i => i.Level >= Common.LogLevel.Warning)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Warning);
             }
         }
 
