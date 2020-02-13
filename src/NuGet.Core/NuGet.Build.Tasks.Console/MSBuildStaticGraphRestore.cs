@@ -952,22 +952,12 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>True if the project has CentralPackageVersionManagement enabled and the project is PackageReference or the projectStyle is null.</returns>
         internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, ProjectStyle? projectStyle)
         {
-            var cpvmEnabledProperty = StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("CentralPackageVersionsEnabled"), bool.TrueString);
-
-            return (cpvmEnabledProperty && (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference)));
+            if(!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
+            {
+                return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("CentralPackageVersionsEnabled"), bool.TrueString);
+            }
+            return false;
         }      
-
-        /// <summary>
-        /// It evaluates the <paramref name="item"/> metadata and search for the <paramref name="propertyName"/> metadata key.
-        /// If the metadata exists and has the value "true" the method will return <see cref="true"/>, otherwise it wil return <see cref="false"/>.
-        /// </summary>
-        /// <param name="item">The item to be evaluated.</param>
-        /// <param name="propertyName">The property name.</param>
-        /// <returns>Returns true only if the metadata with the <paramref name="propertyName"/> key exists and its value is <see cref="true"/>.</returns>
-        private static bool IsPropertyTrue(IMSBuildItem item, string propertyName)
-        {
-            return StringComparer.OrdinalIgnoreCase.Equals(item.GetProperty(propertyName), bool.TrueString);
-        }
 
         /// <summary>
         /// Returns the list of distinct items with the <paramref name="itemName"/> name.
@@ -978,7 +968,7 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>Returns the list of items with the <paramref name="itemName"/>. If the item does not exist it will return an empty list.</returns>
         private static IEnumerable<IMSBuildItem> GetDistinctItemsOrEmpty(IMSBuildProject project, string itemName)
         {
-            return project.GetItems(itemName)?.Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance) ?? new List<IMSBuildItem>();
+            return project.GetItems(itemName)?.Distinct(ProjectItemInstanceEvaluatedIncludeComparer.Instance) ?? Enumerable.Empty<IMSBuildItem>();
         }
     }
 }
