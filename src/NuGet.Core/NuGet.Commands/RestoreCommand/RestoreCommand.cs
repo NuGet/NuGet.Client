@@ -168,8 +168,6 @@ namespace NuGet.Commands
 
                 if(!await AreCentralVersionRequirementsSatisfiedAsync(cpvmEnabled))
                 {
-                    await MSBuildRestoreUtility.ReplayWarningsAndErrorsAsync(_request.ExistingLockFile?.LogMessages, _logger);
-
                     restoreTime.Stop();
                     _success = false;
 
