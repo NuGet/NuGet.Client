@@ -99,7 +99,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 return null;
             }
 
-            var projectNames = vsProject.ProjectNames;
             var fullProjectPath = vsProject.FullProjectPath;
             var unconfiguredProject = GetUnconfiguredProject(vsProject.Project);
 
@@ -110,7 +109,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 vsProject.CustomUniqueName,
                 fullProjectPath,
                 _projectSystemCache,
-                vsProject,
                 unconfiguredProject,
                 projectServices,
                 vsProject.ProjectId);
