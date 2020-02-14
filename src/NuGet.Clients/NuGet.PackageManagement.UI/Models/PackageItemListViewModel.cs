@@ -139,6 +139,7 @@ namespace NuGet.PackageManagement.UI
                 OnPropertyChanged(nameof(AutoReferenced));
             }
         }
+
         private string _installedVersionToolTip;
 
         public string InstalledVersionToolTip
