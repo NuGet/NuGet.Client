@@ -640,6 +640,94 @@ namespace Dotnet.Integration.Test
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
+        public void PackCommand_PackProject_ExactVersionOverrideProjectRefVersionInMsbuild(string tfmProperty, string tfmValue)
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var referencedProject = "ClassLibrary2";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                var refProjectFile = Path.Combine(testDirectory, referencedProject, $"{referencedProject}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                using (var refStream = new FileStream(refProjectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    var attributes = new Dictionary<string, string>();
+
+                    var properties = new Dictionary<string, string>();
+                    var target = @"<Target Name=""_ExactProjectReferencesVersion"" AfterTargets=""_GetProjectReferenceVersions"">
+    <ItemGroup>
+      <_ProjectReferencesWithExactVersions Include=""@(_ProjectReferencesWithVersions)"">
+        <ProjectVersion>[%(_ProjectReferencesWithVersions.ProjectVersion)]</ProjectVersion>
+      </_ProjectReferencesWithExactVersions>
+    </ItemGroup>
+
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Remove=""@(_ProjectReferencesWithVersions)"" />
+      <_ProjectReferencesWithVersions Include=""@(_ProjectReferencesWithExactVersions)"" />
+    </ItemGroup>
+  </Target>";
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "ProjectReference",
+                        @"..\ClassLibrary2\ClassLibrary2.csproj",
+                        string.Empty,
+                        properties,
+                        attributes);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
+                    ProjectFileUtils.AddCustomXmlToProjectRoot(xml, target);
+
+                    var refXml = XDocument.Load(refStream);
+                    ProjectFileUtils.AddProperty(refXml, "PackageVersion", "1.2.3-alpha", "'$(ExcludeRestorePackageImports)' != 'true'");
+                    ProjectFileUtils.SetTargetFrameworkForProject(refXml, tfmProperty, tfmValue);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                    ProjectFileUtils.WriteXmlToFile(refXml, refStream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                // Assert
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    var dependencyGroups = nuspecReader
+                        .GetDependencyGroups()
+                        .OrderBy(x => x.TargetFramework,
+                            new NuGetFrameworkSorter())
+                        .ToList();
+
+                    Assert.Equal(tfmValue.Split(';').Count(),
+                        dependencyGroups.Count);
+                    foreach (var depGroup in dependencyGroups)
+                    {
+                        var packages = depGroup.Packages.ToList();
+                        var package = packages.Where(t => t.Id.Equals("ClassLibrary2")).First();
+                        Assert.Equal(new VersionRange(new NuGetVersion("1.2.3-alpha"), true, new NuGetVersion("1.2.3-alpha"), true), package.VersionRange);
+                    }
+                }
+            }
+        }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData("TargetFramework", "netstandard1.4")]
+        [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange

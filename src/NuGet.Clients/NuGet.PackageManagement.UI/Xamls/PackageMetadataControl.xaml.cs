@@ -69,5 +69,24 @@ namespace NuGet.PackageManagement.UI
                 Visibility = Visibility.Collapsed;
             }
         }
+
+        // capture each item as it is selected, so we can unselect when treeview lostfocus
+        private void OnItemSelected(object sender, RoutedEventArgs e)
+        {
+            _dependencies.Tag = e.OriginalSource;
+        }
+
+        private void TreeView_LostFocus(object sender, RoutedEventArgs e)
+        {
+            // hide focus highlight when treeview lostfocus
+            if (_dependencies.SelectedItem != null)
+            {
+                TreeViewItem selectedTVI = _dependencies.Tag as TreeViewItem;
+                if (selectedTVI != null)
+                {
+                    selectedTVI.IsSelected = false;
+                }
+            }
+        }
     }
 }

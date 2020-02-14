@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -8,7 +8,7 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependencyTypeFlag
     {
-        private static ConcurrentDictionary<string, LibraryDependencyTypeFlag> _flags = new ConcurrentDictionary<string, LibraryDependencyTypeFlag>();
+        private static readonly ConcurrentDictionary<string, LibraryDependencyTypeFlag> Flags = new ConcurrentDictionary<string, LibraryDependencyTypeFlag>();
         private readonly string _value;
 
         public static readonly LibraryDependencyTypeFlag MainReference = Declare("MainReference");
@@ -29,7 +29,7 @@ namespace NuGet.LibraryModel
 
         public static LibraryDependencyTypeFlag Declare(string keyword)
         {
-            return _flags.GetOrAdd(keyword, x => new LibraryDependencyTypeFlag(x));
+            return Flags.GetOrAdd(keyword, x => new LibraryDependencyTypeFlag(x));
         }
 
         public override bool Equals(object obj)

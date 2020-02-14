@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -10,7 +10,7 @@ namespace NuGet.LibraryModel
 {
     public class LibraryDependencyTypeKeyword
     {
-        private static ConcurrentDictionary<string, LibraryDependencyTypeKeyword> _keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>(StringComparer.OrdinalIgnoreCase);
+        private static readonly ConcurrentDictionary<string, LibraryDependencyTypeKeyword> Keywords = new ConcurrentDictionary<string, LibraryDependencyTypeKeyword>(StringComparer.OrdinalIgnoreCase);
 
         public static readonly LibraryDependencyTypeKeyword Default;
         public static readonly LibraryDependencyTypeKeyword Platform;
@@ -20,18 +20,9 @@ namespace NuGet.LibraryModel
         public static readonly LibraryDependencyTypeKeyword Dev;
 
         private readonly string _value;
-        private readonly IEnumerable<LibraryDependencyTypeFlag> _flagsToAdd;
-        private readonly IEnumerable<LibraryDependencyTypeFlag> _flagsToRemove;
 
-        public IEnumerable<LibraryDependencyTypeFlag> FlagsToAdd
-        {
-            get { return _flagsToAdd; }
-        }
-
-        public IEnumerable<LibraryDependencyTypeFlag> FlagsToRemove
-        {
-            get { return _flagsToRemove; }
-        }
+        public IEnumerable<LibraryDependencyTypeFlag> FlagsToAdd { get; private set; }
+        public IEnumerable<LibraryDependencyTypeFlag> FlagsToRemove { get; private set; }
 
         static LibraryDependencyTypeKeyword()
         {
@@ -133,8 +124,8 @@ namespace NuGet.LibraryModel
             IEnumerable<LibraryDependencyTypeFlag> flagsToRemove)
         {
             _value = value;
-            _flagsToAdd = flagsToAdd;
-            _flagsToRemove = flagsToRemove;
+            FlagsToAdd = flagsToAdd;
+            FlagsToRemove = flagsToRemove;
         }
 
         internal static LibraryDependencyTypeKeyword Declare(
@@ -142,13 +133,13 @@ namespace NuGet.LibraryModel
             IEnumerable<LibraryDependencyTypeFlag> flagsToAdd,
             IEnumerable<LibraryDependencyTypeFlag> flagsToRemove)
         {
-            return _keywords.GetOrAdd(keyword, _ => new LibraryDependencyTypeKeyword(keyword, flagsToAdd, flagsToRemove));
+            return Keywords.GetOrAdd(keyword, _ => new LibraryDependencyTypeKeyword(keyword, flagsToAdd, flagsToRemove));
         }
 
         internal static LibraryDependencyTypeKeyword Parse(string keyword)
         {
             LibraryDependencyTypeKeyword value;
-            if (_keywords.TryGetValue(keyword?.Trim(), out value))
+            if (Keywords.TryGetValue(keyword?.Trim(), out value))
             {
                 return value;
             }
