@@ -11,19 +11,12 @@
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   MinHeight="72"
   d:DesignHeight="90"
-  d:DesignWidth="400"
-  Style="{DynamicResource controlStyle}">
+  d:DesignWidth="400">
   <UserControl.Resources>
     <ResourceDictionary>
       <ResourceDictionary.MergedDictionaries>
         <nuget:SharedResources />
       </ResourceDictionary.MergedDictionaries>
-      <nuget:PackageStatusToInstallImageVisibilityConverter
-        x:Key="PackageStatusToInstallImageVisibilityConverter" />
-      <nuget:PackageStatusToUpdateImageVisibilityConverter
-        x:Key="PackageStatusToUpdateImageVisibilityConverter" />
-      <nuget:BooleanToVisibilityConverter
-        x:Key="BooleanToVisibilityConverter" />
       <nuget:SummaryToFontStyleConverter
         x:Key="SummaryToFontStyleConverter" />
       <nuget:SummaryToStringConverter
@@ -71,91 +64,91 @@
           </Trigger>
         </Style.Triggers>
       </Style>
+    </ResourceDictionary>
+  </UserControl.Resources>
 
-      <!-- style of this control itself -->
-      <Style x:Key="controlStyle" TargetType="{x:Type UserControl}">
-        <Setter Property="Template">
-          <Setter.Value>
-            <ControlTemplate TargetType="{x:Type UserControl}">
-              <Border
+  <Border
                 BorderThickness="0,0,0,0"
                 BorderBrush="{DynamicResource {x:Static SystemColors.ActiveBorderBrushKey}}"
                 Background="Transparent"
                 Padding="0,8,0,0">
-                <Grid
+    <Grid
                   Margin="16,0,7,0">
-                  <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                  </Grid.ColumnDefinitions>
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="Auto" />
+        <ColumnDefinition Width="*" />
+        <ColumnDefinition Width="Auto" />
+      </Grid.ColumnDefinitions>
 
-                  <!-- check box -->
-                  <CheckBox
+      <!-- check box -->
+      <CheckBox
                     Grid.Column="0"
                     Margin="0,12,8,0"
                     VerticalAlignment="top"
                     Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
                     IsChecked="{Binding Selected}" />
 
-                  <!-- Icon -->
-                  <Grid
+      <!-- Icon -->
+      <Grid
                     Grid.Column="1"
                     VerticalAlignment="Top">
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="Auto" />
-                    </Grid.RowDefinitions>
-                    <Image
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <Image
                       Grid.Row="0"
                       AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageIcon}"
                       Style="{StaticResource PackageIconImageStyle}"
                       VerticalAlignment="Top"
                       Margin="0,0,16,0" />
-                    <imaging:CrispImage
+        <imaging:CrispImage
                       x:Name="_checkMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
                       Width="16"
                       Height="16"
                       VerticalAlignment="Top"
-                      Visibility="{Binding Status, Converter={StaticResource PackageStatusToInstallImageVisibilityConverter}}"
+                      Visibility="{Binding IsLatestInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
+                      AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}" />
-                    <imaging:CrispImage
+        <imaging:CrispImage
                       x:Name="_updateMark"
                       Grid.Row="0"
                       Margin="18,20,0,0"
                       Width="16"
                       Height="16"
                       VerticalAlignment="Top"
-                      Visibility="{Binding Status, Converter={StaticResource PackageStatusToUpdateImageVisibilityConverter}}"
+                      Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
+                      AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
                       Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}"/>
 
-                    <TextBlock
+        <TextBlock
                       Grid.Row="1"
                       Text="{x:Static nuget:Resources.Label_PackagePrerelease}"
                       FontSize="9"
                       Margin="0,3,5,0"
                       HorizontalAlignment="Left"
                       Visibility="{Binding Version.IsPrerelease, Converter={StaticResource BooleanToVisibilityConverter}}" />
-                  </Grid>
+      </Grid>
 
-                  <!-- title & summary-->
-                  <Grid
+      <!-- title & summary-->
+      <Grid
                     Grid.Column="2"
                     VerticalAlignment="Top"
                     MinHeight="48">
-                    <Grid.RowDefinitions>
-                      <RowDefinition Height="Auto" />
-                      <RowDefinition Height="36" MaxHeight="36" />
-                    </Grid.RowDefinitions>
-                    <StackPanel
+        <Grid.RowDefinitions>
+          <RowDefinition Height="Auto" />
+          <RowDefinition Height="36" MaxHeight="36" />
+        </Grid.RowDefinitions>
+        <StackPanel
                       Grid.Row="0"
                       Orientation="Horizontal">
-                      <TextBlock
+          <TextBlock
                         FontWeight="Bold"
                         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                         TextTrimming="CharacterEllipsis"
@@ -163,8 +156,8 @@
                         AutomationProperties.AutomationId="id"
                         VerticalAlignment="Top"
                         Text="{Binding Id}" />
-                      <!-- prefix reservation indicator -->
-                      <imaging:CrispImage
+          <!-- prefix reservation indicator -->
+          <imaging:CrispImage
                         x:Name="_prefixReservedMark"
                         Grid.Row="0"
                         Margin="5,5,0,0"
@@ -173,38 +166,39 @@
                         VerticalAlignment="Top"
                         Visibility="{Binding PrefixReserved, Converter={StaticResource BooleanToVisibilityConverter}}"
                         ToolTip="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
+                        AutomationProperties.Name="{x:Static nuget:Resources.Tooltip_PrefixReserved}"
                         Moniker="{x:Static nuget:PackageIconMonikers.PrefixReservedIndicator}" />
-                      <!-- author and download count -->
-                      <nuget:AuthorAndDownloadCount
+          <!-- author and download count -->
+          <nuget:AuthorAndDownloadCount
                         Margin="5,4,0,0"
                         Author="{Binding Author}"
                         DownloadCount="{Binding DownloadCount}" />
-                    </StackPanel>
+        </StackPanel>
 
-                    <Grid
+        <Grid
                       Grid.Row="2">
-                      <Grid.RowDefinitions>
-                        <RowDefinition Height="auto" />
-                        <RowDefinition Height="4" />
-                        <RowDefinition Height="*" />
-                      </Grid.RowDefinitions>
-                      <!-- providers -->
-                      <nuget:PackageManagerProvidersLabel
+          <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="4" />
+            <RowDefinition Height="*" />
+          </Grid.RowDefinitions>
+          <!-- providers -->
+          <nuget:PackageManagerProvidersLabel
                         Grid.Row="0"
                         FormatString="{x:Static nuget:Resources.Label_UseInstead}"
                         DataContext="{Binding Providers}" />
 
-                      <!-- Summary -->
-                      <TextBlock
+          <!-- Summary -->
+          <TextBlock
                         Grid.Row="2"
                         Text="{Binding Summary, Converter={StaticResource SummaryToStringConverter}}"
                         FontStyle="{Binding Summary, Converter={StaticResource SummaryToFontStyleConverter}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="Wrap" />
-                    </Grid>
+        </Grid>
 
-                    <Grid.ToolTip>
-                      <TextBlock
+        <Grid.ToolTip>
+          <TextBlock
                         Style="{StaticResource TooltipStyle}">
                         <Run
                           Text="{Binding Id}"
@@ -212,315 +206,239 @@
                         <LineBreak />
                         <Run
                           Text="{Binding Summary}" />
-                      </TextBlock>
-                    </Grid.ToolTip>
-                  </Grid>
+          </TextBlock>
+        </Grid.ToolTip>
+      </Grid>
 
-                  <Grid
+      <Grid
                     Grid.Column="3"
                     VerticalAlignment="Top"
                     Margin="10,0,0,0">
-                    <Grid.RowDefinitions>
-                      <RowDefinition />
-                      <RowDefinition />
-                    </Grid.RowDefinitions>
-                    <Grid.ColumnDefinitions>
-                      <ColumnDefinition Width="auto" />
-                      <ColumnDefinition Width="auto" />
-                    </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+          <RowDefinition />
+          <RowDefinition />
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="auto" />
+          <ColumnDefinition Width="auto" />
+        </Grid.ColumnDefinitions>
 
-                    <!-- row 0: -->
-                    <Grid
+        <!-- row 0: -->
+        <Grid
                       Grid.Row="0"
                       Grid.Column="0"
                       HorizontalAlignment="Right">
-                      <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="auto" />
-                        <ColumnDefinition Width="auto" />
-                      </Grid.ColumnDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto" />
+            <ColumnDefinition Width="auto" />
+          </Grid.ColumnDefinitions>
 
-                      <!-- deprecation indicator -->
-                      <imaging:CrispImage
+          <!-- deprecation indicator -->
+          <imaging:CrispImage
                         x:Name="_deprecationIndicator"
                         Grid.Column="0"
                         Width="12"
                         Height="12"
-                        Visibility="Visible"
+                        Visibility="{Binding IsPackageDeprecated,Converter={StaticResource BooleanToVisibilityConverter}}"
                         VerticalAlignment="Center"
                         ToolTip="{x:Static nuget:Resources.Label_Deprecated}"
                         AutomationProperties.Name="{x:Static nuget:Resources.Label_Deprecated}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}"/>
 
-                      <!-- installed version -->
-                      <TextBlock
+          <!-- installed version -->
+          <TextBlock
                         x:Name="_installedVersion"
                         Grid.Column="1"
                         Margin="4,0,4,0"
                         VerticalAlignment="Center"
-                        Visibility="Hidden"
-                        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
-                        <TextBlock.ToolTip>
-                          <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                            <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
-                            <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
-                          </MultiBinding>
-                        </TextBlock.ToolTip>
-                      </TextBlock>
-                    </Grid>
+                        Visibility="{Binding IsNotInstalled, Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
+                        Text="{Binding InstalledVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}">
+            <TextBlock.ToolTip>
+              <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
+                <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
+              </MultiBinding>
+            </TextBlock.ToolTip>
+            <AutomationProperties.Name>
+              <MultiBinding Converter="{StaticResource StringFormatConverter}">
+                <Binding Source="{x:Static nuget:Resources.ToolTip_InstalledVersion}" />
+                <Binding Path="InstalledVersion" Converter="{StaticResource VersionToStringConverter}" />
+              </MultiBinding>
+            </AutomationProperties.Name>
+          </TextBlock>
+        </Grid>
 
-                    <!-- version to install. It occupies the same position as the installed version -->
-                    <TextBlock
+        <!-- version to install. It occupies the same position as the installed version -->
+        <TextBlock
                       x:Name="_versionToInstall"
                       Grid.Row="0"
                       Grid.Column="0"
                       Margin="2,0,4,0"
                       VerticalAlignment="Center"
                       TextAlignment="Right"
-                      Visibility="Hidden"
-                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
-                      <TextBlock.ToolTip>
-                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static nuget:Resources.ToolTip_LatestVersion}" />
-                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
-                        </MultiBinding>
-                      </TextBlock.ToolTip>
-                    </TextBlock>
+                      Visibility="{Binding IsNotInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}"
+                      ToolTip="{Binding LatestVersionToolTip}"
+                      AutomationProperties.Name="{Binding LatestVersionToolTip}" />
 
-                    <!-- uninstall button -->
-                    <Button
+        <!-- uninstall button -->
+        <Button
                       x:Name="_uninstallButton"
-                      Style="{StaticResource buttonStyle}"
                       Grid.Row="0"
                       Grid.Column="1"
                       Command="{x:Static nuget:Commands.UninstallPackageCommand}"
                       CommandParameter="{Binding}"
-                      Visibility="Hidden"
                       AutomationProperties.Name="{x:Static nuget:Resources.Button_Uninstall}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_UninstallButton}"
                       FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
-                      <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
-                    </Button>
-
-                    <!-- install button. It occupies the same position of the install button -->
-                    <Button
-                      x:Name="_installButton"
-                      Grid.Row="0"
-                      Grid.Column="1"
-                      Style="{StaticResource buttonStyle}"
-                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
-                      CommandParameter="{Binding}"
-                      AutomationProperties.Name="{x:Static nuget:Resources.Button_Install}"
-                      Visibility="Hidden"
-                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
-                      <Button.ToolTip>
-                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static nuget:Resources.ToolTip_InstallButton}" />
-                          <Binding Path="Id" />
-                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
-                        </MultiBinding>
-                      </Button.ToolTip>
-                      <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}"
-                        />
-                    </Button>
-
-                    <!-- row 1: latest version and the update button-->
-                    <!-- version to update to -->
-                    <TextBlock
-                      x:Name="_versionToUpdateTo"
-                      Grid.Row="1"
-                      Grid.Column="0"
-                      Margin="2,5,4,0"
-                      VerticalAlignment="Center"
-                      TextAlignment="Right"
-                      Visibility="Hidden"
-                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter},StringFormat={}v{0}}">
-                      <TextBlock.ToolTip>
-                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static nuget:Resources.ToolTip_LatestVersion}" />
-                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
-                        </MultiBinding>
-                      </TextBlock.ToolTip>
-                    </TextBlock>
-
-                    <!-- update button -->
-                    <Button
-                      x:Name="_updateButton"
-                      Grid.Row="1"
-                      Grid.Column="2"
-                      Style="{StaticResource buttonStyle}"
-                      Margin="0,5,0,0"
-                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
-                      CommandParameter="{Binding}"
-                      AutomationProperties.Name="{x:Static nuget:Resources.Button_Update}"
-                      Visibility="Hidden"
-                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
-                      <Button.ToolTip>
-                        <MultiBinding Converter="{StaticResource StringFormatConverter}">
-                          <Binding Source="{x:Static nuget:Resources.ToolTip_UpdateButton}" />
-                          <Binding Path="Id" />
-                          <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
-                        </MultiBinding>
-                      </Button.ToolTip>
-                      <imaging:CrispImage
-                        Width="16"
-                        Height="16"
-                        Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
-                    </Button>
-                  </Grid>
-                </Grid>
-              </Border>
-
-              <!-- triggers -->
-              <ControlTemplate.Triggers>
-                <!-- The install button is visible when
-                     * IsSolution is false;
-                     * Status is NotInstalled;
-                     * mouse hovers over the control;
-                -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
-                      Value="true" />
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="NotInstalled" />
-                    <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="_installButton" Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
-                <!-- The install button is collapsed when IsSolution is true -->
-                <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                  Value="True">
-                  <Setter TargetName="_installButton" Property="Visibility" Value="Collapsed" />
-                </DataTrigger>
-
-                <!-- installed version is visible when InstalledVersion is not null -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding InstalledVersion,Converter={StaticResource NullToBooleanConverter}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="_installedVersion" Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
-                <!-- version to install is visible when Status is NotInstalled -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="NotInstalled" />
-                    <Condition
-                      Binding="{Binding LatestVersion,Converter={StaticResource NullToBooleanConverter}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter
-                    TargetName="_versionToInstall"
-                    Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
-                <!-- version to update to is visible when Status is UpdateAvailable -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="UpdateAvailable" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter
-                    TargetName="_versionToUpdateTo"
-                    Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
+          <Button.Style>
+            <Style TargetType="Button" BasedOn="{StaticResource buttonStyle}">
+              <Style.Triggers>
                 <!-- The uninstall button is visible when
                      * IsSolution is false;
                      * Status is Installed or UpdateAvailable;
                      * mouse hovers over the control;
                      Since there is no OR condition in triggers, we need to use two triggers instead.
                 -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
-                      Value="true" />
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="Installed" />
-                    <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="_uninstallButton" Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
-                      Value="true" />
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="UpdateAvailable" />
-                    <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="_uninstallButton" Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
-                <!-- The uninstall button is collapsed when IsSolution is true -->
-                <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                  Value="True">
-                  <Setter TargetName="_uninstallButton" Property="Visibility" Value="Collapsed" />
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}"
+                      Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
                 </DataTrigger>
+                <DataTrigger Binding="{Binding IsUninstallable}"
+                      Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
+                      Value="true">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+          <imaging:CrispImage
+                        Width="16"
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.UninstallIndicator}"/>
+        </Button>
 
-                <!-- The update button is visible when
-                     * IsSolution is false;
-                     * Status is UpdateAvailable;
+        <!-- install button. It occupies the same position of the install button -->
+        <Button
+                      x:Name="_installButton"
+                      Grid.Row="0"
+                      Grid.Column="1"
+                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
+                      CommandParameter="{Binding}"
+                      ToolTip="{Binding InstalledVersionToolTip}"
+                      AutomationProperties.Name="{Binding InstalledVersionToolTip}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
+          <Button.Style>
+            <Style TargetType="Button" BasedOn="{StaticResource buttonStyle}">
+              <Style.Triggers>
+                <!-- The install button is visible when
                      * mouse hovers over the control;
+                     * IsNotInstalled;
+                     * IsSolution is false;
                 -->
-                <MultiDataTrigger>
-                  <MultiDataTrigger.Conditions>
-                    <Condition
-                      Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}"
-                      Value="true" />
-                    <Condition
-                      Binding="{Binding Status}"
-                      Value="UpdateAvailable" />
-                    <Condition
-                      Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                      Value="False" />
-                  </MultiDataTrigger.Conditions>
-                  <Setter TargetName="_updateButton" Property="Visibility" Value="Visible" />
-                </MultiDataTrigger>
-
-                <!-- The update button is collapsed when IsSolution is true -->
-                <DataTrigger
-                  Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}"
-                  Value="True">
-                  <Setter TargetName="_updateButton" Property="Visibility" Value="Collapsed" />
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
                 </DataTrigger>
-
-                <!-- The deprecation indicator becomes visible when IsPackageDeprecated is true -->
-                <DataTrigger
-                  Binding="{Binding IsPackageDeprecated}" Value="false">
-                  <Setter TargetName="_deprecationIndicator" Property="Visibility" Value="Collapsed" />
+                <DataTrigger Binding="{Binding IsNotInstalled}" Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
                 </DataTrigger>
-              </ControlTemplate.Triggers>
-            </ControlTemplate>
-          </Setter.Value>
-        </Setter>
-      </Style>
-    </ResourceDictionary>
-  </UserControl.Resources>
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+          <imaging:CrispImage
+                        Width="16"
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.DownloadIndicator}"
+                        />
+        </Button>
+
+        <!-- row 1: latest version and the update button-->
+        <!-- version to update to -->
+        <TextBlock
+                      x:Name="_versionToUpdateTo"
+                      Grid.Row="1"
+                      Grid.Column="0"
+                      Margin="2,5,4,0"
+                      VerticalAlignment="Center"
+                      TextAlignment="Right"
+                      Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      ToolTip="{Binding LatestVersionToolTip}"
+                      AutomationProperties.Name="{Binding LatestVersionToolTip}"
+                      Text="{Binding LatestVersion, Converter={StaticResource VersionToStringConverter}, ConverterParameter=vN}" />
+
+        <!-- update button -->
+        <Button
+                      x:Name="_updateButton"
+                      Grid.Row="1"
+                      Grid.Column="2"
+                      Margin="0,5,0,0"
+                      Command="{x:Static nuget:Commands.InstallPackageCommand}"
+                      CommandParameter="{Binding}"
+                      FocusVisualStyle="{DynamicResource ControlsFocusVisualStyle}">
+          <Button.Style>
+            <Style TargetType="Button" BasedOn="{StaticResource buttonStyle}">
+              <Style.Triggers>
+                <!-- The update button is visible when
+                     * mouse hovers over the control;
+                     * IsUpdateAvailable;
+                     * IsSolution is false;
+                -->
+                <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType={x:Type nuget:PackageItemControl}}}" Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="false">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsSolution, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}}" Value="true">
+                  <DataTrigger.Setters>
+                    <Setter Property="Visibility" Value="Hidden" />
+                  </DataTrigger.Setters>
+                </DataTrigger>
+              </Style.Triggers>
+            </Style>
+          </Button.Style>
+          <Button.ToolTip>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_UpdateButton}" />
+              <Binding Path="Id" />
+              <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </Button.ToolTip>
+          <AutomationProperties.Name>
+            <MultiBinding Converter="{StaticResource StringFormatConverter}">
+              <Binding Source="{x:Static nuget:Resources.ToolTip_UpdateButton}" />
+              <Binding Path="Id" />
+              <Binding Path="LatestVersion" Converter="{StaticResource VersionToStringConverter}" />
+            </MultiBinding>
+          </AutomationProperties.Name>
+          <imaging:CrispImage
+                        Width="16"
+                        Height="16"
+                        Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}" />
+        </Button>
+      </Grid>
+    </Grid>
+  </Border>
 </UserControl>

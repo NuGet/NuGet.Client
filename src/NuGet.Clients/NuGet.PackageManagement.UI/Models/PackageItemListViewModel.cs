@@ -67,6 +67,21 @@ namespace NuGet.PackageManagement.UI
                 {
                     _installedVersion = value;
                     OnPropertyChanged(nameof(InstalledVersion));
+                    OnPropertyChanged(nameof(IsLatestInstalled));
+
+                    // update tool tip
+                    if (_installedVersion != null)
+                    {
+                        var displayVersion = new DisplayVersion(_installedVersion, string.Empty);
+                        InstalledVersionToolTip = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Resources.ToolTip_InstalledVersion,
+                            displayVersion);
+                    }
+                    else
+                    {
+                        InstalledVersionToolTip = null;
+                    }
                 }
             }
         }
@@ -87,6 +102,8 @@ namespace NuGet.PackageManagement.UI
                 if (!VersionEquals(_latestVersion, value))
                 {
                     _latestVersion = value;
+                    OnPropertyChanged(nameof(IsNotInstalled));
+                    OnPropertyChanged(nameof(IsUpdateAvailable));
                     OnPropertyChanged(nameof(LatestVersion));
 
                     // update tool tip
@@ -120,6 +137,20 @@ namespace NuGet.PackageManagement.UI
             {
                 _autoReferenced = value;
                 OnPropertyChanged(nameof(AutoReferenced));
+            }
+        }
+        private string _installedVersionToolTip;
+
+        public string InstalledVersionToolTip
+        {
+            get
+            {
+                return _installedVersionToolTip;
+            }
+            set
+            {
+                _installedVersionToolTip = value;
+                OnPropertyChanged(nameof(InstalledVersionToolTip));
             }
         }
 
@@ -185,7 +216,7 @@ namespace NuGet.PackageManagement.UI
 
         public string Summary { get; set; }
 
-        private PackageStatus _status = PackageStatus.NotInstalled;
+        private PackageStatus _status;
         public PackageStatus Status
         {
             get
@@ -202,7 +233,51 @@ namespace NuGet.PackageManagement.UI
                 if (refresh)
                 {
                     OnPropertyChanged(nameof(Status));
+                    OnPropertyChanged(nameof(IsLatestInstalled));
+                    OnPropertyChanged(nameof(IsUpdateAvailable));
+                    OnPropertyChanged(nameof(IsUninstallable));
+                    OnPropertyChanged(nameof(IsNotInstalled));
                 }
+            }
+        }
+
+        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsNotInstalled
+        // in all those properties.
+        public bool IsNotInstalled
+        {
+            get
+            {
+                return (Status == PackageStatus.NotInstalled && LatestVersion != null);
+            }
+        }
+
+        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUninstallable
+        // in all those properties.
+        public bool IsUninstallable
+        {
+            get
+            {
+                return (Status == PackageStatus.Installed || Status == PackageStatus.UpdateAvailable);
+            }
+        }
+
+        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsLatestInstalled
+        // in all those properties.
+        public bool IsLatestInstalled
+        {
+            get
+            {
+                return (Status == PackageStatus.Installed && InstalledVersion != null);
+            }
+        }
+
+        // If the values that help calculate this property change, make sure you raise OnPropertyChanged for IsUpdateAvailable
+        // in all those properties.
+        public bool IsUpdateAvailable
+        {
+            get
+            {
+                return (Status == PackageStatus.UpdateAvailable && LatestVersion != null);
             }
         }
 
