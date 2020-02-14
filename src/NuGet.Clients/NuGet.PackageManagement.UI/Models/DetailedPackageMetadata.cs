@@ -29,14 +29,22 @@ namespace NuGet.PackageManagement.UI
             LicenseUrl = serverData.LicenseUrl;
             ProjectUrl = serverData.ProjectUrl;
             ReportAbuseUrl = serverData.ReportAbuseUrl;
-            Tags = serverData.Tags;
+            // Some server implementations send down an array with an empty string, which ends up as an empty string.
+            // In PM UI, we want Tags to work like most other properties from the server (Authors/Owners), and be null, if there is no value.
+            Tags = string.IsNullOrEmpty(serverData.Tags) ? null : serverData.Tags;
             DownloadCount = downloadCount;
             Published = serverData.Published;
-            DependencySets = serverData.DependencySets?
-                .Select(e => new PackageDependencySetMetadata(e))
-                ?? new PackageDependencySetMetadata[] { };
-            HasDependencies = DependencySets.Any(
-                dependencySet => dependencySet.Dependencies != null && dependencySet.Dependencies.Count > 0);
+
+            IEnumerable<PackageDependencyGroup> dependencySets = serverData.DependencySets;
+            if (dependencySets != null && dependencySets.Any())
+            {
+                DependencySets = dependencySets.Select(e => new PackageDependencySetMetadata(e)).ToArray();
+            }
+            else
+            {
+                DependencySets = NoDependenciesPlaceholder;
+            }
+
             PrefixReserved = serverData.PrefixReserved;
             LicenseMetadata = serverData.LicenseMetadata;
             DeprecationMetadata = deprecationMetadata;
@@ -98,14 +106,13 @@ namespace NuGet.PackageManagement.UI
 
         public bool PrefixReserved { get; set; }
 
-        // This property is used by data binding to display text "No dependencies"
-        public bool HasDependencies { get; set; }
-
         public LicenseMetadata LicenseMetadata { get; set; }
 
         public PackageDeprecationMetadata DeprecationMetadata { get; set; }
 
         public IReadOnlyList<IText> LicenseLinks => PackageLicenseUtilities.GenerateLicenseLinks(this);
+
+        private static readonly IReadOnlyList<PackageDependencySetMetadata> NoDependenciesPlaceholder = new PackageDependencySetMetadata[] { new PackageDependencySetMetadata(dependencyGroup: null) };
 
         public string LoadFileAsText(string path)
         {

@@ -7,7 +7,7 @@
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
   xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
-Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
+  Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   mc:Ignorable="d"
   d:DesignHeight="300"
@@ -20,10 +20,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <nuget:DateTimeConverter x:Key="DateFormatConverter" />
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_License}"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                     ToolTip="{Binding Link}"
@@ -35,10 +35,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
 
       <DataTemplate DataType="{x:Type nuget:LicenseFileText}">
         <TextBlock
-            AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseText}"
             AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFile'}">
                 <Hyperlink
                     AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseFileLink'}"
+                    AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_License}"
                     Style="{StaticResource WindowHyperlinkStyle}"
                     Click="ViewLicense_Click">
                   <Run Text="{Binding Text}"/>
@@ -54,9 +54,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
                         Height="13"
                         Visibility="{Binding Text, Converter={StaticResource NullToVisibilityConverter}}"
                         ToolTip="{Binding Text}"
+                        AutomationProperties.Name="{Binding Text}"
                         Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
       </DataTemplate>
-      
+
       <DataTemplate DataType="{x:Type nuget:FreeText}">
         <TextBlock
             AutomationProperties.LabeledBy="{Binding ElementName=_packageLicenseOperator}"
@@ -81,14 +82,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
     <TextBlock
       Grid.Row="0"
       x:Name="_descriptionLabel"
-      AutomationProperties.Name="{Binding Text}"
       Text="{x:Static nuget:Resources.Label_Description}"
       FontWeight="Bold" />
     <TextBox
       Style="{DynamicResource SelectableTextBlockStyle}" 
       Grid.Row="1"
       x:Name="_description"
-      AutomationProperties.Name="{Binding Path=Description}"
       AutomationProperties.LabeledBy="{Binding ElementName=_descriptionLabel}"
       Margin="0,8,0,0"
       TextWrapping="Wrap"
@@ -131,7 +130,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         Grid.Row="0"
         Grid.Column="1"
         Visibility="{Binding Path=Version,Converter={StaticResource NullToVisibilityConverter}}"
-        AutomationProperties.Name="{Binding Path=Version,Converter={StaticResource VersionToStringConverter},ConverterParameter=F}"
         AutomationProperties.LabeledBy="{Binding ElementName=_versionLabel}"
         Text="{Binding Path=Version,Converter={StaticResource VersionToStringConverter},ConverterParameter=F}"
         Margin="8,8,0,0"
@@ -150,7 +148,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Owners,Converter={StaticResource NullToVisibilityConverter}}"
-        AutomationProperties.Name="{Binding Path=Owners}"
         AutomationProperties.LabeledBy="{Binding ElementName=_ownersLabel}"
         Text="{Binding Path=Owners}"
         Margin="8,8,0,0"
@@ -171,7 +168,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Authors,Converter={StaticResource NullToVisibilityConverter}}"
-        AutomationProperties.Name="{Binding Path=Authors}"
         AutomationProperties.LabeledBy="{Binding ElementName=_authorsLabel}"
         Text="{Binding Path=Authors}"
         Margin="8,8,0,0"
@@ -190,7 +186,7 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_License}"/>
 
-      <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}">
+      <ItemsControl Grid.Row="3" Grid.Column="1" ItemsSource="{Binding LicenseLinks}" IsTabStop="False">
         <ItemsControl.ItemsPanel>
           <ItemsPanelTemplate>
             <WrapPanel Margin="8,8,0,0" Orientation="Horizontal" />
@@ -206,12 +202,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_downloadsLabel"
-        AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_Downloads}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=DownloadCount,Converter={StaticResource DownloadCountToVisibilityConverter}}"
-        AutomationProperties.Name="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         AutomationProperties.LabeledBy="{Binding ElementName=_downloadsLabel}"
         Text="{Binding Path=DownloadCount,StringFormat={}{0:N0}}"
         Margin="8,8,0,0"
@@ -227,14 +221,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_datePublishedLabel"
-        AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_DatePublished}" />
       <TextBox
         Name="datePublished"
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Published,Converter={StaticResource NullToVisibilityConverter}}"
         Text="{Binding Path=Published,Converter={StaticResource DateFormatConverter}}"
-        AutomationProperties.Name="{Binding Path=Published,Converter={StaticResource DateFormatConverter}}"
         AutomationProperties.LabeledBy="{Binding ElementName=_datePublishedLabel}"
         Margin="8,8,0,0"
         TextWrapping="Wrap"
@@ -257,12 +249,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
         Grid.Row="6"
-        Grid.Column="1"
-        AutomationProperties.LabeledBy="{Binding ElementName=_projectUrlLabel}">
+        Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ProjectUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ProjectUrl}">
           <Run Text="{Binding Path=ProjectUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -275,7 +267,6 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_reportAbuseLabel"
-        AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_ReportAbuse}" />
 
       <TextBlock
@@ -283,12 +274,12 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         TextWrapping="Wrap"
         Margin="8,8,0,0"
         Grid.Row="7"
-        Grid.Column="1"
-        AutomationProperties.LabeledBy="{Binding ElementName=_reportAbuseLabel}">
+        Grid.Column="1">
         <Hyperlink
           NavigateUri="{Binding Path=ReportAbuseUrl}"
           Style="{StaticResource HyperlinkStyle}"
-          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
+          Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
+          AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_ReportAbuse}">
           <Run Text="{Binding Path=ReportAbuseUrl}" />
         </Hyperlink>
       </TextBlock>
@@ -301,12 +292,10 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         FontWeight="Bold"
         Margin="0,8,0,0"
         x:Name="_tagsLabel"
-        AutomationProperties.Name="{Binding Text}"
         Text="{x:Static nuget:Resources.Label_Tags}" />
       <TextBox
         Style="{DynamicResource SelectableTextBlockStyle}" 
         Visibility="{Binding Path=Tags,Converter={StaticResource NullToVisibilityConverter}}"
-        AutomationProperties.Name="{Binding Path=Tags}"
         AutomationProperties.LabeledBy="{Binding ElementName=_tagsLabel}"
         Text="{Binding Path=Tags}"
         Margin="8,8,0,0"
@@ -315,67 +304,49 @@ Background="{DynamicResource {x:Static nuget:Brushes.DetailPaneBackground}}"
         Grid.Column="1" />
     </Grid>
 
-    <!-- dependencies -->
-    <StackPanel
-      Grid.Row="3"
-      Margin="0,8">
-      <TextBlock
-        FontWeight="Bold"
-        Margin="0,8,0,0"
-        x:Name="_dependenciesLabel"
-        AutomationProperties.Name="{Binding Text}"
-        Text="{x:Static nuget:Resources.Label_Dependencies}" />
-
-      <ItemsControl
-        ItemsSource="{Binding Path=DependencySets}"
-        Visibility="{Binding Path=HasDependencies,Converter={StaticResource BooleanToVisibilityConverter}}"
-        IsTabStop="False"
-        Margin="8,0,0,0"
-        AutomationProperties.LabeledBy="{Binding ElementName=_dependenciesLabel}">
-        <ItemsControl.ItemTemplate>
-          <DataTemplate>
-            <StackPanel
-              Orientation="Vertical"
-              Margin="0,8,0,0">
-              <TextBlock
-                Text="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToStringConverter}}"
-                FontWeight="Bold"
-                x:Name="_targetFramework"
-                AutomationProperties.Name="{Binding Text}"
-                Visibility="{Binding TargetFramework,Converter={StaticResource NuGetFrameworkToVisibilityConverter}}" />
-              <ItemsControl
-                ItemsSource="{Binding Dependencies}"
-                IsTabStop="False"
-                AutomationProperties.LabeledBy="{Binding ElementName=_targetFramework}">
-                <ItemsControl.ItemTemplate>
-                  <DataTemplate>
-                    <TextBox
-                      x:Name="_dependencies"
-                      Style="{DynamicResource SelectableTextBlockStyle}"
-                      AutomationProperties.Name="{Binding Text}"
-                      Text="{Binding Mode=OneWay}"/>
-                  </DataTemplate>
-                </ItemsControl.ItemTemplate>
-              </ItemsControl>
-              <TextBlock
-                FontStyle="Italic"
-                Text="{x:Static nuget:Resources.Text_NoDependencies}"
-                x:Name="_noDependencies"
-                AutomationProperties.Name="{Binding Text}"
-                Visibility="{Binding Dependencies,Converter={StaticResource EmptyEnumerableToVisibilityConverter}}" />
-            </StackPanel>
-          </DataTemplate>
-        </ItemsControl.ItemTemplate>
-      </ItemsControl>
-
-      <TextBlock
-        Margin="0,8,0,0"
-        Visibility="{Binding Path=HasDependencies,Converter={StaticResource InvertedBooleanToVisibilityConverter}}"
-        FontStyle="Italic"
-        x:Name="_hasDependencies"
-        AutomationProperties.Name="{Binding Text}"
-        AutomationProperties.LabeledBy="{Binding ElementName=_dependenciesLabel}"
-        Text="{x:Static nuget:Resources.Text_NoDependencies}" />
-    </StackPanel>
+    <!-- dependencies treeview -->
+    <TreeView
+        x:Name="_dependencies"
+        Grid.Row="3"
+        Margin="-21,0,0,0"
+        BorderThickness="0"
+        Background="{x:Null}"
+        TreeViewItem.Selected="OnItemSelected"
+        LostFocus="TreeView_LostFocus"
+        AutomationProperties.Name="{x:Static nuget:Resources.Label_Dependencies}">
+      <TreeView.Template>
+        <!--
+          Replaces default control template for this treeview with a slimmer control template.
+          Specifically, this one has no ScrollViewer...which wasn't being used, and was making mousewheel not work for
+          the larget detail scrollable area while the mouse was over the treeview.
+        -->
+        <ControlTemplate TargetType="TreeView">
+          <ItemsPresenter />
+        </ControlTemplate>
+      </TreeView.Template>
+      <TreeView.Resources>
+        <nuget:AccessibleConverter x:Key="AccNameWorkaround" />
+        <HierarchicalDataTemplate ItemsSource="{Binding Dependencies}" DataType="{x:Type nuget:PackageDependencySetMetadata}">
+          <TextBlock Text="{Binding TargetFrameworkDisplay}" Padding="0,2,0,0" />
+        </HierarchicalDataTemplate>
+        <DataTemplate DataType="{x:Type nuget:PackageDependencyMetadata}">
+          <TextBlock Text="{Binding}" ToolTip="{Binding}" />
+        </DataTemplate>
+      </TreeView.Resources>
+      <TreeViewItem Header="{x:Static nuget:Resources.Label_Dependencies}"
+                    ItemsSource="{Binding Path=DependencySets}"
+                    IsExpanded="true"
+                    Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
+                    FontWeight="Bold">
+        <TreeViewItem.ItemContainerStyle>
+          <Style TargetType="TreeViewItem">
+            <Setter Property="IsExpanded" Value="true" />
+            <Setter Property="AutomationProperties.Name" Value="{Binding RelativeSource={RelativeSource Self},Converter={StaticResource AccNameWorkaround}}" />
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+            <Setter Property="FontWeight" Value="normal" />
+          </Style>
+        </TreeViewItem.ItemContainerStyle>
+      </TreeViewItem>
+    </TreeView>
   </Grid>
 </UserControl>

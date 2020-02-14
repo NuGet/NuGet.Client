@@ -13,7 +13,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -114,7 +113,6 @@ namespace NuGet.ProjectModel
             packageSpec.Dependencies = new List<LibraryDependency>();
             packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
             packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-
 
             var buildOptions = rawPackageSpec["buildOptions"] as JObject;
             if (buildOptions != null)
@@ -290,6 +288,7 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.TargetFrameworks.Add(frameworkGroup);
                 }
             }
+
             // Add the config file paths to the equals method
             msbuildMetadata.ConfigFilePaths = new List<string>();
 
@@ -301,7 +300,6 @@ namespace NuGet.ProjectModel
                     msbuildMetadata.ConfigFilePaths.Add(fallbackFolder);
                 }
             }
-
 
             msbuildMetadata.FallbackFolders = new List<string>();
 
@@ -485,13 +483,13 @@ namespace NuGet.ProjectModel
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
                     var noWarn = new List<NuGetLogCode>();
-                    
+
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
                     var targetFlagsValue = isGacOrFrameworkReference
-                                                    ? LibraryDependencyTarget.Reference
-                                                    : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
+                        ? LibraryDependencyTarget.Reference
+                        : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
                     var autoReferenced = false;
                     var generatePathProperty = false;
@@ -647,16 +645,18 @@ namespace NuGet.ProjectModel
             else if (token.Type == JTokenType.String)
             {
                 values = new[]
-                    {
-                        token.Value<string>()
-                    };
+                {
+                    token.Value<string>()
+                };
             }
             else
             {
                 values = token.Value<string[]>();
             }
+
             result = values
                 .SelectMany(value => value.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries));
+
             return true;
         }
 
@@ -687,9 +687,9 @@ namespace NuGet.ProjectModel
             else if (token.Type == JTokenType.String)
             {
                 values = new[]
-                    {
-                        token.Value<string>()
-                    };
+                {
+                    token.Value<string>()
+                };
             }
             else if (token.Type == JTokenType.Array)
             {
@@ -785,7 +785,7 @@ namespace NuGet.ProjectModel
                 Warn = GetWarnSetting(properties),
                 AssetTargetFallback = assetTargetFallback,
                 RuntimeIdentifierGraphPath = GetRuntimeIdentifierGraphPath(properties)
-        };
+            };
 
             PopulateDependencies(
                 packageSpec.FilePath,
@@ -811,8 +811,8 @@ namespace NuGet.ProjectModel
                 targetFrameworkInformation.FrameworkReferences,
                 properties,
                 "frameworkReferences",
-                packageSpec.FilePath
-                );
+                packageSpec.FilePath);
+
             frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
 
             packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
@@ -908,9 +908,9 @@ namespace NuGet.ProjectModel
                     else
                     {
                         throw FileFormatException.Create(
-                                $"The version cannot be null or empty",
-                                dependencyVersionToken,
-                                packageSpecPath);
+                            "The version cannot be null or empty",
+                            dependencyVersionToken,
+                            packageSpecPath);
                     }
                 }
             }
@@ -934,12 +934,12 @@ namespace NuGet.ProjectModel
             if (frameworks.Any(p => !p.IsSpecificFramework))
             {
                 throw FileFormatException.Create(
-                           string.Format(
-                               Strings.Log_InvalidImportFramework,
-                               importsProperty.ToString().Replace(Environment.NewLine, string.Empty),
-                               PackageSpec.PackageSpecFileName),
-                           importsProperty,
-                           packageSpec.FilePath);
+                    string.Format(
+                        Strings.Log_InvalidImportFramework,
+                        importsProperty.ToString().Replace(Environment.NewLine, string.Empty),
+                        PackageSpec.PackageSpecFileName),
+                    importsProperty,
+                    packageSpec.FilePath);
             }
 
             return frameworks;
@@ -956,7 +956,6 @@ namespace NuGet.ProjectModel
 
             return null;
         }
-
 
         private static bool GetWarnSetting(JObject properties)
         {
