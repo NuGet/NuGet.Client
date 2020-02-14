@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.TeamFoundation.VersionControl.Client;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -18,6 +19,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -491,7 +493,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var projectFullPath = cps.ProjectFullPath;
 
             var vstfm = isV2Nominate ?
-                (IVsTargetFrameworkInfo) new VsTargetFrameworkInfo2(
+                (IVsTargetFrameworkInfo)new VsTargetFrameworkInfo2(
                         "netcoreapp1.0",
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
@@ -612,9 +614,9 @@ namespace NuGet.SolutionRestoreManager.Test
                 .WithTargetFrameworkInfo(vstfm);
 
             // Act
-           var actualRestoreSpec = isV2Nominate ?
-                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
-                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
+            var actualRestoreSpec = isV2Nominate ?
+                         await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                         await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -706,7 +708,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_PackageId(bool isV2Nominate)
         {
             var vstfm = isV2Nominate ?
-                (IVsTargetFrameworkInfo) new VsTargetFrameworkInfo2(
+                (IVsTargetFrameworkInfo)new VsTargetFrameworkInfo2(
                         "netcoreapp1.0",
                         Enumerable.Empty<IVsReferenceItem>(),
                         Enumerable.Empty<IVsReferenceItem>(),
@@ -725,9 +727,9 @@ namespace NuGet.SolutionRestoreManager.Test
                 .WithTargetFrameworkInfo(vstfm);
 
             // Act
-           var actualRestoreSpec = isV2Nominate ?
-                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
-                        await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
+            var actualRestoreSpec = isV2Nominate ?
+                         await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                         await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
 
             // Assert
             SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
@@ -1033,15 +1035,15 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
 
-           var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
+            var specSources = actualProjectSpec.RestoreMetadata.Sources?.Select(e => e.Source);
 
-            var expectedSources = 
+            var expectedSources =
                 (MSBuildStringUtility.Split(restoreSources).Any(e => StringComparer.OrdinalIgnoreCase.Equals("clear", e)) ?
                     new string[] { "Clear" } :
                     MSBuildStringUtility.Split(restoreSources)).
                 Concat(
                 restoreAdditionalProjectSources != null ?
-                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalProjectSources)):
+                    new List<string>() { VSRestoreSettingsUtilities.AdditionalValue }.Concat(MSBuildStringUtility.Split(restoreAdditionalProjectSources)) :
                     new string[] { }
                 );
 
@@ -1066,10 +1068,10 @@ namespace NuGet.SolutionRestoreManager.Test
 
 
         [Theory]
-        [InlineData(@"C:\source1", @"C:\additionalsource",@"C:\source1;C:\additionalsource", @"C:\fallback1", @"C:\additionalFallback1", @"C:\fallback1;C:\additionalFallback1", false)]
+        [InlineData(@"C:\source1", @"C:\additionalsource", @"C:\source1;C:\additionalsource", @"C:\fallback1", @"C:\additionalFallback1", @"C:\fallback1;C:\additionalFallback1", false)]
         [InlineData(@"C:\source1", null, @"C:\source1", @"C:\fallback1", null, @"C:\fallback1", false)]
-        [InlineData(null, @"C:\additionalsource", @"C:\additionalsource",  null, @"C:\additionalFallback1", @"C:\additionalFallback1", false)]
-        [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\additionalsource",  @"C:\fallback1;Clear", @"C:\additionalFallback1", @"C:\additionalFallback1", false)]
+        [InlineData(null, @"C:\additionalsource", @"C:\additionalsource", null, @"C:\additionalFallback1", @"C:\additionalFallback1", false)]
+        [InlineData(@"Clear;C:\source1", @"C:\additionalsource", @"C:\additionalsource", @"C:\fallback1;Clear", @"C:\additionalFallback1", @"C:\additionalFallback1", false)]
         [InlineData(@"C:\source1;Clear", @"C:\additionalsource", @"C:\additionalsource", @"Clear;C:\fallback1", @"C:\additionalFallback1", @"C:\additionalFallback1", false)]
         [InlineData(@"C:\source1", @"C:\additionalsource", @"C:\source1;C:\additionalsource", @"C:\fallback1", @"C:\additionalFallback1", @"C:\fallback1;C:\additionalFallback1", true)]
         [InlineData(@"C:\source1", null, @"C:\source1", @"C:\fallback1", null, @"C:\fallback1", true)]
@@ -1117,7 +1119,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
             Assert.NotNull(actualProjectSpec);
 
-           var specSources = VSRestoreSettingsUtilities.GetSources(NullSettings.Instance, actualProjectSpec).Select(e => e.Source);
+            var specSources = VSRestoreSettingsUtilities.GetSources(NullSettings.Instance, actualProjectSpec).Select(e => e.Source);
 
             var expectedSources = MSBuildStringUtility.Split(expectedRestoreSources);
 
@@ -1606,9 +1608,9 @@ namespace NuGet.SolutionRestoreManager.Test
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public async Task NominateProjectAsync_WarningProperties(bool  isV2Nominate)
+        public async Task NominateProjectAsync_WarningProperties(bool isV2Nominate)
         {
-            var packageReference = new VsReferenceItem("NuGet.Protocol", new VsReferenceProperties() { new VsReferenceProperty("NoWarn", "NU1605") } );
+            var packageReference = new VsReferenceItem("NuGet.Protocol", new VsReferenceProperties() { new VsReferenceProperty("NoWarn", "NU1605") });
 
             var vstfms = isV2Nominate ?
                 (IVsTargetFrameworkInfo)
@@ -1740,7 +1742,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
-                new VsTargetFrameworks2(new []
+                new VsTargetFrameworks2(new[]
                 {
                     new VsTargetFrameworkInfo2(
                         targetFrameworkMoniker: "_,Version=2.0",
@@ -1847,6 +1849,92 @@ namespace NuGet.SolutionRestoreManager.Test
 
             // Act & Assert
             await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None));
+        }
+
+        [Fact]
+
+        public void ToPackageSpec_CentralVersions_AreAddedToThePackageSpecIfCPVMIsEnabled()
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+
+            var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
+                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
+                packageReferences: new[] { new VsReferenceItem("foo", new VsReferenceProperties()) },
+                projectReferences: emptyReferenceItems,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: new VsProjectProperty[] { new VsProjectProperty("DisableCentralPackageVersions", "false") },
+                centralPackageVersions: new[]
+                        {
+                            new VsReferenceItem("foo", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "2.0.0")
+                            }))
+                        })
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+
+            Assert.Equal(1, tfm.CentralPackageVersions.Count);
+            Assert.True(tfm.CentralPackageVersions.ContainsKey("foo"));
+            Assert.Equal("[2.0.0, )", tfm.CentralPackageVersions["foo"].VersionRange.ToNormalizedString());
+            Assert.Equal(1, tfm.Dependencies.Count);
+            Assert.Null(tfm.Dependencies.First().LibraryRange.VersionRange);
+            Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
+        }
+
+        /// <summary>
+        /// The default for DisableCentralPackageVersions should be disabled.
+        /// </summary>
+        [Theory]
+        [InlineData("1.0.0", "true")]
+        [InlineData(null, null)]
+        [InlineData("1.0.0", "")]
+
+        public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string packRefVersion, string disableCentralPackageVersionsValue)
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+            var packageReferenceProperties = packRefVersion == null ?
+                new VsReferenceProperties() :
+                new VsReferenceProperties(new[] { new VsReferenceProperty("Version", packRefVersion) });
+            var projectProperties = disableCentralPackageVersionsValue == null ?
+                new VsProjectProperty[0] :
+                new VsProjectProperty[] { new VsProjectProperty("DisableCentralPackageVersions", disableCentralPackageVersionsValue) };
+
+            var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
+                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
+                packageReferences: new[] { new VsReferenceItem("foo", packageReferenceProperties) },
+                projectReferences: emptyReferenceItems,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: projectProperties,
+                centralPackageVersions: new[]
+                        {
+                            new VsReferenceItem("foo", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "2.0.0")
+                            }))
+                        })
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+            var expectedPackageReferenceVersion = packRefVersion == null ? "(, )" : "[1.0.0, )";
+            Assert.Equal(0, tfm.CentralPackageVersions.Count);
+            Assert.Equal(1, tfm.Dependencies.Count);
+            Assert.Equal(expectedPackageReferenceVersion, tfm.Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.False(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
