@@ -12,7 +12,6 @@ namespace NuGet.ProjectModel.Test
 {
     public class TargetFrameworkInformationTests
     {
-
         [Fact]
         public void Equals_WithSameObject_ReturnsTrue()
         {
@@ -54,6 +53,12 @@ namespace NuGet.ProjectModel.Test
 
             // Act & Assert
             tfi.Equals(tfiClone).Should().BeTrue();
+            Assert.NotSame(tfi, tfiClone);
+            Assert.NotSame(tfi.CentralPackageVersions, tfiClone.CentralPackageVersions);
+            Assert.NotSame(tfi.Dependencies, tfiClone.Dependencies);
+            Assert.NotSame(tfi.Imports, tfiClone.Imports);
+            Assert.NotSame(tfi.DownloadDependencies, tfiClone.DownloadDependencies);
+            Assert.NotSame(tfi.FrameworkReferences, tfiClone.FrameworkReferences);
         }
 
         private TargetFrameworkInformation CreateTargetFrameworkInformation()
@@ -65,9 +70,12 @@ namespace NuGet.ProjectModel.Test
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
             var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.All, LibraryDependencyTarget.All),
-            LibraryDependencyType.Default,
-            LibraryIncludeFlags.All,
-            LibraryIncludeFlags.All, new List<Common.NuGetLogCode>(), true, true);
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: true,
+                generatePathProperty: true);
 
             var downloadDependency = new DownloadDependency("foo", VersionRange.All);
             var frameworkDependency = new FrameworkDependency("framework", FrameworkDependencyFlags.All);

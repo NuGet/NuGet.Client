@@ -8,7 +8,7 @@ using NuGet.Versioning;
 
 namespace NuGet.LibraryModel
 {
-    public class CentralPackageVersion : IEquatable<CentralPackageVersion>
+    public sealed class CentralPackageVersion : IEquatable<CentralPackageVersion>
     {
         public string Name { get; }
 
@@ -18,8 +18,8 @@ namespace NuGet.LibraryModel
             string name,
             VersionRange versionRange)
         {
-            Name = name;
-            VersionRange = versionRange;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            VersionRange = versionRange ?? throw new ArgumentNullException(nameof(versionRange));
         }
 
         public override string ToString()

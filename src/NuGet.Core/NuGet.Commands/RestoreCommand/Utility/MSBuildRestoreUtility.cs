@@ -158,8 +158,8 @@ namespace NuGet.Commands
 
             if (specItem != null)
             {
-                var restoreType = GetProjectStyle(specItem);
-                var cpvmEnabled = IsCentralVersionsManagementEnabled(specItem, restoreType);
+                ProjectStyle restoreType = GetProjectStyle(specItem);
+                bool isCpvmEnabled = IsCentralVersionsManagementEnabled(specItem, restoreType);
 
                 // Get base spec
                 if (restoreType == ProjectStyle.ProjectJson)
@@ -222,7 +222,7 @@ namespace NuGet.Commands
                     || restoreType == ProjectStyle.DotnetCliTool
                     || restoreType == ProjectStyle.DotnetToolReference)
                 {
-                    AddPackageReferences(result, items, cpvmEnabled);
+                    AddPackageReferences(result, items, isCpvmEnabled);
                     AddPackageDownloads(result, items);
                     AddFrameworkReferences(result, items);
 
@@ -294,7 +294,7 @@ namespace NuGet.Commands
                     result.RestoreMetadata.ValidateRuntimeAssets = true;
                 }
 
-                result.RestoreMetadata.CentralPackageVersionsEnabled = cpvmEnabled;
+                result.RestoreMetadata.CentralPackageVersionsEnabled = isCpvmEnabled;
             }
 
             return result;
@@ -330,7 +330,7 @@ namespace NuGet.Commands
 
         public static void NormalizePathCasings(Dictionary<string, string> paths, DependencyGraphSpec graphSpec)
         {
-            NormalizePathCasings((IDictionary<string, string>) paths, graphSpec);
+            NormalizePathCasings((IDictionary<string, string>)paths, graphSpec);
         }
 
         /// <summary>
@@ -605,7 +605,7 @@ namespace NuGet.Commands
             return false;
         }
 
-        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items, bool cpvmEnabled)
+        private static void AddPackageReferences(PackageSpec spec, IEnumerable<IMSBuildItem> items, bool isCpvmEnabled)
         {
             foreach (var item in GetItemByType(items, "Dependency"))
             {
@@ -613,7 +613,7 @@ namespace NuGet.Commands
                 {
                     LibraryRange = new LibraryRange(
                         name: item.GetProperty("Id"),
-                        versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? null : VersionRange.All),
+                        versionRange: GetVersionRange(item, defaultValue: isCpvmEnabled ? null : VersionRange.All),
                         typeConstraint: LibraryDependencyTarget.Package),
 
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
@@ -644,7 +644,7 @@ namespace NuGet.Commands
                 }
             }
 
-            if (cpvmEnabled)
+            if (isCpvmEnabled)
             {
                 AddCentralPackageVersions(spec, items);
             }
@@ -943,22 +943,22 @@ namespace NuGet.Commands
         private static Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> CreateCentralVersionDependencies(IEnumerable<IMSBuildItem> items,
             IList<TargetFrameworkInformation> specFrameworks)
         {
-            var centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(new MSBuildItemIdentityComparer()).ToList();
+            IEnumerable<IMSBuildItem> centralVersions = GetItemByType(items, "CentralPackageVersion")?.Distinct(MSBuildItemIdentityComparer.Default).ToList();
             var result = new Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>>();
 
             foreach (IMSBuildItem cv in centralVersions)
             {
-                var tfms = GetFrameworks(cv);
-                var version = cv.GetProperty("VersionRange");
-                var dependency = new CentralPackageVersion(cv.GetProperty("Id"), !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All);
+                HashSet<NuGetFramework> tfms = GetFrameworks(cv);
+                string version = cv.GetProperty("VersionRange");
+                CentralPackageVersion centralPackageVersion = new CentralPackageVersion(cv.GetProperty("Id"), string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version));
 
                 if (tfms.Count > 0)
                 {
-                    AddCentralPackageVersion(result, dependency, tfms);
+                    AddCentralPackageVersion(result, centralPackageVersion, tfms);
                 }
                 else
                 {
-                    AddCentralPackageVersion(result, dependency, specFrameworks.Select(f => f.FrameworkName));
+                    AddCentralPackageVersion(result, centralPackageVersion, specFrameworks.Select(f => f.FrameworkName));
                 }
             }
 

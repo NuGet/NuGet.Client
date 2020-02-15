@@ -284,7 +284,7 @@ namespace NuGet.Build.Tasks
             // Allow a user to override by setting RestoreProjectStyle in the project.
             if (!string.IsNullOrWhiteSpace(restoreProjectStyleProperty))
             {
-                if(!Enum.TryParse(restoreProjectStyleProperty, ignoreCase: true, out projectStyle))
+                if (!Enum.TryParse(restoreProjectStyleProperty, ignoreCase: true, out projectStyle))
                 {
                     projectStyle = ProjectStyle.Unknown;
                 }

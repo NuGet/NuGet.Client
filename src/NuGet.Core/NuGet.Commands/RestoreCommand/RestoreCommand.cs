@@ -105,8 +105,8 @@ namespace NuGet.Commands
             {
                 _operationId = telemetry.OperationId;
 
-                var cpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
-                telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = cpvmEnabled;
+                var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
+                telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -166,16 +166,16 @@ namespace NuGet.Commands
                     }
                 }
 
-                if(cpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
+                if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
                 {
                     restoreTime.Stop();
                     _success = false;
 
                     return new RestoreResult(
                         success: _success,
-                        restoreGraphs: new List<RestoreTargetGraph>(),
-                        compatibilityCheckResults: new List<CompatibilityCheckResult>(),
-                        msbuildFiles: new List<MSBuildOutputFile>(),
+                        restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
+                        compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
+                        msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
                         lockFile: _request.ExistingLockFile,
                         previousLockFile: _request.ExistingLockFile,
                         lockFilePath: _request.ExistingLockFile?.Path,
@@ -396,17 +396,17 @@ namespace NuGet.Commands
             }
         }
 
-        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync( )
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync()
         {
             // The dependencies should not have versions explicitelly defined if cpvm is enabled.
-            var dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
+            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
             if (dependenciesWithDefinedVersion.Any())
             {
                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
 
                 return false;
             }
-            var autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
+            IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
             if (autoReferencedAndDefinedInCentralFile.Any())
             {
                 await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
@@ -906,7 +906,7 @@ namespace NuGet.Commands
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
-            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath)); 
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
 
             // Get external project references
             // If the top level project already exists, update the package spec provided

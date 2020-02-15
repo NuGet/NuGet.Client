@@ -47,7 +47,6 @@ namespace NuGet.LibraryModel
             bool generatePathProperty) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false)
         {
         }
-        
 
         public LibraryDependency(
             LibraryRange libraryRange,

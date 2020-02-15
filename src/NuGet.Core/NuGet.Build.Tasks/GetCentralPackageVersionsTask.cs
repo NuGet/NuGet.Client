@@ -47,7 +47,7 @@ namespace NuGet.Build.Tasks
            
             foreach (var msbuildItem in CentralPackageVersions)
             {
-                var packageId = msbuildItem.ItemSpec;
+                string packageId = msbuildItem.ItemSpec;
 
                 if (string.IsNullOrEmpty(packageId) || !seenIds.Add(packageId))
                 {

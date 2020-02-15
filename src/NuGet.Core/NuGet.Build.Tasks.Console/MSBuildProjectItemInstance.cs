@@ -18,6 +18,8 @@ namespace NuGet.Build.Tasks.Console
         /// </summary>
         private readonly ProjectItemInstance _projectItemInstance;
 
+        private readonly IReadOnlyList<string> _metadataNames;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="MSBuildProjectItemInstance" /> class.
         /// </summary>
@@ -25,11 +27,12 @@ namespace NuGet.Build.Tasks.Console
         public MSBuildProjectItemInstance(ProjectItemInstance projectItemInstance)
         {
             _projectItemInstance = projectItemInstance ?? throw new ArgumentNullException(nameof(projectItemInstance));
+            _metadataNames = _projectItemInstance.MetadataNames.ToList();
         }
 
         public override string Identity => _projectItemInstance.EvaluatedInclude;
 
-        public override IReadOnlyList<string> Properties => _projectItemInstance.MetadataNames.ToList();
+        public override IReadOnlyList<string> Properties => _metadataNames;
 
         /// <inheritdoc cref="MSBuildItemBase.GetPropertyValue(string)" />
         protected override string GetPropertyValue(string name) => _projectItemInstance.GetMetadataValue(name);

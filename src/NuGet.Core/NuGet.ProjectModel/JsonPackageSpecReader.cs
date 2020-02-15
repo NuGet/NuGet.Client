@@ -950,7 +950,7 @@ namespace NuGet.ProjectModel
                     if (depVersion == null)
                     {
                         throw FileFormatException.Create(
-                            "The version cannot be null ''.",
+                            "The version cannot be null.",
                             depName,
                             packageSpecPath);
                     }

@@ -8,6 +8,7 @@ using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
+using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -198,7 +199,7 @@ namespace NuGet.ProjectModel
         }
 
         public void AddProject(PackageSpec projectSpec)
-        {  
+        {
             // Find the unique name in the spec, otherwise generate a new one.
             var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
@@ -218,11 +219,16 @@ namespace NuGet.ProjectModel
         private PackageSpec ToPackageSpecWithCentralVersionInformation(PackageSpec spec)
         {
             var newSpec = spec.Clone();
-            foreach(var tfm in newSpec.TargetFrameworks)
+            foreach (var tfm in newSpec.TargetFrameworks)
             {
-                foreach (var d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
+                foreach (LibraryDependency d in tfm.Dependencies.Where(d => !d.AutoReferenced && d.LibraryRange.VersionRange == null))
                 {
-                    d.LibraryRange.VersionRange = tfm.CentralPackageVersions.ContainsKey(d.Name) ? tfm.CentralPackageVersions[d.Name].VersionRange : VersionRange.All;                   
+                    d.LibraryRange.VersionRange = VersionRange.All;
+                    if (tfm.CentralPackageVersions.TryGetValue(d.Name, out CentralPackageVersion centralPackageVersion))
+                    {
+                        d.LibraryRange.VersionRange = centralPackageVersion.VersionRange;
+                    }
+
                     d.VersionCentrallyManaged = true;
                 }
             }

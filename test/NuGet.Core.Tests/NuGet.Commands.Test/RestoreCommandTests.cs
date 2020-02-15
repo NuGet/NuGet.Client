@@ -1382,18 +1382,9 @@ namespace NuGet.Commands.Test
         [Theory]
         [InlineData("bar")]
         [InlineData("Bar")]
-
         public async Task RestoreCommand_CentralVersion_ErrorWhenCentralPackageVersionFileContainsAutoReferencedReferences(string autoreferencedpackageId)
         {
             // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
-
             var dependencyBar = new LibraryDependency(new LibraryRange(autoreferencedpackageId, VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,

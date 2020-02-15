@@ -703,26 +703,25 @@ namespace NuGet.Build.Tasks.Console.Test
         }
 
         [Theory]
-        [InlineData(true, "true", ProjectStyle.PackageReference)]
-        [InlineData(false, "true", ProjectStyle.DotnetCliTool)]
-        [InlineData(false, "true", ProjectStyle.DotnetToolReference)]
-        [InlineData(false, "true", ProjectStyle.PackagesConfig)]
-        [InlineData(false, "true", ProjectStyle.ProjectJson)]
-        [InlineData(false, "true", ProjectStyle.Standalone)]
-        [InlineData(false, "true", ProjectStyle.Unknown)]
-        public void IsCentralVersionsManagementEnabled_OnlyPackageReferenceWithProjectCPVMEnabledProperty(bool expected, string centralPackageVersionsEnabled, ProjectStyle projectStyle)
+        [InlineData(true, ProjectStyle.PackageReference)]
+        [InlineData(false, ProjectStyle.DotnetCliTool)]
+        [InlineData(false, ProjectStyle.DotnetToolReference)]
+        [InlineData(false, ProjectStyle.PackagesConfig)]
+        [InlineData(false, ProjectStyle.ProjectJson)]
+        [InlineData(false, ProjectStyle.Standalone)]
+        [InlineData(false, ProjectStyle.Unknown)]
+        public void IsCentralVersionsManagementEnabled_OnlyPackageReferenceWithProjectCPVMEnabledProperty(bool expected, ProjectStyle projectStyle)
         {
             // Arrange
             var project = new MockMSBuildProject(new Dictionary<string, string>
             {
-                ["_CentralPackageVersionsEnabled"] = centralPackageVersionsEnabled,
+                ["_CentralPackageVersionsEnabled"] = "true",
             });
 
             // Act + Assert
             var result = MSBuildStaticGraphRestore.IsCentralVersionsManagementEnabled(project, projectStyle);
             Assert.Equal(expected, result);
         }
-
 
         [Fact]
         public void GetTargetFrameworkInfos_TheCentralVersionInformationIsAdded()
@@ -734,36 +733,36 @@ namespace NuGet.Build.Tasks.Console.Test
             var innerNodes = new Dictionary<NuGetFramework, IMSBuildProject>
             {
                 [netstandard20] = new MockMSBuildProject("Project-netstandard2.0",
-                new Dictionary<string, string>(),
-                new Dictionary<string, IList<IMSBuildItem>>
-                {
-                    ["PackageReference"] = new List<IMSBuildItem>
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
                     {
-                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
-                    },
-                    ["PackageVersion"] = new List<IMSBuildItem>
-                    {
-                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
-                        new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
-                    },
-                }),
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                        },
+                    }),
                 [netstandard22] = new MockMSBuildProject("Project-netstandard2.2",
-                new Dictionary<string, string>(),
-                new Dictionary<string, IList<IMSBuildItem>>
-                {
-                    ["PackageReference"] = new List<IMSBuildItem>
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
                     {
-                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "11.0.0", ["IsImplicitlyDefined"] = bool.FalseString }),
-                    },
-                    ["PackageVersion"] = new List<IMSBuildItem>
-                    {
-                        new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.2.2" }),
-                        new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.2.0" }),
-                    },
-                }),
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "11.0.0", ["IsImplicitlyDefined"] = bool.FalseString }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.2.2" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.2.0" }),
+                        },
+                    }),
             };
 
-            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, true);
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
 
             // Assert
             Assert.Equal(2, targetFrameworkInfos.Count);

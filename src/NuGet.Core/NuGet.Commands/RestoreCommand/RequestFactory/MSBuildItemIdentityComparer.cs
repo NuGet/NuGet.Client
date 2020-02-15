@@ -9,8 +9,14 @@ namespace NuGet.Commands
     /// <summary>
     /// A comparer for the <see cref="IMSBuildItem"/> based on the <see cref="IMSBuildItem.Identity"/>.
     /// </summary>
-    internal class MSBuildItemIdentityComparer : IEqualityComparer<IMSBuildItem>
+    internal sealed class MSBuildItemIdentityComparer : IEqualityComparer<IMSBuildItem>
     {
+        public static MSBuildItemIdentityComparer Default { get; } = new MSBuildItemIdentityComparer();
+
+        private MSBuildItemIdentityComparer()
+        {
+        }
+
         public bool Equals(IMSBuildItem x, IMSBuildItem y)
         {
             return string.Equals(x?.Identity, y?.Identity, StringComparison.OrdinalIgnoreCase);
@@ -18,6 +24,10 @@ namespace NuGet.Commands
 
         public int GetHashCode(IMSBuildItem obj)
         {
+            if (obj == null)
+            {
+                throw new ArgumentNullException(nameof(obj));
+            }
             return StringComparer.OrdinalIgnoreCase.GetHashCode(obj.Identity);
         }
     }

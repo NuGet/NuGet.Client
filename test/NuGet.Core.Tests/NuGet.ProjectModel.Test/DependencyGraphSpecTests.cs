@@ -445,7 +445,7 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreMergedWhenNullVersion()
         {
             // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
@@ -459,7 +459,7 @@ namespace NuGet.ProjectModel.Test
                new List<Common.NuGetLogCode>(),
                autoReferenced: true,
                generatePathProperty: true);
-            var dependencyBoom = new LibraryDependency(new LibraryRange("boom", null, LibraryDependencyTarget.All),
+            var dependencyBoom = new LibraryDependency(new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.All),
                 LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
@@ -495,7 +495,7 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreVersionAllWhenNotInCentralVersion()
         {
             // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.All),
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,

@@ -221,7 +221,7 @@ namespace NuGet.Build.Tasks.Console
             {
                 string id = projectItemInstance.Identity;
                 string version = projectItemInstance.GetProperty("Version");
-                VersionRange versionRange = !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : VersionRange.All;
+                VersionRange versionRange = string.IsNullOrWhiteSpace(version) ? VersionRange.All : VersionRange.Parse(version);
 
                 result.Add(id, new CentralPackageVersion(id, versionRange));
             }
@@ -233,13 +233,13 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the package references for the specified project.
         /// </summary>
         /// <param name="project">The <see cref="ProjectInstance" /> to get package references for.</param>
-        /// <param name="centralPackageVersionManagementEnabled">A flag for central package version management being enabled.</param>
+        /// <param name="isCentralPackageVersionManagementEnabled">A flag for central package version management being enabled.</param>
         /// <returns>A <see cref="List{LibraryDependency}" /> containing the package references for the specified project.</returns>
-        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool centralPackageVersionManagementEnabled)
+        internal static List<LibraryDependency> GetPackageReferences(IMSBuildProject project, bool isCentralPackageVersionManagementEnabled)
         {
             // Get the distinct PackageReference items, ignoring duplicates
             List<IMSBuildItem> packageReferenceItems = GetDistinctItemsOrEmpty(project, "PackageReference").ToList();
- 
+
             var libraryDependencies = new List<LibraryDependency>(packageReferenceItems.Count);
 
             foreach (var packageReferenceItem in packageReferenceItems)
@@ -253,7 +253,7 @@ namespace NuGet.Build.Tasks.Console
                     IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     LibraryRange = new LibraryRange(
                         packageReferenceItem.Identity,
-                        !string.IsNullOrWhiteSpace(version) ? VersionRange.Parse(version) : centralPackageVersionManagementEnabled ? null : VersionRange.All,
+                        string.IsNullOrWhiteSpace(version) ? isCentralPackageVersionManagementEnabled ? null : VersionRange.All : VersionRange.Parse(version),
                         LibraryDependencyTarget.Package),
                     NoWarn = MSBuildStringUtility.GetNuGetLogCodes(packageReferenceItem.GetProperty("NoWarn")).ToList(),
                     SuppressParent = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("PrivateAssets"), LibraryIncludeFlagUtils.DefaultSuppressParent)
@@ -531,9 +531,9 @@ namespace NuGet.Build.Tasks.Console
         /// Gets the target framework information for the specified project.  This includes the package references, package downloads, and framework references.
         /// </summary>
         /// <param name="projectInnerNodes">An <see cref="IReadOnlyDictionary{NuGetFramework,ProjectInstance} "/> containing the projects by their target framework.</param>
-        /// <param name="cpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
+        /// <param name="isCpvmEnabled">A flag that is true if the Central Package Management was enabled.</param>
         /// <returns>A <see cref="List{TargetFrameworkInformation}" /> containing the target framework information for the specified project.</returns>
-        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes, bool cpvmEnabled)
+        internal static List<TargetFrameworkInformation> GetTargetFrameworkInfos(IReadOnlyDictionary<NuGetFramework, IMSBuildProject> projectInnerNodes, bool isCpvmEnabled)
         {
             var targetFrameworkInfos = new List<TargetFrameworkInformation>(projectInnerNodes.Count);
 
@@ -555,13 +555,13 @@ namespace NuGet.Build.Tasks.Console
 
                 AssetTargetFallbackUtility.ApplyFramework(targetFrameworkInformation, packageTargetFallback, assetTargetFallback);
 
-                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance, cpvmEnabled));
+                targetFrameworkInformation.Dependencies.AddRange(GetPackageReferences(msBuildProjectInstance, isCpvmEnabled));
 
                 targetFrameworkInformation.DownloadDependencies.AddRange(GetPackageDownloads(msBuildProjectInstance));
 
                 targetFrameworkInformation.FrameworkReferences.AddRange(GetFrameworkReferences(msBuildProjectInstance));
 
-                if (cpvmEnabled && targetFrameworkInformation.Dependencies.Any())
+                if (isCpvmEnabled && targetFrameworkInformation.Dependencies.Any())
                 {
                     targetFrameworkInformation.CentralPackageVersions.AddRange(GetCentralPackageVersions(msBuildProjectInstance));
                 }
@@ -732,8 +732,8 @@ namespace NuGet.Build.Tasks.Console
             var outputPath = GetRestoreOutputPath(project);
 
             var projectStyleOrNull = BuildTasksUtility.GetProjectRestoreStyleFromProjectProperty(project.GetProperty("RestoreProjectStyle"));
-            var cpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);
-            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, cpvmEnabled);
+            var isCpvmEnabled = IsCentralVersionsManagementEnabled(project, projectStyleOrNull);
+            var targetFrameworkInfos = GetTargetFrameworkInfos(projectsByTargetFramework, isCpvmEnabled);
 
             var projectStyleResult = BuildTasksUtility.GetProjectRestoreStyle(
                 restoreProjectStyle: projectStyleOrNull,
@@ -771,7 +771,7 @@ namespace NuGet.Build.Tasks.Console
                         settings),
                     SkipContentFileWrite = IsLegacyProject(project),
                     ValidateRuntimeAssets = project.IsPropertyTrue("ValidateRuntimeIdentifierCompatibility"),
-                    CentralPackageVersionsEnabled = cpvmEnabled && projectStyle == ProjectStyle.PackageReference
+                    CentralPackageVersionsEnabled = isCpvmEnabled && projectStyle == ProjectStyle.PackageReference
                 };
             }
 
@@ -952,12 +952,12 @@ namespace NuGet.Build.Tasks.Console
         /// <returns>True if the project has CentralPackageVersionManagement enabled and the project is PackageReference or the projectStyle is null.</returns>
         internal static bool IsCentralVersionsManagementEnabled(IMSBuildProject project, ProjectStyle? projectStyle)
         {
-            if(!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
+            if (!projectStyle.HasValue || (projectStyle.Value == ProjectStyle.PackageReference))
             {
                 return StringComparer.OrdinalIgnoreCase.Equals(project.GetProperty("_CentralPackageVersionsEnabled"), bool.TrueString);
             }
             return false;
-        }      
+        }
 
         /// <summary>
         /// Returns the list of distinct items with the <paramref name="itemName"/> name.
