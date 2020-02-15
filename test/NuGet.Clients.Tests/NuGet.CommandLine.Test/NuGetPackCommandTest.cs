@@ -4539,13 +4539,14 @@ namespace Proj1
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
                 r.Success.Should().BeTrue(because: r.AllOutput);
+                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
                 if (expectToWarn)
                 {
-                    r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
+                    r.AllOutput.Should().Contain(expectedMessage);
                 }
                 else
                 {
-                    r.AllOutput.Should().NotContain(NuGetLogCode.NU5115.ToString());
+                    r.AllOutput.Should().NotContain(expectedMessage);
                 }
             }
         }
@@ -4608,13 +4609,14 @@ namespace Proj1
                     waitForExit: true);
                 r.Success.Should().BeTrue(because: r.AllOutput);
 
+                var expectedMessage = "Error " + NuGetLogCode.NU5115.ToString();
                 if (expectToError)
                 {
-                    r.AllOutput.Should().Contain(NuGetLogCode.NU5115.ToString());
+                    r.AllOutput.Should().Contain(expectedMessage);
                 }
                 else
                 {
-                    r.AllOutput.Should().NotContain(NuGetLogCode.NU5115.ToString());
+                    r.AllOutput.Should().NotContain(expectedMessage);
                 }
             }
         }
