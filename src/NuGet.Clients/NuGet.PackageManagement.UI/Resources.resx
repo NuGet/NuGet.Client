@@ -844,9 +844,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PackageDetailsUrlIcon" xml:space="preserve">
     <value>Package details URL icon</value>
   </data>
-  <data name="Accessibility_PackageDetailsUrlLink" xml:space="preserve">
-    <value>Package details link</value>
-  </data>
   <data name="Label_Deprecated" xml:space="preserve">
     <value>Deprecated</value>
   </data>
