@@ -19,11 +19,8 @@
       </ResourceDictionary.MergedDictionaries>
       <nuget:DateTimeConverter x:Key="DateFormatConverter" />
       <DataTemplate DataType="{x:Type nuget:LicenseText}">
-        <TextBlock
-            AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTerm_{0}'}">
+        <TextBlock>
                 <Hyperlink
-                    AutomationProperties.AutomationId="{Binding Id, Mode=OneWay, StringFormat='LicenseTermLink_{0}'}"
-                    AutomationProperties.Name="{x:Static nuget:Resources.Hyperlink_License}"
                     Style="{StaticResource HyperlinkStyle}"
                     Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}"
                     ToolTip="{Binding Link}"

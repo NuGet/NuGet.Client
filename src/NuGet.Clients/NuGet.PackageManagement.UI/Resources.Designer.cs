@@ -88,15 +88,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package details link.
-        /// </summary>
-        public static string Accessibility_PackageDetailsUrlLink {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageDetailsUrlLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package icon.
         /// </summary>
         public static string Accessibility_PackageIcon {

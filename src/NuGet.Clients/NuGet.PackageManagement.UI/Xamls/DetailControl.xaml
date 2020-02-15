@@ -116,8 +116,8 @@
             <Hyperlink
               NavigateUri="{Binding Path=PackageMetadata.PackageDetailsUrl}"
               Style="{StaticResource HyperlinkStyle}"
-              AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_PackageDetailsUrlLink}"
               ToolTip="{Binding Path=PackageMetadata.PackageDetailsUrl}"
+              AutomationProperties.LabeledBy="{Binding ElementName=_packageDetailsUrlIcon}"
               Command="{x:Static nuget:PackageManagerControlCommands.OpenExternalLink}">
               <Run Text="{Binding Path=PackageMetadata.PackageDetailsText}" />
             </Hyperlink>
