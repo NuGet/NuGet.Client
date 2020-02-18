@@ -8,7 +8,7 @@ using NuGet.Test.Utility;
 
 namespace NuGet.Build.Tasks.Console.Test
 {
-    public class MockMSBuildProject : MSBuildItem, IMSBuildProject
+    internal class MockMSBuildProject : MSBuildItem, IMSBuildProject
     {
         public MockMSBuildProject(TestDirectory directory)
             : this(Path.Combine(directory, "ProjectA.csproj"))

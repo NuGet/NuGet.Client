@@ -133,6 +133,24 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs.
+        /// </summary>
+        internal static string Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}..
+        /// </summary>
+        internal static string Error_CentralPackageVersions_VersionsNotAllowed {
+            get {
+                return ResourceManager.GetString("Error_CentralPackageVersions_VersionsNotAllowed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Could not add the trusted signer: {0}.
         /// </summary>
         internal static string Error_CouldNotAdd {
@@ -205,7 +223,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please specify a nuspec, project.json, or project file to use.
+        ///   Looks up a localized string similar to Specify a nuspec, project.json, or project file to use.
         /// </summary>
         internal static string Error_InputFileNotSpecified {
             get {
@@ -349,7 +367,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No signature to be trusted was specified for the package &apos;{0}&apos;. Please specify either Author or Repository..
+        ///   Looks up a localized string similar to No signature to be trusted was specified for the package &apos;{0}&apos;. Specify either Author or Repository..
         /// </summary>
         internal static string Error_NoSignatureTrustedForPackage {
             get {
@@ -574,7 +592,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so please run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore..
+        ///   Looks up a localized string similar to Unable to find project information for &apos;{0}&apos;. If you are using Visual Studio, this may be because the project is unloaded or not part of the current solution so run a restore from the command-line. Otherwise, the project file may be invalid or missing targets required for restore..
         /// </summary>
         internal static string Error_UnableToFindProjectInfo {
             get {
@@ -718,7 +736,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The specified source &apos;{0}&apos; is invalid. Please provide a valid source..
+        ///   Looks up a localized string similar to The specified source &apos;{0}&apos; is invalid. Provide a valid source..
         /// </summary>
         internal static string InvalidSource {
             get {
@@ -809,7 +827,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to An invalid local resource name was provided. Please provide one of the following values: http-cache, temp, global-packages, all..
+        ///   Looks up a localized string similar to An invalid local resource name was provided. Provide one of the following values: http-cache, temp, global-packages, all..
         /// </summary>
         internal static string LocalsCommand_InvalidLocalResourceName {
             get {
@@ -1637,7 +1655,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandCertificateFileNotFound {
             get {
@@ -1646,7 +1664,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate store &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to Certificate store &apos;{0}&apos; not found. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandCertificateStoreNotFound {
             get {
@@ -1655,7 +1673,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Please select a valid certificate.
+        ///   Looks up a localized string similar to Select a valid certificate.
         /// </summary>
         internal static string SignCommandDialogMessage {
             get {
@@ -1700,7 +1718,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; is invalid. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to Certificate file &apos;{0}&apos; is invalid. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandInvalidCertException {
             get {
@@ -1709,7 +1727,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Invalid password was provided for the certificate file &apos;{0}&apos;. Please provide a valid password using the &apos;-{1}&apos; option.
+        ///   Looks up a localized string similar to Invalid password was provided for the certificate file &apos;{0}&apos;. Provide a valid password using the &apos;-{1}&apos; option.
         /// </summary>
         internal static string SignCommandInvalidPasswordException {
             get {
@@ -1727,7 +1745,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, please visit https://docs.nuget.org/docs/reference/command-line-reference.
+        ///   Looks up a localized string similar to No certificates were found that meet all the given criteria. For a list of accepted ways to provide a certificate, visit https://docs.nuget.org/docs/reference/command-line-reference.
         /// </summary>
         internal static string SignCommandNoCertException {
             get {
@@ -1826,7 +1844,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified is invalid. Please provide a valid source..
+        ///   Looks up a localized string similar to The source specified is invalid. Provide a valid source..
         /// </summary>
         internal static string SourcesCommandInvalidSource {
             get {
@@ -1835,7 +1853,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name specified cannot be empty. Please provide a valid name..
+        ///   Looks up a localized string similar to The name specified cannot be empty. Provide a valid name..
         /// </summary>
         internal static string SourcesCommandNameRequired {
             get {
@@ -1907,7 +1925,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified cannot be empty. Please provide a valid source..
+        ///   Looks up a localized string similar to The source specified cannot be empty. Provide a valid source..
         /// </summary>
         internal static string SourcesCommandSourceRequired {
             get {
@@ -1916,7 +1934,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Please provide a unique name..
+        ///   Looks up a localized string similar to The name specified has already been added to the list of available package sources. Provide a unique name..
         /// </summary>
         internal static string SourcesCommandUniqueName {
             get {
@@ -1925,7 +1943,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Please provide a unique source..
+        ///   Looks up a localized string similar to The source specified has already been added to the list of available package sources. Provide a unique source..
         /// </summary>
         internal static string SourcesCommandUniqueSource {
             get {
@@ -2195,7 +2213,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Verification type not supported. Please use only one of the following supported types: -All, -Signatures.
+        ///   Looks up a localized string similar to Verification type not supported. Use only one of the following supported types: -All, -Signatures.
         /// </summary>
         internal static string VerifyCommand_VerificationTypeNotSupported {
             get {
