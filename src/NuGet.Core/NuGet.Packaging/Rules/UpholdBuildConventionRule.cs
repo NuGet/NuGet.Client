@@ -2,21 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
 using NuGet.Client;
 using NuGet.Common;
-using NuGet.ContentModel;
 using NuGet.Frameworks;
-using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 
 namespace NuGet.Packaging.Rules

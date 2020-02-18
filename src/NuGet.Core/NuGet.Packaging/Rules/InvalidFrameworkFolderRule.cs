@@ -6,9 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using System.Runtime.Versioning;
 using NuGet.Common;
-using NuGet.Frameworks;
 
 namespace NuGet.Packaging.Rules
 {

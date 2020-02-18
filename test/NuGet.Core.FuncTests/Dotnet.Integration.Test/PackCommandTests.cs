@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -5,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -13,6 +13,8 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
+using NuGet.Protocol;
+using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2785,13 +2787,12 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("NoWarn", "NU5105", false)]
+        [InlineData("NoWarn", "NU5125", false)]
         [InlineData("NoWarn", "NU5106", true)]
         public void PackCommand_NoWarn_SuppressesWarnings(string property, string value, bool expectToWarn)
         {
             using (var testDirectory = TestDirectory.Create())
             {
-                var semver2Version = "1.0.0-rtm+asdassd";
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 Directory.CreateDirectory(workingDirectory);
@@ -2803,26 +2804,34 @@ namespace ClassLibrary
                     var xml = XDocument.Load(stream);
 
                     ProjectFileUtils.AddProperty(xml, property, value);
+                    ProjectFileUtils.AddProperty(xml, "PackageLicenseUrl", "http://contoso.com/license.html");
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
 
-                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
-                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
 
-                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}");
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-                var expectedWarning = string.Format("warning " + NuGetLogCode.NU5105 + ": " + NuGet.Packaging.Rules.AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(result.AllOutput.Contains(expectedWarning), expectToWarn);
+                var expectedWarning = string.Format("warning " + NuGetLogCode.NU5125 + ": " + NuGet.Packaging.Rules.AnalysisResources.LicenseUrlDeprecationWarning);
 
+                if (expectToWarn)
+                {
+                    result.AllOutput.Should().Contain(expectedWarning);
+                }
+                else
+                {
+                    result.AllOutput.Should().NotContain(expectedWarning);
+                }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("WarningsAsErrors", "NU5105", true)]
+        [InlineData("WarningsAsErrors", "NU5102", true)]
         [InlineData("WarningsAsErrors", "NU5106", false)]
         [InlineData("TreatWarningsAsErrors", "true", true)]
         public void PackCommand_WarnAsError_PrintsWarningsAsErrors(string property, string value, bool expectToError)
@@ -2840,6 +2849,7 @@ namespace ClassLibrary
                 {
                     var xml = XDocument.Load(stream);
 
+                    ProjectFileUtils.AddProperty(xml, "PackageProjectUrl", "http://project_url_here_or_delete_this_line/");
                     ProjectFileUtils.AddProperty(xml, property, value);
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
@@ -2853,8 +2863,10 @@ namespace ClassLibrary
 
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
-                Assert.Equal(result.AllOutput.Contains(string.Format("error " + NuGetLogCode.NU5105 + ": " + NuGet.Packaging.Rules.AnalysisResources.LegacyVersionWarning, semver2Version)), expectToError);
-
+                if (expectToError)
+                {
+                    result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                }
             }
         }
 
@@ -4243,6 +4255,38 @@ namespace ClassLibrary
                 Assert.Contains(NuGetLogCode.NU5048.ToString(), result.Output);
                 Assert.Contains("iconUrl", result.Output);
                 Assert.Contains("PackageIconUrl", result.Output);
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_WhenUsingSemver2Version_NU5105_IsNotRaised()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                Directory.CreateDirectory(workingDirectory);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddProperty(xml, "PackageVersion", "1.0.0+mySpecialSemver2Metadata");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                Assert.True(File.Exists(nupkgPath), $"The output .nupkg is not in the expected place. {result.AllOutput}");
+                Assert.True(File.Exists(nuspecPath), $"The intermediate nuspec file is not in the expected place. {result.AllOutput}");
+                result.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
             }
         }
 
