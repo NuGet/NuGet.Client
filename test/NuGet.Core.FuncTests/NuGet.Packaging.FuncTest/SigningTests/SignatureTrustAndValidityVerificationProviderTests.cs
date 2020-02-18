@@ -1039,10 +1039,17 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 settings);
 
-            Assert.Equal(2, matchingIssues.Count);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
 
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1055,10 +1062,16 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 _verifyCommandSettings);
 
-            Assert.Equal(2, matchingIssues.Count);
-
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1112,10 +1125,17 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 settings);
 
-            Assert.Equal(2, matchingIssues.Count);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
 
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1142,8 +1162,12 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Information,
                 settings);
 
-            AssertOfflineRevocationOfflineMode(matchingIssues);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.Undefined, LogLevel.Information);
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                SigningTestUtility.AssertOfflineRevocationOfflineMode(matchingIssues);
+            }
+
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Information, NuGetLogCode.Undefined);
         }
 
         [CIOnlyFact]
@@ -1155,10 +1179,16 @@ namespace NuGet.Packaging.FuncTest
                 _verifyCommandSettings,
                 "ExpiredPrimaryAndTimestampCertificatesWithUnavailableRevocationInfo.nupkg");
 
-            Assert.Equal(4, matchingIssues.Count);
-
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(2, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(4, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -2225,30 +2255,6 @@ namespace NuGet.Packaging.FuncTest
                         .ToList();
                 }
             }
-        }
-
-        private static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
-        }
-
-        private static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.Undefined &&
-                issue.Level == LogLevel.Information &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
-        }
-
-        private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, NuGetLogCode code, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == code &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation for the certificate."));
         }
 
         private static byte[] GetResource(string name)

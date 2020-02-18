@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using NuGet.Common;
 using NuGet.Test.Utility;
 
@@ -84,6 +85,33 @@ namespace Test.Utility.Signing
             _store = new X509Store(StoreName, StoreLocation);
             _store.Open(OpenFlags.ReadWrite);
             _store.Add(TrustedCert);
+
+            //Add wait for Linux, as https://github.com/dotnet/runtime/issues/32608
+            //Windows has a live-synchronized model, and on Linux, there is a filesystem/rescan delay problem.
+            //For performance reasons, dotnet/runtime only check to see if the store has been modified once a second.
+            if (RuntimeEnvironmentHelper.IsLinux)
+            {
+                Thread.Sleep(1500);
+                
+                var MaxTries = 30;
+
+                for (var i = 0; i < MaxTries; i++)
+                {
+                    using (var chain = new X509Chain())
+                    {
+                        chain.ChainPolicy.RevocationMode = X509RevocationMode.Online;
+
+                        if (chain.Build(TrustedCert))
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            Thread.Sleep(1000);
+                        }
+                    }
+                }
+            }           
         }
 
         //According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store,
