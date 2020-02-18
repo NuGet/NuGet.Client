@@ -22,16 +22,17 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_AddSource()
+        public void Sources_WhenAddingSource_AddsSource()
         {
-            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "add",
                     "source",
-                    "http://test_source",
+                    "https://source.test",
                     "--name",
                     "test_source",
                 };
@@ -45,24 +46,25 @@ namespace Dotnet.Integration.Test
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                var settings = Settings.LoadDefaultSettings(null, null, null);
+                var settings = Settings.LoadDefaultSettings(root: null, configFileName: null, machineWideSettings: null);
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
             }
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_AddWithUserNamePassword()
+        public void Sources_WhenAddingSourceWithCredentials_CreatesEncryptedCredentials()
         {
-            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "add",
                     "source",
-                    "http://test_source",
+                    "https://source.test",
                     "--name",
                     "test_source",
                     "--username",
@@ -80,13 +82,13 @@ namespace Dotnet.Integration.Test
 
 
                 // Assert
-                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.True(result.Success, result.Output + " " + result.Errors);
 
                 var settings = Settings.LoadDefaultSettings(null, null, null);
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
                 var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
@@ -100,16 +102,17 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_AddWithUserNamePasswordInClearText()
+        public void Sources_WhenAddingSourceWithCredentialsInClearText_CreatesClearTextCredentials()
         {
-            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "add",
                     "source",
-                    "http://test_source",
+                    "https://source.test",
                     "--name",
                     "test_source",
                     "--username",
@@ -127,13 +130,13 @@ namespace Dotnet.Integration.Test
                 var result = _fixture.RunDotnet(root, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
-                Assert.True(0 == result.Item1, result.Item2 + " " + result.Item3);
+                Assert.True(result.Success, result.Output + " " + result.Errors);
 
                 var settings = Settings.LoadDefaultSettings(null, null, null);
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
                 var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
@@ -145,7 +148,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_AddWithUserNamePassword_UserDefinedConfigFile()
+        public void Sources_WhenAddingSourceWithUserConfigFile_AddsCorrectCredentials()
         {
             // Arrange
             using (var configFileDirectory = TestDirectory.Create())
@@ -159,11 +162,12 @@ namespace Dotnet.Integration.Test
 </configuration>";
                 CreateXmlFile(configFilePath, nugetConfig);
 
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "add",
                     "source",
-                    "http://test_source",
+                    "https://source.test",
                     "--name",
                     "test_source",
                     "--username",
@@ -178,7 +182,7 @@ namespace Dotnet.Integration.Test
                 var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
-                Assert.Equal(0, result.Item1);
+                Assert.True(result.Success);
 
                 var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
@@ -187,7 +191,7 @@ namespace Dotnet.Integration.Test
 
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
 
                 var sourceCredentialsSection = settings.GetSection("packageSourceCredentials");
                 var credentialItem = sourceCredentialsSection?.Items.First(c => string.Equals(c.ElementName, "test_source", StringComparison.OrdinalIgnoreCase)) as CredentialsItem;
@@ -210,7 +214,7 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_EnableSource()
+        public void Sources_WhenEnablingADisabledSource_EnablesSource()
         {
             // Arrange
             using (var configFileDirectory = TestDirectory.Create())
@@ -222,7 +226,7 @@ namespace Dotnet.Integration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""test_source"" value=""http://test_source"" />
+    <add key=""test_source"" value=""https://source.test"" />
   </packageSources>
   <disabledPackageSources>
     <add key=""test_source"" value=""true"" />
@@ -231,7 +235,8 @@ namespace Dotnet.Integration.Test
 </configuration>";
                 CreateXmlFile(configFilePath, nugetConfig);
 
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "enable",
                     "source",
@@ -244,14 +249,14 @@ namespace Dotnet.Integration.Test
                 var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
                     configFileName,
-                    null);
+                    machineWideSettings: null);
                 var packageSourceProvider = new PackageSourceProvider(settings);
                 var sources = packageSourceProvider.LoadPackageSources().ToList();
                 Assert.Single(sources);
 
                 var source = sources.Single();
                 Assert.Equal("test_source", source.Name);
-                Assert.Equal("http://test_source", source.Source);
+                Assert.Equal("https://source.test", source.Source);
                 Assert.False(source.IsEnabled);
 
                 // Main Act
@@ -279,13 +284,13 @@ namespace Dotnet.Integration.Test
                 source = testSources.Single();
 
                 Assert.Equal("test_source", source.Name);
-                Assert.Equal("http://test_source", source.Source);
+                Assert.Equal("https://source.test", source.Source);
                 Assert.True(source.IsEnabled, "Source is not enabled");
             }
         }
 
         [PlatformFact(Platform.Windows)]
-        public void SourcesCommandTest_DisableSource()
+        public void Sources_WhenDisablingASource_DisablesSource()
         {
             // Arrange
             using (var configFileDirectory = TestDirectory.Create())
@@ -297,12 +302,13 @@ namespace Dotnet.Integration.Test
                     @"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
   <packageSources>
-    <add key=""test_source"" value=""http://test_source"" />
+    <add key=""test_source"" value=""https://source.test"" />
   </packageSources>
 </configuration>";
                 CreateXmlFile(configFilePath, nugetConfig);
 
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "disable",
                     "source",
@@ -323,7 +329,7 @@ namespace Dotnet.Integration.Test
 
                 var source = sources.Single();
                 Assert.Equal("test_source", source.Name);
-                Assert.Equal("http://test_source", source.Source);
+                Assert.Equal("https://source.test", source.Source);
                 Assert.True(source.IsEnabled);
 
                 // Main Act
@@ -345,7 +351,7 @@ namespace Dotnet.Integration.Test
                 source = testSources.Single();
 
                 Assert.Equal("test_source", source.Name);
-                Assert.Equal("http://test_source", source.Source);
+                Assert.Equal("https://source.test", source.Source);
                 Assert.False(source.IsEnabled, "Source is not disabled");
             }
         }
@@ -357,7 +363,7 @@ namespace Dotnet.Integration.Test
         [InlineData("remove a b c", 1)]
         [InlineData("add source B a --configfile file.txt --name x --source y", 3)]
         [InlineData("list source --configfile file.txt B a", 4)]
-        public void SourcesCommandTest_Failure_InvalidArguments(string cmd, int badParam)
+        public void Sources_WhenPassingInvalidArguments_FailsCorrectly(string cmd, int badParam)
         {
             // all of these commands need to start with "nuget ", and need to adjust bad param to account for those 2 new params
             TestCommandInvalidArguments("nuget " + cmd, badParam + 1);
@@ -366,14 +372,15 @@ namespace Dotnet.Integration.Test
         [Fact(Skip = "cutting verbosity Quiet for now. #6374 covers fixing it for `dotnet add package` too.")]
         public void TestVerbosityQuiet_DoesNotShowInfoMessages()
         {
-            using (var preserver = new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
+            using (new NuGet.CommandLine.Test.DefaultConfigurationFilePreserver())
             {
                 // Arrange
-                var args = new string[] {
+                var args = new string[]
+                {
                     "nuget",
                     "add",
                     "source",
-                    "http://test_source",
+                    "https://source.test",
                     "--name",
                     "test_source",
                     "--verbosity",
@@ -390,12 +397,12 @@ namespace Dotnet.Integration.Test
                 // Assert
                 Assert.True(result.ExitCode == 0);
                 // Ensure that no messages are shown with Verbosity as Quiet
-                Assert.Equal(string.Empty, result.Item2);
+                Assert.Equal(string.Empty, result.Output);
                 var settings = Settings.LoadDefaultSettings(null, null, null);
                 var packageSourcesSection = settings.GetSection("packageSources");
                 var sourceItem = packageSourcesSection?.GetFirstItemWithAttribute<SourceItem>("key", "test_source");
 
-                Assert.Equal("http://test_source", sourceItem.GetValueAsPath());
+                Assert.Equal("https://source.test", sourceItem.GetValueAsPath());
             }
         }
 
@@ -422,9 +429,8 @@ namespace Dotnet.Integration.Test
             // 3rd - nextParam
             string badCommand = commandSplit[badCommandIndex];
 
-            //TODO: item2 in dotnet.exe, item3 in nuget.exe - why doesn't it work the same?
             // Assert command
-            Assert.Contains("'" + badCommand + "'", result.Item2, StringComparison.InvariantCultureIgnoreCase);
+            Assert.Contains("'" + badCommand + "'", result.Output, StringComparison.InvariantCultureIgnoreCase);
 
 
             // Assert invalid argument message
@@ -441,7 +447,7 @@ namespace Dotnet.Integration.Test
             // Verify Exit code
             VerifyResultFailure(result, invalidMessage);
             // Verify traits of help message in stdout
-            Assert.Contains("Specify --help for a list of available options and commands.", result.Item2);
+            Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
         }
 
         /// <summary>
@@ -455,13 +461,12 @@ namespace Dotnet.Integration.Test
                                                string expectedErrorMessage)
         {
             Assert.True(
-                result.Item1 != 0,
-                "dotnet.exe nuget DID NOT FAIL: Output is " + result.Item2 + ". Error is " + result.Item3);
+                !result.Success,
+                "dotnet.exe nuget DID NOT FAIL: Output is " + result.Output + ". Error is " + result.Errors);
 
             Assert.True(
-                // TODO: Item2 in dotnet, vs Item3 in nuget.exe -- switched
-                result.Item2.Contains(expectedErrorMessage),
-                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Item2);
+                result.Output.Contains(expectedErrorMessage),
+                "Expected error is " + expectedErrorMessage + ". Actual error is " + result.Output);
         }
     }
 }

@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 AddCmd.HelpOption("-h|--help");
                 AddCmd.Description = Strings.Add_Description;
-                AddCmd.OnExecute(() => 
+                AddCmd.OnExecute(() =>
                 {
                     app.ShowHelp("add");
                     return 0;
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 DisableCmd.HelpOption("-h|--help");
                 DisableCmd.Description = Strings.Disable_Description;
-                DisableCmd.OnExecute(() => 
+                DisableCmd.OnExecute(() =>
                 {
                     app.ShowHelp("disable");
                     return 0;
@@ -148,7 +148,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 EnableCmd.HelpOption("-h|--help");
                 EnableCmd.Description = Strings.Enable_Description;
-                EnableCmd.OnExecute(() => 
+                EnableCmd.OnExecute(() =>
                 {
                     app.ShowHelp("enable");
                     return 0;
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 ListCmd.HelpOption("-h|--help");
                 ListCmd.Description = Strings.List_Description;
-                ListCmd.OnExecute(() => 
+                ListCmd.OnExecute(() =>
                 {
                     app.ShowHelp("list");
                     return 0;
@@ -230,7 +230,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 RemoveCmd.HelpOption("-h|--help");
                 RemoveCmd.Description = Strings.Remove_Description;
-                RemoveCmd.OnExecute(() => 
+                RemoveCmd.OnExecute(() =>
                 {
                     app.ShowHelp("remove");
                     return 0;
@@ -295,7 +295,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 UpdateCmd.HelpOption("-h|--help");
                 UpdateCmd.Description = Strings.Update_Description;
-                UpdateCmd.OnExecute(() => 
+                UpdateCmd.OnExecute(() =>
                 {
                     app.ShowHelp("update");
                     return 0;

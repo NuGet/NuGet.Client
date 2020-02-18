@@ -9,7 +9,7 @@
 <#
     string InitCaps(string input)
     {
-        string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
         return output;
     }
 
@@ -20,7 +20,7 @@
 
     string GetProperty(XElement element)
     {
-        switch  (element.Name.LocalName)
+        switch (element.Name.LocalName)
         {
             case "SingleValueOption":
                 return "Option";
@@ -29,7 +29,7 @@
             case "Argument":
                 return "Argument";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -44,7 +44,7 @@
             case "Value":
                 return "Value";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -91,7 +91,8 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                 {
 <#
         }
-        foreach (var option in noun.Descendants()) {
+        foreach (var option in noun.Descendants())
+        {
             var optionName = option.Attribute(XName.Get("Name", "")).Value;
             var optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
             var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
@@ -207,7 +208,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
 #>
                 <#= commandFormalName #>Cmd.HelpOption("-h|--help");
                 <#= commandFormalName #>Cmd.Description = Strings.<#= commandFormalName #>_Description;
-                <#= commandFormalName #>Cmd.OnExecute(() => 
+                <#= commandFormalName #>Cmd.OnExecute(() =>
                 {
                     app.ShowHelp("<#= commandName #>");
                     return 0;

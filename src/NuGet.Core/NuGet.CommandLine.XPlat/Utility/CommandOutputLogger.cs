@@ -65,10 +65,7 @@ namespace NuGet.CommandLine.XPlat
             }
         }
 
-        public bool HidePrefixForInfoAndMinimal
-        {
-            get; set;
-        }
+        internal bool HidePrefixForInfoAndMinimal { get; set; }
 
         protected virtual void LogInternal(LogLevel logLevel, string message)
         {

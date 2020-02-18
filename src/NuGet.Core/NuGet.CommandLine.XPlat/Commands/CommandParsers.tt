@@ -9,7 +9,7 @@
 <#
     string InitCaps(string input)
     {
-        string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
         return output;
     }
 
@@ -20,7 +20,7 @@
 
     string GetProperty(XElement element)
     {
-        switch  (element.Name.LocalName)
+        switch (element.Name.LocalName)
         {
             case "SingleValueOption":
                 return "Option";
@@ -29,7 +29,7 @@
             case "Argument":
                 return "Argument";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -44,7 +44,7 @@
             case "Value":
                 return "Value";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -103,7 +103,8 @@ namespace NuGet.CommandLine.XPlat
             app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
             {
 <#
-        foreach (var option in command.Descendants()) {
+        foreach (var option in command.Descendants())
+        {
             var optionName = option.Attribute(XName.Get("Name", "")).Value;
             var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
             var optionFormalName = optionName.Replace("-","");
@@ -134,7 +135,8 @@ namespace NuGet.CommandLine.XPlat
                     var args = new <#= commandFormalName #>FArgs()
                     {
 <#
-        foreach (var option in command.Descendants()) {
+        foreach (var option in command.Descendants())
+        {
             var optionName = option.Attribute(XName.Get("Name", "")).Value;
             var optionFormalName = optionName.Replace("-","");
             var optionCapsName = InitCaps(optionFormalName);
@@ -160,7 +162,6 @@ namespace NuGet.CommandLine.XPlat
 <#                    
                     break;
                 }
-            
             }
         }
     
@@ -171,7 +172,8 @@ namespace NuGet.CommandLine.XPlat
 <#  // ****** IMPLEMENT REQUIRED ARGUMENTS ********
     
 
-        foreach (var option in command.Descendants()) {
+        foreach (var option in command.Descendants())
+        {
             var optionName = option.Attribute(XName.Get("Name", "")).Value;
             var required = option.Attribute(XName.Get("Required", ""))?.Value == "true";
             var optionFormalName = optionName.Replace("-","");
