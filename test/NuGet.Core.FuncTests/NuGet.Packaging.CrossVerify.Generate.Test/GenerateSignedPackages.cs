@@ -386,25 +386,12 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
                 Directory.CreateDirectory(packagePath);
 
                 using (var certificate = new X509Certificate2(_signingTestFixture_Author.TrustedTestCertificate.Source.Cert))
-                using (var directory = TestDirectory.Create())
                 {
                     var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                         certificate,
                         nupkg,
                         packagePath,
                         timestampService.Url);
-
-                    //Creat certificate under _dir\cert folder
-                    string certFolder = System.IO.Path.Combine(caseFolder, "cert");
-                    Directory.CreateDirectory(certFolder);
-
-                    var CertFile = new FileInfo(Path.Combine(certFolder, "Author.cer"));
-                    var bytes = certificate.RawData;
-                    File.WriteAllBytes(CertFile.FullName, bytes);
-
-                    var tsaRootCertPath = new FileInfo(Path.Combine(certFolder, "AuthorTSARoot.cer"));
-                    var tsaRootCertbytes = _authorTSARootCert.RawData;
-                    File.WriteAllBytes(tsaRootCertPath.FullName, tsaRootCertbytes);
                 }
             }
         }

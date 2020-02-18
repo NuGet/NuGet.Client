@@ -358,19 +358,10 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
             var signedPackagePath = Directory.GetFiles(signedPackageFolder).Where(f => f.EndsWith(".nupkg")).First();
 
-            var certFolder = Path.Combine(dir, caseName, "cert");
-            var authorCertFile = Directory.GetFiles(certFolder).Where(f => f.EndsWith("Author.cer")).First();
-            var authorTsaRootCertFile = Directory.GetFiles(certFolder).Where(f => f.EndsWith("AuthorTSARoot.cer")).First();
-
-            using (var primaryCertificate = new X509Certificate2(File.ReadAllBytes(authorCertFile)))
-            using (var authorTsaRootCertificate = new X509Certificate2(File.ReadAllBytes(authorTsaRootCertFile)))
             using (var packageReader = new PackageArchiveReader(signedPackagePath))
             using (var store = new X509Store(StoreName.Root,
                 RuntimeEnvironmentHelper.IsWindows ? StoreLocation.LocalMachine : StoreLocation.CurrentUser))
             {
-                AddCertificateToStore(primaryCertificate, store);
-                AddCertificateToStore(authorTsaRootCertificate, store);
-
                 using (FileStream stream = File.OpenRead(signedPackagePath))
                 using (var reader = new PackageArchiveReader(stream))
                 {
