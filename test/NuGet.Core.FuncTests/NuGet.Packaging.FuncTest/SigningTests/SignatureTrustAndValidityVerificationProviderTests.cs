@@ -819,8 +819,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -857,8 +856,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -894,8 +892,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -933,8 +930,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
