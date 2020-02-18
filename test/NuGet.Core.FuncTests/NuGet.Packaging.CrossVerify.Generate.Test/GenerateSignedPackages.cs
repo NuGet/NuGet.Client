@@ -361,6 +361,53 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
             }
         }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage()
+        {
+            // Arrange
+            var caseName = "ATNOCERTIFICATEUSAGE";
+            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            Directory.CreateDirectory(caseFolder);
+
+            ISigningTestServer testServer = await _signingTestFixture_Author.GetSigningTestServerAsync();
+            CertificateAuthority rootCa = await _signingTestFixture_Author.GetDefaultTrustedCertificateAuthorityAsync();
+            var options = new TimestampServiceOptions()
+            {
+                SigningCertificateUsage = SigningCertificateUsage.None
+            };
+            TimestampService timestampService = TimestampService.Create(rootCa, options);
+
+            using (testServer.RegisterResponder(timestampService))
+            {
+                var nupkg = new SimpleTestPackageContext();
+
+                string packagePath = Path.Combine(caseFolder, "package");
+                Directory.CreateDirectory(packagePath);
+
+                using (var certificate = new X509Certificate2(_signingTestFixture_Author.TrustedTestCertificate.Source.Cert))
+                using (var directory = TestDirectory.Create())
+                {
+                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                        certificate,
+                        nupkg,
+                        packagePath,
+                        timestampService.Url);
+
+                    //Creat certificate under _dir\cert folder
+                    string certFolder = System.IO.Path.Combine(caseFolder, "cert");
+                    Directory.CreateDirectory(certFolder);
+
+                    var CertFile = new FileInfo(Path.Combine(certFolder, "Author.cer"));
+                    var bytes = certificate.RawData;
+                    File.WriteAllBytes(CertFile.FullName, bytes);
+
+                    var tsaRootCertPath = new FileInfo(Path.Combine(certFolder, "AuthorTSARoot.cer"));
+                    var tsaRootCertbytes = _authorTSARootCert.RawData;
+                    File.WriteAllBytes(tsaRootCertPath.FullName, tsaRootCertbytes);
+                }
+            }
+        }                
     }
 }
 #endif

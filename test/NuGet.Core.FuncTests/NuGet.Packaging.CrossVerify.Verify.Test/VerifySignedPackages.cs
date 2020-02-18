@@ -347,6 +347,47 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         }
 
         [Theory]
+        [MemberData(nameof(Windows_NetFulFrameworkFolder))]
+        public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage(string dir)
+        {
+            // Arrange
+            var caseName = "ATNOCERTIFICATEUSAGE";
+
+            var settings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
+
+            var signedPackageFolder = Path.Combine(dir, caseName, "package");
+            var signedPackagePath = Directory.GetFiles(signedPackageFolder).Where(f => f.EndsWith(".nupkg")).First();
+
+            var certFolder = Path.Combine(dir, caseName, "cert");
+            var authorCertFile = Directory.GetFiles(certFolder).Where(f => f.EndsWith("Author.cer")).First();
+            var authorTsaRootCertFile = Directory.GetFiles(certFolder).Where(f => f.EndsWith("AuthorTSARoot.cer")).First();
+
+            using (var primaryCertificate = new X509Certificate2(File.ReadAllBytes(authorCertFile)))
+            using (var authorTsaRootCertificate = new X509Certificate2(File.ReadAllBytes(authorTsaRootCertFile)))
+            using (var packageReader = new PackageArchiveReader(signedPackagePath))
+            using (var store = new X509Store(StoreName.Root,
+                RuntimeEnvironmentHelper.IsWindows ? StoreLocation.LocalMachine : StoreLocation.CurrentUser))
+            {
+                AddCertificateToStore(primaryCertificate, store);
+                AddCertificateToStore(authorTsaRootCertificate, store);
+
+                using (FileStream stream = File.OpenRead(signedPackagePath))
+                using (var reader = new PackageArchiveReader(stream))
+                {
+                    // Act
+                    PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
+
+                    var exception = Assert.Throws<SignatureException>(
+                        () => SignatureUtility.GetTimestampCertificateChain(signature));
+
+                    Assert.Equal(
+                        "Either the signing-certificate or signing-certificate-v2 attribute must be present.",
+                        exception.Message);
+                }
+            }
+        }
+
+        [Theory]
         [MemberData(nameof(FolderForEachPlatform))]
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_Timestamped_RepositorySigned_Timestamped(string dir)
         {
@@ -432,6 +473,16 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
 
             return path;
 
+        }
+
+        public static TheoryData Windows_NetFulFrameworkFolder
+        {
+            get
+            {
+                var folder = new TheoryData<string>();
+                folder.Add(Path.Combine(GetPreGenPackageRootPath(), "Windows_NetFulFramework"));
+                return folder;                
+            }
         }
 
         public static TheoryData FolderForEachPlatform
