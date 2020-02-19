@@ -11,6 +11,7 @@ using NuGet.Common;
 using NuGet.Packaging.FuncTest;
 using NuGet.Packaging.Signing;
 using NuGet.Test.Utility;
+using Test.Utility.Signing;
 using Xunit;
 
 namespace NuGet.Packaging.CrossVerify.Verify.Test
@@ -347,7 +348,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         }
 
         [Theory]
-        [MemberData(nameof(Windows_NetFulFrameworkFolder))]
+        [MemberData(nameof(FolderForWindows_NetFulFramework))]
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage(string dir)
         {
             // Arrange
@@ -460,18 +461,18 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         private static string GetPreGenPackageRootPath()
         {
             var root = TestFileSystemUtility.NuGetTestFolder;
-            var path = System.IO.Path.Combine(root, "PreGenPackages");
+            var path = System.IO.Path.Combine(root, Constants.PreGenPackagesFolder);
 
             return path;
 
         }
 
-        public static TheoryData Windows_NetFulFrameworkFolder
+        public static TheoryData FolderForWindows_NetFulFramework
         {
             get
             {
                 var folder = new TheoryData<string>();
-                folder.Add(Path.Combine(GetPreGenPackageRootPath(), "Windows_NetFulFramework"));
+                folder.Add(Path.Combine(GetPreGenPackageRootPath(), Constants.Windows_NetFulFrameworkFolder));
                 return folder;                
             }
         }
