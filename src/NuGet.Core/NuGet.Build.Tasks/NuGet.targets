@@ -58,8 +58,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
     <!-- Flag if the Central package file is enabled -->
-    <DisableCentralPackageVersions Condition="'$(DisableCentralPackageVersions)' == ''">true</DisableCentralPackageVersions>
-    <_CentralPackageVersionsEnabled Condition="'$(DisableCentralPackageVersions)' != 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
+    <EnableCentralPackageVersions Condition="'$(EnableCentralPackageVersions)' == ''">false</EnableCentralPackageVersions>
+    <_CentralPackageVersionsEnabled Condition="'$(EnableCentralPackageVersions)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
