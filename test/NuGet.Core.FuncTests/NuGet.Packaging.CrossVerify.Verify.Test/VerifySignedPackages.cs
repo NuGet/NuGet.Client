@@ -349,7 +349,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
 
         [Theory]
         [MemberData(nameof(FolderForWindows_NetFulFramework))]
-        public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage(string dir)
+        public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage_Throws(string dir)
         {
             // Arrange
             var caseName = "ATNOCERTIFICATEUSAGE";
