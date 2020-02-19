@@ -79,7 +79,6 @@ jobs:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
-    DesktopTargetFramework: "net472"
 
   pool:
     name: VSEng-MicroBuildVS2019

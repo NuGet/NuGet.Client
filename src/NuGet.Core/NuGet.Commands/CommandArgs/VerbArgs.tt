@@ -9,7 +9,7 @@
 <#
     string InitCaps(string input)
     {
-        string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
         return output;
     }
 
@@ -20,7 +20,7 @@
 
     string GetProperty(XElement element)
     {
-        switch  (element.Name.LocalName)
+        switch (element.Name.LocalName)
         {
             case "SingleValueOption":
                 return "Option";
@@ -29,7 +29,7 @@
             case "Argument":
                 return "Argument";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -44,7 +44,7 @@
             case "Value":
                 return "Value";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
