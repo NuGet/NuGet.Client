@@ -354,8 +354,6 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
             // Arrange
             var caseName = "ATNOCERTIFICATEUSAGE";
 
-            var settings = SignedPackageVerifierSettings.GetVerifyCommandDefaultPolicy();
-
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
             var signedPackagePath = Directory.GetFiles(signedPackageFolder).Where(f => f.EndsWith(".nupkg")).First();
 
