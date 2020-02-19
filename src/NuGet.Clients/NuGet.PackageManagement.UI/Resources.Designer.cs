@@ -538,6 +538,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Selected.
+        /// </summary>
+        public static string CheckBox_Selected {
+            get {
+                return ResourceManager.GetString("CheckBox_Selected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Select this checkbox to install the NuGet Package to the project &apos;{0}&apos;.
         /// </summary>
         public static string CheckBox_SelectProject_HelpText {

@@ -7,10 +7,6 @@
   <nuget:StyleKeyConverter
     x:Key="StyleKeyConverter" />
 
-  <nuget:PackageStatusToInstallImageVisibilityConverter
-    x:Key="PackageStatusToInstallImageVis" />
-  <nuget:PackageStatusToUpdateImageVisibilityConverter
-    x:Key="PackageStatusToUpdateImageConverter" />
   <nuget:IconUrlToVisibilityConverter
     x:Key="IconUrlToVisibilityConverter" />
   <nuget:NuGetFrameworkToStringConverter
@@ -111,51 +107,51 @@
       </Setter.Value>
     </Setter>
     <Style.Triggers>
-        <Trigger Property="IsDefaulted" Value="true">
-          <Setter Property="Background" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultStyleBrushKey}}"/>
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultTextStyleBrushKey}}"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultBorderStyleBrushKey}}"/>
-        </Trigger>
-        <Trigger Property="IsMouseOver" Value="True">
-          <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverStyleBrushKey}}"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverBorderStyleBrushKey}}"/>
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverTextStyleBrushKey}}"/>
-        </Trigger>
-        <Trigger Property="IsPressed" Value="True">
-          <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedStyleBrushKey}}"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedBorderStyleBrushKey}}"/>
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedTextStyleBrushKey}}"/>
-        </Trigger>
-        <Trigger Property="IsEnabled" Value="False">
-          <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledStyleBrushKey}}"/>
-          <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledTextStyleBrushKey}}"/>
-          <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledBorderStyleBrushKey}}"/>
+      <Trigger Property="IsDefaulted" Value="true">
+        <Setter Property="Background" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultStyleBrushKey}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultTextStyleBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static  nuget:Brushes.ButtonDefaultBorderStyleBrushKey}}"/>
+      </Trigger>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverStyleBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverBorderStyleBrushKey}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonHoverTextStyleBrushKey}}"/>
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedStyleBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedBorderStyleBrushKey}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonPressedTextStyleBrushKey}}"/>
+      </Trigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledStyleBrushKey}}"/>
+        <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledTextStyleBrushKey}}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource {x:Static nuget:Brushes.ButtonDisabledBorderStyleBrushKey}}"/>
       </Trigger>
     </Style.Triggers>
   </Style>
-  
+
   <Style x:Key="{x:Type ListBoxItem}" TargetType="{x:Type ListBoxItem}" BasedOn="{StaticResource {x:Type ListBoxItem}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
-  
+
   <Style x:Key="{x:Type TextBlock}" TargetType="{x:Type TextBlock}" BasedOn="{StaticResource {x:Type TextBlock}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
-  
+
   <Style x:Key="{x:Type GridSplitter}" TargetType="{x:Type GridSplitter}" BasedOn="{StaticResource {x:Type GridSplitter}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
-  
+
   <Style x:Key="{x:Type ComboBox}" TargetType="{x:Type ComboBox}" BasedOn="{StaticResource {x:Static nuget:Styles.ThemedComboStyleKey}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
-  
+
   <Style x:Key="{x:Type ComboBoxItem}" TargetType="{x:Type ComboBoxItem}" BasedOn="{StaticResource {x:Type ComboBoxItem}}">
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
   </Style>
-  
+
   <Style x:Key="{x:Type ScrollBar}" TargetType="{x:Type ScrollBar}" BasedOn="{StaticResource {x:Static nuget:Styles.ScrollBarStyleKey}}"/>
-  
+
   <Style x:Key="{x:Type ScrollViewer}" TargetType="{x:Type ScrollViewer}" BasedOn="{StaticResource {x:Static nuget:Styles.ScrollViewerStyleKey}}"/>
 
   <Style x:Key="TooltipStyle" TargetType="{x:Type TextBlock}">
@@ -229,7 +225,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  
+
   <Style x:Key="ExpanderRightHeaderStyle" TargetType="{x:Type ToggleButton}">
     <Setter Property="Template">
       <Setter.Value>
@@ -533,7 +529,7 @@
       </Setter.Value>
     </Setter>
   </Style>
-  
+
   <Style TargetType="{x:Type ComboBoxItem}" x:Key="ComboBoxItemStyle">
     <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}"/>
     <Setter Property="FocusVisualStyle" Value="{StaticResource ControlsFocusVisualStyle}"/>
@@ -679,7 +675,7 @@
       </Trigger>
     </Style.Triggers>
   </Style>
-  
+
   <Style
     x:Key="PackageIconImageStyle"
     TargetType="{x:Type Image}">

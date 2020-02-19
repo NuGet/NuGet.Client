@@ -267,7 +267,6 @@
     <Compile Include="Xamls\PackageManagerControl.xaml.cs">
       <DependentUpon>PackageManagerControl.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Converters\PackageStatusToInstallImageConverter.cs" />
     <Compile Include="Xamls\PackageManagerTopPanel.xaml.cs">
       <DependentUpon>PackageManagerTopPanel.xaml</DependentUpon>
     </Compile>
