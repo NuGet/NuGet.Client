@@ -361,6 +361,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
             }
         }
+
 #if IS_DESKTOP
         [PlatformFact(Platform.Windows)]
         public async Task PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage()

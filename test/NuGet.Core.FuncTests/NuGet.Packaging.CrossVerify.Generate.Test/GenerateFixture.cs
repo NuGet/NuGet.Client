@@ -24,7 +24,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
             //Create a folder for a each platform, under PreGenPackages folder.
             //For functional test on windows, 2 folders will be created.
-            var platform = "";
+            var platform = string.Empty;
 #if IS_DESKTOP
             platform =  Constants.Windows_NetFulFrameworkFolder;
 #else
