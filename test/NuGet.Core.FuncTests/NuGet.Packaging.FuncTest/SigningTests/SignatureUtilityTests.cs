@@ -27,46 +27,6 @@ namespace NuGet.Packaging.FuncTest.SigningTests
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
 
-        [Fact]
-        public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
-        {
-            ISigningTestServer testServer = await _fixture.GetSigningTestServerAsync();
-            CertificateAuthority rootCa = await _fixture.GetDefaultTrustedCertificateAuthorityAsync();
-            var options = new TimestampServiceOptions()
-            {
-                SigningCertificateUsage = SigningCertificateUsage.None
-            };
-            TimestampService timestampService = TimestampService.Create(rootCa, options);
-
-            using (testServer.RegisterResponder(timestampService))
-            {
-                var nupkg = new SimpleTestPackageContext();
-
-                using (var certificate = new X509Certificate2(_fixture.TrustedTestCertificate.Source.Cert))
-                using (var directory = TestDirectory.Create())
-                {
-                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
-                        certificate,
-                        nupkg,
-                        directory,
-                        timestampService.Url);
-
-                    using (FileStream stream = File.OpenRead(signedPackagePath))
-                    using (var reader = new PackageArchiveReader(stream))
-                    {
-                        PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
-
-                        var exception = Assert.Throws<SignatureException>(
-                            () => SignatureUtility.GetTimestampCertificateChain(signature));
-
-                        Assert.Equal(
-                            "Either the signing-certificate or signing-certificate-v2 attribute must be present.",
-                            exception.Message);
-                    }
-                }
-            }
-        }
-
         [Theory]
         [InlineData(SigningCertificateUsage.V1)]
         [InlineData(SigningCertificateUsage.V2)]
