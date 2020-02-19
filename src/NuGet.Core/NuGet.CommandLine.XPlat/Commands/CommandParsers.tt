@@ -48,8 +48,8 @@
         }
     }
 
-    var commandFile = this.Host.ResolvePath("Commands.xml");
-    var commands = XDocument.Load(commandFile);
+    string commandFile = this.Host.ResolvePath("Commands.xml");
+    XDocument commands = XDocument.Load(commandFile);
 #>
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -69,160 +69,25 @@ namespace NuGet.CommandLine.XPlat
         public static void Register(CommandLineApplication app, Func<ILogger> getLogger)
         {
 <#
- foreach (var command in commands.Descendants(XName.Get("Verb","")))
+ foreach (XElement command in commands.Descendants(XName.Get("Verb","")))
  {
-    var verbName = command.Attribute(XName.Get("Name", "")).Value;
-    var verbFormalName = InitCaps(verbName);
+    string verbName = command.Attribute(XName.Get("Name", "")).Value;
+    string verbFormalName = InitCaps(verbName);
 #>
             <#= verbFormalName #>VerbParser.Register(app, getLogger);
 <#
  }
 #>
 <#
- foreach (var command in commands.Descendants(XName.Get("Command","")))
+ foreach (XElement command in commands.Descendants(XName.Get("Command","")))
  {
-    var commandName = command.Attribute(XName.Get("Name", "")).Value;
-    var commandFormalName = InitCaps(commandName);
+    string commandName = command.Attribute(XName.Get("Name", "")).Value;
+    string commandFormalName = InitCaps(commandName);
 #>
             <#= commandFormalName #>CommandParser.Register(app, getLogger);
 <#
-}
-#>        }
-    }
-<#
- foreach (var command in commands.Descendants(XName.Get("Command","")))
- {
-    var commandName = command.Attribute(XName.Get("Name", "")).Value;
-    var commandFormalName = InitCaps(commandName);
-#>
-
-    internal partial class <#= commandFormalName #>CommandParser
-    {
-        internal static void Register(CommandLineApplication app, Func<ILogger> getLogger)
-        {
-            app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
-            {
-<#
-        foreach (var option in command.Descendants())
-        {
-            var optionName = option.Attribute(XName.Get("Name", "")).Value;
-            var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
-            var optionFormalName = optionName.Replace("-","");
-            var optionCapsName = InitCaps(optionName);
-            if (IsArgument(GetProperty(option)))
-            {
-#>
-                var <#= optionFormalName #> = <#= commandFormalName #>Cmd.Argument(
-                    "<#= optionName #>", "<#= optionHelp != null ? optionHelp : "" #>");
-<#
-            }
-            else
-            {
-                var optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
-#>
-                var <#= optionFormalName #> = <#= commandFormalName #>Cmd.Option(
-                    "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName #>",
-                    Strings.Source_Description,
-                    CommandOptionType.<#= GetOptionType(option) #>);
-<#
-            }
-        }
-#>
-                <#= commandFormalName #>Cmd.HelpOption("-h|--help");
-
-                <#= commandFormalName #>Cmd.OnExecute(() =>
-                {
-                    var args = new <#= commandFormalName #>FArgs()
-                    {
-<#
-        foreach (var option in command.Descendants())
-        {
-            var optionName = option.Attribute(XName.Get("Name", "")).Value;
-            var optionFormalName = optionName.Replace("-","");
-            var optionCapsName = InitCaps(optionFormalName);
-            if (IsArgument(GetProperty(option)))
-            {
-#>
-                        <#= optionCapsName #> = <#=optionFormalName#>.Value,
-<#
-            }
-            else
-            {
-                var optionType = GetOptionType(option);
-                switch (optionType)
-                {
-                    case "SingleValue":
-#>
-                        <#= optionCapsName #> = <#= optionFormalName #>.Value(),
-<#                    
-                    break;
-                    case "NoValue":
-#>
-                        <#= optionCapsName #> = <#= optionFormalName #>.HasValue(),
-<#                    
-                    break;
-                }
-            }
-        }
-    
-#>
-                    };
-
-
-<#  // ****** IMPLEMENT REQUIRED ARGUMENTS ********
-    
-
-        foreach (var option in command.Descendants())
-        {
-            var optionName = option.Attribute(XName.Get("Name", "")).Value;
-            var required = option.Attribute(XName.Get("Required", ""))?.Value == "true";
-            var optionFormalName = optionName.Replace("-","");
-            var optionCapsName = InitCaps(optionFormalName);
-
-            if (required)
-            {
-                if (IsArgument(GetProperty(option)))
-                {
-#>
-                    if (args.<#= optionCapsName #> == null)
-                    {
-                        throw new CommandException("'<#=optionFormalName#>' argument is missing but required.");
-                    }
-<#
-                }
-                else
-                {
-                    var optionType = GetOptionType(option);
-                    switch (optionType)
-                    {
-                        case "SingleValue":
-#>
-                        if (args.<#= optionCapsName #> == null)
-                        {
-                            throw new CommandException("'<#=optionFormalName#>' option is missing but required.");
-                        }
-<#                    
-                        break;
-                        case "NoValue":
-#>
-                        //TODO: implement required for bool
-<#                    
-                        break;
-                    }
-            
-                }
-            }
-        }
-// ****** END - IMPLEMENT REQUIRED ARGUMENTS ********
-#> 
-
-                    <#= commandFormalName #>FRunner.Run(args, getLogger);
-                    return 0;
-                });
-            });
-        }
-    }
-<#
 } // End of CommandParser class
 #>
+        }
+    }
 }

@@ -48,8 +48,8 @@
         }
     }
 
- var commandFile = this.Host.ResolvePath("Commands.xml");
- var commands = XDocument.Load(commandFile);
+ string commandFile = this.Host.ResolvePath("Commands.xml");
+ XDocument commands = XDocument.Load(commandFile);
 #>
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -67,10 +67,10 @@ namespace NuGet.CommandLine.XPlat
 {
 <#
 // ********************** Verb-Parser Template
-foreach (var verb in commands.Descendants(XName.Get("Verb","")))
+foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
 {
-    var commandName = verb.Attribute(XName.Get("Name", "")).Value;
-    var commandFormalName = InitCaps(commandName);
+    string commandName = verb.Attribute(XName.Get("Name", "")).Value;
+    string  commandFormalName = InitCaps(commandName);
 #>
     internal partial class <#= commandFormalName #>VerbParser
     {
@@ -80,10 +80,10 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
             app.Command("<#= commandName #>", <#= commandFormalName #>Cmd =>
             {
 <#
-    foreach (var noun in verb.Descendants(XName.Get("Noun")))
+    foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
     {
-        var nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-        var nounFormalName = InitCaps(nounName);
+        string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
+        string nounFormalName = InitCaps(nounName);
         if (nounName != null)
         {
 #>
@@ -91,26 +91,26 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                 {
 <#
         }
-        foreach (var option in noun.Descendants())
+        foreach (XElement option in noun.Descendants())
         {
-            var optionName = option.Attribute(XName.Get("Name", "")).Value;
-            var optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
-            var optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
-            var optionFormalName = optionName.Replace("-","");
+            string optionName = option.Attribute(XName.Get("Name", "")).Value;
+            string optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
+            string optionHelp = option.Attribute(XName.Get("Help", ""))?.Value;
+            string optionFormalName = optionName.Replace("-","");
 
             if (IsArgument(GetProperty(option)))
             {
                 
 #>
-                    var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Argument(
+                    CommandArgument <#= optionFormalName #> = <#= nounFormalName #>Cmd.Argument(
                         "<#= optionLongName != null ? optionLongName : optionName #>", <#= optionHelp != null ? "Strings."+optionHelp : "" #>);
 <#
             }
             else
             {
-                var optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
+                string optionShortcut = option.Attribute(XName.Get("Shortcut",""))?.Value;
 #>
-                    var <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
+                    CommandOption <#= optionFormalName #> = <#= nounFormalName #>Cmd.Option(
                         "<#= (optionShortcut != null ? "-" + optionShortcut + "|" : "") + "--" + optionName.ToLower() #>",
                         <#= optionHelp != null ? "Strings."+optionHelp : "" #>,
                         CommandOptionType.<#= GetOptionType(option) #>);
@@ -125,11 +125,11 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                         var args = new <#= commandFormalName #><#= nounFormalName #>Args()
                         {
 <#
-        foreach (var option in noun.Descendants())
+        foreach (XElement option in noun.Descendants())
         {
-            var optionName = option.Attribute(XName.Get("Name", "")).Value;
-            var optionFormalName = optionName.Replace("-","");
-            var optionCapsName = InitCaps(optionFormalName);
+            string optionName = option.Attribute(XName.Get("Name", "")).Value;
+            string optionFormalName = optionName.Replace("-","");
+            string optionCapsName = InitCaps(optionFormalName);
             if (IsArgument(GetProperty(option)))
             {
 #>
@@ -138,7 +138,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
             }
             else
             {
-                var optionType = GetOptionType(option);
+                string optionType = GetOptionType(option);
                 switch (optionType)
                 {
                     case "SingleValue":
@@ -159,14 +159,14 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
 
 <#  // ****** IMPLEMENT REQUIRED ARGUMENTS ********
 
-            foreach (var option2 in noun.Descendants())
+            foreach (XElement option2 in noun.Descendants())
             {
-                var required = option2.Attribute(XName.Get("Required", ""))?.Value == "true";
+                bool required = option2.Attribute(XName.Get("Required", ""))?.Value == "true";
                 if (required)
                 {
-                    var optionName2 = option2.Attribute(XName.Get("Name", "")).Value;
-                    var optionFormalName2 = optionName2.Replace("-","");
-                    var optionCapsName2 = InitCaps(optionFormalName2);
+                    string optionName2 = option2.Attribute(XName.Get("Name", "")).Value;
+                    string optionFormalName2 = optionName2.Replace("-","");
+                    string optionCapsName2 = InitCaps(optionFormalName2);
 
                     if (IsArgument(GetProperty(option2)))
                     {
@@ -179,7 +179,7 @@ foreach (var verb in commands.Descendants(XName.Get("Verb","")))
                     }
                     else
                     {
-                        var optionType2 = GetOptionType(option2);
+                        string optionType2 = GetOptionType(option2);
                         switch (optionType2)
                         {
                         case "SingleValue":
