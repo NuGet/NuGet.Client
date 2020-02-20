@@ -91,7 +91,7 @@ jobs:
     LocalizedLanguageCount: "13"
     DesktopTargetFramework: "net472"
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  queue:
+  steps:
     name: VSEng-MicroBuildVS2019
     demands: 
       - DotNetFramework
