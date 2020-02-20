@@ -363,12 +363,12 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         }
 
 #if IS_DESKTOP
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public async Task PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage()
         {
             // Arrange
             var caseName = "ATNOCERTIFICATEUSAGE";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = Path.Combine(_dir, caseName);
             Directory.CreateDirectory(caseFolder);
 
             ISigningTestServer testServer = await _signingTestFixture_Author.GetSigningTestServerAsync();
@@ -388,7 +388,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
                 using (var certificate = new X509Certificate2(_signingTestFixture_Author.TrustedTestCertificate.Source.Cert))
                 {
-                    var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
+                    string signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                         certificate,
                         nupkg,
                         packagePath,

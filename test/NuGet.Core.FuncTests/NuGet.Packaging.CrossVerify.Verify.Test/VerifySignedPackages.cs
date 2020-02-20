@@ -29,7 +29,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
                 new IntegrityVerificationProvider(),
                 new SignatureTrustAndValidityVerificationProvider()
             };
-            _dir = GetPreGenPackageRootPath();
+            _dir = GetGeneratedPackagesRootPath();
         }
 
         [Theory]
@@ -348,7 +348,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         }
 
         [Theory]
-        [MemberData(nameof(FolderForWindows_NetFulFramework))]
+        [MemberData(nameof(FolderForWindows_NetFullFramework))]
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage_Throws(string dir)
         {
             // Arrange
@@ -357,26 +357,21 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
             var signedPackagePath = Directory.GetFiles(signedPackageFolder).Where(f => f.EndsWith(".nupkg")).First();
 
-            using (var packageReader = new PackageArchiveReader(signedPackagePath))
-            using (var store = new X509Store(StoreName.Root,
-                RuntimeEnvironmentHelper.IsWindows ? StoreLocation.LocalMachine : StoreLocation.CurrentUser))
+            using (FileStream stream = File.OpenRead(signedPackagePath))
+            using (var reader = new PackageArchiveReader(stream))
             {
-                using (FileStream stream = File.OpenRead(signedPackagePath))
-                using (var reader = new PackageArchiveReader(stream))
-                {
-                    // Act
-                    PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
+                // Act
+                PrimarySignature signature = await reader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                    var exception = Assert.Throws<SignatureException>(
-                        () => SignatureUtility.GetTimestampCertificateChain(signature));
+                var exception = Assert.Throws<SignatureException>(
+                    () => SignatureUtility.GetTimestampCertificateChain(signature));
 
-                    Assert.Equal(
-                        "Either the signing-certificate or signing-certificate-v2 attribute must be present.",
-                        exception.Message);
-                }
+                Assert.Equal(
+                    "Either the signing-certificate or signing-certificate-v2 attribute must be present.",
+                    exception.Message);
             }
         }
-
+            
         [Theory]
         [MemberData(nameof(FolderForEachPlatform))]
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_Timestamped_RepositorySigned_Timestamped(string dir)
@@ -456,21 +451,21 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
             return sb.ToString();
         }
 
-        private static string GetPreGenPackageRootPath()
+        private static string GetGeneratedPackagesRootPath()
         {
             var root = TestFileSystemUtility.NuGetTestFolder;
-            var path = System.IO.Path.Combine(root, Constants.PreGenPackagesFolder);
+            var path = Path.Combine(root, TestFolderNames.PreGenPackagesFolder);
 
             return path;
 
         }
 
-        public static TheoryData FolderForWindows_NetFulFramework
+        public static TheoryData FolderForWindows_NetFullFramework
         {
             get
             {
                 var folder = new TheoryData<string>();
-                folder.Add(Path.Combine(GetPreGenPackageRootPath(), Constants.Windows_NetFulFrameworkFolder));
+                folder.Add(Path.Combine(GetGeneratedPackagesRootPath(), TestFolderNames.Windows_NetFullFrameworkFolder));
                 return folder;                
             }
         }
@@ -486,7 +481,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
                     "Linux_NetCore",
                 */
                 var folders = new TheoryData<string>();
-                foreach (var folder in Directory.GetDirectories(GetPreGenPackageRootPath()))
+                foreach (var folder in Directory.GetDirectories(GetGeneratedPackagesRootPath()))
                 {
                     folders.Add(folder);
                 }

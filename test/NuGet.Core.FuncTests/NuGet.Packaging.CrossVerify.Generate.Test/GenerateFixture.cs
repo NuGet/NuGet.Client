@@ -11,12 +11,13 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
         public GenerateFixture()
         {
-            _dir = CreatePreGenPackageForEachPlatform();
+            _dir = GeneratePackagesForEachPlatform();
         }
-        private static string CreatePreGenPackageForEachPlatform()
+
+        private static string GeneratePackagesForEachPlatform()
         {
             var root = TestFileSystemUtility.NuGetTestFolder;
-            var path = Path.Combine(root, Constants.PreGenPackagesFolder);
+            var path = Path.Combine(root, TestFolderNames.PreGenPackagesFolder);
             if (!Directory.Exists(path))
             {
                 Directory.CreateDirectory(path);
@@ -24,21 +25,21 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
             //Create a folder for a each platform, under PreGenPackages folder.
             //For functional test on windows, 2 folders will be created.
-            var platform = string.Empty;
+            string platform = string.Empty;
 #if IS_DESKTOP
-            platform =  Constants.Windows_NetFulFrameworkFolder;
+            platform =  TestFolderNames.Windows_NetFullFrameworkFolder;
 #else
             if (RuntimeEnvironmentHelper.IsWindows)
             {
-                platform =  Constants.Windows_NetCoreFolder;
+                platform =  TestFolderNames.Windows_NetCoreFolder;
             }
             else if (RuntimeEnvironmentHelper.IsMacOSX)
             {
-                platform = Constants.Mac_NetCoreFolder;
+                platform = TestFolderNames.Mac_NetCoreFolder;
             }
             else
             {
-                platform = Constants.Linux_NetCoreFolder;
+                platform = TestFolderNames.Linux_NetCoreFolder;
             }
 #endif
             var pathForEachPlatform = Path.Combine(path, platform);
