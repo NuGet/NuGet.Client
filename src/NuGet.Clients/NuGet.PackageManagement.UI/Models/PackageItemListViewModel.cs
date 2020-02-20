@@ -448,7 +448,7 @@ namespace NuGet.PackageManagement.UI
 
             _backgroundDeprecationMetadataLoader = AsyncLazy.New(GetPackageDeprecationMetadataAsync);
 
-            TriggerStatusLoader();
+            OnPropertyChanged(nameof(Status));
         }
 
         private static PackageStatus GetPackageStatus(
