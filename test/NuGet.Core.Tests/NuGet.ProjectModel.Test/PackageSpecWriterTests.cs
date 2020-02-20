@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -17,7 +18,7 @@ namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecWriterTests
     {
-        private static readonly PackageSpec _emptyPackageSpec = JsonPackageSpecReader.GetPackageSpec(new JObject());
+        private static readonly PackageSpec EmptyPackageSpec = JsonPackageSpecReader.GetPackageSpec(new JObject());
 
         [Fact]
         public void RoundTripAutoReferencedProperty()
@@ -74,17 +75,18 @@ namespace NuGet.ProjectModel.Test
         [Fact]
         public void Write_ThrowsForNullPackageSpec()
         {
-            var writer = new JsonObjectWriter();
-
-            // Assert
-            Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(packageSpec: null, writer: writer));
+            using (var jsonWriter = new JTokenWriter())
+            using (var writer = new JsonObjectWriter(jsonWriter))
+            {
+                Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(packageSpec: null, writer: writer));
+            }
         }
 
         [Fact]
         public void Write_ThrowsForNullWriter()
         {
             // Assert
-            Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(_emptyPackageSpec, writer: null));
+            Assert.Throws<ArgumentNullException>(() => PackageSpecWriter.Write(EmptyPackageSpec, writer: null));
         }
 
         [Fact]
@@ -233,14 +235,14 @@ namespace NuGet.ProjectModel.Test
         public void WriteToFile_ThrowsForNullFilePath()
         {
             // Assert
-            Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(_emptyPackageSpec, filePath: null));
+            Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(EmptyPackageSpec, filePath: null));
         }
 
         [Fact]
         public void WriteToFile_ThrowsForEmptyFilePath()
         {
             // Assert
-            Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(_emptyPackageSpec, filePath: null));
+            Assert.Throws<ArgumentException>(() => PackageSpecWriter.WriteToFile(EmptyPackageSpec, filePath: null));
         }
 
         [Fact]
@@ -287,7 +289,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
             var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
-            var actualJson = GetJsonObject(packageSpec);
+            var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
 
             // Assert
@@ -314,7 +316,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
             var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
-            var actualJson = GetJsonObject(packageSpec);
+            var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
 
             // Assert
@@ -338,7 +340,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode> { NuGetLogCode.NU1602, NuGetLogCode.NU1601 };
             var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
-            var actualJson = GetJsonObject(packageSpec);
+            var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
 
             // Assert
@@ -355,7 +357,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode> { };
             var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
-            var actualJson = GetJsonObject(packageSpec);
+            var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"];
 
             // Assert
@@ -378,7 +380,7 @@ namespace NuGet.ProjectModel.Test
             var noWarn = new HashSet<NuGetLogCode> { };
             var warningProperties = new WarningProperties(warningsAsErrors, noWarn, allWarningsAsErrors);
             var packageSpec = CreatePackageSpec(withRestoreSettings: true, warningProperties: warningProperties);
-            var actualJson = GetJsonObject(packageSpec);
+            var actualJson = packageSpec.ToJObject();
             var actualWarningPropertiesJson = actualJson["restore"]["warningProperties"].ToString();
 
             // Assert
@@ -560,20 +562,9 @@ namespace NuGet.ProjectModel.Test
 
         private static string GetJsonString(PackageSpec packageSpec)
         {
-            var writer = new JsonObjectWriter();
+            JObject jObject = packageSpec.ToJObject();
 
-            PackageSpecWriter.Write(packageSpec, writer);
-
-            return writer.GetJson();
-        }
-
-        private static JObject GetJsonObject(PackageSpec packageSpec)
-        {
-            var writer = new JsonObjectWriter();
-
-            PackageSpecWriter.Write(packageSpec, writer);
-
-            return writer.GetJObject();
+            return jObject.ToString(Formatting.Indented);
         }
 
         private static PackageSpec CreatePackageSpec(bool withRestoreSettings, WarningProperties warningProperties = null)
@@ -719,13 +710,8 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange & Act
             var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
-
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(spec, writer);
-
-            var actualResult = writer.GetJson();
-
-            var expected = JObject.Parse(json).ToString();
+            string actualResult = GetJsonString(spec);
+            string expected = JObject.Parse(json).ToString();
 
             // Assert
             Assert.Equal(expected, actualResult);
@@ -734,14 +720,9 @@ namespace NuGet.ProjectModel.Test
         private static void VerifyPackageSpecWrite(string json, string expectedJson)
         {
             // Arrange & Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
-
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(spec, writer);
-
-            var actualResult = writer.GetJson();
-
-            var expected = JObject.Parse(expectedJson).ToString();
+            PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(json, "testName", @"C:\fake\path");
+            string actualResult = GetJsonString(spec);
+            string expected = JObject.Parse(expectedJson).ToString();
 
             // Assert
             Assert.Equal(expected, actualResult);

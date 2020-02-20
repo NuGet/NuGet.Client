@@ -1,8 +1,11 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
 using NuGet.RuntimeModel;
 
@@ -12,11 +15,48 @@ namespace NuGet.ProjectModel.Test
     {
         public static PackageSpec RoundTrip(this PackageSpec spec)
         {
-            var writer = new JsonObjectWriter();
-            PackageSpecWriter.Write(spec, writer);
-            var json = writer.GetJObject();
+            using (var jsonWriter = new JTokenWriter())
+            using (var writer = new JsonObjectWriter(jsonWriter))
+            {
+                writer.WriteObjectStart();
 
-            return JsonPackageSpecReader.GetPackageSpec(json);
+                PackageSpecWriter.Write(spec, writer);
+
+                writer.WriteObjectEnd();
+
+                return JsonPackageSpecReader.GetPackageSpec((JObject)jsonWriter.Token);
+            }
+        }
+
+        internal static PackageSpec RoundTrip(this PackageSpec spec, string packageSpecName, string packageSpecPath)
+        {
+            using (var stringWriter = new StringWriter())
+            using (var jsonWriter = new JsonTextWriter(stringWriter))
+            using (var writer = new JsonObjectWriter(jsonWriter))
+            {
+                writer.WriteObjectStart();
+
+                PackageSpecWriter.Write(spec, writer);
+
+                writer.WriteObjectEnd();
+
+                return JsonPackageSpecReader.GetPackageSpec(stringWriter.ToString(), packageSpecName, packageSpecPath);
+            }
+        }
+
+        internal static JObject ToJObject(this PackageSpec spec)
+        {
+            using (var jsonWriter = new JTokenWriter())
+            using (var writer = new JsonObjectWriter(jsonWriter))
+            {
+                writer.WriteObjectStart();
+
+                PackageSpecWriter.Write(spec, writer);
+
+                writer.WriteObjectEnd();
+
+                return (JObject)jsonWriter.Token;
+            }
         }
 
         public static PackageSpec GetSpec()

@@ -17,6 +17,9 @@ namespace NuGet.ProjectModel.Test
 {
     public class DependencyGraphSpecTests
     {
+        private const string PackageSpecName = "x";
+        private const string PackageSpecPath = @"c:\fake\project.json";
+
         [Fact]
         public void DependencyGraphSpec_GetParents()
         {
@@ -176,14 +179,14 @@ namespace NuGet.ProjectModel.Test
             var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project1.json", typeof(DependencyGraphSpecTests));
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, PackageSpecName, PackageSpecPath);
             var msbuildMetadata = spec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -202,14 +205,14 @@ namespace NuGet.ProjectModel.Test
             var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project2.json", typeof(DependencyGraphSpecTests));
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, PackageSpecName, PackageSpecPath);
             var msbuildMetadata = spec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -229,7 +232,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
@@ -262,7 +265,7 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -289,7 +292,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
@@ -321,17 +324,14 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.LegacyPackagesDirectory = true;
 
             // Act
-            var writer = new RuntimeModel.JsonObjectWriter();
-            PackageSpecWriter.Write(spec, writer);
-            var json = writer.GetJson();
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
-            var msbuildMetadata2 = readSpec.RestoreMetadata;
+            PackageSpec readSpec = PackageSpecTestUtility.RoundTrip(spec, PackageSpecName, PackageSpecPath);
+            ProjectRestoreMetadata msbuildMetadata2 = readSpec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata2);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata2.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata2.ProjectPath);
-            Assert.Equal("x", msbuildMetadata2.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata2.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata2.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata2.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata2.PackagesPath);
@@ -362,7 +362,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
 
             var tfmGroup = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45"));
@@ -392,12 +392,8 @@ namespace NuGet.ProjectModel.Test
             tfmGroup2.ProjectReferences.Add(ref1);
             tfmGroup2.ProjectReferences.Add(ref2);
 
-            var writer = new RuntimeModel.JsonObjectWriter();
-
             // Act
-            PackageSpecWriter.Write(spec, writer);
-            var json = writer.GetJson();
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            PackageSpec readSpec = PackageSpecTestUtility.RoundTrip(spec, PackageSpecName, PackageSpecPath);
 
             // Assert
             Assert.Equal(2, readSpec.RestoreMetadata.TargetFrameworks.Count);

@@ -46,16 +46,14 @@ namespace NuGet.RuntimeModel
 
         public static void WriteRuntimeGraph(string filePath, RuntimeGraph runtimeGraph)
         {
-            var writer = new JsonObjectWriter();
-
-            WriteRuntimeGraph(writer, runtimeGraph);
-
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
             using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var writer = new JsonObjectWriter(jsonWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-                writer.WriteTo(jsonWriter);
+
+                WriteRuntimeGraph(writer, runtimeGraph);
             }
         }
 
@@ -74,10 +72,10 @@ namespace NuGet.RuntimeModel
                 {
                     writer.WriteObjectStart("runtimes");
 
-                    var sortedRuntimes = runtimeGraph.Runtimes.Values
-                                                     .OrderBy(runtime => runtime.RuntimeIdentifier, StringComparer.Ordinal);
+                    IOrderedEnumerable<RuntimeDescription> sortedRuntimes = runtimeGraph.Runtimes.Values
+                        .OrderBy(runtime => runtime.RuntimeIdentifier, StringComparer.Ordinal);
 
-                    foreach (var runtime in sortedRuntimes)
+                    foreach (RuntimeDescription runtime in sortedRuntimes)
                     {
                         WriteRuntimeDescription(writer, runtime);
                     }
@@ -89,10 +87,10 @@ namespace NuGet.RuntimeModel
                 {
                     writer.WriteObjectStart("supports");
 
-                    var sortedSupports = runtimeGraph.Supports.Values
-                                                     .OrderBy(runtime => runtime.Name, StringComparer.Ordinal);
+                    IOrderedEnumerable<CompatibilityProfile> sortedSupports = runtimeGraph.Supports.Values
+                        .OrderBy(runtime => runtime.Name, StringComparer.Ordinal);
 
-                    foreach (var support in sortedSupports)
+                    foreach (CompatibilityProfile support in sortedSupports)
                     {
                         WriteCompatibilityProfile(writer, support);
                     }
@@ -169,7 +167,7 @@ namespace NuGet.RuntimeModel
         {
             var name = json.Key;
             var sets = new List<FrameworkRuntimePair>();
-            foreach(var property in EachProperty(json.Value))
+            foreach (var property in EachProperty(json.Value))
             {
                 var profiles = ReadCompatibilitySets(property);
                 sets.AddRange(profiles);
@@ -180,10 +178,10 @@ namespace NuGet.RuntimeModel
         private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(KeyValuePair<string, JToken> property)
         {
             var framework = NuGetFramework.Parse(property.Key);
-            switch(property.Value.Type)
+            switch (property.Value.Type)
             {
                 case JTokenType.Array:
-                    foreach(var value in (JArray)property.Value)
+                    foreach (var value in (JArray)property.Value)
                     {
                         yield return new FrameworkRuntimePair(framework, value.Value<string>());
                     }
@@ -191,7 +189,7 @@ namespace NuGet.RuntimeModel
                 case JTokenType.String:
                     yield return new FrameworkRuntimePair(framework, property.Value.ToString());
                     break;
-                // Other token types are not supported
+                    // Other token types are not supported
             }
         }
 

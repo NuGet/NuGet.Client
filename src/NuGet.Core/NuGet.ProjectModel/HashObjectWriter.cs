@@ -17,10 +17,11 @@ namespace NuGet.ProjectModel
     /// </summary>
     public sealed class HashObjectWriter : IObjectWriter, IDisposable
     {
-        private const int _defaultBufferSize = 4096;
+        private const int DefaultBufferSize = 4096;
 
         private readonly byte[] _buffer;
         private readonly IHashFunction _hashFunc;
+        private bool _isDisposed;
         private bool _isReadOnly;
         private int _nestLevel;
         private readonly CircularMemoryStream _stream;
@@ -38,25 +39,38 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(hashFunc));
             }
 
-            _buffer = new byte[_defaultBufferSize];
+            _buffer = new byte[DefaultBufferSize];
             _hashFunc = hashFunc;
             _stream = new CircularMemoryStream(_buffer);
             _streamWriter = new StreamWriter(_stream);
             _writer = new JsonTextWriter(_streamWriter);
 
             _stream.OnFlush += OnFlush;
-
-            _writer.WriteStartObject();
         }
 
         public void Dispose()
         {
-            _stream.OnFlush -= OnFlush;
+            if (!_isDisposed)
+            {
+                _stream.OnFlush -= OnFlush;
 
-            _hashFunc.Dispose();
-            _writer.Close();
-            _streamWriter.Dispose();
-            _stream.Dispose();
+                _hashFunc.Dispose();
+                _writer.Close();
+                _streamWriter.Dispose();
+                _stream.Dispose();
+
+                _isDisposed = true;
+            }
+        }
+
+        public void WriteObjectStart()
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WriteStartObject();
+
+            ++_nestLevel;
         }
 
         public void WriteObjectStart(string name)
@@ -66,6 +80,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(name));
             }
 
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             _writer.WritePropertyName(name);
@@ -76,6 +91,7 @@ namespace NuGet.ProjectModel
 
         public void WriteObjectEnd()
         {
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             if (_nestLevel == 0)
@@ -95,6 +111,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(name));
             }
 
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             _writer.WritePropertyName(name);
@@ -108,6 +125,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(name));
             }
 
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             _writer.WritePropertyName(name);
@@ -121,6 +139,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(name));
             }
 
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             _writer.WritePropertyName(name);
@@ -134,12 +153,18 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(name));
             }
 
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
+            ThrowIfDisposed();
             ThrowIfReadOnly();
 
             _writer.WritePropertyName(name);
             _writer.WriteStartArray();
 
-            foreach (var value in values)
+            foreach (string value in values)
             {
                 _writer.WriteValue(value);
             }
@@ -155,15 +180,47 @@ namespace NuGet.ProjectModel
         /// <returns>A hash of the object.</returns>
         public string GetHash()
         {
+            ThrowIfDisposed();
+
             if (!_isReadOnly)
             {
-                _writer.WriteEndObject();
                 _writer.Flush();
 
                 _isReadOnly = true;
             }
 
             return _hashFunc.GetHash();
+        }
+
+        public void WriteArrayStart(string name)
+        {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            _writer.WritePropertyName(name);
+            _writer.WriteStartArray();
+
+            ++_nestLevel;
+        }
+
+        public void WriteArrayEnd()
+        {
+            ThrowIfDisposed();
+            ThrowIfReadOnly();
+
+            if (_nestLevel == 0)
+            {
+                throw new InvalidOperationException();
+            }
+
+            _writer.WriteEndArray();
+
+            --_nestLevel;
         }
 
         private void OnFlush(object sender, ArraySegment<byte> bytes)
@@ -182,42 +239,12 @@ namespace NuGet.ProjectModel
             }
         }
 
-        public void WriteArrayStart(string name)
+        private void ThrowIfDisposed()
         {
-            if (name == null)
+            if (_isDisposed)
             {
-                throw new ArgumentNullException(nameof(name));
+                throw new ObjectDisposedException(nameof(HashObjectWriter));
             }
-
-            ThrowIfReadOnly();
-
-            _writer.WritePropertyName(name);
-            _writer.WriteStartArray();
-
-            ++_nestLevel;
-        }
-
-        public void WriteArrayEnd()
-        {
-            ThrowIfReadOnly();
-
-            if (_nestLevel == 0)
-            {
-                throw new InvalidOperationException();
-            }
-
-            _writer.WriteEndArray();
-
-            --_nestLevel;
-        }
-
-        public void WriteObjectInArrayStart()
-        {
-            ThrowIfReadOnly();
-
-            _writer.WriteStartObject();
-
-            ++_nestLevel;
         }
     }
 }
