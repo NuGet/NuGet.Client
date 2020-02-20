@@ -599,7 +599,7 @@ namespace NuGet.Commands
             // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath) &&
+                File.Exists(_request.Project.RestoreMetadata.CacheFilePath) ||
                 _request.AdditionalMessages?.Count > 0)
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
