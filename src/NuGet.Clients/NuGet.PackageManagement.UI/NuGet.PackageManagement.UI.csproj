@@ -251,9 +251,6 @@
     <Compile Include="Xamls\FileConflictDialog.xaml.cs">
       <DependentUpon>FileConflictDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Xamls\FilterLabel.xaml.cs">
-      <DependentUpon>FilterLabel.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Xamls\InfiniteScrollList.xaml.cs">
       <DependentUpon>InfiniteScrollList.xaml</DependentUpon>
     </Compile>
@@ -375,10 +372,6 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="Xamls\FileConflictDialog.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Xamls\FilterLabel.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

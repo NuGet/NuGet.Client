@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.UI
     /// Represents Button controls which are used as Clickable Tab Items.
     /// Example: Browse, Installed, Update Tab items in the Nuget Package Manager tab
     /// </summary>
-    internal class TabItemButton : TabItem
+    internal class TabItemButton : Button
     {
         protected override AutomationPeer OnCreateAutomationPeer()
         {
