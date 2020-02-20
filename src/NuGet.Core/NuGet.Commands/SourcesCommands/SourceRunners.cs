@@ -85,7 +85,7 @@ namespace NuGet.Commands
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
-            RunnerHelper.EnableOrDisableSource(sourceProvider, args.Name, enabled: false, getLogger);
+            RunnerHelper.EnableOrDisableSource(sourceProvider, args.Name, enable: false, getLogger);
         }
     }
 
@@ -95,7 +95,7 @@ namespace NuGet.Commands
         {
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var sourceProvider = RunnerHelper.GetSourceProvider(settings);
-            RunnerHelper.EnableOrDisableSource(sourceProvider, args.Name, enabled: true, getLogger);
+            RunnerHelper.EnableOrDisableSource(sourceProvider, args.Name, enable: true, getLogger);
         }
     }
 
@@ -287,7 +287,7 @@ namespace NuGet.Commands
             return sourceProvider;
         }
 
-        public static void EnableOrDisableSource(PackageSourceProvider sourceProvider, string name, bool enabled, Func<ILogger> getLogger)
+        public static void EnableOrDisableSource(PackageSourceProvider sourceProvider, string name, bool enable, Func<ILogger> getLogger)
         {
             var packageSource = sourceProvider.GetPackageSourceByName(name);
             if (packageSource == null)
@@ -298,16 +298,16 @@ namespace NuGet.Commands
             // Use casing consistent with existing source.
             name = packageSource.Name;
 
-            if (enabled && !packageSource.IsEnabled)
+            if (enable && !packageSource.IsEnabled)
             {
                 sourceProvider.EnablePackageSource(name);
             }
-            else if (!enabled && packageSource.IsEnabled)
+            else if (!enable && packageSource.IsEnabled)
             {
                 sourceProvider.DisablePackageSource(name);
             }
 
-            if (enabled)
+            if (enable)
             {
                 getLogger().LogMinimal(string.Format(CultureInfo.CurrentCulture,
                     Strings.SourcesCommandSourceEnabledSuccessfully, name));
@@ -338,5 +338,4 @@ namespace NuGet.Commands
             }
         }
     }
-
 }
