@@ -1347,6 +1347,47 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public async Task RestoreCommand_MinimalProjectWithAdditionalMessages_WritesAssetsFileWithMessages()
+        {
+            // Arrange
+            var sources = new List<PackageSource>();
+
+            using (var workingDir = TestDirectory.Create())
+            {
+                var packagesDir = new DirectoryInfo(Path.Combine(workingDir, "globalPackages"));
+                var packageSource = new DirectoryInfo(Path.Combine(workingDir, "packageSource"));
+                var project1 = new DirectoryInfo(Path.Combine(workingDir, "projects", "project1"));
+                var project1Obj = new DirectoryInfo(Path.Combine(project1.FullName, "obj"));
+                packagesDir.Create();
+                packageSource.Create();
+                project1.Create();
+                sources.Add(new PackageSource(packageSource.FullName));
+
+                var dgspec1 = DependencyGraphSpec.CreateMinimal(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
+                var spec1 = dgspec1.Projects[0];
+
+                var logger = new TestLogger();
+                var request = new TestRestoreRequest(spec1, sources, packagesDir.FullName, logger)
+                {
+                    AdditionalMessages = new List<IAssetsLogMessage>()
+                    {
+                        new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1010, "Test error")
+                    }
+                };
+
+                // Act
+                var command = new RestoreCommand(request);
+                var result = await command.ExecuteAsync();
+                var lockFile = result.LockFile;
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.False(result.Success);
+                Assert.Equal(1, lockFile.LogMessages.Count);
+            }
+        }
+
+        [Fact]
         public async Task RestoreCommand_CentralVersion_ErrorWhenDependenciesHaveVersion()
         {
             // Arrange

@@ -1724,18 +1724,23 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_InvalidTargetFrameworkMoniker_Succeeds()
         {
             // Arrange
+            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
             var cache = new Mock<IProjectSystemCache>();
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
                     It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>((_, __, callbackAdditionalMessages) =>
+                {
+                    additionalMessages = callbackAdditionalMessages;
+                })
                 .Returns(true);
 
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
             restoreWorker.Setup(x => x.ScheduleRestoreAsync(
                     It.IsAny<SolutionRestoreRequest>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(false)); // framework is invalid, restore fails
+                .Returns(Task.FromResult(true));
 
             var logger = new Mock<ILogger>();
 
@@ -1758,29 +1763,35 @@ namespace NuGet.SolutionRestoreManager.Test
             var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
 
             // Assert
-            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the TFM is invalid.
-            Assert.False(result);
-            // https://github.com/NuGet/Home/issues/7717
-            logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains(nameof(FrameworkException)))), Times.Once);
-            // restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+            Assert.True(result);
+            logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
+            Assert.NotNull(additionalMessages);
+            Assert.Equal(1, additionalMessages.Count);
+            Assert.Equal(NuGetLogCode.NU1010, additionalMessages[0].Code);
+            restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task NominateProjectAsync_InvalidDependencyVersion_Succeeds()
         {
             // Arrange
+            IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
             var cache = new Mock<IProjectSystemCache>();
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
                     It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>((_, __, callbackAdditionalMessages) =>
+                {
+                    additionalMessages = callbackAdditionalMessages;
+                })
                 .Returns(true);
 
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
             restoreWorker.Setup(x => x.ScheduleRestoreAsync(
                     It.IsAny<SolutionRestoreRequest>(),
                     It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(false)); // version is invalid, restore fails
+                .Returns(Task.FromResult(true));
 
             var logger = new Mock<ILogger>();
 
@@ -1809,11 +1820,12 @@ namespace NuGet.SolutionRestoreManager.Test
             var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
 
             // Assert
-            // As per IVsSolutionRestoreService* xmldoc, result signifies restore result, not nomination failure. We expect false since the version string is invalid.
-            Assert.False(result);
-            // https://github.com/NuGet/Home/issues/7717
-            logger.Verify(l => l.LogError(It.Is<string>(s => s.Contains("'foo' is not a valid version string"))), Times.Once);
-            // restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
+            Assert.True(result);
+            logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
+            Assert.NotNull(additionalMessages);
+            Assert.Equal(1, additionalMessages.Count);
+            Assert.Equal(NuGetLogCode.NU1010, additionalMessages[0].Code);
+            restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]

@@ -78,11 +78,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return project != null;
         }
 
-        public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo)
-        {
-            return TryGetProjectRestoreInfo(name, out projectRestoreInfo, out _);
-        }
-
         public bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> additionalMessages)
         {
             if (string.IsNullOrEmpty(name))
