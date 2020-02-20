@@ -23,7 +23,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
                 Directory.CreateDirectory(path);
             }
 
-            //Create a folder for a each platform, under PreGenPackages folder.
+            //Create a folder for a each platform, under GeneratedPackages folder.
             //For functional test on windows, 2 folders will be created.
             string platform = string.Empty;
 #if IS_DESKTOP
