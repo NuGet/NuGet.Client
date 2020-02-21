@@ -82,10 +82,10 @@ The `dotnet nuget add source` command will add a new source to your NuGet config
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
     
 
@@ -133,10 +133,10 @@ The `dotnet nuget disable source` command will disable an existing source in you
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
     
 
@@ -184,10 +184,10 @@ The `dotnet nuget enable source` command will enable an existing source in your 
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
     
 
@@ -234,10 +234,10 @@ The `dotnet nuget list source` command will list all existing sources from your 
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
     
 
@@ -285,10 +285,10 @@ The `dotnet nuget remove source` command will remove an existing source from you
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
     
 
@@ -356,9 +356,9 @@ The `dotnet nuget update source` command will update an existing source in your 
   ```
 ## See also
 
-- [Package source sections in NuGet.config files](https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections)
+- [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 
-- [sources command (nuget.exe)](https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources)
+- [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
 
 }
