@@ -352,10 +352,10 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage_Throws(string dir)
         {
             // Arrange
-            var caseName = "ATNOCERTIFICATEUSAGE";
+            string caseName = FolderNames.One.ToString();
 
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
-            var signedPackagePath = Directory.GetFiles(signedPackageFolder).Where(f => f.EndsWith(".nupkg")).First();
+            var signedPackagePath = FileUtility.GetFirstFileName(signedPackageFolder, "*.nupkg");
 
             using (FileStream stream = File.OpenRead(signedPackagePath))
             using (var reader = new PackageArchiveReader(stream))

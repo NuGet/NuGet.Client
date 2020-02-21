@@ -5,6 +5,15 @@ using System;
 
 namespace Test.Utility.Signing
 {
+    /// <summary>
+    /// Folder names ensure uniqueness in path when signed packages are stored on disk for verification in later steps
+    /// </summary>
+    public enum FolderNames
+    {
+        One,
+        Two
+    }
+
     public static class TestFolderNames
     {
         public const string Windows_NetFullFrameworkFolder = "Windows_NetFullFramework";

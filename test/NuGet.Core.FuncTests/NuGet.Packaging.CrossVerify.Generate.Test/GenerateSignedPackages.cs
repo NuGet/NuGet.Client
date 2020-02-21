@@ -367,8 +367,8 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         public async Task PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage()
         {
             // Arrange
-            var caseName = "ATNOCERTIFICATEUSAGE";
-            string caseFolder = Path.Combine(_dir, caseName);
+            var folder = FolderNames.One.ToString();
+            string caseFolder = Path.Combine(_dir, folder);
             Directory.CreateDirectory(caseFolder);
 
             ISigningTestServer testServer = await _signingTestFixture_Author.GetSigningTestServerAsync();
