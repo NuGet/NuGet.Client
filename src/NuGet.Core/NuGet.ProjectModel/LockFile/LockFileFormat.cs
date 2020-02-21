@@ -626,11 +626,13 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
+#pragma warning disable CS0618
             return JsonPackageSpecReader.GetPackageSpec(
                 json,
                 name: null,
                 packageSpecPath: null,
                 snapshotValue: null);
+#pragma warning restore CS0618
         }
 
         private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)

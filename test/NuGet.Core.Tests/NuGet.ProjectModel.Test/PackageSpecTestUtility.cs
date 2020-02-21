@@ -24,7 +24,9 @@ namespace NuGet.ProjectModel.Test
 
                 writer.WriteObjectEnd();
 
+#pragma warning disable CS0618
                 return JsonPackageSpecReader.GetPackageSpec((JObject)jsonWriter.Token);
+#pragma warning restore CS0618
             }
         }
 
