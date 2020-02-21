@@ -351,8 +351,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        // Shows the Loading status bar, if necessary
-        // Also, it inserts the loading element if necesary
+        /// <summary>
+        /// Shows the Loading status bar, if necessary. Also, it inserts the Loading... indicator, if necesary
+        /// </summary>
+        /// <param name="loader">Current loader</param>
+        /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -378,9 +381,8 @@ namespace NuGet.PackageManagement.UI
                     {
                         await _list.ItemsLock.ExecuteAsync(() =>
                         {
-                            // vvvvvvv TODO: INVESTIGATE THE LINE BELOW vvvvvvv
                             Items.Add(_loadingStatusIndicator);
-                            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
                             return Task.CompletedTask;
                         });
                     }
@@ -415,6 +417,11 @@ namespace NuGet.PackageManagement.UI
             return statusBarVisibility;
         }
 
+        /// <summary>
+        /// Appends <c>packages</c> to the <c>Items</c>
+        /// </summary>
+        /// <param name="packages">View model collection to add</param>
+        /// <param name="refresh">Clear <c>Items</c> list if set to <c>true</c></param>
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -423,7 +430,7 @@ namespace NuGet.PackageManagement.UI
                 await _list.ItemsLock.ExecuteAsync(() =>
                 {
                     // remove the loading status indicator if it's in the list
-                    Items.Remove(_loadingStatusIndicator);
+                    var removed = Items.Remove(_loadingStatusIndicator);
 
                     if (refresh)
                     {
@@ -438,17 +445,19 @@ namespace NuGet.PackageManagement.UI
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
                     }
 
-                    // vvvvvvv TODO: INVESTIGATE THE LINE BELOW vvvvvvv
-                    Items.Add(_loadingStatusIndicator);
-                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    if (removed)
+                    {
+                        Items.Add(_loadingStatusIndicator);
+                    }
 
                     return Task.CompletedTask;
                 });
             });
         }
 
-        // Set the internal items list to zero
-        // Removes the event handlers
+        /// <summary>
+        /// Clear <c>Items</c> list and removes the event handlers for each element
+        /// </summary>
         private void ClearPackageList()
         {
             foreach (var package in PackageItems)
