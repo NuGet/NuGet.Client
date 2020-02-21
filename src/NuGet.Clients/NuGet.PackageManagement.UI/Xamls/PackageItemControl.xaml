@@ -114,6 +114,7 @@
                       Visibility="{Binding IsLatestInstalled, Converter={StaticResource BooleanToVisibilityConverter}}"
                       ToolTip="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
                       AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageInstalled}"
+                      Tag="{Binding Status}"
                       Moniker="{x:Static nuget:PackageIconMonikers.InstalledIndicator}" />
         <imaging:CrispImage
                       x:Name="_updateMark"
