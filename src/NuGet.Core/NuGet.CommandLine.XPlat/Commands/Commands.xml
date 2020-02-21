@@ -3,7 +3,9 @@
      Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information. -->
 <Commands>
   <Verb Name="add">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200"
+       Description="will add a new source to your NuGet configuration files. This will enable finding packages at this additional source."
+       >
       <Argument Name="Source" LongName="PackageSourcePath" Help="SourcesCommandSourceDescription" />
       <SingleValueOption Name="name" Shortcut="n" Help="SourcesCommandNameDescription"/>
       <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
@@ -11,34 +13,62 @@
       <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
       <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+      <Example Title="Add `nuget.org` as a source:" Command="dotnet nuget add source https://api.nuget.org/v3/index.json -n nuget.org" />
+      <Example Title="Add `c:\packages` as a local source:" Command="dotnet nuget add source c:\packages" />
+      <Example Title="Add a source that needs authentication:" Command="dotnet nuget add source https://someServer/myTeam -n myTeam -u myUserName -p myPassword --store-password-in-clear-text" />
+      <Example Title="Add a source that needs authentication (then go install credential provider):" Command="dotnet nuget add source https://azureartifacts.microsoft.com/myTeam -n myTeam" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
   <Verb Name="disable">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200" 
+       Description="will disable an existing source in your NuGet configuration files."
+    >
       <Argument Name="name" Help="SourcesCommandNameDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+      <Example Title="Disable a source with name of `mySource`:" Command="dotnet nuget disable source mySource" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
   <Verb Name="enable">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200"
+       Description="will enable an existing source in your NuGet configuration files."
+    >
       <Argument Name="name" Help="SourcesCommandNameDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+      <Example Title="Enable a source with name of `mySource`:" Command="dotnet nuget enable source mySource" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
   <Verb Name="list">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200"
+       Description="will list all existing sources from your NuGet configuration files."
+    >
       <SingleValueOption Name="format" Help="SourcesCommandFormatDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+      <Example Title="List configured sources from the current directory:" Command="dotnet nuget list source" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
   <Verb Name="remove">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200"
+       Description="will remove an existing source from your NuGet configuration files."
+    >
       <Argument Name="name" Help="SourcesCommandNameDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile"/>
+      <Example Title="Remove a source with name of `mySource`:" Command="dotnet nuget remove source mySource" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
   <Verb Name="update">
-    <Noun Name="source">
+    <Noun Name="source" Version="3.1.200"
+       Description="will update an existing source in your NuGet configuration files."
+    >
       <Argument Name="name" Help="SourcesCommandNameDescription" />
       <SingleValueOption Name="source" Shortcut="s" Help="SourcesCommandSourceDescription"/>
       <SingleValueOption Name="username" Shortcut="u" Help="SourcesCommandUserNameDescription"/>
@@ -46,6 +76,9 @@
       <SwitchOption Name="store-Password-In-Clear-Text" Help="SourcesCommandStorePasswordInClearTextDescription"/>
       <SingleValueOption Name="valid-Authentication-Types" Help="SourcesCommandValidAuthenticationTypesDescription" />
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+      <Example Title="Enable a source with name of `mySource`:" Command="dotnet nuget remove source mySource" />
+      <SeeAlso Title="Package source sections in NuGet.config files" Url="https://docs.microsoft.com/en-us/nuget/reference/nuget-config-file#package-source-sections" />
+      <SeeAlso Title="sources command (nuget.exe)" Url="https://docs.microsoft.com/en-us/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
   </Verb>
 </Commands>
