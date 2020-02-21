@@ -645,7 +645,7 @@ jobs:
 
 - job: Tests_On_Linux
   dependsOn: Initialize_Build
-  timeoutInMinutes: 120
+  timeoutInMinutes: 60
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     MSBUILDDISABLENODEREUSE: 1
