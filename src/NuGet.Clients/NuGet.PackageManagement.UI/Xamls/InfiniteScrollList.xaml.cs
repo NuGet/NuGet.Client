@@ -193,7 +193,7 @@ namespace NuGet.PackageManagement.UI
 
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
-                await TaskScheduler.Default; // switch to background tread
+                await TaskScheduler.Default; // switch to background thread
 
                 try
                 {
