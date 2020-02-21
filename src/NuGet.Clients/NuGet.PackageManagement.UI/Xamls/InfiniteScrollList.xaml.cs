@@ -37,8 +37,9 @@ namespace NuGet.PackageManagement.UI
         public delegate void UpdateButtonClickEventHandler(PackageItemListViewModel[] selectedPackages);
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
-        // This exists only to facilitate unit testing.
-        // it is triggered after LoadItems() is just before finished
+        /// <summary>
+        /// This exists only to facilitate unit testing. It is triggered after LoadItems() is just before finished
+        /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
@@ -159,8 +160,10 @@ namespace NuGet.PackageManagement.UI
             LoadItems(selectedPackageItem, token);
         }
 
-        // Keep the selected pakcage on the item after a search
-        // or select the first on the search if none was selected before
+        /// <summary>
+        /// Keep the selected package on the item after a search
+        /// or select the first on the search if none was selected before
+        /// <param name="selectedItem">Previously selected item</param>
         internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
             if (selectedItem != null)
@@ -334,8 +337,6 @@ namespace NuGet.PackageManagement.UI
                 token.ThrowIfCancellationRequested();
                 await currentLoader.UpdateStateAsync(progress, token);
             }
-
-
         }
 
         private async Task WaitForInitialResultsAsync(
@@ -382,7 +383,6 @@ namespace NuGet.PackageManagement.UI
                         await _list.ItemsLock.ExecuteAsync(() =>
                         {
                             Items.Add(_loadingStatusIndicator);
-
                             return Task.CompletedTask;
                         });
                     }
