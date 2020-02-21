@@ -716,7 +716,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         <RestorePackagesWithLockFile>$(RestorePackagesWithLockFile)</RestorePackagesWithLockFile>
         <NuGetLockFilePath>$(NuGetLockFilePath)</NuGetLockFilePath>
         <RestoreLockedMode>$(RestoreLockedMode)</RestoreLockedMode>
-        <CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</CentralPackageVersionsEnabled>
+        <_CentralPackageVersionsEnabled>$(_CentralPackageVersionsEnabled)</_CentralPackageVersionsEnabled>
       </_RestoreGraphEntry>
     </ItemGroup>
 
@@ -875,7 +875,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Write out central package versions -->
     <GetCentralPackageVersionsTask
-      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(CentralPackageVersionsEnabled)' == 'true' "
+      Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' AND '$(_CentralPackageVersionsEnabled)' == 'true' "
       ProjectUniqueName="$(MSBuildProjectFullPath)"
       CentralPackageVersions="@(PackageVersion)"
       TargetFrameworks="$(TargetFramework)"
