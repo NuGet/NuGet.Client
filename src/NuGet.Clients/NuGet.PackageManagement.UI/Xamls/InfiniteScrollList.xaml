@@ -27,7 +27,8 @@
     <DataTemplate
       DataType="{x:Type nuget:LoadingStatusIndicator}">
       <Grid
-        Margin="0,8">
+        Margin="0,8"
+        Background="Red">
         <TextBlock
           Name="_noItemsFound"
           FontStyle="Italic"

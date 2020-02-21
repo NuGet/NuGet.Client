@@ -38,6 +38,7 @@ namespace NuGet.PackageManagement.UI
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         // This exists only to facilitate unit testing.
+        // it is triggered after LoadItems() is just before finished
         internal event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
@@ -158,6 +159,8 @@ namespace NuGet.PackageManagement.UI
             LoadItems(selectedPackageItem, token);
         }
 
+        // Keep the selected pakcage on the item after a search
+        // or select the first on the search if none was selected before
         internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
             if (selectedItem != null)
@@ -177,11 +180,17 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
+            // add Loading... indicator if not present
+            if (!Items.Contains(_loadingStatusIndicator))
+            {
+                Items.Remove(_loadingStatusIndicator);
+            }
+
             var currentLoader = _loader;
 
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
-                await TaskScheduler.Default;
+                await TaskScheduler.Default; // switch to background tread
 
                 try
                 {
@@ -235,6 +244,7 @@ namespace NuGet.PackageManagement.UI
                 UpdateCheckBoxStatus();
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
+                Items.Remove(_loadingStatusIndicator);
             });
         }
 
@@ -324,6 +334,8 @@ namespace NuGet.PackageManagement.UI
                 token.ThrowIfCancellationRequested();
                 await currentLoader.UpdateStateAsync(progress, token);
             }
+
+
         }
 
         private async Task WaitForInitialResultsAsync(
@@ -339,6 +351,8 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        // Shows the Loading status bar, if necessary
+        // Also, it inserts the loading element if necesary
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -364,7 +378,9 @@ namespace NuGet.PackageManagement.UI
                     {
                         await _list.ItemsLock.ExecuteAsync(() =>
                         {
+                            // vvvvvvv TODO: INVESTIGATE THE LINE BELOW vvvvvvv
                             Items.Add(_loadingStatusIndicator);
+                            // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                             return Task.CompletedTask;
                         });
                     }
@@ -422,13 +438,17 @@ namespace NuGet.PackageManagement.UI
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
                     }
 
+                    // vvvvvvv TODO: INVESTIGATE THE LINE BELOW vvvvvvv
                     Items.Add(_loadingStatusIndicator);
+                    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
                     return Task.CompletedTask;
                 });
             });
         }
 
+        // Set the internal items list to zero
+        // Removes the event handlers
         private void ClearPackageList()
         {
             foreach (var package in PackageItems)

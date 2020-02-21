@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
@@ -11,12 +11,12 @@ namespace NuGet.PackageManagement.UI
     public static class Styles
     {
         [Browsable(false)]
-        public static object ThemedComboStyleKey => VsResourceKeys.ThemedDialogComboBoxStyleKey ?? typeof(ComboBox);
+        public static object ThemedComboStyleKey => typeof(ComboBox);
 
         [Browsable(false)]
-        public static object ScrollBarStyleKey => VsResourceKeys.ScrollBarStyleKey ?? typeof(ScrollBar);
+        public static object ScrollBarStyleKey => typeof(ScrollBar);
 
         [Browsable(false)]
-        public static object ScrollViewerStyleKey => VsResourceKeys.ScrollViewerStyleKey ?? typeof(ScrollViewer);
+        public static object ScrollViewerStyleKey => typeof(ScrollViewer);
     }
 }
