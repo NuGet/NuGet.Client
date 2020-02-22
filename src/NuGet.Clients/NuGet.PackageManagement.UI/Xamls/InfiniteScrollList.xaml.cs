@@ -38,7 +38,8 @@ namespace NuGet.PackageManagement.UI
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
         /// <summary>
-        /// This exists only to facilitate unit testing. It is triggered after LoadItems() is just before finished
+        /// This exists only to facilitate unit testing.
+        /// It is triggered at <see cref="LoadItems(PackageItemListViewModel, CancellationToken)" />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -183,10 +184,11 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
+            var deleteStatusIndicator = true;
             // add Loading... indicator if not present
             if (!Items.Contains(_loadingStatusIndicator))
             {
-                Items.Remove(_loadingStatusIndicator);
+                Items.Add(_loadingStatusIndicator);
             }
 
             var currentLoader = _loader;
@@ -223,6 +225,7 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
+                    deleteStatusIndicator = false;
                 }
                 catch (Exception ex) when (!loadCts.IsCancellationRequested)
                 {
@@ -242,12 +245,17 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;
+                    deleteStatusIndicator = false;
                 }
 
                 UpdateCheckBoxStatus();
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-                Items.Remove(_loadingStatusIndicator);
+
+                if (deleteStatusIndicator)
+                {
+                    Items.Remove(_loadingStatusIndicator);
+                }
             });
         }
 
@@ -418,10 +426,10 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Appends <c>packages</c> to the <c>Items</c>
+        /// Appends <c>packages</c> to the internal <see cref="Items"> list
         /// </summary>
-        /// <param name="packages">View model collection to add</param>
-        /// <param name="refresh">Clear <c>Items</c> list if set to <c>true</c></param>
+        /// <param name="packages">Packages collection to add</param>
+        /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -430,7 +438,7 @@ namespace NuGet.PackageManagement.UI
                 await _list.ItemsLock.ExecuteAsync(() =>
                 {
                     // remove the loading status indicator if it's in the list
-                    var removed = Items.Remove(_loadingStatusIndicator);
+                    bool removed = Items.Remove(_loadingStatusIndicator);
 
                     if (refresh)
                     {
