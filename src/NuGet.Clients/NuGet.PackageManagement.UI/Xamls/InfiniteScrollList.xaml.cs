@@ -184,7 +184,6 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
-            var deleteStatusIndicator = true;
             // add Loading... indicator if not present
             if (!Items.Contains(_loadingStatusIndicator))
             {
@@ -221,11 +220,8 @@ namespace NuGet.PackageManagement.UI
                     // Do not log to the activity log, since it is not a NuGet error
                     _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
-                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
-                    deleteStatusIndicator = false;
                 }
                 catch (Exception ex) when (!loadCts.IsCancellationRequested)
                 {
@@ -241,18 +237,17 @@ namespace NuGet.PackageManagement.UI
                     var errorMessage = ExceptionUtilities.DisplayMessage(ex);
                     _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
 
-                    _loadingStatusIndicator.SetError(errorMessage);
-
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;
-                    deleteStatusIndicator = false;
                 }
 
                 UpdateCheckBoxStatus();
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
 
-                if (deleteStatusIndicator)
+                // This avoids removing the "No items found message" but, it can lead to
+                // the Updates tab with a 'blank' state: without "No items found message" and no "Loading ..." message
+                if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound)
                 {
                     Items.Remove(_loadingStatusIndicator);
                 }

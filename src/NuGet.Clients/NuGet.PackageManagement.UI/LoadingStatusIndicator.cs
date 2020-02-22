@@ -11,7 +11,6 @@ namespace NuGet.PackageManagement.UI
         public event PropertyChangedEventHandler PropertyChanged;
 
         private LoadingStatus _status = LoadingStatus.Unknown;
-        private string _errorMessage;
         private string _loadingMessage;
 
         public LoadingStatus Status
@@ -40,22 +39,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public string ErrorMessage
-        {
-            get
-            {
-                return _errorMessage;
-            }
-            set
-            {
-                if (_errorMessage != value)
-                {
-                    _errorMessage = value;
-                    OnPropertyChanged(nameof(ErrorMessage));
-                }
-            }
-        }
-
         protected void OnPropertyChanged(string propertyName)
         {
             if (PropertyChanged != null)
@@ -74,13 +57,6 @@ namespace NuGet.PackageManagement.UI
         {
             Status = LoadingStatus.Unknown;
             LoadingMessage = loadingMessage;
-        }
-
-        public void SetError(string message)
-        {
-            Status = LoadingStatus.ErrorOccurred;
-            ErrorMessage = message;
-            LoadingMessage = "ERROR: " + message;
         }
     }
 }
