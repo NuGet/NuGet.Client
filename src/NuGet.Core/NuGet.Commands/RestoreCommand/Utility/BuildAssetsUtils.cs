@@ -335,9 +335,7 @@ namespace NuGet.Commands
 
                 if (existing != null)
                 {
-                    // Use a simple string compare to check if the files match
-                    // This can be optimized in the future, but generally these are very small files.
-                    return !newFile.ToString().Equals(existing.ToString(), StringComparison.Ordinal);
+                    return !XDocument.DeepEquals(existing, newFile);
                 }
             }
 
