@@ -1993,8 +1993,8 @@ namespace NuGet.SolutionRestoreManager.Test
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
                     It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { capturedRestoreSpec = dg; })
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>(
+                    (_, dg, __) => { capturedRestoreSpec = dg; })
                 .Returns(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
@@ -2026,8 +2026,8 @@ namespace NuGet.SolutionRestoreManager.Test
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
                     It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Callback<ProjectNames, DependencyGraphSpec>(
-                    (_, dg) => { capturedRestoreSpec = dg; })
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>(
+                    (_, dg, __) => { capturedRestoreSpec = dg; })
                 .Returns(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
