@@ -185,7 +185,7 @@ namespace NuGet.Commands
 
                 new XElement(Namespace + "Project",
                     new XAttribute("ToolsVersion", "14.0"),
-                    new XAttribute("xmlns", Namespace),
+                    new XAttribute("xmlns", Namespace.NamespaceName),
                     new XElement(Namespace + "PropertyGroup",
                         new XElement(Namespace + "MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"))));
 
