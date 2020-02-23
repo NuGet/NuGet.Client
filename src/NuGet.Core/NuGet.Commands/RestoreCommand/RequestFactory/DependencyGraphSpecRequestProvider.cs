@@ -72,16 +72,21 @@ namespace NuGet.Commands
                 // Parallel.Foreach has an optimization for Arrays, so calling .ToArray() is better and adds almost no overhead
                 Parallel.ForEach(dgFile.Restore.ToArray(), parallelOptions, projectNameToRestore =>
                 {
-                    var closure = dgFile.GetClosure(projectNameToRestore);
-
-                    var projectDependencyGraphSpec = dgFile.WithProjectClosure(projectNameToRestore);
+                    IReadOnlyList<PackageSpec> closure = dgFile.GetClosure(projectNameToRestore);
+                    DependencyGraphSpec projectDependencyGraphSpec = dgFile.CreateFromClosure(projectNameToRestore, closure);
 
                     var externalClosure = new HashSet<ExternalProjectReference>(closure.Select(GetExternalProject));
 
-                    var rootProject = externalClosure.Single(p =>
+                    ExternalProjectReference rootProject = externalClosure.Single(p =>
                         StringComparer.Ordinal.Equals(projectNameToRestore, p.UniqueName));
 
-                    var request = Create(projectNameToRestore, rootProject, externalClosure, restoreContext, projectDgSpec: projectDependencyGraphSpec, settingsLoadingContext: settingsLoadingContext);
+                    RestoreSummaryRequest request = Create(
+                        projectNameToRestore,
+                        rootProject,
+                        externalClosure,
+                        restoreContext,
+                        projectDgSpec: projectDependencyGraphSpec,
+                        settingsLoadingContext: settingsLoadingContext);
 
                     if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                     {
@@ -94,8 +99,9 @@ namespace NuGet.Commands
                     }
                 });
             }
+
             // Filter out duplicate tool restore requests
-            foreach (var subSetRequest in ToolRestoreUtility.GetSubSetRequests(toolRequests))
+            foreach (RestoreSummaryRequest subSetRequest in ToolRestoreUtility.GetSubSetRequests(toolRequests))
             {
                 requests.Add(subSetRequest);
             }
@@ -105,11 +111,9 @@ namespace NuGet.Commands
 
         public static IEnumerable<ExternalProjectReference> GetExternalClosure(DependencyGraphSpec dgFile, string projectNameToRestore)
         {
-            var closure = dgFile.GetClosure(projectNameToRestore);
+            IReadOnlyList<PackageSpec> closure = dgFile.GetClosure(projectNameToRestore);
 
-            var externalClosure = closure.Select(GetExternalProject);
-            return externalClosure;
-
+            return closure.Select(GetExternalProject);
         }
 
         private static ExternalProjectReference GetExternalProject(PackageSpec rootProject)
@@ -152,7 +156,7 @@ namespace NuGet.Commands
                 sources,
                 restoreArgs.CacheContext,
                 restoreArgs.Log);
-            
+
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
             // Create request
@@ -170,7 +174,7 @@ namespace NuGet.Commands
                 DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath
             };
-            
+
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
                 ?? DefaultRestoreLegacyPackagesDirectory;
             request.IsLowercasePackagesDirectory = !restoreLegacyPackagesDirectory;
@@ -200,14 +204,6 @@ namespace NuGet.Commands
             return project.RestoreMetadata.PackagesPath;
         }
 
-        private void UpdateSources(ProjectRestoreMetadata project, List<SourceRepository> sources)
-        {
-            project.Sources.Clear();
-            foreach (var source in sources)
-            {
-                project.Sources.Add(source.PackageSource);
-            }
-        }
         /// <summary>
         /// Return all references for a given project path.
         /// References is modified by this method.

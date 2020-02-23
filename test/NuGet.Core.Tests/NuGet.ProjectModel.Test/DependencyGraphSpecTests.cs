@@ -618,6 +618,78 @@ namespace NuGet.ProjectModel.Test
                 actualResult => Assert.Same(expectedResult, actualResult));
         }
 
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void CreateFromClosure_WhenProjectUniqueNameIsNullOrEmpty_Throws(string projectUniqueName)
+        {
+            IReadOnlyList<PackageSpec> closure = new[] { new PackageSpec() };
+            var dgSpec = new DependencyGraphSpec();
+
+            ArgumentException exception = Assert.Throws<ArgumentException>(
+                () => dgSpec.CreateFromClosure(projectUniqueName, closure));
+
+            Assert.Equal("projectUniqueName", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenClosureIsNull_Throws()
+        {
+            var dgSpec = new DependencyGraphSpec();
+
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => dgSpec.CreateFromClosure(PackageSpecName, closure: null));
+
+            Assert.Equal("closure", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenReadOnlyIsTrue_ReturnsSameClosure()
+        {
+            var expectedResult = new PackageSpec()
+            {
+                RestoreMetadata = new ProjectRestoreMetadata()
+            };
+            IReadOnlyList<PackageSpec> closure = new[] { expectedResult };
+            var dgSpec = new DependencyGraphSpec(isReadOnly: true);
+
+            DependencyGraphSpec newDgSpec = dgSpec.CreateFromClosure(PackageSpecName, closure);
+
+            Assert.Collection(
+                newDgSpec.Restore,
+                actualResult => Assert.Equal(PackageSpecName, actualResult));
+
+            Assert.Collection(
+                newDgSpec.Projects,
+                actualResult => Assert.Same(expectedResult, actualResult));
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenReadOnlyIsFalse_ReturnsClonedClosure()
+        {
+            var expectedResult = new PackageSpec()
+            {
+                IsDefaultVersion = false,
+                RestoreMetadata = new ProjectRestoreMetadata()
+            };
+            IReadOnlyList<PackageSpec> closure = new[] { expectedResult };
+            var dgSpec = new DependencyGraphSpec(isReadOnly: false);
+
+            DependencyGraphSpec newDgSpec = dgSpec.CreateFromClosure(PackageSpecName, closure);
+
+            Assert.Collection(
+                newDgSpec.Restore,
+                actualResult => Assert.Equal(PackageSpecName, actualResult));
+
+            Assert.Collection(
+                newDgSpec.Projects,
+                actualResult =>
+                {
+                    Assert.True(expectedResult.Equals(actualResult));
+                    Assert.NotSame(expectedResult, actualResult);
+                });
+        }
+
         private static DependencyGraphSpec CreateDependencyGraphSpec()
         {
             var dgSpec = new DependencyGraphSpec();
