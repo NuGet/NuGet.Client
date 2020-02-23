@@ -201,13 +201,14 @@ namespace NuGet.ProjectModel
         public void AddProject(PackageSpec projectSpec)
         {
             // Find the unique name in the spec, otherwise generate a new one.
-            var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
+            string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                var projectToRestore = projectSpec;
-                if (projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                PackageSpec projectToRestore = projectSpec;
+
+                if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
                     projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
                 }
