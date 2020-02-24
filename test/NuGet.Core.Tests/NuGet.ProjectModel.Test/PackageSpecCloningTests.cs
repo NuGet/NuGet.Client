@@ -766,5 +766,23 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(3, compat.RestoreContexts.Count);
             Assert.Equal(2, clone.RestoreContexts.Count);
         }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Clone_WhenIsDefaultVersionVaries_ReturnsEqualClone(bool expectedResult)
+        {
+            var packageSpec = new PackageSpec();
+
+            packageSpec.IsDefaultVersion = expectedResult;
+
+            Assert.Equal(expectedResult, packageSpec.IsDefaultVersion);
+
+            PackageSpec clone = packageSpec.Clone();
+
+            Assert.Equal(expectedResult, packageSpec.IsDefaultVersion);
+            Assert.Equal(expectedResult, clone.IsDefaultVersion);
+            Assert.True(packageSpec.Equals(clone));
+        }
     }
 }
