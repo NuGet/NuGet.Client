@@ -185,9 +185,11 @@ namespace NuGet.PackageManagement.UI
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
             // add Loading... indicator if not present
+            var addedLoadingIndicator = false;
             if (!Items.Contains(_loadingStatusIndicator))
             {
                 Items.Add(_loadingStatusIndicator);
+                addedLoadingIndicator = true;
             }
 
             var currentLoader = _loader;
@@ -245,11 +247,17 @@ namespace NuGet.PackageManagement.UI
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
 
-                // This avoids removing the "No items found message" but, it can lead to
-                // the Updates tab with a 'blank' state: without "No items found message" and no "Loading ..." message
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound)
                 {
-                    Items.Remove(_loadingStatusIndicator);
+                    var emtyListCount = addedLoadingIndicator ? 1 : 0;
+                    if (Items.Count == emtyListCount)
+                    {
+                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                    }
+                    else
+                    {
+                        Items.Remove(_loadingStatusIndicator);
+                    }
                 }
             });
         }
