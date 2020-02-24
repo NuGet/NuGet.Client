@@ -6440,8 +6440,6 @@ namespace NuGet.CommandLine.Test
                     Version = "1.0.0"
                 };
 
-                var projects = new List<SimpleTestProjectContext>();
-
                 var project = SimpleTestProjectContext.CreateNETCore(
                    $"proj",
                    pathContext.SolutionRoot,
@@ -6462,7 +6460,7 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.Item1);
                 Assert.Contains("Writing cache file", result.Item2);
                 Assert.Contains("Writing assets file to disk", result.Item2);
-                Assert.Contains("Persisting no-op dg", result.Item2);
+                Assert.Contains("Persisting dg", result.Item2);
 
                 var dgSpecFileName = Path.Combine(Path.GetDirectoryName(project.AssetsFileOutputPath), $"{Path.GetFileName(project.ProjectPath)}.nuget.dgspec.json");
 
@@ -6477,73 +6475,11 @@ namespace NuGet.CommandLine.Test
                 Assert.Equal(0, result.Item1);
                 Assert.DoesNotContain("Writing cache file", result.Item2);
                 Assert.DoesNotContain("Writing assets file to disk", result.Item2);
-                Assert.DoesNotContain("Persisting no-op dg", result.Item2);
+                Assert.DoesNotContain("Persisting dg", result.Item2);
 
                 fileInfo = new FileInfo(dgSpecFileName);
                 Assert.True(fileInfo.Exists);
                 Assert.Equal(lastWriteTime, fileInfo.LastWriteTime);
-            }
-        }
-
-        [Fact]
-        public async Task RestoreNetCore_NoOp_DgSpecJsonIsWrittenInNoopCaseIfNotExists()
-        {
-            // Arrange
-            using (var pathContext = new SimpleTestPathContext())
-            {
-                // Set up solution, project, and packages
-                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
-
-                var packageX = new SimpleTestPackageContext()
-                {
-                    Id = "x",
-                    Version = "1.0.0"
-                };
-
-                var projects = new List<SimpleTestProjectContext>();
-
-                var project = SimpleTestProjectContext.CreateNETCore(
-                   $"proj",
-                   pathContext.SolutionRoot,
-                   NuGetFramework.Parse("net45"));
-
-                project.AddPackageToAllFrameworks(packageX);
-                solution.Projects.Add(project);
-                solution.Create(pathContext.SolutionRoot);
-
-
-                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
-                   pathContext.PackageSource,
-                   PackageSaveMode.Defaultv3,
-                   packageX);
-
-                // Prerequisites
-                var result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
-                Assert.Equal(0, result.Item1);
-                Assert.Contains("Writing cache file", result.Item2);
-                Assert.Contains("Writing assets file to disk", result.Item2);
-                Assert.Contains("Persisting no-op dg", result.Item2);
-
-                var dgSpecFileName = Path.Combine(Path.GetDirectoryName(project.AssetsFileOutputPath), $"{Path.GetFileName(project.ProjectPath)}.nuget.dgspec.json");
-
-                var fileInfo = new FileInfo(dgSpecFileName);
-                Assert.True(fileInfo.Exists);
-                fileInfo.Delete();
-                fileInfo = new FileInfo(dgSpecFileName);
-                Assert.False(fileInfo.Exists);
-
-
-                // Act
-                result = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
-
-                // Assert
-                Assert.Equal(0, result.Item1);
-                Assert.DoesNotContain("Writing cache file", result.Item2);
-                Assert.DoesNotContain("Writing assets file to disk", result.Item2);
-                Assert.Contains("Persisting no-op dg", result.Item2);
-
-                fileInfo = new FileInfo(dgSpecFileName);
-                Assert.True(fileInfo.Exists);
             }
         }
 
