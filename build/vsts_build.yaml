@@ -705,7 +705,7 @@ jobs:
     demands: 
     - sh
     - VSTS_OS -equals Mac_Mojave_10.14
-    - Mono -equals 6.4.0
+    - Team -equals NuGet Client Team
 
   steps:
   - task: PowerShell@2
