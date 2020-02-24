@@ -162,8 +162,9 @@ namespace NuGet.PackageManagement.UI
         }
 
         /// <summary>
-        /// Keep the selected package on the item after a search
-        /// or select the first on the search if none was selected before
+        /// Keep the previously selected package after a search.
+        /// Otherwise, select the first on the search if none was selected before.
+        /// </summary>
         /// <param name="selectedItem">Previously selected item</param>
         internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
@@ -223,6 +224,9 @@ namespace NuGet.PackageManagement.UI
                     // Do not log to the activity log, since it is not a NuGet error
                     _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
+                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+
+
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
                 }
@@ -240,12 +244,15 @@ namespace NuGet.PackageManagement.UI
                     var errorMessage = ExceptionUtilities.DisplayMessage(ex);
                     _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
 
+                    _loadingStatusIndicator.SetError(errorMessage);
+
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;
                 }
                 finally
                 {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound)
+                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
+                        || _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                     {
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
                         if (Items.Count == emptyListCount)
