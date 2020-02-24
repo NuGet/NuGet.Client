@@ -109,7 +109,7 @@ namespace Microsoft.Build.NuGetSdkResolver
         /// IMPORTANT: This class is used to ensure that <see cref="NuGetSdkResolver"/> does not consume any NuGet classes directly.  This ensures that no NuGet assemblies
         /// are loaded unless they are needed.  Do not implement anything in <see cref="NuGetSdkResolver"/> that uses a NuGet class and instead place it here.
         /// </summary>
-        internal static class NuGetAbstraction
+        private static class NuGetAbstraction
         {
             public static SdkResult GetSdkResult(SdkReference sdk, object nuGetVersion, SdkResolverContext context, SdkResultFactory factory)
             {
