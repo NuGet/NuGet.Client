@@ -252,8 +252,11 @@ namespace NuGet.PackageManagement.UI
                 finally
                 {
                     if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                        || _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                     {
+                        // Ideally, After a serach, it should report its status and,
+                        // do not keep the LoadingStatus.Loading forever.
+                        // This is a workaround.
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
                         if (Items.Count == emptyListCount)
                         {
