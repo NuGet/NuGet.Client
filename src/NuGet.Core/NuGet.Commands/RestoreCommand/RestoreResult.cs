@@ -76,6 +76,11 @@ namespace NuGet.Commands
         /// </summary>
         private PackagesLockFile NewPackagesLockFile { get; }
 
+
+        private string DependencyGraphSpecFilePath { get; }
+
+        private DependencyGraphSpec DependencyGraphSpec { get; }
+
         public RestoreResult(
             bool success,
             IEnumerable<RestoreTargetGraph> restoreGraphs,
@@ -88,6 +93,8 @@ namespace NuGet.Commands
             string cacheFilePath,
             string packagesLockFilePath,
             PackagesLockFile packagesLockFile,
+            string dependencyGraphSpecFilePath,
+            DependencyGraphSpec dependencyGraphSpec,
             ProjectStyle projectStyle,
             TimeSpan elapsedTime)
         {
@@ -102,6 +109,8 @@ namespace NuGet.Commands
             CacheFilePath = cacheFilePath;
             NewPackagesLockFilePath = packagesLockFilePath;
             NewPackagesLockFile = packagesLockFile;
+            DependencyGraphSpecFilePath = dependencyGraphSpecFilePath;
+            DependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
         }
@@ -158,6 +167,11 @@ namespace NuGet.Commands
 
             // Commit the lock file to disk
             await CommitLockFileAsync(
+                log: log,
+                toolCommit: isTool);
+
+            // Commit the dg spec file to disk
+            await CommitDgSpecFileAsync(
                 log: log,
                 toolCommit: isTool);
         }
@@ -260,6 +274,18 @@ namespace NuGet.Commands
                 await FileUtility.ReplaceWithLock(
                     (outputPath) => PackagesLockFileFormat.Write(outputPath, NewPackagesLockFile),
                     NewPackagesLockFilePath);
+            }
+        }
+
+        private async Task CommitDgSpecFileAsync(ILogger log, bool toolCommit)
+        {
+            if (!toolCommit && DependencyGraphSpecFilePath != null && DependencyGraphSpec != null)
+            {
+                log.LogVerbose($"Persisting dg to {DependencyGraphSpecFilePath}");
+
+                await FileUtility.ReplaceWithLock(
+                    (outputPath) => DependencyGraphSpec.Save(outputPath),
+                    DependencyGraphSpecFilePath);
             }
         }
     }

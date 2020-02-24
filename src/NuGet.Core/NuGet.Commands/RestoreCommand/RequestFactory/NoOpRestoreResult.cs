@@ -20,7 +20,7 @@ namespace NuGet.Commands
         public NoOpRestoreResult(bool success, string lockFilePath, Lazy<LockFile> lockFileLazy, CacheFile cacheFile, string cacheFilePath, ProjectStyle projectStyle, TimeSpan elapsedTime) :
             base(success : success, restoreGraphs : null, compatibilityCheckResults : new List<CompatibilityCheckResult>() , 
                 msbuildFiles : null, lockFile : null, previousLockFile : null, lockFilePath: lockFilePath,
-                cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, projectStyle: projectStyle, elapsedTime: elapsedTime)
+                cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, dependencyGraphSpecFilePath: null, dependencyGraphSpec: null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
             _lockFileLazy = lockFileLazy ?? throw new ArgumentNullException(nameof(lockFileLazy));
         }

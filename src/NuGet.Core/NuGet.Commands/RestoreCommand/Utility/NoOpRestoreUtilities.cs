@@ -226,20 +226,6 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// Persists the dg file for the given restore request.
-        /// This does not do a dirty check!
-        /// </summary>
-        /// <param name="spec">spec</param>
-        /// <param name="dgPath">the dg path</param>
-        /// <param name="log">logger</param>
-        internal static void PersistDGSpecFile(DependencyGraphSpec spec, string dgPath, ILogger log)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(dgPath));
-            log.LogVerbose($"Persisting no-op dg to {dgPath}");
-            spec.Save(dgPath);
-        }
-
-        /// <summary>
         /// Gets the path for dgpsec.json.
         /// The project style that support dgpsec.json persistance are
         /// <see cref="ProjectStyle.PackageReference"/>, <see cref="ProjectStyle.ProjectJson"/>, <see cref="ProjectStyle.Standalone"/>

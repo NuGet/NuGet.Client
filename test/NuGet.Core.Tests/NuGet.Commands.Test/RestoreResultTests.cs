@@ -35,6 +35,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: null,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -71,6 +73,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: null,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -107,6 +111,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: cachePath,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -229,5 +235,7 @@ namespace NuGet.Commands.Test
                 Assert.Equal("System.Runtime", actual.Libraries[0].Name);
             }
         }
+
+        // TODO NK - Add tests for this.
     }
 }
