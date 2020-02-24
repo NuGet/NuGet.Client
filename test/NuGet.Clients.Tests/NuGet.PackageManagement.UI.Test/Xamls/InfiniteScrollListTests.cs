@@ -2,29 +2,39 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using Moq;
+using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
+using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace NuGet.PackageManagement.UI.Test
 {
     public class InfiniteScrollListTests : IDisposable
     {
         private JoinableTaskContext _joinableTaskContext;
-        public InfiniteScrollListTests()
+        private readonly ITestOutputHelper _output;
+
+        public InfiniteScrollListTests(ITestOutputHelper output)
         {
 #pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
             _joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current);
 #pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
 
             NuGetUIThreadHelper.SetCustomJoinableTaskFactory(_joinableTaskContext.Factory);
+
+            _output = output;
         }
 
         public void Dispose()
@@ -267,6 +277,198 @@ namespace NuGet.PackageManagement.UI.Test
                 Assert.Null(errorMessage);
 
                 loader.Verify();
+            }
+        }
+
+        [WpfTheory]
+        [MemberData(nameof(TestSearchMetadata))]
+        public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
+            IPackageSearchMetadata[] searchItems,
+            int expectedItems)
+        {
+            var loaderMock = new Mock<IPackageItemLoader>(MockBehavior.Strict);
+            var stateMock = new Mock<IItemLoaderState>();
+            var searchTask = Task.FromResult(SearchResult.FromItems( searchItems ));
+            var testLogger = new TestNuGetUILogger(_output);
+            var tcs = new TaskCompletionSource<int>();
+            var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
+
+            var currentStatus = LoadingStatus.Loading;
+
+            stateMock.Setup(x => x.LoadingStatus)
+                .Returns(() => currentStatus);
+            stateMock.Setup(x => x.ItemsCount)
+                .Returns(() => searchItems.Length);
+            loaderMock.SetupGet(x => x.State)
+                .Returns(stateMock.Object);
+            loaderMock.SetupGet(x => x.IsMultiSource)
+                .Returns(false);
+            loaderMock.Setup(x => x.UpdateStateAndReportAsync(
+                    It.IsNotNull<SearchResult<IPackageSearchMetadata>>(),
+                    It.IsNotNull<IProgress<IItemLoaderState>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.FromResult(0))
+                .Callback( () => {
+                    currentStatus = searchItems.Length > 0 ? LoadingStatus.Ready : LoadingStatus.NoItemsFound;
+                });
+            loaderMock.Setup(x => x.UpdateStateAsync(
+                    It.IsNotNull<IProgress<IItemLoaderState>>(),
+                    It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult(0));
+            loaderMock.Setup(x => x.GetCurrent())
+                .Returns(() => searchItems.Select(x => new PackageItemListViewModel()));
+
+            list.LoadItemsCompleted += (sender, args) =>
+            {
+                var lst = (InfiniteScrollList)sender;
+                tcs.TrySetResult(lst.Items.Count);
+                _output.WriteLine("3. After assert");
+            };
+
+            _output.WriteLine("1. Init act");
+            await list.LoadItemsAsync(
+                loader: loaderMock.Object,
+                loadingMessage: "Test loading",
+                logger: testLogger,
+                searchResultTask: searchTask,
+                token: CancellationToken.None);
+            _output.WriteLine("2. End act");
+
+            var finished = await tcs.Task;
+
+            Assert.Equal(expectedItems, finished);
+            _output.WriteLine("4. End of test");
+        }
+
+        public static IEnumerable<object[]> TestSearchMetadata()
+        {
+            var allData = new List<object[]>
+            {
+                new object[]{ new IPackageSearchMetadata[] {
+                }, 1 }, // only loading indicator
+                new object[]{ new IPackageSearchMetadata[] {
+                    new TestPackageSearchMetadata(),
+                    new TestPackageSearchMetadata(),
+                    new TestPackageSearchMetadata(),
+                }, 3 }, // only search elements
+            };
+
+            return allData;
+        }
+
+        /// <summary>
+        /// Test implementation of <see cref="IPackageSearchMetadata"/>. Not for produciton use
+        /// </summary>
+        class TestPackageSearchMetadata : IPackageSearchMetadata
+        {
+            public string Authors { get; set; }
+
+            public IEnumerable<PackageDependencyGroup> DependencySets { get; set; }
+
+            public string Description { get; set; }
+
+            public long? DownloadCount { get; set; }
+
+            public Uri IconUrl { get; set; }
+
+            public PackageIdentity Identity { get; set; }
+
+            public Uri LicenseUrl { get; set; }
+
+            public Uri ProjectUrl { get; set; }
+
+            public Uri ReportAbuseUrl { get; set; }
+
+            public Uri PackageDetailsUrl { get; set; }
+
+            public DateTimeOffset? Published { get; set; }
+
+            public string Owners { get; set; }
+
+            public bool RequireLicenseAcceptance { get; set; }
+
+            public string Summary { get; set; }
+
+            public string Tags { get; set; }
+
+            public string Title { get; set; }
+
+            public bool IsListed { get; set; }
+
+            public bool PrefixReserved { get; set; }
+
+            public LicenseMetadata LicenseMetadata { get; set; }
+
+            public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task<IEnumerable<VersionInfo>> GetVersionsAsync()
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        /// <summary>
+        /// NuGet UI Logger to print messages to Xunit test output
+        /// </summary>
+        class TestNuGetUILogger : INuGetUILogger
+        {
+            private readonly ITestOutputHelper _out;
+
+            public TestNuGetUILogger(ITestOutputHelper outputHelper)
+            {
+                _out = outputHelper;
+            }
+
+            public void End()
+            {
+                throw new NotImplementedException();
+            }
+
+            public void Log(MessageLevel level, string message, params object[] args)
+            {
+                _out.WriteLine($"[{level}] {string.Format(message, args)}");
+            }
+
+            public void Log(ILogMessage message)
+            {
+                Log(FromLogLevel(message.Level), message.Message);
+            }
+
+            public void ReportError(string message)
+            {
+                Log(MessageLevel.Error, message);
+            }
+
+            public void ReportError(ILogMessage message)
+            {
+                Log(MessageLevel.Error, message.Message);
+            }
+
+            public void Start()
+            {
+                throw new NotImplementedException();
+            }
+
+            private MessageLevel FromLogLevel(LogLevel logLevel)
+            {
+                switch (logLevel)
+                {
+                    case LogLevel.Error:
+                        return MessageLevel.Error;
+                    case LogLevel.Warning:
+                        return MessageLevel.Warning;
+                    case LogLevel.Verbose:
+                    case LogLevel.Debug:
+                        return MessageLevel.Debug;
+                    case LogLevel.Minimal:
+                    case LogLevel.Information:
+                        return MessageLevel.Info;
+                    default:
+                        return MessageLevel.Warning;
+                }
             }
         }
     }
