@@ -539,14 +539,8 @@ namespace NuGet.Packaging.Test
 
                 Assert.Equal(1, test.Logger.Errors);
                 Assert.Equal(1, test.Logger.Warnings);
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Error &&
-                    message.Message == "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file.");
-                Assert.Contains(test.Logger.LogMessages, message =>
-                    message.Code == NuGetLogCode.NU3018 &&
-                    message.Level == LogLevel.Warning &&
-                    message.Message == "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.");
+                SigningTestUtility.AssertNotTimeValid(test.Logger.LogMessages, LogLevel.Error);
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
             }
         }
 
@@ -569,7 +563,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(0, test.Logger.Errors);
                 Assert.Equal(1, test.Logger.Warnings);
                 Assert.Equal(1, test.Logger.Messages.Count());
-                Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
             }
         }
 
@@ -613,7 +607,7 @@ namespace NuGet.Packaging.Test
                     Assert.Equal(0, test.Logger.Errors);
                     Assert.Equal(1, test.Logger.Warnings);
                     Assert.Equal(1, test.Logger.Messages.Count());
-                    Assert.True(test.Logger.Messages.Contains("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider."));
+                    SigningTestUtility.AssertUntrustedRoot(test.Logger.LogMessages, LogLevel.Warning);
                 }
             }
         }
