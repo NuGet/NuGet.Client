@@ -124,6 +124,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Packages.
+        /// </summary>
+        public static string Accessibility_Packages {
+            get {
+                return ResourceManager.GetString("Accessibility_Packages", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package details.
         /// </summary>
         public static string Accessibility_PackagesDetails {
