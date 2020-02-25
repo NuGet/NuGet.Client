@@ -10,6 +10,7 @@
 
 namespace NuGet.Common {
     using System;
+    using System.Reflection;
     
     
     /// <summary>
@@ -19,7 +20,7 @@ namespace NuGet.Common {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Strings {
@@ -39,7 +40,7 @@ namespace NuGet.Common {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Common.Strings", typeof(Strings).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("NuGet.Common.Strings", typeof(Strings).GetTypeInfo().Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
@@ -84,15 +85,6 @@ namespace NuGet.Common {
         internal static string ArgumentNullOrEmpty {
             get {
                 return ResourceManager.GetString("ArgumentNullOrEmpty", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized string similar to Directory {0} does not exist..
-        /// </summary>
-        internal static string Error_DirectoryDoesNotExist {
-            get {
-                return ResourceManager.GetString("Error_DirectoryDoesNotExist", resourceCulture);
             }
         }
         
