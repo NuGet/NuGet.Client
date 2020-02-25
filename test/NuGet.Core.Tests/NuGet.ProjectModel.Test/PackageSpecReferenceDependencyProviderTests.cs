@@ -46,10 +46,11 @@ namespace NuGet.ProjectModel.Test
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
                 Assert.NotNull(barDep);
                 Assert.True(barDep.VersionCentrallyManaged);
+                Assert.True(barDep.AutoReferenced);
                 Assert.Equal("[2.0.0, )", barDep.LibraryRange.VersionRange.ToNormalizedString());
                 var fooDep = dependencies.Where(d => d.Name == "foo").First();
                 Assert.NotNull(fooDep);
-                Assert.False(fooDep.VersionCentrallyManaged);
+                Assert.False(fooDep.AutoReferenced);
                 Assert.True(fooDep.VersionCentrallyManaged);
                 Assert.Equal("[2.0.0, )", fooDep.LibraryRange.VersionRange.ToNormalizedString());
             }
