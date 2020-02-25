@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -1416,6 +1417,93 @@ namespace NuGet.Commands.Test
             Assert.True(errorMessage.Contains(autoreferencedpackageId));
         }
 
+        [Fact]
+        public void RestoreCommand_AddCentralPackageVersionsToContext()
+        {
+            // Arrange
+            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+               LibraryDependencyType.Default,
+               LibraryIncludeFlags.All,
+               LibraryIncludeFlags.All,
+               new List<Common.NuGetLogCode>(),
+               autoReferenced: false,
+               generatePathProperty: true);
+
+            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
+            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
+
+            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
+            var sources = new List<PackageSource>();
+            var logger = new TestLogger();
+
+            var request = new TestRestoreRequest(packageSpec, sources, "", logger);
+            var restoreCommand = new RestoreCommand(request);
+            RemoteWalkContext context = new RemoteWalkContext(request.CacheContext, logger);
+
+            // Act
+            restoreCommand.AddCentralPackageVersionsToContext(request, context);
+
+            // Assert
+            // Only bar is expected as foo is already in the dependency list         
+            Assert.Equal(1, context.CentralPackageVersions.Count);
+            Assert.Equal(1, context.CentralPackageVersions.First().Value.Count);
+            Assert.Equal("bar", context.CentralPackageVersions.First().Value.First().Key);
+        }
+
+
+        [Fact]
+        public async Task RestoreCommand_DowngradeIsErrorWhenCpvmEnabled()
+        {
+            // Arange
+            // create graph with a downgrade
+            string centralPackageName = "D";
+            string centralPackageVersion = "2.0.0";
+            string otherVersion = "3.0.0";
+            NuGetFramework framework = NuGetFramework.Parse("net45");
+            var logger = new TestLogger();
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            provider.Package("A", otherVersion)
+                    .DependsOn("B", otherVersion)
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+
+            provider.Package("B", otherVersion)
+                   .DependsOn("C", otherVersion);
+
+            provider.Package("C", otherVersion)
+                  .DependsOn(centralPackageName, otherVersion);
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
+
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+            RestoreTargetGraph restoreTargetGraph = RestoreTargetGraph.Create(new List<GraphNode<RemoteResolveResult>>() { rootNode }, context, logger, framework);
+
+            await RestoreCommand.LogDowngradeWarningsOrErrorsAsync(new List<RestoreTargetGraph>() { restoreTargetGraph }, logger, isCpvmEnabled: true);
+
+            // Assert
+            Assert.Equal(1, logger.Errors);
+            Assert.Equal(1, logger.LogMessages.Count);
+            var logMessage = logger.LogMessages.First();
+            Assert.Equal(LogLevel.Error, logMessage.Level);
+            Assert.True(logMessage.Message.Contains("Detected package downgrade: D from 3.0.0 to centrally defined 2.0.0. "));
+            Assert.Equal(NuGetLogCode.NU1609, logMessage.Code);
+        }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
@@ -1433,6 +1521,18 @@ namespace NuGet.Commands.Test
             }
 
             return tfi;
+        }
+
+        private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)
+        {
+            var range = new LibraryRange
+            {
+                Name = name,
+                VersionRange = new VersionRange(new NuGetVersion("1.0"))
+            };
+
+            return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
+
         }
     }
 }

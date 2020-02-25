@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -166,25 +167,30 @@ namespace NuGet.Commands
                     }
                 }
 
-                if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
+                if (isCpvmEnabled)
                 {
-                    restoreTime.Stop();
-                    _success = false;
+                    if (!await AreCentralVersionRequirementsSatisfiedAsync())
+                    {
+                        restoreTime.Stop();
+                        _success = false;
 
-                    return new RestoreResult(
-                        success: _success,
-                        restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
-                        compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
-                        msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                        lockFile: _request.ExistingLockFile,
-                        previousLockFile: _request.ExistingLockFile,
-                        lockFilePath: _request.ExistingLockFile?.Path,
-                        cacheFile: null,
-                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                        packagesLockFilePath: null,
-                        packagesLockFile: null,
-                        projectStyle: _request.ProjectStyle,
-                        elapsedTime: restoreTime.Elapsed);
+                        return new RestoreResult(
+                            success: _success,
+                            restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
+                            compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
+                            msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                            lockFile: _request.ExistingLockFile,
+                            previousLockFile: _request.ExistingLockFile,
+                            lockFilePath: _request.ExistingLockFile?.Path,
+                            cacheFile: null,
+                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                            packagesLockFilePath: null,
+                            packagesLockFile: null,
+                            projectStyle: _request.ProjectStyle,
+                            elapsedTime: restoreTime.Elapsed);
+                    }
+
+                    AddCentralPackageVersionsToContext(_request, contextForProject);
                 }
 
                 // evaluate packages.lock.json file
@@ -266,7 +272,7 @@ namespace NuGet.Commands
                 IList<CompatibilityCheckResult> checkResults = null;
                 using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidateRestoreGraphs))
                 {
-                    _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
+                    _success &= await ValidateRestoreGraphsAsync(graphs, _logger, isCpvmEnabled);
 
                     // Check package compatibility
                     checkResults = await VerifyCompatibilityAsync(
@@ -393,6 +399,17 @@ namespace NuGet.Commands
                     packagesLockFile,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
+            }
+        }
+
+        internal void AddCentralPackageVersionsToContext(RestoreRequest request, RemoteWalkContext context)
+        {
+            foreach (TargetFrameworkInformation targetFramework in request.Project.TargetFrameworks)
+            {
+                var dependeciesNames = new HashSet<string>(targetFramework.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
+                var centralVersions = targetFramework.CentralPackageVersions.Where(kvp => !dependeciesNames.Contains(kvp.Key))
+                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
+                context.CentralPackageVersions.Add(targetFramework.FrameworkName, centralVersions);
             }
         }
 
@@ -717,7 +734,7 @@ namespace NuGet.Commands
         /// are not logged. This is to avoid flooding the log with long 
         /// dependency chains for every package.
         /// </summary>
-        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger, bool isCpvmEnabled)
         {
             // Check for cycles
             var success = await ValidateCyclesAsync(graphs, logger);
@@ -731,7 +748,7 @@ namespace NuGet.Commands
             if (success)
             {
                 // Log downgrades if everything else was successful
-                await LogDowngradeWarningsAsync(graphs, logger);
+                await LogDowngradeWarningsOrErrorsAsync(graphs, logger, isCpvmEnabled);
             }
 
             return success;
@@ -783,7 +800,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Log downgrade warnings from the graphs.
         /// </summary>
-        private static Task LogDowngradeWarningsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger, bool isCpvmEnabled)
         {
             var messages = new List<RestoreLogMessage>();
 
@@ -816,13 +833,20 @@ namespace NuGet.Commands
 
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.Log_DowngradeWarning,
+                                    isCpvmEnabled ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                            if (isCpvmEnabled)
+                            {
+                                messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1609, message, downgraded.Key.Name, graph.TargetGraphName));
+                            }
+                            else
+                            {
+                                messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                            }
                         }
                     }
                 }

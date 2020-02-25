@@ -973,4 +973,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
     <comment>don't localize 'format', 'detailed' or 'short'</comment>
   </data>
+  <data name="Log_CPVM_DowngradeError" xml:space="preserve">
+    <value>Detected package downgrade: {0} from {1} to centrally defined {2}.</value>
+  </data>
 </root>

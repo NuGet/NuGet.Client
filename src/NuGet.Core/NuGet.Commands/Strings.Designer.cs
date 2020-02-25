@@ -908,6 +908,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to centrally defined {2}..
+        /// </summary>
+        internal static string Log_CPVM_DowngradeError {
+            get {
+                return ResourceManager.GetString("Log_CPVM_DowngradeError", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Cycle detected..
         /// </summary>
         internal static string Log_CycleDetected {

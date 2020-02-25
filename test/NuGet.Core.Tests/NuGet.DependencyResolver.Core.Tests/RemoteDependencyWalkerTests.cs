@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Common;
@@ -15,6 +16,7 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
+using Test.Utility;
 
 namespace NuGet.DependencyResolver.Tests
 {
@@ -823,6 +825,252 @@ namespace NuGet.DependencyResolver.Tests
             Assert.False(isGreater);
         }
 
+        [Fact]
+        public void TransitiveCentralPackageVersions__AddAndTake()
+        {
+            // Arrange
+            var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
+            var centralPackageVersion = new CentralPackageVersion("name1", VersionRange.Parse("1.0.0"));
+
+            bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake1);
+            bool resultTake2 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake2);
+
+            // Assert
+            Assert.True(resultAdd);
+            Assert.True(resultTake1);
+            Assert.False(resultTake2);
+
+            Assert.Equal(centralPackageVersion, centralPackageVersionTake1);
+            Assert.Null(centralPackageVersionTake2);
+        }
+
+        [Fact]
+        public void TransitiveCentralPackageVersions__TryAdd_DuplicatesAreIgnored()
+        {
+            // Arrange
+            var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
+            var centralPackageVersion = new CentralPackageVersion("name1", VersionRange.Parse("1.0.0"));
+            bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+            bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+
+            // Assert
+            Assert.True(resultAdd1);
+            Assert.False(resultAdd2);
+
+            // Once the data is added it cannot be readed even if TryTake was invoked
+            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake1);
+            bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+
+            Assert.True(resultTake1);
+            Assert.False(resultAdd3);
+        }
+
+        [Fact]
+        public async Task WalkAsyncAddsTransitiveCentralDependency()
+        {
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            provider.Package("A", "1.0.0")
+                    .DependsOn("B", "1.0.0")
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+
+            provider.Package("B", "1.0.0")
+                   .DependsOn("C", "1.0.0");
+
+            provider.Package("C", "1.0.0")
+                  .DependsOn(centralPackageName, "1.0.0");
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
+
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(2, rootNode.InnerNodes.Count);
+            var centralVersionInGraph = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).Select(n => n.Item.Key.Version.ToNormalizedString()).FirstOrDefault();
+            Assert.Equal(centralPackageVersion, centralVersionInGraph);
+        }
+
+        [Fact]
+        public async Task WalkAsyncDoesNotAddTransitiveCentralDependencyIfNotOnTheContext()
+        {
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            provider.Package("A", "1.0.0")
+                    .DependsOn("B", "1.0.0")
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+
+            provider.Package("B", "1.0.0")
+                    .DependsOn("C", "1.0.0");
+
+            provider.Package("C", "1.0.0")
+                    .DependsOn(centralPackageName, "1.0.0");
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(1, rootNode.InnerNodes.Count);
+            var innerNodeName = rootNode.InnerNodes.FirstOrDefault().Key.Name;
+            Assert.Equal("B", innerNodeName);
+        }
+
+        [Fact]
+        public async Task WalkAsyncDoesNotAddTransitiveCentralDependencyIfCentralversionIsATransitiveVersion()
+        {
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var otherVersion = "2.0.0";
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            provider.Package("A", otherVersion)
+                    .DependsOn("B", otherVersion)
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+
+            provider.Package("B", otherVersion)
+                   .DependsOn("C", otherVersion);
+
+            provider.Package("C", otherVersion)
+                  .DependsOn(centralPackageName, otherVersion);
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
+
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(1, rootNode.InnerNodes.Count);
+            var innerNodeName = rootNode.InnerNodes.FirstOrDefault().Key.Name;
+            Assert.Equal("B", innerNodeName);
+        }
+
+        [Fact]
+        public async Task WalkAsyncDowngradesBecauseOfCentralDependecy()
+        {
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var otherVersion = "3.0.0";
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            provider.Package("A", otherVersion)
+                    .DependsOn("B", otherVersion)
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+
+            provider.Package("B", otherVersion)
+                   .DependsOn("C", otherVersion);
+
+            provider.Package("C", otherVersion)
+                  .DependsOn(centralPackageName, otherVersion);
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
+
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            var analyzeResult = rootNode.Analyze();
+
+            // Assert
+            Assert.Equal(1, analyzeResult.Downgrades.Count);
+            var downgrade = analyzeResult.Downgrades.First();
+            Assert.Equal(centralPackageName, downgrade.DowngradedFrom.Key.Name);
+            Assert.Equal("[3.0.0, )", downgrade.DowngradedFrom.Key.VersionRange.ToNormalizedString());
+            Assert.Equal(centralPackageName, downgrade.DowngradedTo.Key.Name);
+            Assert.Equal("[2.0.0, )", downgrade.DowngradedTo.Key.VersionRange.ToNormalizedString());
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public void IsAutoReferencedCentralDependencyTest(bool autoReferenced, bool versionCentrallyManaged)
+        {
+            var centralPackageName = "D";
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var centralPackageVersion = new CentralPackageVersion(centralPackageName, VersionRange.Parse("2.0.0"));
+            var centralPackageVersionDependecy_VersionCentrallyManaged = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
+                VersionCentrallyManaged = versionCentrallyManaged,
+                AutoReferenced = autoReferenced,
+            };
+
+            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageVersion.Name] = centralPackageVersion });
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var isCentralDependency_VersionCentrallyManaged = walker.IsAutoReferencedCentralDependency(centralPackageVersionDependecy_VersionCentrallyManaged);
+
+            // Assert
+            if (autoReferenced && versionCentrallyManaged)
+            {
+                Assert.True(isCentralDependency_VersionCentrallyManaged);
+            }
+            else
+            {
+                Assert.False(isCentralDependency_VersionCentrallyManaged);
+            }
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();
@@ -838,161 +1086,20 @@ namespace NuGet.DependencyResolver.Tests
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name)
         {
+            return DoWalkAsync(walker, name, NuGetFramework.Parse("net45"));
+
+        }
+
+        private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)
+        {
             var range = new LibraryRange
             {
                 Name = name,
                 VersionRange = new VersionRange(new NuGetVersion("1.0"))
             };
 
-            return walker.WalkAsync(range, NuGetFramework.Parse("net45"), runtimeIdentifier: null, runtimeGraph: null, recursive: true);
+            return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
 
-        }
-
-        private class DependencyProvider : IRemoteDependencyProvider, IDependencyProvider
-        {
-            private readonly Dictionary<LibraryIdentity, List<LibraryDependency>> _graph = new Dictionary<LibraryIdentity, List<LibraryDependency>>();
-
-            public bool IsHttp
-            {
-                get
-                {
-                    return false;
-                }
-            }
-
-            public PackageSource Source => new PackageSource("Test");
-
-            public Task<IPackageDownloader> GetPackageDownloaderAsync(
-                PackageIdentity packageIdentity,
-                SourceCacheContext cacheContext,
-                ILogger logger,
-                CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<LibraryIdentity> FindLibraryAsync(
-                LibraryRange libraryRange,
-                NuGetFramework targetFramework,
-                SourceCacheContext cacheContext,
-                ILogger logger,
-                CancellationToken cancellationToken)
-            {
-                var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
-
-                return Task.FromResult(packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version));
-            }
-
-            public Task<IEnumerable<NuGetVersion>> GetAllVersionsAsync(string id, SourceCacheContext cacheContext, ILogger logger, CancellationToken token)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task<LibraryDependencyInfo> GetDependenciesAsync(
-                LibraryIdentity match,
-                NuGetFramework targetFramework,
-                SourceCacheContext cacheContext,
-                ILogger logger,
-                CancellationToken cancellationToken)
-            {
-                List<LibraryDependency> dependencies;
-                if (_graph.TryGetValue(match, out dependencies))
-                {
-                    return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, dependencies));
-                }
-
-                return Task.FromResult(LibraryDependencyInfo.Create(match, targetFramework, Enumerable.Empty<LibraryDependency>()));
-            }
-
-            public bool SupportsType(LibraryDependencyTarget libraryType)
-            {
-                return (libraryType & (LibraryDependencyTarget.Project | LibraryDependencyTarget.ExternalProject)) != LibraryDependencyTarget.None;
-            }
-
-            public TestPackage Package(string id, string version)
-            {
-                return Package(id, NuGetVersion.Parse(version), LibraryType.Package);
-            }
-
-            public TestPackage Package(string id, string version, LibraryType type)
-            {
-                return Package(id, NuGetVersion.Parse(version), type);
-            }
-
-            public TestPackage Package(string id, NuGetVersion version, LibraryType type)
-            {
-                var libraryIdentity = new LibraryIdentity { Name = id, Version = version, Type = type };
-
-                List<LibraryDependency> dependencies;
-                if (!_graph.TryGetValue(libraryIdentity, out dependencies))
-                {
-                    dependencies = new List<LibraryDependency>();
-                    _graph[libraryIdentity] = dependencies;
-                }
-
-                return new TestPackage(dependencies);
-            }
-
-            public Library GetLibrary(LibraryRange libraryRange, NuGetFramework targetFramework)
-            {
-                var packages = _graph.Keys.Where(p => p.Name == libraryRange.Name);
-                var identity = packages.FindBestMatch(libraryRange.VersionRange, i => i?.Version);
-
-                if (identity != null)
-                {
-                    var dependency = _graph.TryGetValue(identity, out var dependencies) ? dependencies : Enumerable.Empty<LibraryDependency>();
-
-                    return new Library
-                    {
-                        LibraryRange = libraryRange,
-                        Identity = identity,
-                        Path = null,
-                        Dependencies = dependency,
-                        Resolved = true
-                    };
-                }
-
-                return null;
-            }
-
-            public class TestPackage
-            {
-                private List<LibraryDependency> _dependencies;
-
-                public TestPackage(List<LibraryDependency> dependencies)
-                {
-                    _dependencies = dependencies;
-                }
-
-                public TestPackage DependsOn(string id, LibraryDependencyTarget target = LibraryDependencyTarget.All)
-                {
-                    _dependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = id,
-                            TypeConstraint = target
-                        }
-                    });
-
-                    return this;
-                }
-
-                public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All)
-                {
-                    _dependencies.Add(new LibraryDependency
-                    {
-                        LibraryRange = new LibraryRange
-                        {
-                            Name = id,
-                            VersionRange = VersionRange.Parse(version),
-                            TypeConstraint = target
-                        }
-                    });
-
-                    return this;
-                }
-            }
         }
     }
 }

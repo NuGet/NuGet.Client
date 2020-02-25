@@ -9,7 +9,6 @@ using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
-using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -20,6 +19,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
+using Test.Utility;
 
 namespace NuGet.Commands.Test
 {

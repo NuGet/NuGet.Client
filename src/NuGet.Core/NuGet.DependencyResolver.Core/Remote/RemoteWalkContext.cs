@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.DependencyResolver
@@ -27,6 +26,8 @@ namespace NuGet.DependencyResolver
             FindLibraryEntryCache = new ConcurrentDictionary<LibraryRangeCacheKey, Task<GraphItem<RemoteResolveResult>>>();
 
             LockFileLibraries = new Dictionary<LockFileCacheKey, IList<LibraryIdentity>>();
+
+            CentralPackageVersions = new Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>>();
         }
 
         public SourceCacheContext CacheContext { get; }
@@ -50,5 +51,10 @@ namespace NuGet.DependencyResolver
         /// True if this is a csproj or similar project. Xproj should be false.
         /// </summary>
         public bool IsMsBuildBased { get; set; }
+
+        /// <summary>
+        /// The collection of central package versions.
+        /// </summary>
+        public Dictionary<NuGetFramework, Dictionary<string, CentralPackageVersion>> CentralPackageVersions { get; }
     }
 }
