@@ -37,7 +37,10 @@ namespace NuGet.PackageManagement.UI
         public delegate void UpdateButtonClickEventHandler(PackageItemListViewModel[] selectedPackages);
         public event UpdateButtonClickEventHandler UpdateButtonClicked;
 
-        // This exists only to facilitate unit testing.
+        /// <summary>
+        /// This exists only to facilitate unit testing.
+        /// It is triggered at <see cref="LoadItems(PackageItemListViewModel, CancellationToken)" />, just before it is finished
+        /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
         private CancellationTokenSource _loadCts;
@@ -158,6 +161,11 @@ namespace NuGet.PackageManagement.UI
             LoadItems(selectedPackageItem, token);
         }
 
+        /// <summary>
+        /// Keep the previously selected package after a search.
+        /// Otherwise, select the first on the search if none was selected before.
+        /// </summary>
+        /// <param name="selectedItem">Previously selected item</param>
         internal void UpdateSelectedItem(PackageItemListViewModel selectedItem)
         {
             if (selectedItem != null)
@@ -183,8 +191,17 @@ namespace NuGet.PackageManagement.UI
             {
                 await TaskScheduler.Default;
 
+                var addedLoadingIndicator = false;
+
                 try
                 {
+                    // add Loading... indicator if not present
+                    if (!Items.Contains(_loadingStatusIndicator))
+                    {
+                        Items.Add(_loadingStatusIndicator);
+                        addedLoadingIndicator = true;
+                    }
+
                     await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
@@ -209,6 +226,7 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
 
+
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
                 }
@@ -230,6 +248,25 @@ namespace NuGet.PackageManagement.UI
 
                     _loadingStatusBar.SetError();
                     _loadingStatusBar.Visibility = Visibility.Visible;
+                }
+                finally
+                {
+                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
+                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                    {
+                        // Ideally, After a serach, it should report its status and,
+                        // do not keep the LoadingStatus.Loading forever.
+                        // This is a workaround.
+                        var emptyListCount = addedLoadingIndicator ? 1 : 0;
+                        if (Items.Count == emptyListCount)
+                        {
+                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                        }
+                        else
+                        {
+                            Items.Remove(_loadingStatusIndicator);
+                        }
+                    }
                 }
 
                 UpdateCheckBoxStatus();
@@ -339,6 +376,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        /// <summary>
+        /// Shows the Loading status bar, if necessary. Also, it inserts the Loading... indicator, if necesary
+        /// </summary>
+        /// <param name="loader">Current loader</param>
+        /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -399,6 +441,11 @@ namespace NuGet.PackageManagement.UI
             return statusBarVisibility;
         }
 
+        /// <summary>
+        /// Appends <c>packages</c> to the internal <see cref="Items"> list
+        /// </summary>
+        /// <param name="packages">Packages collection to add</param>
+        /// <param name="refresh">Clears <see cref="Items"> list if set to <c>true</c></param>
         private void UpdatePackageList(IEnumerable<PackageItemListViewModel> packages, bool refresh)
         {
             _joinableTaskFactory.Value.Run(async () =>
@@ -407,7 +454,7 @@ namespace NuGet.PackageManagement.UI
                 await _list.ItemsLock.ExecuteAsync(() =>
                 {
                     // remove the loading status indicator if it's in the list
-                    Items.Remove(_loadingStatusIndicator);
+                    bool removed = Items.Remove(_loadingStatusIndicator);
 
                     if (refresh)
                     {
@@ -422,13 +469,19 @@ namespace NuGet.PackageManagement.UI
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
                     }
 
-                    Items.Add(_loadingStatusIndicator);
+                    if (removed)
+                    {
+                        Items.Add(_loadingStatusIndicator);
+                    }
 
                     return Task.CompletedTask;
                 });
             });
         }
 
+        /// <summary>
+        /// Clear <c>Items</c> list and removes the event handlers for each element
+        /// </summary>
         private void ClearPackageList()
         {
             foreach (var package in PackageItems)
