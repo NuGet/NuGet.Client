@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System.IO;
 using NuGet.Common;
 using NuGet.Test.Utility;
@@ -7,11 +10,11 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 {
     public class GenerateFixture
     {
-        public string _dir;
+        public string _directoryPath;
 
         public GenerateFixture()
         {
-            _dir = GeneratePackagesForEachPlatform();
+            _directoryPath = GeneratePackagesForEachPlatform();
         }
 
         private static string GeneratePackagesForEachPlatform()
@@ -25,7 +28,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
 
             //Create a folder for a each platform, under GeneratedPackages folder.
             //For functional test on windows, 2 folders will be created.
-            string platform = string.Empty;
+            string platform;
 #if IS_DESKTOP
             platform =  TestFolderNames.Windows_NetFullFrameworkFolder;
 #else

@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 #if IS_SIGNING_SUPPORTED
 using System;
 using System.Collections.Generic;
@@ -352,10 +355,10 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
         public async Task VerifySignaturesAsync_PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage_Throws(string dir)
         {
             // Arrange
-            string caseName = FolderNames.One.ToString();
+            string caseName = TestPackages.Package1.ToString();
 
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
-            var signedPackagePath = FileUtility.GetFirstFileName(signedPackageFolder, "*.nupkg");
+            var signedPackagePath = TestFileSystemUtility.GetFirstFileName(signedPackageFolder, "*.nupkg");
 
             using (FileStream stream = File.OpenRead(signedPackagePath))
             using (var reader = new PackageArchiveReader(stream))
@@ -481,7 +484,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
                     "Linux_NetCore",
                 */
                 var folders = new TheoryData<string>();
-                foreach (var folder in Directory.GetDirectories(GetGeneratedPackagesRootPath()))
+                foreach (string folder in Directory.GetDirectories(GetGeneratedPackagesRootPath()))
                 {
                     folders.Add(folder);
                 }

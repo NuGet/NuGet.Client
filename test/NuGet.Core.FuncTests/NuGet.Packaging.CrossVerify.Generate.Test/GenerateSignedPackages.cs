@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 #if IS_SIGNING_SUPPORTED
 using System;
 using System.IO;
@@ -13,7 +16,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
     public class GenerateSignedPackages
     {
         private readonly GenerateFixture _generateFixture;
-        private string _dir;
+        private string _directoryPath;
 
         private readonly SigningTestFixture _signingTestFixture_Author;
         private readonly TrustedTestCert<TestCertificate> _authorSignningCert;
@@ -26,7 +29,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         public GenerateSignedPackages(GenerateFixture fixture)
         {
             _generateFixture = fixture;
-            _dir = _generateFixture._dir;
+            _directoryPath = _generateFixture._directoryPath;
 
             _signingTestFixture_Author = new SigningTestFixture();
             _authorSignningCert = _signingTestFixture_Author.TrustedTestCertificate;
@@ -41,7 +44,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "A";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -72,7 +75,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "AT";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -108,7 +111,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "R";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -138,7 +141,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "RT";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -176,7 +179,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "AR";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -217,7 +220,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "ATR";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -265,7 +268,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "ART";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -313,7 +316,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         {
             // Arrange
             var caseName = "ATRT";
-            string caseFolder = System.IO.Path.Combine(_dir, caseName);
+            string caseFolder = System.IO.Path.Combine(_directoryPath, caseName);
             Directory.CreateDirectory(caseFolder);
 
             var nupkg = new SimpleTestPackageContext();
@@ -367,9 +370,9 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
         public async Task PreGenerateSignedPackages_AuthorSigned_TimeStampedWithNoSigningCertificateUsage()
         {
             // Arrange
-            var folder = FolderNames.One.ToString();
-            string caseFolder = Path.Combine(_dir, folder);
-            Directory.CreateDirectory(caseFolder);
+            var folder = TestPackages.Package1.ToString();
+            string packageFolderPath = Path.Combine(_directoryPath, folder);
+            Directory.CreateDirectory(packageFolderPath);
 
             ISigningTestServer testServer = await _signingTestFixture_Author.GetSigningTestServerAsync();
             CertificateAuthority rootCa = await _signingTestFixture_Author.GetDefaultTrustedCertificateAuthorityAsync();
@@ -383,7 +386,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
             {
                 var nupkg = new SimpleTestPackageContext();
 
-                string packagePath = Path.Combine(caseFolder, "package");
+                string packagePath = Path.Combine(packageFolderPath, "package");
                 Directory.CreateDirectory(packagePath);
 
                 using (var certificate = new X509Certificate2(_signingTestFixture_Author.TrustedTestCertificate.Source.Cert))
@@ -396,9 +399,8 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
                 }
             }
         }
-#endif
+#endif //IS_DESKTOP
     }
 }
-#endif
-
+#endif //IS_SIGNING_SUPPORTED
 
