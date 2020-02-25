@@ -1,11 +1,12 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.IO;
-using System.Threading.Tasks;
 using NuGet.Test.Utility;
+using System.IO;
 using Xunit;
+using System;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace NuGet.Common.Test
 {
@@ -339,7 +340,7 @@ namespace NuGet.Common.Test
                         {
                             using (var reader2 = new StreamReader(stream2))
                             {
-                                return await reader2.ReadToEndAsync();
+                               return await reader2.ReadToEndAsync();
                             }
                         }
                     }
@@ -388,54 +389,6 @@ namespace NuGet.Common.Test
                 // Assert
                 Assert.False(File.Exists(dest));
                 Assert.NotNull(exception);
-            }
-        }
-
-        [Fact]
-        public void GetFirstFileName_WhenPathIsNull_Throws()
-        {
-            //Act
-            var exception = Assert.Throws<ArgumentNullException>(() => FileUtility.GetFirstFileName(path: null, searchPattern: string.Empty));
-
-            //Assert
-            Assert.Contains("path", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetFirstFileName_WhenSearchPatternIsNull_Throws()
-        {
-            //Act
-            var exception = Assert.Throws<ArgumentNullException>(() => FileUtility.GetFirstFileName(path: string.Empty, searchPattern: null));
-
-            //Assert
-            Assert.Contains("searchPattern", exception.ParamName);
-        }
-
-        [Fact]
-        public void GetFirstFileName_ReturnsFirstFile_Success()
-        {
-           using (var dir = TestDirectory.Create())
-            {
-                string path = Path.Combine(dir, "a.txt");
-                File.WriteAllText(path, string.Empty);
-
-                string newpath = FileUtility.GetFirstFileName(dir, "*.txt");
-
-                Assert.Equal(path, newpath);
-            }
-        }
-
-        [Fact]
-        public void GetFirstFileName_ReturnsNullWhenNoFileExistsWithMatchingPattern_Success()
-        {
-            using (var dir = TestDirectory.Create())
-            {
-                string path = Path.Combine(dir, "a.txt");
-                File.WriteAllText(path, string.Empty);
-
-                string newpath = FileUtility.GetFirstFileName(dir, ".txt");
-
-                Assert.Equal(null, newpath);
             }
         }
     }

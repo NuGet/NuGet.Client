@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -86,6 +87,19 @@ namespace NuGet.Test.Utility
             }
 
             return currentDir;
+        }
+
+        /// <summary>
+        /// Returns the name of first file that match the specified search pattern
+        /// </summary>
+        /// <param name="path"></param>
+        /// <param name="searchPattern"><see cref="System.IO.Directory.EnumerateFiles(string, string)"/></param>
+        /// <returns></returns>
+        public static string GetFirstFileName(string path, string searchPattern)
+        {
+            IEnumerable<string> files = Directory.EnumerateFiles(path, searchPattern);
+
+            return files.FirstOrDefault();
         }
 
         public static bool DeleteRandomTestFolder(string randomTestPath)
