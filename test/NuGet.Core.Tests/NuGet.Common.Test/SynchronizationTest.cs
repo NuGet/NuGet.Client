@@ -56,24 +56,6 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public async Task ConcurrencyUtilities_ZeroTimeoutStillGetsLock()
-        {
-            // Arrange
-            var fileId = Guid.NewGuid().ToString();
-            var cts = new CancellationTokenSource(TimeSpan.Zero);
-            var expected = 3;
-
-            // Act
-            var actual = await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
-                fileId,
-                token => Task.FromResult(expected),
-                cts.Token);
-
-            // Assert
-            Assert.Equal(actual, expected);
-        }
-
-        [Fact]
         public async Task ConcurrencyUtilityBlocksInProc()
         {
             // Arrange
