@@ -126,10 +126,6 @@
   <data name="Argument_Must_Be_GreaterThanOrEqualTo" xml:space="preserve">
     <value>Value must be greater than or equal to {0}</value>
   </data>
-  <data name="Error_DirectoryDoesNotExist" xml:space="preserve">
-    <value>Directory {0} does not exist.</value>
-    <comment>{0} is the directory name.</comment>
-  </data>
   <data name="Error_FailedToCreateRandomFile" xml:space="preserve">
     <value>Failed to create random file for dotnet add pkg command.</value>
   </data>
