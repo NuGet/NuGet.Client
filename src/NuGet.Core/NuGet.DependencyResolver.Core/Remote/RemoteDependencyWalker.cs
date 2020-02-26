@@ -58,6 +58,11 @@ namespace NuGet.DependencyResolver
             HashSet<string> runtimeDependencies = null;
             List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
 
+            if (outerEdge != null)
+            {
+                MarkCentralVersionForTransitiveProcessing(framework, libraryRange, transitiveCentralPackageVersions);
+            }
+
             if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
             {
                 // HACK(davidfowl): This is making runtime.json support package redirects
