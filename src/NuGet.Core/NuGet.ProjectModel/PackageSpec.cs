@@ -89,7 +89,7 @@ namespace NuGet.ProjectModel
 
         public PackOptions PackOptions { get; set; } = new PackOptions();
 
-        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 

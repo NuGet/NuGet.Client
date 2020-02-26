@@ -20,6 +20,7 @@ namespace NuGet.ProjectModel
 
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly Lazy<JObject> _json;
 
         private const int Version = 1;
 
@@ -30,6 +31,7 @@ namespace NuGet.ProjectModel
             return string.Format(DGSpecFileNameExtension, projectName);
         }
 
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DependencyGraphSpec(JObject json)
         {
             if (json == null)
@@ -38,8 +40,7 @@ namespace NuGet.ProjectModel
             }
 
             ParseJson(json);
-
-            Json = json;
+            _json = new Lazy<JObject>(() => json);
         }
 
         public DependencyGraphSpec()
@@ -49,8 +50,13 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec(bool isReadOnly)
         {
-            Json = new JObject();
+            _json = new Lazy<JObject>(() => new JObject());
             _isReadOnly = isReadOnly;
+        }
+
+        private DependencyGraphSpec(string filePath)
+        {
+            _json = new Lazy<JObject>(() => ReadJson(filePath));
         }
 
         /// <summary>
@@ -78,7 +84,8 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// File json.
         /// </summary>
-        public JObject Json { get; }
+        [Obsolete("This property is obsolete and will be removed in a future release.")]
+        public JObject Json { get => _json.Value; }
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
@@ -255,11 +262,59 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
-            var json = ReadJson(path);
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+            {
+                var dgspec = new DependencyGraphSpec(path);
+                bool wasObjectRead;
 
-            return Load(json);
+                try
+                {
+                    wasObjectRead = jsonReader.ReadObject(propertyName =>
+                    {
+                        switch (propertyName)
+                        {
+                           case "restore":
+                                jsonReader.ReadObject(restorePropertyName =>
+                                {
+                                    if (!string.IsNullOrEmpty(restorePropertyName))
+                                    {
+                                        dgspec._restore.Add(restorePropertyName);
+                                    }
+                                });
+                                break;
+
+                            case "projects":
+                                jsonReader.ReadObject(projectsPropertyName =>
+                                {
+                                    PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
+
+                                    dgspec._projects.Add(projectsPropertyName, packageSpec);
+                                });
+                                break;
+
+                            default:
+                                jsonReader.Skip();
+                                break;
+                        }
+                    });
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw FileFormatException.Create(ex, path);
+                }
+
+                if (!wasObjectRead || jsonReader.TokenType != JsonToken.EndObject)
+                {
+                    throw new InvalidDataException();
+                }
+
+                return dgspec;
+            }
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static DependencyGraphSpec Load(JObject json)
         {
             return new DependencyGraphSpec(json);
@@ -292,8 +347,9 @@ namespace NuGet.ProjectModel
                 foreach (var prop in projectsObj.Properties())
                 {
                     var specJson = (JObject)prop.Value;
+#pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
-
+#pragma warning restore CS0618
                     _projects.Add(prop.Name, spec);
                 }
             }
@@ -301,22 +357,18 @@ namespace NuGet.ProjectModel
 
         private static JObject ReadJson(string packageSpecPath)
         {
-            JObject json;
-
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var reader = new StreamReader(stream))
             {
                 try
                 {
-                    json = JsonUtility.LoadJson(reader);
+                    return JsonUtility.LoadJson(reader);
                 }
                 catch (JsonReaderException ex)
                 {
                     throw FileFormatException.Create(ex, packageSpecPath);
                 }
             }
-
-            return json;
         }
 
         public string GetHash()

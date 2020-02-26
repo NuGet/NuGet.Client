@@ -13,7 +13,6 @@ using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
@@ -22,6 +21,9 @@ namespace NuGet.ProjectModel
 {
     public class JsonPackageSpecReader
     {
+        private static readonly char[] DelimitedStringSeparators = { ' ', ',' };
+        private static readonly char[] VersionSeparators = new[] { ';' };
+
         public static readonly string RestoreOptions = "restore";
         public static readonly string RestoreSettings = "restoreSettings";
         public static readonly string HideWarningsAndErrors = "hideWarningsAndErrors";
@@ -47,6 +49,7 @@ namespace NuGet.ProjectModel
             }
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static PackageSpec GetPackageSpec(JObject json)
         {
             return GetPackageSpec(json, name: null, packageSpecPath: null, snapshotValue: null);
@@ -54,119 +57,163 @@ namespace NuGet.ProjectModel
 
         public static PackageSpec GetPackageSpec(Stream stream, string name, string packageSpecPath, string snapshotValue)
         {
-            // Load the raw JSON into the package spec object
-            JObject rawPackageSpec;
-
-            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
             {
-                try
-                {
-                    rawPackageSpec = JObject.Load(reader);
-                }
-                catch (JsonReaderException ex)
-                {
-                    throw FileFormatException.Create(ex, packageSpecPath);
-                }
+                return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue);
             }
-
-            return GetPackageSpec(rawPackageSpec, name, packageSpecPath, snapshotValue);
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static PackageSpec GetPackageSpec(JObject rawPackageSpec, string name, string packageSpecPath, string snapshotValue)
+        {
+            using (var stringReader = new StringReader(rawPackageSpec.ToString()))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                return GetPackageSpec(jsonReader, name, packageSpecPath, snapshotValue);
+            }
+        }
+
+        internal static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string packageSpecPath)
+        {
+            return GetPackageSpec(jsonReader, name: null, packageSpecPath, snapshotValue: null);
+        }
+
+        private static PackageSpec GetPackageSpec(JsonTextReader jsonReader, string name, string packageSpecPath, string snapshotValue)
         {
             var packageSpec = new PackageSpec();
 
-            // Parse properties we know about
-            var version = rawPackageSpec["version"];
-            var authors = rawPackageSpec["authors"];
-            var contentFiles = rawPackageSpec["contentFiles"];
+            List<CompatibilityProfile> compatibilityProfiles = null;
+            List<RuntimeDescription> runtimeDescriptions = null;
+            var wasPackOptionsSet = false;
+            var isMappingsNull = false;
+
+            string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                if (string.IsNullOrWhiteSpace(propertyName))
+                {
+                    return;
+                }
+
+                switch (propertyName)
+                {
+                    case "authors":
+                        packageSpec.Authors = ReadStringArray(jsonReader) ?? Array.Empty<string>();
+                        break;
+
+                    case "buildOptions":
+                        ReadBuildOptions(jsonReader, packageSpec);
+                        break;
+
+                    case "contentFiles":
+                        List<string> contentFiles = jsonReader.ReadStringArrayAsList();
+
+                        if (contentFiles != null)
+                        {
+                            packageSpec.ContentFiles = contentFiles;
+                        }
+                        break;
+
+                    case "copyright":
+                        packageSpec.Copyright = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "dependencies":
+                        ReadDependencies(
+                            jsonReader,
+                            packageSpec.Dependencies,
+                            filePath,
+                            isGacOrFrameworkReference: false);
+                        break;
+
+                    case "description":
+                        packageSpec.Description = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "frameworks":
+                        ReadFrameworks(jsonReader, packageSpec);
+                        break;
+
+                    case "language":
+                        packageSpec.Language = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "packInclude":
+                        ReadPackInclude(jsonReader, packageSpec);
+                        break;
+
+                    case "packOptions":
+                        ReadPackOptions(jsonReader, packageSpec, ref isMappingsNull);
+                        wasPackOptionsSet = true;
+                        break;
+
+                    case "restore":
+                        ReadMSBuildMetadata(jsonReader, packageSpec);
+                        break;
+
+                    case "restoreSettings":
+                        ReadRestoreSettings(jsonReader, packageSpec);
+                        break;
+
+                    case "runtimes":
+                        runtimeDescriptions = ReadRuntimes(jsonReader);
+                        break;
+
+                    case "scripts":
+                        ReadScripts(jsonReader, packageSpec);
+                        break;
+
+                    case "supports":
+                        compatibilityProfiles = ReadSupports(jsonReader);
+                        break;
+
+                    case "title":
+                        packageSpec.Title = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "version":
+                        string version = jsonReader.ReadAsString();
+
+                        if (version != null)
+                        {
+                            try
+                            {
+                                packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(version);
+                                packageSpec.Version = PackageSpecUtility.SpecifySnapshot(version, snapshotValue);
+                            }
+                            catch (Exception ex)
+                            {
+                                throw FileFormatException.Create(ex, version, packageSpec.FilePath);
+                            }
+                        }
+                        break;
+                }
+            });
 
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
 
-            if (version != null)
+            if (!wasPackOptionsSet)
             {
-                try
+                packageSpec.Owners = Array.Empty<string>();
+                packageSpec.PackOptions = new PackOptions()
                 {
-                    var versionString = version.Value<string>();
-                    packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(versionString);
-                    packageSpec.Version = PackageSpecUtility.SpecifySnapshot(versionString, snapshotValue);
-                }
-                catch (Exception ex)
-                {
-                    throw FileFormatException.Create(ex, version, packageSpec.FilePath);
-                }
-            }
-
-            var packInclude = rawPackageSpec["packInclude"] as JObject;
-            if (packInclude != null)
-            {
-                foreach (var include in packInclude)
-                {
-                    packageSpec.PackInclude.Add(new KeyValuePair<string, string>(include.Key, include.Value.ToString()));
-                }
-            }
-
-            packageSpec.Title = rawPackageSpec.GetValue<string>("title");
-            packageSpec.Description = rawPackageSpec.GetValue<string>("description");
-            packageSpec.Authors = authors == null ? new string[] { } : authors.ValueAsArray<string>();
-            packageSpec.ContentFiles = contentFiles == null ? new string[] { } : contentFiles.ValueAsArray<string>();
-            packageSpec.Dependencies = new List<LibraryDependency>();
-            packageSpec.Copyright = rawPackageSpec.GetValue<string>("copyright");
-            packageSpec.Language = rawPackageSpec.GetValue<string>("language");
-
-            var buildOptions = rawPackageSpec["buildOptions"] as JObject;
-            if (buildOptions != null)
-            {
-                packageSpec.BuildOptions = new BuildOptions()
-                {
-                    OutputName = buildOptions.GetValue<string>("outputName")
+                    PackageType = Array.Empty<PackageType>()
                 };
+                packageSpec.Tags = Array.Empty<string>();
             }
 
-            var scripts = rawPackageSpec["scripts"] as JObject;
-            if (scripts != null)
+            if (isMappingsNull)
             {
-                foreach (var script in scripts)
-                {
-                    var value = script.Value;
-                    if (value.Type == JTokenType.String)
-                    {
-                        packageSpec.Scripts[script.Key] = new string[] { value.Value<string>() };
-                    }
-                    else if (value.Type == JTokenType.Array)
-                    {
-                        packageSpec.Scripts[script.Key] = script.Value.ValueAsArray<string>();
-                    }
-                    else
-                    {
-                        throw FileFormatException.Create(
-                            string.Format("The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName),
-                            value,
-                            packageSpec.FilePath);
-                    }
-                }
+                packageSpec.PackOptions.Mappings = null;
             }
 
-            BuildTargetFrameworks(packageSpec, rawPackageSpec);
+            packageSpec.RuntimeGraph = new RuntimeGraph(
+                runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
+                compatibilityProfiles ?? Enumerable.Empty<CompatibilityProfile>());
 
-            PopulateDependencies(
-                packageSpec.FilePath,
-                packageSpec.Dependencies,
-                rawPackageSpec,
-                "dependencies",
-                isGacOrFrameworkReference: false);
-
-            packageSpec.PackOptions = GetPackOptions(packageSpec, rawPackageSpec);
-
-            packageSpec.RestoreSettings = GetRestoreSettings(packageSpec, rawPackageSpec);
-
-            packageSpec.RestoreMetadata = GetMSBuildMetadata(packageSpec, rawPackageSpec);
-
-            // Read the runtime graph
-            packageSpec.RuntimeGraph = JsonRuntimeFormat.ReadRuntimeGraph(rawPackageSpec);
-
-            // Read the name/path if it exists
             if (packageSpec.Name == null)
             {
                 packageSpec.Name = packageSpec.RestoreMetadata?.ProjectName;
@@ -182,314 +229,132 @@ namespace NuGet.ProjectModel
             return packageSpec;
         }
 
-        private static ProjectRestoreSettings GetRestoreSettings(PackageSpec packageSpec, JObject rawPackageSpec)
+        private static PackageType CreatePackageType(JsonTextReader jsonReader)
         {
-            var rawRestoreSettings = rawPackageSpec.Value<JToken>(RestoreSettings) as JObject;
-            var restoreSettings = new ProjectRestoreSettings();
+            var name = (string)jsonReader.Value;
 
-            if (rawRestoreSettings != null)
-            {
-                restoreSettings.HideWarningsAndErrors = GetBoolOrFalse(rawRestoreSettings, HideWarningsAndErrors, packageSpec.FilePath);
-            }
-
-            return restoreSettings;
+            return new PackageType(name, Packaging.Core.PackageType.EmptyVersion);
         }
 
-        private static ProjectRestoreMetadata GetMSBuildMetadata(PackageSpec packageSpec, JObject rawPackageSpec)
+        private static void ReadBuildOptions(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
-            var rawMSBuildMetadata = rawPackageSpec.Value<JToken>(RestoreOptions) as JObject;
-            if (rawMSBuildMetadata == null)
+            packageSpec.BuildOptions = new BuildOptions();
+
+            jsonReader.ReadObject(buildOptionsPropertyName =>
             {
-                return null;
-            }
-
-            var projectStyleString = rawMSBuildMetadata.GetValue<string>("projectStyle");
-
-            ProjectStyle? projectStyle = null;
-            if (!string.IsNullOrEmpty(projectStyleString)
-                && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out var projectStyleValue))
-            {
-                projectStyle = projectStyleValue;
-            }
-
-            var msbuildMetadata = projectStyle == ProjectStyle.PackagesConfig
-                ? new PackagesConfigProjectRestoreMetadata()
-                : new ProjectRestoreMetadata();
-
-            if (projectStyle.HasValue)
-            {
-                msbuildMetadata.ProjectStyle = projectStyle.Value;
-            }
-
-            msbuildMetadata.ProjectUniqueName = rawMSBuildMetadata.GetValue<string>("projectUniqueName");
-            msbuildMetadata.OutputPath = rawMSBuildMetadata.GetValue<string>("outputPath");
-
-            msbuildMetadata.PackagesPath = rawMSBuildMetadata.GetValue<string>("packagesPath");
-            msbuildMetadata.ProjectJsonPath = rawMSBuildMetadata.GetValue<string>("projectJsonPath");
-            msbuildMetadata.ProjectName = rawMSBuildMetadata.GetValue<string>("projectName");
-            msbuildMetadata.ProjectPath = rawMSBuildMetadata.GetValue<string>("projectPath");
-            msbuildMetadata.CrossTargeting = GetBoolOrFalse(rawMSBuildMetadata, "crossTargeting", packageSpec.FilePath);
-            msbuildMetadata.LegacyPackagesDirectory = GetBoolOrFalse(rawMSBuildMetadata, "legacyPackagesDirectory", packageSpec.FilePath);
-            msbuildMetadata.ValidateRuntimeAssets = GetBoolOrFalse(rawMSBuildMetadata, "validateRuntimeAssets", packageSpec.FilePath);
-            msbuildMetadata.SkipContentFileWrite = GetBoolOrFalse(rawMSBuildMetadata, "skipContentFileWrite", packageSpec.FilePath);
-            msbuildMetadata.CentralPackageVersionsEnabled = GetBoolOrFalse(rawMSBuildMetadata, "centralPackageVersionsManagementEnabled", packageSpec.FilePath);
-
-            msbuildMetadata.Sources = new List<PackageSource>();
-
-            var sourcesObj = rawMSBuildMetadata.GetValue<JObject>("sources");
-            if (sourcesObj != null)
-            {
-                foreach (var prop in sourcesObj.Properties())
+                if (buildOptionsPropertyName == "outputName")
                 {
-                    msbuildMetadata.Sources.Add(new PackageSource(prop.Name));
+                    packageSpec.BuildOptions.OutputName = jsonReader.ReadNextTokenAsString();
                 }
-            }
-
-            var filesObj = rawMSBuildMetadata.GetValue<JObject>("files");
-            if (filesObj != null)
-            {
-                foreach (var prop in filesObj.Properties())
-                {
-                    msbuildMetadata.Files.Add(new ProjectRestoreMetadataFile(prop.Name, prop.Value.ToObject<string>()));
-                }
-            }
-
-            var frameworksObj = rawMSBuildMetadata.GetValue<JObject>("frameworks");
-            if (frameworksObj != null)
-            {
-                foreach (var frameworkProperty in frameworksObj.Properties())
-                {
-                    var framework = NuGetFramework.Parse(frameworkProperty.Name);
-                    var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(framework);
-
-                    var projectsObj = frameworkProperty.Value.GetValue<JObject>("projectReferences");
-                    if (projectsObj != null)
-                    {
-                        foreach (var prop in projectsObj.Properties())
-                        {
-                            frameworkGroup.ProjectReferences.Add(new ProjectRestoreReference()
-                            {
-                                ProjectUniqueName = prop.Name,
-                                ProjectPath = prop.Value.GetValue<string>("projectPath"),
-
-                                IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
-                                    flags: prop.Value.GetValue<string>("includeAssets"),
-                                    defaultFlags: LibraryIncludeFlags.All),
-
-                                ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
-                                    flags: prop.Value.GetValue<string>("excludeAssets"),
-                                    defaultFlags: LibraryIncludeFlags.None),
-
-                                PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
-                                    flags: prop.Value.GetValue<string>("privateAssets"),
-                                    defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
-                            });
-                        }
-                    }
-
-                    msbuildMetadata.TargetFrameworks.Add(frameworkGroup);
-                }
-            }
-
-            // Add the config file paths to the equals method
-            msbuildMetadata.ConfigFilePaths = new List<string>();
-
-            var configFilePaths = rawMSBuildMetadata.GetValue<JArray>("configFilePaths");
-            if (configFilePaths != null)
-            {
-                foreach (var fallbackFolder in configFilePaths.Select(t => t.Value<string>()))
-                {
-                    msbuildMetadata.ConfigFilePaths.Add(fallbackFolder);
-                }
-            }
-
-            msbuildMetadata.FallbackFolders = new List<string>();
-
-            var fallbackObj = rawMSBuildMetadata.GetValue<JArray>("fallbackFolders");
-            if (fallbackObj != null)
-            {
-                foreach (var fallbackFolder in fallbackObj.Select(t => t.Value<string>()))
-                {
-                    msbuildMetadata.FallbackFolders.Add(fallbackFolder);
-                }
-            }
-
-            msbuildMetadata.OriginalTargetFrameworks = new List<string>();
-
-            var originalFrameworksObj = rawMSBuildMetadata.GetValue<JArray>("originalTargetFrameworks");
-            if (originalFrameworksObj != null)
-            {
-                foreach (var orignalFramework in originalFrameworksObj.Select(t => t.Value<string>()))
-                {
-                    msbuildMetadata.OriginalTargetFrameworks.Add(orignalFramework);
-                }
-            }
-
-            var warningPropertiesObj = rawMSBuildMetadata.GetValue<JObject>("warningProperties");
-            if (warningPropertiesObj != null)
-            {
-                var allWarningsAsErrors = warningPropertiesObj.GetValue<bool>("allWarningsAsErrors");
-                var warnAsError = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["warnAsError"]));
-                var noWarn = new HashSet<NuGetLogCode>(GetNuGetLogCodeEnumerableFromJArray(warningPropertiesObj["noWarn"]));
-
-                msbuildMetadata.ProjectWideWarningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
-            }
-
-            // read NuGet lock file msbuild properties
-            var restoreLockProperties = rawMSBuildMetadata.GetValue<JObject>("restoreLockProperties");
-
-            if (restoreLockProperties != null)
-            {
-                msbuildMetadata.RestoreLockProperties = new RestoreLockProperties(
-                    restoreLockProperties.GetValue<string>("restorePackagesWithLockFile"),
-                    restoreLockProperties.GetValue<string>("nuGetLockFilePath"),
-                    GetBoolOrFalse(restoreLockProperties, "restoreLockedMode", packageSpec.FilePath));
-            }
-
-            if (msbuildMetadata is PackagesConfigProjectRestoreMetadata pcMsbuildMetadata)
-            {
-                pcMsbuildMetadata.PackagesConfigPath = rawMSBuildMetadata.GetValue<string>("packagesConfigPath");
-            }
-
-            return msbuildMetadata;
+            });
         }
 
-        private static PackOptions GetPackOptions(PackageSpec packageSpec, JObject rawPackageSpec)
+        private static void ReadCentralPackageVersions(
+            JsonTextReader jsonReader,
+            IDictionary<string, CentralPackageVersion> centralPackageVersions,
+            string filePath)
         {
-            var rawPackOptions = rawPackageSpec.Value<JToken>(PackOptions) as JObject;
-            if (rawPackOptions == null)
+            jsonReader.ReadObject(propertyName =>
             {
-                packageSpec.Owners = new string[] { };
-                packageSpec.Tags = new string[] { };
-                return new PackOptions
+                int line = jsonReader.LineNumber;
+                int column = jsonReader.LinePosition;
+
+                if (string.IsNullOrEmpty(propertyName))
                 {
-                    PackageType = new PackageType[0]
-                };
-            }
-            var owners = rawPackOptions["owners"];
-            var tags = rawPackOptions["tags"];
-            packageSpec.Owners = owners == null ? Array.Empty<string>() : owners.ValueAsArray<string>();
-            packageSpec.Tags = tags == null ? Array.Empty<string>() : tags.ValueAsArray<string>();
-            packageSpec.ProjectUrl = rawPackOptions.GetValue<string>("projectUrl");
-            packageSpec.IconUrl = rawPackOptions.GetValue<string>("iconUrl");
-            packageSpec.Summary = rawPackOptions.GetValue<string>("summary");
-            packageSpec.ReleaseNotes = rawPackOptions.GetValue<string>("releaseNotes");
-            packageSpec.LicenseUrl = rawPackOptions.GetValue<string>("licenseUrl");
-
-            packageSpec.RequireLicenseAcceptance = GetBoolOrFalse(rawPackOptions, "requireLicenseAcceptance", packageSpec.FilePath);
-
-            var rawPackageType = rawPackOptions[PackageType];
-            if (rawPackageType != null &&
-                rawPackageType.Type != JTokenType.String &&
-                (rawPackageType.Type != JTokenType.Array || // The array must be all strings.
-                 rawPackageType.Type == JTokenType.Array && rawPackageType.Any(t => t.Type != JTokenType.String)) &&
-                rawPackageType.Type != JTokenType.Null)
-            {
-                throw FileFormatException.Create(
-                    string.Format(
-                        CultureInfo.CurrentCulture,
-                        Strings.InvalidPackageType,
-                        PackageSpec.PackageSpecFileName),
-                    rawPackageType,
-                    packageSpec.FilePath);
-            }
-
-            IEnumerable<string> packageTypeNames;
-            if (!TryGetStringEnumerableFromJArray(rawPackageType, out packageTypeNames))
-            {
-                packageTypeNames = Enumerable.Empty<string>();
-            }
-
-            Dictionary<string, IncludeExcludeFiles> mappings = null;
-            IncludeExcludeFiles files = null;
-            var rawFiles = rawPackOptions[Files] as JObject;
-            if (rawFiles != null)
-            {
-                files = new IncludeExcludeFiles();
-                if (!files.HandleIncludeExcludeFiles(rawFiles))
-                {
-                    files = null;
+                    throw FileFormatException.Create(
+                        "Unable to resolve central version ''.",
+                        line,
+                        column,
+                        filePath);
                 }
 
-                var rawMappings = rawFiles["mappings"] as JObject;
+                string version = jsonReader.ReadNextTokenAsString();
 
-                if (rawMappings != null)
+                if (string.IsNullOrEmpty(version))
                 {
-                    mappings = new Dictionary<string, IncludeExcludeFiles>();
-                    foreach (var pair in rawMappings)
-                    {
-                        var key = pair.Key;
-                        var value = pair.Value;
-                        if (value.Type == JTokenType.String ||
-                            value.Type == JTokenType.Array)
-                        {
-                            IEnumerable<string> includeFiles;
-                            TryGetStringEnumerableFromJArray(value, out includeFiles);
-                            var includeExcludeFiles = new IncludeExcludeFiles()
-                            {
-                                Include = includeFiles?.ToList()
-                            };
-                            mappings.Add(key, includeExcludeFiles);
-                        }
-                        else if (value.Type == JTokenType.Object)
-                        {
-                            var includeExcludeFiles = new IncludeExcludeFiles();
-                            if (includeExcludeFiles.HandleIncludeExcludeFiles(value as JObject))
-                            {
-                                mappings.Add(key, includeExcludeFiles);
-                            }
-                        }
-                    }
+                    throw FileFormatException.Create(
+                        "The version cannot be null or empty.",
+                        line,
+                        column,
+                        filePath);
                 }
-            }
 
-            return new PackOptions
-            {
-                PackageType = packageTypeNames
-                    .Select(name => new PackageType(name, Packaging.Core.PackageType.EmptyVersion))
-                    .ToList(),
-                IncludeExcludeFiles = files,
-                Mappings = mappings
-            };
+                centralPackageVersions[propertyName] = new CentralPackageVersion(propertyName, VersionRange.Parse(version));
+            });
         }
 
-        private static void PopulateDependencies(
-            string packageSpecPath,
+        private static CompatibilityProfile ReadCompatibilityProfile(JsonTextReader jsonReader, string profileName)
+        {
+            List<FrameworkRuntimePair> sets = null;
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                sets = sets ?? new List<FrameworkRuntimePair>();
+
+                IEnumerable<FrameworkRuntimePair> profiles = ReadCompatibilitySets(jsonReader, propertyName);
+
+                sets.AddRange(profiles);
+            });
+
+            return new CompatibilityProfile(profileName, sets ?? Enumerable.Empty<FrameworkRuntimePair>());
+        }
+
+        private static IEnumerable<FrameworkRuntimePair> ReadCompatibilitySets(JsonTextReader jsonReader, string compatibilitySetName)
+        {
+            NuGetFramework framework = NuGetFramework.Parse(compatibilitySetName);
+
+            IReadOnlyList<string> values = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList() ?? Array.Empty<string>();
+
+            foreach (string value in values)
+            {
+                yield return new FrameworkRuntimePair(framework, value);
+            }
+        }
+
+        private static void ReadDependencies(
+            JsonTextReader jsonReader,
             IList<LibraryDependency> results,
-            JObject settings,
-            string propertyName,
+            string packageSpecPath,
             bool isGacOrFrameworkReference)
         {
-            var dependencies = settings[propertyName] as JObject;
-            if (dependencies != null)
+            jsonReader.ReadObject(propertyName =>
             {
-                foreach (var dependency in dependencies)
+                if (string.IsNullOrEmpty(propertyName))
                 {
-                    if (string.IsNullOrEmpty(dependency.Key))
-                    {
-                        throw FileFormatException.Create(
-                            "Unable to resolve dependency ''.",
-                            dependency.Value,
-                            packageSpecPath);
-                    }
+                    // Advance the reader's position to be able to report the line and column for the property value.
+                    jsonReader.ReadNextToken();
 
-                    // Support
-                    // "dependencies" : {
-                    //    "Name" : "1.0"
-                    // }
+                    throw FileFormatException.Create(
+                        "Unable to resolve dependency ''.",
+                        jsonReader.LineNumber,
+                        jsonReader.LinePosition,
+                        packageSpecPath);
+                }
 
-                    var dependencyValue = dependency.Value;
+                // Support
+                // "dependencies" : {
+                //    "Name" : "1.0"
+                // }
+
+                if (jsonReader.ReadNextToken())
+                {
+                    int dependencyValueLine = jsonReader.LineNumber;
+                    int dependencyValueColumn = jsonReader.LinePosition;
+                    var versionLine = 0;
+                    var versionColumn = 0;
+
                     var dependencyTypeValue = LibraryDependencyType.Default;
-
                     var dependencyIncludeFlagsValue = LibraryIncludeFlags.All;
                     var dependencyExcludeFlagsValue = LibraryIncludeFlags.None;
                     var suppressParentFlagsValue = LibraryIncludeFlagUtils.DefaultSuppressParent;
-                    var noWarn = new List<NuGetLogCode>();
+                    List<NuGetLogCode> noWarn = null;
+                    var wasDependencyIncludeFlagsValueSet = false;
+                    var wasSuppressParentFlagsValueSet = false;
 
                     // This method handles both the dependencies and framework assembly sections.
                     // Framework references should be limited to references.
                     // Dependencies should allow everything but framework references.
-                    var targetFlagsValue = isGacOrFrameworkReference
+                    LibraryDependencyTarget targetFlagsValue = isGacOrFrameworkReference
                         ? LibraryDependencyTarget.Reference
                         : LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference;
 
@@ -498,88 +363,93 @@ namespace NuGet.ProjectModel
                     var versionCentrallyManaged = false;
 
                     string dependencyVersionValue = null;
-                    var dependencyVersionToken = dependencyValue;
 
-                    if (dependencyValue.Type == JTokenType.String)
+                    if (jsonReader.TokenType == JsonToken.String)
                     {
-                        dependencyVersionValue = dependencyValue.Value<string>();
+                        dependencyVersionValue = (string)jsonReader.Value;
                     }
-                    else
+                    else if (jsonReader.TokenType == JsonToken.StartObject)
                     {
-                        if (dependencyValue.Type == JTokenType.Object)
+                        jsonReader.ReadProperties(dependenciesPropertyName =>
                         {
-                            dependencyVersionToken = dependencyValue["version"];
-                            if (dependencyVersionToken != null
-                                && dependencyVersionToken.Type == JTokenType.String)
+                            IEnumerable<string> values = null;
+
+                            switch (dependenciesPropertyName)
                             {
-                                dependencyVersionValue = dependencyVersionToken.Value<string>();
+                                case "autoReferenced":
+                                    autoReferenced = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpecPath);
+                                    break;
+
+                                case "exclude":
+                                    values = jsonReader.ReadDelimitedString();
+                                    dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                    break;
+
+                                case "generatePathProperty":
+                                    generatePathProperty = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpecPath);
+                                    break;
+
+                                case "include":
+                                    values = jsonReader.ReadDelimitedString();
+                                    dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                    wasDependencyIncludeFlagsValueSet = true;
+                                    break;
+
+                                case "noWarn":
+                                    noWarn = ReadNuGetLogCodesList(jsonReader);
+                                    break;
+
+                                case "suppressParent":
+                                    values = jsonReader.ReadDelimitedString();
+                                    suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(values);
+                                    wasSuppressParentFlagsValueSet = true;
+                                    break;
+
+                                case "target":
+                                    targetFlagsValue = ReadTarget(jsonReader, packageSpecPath, targetFlagsValue);
+                                    break;
+
+                                case "type":
+                                    values = jsonReader.ReadDelimitedString();
+                                    dependencyTypeValue = LibraryDependencyType.Parse(values);
+
+                                    // Types are used at pack time, they should be translated to suppressParent to 
+                                    // provide a matching effect for project to project references.
+                                    // This should be set before suppressParent is checked.
+                                    if (!dependencyTypeValue.Contains(LibraryDependencyTypeFlag.BecomesNupkgDependency))
+                                    {
+                                        if (!wasSuppressParentFlagsValueSet)
+                                        {
+                                            suppressParentFlagsValue = LibraryIncludeFlags.All;
+                                        }
+                                    }
+                                    else if (dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
+                                    {
+                                        if (!wasDependencyIncludeFlagsValueSet)
+                                        {
+                                            dependencyIncludeFlagsValue =
+                                                LibraryIncludeFlags.Build |
+                                                LibraryIncludeFlags.Compile |
+                                                LibraryIncludeFlags.Analyzers;
+                                        }
+                                    }
+                                    break;
+
+                                case "version":
+                                    if (jsonReader.ReadNextToken())
+                                    {
+                                        versionLine = jsonReader.LineNumber;
+                                        versionColumn = jsonReader.LinePosition;
+
+                                        dependencyVersionValue = (string)jsonReader.Value;
+                                    }
+                                    break;
+
+                                case "versionCentrallyManaged":
+                                    versionCentrallyManaged = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpecPath);
+                                    break;
                             }
-                        }
-
-                        IEnumerable<string> strings;
-                        if (TryGetStringEnumerable(dependencyValue["type"], out strings))
-                        {
-                            dependencyTypeValue = LibraryDependencyType.Parse(strings);
-
-                            // Types are used at pack time, they should be translated to suppressParent to 
-                            // provide a matching effect for project to project references.
-                            // This should be set before suppressParent is checked.
-                            if (!dependencyTypeValue.Contains(LibraryDependencyTypeFlag.BecomesNupkgDependency))
-                            {
-                                suppressParentFlagsValue = LibraryIncludeFlags.All;
-                            }
-                            else if (dependencyTypeValue.Contains(LibraryDependencyTypeFlag.SharedFramework))
-                            {
-                                dependencyIncludeFlagsValue =
-                                    LibraryIncludeFlags.Build |
-                                    LibraryIncludeFlags.Compile |
-                                    LibraryIncludeFlags.Analyzers;
-                            }
-                        }
-
-                        if (TryGetStringEnumerable(dependencyValue["include"], out strings))
-                        {
-                            dependencyIncludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
-                        }
-
-                        if (TryGetStringEnumerable(dependencyValue["exclude"], out strings))
-                        {
-                            dependencyExcludeFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
-                        }
-
-                        if (TryGetStringEnumerable(dependencyValue["suppressParent"], out strings))
-                        {
-                            // This overrides any settings that came from the type property.
-                            suppressParentFlagsValue = LibraryIncludeFlagUtils.GetFlags(strings);
-                        }
-
-                        noWarn = GetNuGetLogCodeEnumerableFromJArray(dependencyValue["noWarn"])
-                            .ToList();
-
-                        var targetToken = dependencyValue["target"];
-
-                        if (targetToken != null)
-                        {
-                            var targetString = targetToken.Value<string>();
-
-                            targetFlagsValue = LibraryDependencyTargetUtils.Parse(targetString);
-
-                            // Verify that the value specified is package, project, or external project
-                            if (!ValidateDependencyTarget(targetFlagsValue))
-                            {
-                                var message = string.Format(
-                                    CultureInfo.CurrentCulture,
-                                    Strings.InvalidDependencyTarget,
-                                    targetString);
-
-                                throw FileFormatException.Create(message, targetToken, packageSpecPath);
-                            }
-                        }
-
-                        autoReferenced = GetBoolOrFalse(dependencyValue, "autoReferenced", packageSpecPath);
-                        versionCentrallyManaged = GetBoolOrFalse(dependencyValue, "versionCentrallyManaged", packageSpecPath);
-
-                        generatePathProperty = GetBoolOrFalse(dependencyValue, "generatePathProperty", packageSpecPath);
+                        });
                     }
 
                     VersionRange dependencyVersionRange = null;
@@ -594,7 +464,8 @@ namespace NuGet.ProjectModel
                         {
                             throw FileFormatException.Create(
                                 ex,
-                                dependencyVersionToken,
+                                versionLine,
+                                versionColumn,
                                 packageSpecPath);
                         }
                     }
@@ -606,7 +477,8 @@ namespace NuGet.ProjectModel
                         {
                             throw FileFormatException.Create(
                                 new ArgumentException(Strings.MissingVersionOnDependency),
-                                dependency.Value,
+                                dependencyValueLine,
+                                dependencyValueColumn,
                                 packageSpecPath);
                         }
                         else
@@ -618,51 +490,1104 @@ namespace NuGet.ProjectModel
 
                     // the dependency flags are: Include flags - Exclude flags
                     var includeFlags = dependencyIncludeFlagsValue & ~dependencyExcludeFlagsValue;
-
-                    results.Add(new LibraryDependency()
+                    var libraryDependency = new LibraryDependency()
                     {
                         LibraryRange = new LibraryRange()
                         {
-                            Name = dependency.Key,
+                            Name = propertyName,
                             TypeConstraint = targetFlagsValue,
-                            VersionRange = dependencyVersionRange,
+                            VersionRange = dependencyVersionRange
                         },
                         Type = dependencyTypeValue,
                         IncludeType = includeFlags,
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
-                        NoWarn = noWarn.ToList(),
                         GeneratePathProperty = generatePathProperty,
                         VersionCentrallyManaged = versionCentrallyManaged
-                    });
+                    };
+
+                    if (noWarn != null)
+                    {
+                        libraryDependency.NoWarn = noWarn;
+                    }
+
+                    results.Add(libraryDependency);
+                }
+            });
+        }
+
+        private static void ReadDownloadDependencies(
+            JsonTextReader jsonReader,
+            IList<DownloadDependency> downloadDependencies,
+            string packageSpecPath)
+        {
+            var seenIds = new HashSet<string>();
+
+            if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
+            {
+                do
+                {
+                    string name = null;
+                    string versionValue = null;
+                    var isNameDefined = false;
+                    var isVersionDefined = false;
+                    int line = jsonReader.LineNumber;
+                    int column = jsonReader.LinePosition;
+                    int versionLine = 0;
+                    int versionColumn = 0;
+
+                    jsonReader.ReadObject(propertyName =>
+                    {
+                        switch (propertyName)
+                        {
+                            case "name":
+                                isNameDefined = true;
+                                name = jsonReader.ReadNextTokenAsString();
+                                break;
+
+                            case "version":
+                                isVersionDefined = true;
+                                versionValue = jsonReader.ReadNextTokenAsString();
+                                versionLine = jsonReader.LineNumber;
+                                versionColumn = jsonReader.LinePosition;
+                                break;
+                        }
+                    }, out line, out column);
+
+                    if (jsonReader.TokenType == JsonToken.EndArray)
+                    {
+                        break;
+                    }
+
+                    if (!isNameDefined)
+                    {
+                        throw FileFormatException.Create(
+                            "Unable to resolve downloadDependency ''.",
+                            line,
+                            column,
+                            packageSpecPath);
+                    }
+
+                    if (!seenIds.Add(name))
+                    {
+                        // package ID already seen, only use first definition.
+                        continue;
+                    }
+
+                    if (string.IsNullOrEmpty(versionValue))
+                    {
+                        throw FileFormatException.Create(
+                            "The version cannot be null or empty",
+                            isVersionDefined ? versionLine : line,
+                            isVersionDefined ? versionColumn : column,
+                            packageSpecPath);
+                    }
+
+                    string[] versions = versionValue.Split(VersionSeparators, StringSplitOptions.RemoveEmptyEntries);
+
+                    foreach (string singleVersionValue in versions)
+                    {
+                        try
+                        {
+                            VersionRange version = VersionRange.Parse(singleVersionValue);
+
+                            downloadDependencies.Add(new DownloadDependency(name, version));
+                        }
+                        catch (Exception ex)
+                        {
+                            throw FileFormatException.Create(
+                                ex,
+                                isVersionDefined ? versionLine : line,
+                                isVersionDefined ? versionColumn : column,
+                                packageSpecPath);
+                        }
+                    }
+                } while (jsonReader.TokenType == JsonToken.EndObject);
+            }
+        }
+
+        private static IReadOnlyList<string> ReadEnumerableOfString(JsonTextReader jsonReader)
+        {
+            string value = jsonReader.ReadNextTokenAsString();
+
+            return value.Split(DelimitedStringSeparators, StringSplitOptions.RemoveEmptyEntries);
+        }
+
+        private static void ReadFrameworkReferences(
+            JsonTextReader jsonReader,
+            ISet<FrameworkDependency> frameworkReferences,
+            string packageSpecPath)
+        {
+            jsonReader.ReadObject(frameworkName =>
+            {
+                if (string.IsNullOrEmpty(frameworkName))
+                {
+                    // Advance the reader's position to be able to report the line and column for the property value.
+                    jsonReader.ReadNextToken();
+
+                    throw FileFormatException.Create(
+                        "Unable to resolve frameworkReference.",
+                        jsonReader.LineNumber,
+                        jsonReader.LinePosition,
+                        packageSpecPath);
+                }
+
+                var privateAssets = FrameworkDependencyFlagsUtils.Default;
+
+                jsonReader.ReadObject(propertyName =>
+                {
+                    if (propertyName == "privateAssets")
+                    {
+                        IEnumerable<string> strings = ReadEnumerableOfString(jsonReader);
+
+                        privateAssets = FrameworkDependencyFlagsUtils.GetFlags(strings);
+                    }
+                });
+
+                frameworkReferences.Add(new FrameworkDependency(frameworkName, privateAssets));
+            });
+        }
+
+        private static void ReadFrameworks(JsonTextReader jsonReader, PackageSpec packageSpec)
+        {
+            jsonReader.ReadObject(_ =>
+            {
+                var frameworkLine = 0;
+                var frameworkColumn = 0;
+
+                try
+                {
+                    ReadTargetFrameworks(packageSpec, jsonReader, out frameworkLine, out frameworkColumn);
+                }
+                catch (Exception ex)
+                {
+                    throw FileFormatException.Create(ex, frameworkLine, frameworkColumn, packageSpec.FilePath);
+                }
+            });
+        }
+
+        private static void ReadImports(PackageSpec packageSpec, JsonTextReader jsonReader, TargetFrameworkInformation targetFrameworkInformation)
+        {
+            int lineNumber = jsonReader.LineNumber;
+            int linePosition = jsonReader.LinePosition;
+
+            IReadOnlyList<string> imports = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+
+            if (imports != null && imports.Count > 0)
+            {
+                foreach (string import in imports.Where(element => !string.IsNullOrEmpty(element)))
+                {
+                    NuGetFramework framework = NuGetFramework.Parse(import);
+
+                    if (!framework.IsSpecificFramework)
+                    {
+                        throw FileFormatException.Create(
+                            string.Format(
+                                Strings.Log_InvalidImportFramework,
+                                import,
+                                PackageSpec.PackageSpecFileName),
+                            lineNumber,
+                            linePosition,
+                            packageSpec.FilePath);
+                    }
+
+                    targetFrameworkInformation.Imports.Add(framework);
                 }
             }
         }
 
-        private static bool TryGetStringEnumerable(JToken token, out IEnumerable<string> result)
+        private static void ReadMappings(JsonTextReader jsonReader, string mappingKey, IDictionary<string, IncludeExcludeFiles> mappings)
         {
-            IEnumerable<string> values;
-            if (token == null)
+            if (jsonReader.ReadNextToken())
             {
-                result = null;
-                return false;
-            }
-            else if (token.Type == JTokenType.String)
-            {
-                values = new[]
+                switch (jsonReader.TokenType)
                 {
-                    token.Value<string>()
+                    case JsonToken.String:
+                        {
+                            var files = new IncludeExcludeFiles()
+                            {
+                                Include = new[] { (string)jsonReader.Value }
+                            };
+
+                            mappings.Add(mappingKey, files);
+                        }
+                        break;
+
+                    case JsonToken.StartArray:
+                        {
+                            IReadOnlyList<string> include = jsonReader.ReadStringArrayAsReadOnlyListFromArrayStart();
+
+                            var files = new IncludeExcludeFiles()
+                            {
+                                Include = include
+                            };
+
+                            mappings.Add(mappingKey, files);
+                        }
+                        break;
+
+                    case JsonToken.StartObject:
+                        {
+                            IReadOnlyList<string> excludeFiles = null;
+                            IReadOnlyList<string> exclude = null;
+                            IReadOnlyList<string> includeFiles = null;
+                            IReadOnlyList<string> include = null;
+
+                            jsonReader.ReadProperties(filesPropertyName =>
+                            {
+                                switch (filesPropertyName)
+                                {
+                                    case "excludeFiles":
+                                        excludeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                        break;
+
+                                    case "exclude":
+                                        exclude = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                        break;
+
+                                    case "includeFiles":
+                                        includeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                        break;
+
+                                    case "include":
+                                        include = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                                        break;
+                                }
+                            });
+
+                            if (include != null || includeFiles != null || exclude != null || excludeFiles != null)
+                            {
+                                var files = new IncludeExcludeFiles()
+                                {
+                                    ExcludeFiles = excludeFiles,
+                                    Exclude = exclude,
+                                    IncludeFiles = includeFiles,
+                                    Include = include
+                                };
+
+                                mappings.Add(mappingKey, files);
+                            }
+                        }
+                        break;
+                }
+            }
+        }
+
+        private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec)
+        {
+            var centralPackageVersionsManagementEnabled = false;
+            List<string> configFilePaths = null;
+            var crossTargeting = false;
+            List<string> fallbackFolders = null;
+            List<ProjectRestoreMetadataFile> files = null;
+            var legacyPackagesDirectory = false;
+            ProjectRestoreMetadata msbuildMetadata = null;
+            List<string> originalTargetFrameworks = null;
+            string outputPath = null;
+            string packagesConfigPath = null;
+            string packagesPath = null;
+            string projectJsonPath = null;
+            string projectName = null;
+            string projectPath = null;
+            ProjectStyle? projectStyle = null;
+            string projectUniqueName = null;
+            RestoreLockProperties restoreLockProperties = null;
+            var skipContentFileWrite = false;
+            List<PackageSource> sources = null;
+            List<ProjectRestoreMetadataFrameworkInfo> targetFrameworks = null;
+            var validateRuntimeAssets = false;
+            WarningProperties warningProperties = null;
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case "centralPackageVersionsManagementEnabled":
+                        centralPackageVersionsManagementEnabled = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "configFilePaths":
+                        configFilePaths = jsonReader.ReadStringArrayAsList();
+                        break;
+
+                    case "crossTargeting":
+                        crossTargeting = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "fallbackFolders":
+                        fallbackFolders = jsonReader.ReadStringArrayAsList();
+                        break;
+
+                    case "files":
+                        jsonReader.ReadObject(filePropertyName =>
+                        {
+                            files = files ?? new List<ProjectRestoreMetadataFile>();
+
+                            files.Add(new ProjectRestoreMetadataFile(filePropertyName, jsonReader.ReadNextTokenAsString()));
+                        });
+                        break;
+
+                    case "frameworks":
+                        targetFrameworks = ReadTargetFrameworks(jsonReader);
+                        break;
+
+                    case "legacyPackagesDirectory":
+                        legacyPackagesDirectory = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "originalTargetFrameworks":
+                        originalTargetFrameworks = jsonReader.ReadStringArrayAsList();
+                        break;
+
+                    case "outputPath":
+                        outputPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "packagesConfigPath":
+                        packagesConfigPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "packagesPath":
+                        packagesPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "projectJsonPath":
+                        projectJsonPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "projectName":
+                        projectName = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "projectPath":
+                        projectPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "projectStyle":
+                        string projectStyleString = jsonReader.ReadNextTokenAsString();
+
+                        if (!string.IsNullOrEmpty(projectStyleString)
+                            && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out ProjectStyle projectStyleValue))
+                        {
+                            projectStyle = projectStyleValue;
+                        }
+                        break;
+
+                    case "projectUniqueName":
+                        projectUniqueName = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "restoreLockProperties":
+                        string nuGetLockFilePath = null;
+                        var restoreLockedMode = false;
+                        string restorePackagesWithLockFile = null;
+
+                        jsonReader.ReadObject(restoreLockPropertiesPropertyName =>
+                        {
+                            switch (restoreLockPropertiesPropertyName)
+                            {
+                                case "nuGetLockFilePath":
+                                    nuGetLockFilePath = jsonReader.ReadNextTokenAsString();
+                                    break;
+
+                                case "restoreLockedMode":
+                                    restoreLockedMode = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                                    break;
+
+                                case "restorePackagesWithLockFile":
+                                    restorePackagesWithLockFile = jsonReader.ReadNextTokenAsString();
+                                    break;
+                            }
+                        });
+
+                        restoreLockProperties = new RestoreLockProperties(restorePackagesWithLockFile, nuGetLockFilePath, restoreLockedMode);
+                        break;
+
+                    case "skipContentFileWrite":
+                        skipContentFileWrite = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "sources":
+                        jsonReader.ReadObject(sourcePropertyName =>
+                        {
+                            sources = sources ?? new List<PackageSource>();
+
+                            sources.Add(new PackageSource(sourcePropertyName));
+                        });
+                        break;
+
+                    case "validateRuntimeAssets":
+                        validateRuntimeAssets = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "warningProperties":
+                        var allWarningsAsErrors = false;
+                        var noWarn = new HashSet<NuGetLogCode>();
+                        var warnAsError = new HashSet<NuGetLogCode>();
+
+                        jsonReader.ReadObject(warningPropertiesPropertyName =>
+                        {
+                            switch (warningPropertiesPropertyName)
+                            {
+                                case "allWarningsAsErrors":
+                                    allWarningsAsErrors = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                                    break;
+
+                                case "noWarn":
+                                    ReadNuGetLogCodes(jsonReader, noWarn);
+                                    break;
+
+                                case "warnAsError":
+                                    ReadNuGetLogCodes(jsonReader, warnAsError);
+                                    break;
+                            }
+                        });
+
+                        warningProperties = new WarningProperties(warnAsError, noWarn, allWarningsAsErrors);
+                        break;
+                }
+            });
+
+            if (projectStyle == ProjectStyle.PackagesConfig)
+            {
+                msbuildMetadata = new PackagesConfigProjectRestoreMetadata()
+                {
+                    PackagesConfigPath = packagesConfigPath
                 };
             }
             else
             {
-                values = token.Value<string[]>();
+                msbuildMetadata = new ProjectRestoreMetadata();
             }
 
-            result = values
-                .SelectMany(value => value.Split(new[] { ' ', ',' }, StringSplitOptions.RemoveEmptyEntries));
+            msbuildMetadata.CentralPackageVersionsEnabled = centralPackageVersionsManagementEnabled;
 
-            return true;
+            if (configFilePaths != null)
+            {
+                msbuildMetadata.ConfigFilePaths = configFilePaths;
+            }
+
+            msbuildMetadata.CrossTargeting = crossTargeting;
+
+            if (fallbackFolders != null)
+            {
+                msbuildMetadata.FallbackFolders = fallbackFolders;
+            }
+
+            if (files != null)
+            {
+                msbuildMetadata.Files = files;
+            }
+
+            msbuildMetadata.LegacyPackagesDirectory = legacyPackagesDirectory;
+
+            if (originalTargetFrameworks != null)
+            {
+                msbuildMetadata.OriginalTargetFrameworks = originalTargetFrameworks;
+            }
+
+            msbuildMetadata.OutputPath = outputPath;
+            msbuildMetadata.PackagesPath = packagesPath;
+            msbuildMetadata.ProjectJsonPath = projectJsonPath;
+            msbuildMetadata.ProjectName = projectName;
+            msbuildMetadata.ProjectPath = projectPath;
+
+            if (projectStyle.HasValue)
+            {
+                msbuildMetadata.ProjectStyle = projectStyle.Value;
+            }
+
+            msbuildMetadata.ProjectUniqueName = projectUniqueName;
+
+            if (restoreLockProperties != null)
+            {
+                msbuildMetadata.RestoreLockProperties = restoreLockProperties;
+            }
+
+            msbuildMetadata.SkipContentFileWrite = skipContentFileWrite;
+
+            if (sources != null)
+            {
+                msbuildMetadata.Sources = sources;
+            }
+
+            if (targetFrameworks != null)
+            {
+                msbuildMetadata.TargetFrameworks = targetFrameworks;
+            }
+
+            msbuildMetadata.ValidateRuntimeAssets = validateRuntimeAssets;
+
+            if (warningProperties != null)
+            {
+                msbuildMetadata.ProjectWideWarningProperties = warningProperties;
+            }
+
+            packageSpec.RestoreMetadata = msbuildMetadata;
+        }
+
+        private static bool ReadNextTokenAsBoolOrFalse(JsonTextReader jsonReader, string filePath)
+        {
+            if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.Boolean)
+            {
+                try
+                {
+                    return (bool)jsonReader.Value;
+                }
+                catch (Exception ex)
+                {
+                    throw FileFormatException.Create(ex, jsonReader.LineNumber, jsonReader.LinePosition, filePath);
+                }
+            }
+
+            return false;
+        }
+
+        private static void ReadNuGetLogCodes(JsonTextReader jsonReader, HashSet<NuGetLogCode> hashCodes)
+        {
+            if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
+            {
+                while (jsonReader.ReadNextToken() && jsonReader.TokenType != JsonToken.EndArray)
+                {
+                    if (jsonReader.TokenType == JsonToken.String && Enum.TryParse((string)jsonReader.Value, out NuGetLogCode code))
+                    {
+                        hashCodes.Add(code);
+                    }
+                }
+            }
+        }
+
+        private static List<NuGetLogCode> ReadNuGetLogCodesList(JsonTextReader jsonReader)
+        {
+            List<NuGetLogCode> items = null;
+
+            if (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.StartArray)
+            {
+                while (jsonReader.ReadNextToken() && jsonReader.TokenType != JsonToken.EndArray)
+                {
+                    if (jsonReader.TokenType == JsonToken.String && Enum.TryParse((string)jsonReader.Value, out NuGetLogCode code))
+                    {
+                        items = items ?? new List<NuGetLogCode>();
+
+                        items.Add(code);
+                    }
+                }
+            }
+
+            return items;
+        }
+
+        private static void ReadPackageTypes(PackageSpec packageSpec, JsonTextReader jsonReader)
+        {
+            var errorLine = 0;
+            var errorColumn = 0;
+
+            IReadOnlyList<PackageType> packageTypes = null;
+            PackageType packageType = null;
+
+            try
+            {
+                if (jsonReader.ReadNextToken())
+                {
+                    errorLine = jsonReader.LineNumber;
+                    errorColumn = jsonReader.LinePosition;
+
+                    switch (jsonReader.TokenType)
+                    {
+                        case JsonToken.String:
+                            packageType = CreatePackageType(jsonReader);
+
+                            packageTypes = new[] { packageType };
+                            break;
+
+                        case JsonToken.StartArray:
+                            var types = new List<PackageType>();
+
+                            while (jsonReader.ReadNextToken() && jsonReader.TokenType != JsonToken.EndArray)
+                            {
+                                if (jsonReader.TokenType != JsonToken.String)
+                                {
+                                    throw FileFormatException.Create(
+                                        string.Format(
+                                            CultureInfo.CurrentCulture,
+                                            Strings.InvalidPackageType,
+                                            PackageSpec.PackageSpecFileName),
+                                        errorLine,
+                                        errorColumn,
+                                        packageSpec.FilePath);
+                                }
+
+                                packageType = CreatePackageType(jsonReader);
+
+                                types.Add(packageType);
+                            }
+
+                            packageTypes = types;
+                            break;
+
+                        case JsonToken.Null:
+                            break;
+
+                        default:
+                            throw new InvalidCastException();
+                    }
+
+                    if (packageTypes != null)
+                    {
+                        packageSpec.PackOptions.PackageType = packageTypes;
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                throw FileFormatException.Create(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidPackageType,
+                        PackageSpec.PackageSpecFileName),
+                    errorLine,
+                    errorColumn,
+                    packageSpec.FilePath);
+            }
+        }
+
+        private static void ReadPackInclude(JsonTextReader jsonReader, PackageSpec packageSpec)
+        {
+            jsonReader.ReadObject(propertyName =>
+            {
+                string propertyValue = jsonReader.ReadAsString();
+
+                packageSpec.PackInclude.Add(new KeyValuePair<string, string>(propertyName, propertyValue));
+            });
+        }
+
+        private static void ReadPackOptions(JsonTextReader jsonReader, PackageSpec packageSpec, ref bool isMappingsNull)
+        {
+            var wasMappingsRead = false;
+
+            bool isPackOptionsValueAnObject = jsonReader.ReadObject(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case "files":
+                        wasMappingsRead = ReadPackOptionsFiles(packageSpec, jsonReader, wasMappingsRead);
+                        break;
+
+                    case "iconUrl":
+                        packageSpec.IconUrl = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "licenseUrl":
+                        packageSpec.LicenseUrl = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "owners":
+                        string[] owners = ReadStringArray(jsonReader);
+
+                        if (owners != null)
+                        {
+                            packageSpec.Owners = owners;
+                        }
+                        break;
+
+                    case "packageType":
+                        ReadPackageTypes(packageSpec, jsonReader);
+                        break;
+
+                    case "projectUrl":
+                        packageSpec.ProjectUrl = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "releaseNotes":
+                        packageSpec.ReleaseNotes = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "requireLicenseAcceptance":
+                        packageSpec.RequireLicenseAcceptance = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "summary":
+                        packageSpec.Summary = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "tags":
+                        string[] tags = ReadStringArray(jsonReader);
+
+                        if (tags != null)
+                        {
+                            packageSpec.Tags = tags;
+                        }
+                        break;
+                }
+            });
+
+            isMappingsNull = isPackOptionsValueAnObject && !wasMappingsRead;
+        }
+
+        private static bool ReadPackOptionsFiles(PackageSpec packageSpec, JsonTextReader jsonReader, bool wasMappingsRead)
+        {
+            IReadOnlyList<string> excludeFiles = null;
+            IReadOnlyList<string> exclude = null;
+            IReadOnlyList<string> includeFiles = null;
+            IReadOnlyList<string> include = null;
+
+            jsonReader.ReadObject(filesPropertyName =>
+            {
+                switch (filesPropertyName)
+                {
+                    case "excludeFiles":
+                        excludeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        break;
+
+                    case "exclude":
+                        exclude = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        break;
+
+                    case "includeFiles":
+                        includeFiles = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        break;
+
+                    case "include":
+                        include = jsonReader.ReadStringOrArrayOfStringsAsReadOnlyList();
+                        break;
+
+                    case "mappings":
+                        jsonReader.ReadObject(mappingsPropertyName =>
+                        {
+                            wasMappingsRead = true;
+
+                            ReadMappings(jsonReader, mappingsPropertyName, packageSpec.PackOptions.Mappings);
+                        });
+                        break;
+                }
+            });
+
+            if (include != null || includeFiles != null || exclude != null || excludeFiles != null)
+            {
+                packageSpec.PackOptions.IncludeExcludeFiles = new IncludeExcludeFiles()
+                {
+                    ExcludeFiles = excludeFiles,
+                    Exclude = exclude,
+                    IncludeFiles = includeFiles,
+                    Include = include
+                };
+            }
+
+            return wasMappingsRead;
+        }
+
+        private static void ReadRestoreSettings(JsonTextReader jsonReader, PackageSpec packageSpec)
+        {
+            packageSpec.RestoreSettings = new ProjectRestoreSettings();
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                if (propertyName == JsonPackageSpecReader.HideWarningsAndErrors)
+                {
+                    packageSpec.RestoreSettings.HideWarningsAndErrors = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                }
+            });
+        }
+
+        private static RuntimeDependencySet ReadRuntimeDependencySet(JsonTextReader jsonReader, string dependencySetName)
+        {
+            List<RuntimePackageDependency> dependencies = null;
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                dependencies = dependencies ?? new List<RuntimePackageDependency>();
+
+                var dependency = new RuntimePackageDependency(propertyName, VersionRange.Parse(jsonReader.ReadNextTokenAsString()));
+
+                dependencies.Add(dependency);
+            });
+
+            return new RuntimeDependencySet(
+                dependencySetName,
+                dependencies ?? Enumerable.Empty<RuntimePackageDependency>());
+        }
+
+        private static RuntimeDescription ReadRuntimeDescription(JsonTextReader jsonReader, string runtimeName)
+        {
+            List<string> inheritedRuntimes = null;
+            List<RuntimeDependencySet> additionalDependencies = null;
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                if (propertyName == "#import")
+                {
+                    inheritedRuntimes = jsonReader.ReadStringArrayAsList();
+                }
+                else
+                {
+                    additionalDependencies = additionalDependencies ?? new List<RuntimeDependencySet>();
+
+                    RuntimeDependencySet dependency = ReadRuntimeDependencySet(jsonReader, propertyName);
+
+                    additionalDependencies.Add(dependency);
+                }
+            });
+
+            return new RuntimeDescription(
+                runtimeName,
+                inheritedRuntimes ?? Enumerable.Empty<string>(),
+                additionalDependencies ?? Enumerable.Empty<RuntimeDependencySet>());
+        }
+
+        private static List<RuntimeDescription> ReadRuntimes(JsonTextReader jsonReader)
+        {
+            var runtimeDescriptions = new List<RuntimeDescription>();
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                RuntimeDescription runtimeDescription = ReadRuntimeDescription(jsonReader, propertyName);
+
+                runtimeDescriptions.Add(runtimeDescription);
+            });
+
+            return runtimeDescriptions;
+        }
+
+        private static void ReadScripts(JsonTextReader jsonReader, PackageSpec packageSpec)
+        {
+            jsonReader.ReadObject(propertyName =>
+            {
+                if (jsonReader.ReadNextToken())
+                {
+                    if (jsonReader.TokenType == JsonToken.String)
+                    {
+                        packageSpec.Scripts[propertyName] = new string[] { (string)jsonReader.Value };
+                    }
+                    else if (jsonReader.TokenType == JsonToken.StartArray)
+                    {
+                        var list = new List<string>();
+
+                        while (jsonReader.ReadNextToken() && jsonReader.TokenType == JsonToken.String)
+                        {
+                            list.Add((string)jsonReader.Value);
+                        }
+
+                        packageSpec.Scripts[propertyName] = list;
+                    }
+                    else
+                    {
+                        throw FileFormatException.Create(
+                            string.Format("The value of a script in '{0}' can only be a string or an array of strings", PackageSpec.PackageSpecFileName),
+                            jsonReader.LineNumber,
+                            jsonReader.LinePosition,
+                            packageSpec.FilePath);
+                    }
+                }
+            });
+        }
+
+        private static string[] ReadStringArray(JsonTextReader jsonReader)
+        {
+            List<string> list = jsonReader.ReadStringArrayAsList();
+
+            return list?.ToArray();
+        }
+
+        private static List<CompatibilityProfile> ReadSupports(JsonTextReader jsonReader)
+        {
+            var compatibilityProfiles = new List<CompatibilityProfile>();
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                CompatibilityProfile compatibilityProfile = ReadCompatibilityProfile(jsonReader, propertyName);
+
+                compatibilityProfiles.Add(compatibilityProfile);
+            });
+
+            return compatibilityProfiles;
+        }
+
+        private static LibraryDependencyTarget ReadTarget(
+            JsonTextReader jsonReader,
+            string packageSpecPath,
+            LibraryDependencyTarget targetFlagsValue)
+        {
+            if (jsonReader.ReadNextToken())
+            {
+                var targetString = (string)jsonReader.Value;
+
+                targetFlagsValue = LibraryDependencyTargetUtils.Parse(targetString);
+
+                // Verify that the value specified is package, project, or external project
+                if (!ValidateDependencyTarget(targetFlagsValue))
+                {
+                    string message = string.Format(
+                        CultureInfo.CurrentCulture,
+                        Strings.InvalidDependencyTarget,
+                        targetString);
+
+                    throw FileFormatException.Create(
+                        message,
+                        jsonReader.LineNumber,
+                        jsonReader.LinePosition,
+                        packageSpecPath);
+                }
+            }
+
+            return targetFlagsValue;
+        }
+
+        private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(JsonTextReader jsonReader)
+        {
+            var targetFrameworks = new List<ProjectRestoreMetadataFrameworkInfo>();
+
+            jsonReader.ReadObject(frameworkPropertyName =>
+            {
+                NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                var frameworkGroup = new ProjectRestoreMetadataFrameworkInfo(framework);
+
+                jsonReader.ReadObject(projectReferencesPropertyName =>
+                {
+                    if (projectReferencesPropertyName == "projectReferences")
+                    {
+                        jsonReader.ReadObject(projectReferencePropertyName =>
+                        {
+                            string excludeAssets = null;
+                            string includeAssets = null;
+                            string privateAssets = null;
+                            string projectReferenceProjectPath = null;
+
+                            jsonReader.ReadObject(projectReferenceObjectPropertyName =>
+                            {
+                                switch (projectReferenceObjectPropertyName)
+                                {
+                                    case "excludeAssets":
+                                        excludeAssets = jsonReader.ReadNextTokenAsString();
+                                        break;
+
+                                    case "includeAssets":
+                                        includeAssets = jsonReader.ReadNextTokenAsString();
+                                        break;
+
+                                    case "privateAssets":
+                                        privateAssets = jsonReader.ReadNextTokenAsString();
+                                        break;
+
+                                    case "projectPath":
+                                        projectReferenceProjectPath = jsonReader.ReadNextTokenAsString();
+                                        break;
+                                }
+                            });
+
+                            frameworkGroup.ProjectReferences.Add(new ProjectRestoreReference()
+                            {
+                                ProjectUniqueName = projectReferencePropertyName,
+                                ProjectPath = projectReferenceProjectPath,
+
+                                IncludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: includeAssets,
+                                    defaultFlags: LibraryIncludeFlags.All),
+
+                                ExcludeAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: excludeAssets,
+                                    defaultFlags: LibraryIncludeFlags.None),
+
+                                PrivateAssets = LibraryIncludeFlagUtils.GetFlags(
+                                    flags: privateAssets,
+                                    defaultFlags: LibraryIncludeFlagUtils.DefaultSuppressParent),
+                            });
+                        });
+                    }
+                });
+
+                targetFrameworks.Add(frameworkGroup);
+            });
+
+            return targetFrameworks;
+        }
+
+        private static void ReadTargetFrameworks(PackageSpec packageSpec, JsonTextReader jsonReader, out int frameworkLine, out int frameworkColumn)
+        {
+            frameworkLine = 0;
+            frameworkColumn = 0;
+
+            NuGetFramework frameworkName = NuGetFramework.Parse((string)jsonReader.Value);
+
+            var targetFrameworkInformation = new TargetFrameworkInformation();
+
+            jsonReader.ReadObject(propertyName =>
+            {
+                switch (propertyName)
+                {
+                    case "assetTargetFallback":
+                        targetFrameworkInformation.AssetTargetFallback = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+
+                    case "centralPackageVersions":
+                        ReadCentralPackageVersions(
+                            jsonReader,
+                            targetFrameworkInformation.CentralPackageVersions,
+                            packageSpec.FilePath);
+                        break;
+
+                    case "dependencies":
+                        ReadDependencies(
+                            jsonReader,
+                            targetFrameworkInformation.Dependencies,
+                            packageSpec.FilePath,
+                            isGacOrFrameworkReference: false);
+                        break;
+
+                    case "downloadDependencies":
+                        ReadDownloadDependencies(
+                            jsonReader,
+                            targetFrameworkInformation.DownloadDependencies,
+                            packageSpec.FilePath);
+                        break;
+
+                    case "frameworkAssemblies":
+                        ReadDependencies(
+                            jsonReader,
+                            targetFrameworkInformation.Dependencies,
+                            packageSpec.FilePath,
+                            isGacOrFrameworkReference: true);
+                        break;
+
+                    case "frameworkReferences":
+                        ReadFrameworkReferences(
+                            jsonReader,
+                            targetFrameworkInformation.FrameworkReferences,
+                            packageSpec.FilePath);
+                        break;
+
+                    case "imports":
+                        ReadImports(packageSpec, jsonReader, targetFrameworkInformation);
+                        break;
+
+                    case "runtimeIdentifierGraphPath":
+                        targetFrameworkInformation.RuntimeIdentifierGraphPath = jsonReader.ReadNextTokenAsString();
+                        break;
+
+                    case "warn":
+                        targetFrameworkInformation.Warn = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                        break;
+                }
+            }, out frameworkLine, out frameworkColumn);
+
+            NuGetFramework updatedFramework = frameworkName;
+
+            if (targetFrameworkInformation.Imports.Count > 0)
+            {
+                NuGetFramework[] imports = targetFrameworkInformation.Imports.ToArray();
+
+                if (targetFrameworkInformation.AssetTargetFallback)
+                {
+                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, imports);
+                }
+                else
+                {
+                    updatedFramework = new FallbackFramework(frameworkName, imports);
+                }
+            }
+
+            targetFrameworkInformation.FrameworkName = updatedFramework;
+
+            packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
         }
 
         private static bool ValidateDependencyTarget(LibraryDependencyTarget targetValue)
@@ -679,384 +1604,6 @@ namespace NuGet.ProjectModel
             }
 
             return isValid;
-        }
-
-        internal static bool TryGetStringEnumerableFromJArray(JToken token, out IEnumerable<string> result)
-        {
-            IEnumerable<string> values;
-            if (token == null)
-            {
-                result = null;
-                return false;
-            }
-            else if (token.Type == JTokenType.String)
-            {
-                values = new[]
-                {
-                    token.Value<string>()
-                };
-            }
-            else if (token.Type == JTokenType.Array)
-            {
-                values = token.ValueAsArray<string>();
-            }
-            else
-            {
-                result = null;
-                return false;
-            }
-
-            result = values;
-            return true;
-        }
-
-        internal static IEnumerable<NuGetLogCode> GetNuGetLogCodeEnumerableFromJArray(JToken token)
-        {
-            var items = new List<NuGetLogCode>();
-            var array = (JArray)token;
-            if (array != null)
-            {
-                foreach (var child in array)
-                {
-                    if (child.Type == JTokenType.String && Enum.TryParse(child.Value<string>(), out NuGetLogCode code))
-                    {
-                        items.Add(code);
-                    }
-                }
-            }
-            return items;
-        }
-
-        private static void BuildTargetFrameworks(PackageSpec packageSpec, JObject rawPackageSpec)
-        {
-            // The frameworks node is where target frameworks go
-            /*
-                {
-                    "frameworks": {
-                        "net45": {
-                        },
-                        "aspnet50": {
-                        }
-                    }
-                }
-            */
-
-            var frameworks = rawPackageSpec["frameworks"] as JObject;
-            if (frameworks != null)
-            {
-                foreach (var framework in frameworks)
-                {
-                    try
-                    {
-                        BuildTargetFrameworkNode(packageSpec, framework, packageSpec.FilePath);
-                    }
-                    catch (Exception ex)
-                    {
-                        throw FileFormatException.Create(ex, framework.Value, packageSpec.FilePath);
-                    }
-                }
-            }
-        }
-
-        private static bool BuildTargetFrameworkNode(PackageSpec packageSpec, KeyValuePair<string, JToken> targetFramework, string filePath)
-        {
-            var frameworkName = GetFramework(targetFramework.Key);
-
-            var properties = targetFramework.Value.Value<JObject>();
-            var assetTargetFallback = GetBoolOrFalse(properties, "assetTargetFallback", filePath);
-
-            var importFrameworks = GetImports(properties, packageSpec);
-
-            // If a fallback framework exists, update the framework to contain both.
-            var updatedFramework = frameworkName;
-
-            if (importFrameworks.Count != 0)
-            {
-                if (assetTargetFallback)
-                {
-                    updatedFramework = new AssetTargetFallbackFramework(frameworkName, importFrameworks);
-                }
-                else
-                {
-                    updatedFramework = new FallbackFramework(frameworkName, importFrameworks);
-                }
-            }
-
-            var targetFrameworkInformation = new TargetFrameworkInformation
-            {
-                FrameworkName = updatedFramework,
-                Dependencies = new List<LibraryDependency>(),
-                Imports = importFrameworks,
-                Warn = GetWarnSetting(properties),
-                AssetTargetFallback = assetTargetFallback,
-                RuntimeIdentifierGraphPath = GetRuntimeIdentifierGraphPath(properties)
-            };
-
-            PopulateDependencies(
-                packageSpec.FilePath,
-                targetFrameworkInformation.Dependencies,
-                properties,
-                "dependencies",
-                isGacOrFrameworkReference: false);
-
-            PopulateDownloadDependencies(
-                targetFrameworkInformation.DownloadDependencies,
-                properties,
-                packageSpec.FilePath);
-
-            PopulateCentralDependencies(
-               packageSpec.FilePath,
-               targetFrameworkInformation,
-               properties);
-
-            var frameworkAssemblies = new List<LibraryDependency>();
-            PopulateDependencies(
-                packageSpec.FilePath,
-                frameworkAssemblies,
-                properties,
-                "frameworkAssemblies",
-                isGacOrFrameworkReference: true);
-
-            PopulateFrameworkReferences(
-                targetFrameworkInformation.FrameworkReferences,
-                properties,
-                "frameworkReferences",
-                packageSpec.FilePath);
-
-            frameworkAssemblies.ForEach(d => targetFrameworkInformation.Dependencies.Add(d));
-
-            packageSpec.TargetFrameworks.Add(targetFrameworkInformation);
-
-            return true;
-        }
-
-        private static void PopulateFrameworkReferences(ISet<FrameworkDependency> frameworkReferences, JObject properties, string frameworkReferenceName, string packageSpecPath)
-        {
-            var frameworkRefs = properties[frameworkReferenceName] as JObject;
-
-            if (frameworkRefs != null)
-            {
-                foreach (var frameworkReference in frameworkRefs)
-                {
-                    if (string.IsNullOrEmpty(frameworkReference.Key))
-                    {
-                        throw FileFormatException.Create(
-                                   "Unable to resolve frameworkReference.",
-                                   frameworkReference.Value,
-                                   packageSpecPath);
-                    }
-
-                    var privateAssets = FrameworkDependencyFlagsUtils.Default;
-
-                    if (frameworkReference.Value is JObject frameworkReferenceToken)
-                    {
-                        if (TryGetStringEnumerable(frameworkReferenceToken["privateAssets"], out var strings))
-                        {
-                            privateAssets = FrameworkDependencyFlagsUtils.GetFlags(strings);
-                        }
-                    }
-                    frameworkReferences.Add(new FrameworkDependency(frameworkReference.Key, privateAssets));
-                }
-            }
-        }
-
-        private static void PopulateDownloadDependencies(IList<DownloadDependency> downloadDependencies, JObject properties, string packageSpecPath)
-        {
-            var splitChars = new[] { ';' };
-
-            var seenIds = new HashSet<string>();
-
-            var downloadDependenciesProperty = properties["downloadDependencies"] as JArray;
-            if (downloadDependenciesProperty != null)
-            {
-                foreach (var dependency in downloadDependenciesProperty.Values<JToken>())
-                {
-                    if (dependency["name"] == null)
-                    {
-                        throw FileFormatException.Create(
-                            "Unable to resolve downloadDependency ''.",
-                            dependency,
-                            packageSpecPath);
-                    }
-                    var name = dependency["name"].Value<string>();
-                    if (!seenIds.Add(name))
-                    {
-                        // package ID already seen, only use first definition.
-                        continue;
-                    }
-
-                    string versionValue = null;
-
-                    var dependencyVersionToken = dependency["version"];
-                    if (dependencyVersionToken != null
-                        && dependencyVersionToken.Type == JTokenType.String)
-                    {
-                        versionValue = dependencyVersionToken.Value<string>();
-                    }
-
-                    VersionRange version = null;
-
-                    if (!string.IsNullOrEmpty(versionValue))
-                    {
-                        var versions = versionValue.Split(splitChars, StringSplitOptions.RemoveEmptyEntries);
-                        foreach (var singleVersionValue in versions)
-                        {
-                            try
-                            {
-                                version = VersionRange.Parse(singleVersionValue);
-                                downloadDependencies.Add(new DownloadDependency(name, version));
-                            }
-                            catch (Exception ex)
-                            {
-                                throw FileFormatException.Create(
-                                    ex,
-                                    dependencyVersionToken,
-                                    packageSpecPath);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        throw FileFormatException.Create(
-                            "The version cannot be null or empty",
-                            dependencyVersionToken,
-                            packageSpecPath);
-                    }
-                }
-            }
-        }
-
-        internal static void PopulateCentralDependencies(
-           string packageSpecPath,
-           TargetFrameworkInformation targetFrameworkInformation,
-           JObject properties)
-        {
-            var centralversions = new Dictionary<string, CentralPackageVersion>();
-            var ventralVersionDependenciesProperty = properties["centralPackageVersions"] as JObject;
-            if (ventralVersionDependenciesProperty != null)
-            {
-                foreach (var dependency in ventralVersionDependenciesProperty.Values<JToken>())
-                {
-                    var depName = ((JProperty)dependency).Name;
-                    var depVersion = (string)((JProperty)dependency).Value;
-
-                    if (depName == null)
-                    {
-                        throw FileFormatException.Create(
-                            "Unable to resolve central version ''.",
-                            dependency,
-                            packageSpecPath);
-                    }
-                    if (depVersion == null)
-                    {
-                        throw FileFormatException.Create(
-                            "The version cannot be null.",
-                            depName,
-                            packageSpecPath);
-                    }
-
-                    centralversions.Add(depName, new CentralPackageVersion(depName, VersionRange.Parse(depVersion)));
-                }
-            }
-
-            targetFrameworkInformation.CentralPackageVersions.AddRange(centralversions);
-        }
-
-        private static List<NuGetFramework> GetImports(JObject properties, PackageSpec packageSpec)
-        {
-            var frameworks = new List<NuGetFramework>();
-
-            var importsProperty = properties["imports"];
-
-            if (importsProperty != null)
-            {
-                IEnumerable<string> importArray = new List<string>();
-                if (TryGetStringEnumerableFromJArray(importsProperty, out importArray))
-                {
-                    frameworks = importArray.Where(p => !string.IsNullOrEmpty(p)).Select(p => NuGetFramework.Parse(p)).ToList();
-                }
-            }
-
-            if (frameworks.Any(p => !p.IsSpecificFramework))
-            {
-                throw FileFormatException.Create(
-                    string.Format(
-                        Strings.Log_InvalidImportFramework,
-                        importsProperty.ToString().Replace(Environment.NewLine, string.Empty),
-                        PackageSpec.PackageSpecFileName),
-                    importsProperty,
-                    packageSpec.FilePath);
-            }
-
-            return frameworks;
-        }
-
-        private static string GetRuntimeIdentifierGraphPath(JObject properties)
-        {
-            var runtimeIdentifierGraphPath = properties["runtimeIdentifierGraphPath"];
-
-            if (runtimeIdentifierGraphPath != null)
-            {
-                return runtimeIdentifierGraphPath.ToObject<string>();
-            }
-
-            return null;
-        }
-
-        private static bool GetWarnSetting(JObject properties)
-        {
-            var warn = false;
-
-            var warnProperty = properties["warn"];
-
-            if (warnProperty != null)
-            {
-                warn = warnProperty.ToObject<bool>();
-            }
-
-            return warn;
-        }
-
-        private static NuGetFramework GetFramework(string key)
-        {
-            return NuGetFramework.Parse(key);
-        }
-
-        /// <summary>
-        /// Returns true if the property is set to true. Otherwise false.
-        /// </summary>
-        private static bool GetBoolOrFalse(JToken parent, string propertyName, string filePath)
-        {
-            var jObj = parent as JObject;
-
-            if (jObj != null)
-            {
-                return GetBoolOrFalse(jObj, propertyName, filePath);
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Returns true if the property is set to true. Otherwise false.
-        /// </summary>
-        private static bool GetBoolOrFalse(JObject parent, string propertyName, string filePath)
-        {
-            var token = parent[propertyName];
-
-            if (token != null)
-            {
-                try
-                {
-                    return parent.GetValue<bool?>(propertyName) ?? false;
-                }
-                catch (Exception ex)
-                {
-                    throw FileFormatException.Create(ex, token, filePath);
-                }
-            }
-
-            return false;
         }
     }
 }

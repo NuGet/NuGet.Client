@@ -14,7 +14,7 @@
           "dependencies": {
             "foo": {
               "suppressParent": "All",
-              "target": "All",
+              "target": "Package",
               "version": "[1.0.0, )",
               "generatePathProperty": true,
               "versionCentrallyManaged": true
