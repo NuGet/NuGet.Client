@@ -185,7 +185,8 @@ namespace NuGet.Frameworks
             if (target.IsNet5Era)
             {
                 // versions must be compat. profiles need to be same, or candidate has no profile.
-                return (IsVersionCompatible(target.Version, candidate.Version)
+                return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                    && IsVersionCompatible(target.Version, candidate.Version)
                     && !target.IsInvalid
                     && !candidate.IsInvalid
                     && (StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile) || !candidate.HasProfile));
