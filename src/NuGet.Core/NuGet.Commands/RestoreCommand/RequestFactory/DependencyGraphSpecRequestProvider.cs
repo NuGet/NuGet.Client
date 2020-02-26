@@ -85,8 +85,8 @@ namespace NuGet.Commands
                         rootProject,
                         externalClosure,
                         restoreContext,
-                        projectDgSpec: projectDependencyGraphSpec,
-                        settingsLoadingContext: settingsLoadingContext);
+                        projectDependencyGraphSpec,
+                        settingsLoadingContext);
 
                     if (request.Request.ProjectStyle == ProjectStyle.DotnetCliTool)
                     {
