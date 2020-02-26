@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using Newtonsoft.Json.Linq;
 using NuGet.Frameworks;
@@ -73,7 +74,7 @@ namespace NuGet.ProjectModel.Test
 
             // Act
             PackageSpec spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", "project.json");
-            System.Collections.Generic.List<NuGetFramework> importFramework = spec.TargetFrameworks.First().Imports.ToList();
+            List<NuGetFramework> importFramework = spec.TargetFrameworks.First().Imports.ToList();
             NuGetFramework expectedFramework = NuGetFramework.Parse("dotnet5.3");
 
             // Assert

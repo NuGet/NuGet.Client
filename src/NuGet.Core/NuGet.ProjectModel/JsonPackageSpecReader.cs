@@ -83,13 +83,8 @@ namespace NuGet.ProjectModel
         {
             var packageSpec = new PackageSpec();
 
-            string[] authors = null;
-            BuildOptions buildOptions = null;
             List<CompatibilityProfile> compatibilityProfiles = null;
-            IList<string> contentFiles = null;
             List<RuntimeDescription> runtimeDescriptions = null;
-            string title = null;
-            string version = null;
             var wasPackOptionsSet = false;
             var isMappingsNull = false;
 
@@ -105,15 +100,20 @@ namespace NuGet.ProjectModel
                 switch (propertyName)
                 {
                     case "authors":
-                        authors = ReadStringArray(jsonReader);
+                        packageSpec.Authors = ReadStringArray(jsonReader) ?? Array.Empty<string>();
                         break;
 
                     case "buildOptions":
-                        buildOptions = ReadBuildOptions(jsonReader);
+                        ReadBuildOptions(jsonReader, packageSpec);
                         break;
 
                     case "contentFiles":
-                        contentFiles = jsonReader.ReadStringArrayAsList();
+                        List<string> contentFiles = jsonReader.ReadStringArrayAsList();
+
+                        if (contentFiles != null)
+                        {
+                            packageSpec.ContentFiles = contentFiles;
+                        }
                         break;
 
                     case "copyright":
@@ -145,16 +145,16 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "packOptions":
-                        ReadPackOptions(packageSpec, jsonReader, ref isMappingsNull);
+                        ReadPackOptions(jsonReader, packageSpec, ref isMappingsNull);
                         wasPackOptionsSet = true;
                         break;
 
                     case "restore":
-                        packageSpec.RestoreMetadata = ReadMSBuildMetadata(packageSpec, jsonReader);
+                        ReadMSBuildMetadata(jsonReader, packageSpec);
                         break;
 
                     case "restoreSettings":
-                        packageSpec.RestoreSettings = ReadRestoreSettings(packageSpec, jsonReader);
+                        ReadRestoreSettings(jsonReader, packageSpec);
                         break;
 
                     case "runtimes":
@@ -170,11 +170,11 @@ namespace NuGet.ProjectModel
                         break;
 
                     case "title":
-                        title = jsonReader.ReadNextTokenAsString();
+                        packageSpec.Title = jsonReader.ReadNextTokenAsString();
                         break;
 
                     case "version":
-                        version = jsonReader.ReadAsString();
+                        string version = jsonReader.ReadAsString();
 
                         if (version != null)
                         {
@@ -191,14 +191,6 @@ namespace NuGet.ProjectModel
                         break;
                 }
             });
-
-            packageSpec.Authors = authors ?? Array.Empty<string>();
-            packageSpec.BuildOptions = buildOptions;
-
-            if (contentFiles != null)
-            {
-                packageSpec.ContentFiles = contentFiles;
-            }
 
             packageSpec.Name = name;
             packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
@@ -221,7 +213,6 @@ namespace NuGet.ProjectModel
             packageSpec.RuntimeGraph = new RuntimeGraph(
                 runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
                 compatibilityProfiles ?? Enumerable.Empty<CompatibilityProfile>());
-            packageSpec.Title = title;
 
             if (packageSpec.Name == null)
             {
@@ -245,19 +236,17 @@ namespace NuGet.ProjectModel
             return new PackageType(name, Packaging.Core.PackageType.EmptyVersion);
         }
 
-        private static BuildOptions ReadBuildOptions(JsonTextReader jsonReader)
+        private static void ReadBuildOptions(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
-            var buildOptions = new BuildOptions();
+            packageSpec.BuildOptions = new BuildOptions();
 
             jsonReader.ReadObject(buildOptionsPropertyName =>
             {
                 if (buildOptionsPropertyName == "outputName")
                 {
-                    buildOptions.OutputName = jsonReader.ReadNextTokenAsString();
+                    packageSpec.BuildOptions.OutputName = jsonReader.ReadNextTokenAsString();
                 }
             });
-
-            return buildOptions;
         }
 
         private static void ReadCentralPackageVersions(
@@ -784,7 +773,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static ProjectRestoreMetadata ReadMSBuildMetadata(PackageSpec packageSpec, JsonTextReader jsonReader)
+        private static void ReadMSBuildMetadata(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
             var centralPackageVersionsManagementEnabled = false;
             List<string> configFilePaths = null;
@@ -878,7 +867,7 @@ namespace NuGet.ProjectModel
                         string projectStyleString = jsonReader.ReadNextTokenAsString();
 
                         if (!string.IsNullOrEmpty(projectStyleString)
-                            && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out var projectStyleValue))
+                            && Enum.TryParse<ProjectStyle>(projectStyleString, ignoreCase: true, result: out ProjectStyle projectStyleValue))
                         {
                             projectStyle = projectStyleValue;
                         }
@@ -1034,7 +1023,7 @@ namespace NuGet.ProjectModel
                 msbuildMetadata.ProjectWideWarningProperties = warningProperties;
             }
 
-            return msbuildMetadata;
+            packageSpec.RestoreMetadata = msbuildMetadata;
         }
 
         private static bool ReadNextTokenAsBoolOrFalse(JsonTextReader jsonReader, string filePath)
@@ -1172,7 +1161,7 @@ namespace NuGet.ProjectModel
             });
         }
 
-        private static void ReadPackOptions(PackageSpec packageSpec, JsonTextReader jsonReader, ref bool isMappingsNull)
+        private static void ReadPackOptions(JsonTextReader jsonReader, PackageSpec packageSpec, ref bool isMappingsNull)
         {
             var wasMappingsRead = false;
 
@@ -1287,19 +1276,17 @@ namespace NuGet.ProjectModel
             return wasMappingsRead;
         }
 
-        private static ProjectRestoreSettings ReadRestoreSettings(PackageSpec packageSpec, JsonTextReader jsonReader)
+        private static void ReadRestoreSettings(JsonTextReader jsonReader, PackageSpec packageSpec)
         {
-            var restoreSettings = new ProjectRestoreSettings();
+            packageSpec.RestoreSettings = new ProjectRestoreSettings();
 
             jsonReader.ReadObject(propertyName =>
             {
                 if (propertyName == JsonPackageSpecReader.HideWarningsAndErrors)
                 {
-                    restoreSettings.HideWarningsAndErrors = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
+                    packageSpec.RestoreSettings.HideWarningsAndErrors = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpec.FilePath);
                 }
             });
-
-            return restoreSettings;
         }
 
         private static RuntimeDependencySet ReadRuntimeDependencySet(JsonTextReader jsonReader, string dependencySetName)
