@@ -5,8 +5,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
-using NuGet.Common;
-using NuGet.LibraryModel;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -223,20 +221,6 @@ namespace NuGet.Commands
             }
 
             return dgSpec;
-        }
-
-        /// <summary>
-        /// Persists the dg file for the given restore request.
-        /// This does not do a dirty check!
-        /// </summary>
-        /// <param name="spec">spec</param>
-        /// <param name="dgPath">the dg path</param>
-        /// <param name="log">logger</param>
-        internal static void PersistDGSpecFile(DependencyGraphSpec spec, string dgPath, ILogger log)
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(dgPath));
-            log.LogVerbose($"Persisting no-op dg to {dgPath}");
-            spec.Save(dgPath);
         }
 
         /// <summary>
