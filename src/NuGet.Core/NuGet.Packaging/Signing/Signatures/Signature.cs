@@ -220,7 +220,7 @@ namespace NuGet.Packaging.Signing
                         var statusFlags = CertificateChainUtility.DefaultObservedStatusFlags;
 
                         IEnumerable<string> messages;
-                        if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, statusFlags, out messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, statusFlags, out messages))
                         {
                             foreach (var message in messages)
                             {
@@ -234,7 +234,7 @@ namespace NuGet.Packaging.Signing
                         // For all the special cases, chain status list only has unique elements for each chain status flag present
                         // therefore if we are checking for one specific chain status we can use the first of the returned list
                         // if we are combining checks for more than one, then we have to use the whole list.
-                        if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.Revoked, out messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, X509ChainStatusFlags.Revoked, out messages))
                         {
                             issues.Add(SignatureLog.Error(NuGetLogCode.NU3012, string.Format(CultureInfo.CurrentCulture, Strings.VerifyChainBuildingIssue, FriendlyName, messages.First())));
                             flags |= SignatureVerificationStatusFlags.CertificateRevoked;
@@ -242,7 +242,7 @@ namespace NuGet.Packaging.Signing
                             return new SignatureVerificationSummary(Type, SignatureVerificationStatus.Suspect, flags, timestamp, issues);
                         }
 
-                        if (CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
+                        if (CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, X509ChainStatusFlags.UntrustedRoot, out messages))
                         {
                             if (settings.ReportUntrustedRoot)
                             {
@@ -256,8 +256,8 @@ namespace NuGet.Packaging.Signing
                             }
                         }
 
-                        var offlineRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.OfflineRevocation, out var _);
-                        var unknownRevocationErrors = CertificateChainUtility.TryGetStatusMessage(chainStatuses, X509ChainStatusFlags.RevocationStatusUnknown, out var unknownRevocationStatusMessages);
+                        var offlineRevocationErrors = CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, X509ChainStatusFlags.OfflineRevocation, out var _);
+                        var unknownRevocationErrors = CertificateChainUtility.TryGetStatusAndMessage(chainStatuses, X509ChainStatusFlags.RevocationStatusUnknown, out var unknownRevocationStatusMessages);
                         if (offlineRevocationErrors || unknownRevocationErrors)
                         {
                             if (settings.ReportUnknownRevocation)

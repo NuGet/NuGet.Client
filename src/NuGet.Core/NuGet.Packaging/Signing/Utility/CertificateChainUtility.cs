@@ -83,11 +83,11 @@ namespace NuGet.Packaging.Signing
                     if ((chainStatus.Status & errorStatusFlags) != 0)
                     {
                         fatalStatuses.Add(chainStatus);
-                        logger.Log(LogMessage.CreateError(logCode, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateError(logCode, $"{chainStatus.Status}: {chainStatus.StatusInformation?.Trim()}"));
                     }
                     else if ((chainStatus.Status & warningStatusFlags) != 0)
                     {
-                        logger.Log(LogMessage.CreateWarning(logCode, chainStatus.StatusInformation?.Trim()));
+                        logger.Log(LogMessage.CreateWarning(logCode, $"{chainStatus.Status}: {chainStatus.StatusInformation?.Trim()}"));
                     }
                 }
 
@@ -212,13 +212,13 @@ namespace NuGet.Packaging.Signing
             return chainStatus.Any();
         }
 
-        internal static bool TryGetStatusMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<string> messages)
+        internal static bool TryGetStatusAndMessage(X509ChainStatus[] chainStatuses, X509ChainStatusFlags status, out IEnumerable<string> statusAndMessages)
         {
-            messages = null;
+            statusAndMessages = null;
 
             if (ChainStatusListIncludesStatus(chainStatuses, status, out var chainStatus))
             {
-                messages = GetMessagesFromChainStatuses(chainStatus);
+                statusAndMessages = GetStatusAndMessagesFromChainStatuses(chainStatus);
 
                 return true;
             }
@@ -226,11 +226,11 @@ namespace NuGet.Packaging.Signing
             return false;
         }
 
-        internal static IEnumerable<string> GetMessagesFromChainStatuses(IEnumerable<X509ChainStatus> chainStatuses)
+        internal static IEnumerable<string> GetStatusAndMessagesFromChainStatuses(IEnumerable<X509ChainStatus> chainStatuses)
         {
             return chainStatuses
-                .Select(x => x.StatusInformation?.Trim())
-                .Where(x => !string.IsNullOrEmpty(x))
+                .Where(x => !string.IsNullOrEmpty(x.StatusInformation?.Trim()))
+                .Select(x => $"{x.Status}: {x.StatusInformation?.Trim()}")
                 .Distinct(StringComparer.Ordinal)
                 .OrderBy(x => x, StringComparer.Ordinal);
         }

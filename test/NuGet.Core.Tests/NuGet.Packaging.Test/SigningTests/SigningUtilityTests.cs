@@ -152,7 +152,7 @@ namespace NuGet.Packaging.Test
 #if !NETCORE5_0
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
-                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                 }
 #endif
             }
