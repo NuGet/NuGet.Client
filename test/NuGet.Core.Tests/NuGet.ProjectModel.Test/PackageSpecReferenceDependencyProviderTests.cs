@@ -1,7 +1,6 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-
 using System.Collections.Generic;
 using System.Linq;
 using NuGet.Frameworks;
@@ -40,7 +39,7 @@ namespace NuGet.ProjectModel.Test
             var dependencies = PackageSpecReferenceDependencyProvider.GetSpecDependencies(packSpec, tfi.FrameworkName);
 
             // Assert
-            if(cpvmEnabled)
+            if (cpvmEnabled)
             {
                 Assert.Equal(2, dependencies.Count);
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
@@ -61,7 +60,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.NotNull(fooDep);
                 Assert.False(fooDep.VersionCentrallyManaged);
                 Assert.False(fooDep.VersionCentrallyManaged);
-                Assert.Null( fooDep.LibraryRange.VersionRange);
+                Assert.Null(fooDep.LibraryRange.VersionRange);
             }
         }
 

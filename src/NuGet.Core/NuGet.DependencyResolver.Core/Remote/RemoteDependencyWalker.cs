@@ -372,11 +372,8 @@ namespace NuGet.DependencyResolver
         }
 
         /// <summary>
-        /// If the <paramref name="libraryRange"/> is in the list of central dependencies the <paramref name="transitiveCentralPackageVersions"/> will have a new entry added to have a new node added to the graph.
+        /// Mark a central package version that it is transitive and need to be added to the graph.
         /// </summary>
-        /// <param name="framework">The <see cref="NuGetFramework"/>.</param>
-        /// <param name="libraryRange">The <see cref="LibraryRange"/> to compare the central package versions against.</param>
-        /// <param name="transitiveCentralPackageVersions">The <see cref="TransitiveCentralPackageVersions"/> to record the central package versions that were identified as transitive and need to be added to the graph.</param>
         private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryRange libraryRange, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             if (_context.CentralPackageVersions.TryGetValue(framework, out Dictionary<string, CentralPackageVersion> centralPackageVersions))
