@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,7 +17,7 @@ namespace NuGet.Frameworks
     {
         private readonly IFrameworkNameProvider _mappings;
         private readonly FrameworkExpander _expander;
-        private static readonly NuGetFrameworkFullComparer _fullComparer = new NuGetFrameworkFullComparer();
+        private static readonly NuGetFrameworkFullComparer FullComparer = new NuGetFrameworkFullComparer();
         private readonly ConcurrentDictionary<CompatibilityCacheKey, bool> _cache;
 
         public CompatibilityProvider(IFrameworkNameProvider mappings)
@@ -62,7 +62,7 @@ namespace NuGet.Frameworks
             bool? result = null;
 
             // check if they are the exact same
-            if (_fullComparer.Equals(target, candidate))
+            if (FullComparer.Equals(target, candidate))
             {
                 return true;
             }
@@ -181,7 +181,16 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            // compare the frameworks
+            // Profile have different compat rules if target IsNet5Era
+            if (target.IsNet5Era)
+            {
+                // versions must be compat. profiles need to be same, or candidate has no profile.
+                return (IsVersionCompatible(target.Version, candidate.Version)
+                    && !target.IsInvalid
+                    && !candidate.IsInvalid
+                    && (StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile) || !candidate.HasProfile));
+            }
+            // compare the frameworks as normal pre-IsNet5Era
             return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
                 && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
                 && IsVersionCompatible(target.Version, candidate.Version));

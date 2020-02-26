@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace NuGet.Frameworks
 {
@@ -13,7 +14,7 @@ namespace NuGet.Frameworks
     static class FrameworkConstants
     {
         public static readonly Version EmptyVersion = new Version(0, 0, 0, 0);
-        public static readonly Version MaxVersion = new Version(Int32.MaxValue, 0, 0, 0);
+        public static readonly Version MaxVersion = new Version(int.MaxValue, 0, 0, 0);
         public static readonly Version Version5 = new Version(5, 0, 0, 0);
         public static readonly Version Version10 = new Version(10, 0, 0, 0);
         public static readonly FrameworkRange DotNetAll = new FrameworkRange(
@@ -32,6 +33,13 @@ namespace NuGet.Frameworks
             public const string WindowsPhone = "WindowsPhone";
             public const string Windows = "Windows";
         }
+
+        /// <summary>
+        /// Allowed list of profiles in Net5.0ERA
+        /// </summary>
+        public static HashSet<string> FrameworkProfiles
+            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                { "android", "ios", "macos", "tvos", "watchos", "windows" };
 
         public static class FrameworkIdentifiers
         {
@@ -87,6 +95,7 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
             public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
             public static readonly NuGetFramework Net463 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 3, 0));
+
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));
@@ -180,6 +189,12 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework NetCoreApp30
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 0, 0, 0));
             public static readonly NuGetFramework NetCoreApp31
-                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 1, 0, 0));        }
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 1, 0, 0));
+            public static readonly NuGetFramework NetCoreApp50
+                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
+
+            // .NET 5.0 and later has NetCoreApp identifier
+            public static readonly NuGetFramework Net50 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
+        }
     }
 }
