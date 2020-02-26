@@ -69,17 +69,17 @@ namespace NuGet.Commands
         /// <summary>
         /// New Packages lock file path
         /// </summary>
-        private string NewPackagesLockFilePath { get; }
+        private readonly string _newPackagesLockFilePath;
 
         /// <summary>
         /// NuGet lock file which is either generated or updated to lock down NuGet packages version
         /// </summary>
-        private PackagesLockFile NewPackagesLockFile { get; }
+        private readonly PackagesLockFile _newPackagesLockFile;
 
 
-        private string DependencyGraphSpecFilePath { get; }
+        private readonly string _dependencyGraphSpecFilePath;
 
-        private DependencyGraphSpec DependencyGraphSpec { get; }
+        private readonly DependencyGraphSpec _dependencyGraphSpec;
 
         public RestoreResult(
             bool success,
@@ -107,10 +107,10 @@ namespace NuGet.Commands
             PreviousLockFile = previousLockFile;
             CacheFile = cacheFile;
             CacheFilePath = cacheFilePath;
-            NewPackagesLockFilePath = packagesLockFilePath;
-            NewPackagesLockFile = packagesLockFile;
-            DependencyGraphSpecFilePath = dependencyGraphSpecFilePath;
-            DependencyGraphSpec = dependencyGraphSpec;
+            _newPackagesLockFilePath = packagesLockFilePath;
+            _newPackagesLockFile = packagesLockFile;
+            _dependencyGraphSpecFilePath = dependencyGraphSpecFilePath;
+            _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
         }
@@ -265,27 +265,27 @@ namespace NuGet.Commands
         private async Task CommitLockFileAsync(ILogger log, bool toolCommit)
         {
             // write packages lock file if it's not tool commit
-            if (!toolCommit && NewPackagesLockFile != null && !string.IsNullOrEmpty(NewPackagesLockFilePath))
+            if (!toolCommit && _newPackagesLockFile != null && !string.IsNullOrEmpty(_newPackagesLockFilePath))
             {
                 log.LogInformation(string.Format(CultureInfo.CurrentCulture,
                 Strings.Log_WritingPackagesLockFile,
-                NewPackagesLockFilePath));
+                _newPackagesLockFilePath));
 
                 await FileUtility.ReplaceWithLock(
-                    (outputPath) => PackagesLockFileFormat.Write(outputPath, NewPackagesLockFile),
-                    NewPackagesLockFilePath);
+                    (outputPath) => PackagesLockFileFormat.Write(outputPath, _newPackagesLockFile),
+                    _newPackagesLockFilePath);
             }
         }
 
         private async Task CommitDgSpecFileAsync(ILogger log, bool toolCommit)
         {
-            if (!toolCommit && DependencyGraphSpecFilePath != null && DependencyGraphSpec != null)
+            if (!toolCommit && _dependencyGraphSpecFilePath != null && _dependencyGraphSpec != null)
             {
-                log.LogVerbose($"Persisting dg to {DependencyGraphSpecFilePath}");
+                log.LogVerbose($"Persisting dg to {_dependencyGraphSpecFilePath}");
 
                 await FileUtility.ReplaceWithLock(
-                    (outputPath) => DependencyGraphSpec.Save(outputPath),
-                    DependencyGraphSpecFilePath);
+                    (outputPath) => _dependencyGraphSpec.Save(outputPath),
+                    _dependencyGraphSpecFilePath);
             }
         }
     }
