@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
@@ -31,7 +30,7 @@ namespace NuGet.PackageManagement.UI.Test
             this.output = output;
         }
 
-        [WpfFact]
+        [Fact]
         public void Convert_WithMalformedUrlScheme_ReturnsDefault()
         {
             var iconUrl = new Uri("ttp://fake.com/image.png");
@@ -47,7 +46,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Same(DefaultPackageIcon, image);
         }
 
-        [WpfFact]
+        [Fact]
         public void Convert_WhenFileNotFound_ReturnsDefault()
         {
             var iconUrl = new Uri(@"C:\path\to\image.png");
@@ -63,7 +62,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Same(DefaultPackageIcon, image);
         }
 
-        [WpfFact]
+        [Fact]
         public void Convert_WithLocalPath_LoadsImage()
         {
             var iconUrl = new Uri(@"resources/packageicon.png", UriKind.Relative);
@@ -81,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [WpfFact]
+        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -99,7 +98,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [WpfTheory]
+        [Theory(Skip = "Runs only on Windows Desktop with WPF support")]
         [InlineData("icon.png", "icon.png", "icon.png", "")]
         [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
         [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
@@ -154,7 +153,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [WpfFact]
+        [Fact]
         public void Convert_FileUri_LoadsImage()
         {
             // Prepare
@@ -183,9 +182,9 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Theory]
         [InlineData(@"/")]
         [InlineData(@"\")]
-        [WpfTheory]
         public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault(string separator)
         {
             using (var testDir = TestDirectory.Create())
@@ -214,8 +213,8 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
+        [Theory]
         [MemberData(nameof(TestData))]
-        [WpfTheory]
         public void IsEmbeddedIconUri_Tests(Uri testUri, bool expectedResult)
         {
             var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
@@ -266,7 +265,7 @@ namespace NuGet.PackageManagement.UI.Test
         /// <summary>
         /// Creates a NuGet package with .nupkg extension and with a PNG image named "icon.png"
         /// </summary>
-        /// <param name="path">Final path to the dummy .nupkg</param>
+        /// <param name="path">Path to NuGet package</param>
         /// <param name="iconName">Icon filename with .png extension</param>
         private static void CreateDummyPackage(
             string zipPath,
