@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.UI.Test
             this.output = output;
         }
 
-        [Fact]
+        [WpfFact]
         public void Convert_WithMalformedUrlScheme_ReturnsDefault()
         {
             var iconUrl = new Uri("ttp://fake.com/image.png");
@@ -47,7 +47,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Same(DefaultPackageIcon, image);
         }
 
-        [Fact]
+        [WpfFact]
         public void Convert_WhenFileNotFound_ReturnsDefault()
         {
             var iconUrl = new Uri(@"C:\path\to\image.png");
@@ -63,7 +63,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Same(DefaultPackageIcon, image);
         }
 
-        [Fact]
+        [WpfFact]
         public void Convert_WithLocalPath_LoadsImage()
         {
             var iconUrl = new Uri(@"resources/packageicon.png", UriKind.Relative);
@@ -81,7 +81,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip="Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        [WpfFact]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -99,21 +99,33 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Runs only on Windows Desktop with WPF support")]
-        public void Convert_EmbeddedIcon_HappyPath_LoadsImage()
+        [WpfTheory]
+        [InlineData("icon.png", "icon.png", "icon.png", "")]
+        [InlineData("folder/icon.png", "folder\\icon.png", "folder/icon.png", "folder")]
+        [InlineData("folder\\icon.png", "folder\\icon.png", "folder\\icon.png", "folder")]
+        public void Convert_EmbeddedIcon_HappyPath_LoadsImage(
+            string iconElement,
+            string iconFileLocation,
+            string fileSourceElement,
+            string fileTargetElement)
         {
             using (var testDir = TestDirectory.Create())
             {
                 // Create decoy nuget package
                 var zipPath = Path.Combine(testDir.Path, "file.nupkg");
-                CreateDummyPackage(zipPath);
+                CreateDummyPackage(
+                    zipPath: zipPath,
+                    iconName: iconElement,
+                    iconFile: iconFileLocation,
+                    iconFileSourceElement: fileSourceElement,
+                    iconFileTargetElement: fileTargetElement);
 
                 // prepare test
                 var converter = new IconUrlToImageCacheConverter();
 
                 UriBuilder builder = new UriBuilder(new Uri(zipPath, UriKind.Absolute))
                 {
-                    Fragment = "icon.png"
+                    Fragment = iconElement
                 };
 
                 output.WriteLine($"ZipPath {zipPath}");
@@ -122,7 +134,11 @@ namespace NuGet.PackageManagement.UI.Test
 
                 // Act
                 var result = converter.Convert(
-                    values: new object[] { builder.Uri, new Func<PackageReaderBase>(() => new PackageArchiveReader(zipPath)) },
+                    values: new object[]
+                    {
+                        builder.Uri,
+                        new Func<PackageReaderBase>(() => new Packaging.PackageArchiveReader(zipPath))
+                    },
                     targetType: null,
                     parameter: DefaultPackageIcon,
                     culture: null);
@@ -138,7 +154,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [Fact]
+        [WpfFact]
         public void Convert_FileUri_LoadsImage()
         {
             // Prepare
@@ -169,7 +185,7 @@ namespace NuGet.PackageManagement.UI.Test
 
         [InlineData(@"/")]
         [InlineData(@"\")]
-        [Theory]
+        [WpfTheory]
         public void Convert_EmbeddedIcon_RelativeParentPath_ReturnsDefault(string separator)
         {
             using (var testDir = TestDirectory.Create())
@@ -199,7 +215,7 @@ namespace NuGet.PackageManagement.UI.Test
         }
 
         [MemberData(nameof(TestData))]
-        [Theory]
+        [WpfTheory]
         public void IsEmbeddedIconUri_Tests(Uri testUri, bool expectedResult)
         {
             var result = IconUrlToImageCacheConverter.IsEmbeddedIconUri(testUri);
@@ -248,23 +264,46 @@ namespace NuGet.PackageManagement.UI.Test
 
 
         /// <summary>
-        /// Creates a dummy zip file with .nupkg extension and with a PNG image named "icon.png"
+        /// Creates a NuGet package with .nupkg extension and with a PNG image named "icon.png"
         /// </summary>
         /// <param name="path">Final path to the dummy .nupkg</param>
         /// <param name="iconName">Icon filename with .png extension</param>
-        private static void CreateDummyPackage(string zipPath, string iconName = "icon.png")
+        private static void CreateDummyPackage(
+            string zipPath,
+            string iconName = "icon.png",
+            string iconFile = "icon.png",
+            string iconFileSourceElement = "icon.png",
+            string iconFileTargetElement = "")
         {
             var dir =  Path.GetDirectoryName(zipPath);
-            var holdDir = Path.GetRandomFileName();
+            var holdDir = "pkg";
             var folderPath = Path.Combine(dir, holdDir);
 
+            // base dir
             Directory.CreateDirectory(folderPath);
 
-            var iconPath = Path.Combine(folderPath, iconName);
+            // create nuspec
+            var nuspec = NuspecBuilder.Create()
+                .WithIcon(iconName)
+                .WithFile(iconFileSourceElement, iconFileTargetElement);
+
+            // create png image
+            var iconPath = Path.Combine(folderPath, iconFile);
+            var iconDir = Path.GetDirectoryName(iconPath);
+            Directory.CreateDirectory(iconDir);
             CreateNoisePngImage(iconPath);
 
-            // Create decoy nuget package
-            ZipFile.CreateFromDirectory(folderPath, zipPath);
+            // Create nuget package
+            using (var nuspecStream = new MemoryStream())
+            using (FileStream nupkgStream = File.Create(zipPath))
+            {
+                var writer = new StreamWriter(nuspecStream);
+                nuspec.Write(writer);
+                writer.Flush();
+                nuspecStream.Position = 0;
+                var pkgBuilder = new PackageBuilder( stream: nuspecStream, basePath: folderPath);
+                pkgBuilder.Save(nupkgStream);
+            }
         }
 
         /// <summary>

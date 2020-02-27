@@ -5645,16 +5645,19 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackIconSuccess(testDir, "utils/icon.jpg");
         }
 
-        [Fact]
-        public void PackCommand_PackIcon_FolderNested_Succeeds()
+        [Theory]
+        [InlineData('/')]
+        [InlineData('\\')]
+        public void PackCommand_PackIcon_FolderNested_Succeeds(char iconSeparator)
         {
             var nuspec = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
             var s = Path.DirectorySeparatorChar;
+            var u = iconSeparator;
 
             nuspec
                 .WithFile($"content{s}**", "utils")
-                .WithIcon($"utils/nested/icon.jpg");
+                .WithIcon($"utils{u}nested{u}icon.jpg");
 
             testDirBuilder
                 .WithFile($"content{s}nested{s}icon.jpg", 6)
@@ -5907,7 +5910,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         /// </list>
         /// </remarks>
         /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
-        /// <param name="iconEntry">Zip entry to validate</param>
+        /// <param name="iconEntry">Normalized Zip entry to validate</param>
         /// <param name="message">If not nulll, check that the message is in the command output</param>
         private void TestPackIconSuccess(TestDirectoryBuilder testDirBuilder, string iconEntry = "icon.jpg", string message = null)
         {
@@ -5931,8 +5934,9 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var nuspecReader = nupkgReader.NuspecReader;
 
                     Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry(iconEntry) != null);
-                    Assert.True(iconEntry.Equals(nuspecReader.GetIcon()));
+                    Assert.NotNull(nupkgReader.GetEntry(iconEntry));
+                    var normalizedPackedIconEntry = Common.PathUtility.StripLeadingDirectorySeparators(nuspecReader.GetIcon());
+                    Assert.Equal(iconEntry, normalizedPackedIconEntry);
                 }
             }
         }
