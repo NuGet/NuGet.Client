@@ -145,6 +145,39 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
+        /// Creates a new <see cref="DependencyGraphSpec" /> from a project name and project closure.
+        /// </summary>
+        /// <param name="projectUniqueName">The project's unique name.</param>
+        /// <param name="closure">The project's closure</param>
+        /// <returns>A <see cref="DependencyGraphSpec" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="projectUniqueName" />
+        /// is <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="closure" /> is <c>null</c>.</exception>
+        public DependencyGraphSpec CreateFromClosure(string projectUniqueName, IReadOnlyList<PackageSpec> closure)
+        {
+            if (string.IsNullOrEmpty(projectUniqueName))
+            {
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectUniqueName));
+            }
+
+            if (closure == null)
+            {
+                throw new ArgumentNullException(nameof(closure));
+            }
+
+            var dgSpec = new DependencyGraphSpec();
+
+            dgSpec.AddRestore(projectUniqueName);
+
+            foreach (PackageSpec packageSpec in closure)
+            {
+                dgSpec.AddProject(_isReadOnly ? packageSpec : packageSpec.Clone());
+            }
+
+            return dgSpec;
+        }
+
+        /// <summary>
         /// Retrieve the full project closure including the root project itself.
         /// </summary>
         /// <remarks>Results are not sorted in any form.</remarks>
