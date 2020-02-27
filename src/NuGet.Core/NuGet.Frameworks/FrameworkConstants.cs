@@ -39,7 +39,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public static HashSet<string> FrameworkProfiles
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                { "android", "ios", "macos", "tvos", "watchos", "windows" };
+                { };
 
         public static class FrameworkIdentifiers
         {

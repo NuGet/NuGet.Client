@@ -42,17 +42,15 @@ namespace NuGet.Test
         [InlineData("net5.1", "netcoreapp3.1", true)]
         [InlineData("net6.0", "netcoreapp3.1", true)]
 
-        //TODO: 
-        //[InlineData("net5.0", "netcoreapp3.1", true)] == if wpf/winforms is used, this should be false.
-
-        // net5.0-<osname> is compatible with net5.0
-        [InlineData("net5.0-android", "net5.0", true)]
-        [InlineData("net5.0-android", "netcoreapp3.1", true)]
-        [InlineData("net5.0-ios", "net5.0", true)]
-        [InlineData("net5.0-macos", "net5.0", true)]
-        [InlineData("net5.0-tvos", "net5.0", true)]
-        [InlineData("net5.0-watchos", "net5.0", true)]
-        [InlineData("net5.0-windows", "net5.0", true)]
+        // net5.0-<osname> is not yet supported with this change.
+        [InlineData("net5.0-android", "net5.0", false)]
+        [InlineData("net5.0-android", "netcoreapp3.1", false)]
+        [InlineData("net5.0-ios", "net5.0", false)]
+        [InlineData("net5.0-macos", "net5.0", false)]
+        [InlineData("net5.0-tvos", "net5.0", false)]
+        [InlineData("net5.0-watchos", "net5.0", false)]
+        [InlineData("net5.0-windows", "net5.0", false)]
+        [InlineData("net5.0", "net5.0-windows", false)]
 
         // net5.0 profiles aren't compat with eachother
         [InlineData("net5.0-windows", "net5.0-ios", false)]
