@@ -511,7 +511,7 @@ namespace NuGet.Frameworks
                     break;
                 case "netcoreapp2.1":
                 case "netcoreapp21":
-                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp21;
                     break;
                 case "netcoreapp3.1":
                 case "netcoreapp31":
