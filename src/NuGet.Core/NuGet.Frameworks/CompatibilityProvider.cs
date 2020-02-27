@@ -181,20 +181,26 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            // Profile have different compat rules if target IsNet5Era
-            if (target.IsNet5Era)
-            {
-                // versions must be compat. profiles need to be same, or candidate has no profile.
-                return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                    && IsVersionCompatible(target.Version, candidate.Version)
-                    && !target.IsInvalid
-                    && !candidate.IsInvalid
-                    && (StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile) || !candidate.HasProfile));
-            }
-            // compare the frameworks as normal pre-IsNet5Era
-            return (NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
-                && IsVersionCompatible(target.Version, candidate.Version));
+            return (
+                NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                && IsVersionCompatible(target.Version, candidate.Version)
+                &&
+                    (
+                        // profile comparison rules for Net5Era
+                        (
+                            target.IsNet5Era
+                         && !target.IsInvalid
+                         && !candidate.IsInvalid
+                         && (StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile) || !candidate.HasProfile)
+                        )
+                        ||
+                        // earlier profile comparison rules
+                        (
+                            !target.IsNet5Era
+                         && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
+                        )
+                    )
+                );
         }
 
         private static bool IsVersionCompatible(Version target, Version candidate)

@@ -436,6 +436,11 @@ namespace NuGet.Frameworks
 
             switch (frameworkString)
             {
+                case "dotnet":
+                case "dotnet50":
+                case "dotnet5.0":
+                    framework = FrameworkConstants.CommonFrameworks.DotNet50;
+                    break;
                 case "net40":
                 case "net4":
                     framework = FrameworkConstants.CommonFrameworks.Net4;
