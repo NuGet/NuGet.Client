@@ -37,9 +37,9 @@ namespace NuGet.DependencyResolver
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
-            while (transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageversion))
+            while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageversionDependecy))
             {
-                await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageversion, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions);
+                await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageversionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions);
             }
 
             return rootNode;
@@ -57,11 +57,6 @@ namespace NuGet.DependencyResolver
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
             List<Task<GraphNode<RemoteResolveResult>>> tasks = null;
-
-            if (outerEdge != null)
-            {
-                MarkCentralVersionForTransitiveProcessing(framework, libraryRange, transitiveCentralPackageVersions);
-            }
 
             if (runtimeGraph != null && !string.IsNullOrEmpty(runtimeName))
             {
@@ -188,7 +183,7 @@ namespace NuGet.DependencyResolver
                         // the centrally managed package versions need to be added to the graph explicitelly as they are not added otherwise
                         if (result.conflictingDependency != null && IsAutoReferencedCentralDependency(result.conflictingDependency))
                         {
-                            MarkCentralVersionForTransitiveProcessing(framework, dependency.LibraryRange, transitiveCentralPackageVersions);
+                            MarkCentralVersionForTransitiveProcessing(framework, result.conflictingDependency, transitiveCentralPackageVersions);
                         }
 
                         // Keep the node in the tree if we need to look at it later
@@ -231,7 +226,7 @@ namespace NuGet.DependencyResolver
             {
                 if (StringComparer.OrdinalIgnoreCase.Equals(item.Data.Match.Library.Name, library.Name))
                 {
-                    return (DependencyResult.Cycle, dependency);
+                    return (DependencyResult.Cycle, null);
                 }
 
                 foreach (var d in item.Data.Dependencies)
@@ -379,18 +374,9 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Mark a central package version that it is transitive and need to be added to the graph.
         /// </summary>
-        private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryRange libraryRange, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
+        private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryDependency libraryDependency, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
-            if (_context.CentralPackageVersions.TryGetValue(framework, out Dictionary<string, CentralPackageVersion> centralPackageVersions))
-            {
-                if (centralPackageVersions.TryGetValue(libraryRange.Name, out CentralPackageVersion centralVersionsOnFramework))
-                {
-                    if (!centralVersionsOnFramework.VersionRange.Equals(libraryRange.VersionRange))
-                    {
-                        transitiveCentralPackageVersions.TryAdd(centralVersionsOnFramework);
-                    }
-                }
-            }
+            transitiveCentralPackageVersions.TryAdd(libraryDependency);
         }
 
         /// <summary>
@@ -399,18 +385,18 @@ namespace NuGet.DependencyResolver
         /// </summary>
         private async Task AddTransitiveCentralPackageVersionNodesAsync(
             GraphNode<RemoteResolveResult> rootNode,
-            CentralPackageVersion centralPackageVersion,
+            LibraryDependency centralPackageVersionDependency,
             NuGetFramework framework,
             string runtimeIdentifier,
             RuntimeGraph runtimeGraph,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             GraphNode<RemoteResolveResult> node = await CreateGraphNode(
-                    libraryRange: new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
+                    libraryRange: centralPackageVersionDependency.LibraryRange,
                     framework: framework,
                     runtimeName: runtimeIdentifier,
                     runtimeGraph: runtimeGraph,
-                    predicate: _ => (DependencyResult.Acceptable, null),
+                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
@@ -428,29 +414,29 @@ namespace NuGet.DependencyResolver
 
         internal class TransitiveCentralPackageVersions
         {
-            private ConcurrentQueue<CentralPackageVersion> _toBeProcessedTransitiveCentralPackageVersions;
-            private ConcurrentDictionary<CentralPackageVersion, bool> _transitiveCentralPackageVersions;
+            private ConcurrentQueue<LibraryDependency> _toBeProcessedTransitiveCentralPackageVersions;
+            private ConcurrentDictionary<LibraryRange, bool> _transitiveCentralPackageVersions;
 
             internal TransitiveCentralPackageVersions()
             {
-                _toBeProcessedTransitiveCentralPackageVersions = new ConcurrentQueue<CentralPackageVersion>();
-                _transitiveCentralPackageVersions = new ConcurrentDictionary<CentralPackageVersion, bool>();
+                _toBeProcessedTransitiveCentralPackageVersions = new ConcurrentQueue<LibraryDependency>();
+                _transitiveCentralPackageVersions = new ConcurrentDictionary<LibraryRange, bool>();
             }
 
-            internal bool TryAdd(CentralPackageVersion centralPackageVersion)
+            internal bool TryAdd(LibraryDependency centralPackageVersionDependecy)
             {
-                if (_transitiveCentralPackageVersions.TryAdd(centralPackageVersion, false))
+                if (_transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependecy.LibraryRange, false))
                 {
-                    _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersion);
+                    _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersionDependecy);
                     return true;
                 }
 
                 return false;
             }
 
-            internal bool TryTake(out CentralPackageVersion centralPackageVersion)
+            internal bool TryTake(out LibraryDependency centralPackageVersionDependecy)
             {
-                return _toBeProcessedTransitiveCentralPackageVersions.TryDequeue(out centralPackageVersion);
+                return _toBeProcessedTransitiveCentralPackageVersions.TryDequeue(out centralPackageVersionDependecy);
             }
         }
     }

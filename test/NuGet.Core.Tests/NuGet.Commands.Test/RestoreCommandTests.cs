@@ -1418,42 +1418,6 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public void RestoreCommand_AddCentralPackageVersionsToContext()
-        {
-            // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
-
-            var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
-            var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
-
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar });
-            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { tfi });
-            packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
-            var sources = new List<PackageSource>();
-            var logger = new TestLogger();
-
-            var request = new TestRestoreRequest(packageSpec, sources, "", logger);
-            var restoreCommand = new RestoreCommand(request);
-            RemoteWalkContext context = new RemoteWalkContext(request.CacheContext, logger);
-
-            // Act
-            restoreCommand.AddCentralPackageVersionsToContext(request, context);
-
-            // Assert
-            // Only bar is expected as foo is already in the dependency list         
-            Assert.Equal(1, context.CentralPackageVersions.Count);
-            Assert.Equal(1, context.CentralPackageVersions.First().Value.Count);
-            Assert.Equal("bar", context.CentralPackageVersions.First().Value.First().Key);
-        }
-
-
-        [Fact]
         public async Task RestoreCommand_DowngradeIsErrorWhenCpvmEnabled()
         {
             // Arange

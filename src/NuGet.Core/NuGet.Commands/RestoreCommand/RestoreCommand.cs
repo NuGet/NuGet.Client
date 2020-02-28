@@ -167,30 +167,25 @@ namespace NuGet.Commands
                     }
                 }
 
-                if (isCpvmEnabled)
+                if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
                 {
-                    if (!await AreCentralVersionRequirementsSatisfiedAsync())
-                    {
-                        restoreTime.Stop();
-                        _success = false;
+                    restoreTime.Stop();
+                    _success = false;
 
-                        return new RestoreResult(
-                            success: _success,
-                            restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
-                            compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
-                            msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
-                            lockFile: _request.ExistingLockFile,
-                            previousLockFile: _request.ExistingLockFile,
-                            lockFilePath: _request.ExistingLockFile?.Path,
-                            cacheFile: null,
-                            cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
-                            packagesLockFilePath: null,
-                            packagesLockFile: null,
-                            projectStyle: _request.ProjectStyle,
-                            elapsedTime: restoreTime.Elapsed);
-                    }
-
-                    AddCentralPackageVersionsToContext(_request, contextForProject);
+                    return new RestoreResult(
+                        success: _success,
+                        restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
+                        compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
+                        msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                        lockFile: _request.ExistingLockFile,
+                        previousLockFile: _request.ExistingLockFile,
+                        lockFilePath: _request.ExistingLockFile?.Path,
+                        cacheFile: null,
+                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                        packagesLockFilePath: null,
+                        packagesLockFile: null,
+                        projectStyle: _request.ProjectStyle,
+                        elapsedTime: restoreTime.Elapsed);
                 }
 
                 // evaluate packages.lock.json file
@@ -399,17 +394,6 @@ namespace NuGet.Commands
                     packagesLockFile,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
-            }
-        }
-
-        internal void AddCentralPackageVersionsToContext(RestoreRequest request, RemoteWalkContext context)
-        {
-            foreach (TargetFrameworkInformation targetFramework in request.Project.TargetFrameworks)
-            {
-                var dependeciesNames = new HashSet<string>(targetFramework.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
-                var centralVersions = targetFramework.CentralPackageVersions.Where(kvp => !dependeciesNames.Contains(kvp.Key))
-                    .ToDictionary(kvp => kvp.Key, kvp => kvp.Value, StringComparer.OrdinalIgnoreCase);
-                context.CentralPackageVersions.Add(targetFramework.FrameworkName, centralVersions);
             }
         }
 

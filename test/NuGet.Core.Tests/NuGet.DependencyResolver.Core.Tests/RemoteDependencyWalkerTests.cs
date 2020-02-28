@@ -830,18 +830,22 @@ namespace NuGet.DependencyResolver.Tests
         {
             // Arrange
             var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
-            var centralPackageVersion = new CentralPackageVersion("name1", VersionRange.Parse("1.0.0"));
+            var centralPackageVersionDependency = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+            };
 
-            bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
-            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake1);
-            bool resultTake2 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake2);
+            bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
+            // nothing more to take 
+            bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
 
             // Assert
             Assert.True(resultAdd);
             Assert.True(resultTake1);
             Assert.False(resultTake2);
 
-            Assert.Equal(centralPackageVersion, centralPackageVersionTake1);
+            Assert.Equal(centralPackageVersionDependency, centralPackageVersionTake1);
             Assert.Null(centralPackageVersionTake2);
         }
 
@@ -850,116 +854,39 @@ namespace NuGet.DependencyResolver.Tests
         {
             // Arrange
             var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
-            var centralPackageVersion = new CentralPackageVersion("name1", VersionRange.Parse("1.0.0"));
-            bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
-            bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+            var centralPackageVersionDependency = new LibraryDependency()
+            {
+                LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+            };
+            bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+            bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
 
             // Assert
             Assert.True(resultAdd1);
             Assert.False(resultAdd2);
 
-            // Once the data is added it cannot be readed even if TryTake was invoked
-            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out CentralPackageVersion centralPackageVersionTake1);
-            bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersion);
+            // Once the data is added it cannot be re-added even if after TryTake 
+            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
+            bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
 
             Assert.True(resultTake1);
             Assert.False(resultAdd3);
         }
 
-        [Fact]
-        public async Task WalkAsyncAddsTransitiveCentralDependency()
+        [Theory]
+        [InlineData("2.0.0", "2.0.0")]
+        [InlineData("2.0.0", "1.0.0")]
+
+        public async Task WalkAsyncAddsTransitiveCentralDependency(string centralPackageVersion, string otherVersion)
         {
             var centralPackageName = "D";
-            var centralPackageVersion = "2.0.0";
             var framework = NuGetFramework.Parse("net45");
 
             var context = new TestRemoteWalkContext();
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
-            provider.Package("A", "1.0.0")
-                    .DependsOn("B", "1.0.0")
-                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
-
-            provider.Package("B", "1.0.0")
-                   .DependsOn("C", "1.0.0");
-
-            provider.Package("C", "1.0.0")
-                  .DependsOn(centralPackageName, "1.0.0");
-
-            // Add central package to the source with multiple versions
-            provider.Package(centralPackageName, "1.0.0");
-            provider.Package(centralPackageName, centralPackageVersion);
-            provider.Package(centralPackageName, "3.0.0");
-
-            context.LocalLibraryProviders.Add(provider);
-            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
-
-            var walker = new RemoteDependencyWalker(context);
-
-            // Act
-            var rootNode = await DoWalkAsync(walker, "A", framework);
-
-            // Assert
-            Assert.Equal(2, rootNode.InnerNodes.Count);
-            var centralVersionInGraph = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).Select(n => n.Item.Key.Version.ToNormalizedString()).FirstOrDefault();
-            Assert.Equal(centralPackageVersion, centralVersionInGraph);
-        }
-
-        [Fact]
-        public async Task WalkAsyncDoesNotAddTransitiveCentralDependencyIfNotOnTheContext()
-        {
-            var centralPackageName = "D";
-            var centralPackageVersion = "2.0.0";
-            var framework = NuGetFramework.Parse("net45");
-
-            var context = new TestRemoteWalkContext();
-            var provider = new DependencyProvider();
-            // D is a transitive dependency for package A through package B -> C -> D
-            // D is defined as a Central Package Version
-            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
-            provider.Package("A", "1.0.0")
-                    .DependsOn("B", "1.0.0")
-                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
-
-            provider.Package("B", "1.0.0")
-                    .DependsOn("C", "1.0.0");
-
-            provider.Package("C", "1.0.0")
-                    .DependsOn(centralPackageName, "1.0.0");
-
-            // Add central package to the source with multiple versions
-            provider.Package(centralPackageName, "1.0.0");
-            provider.Package(centralPackageName, centralPackageVersion);
-            provider.Package(centralPackageName, "3.0.0");
-
-            context.LocalLibraryProviders.Add(provider);
-
-            var walker = new RemoteDependencyWalker(context);
-
-            // Act
-            var rootNode = await DoWalkAsync(walker, "A", framework);
-
-            // Assert
-            Assert.Equal(1, rootNode.InnerNodes.Count);
-            var innerNodeName = rootNode.InnerNodes.FirstOrDefault().Key.Name;
-            Assert.Equal("B", innerNodeName);
-        }
-
-        [Fact]
-        public async Task WalkAsyncDoesNotAddTransitiveCentralDependencyIfCentralversionIsATransitiveVersion()
-        {
-            var centralPackageName = "D";
-            var centralPackageVersion = "2.0.0";
-            var otherVersion = "2.0.0";
-            var framework = NuGetFramework.Parse("net45");
-
-            var context = new TestRemoteWalkContext();
-            var provider = new DependencyProvider();
-            // D is a transitive dependency for package A through package B -> C -> D
-            // D is defined as a Central Package Version
-            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
             provider.Package("A", otherVersion)
                     .DependsOn("B", otherVersion)
                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
@@ -976,17 +903,15 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package(centralPackageName, "3.0.0");
 
             context.LocalLibraryProviders.Add(provider);
-            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
-
             var walker = new RemoteDependencyWalker(context);
 
             // Act
             var rootNode = await DoWalkAsync(walker, "A", framework);
 
             // Assert
-            Assert.Equal(1, rootNode.InnerNodes.Count);
-            var innerNodeName = rootNode.InnerNodes.FirstOrDefault().Key.Name;
-            Assert.Equal("B", innerNodeName);
+            Assert.Equal(2, rootNode.InnerNodes.Count);
+            var centralVersionInGraph = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).Select(n => n.Item.Key.Version.ToNormalizedString()).FirstOrDefault();
+            Assert.Equal(centralPackageVersion, centralVersionInGraph);
         }
 
         [Fact]
@@ -1018,8 +943,6 @@ namespace NuGet.DependencyResolver.Tests
             provider.Package(centralPackageName, "3.0.0");
 
             context.LocalLibraryProviders.Add(provider);
-            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
-
             var walker = new RemoteDependencyWalker(context);
 
             // Act
@@ -1053,8 +976,6 @@ namespace NuGet.DependencyResolver.Tests
                 VersionCentrallyManaged = versionCentrallyManaged,
                 AutoReferenced = autoReferenced,
             };
-
-            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageVersion.Name] = centralPackageVersion });
             var walker = new RemoteDependencyWalker(context);
 
             // Act
