@@ -45,11 +45,11 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
   Password to be used when connecting to an authenticated source.
 
-- **`--store-Password-In-Clear-Text`**
+- **`--store-password-in-clear-text`**
 
   Enables storing portable package source credentials by disabling password encryption.
 
-- **`--valid-Authentication-Types`**
+- **`--valid-authentication-types`**
 
   Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate
 
@@ -345,11 +345,11 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
   Password to be used when connecting to an authenticated source.
 
-- **`--store-Password-In-Clear-Text`**
+- **`--store-password-in-clear-text`**
 
   Enables storing portable package source credentials by disabling password encryption.
 
-- **`--valid-Authentication-Types`**
+- **`--valid-authentication-types`**
 
   Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate
 

@@ -251,7 +251,7 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                 }
                 else
                 {
-                    string optionFormalName = MakeFormal(optionName, shortcut);
+                    string optionFormalName = MakeFormal(optionName, shortcut).ToLower();
                     switch (GetOptionType(option))
                     {
                     case "SingleValue":
