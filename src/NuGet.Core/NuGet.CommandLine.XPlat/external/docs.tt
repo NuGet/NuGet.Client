@@ -142,7 +142,7 @@
 title: dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command
 description: The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
 author: nugetClient
-ms.date: <#= DateTime.Now.ToString("d") #>
+ms.date: <#= DateTime.Now.ToString("MM/dd/yyyy") #>
 ---
 # dotnet nuget <#= verbFormalName #> <#= nounFormalName #>
 
@@ -162,7 +162,6 @@ ms.date: <#= DateTime.Now.ToString("d") #>
 ## Description
 
 The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
-
 <#
             var headerForArgumentsShown = false;
             var headerForOptionsShown = false; 
@@ -182,7 +181,9 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         if (!headerForArgumentsShown)
                         {
 #>
+
 ## Arguments
+
 <#
                             headerForArgumentsShown = true;
                         }
@@ -190,7 +191,6 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 - **`<#= optionLongName.ToUpper() #>`**
 
   <#= stringDictionary[helpText.ToLower()] #>
-
 <#
                     }
                     else
@@ -198,7 +198,9 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         if (!headerForArgumentsShown)
                         {
 #>
+
 ## Arguments
+
 <#
                             headerForArgumentsShown = true;
                         }
@@ -237,6 +239,7 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                     if (!headerForSeeAlsosShown)
                     {
 #>
+
 ## See also
 <#
                         headerForSeeAlsosShown = true;
@@ -244,7 +247,6 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 #>
 
 - [<#= titleText #>](<#= urlText #>)
-
 <#
                 }
                 else
@@ -256,7 +258,9 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         if (!headerForOptionsShown)
                         {
 #>
+
 ## Options
+
 <#
                             headerForOptionsShown = true;
                         }
@@ -271,7 +275,9 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         if (!headerForOptionsShown)
                         {
 #>
+
 ## Options
+
 <#
                             headerForOptionsShown = true;
                         }
@@ -286,7 +292,9 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         if (!headerForOptionsShown)
                         {
 #>
+
 ## Options
+
 <#
                             headerForOptionsShown = true;
                         }
@@ -302,4 +310,4 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
             }
         }
     }
-#>}
+#>
