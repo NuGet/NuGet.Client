@@ -347,7 +347,6 @@ namespace NuGet.ProjectModel
                     // Clone the library dependency so we can safely modify it. The instance cloned here is from the
                     // original package spec, which should not be modified.
                     dependencies[i] = dependencies[i].Clone();
-
                     // Remove "project" from the allowed types for this dependency
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.
