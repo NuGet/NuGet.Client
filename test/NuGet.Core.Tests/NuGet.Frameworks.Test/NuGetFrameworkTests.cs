@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -12,6 +12,7 @@ namespace NuGet.Test
     {
         [Theory]
         [InlineData("net45", "net45")]
+        [InlineData("net5.0", "net5.0")]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8")]
         [InlineData("portable-net45+win8+xamarin.ios", "portable-net45+win8")]
         [InlineData("portable-net45+win8", "portable-net45+win8")]
@@ -36,6 +37,19 @@ namespace NuGet.Test
             var fw = NuGetFramework.Parse(input);
 
             string result = fw.GetShortFolderName();
+
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("net5.0", ".NETFramework,Version=v5.0")]
+        [InlineData("net452", ".NETFramework,Version=v4.5.2")]
+        [InlineData("netcoreapp3.1", ".NETCoreApp,Version=v3.1")]
+        public void NuGetFramework_GetDotNetFrameworkName(string input, string expected)
+        {
+            var fw = NuGetFramework.Parse(input);
+            
+            string result = fw.GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
 
             Assert.Equal(expected, result);
         }

@@ -120,7 +120,7 @@ namespace NuGet.Frameworks
 
             if (framework.IsSpecificFramework)
             {
-                var parts = new List<string>(3) { framework.Framework };
+                var parts = new List<string>(3) { framework.IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : framework.Framework };
 
                 parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
 
@@ -168,9 +168,11 @@ namespace NuGet.Frameworks
                 var shortFramework = string.Empty;
 
                 // get the framework
-                if (!mappings.TryGetShortIdentifier(framework.Framework, out shortFramework))
+                if (!mappings.TryGetShortIdentifier(
+                    framework.IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : framework.Framework,
+                    out shortFramework))
                 {
-                    shortFramework = framework.IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : GetLettersAndDigitsOnly(framework.Framework);
+                    shortFramework = GetLettersAndDigitsOnly(framework.Framework);
                 }
 
                 if (string.IsNullOrEmpty(shortFramework))
