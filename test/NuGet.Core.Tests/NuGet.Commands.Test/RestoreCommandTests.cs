@@ -1449,8 +1449,6 @@ namespace NuGet.Commands.Test
             provider.Package(centralPackageName, "3.0.0");
 
             context.LocalLibraryProviders.Add(provider);
-            context.CentralPackageVersions.Add(framework, new Dictionary<string, CentralPackageVersion>() { [centralPackageName] = new CentralPackageVersion(centralPackageName, VersionRange.Parse(centralPackageVersion)) });
-
             var walker = new RemoteDependencyWalker(context);
 
             // Act
