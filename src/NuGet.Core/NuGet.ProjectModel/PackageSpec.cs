@@ -89,7 +89,7 @@ namespace NuGet.ProjectModel
 
         public PackOptions PackOptions { get; set; } = new PackOptions();
 
-        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; } = new List<TargetFrameworkInformation>();
+        public IList<TargetFrameworkInformation> TargetFrameworks { get; private set; }
 
         public RuntimeGraph RuntimeGraph { get; set; } = new RuntimeGraph();
 
@@ -110,7 +110,7 @@ namespace NuGet.ProjectModel
         public override int GetHashCode()
         {
             var hashCode = new HashCodeCombiner();
-            
+
             hashCode.AddObject(Title);
             hashCode.AddObject(Version);
             hashCode.AddObject(IsDefaultVersion);
@@ -195,22 +195,22 @@ namespace NuGet.ProjectModel
             spec.Name = Name;
             spec.FilePath = FilePath;
             spec.Title = Title;
-            spec.IsDefaultVersion = IsDefaultVersion;
             spec.HasVersionSnapshot = HasVersionSnapshot;
             spec.Description = Description;
             spec.Summary = Summary;
             spec.ReleaseNotes = ReleaseNotes;
-            spec.Authors = (string[]) Authors?.Clone();
-            spec.Owners = (string[]) Owners?.Clone();
+            spec.Authors = (string[])Authors?.Clone();
+            spec.Owners = (string[])Owners?.Clone();
             spec.ProjectUrl = ProjectUrl;
             spec.IconUrl = IconUrl;
             spec.LicenseUrl = LicenseUrl;
             spec.RequireLicenseAcceptance = RequireLicenseAcceptance;
             spec.Language = Language;
             spec.Copyright = Copyright;
-            spec.Version = Version; 
+            spec.Version = Version;
+            spec.IsDefaultVersion = IsDefaultVersion;
             spec.BuildOptions = BuildOptions?.Clone();
-            spec.Tags = (string[]) Tags?.Clone();    
+            spec.Tags = (string[])Tags?.Clone();
             spec.ContentFiles = ContentFiles != null ? new List<string>(ContentFiles) : null;
             spec.Dependencies = Dependencies?.Select(item => item.Clone()).ToList();
             spec.Scripts = CloneScripts(Scripts);

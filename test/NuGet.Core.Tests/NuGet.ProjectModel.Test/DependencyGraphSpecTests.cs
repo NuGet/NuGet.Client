@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -17,11 +18,70 @@ namespace NuGet.ProjectModel.Test
 {
     public class DependencyGraphSpecTests
     {
+#pragma warning disable CS0618
+        private const string DgSpecWithCentralDependencies = "DependencyGraphSpec_CentralVersionDependencies.json";
+        private const string Project1Json = "project1.json";
+        private const string Project2Json = "project2.json";
+        private const string Test1Dg = "test1.dg";
+        private const string Test2Dg = "test2.dg";
+        private const string Test3Dg = "test3.dg";
+
+        private const string PackageSpecName = "x";
+        private const string PackageSpecPath = @"c:\fake\project.json";
+
         [Fact]
-        public void DependencyGraphSpec_GetParents()
+        public void Json_WhenDgSpecWasCreatedWithDefaultConstructor_ReturnsEmptyObject()
+        {
+            var dgSpec = new DependencyGraphSpec();
+
+            Assert.Empty(dgSpec.Json);
+        }
+
+        [Fact]
+        public void Json_WhenDgSpecWasCreatedWithBoolConstructor_ReturnsEmptyObject()
+        {
+            var dgSpec = new DependencyGraphSpec(isReadOnly: true);
+
+            Assert.Empty(dgSpec.Json);
+        }
+
+        [Fact]
+        public void Json_WhenDgSpecWasCreatedWithJObjectConstructor_ReturnsSameJObject()
+        {
+            var expectedResult = new JObject();
+            var dgSpec = new DependencyGraphSpec(expectedResult);
+
+            Assert.Same(expectedResult, dgSpec.Json);
+        }
+
+        [Fact]
+        public void Json_WhenDgSpecWasCreatedWithLoadFilePathMethod_ReturnsFileJObject()
+        {
+            string json = "{\"restore\":{}}";
+
+            using (Test test = Test.Create(json))
+            {
+                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
+
+                Assert.Equal(json, dgSpec.Json.ToString(Formatting.None));
+            }
+        }
+
+        [Fact]
+        public void Json_WhenDgSpecWasCreatedWithLoadJObjectMethod_ReturnsSameJObject()
+        {
+            var expectedResult = new JObject();
+
+            DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(expectedResult);
+
+            Assert.Same(expectedResult, dgSpec.Json);
+        }
+
+        [Fact]
+        public void GetParents_WhenCalledOnChild_ReturnsParents()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test1.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test1Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -40,10 +100,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadFileWithProjects_GetClosures()
+        public void GetClosure_WhenClosureExists_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test1.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test1Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -66,10 +126,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [PlatformFact(Platform.Windows)]
-        public void DependencyGraphSpec_ReadFileWithProjects_CaseInsensitive_GetClosures()
+        public void GetClosure_WhenClosureExistsCaseInsensitively_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test3.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test3Dg);
 
             // Act
             var dg = DependencyGraphSpec.Load(json);
@@ -88,10 +148,10 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ProjectsWithToolReferences_GetClosures()
+        public void GetClosure_WhenProjectHasToolReferences_ReturnsClosure()
         {
             // Arrange
-            var json = JObject.Parse(ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.test2.dg", typeof(DependencyGraphSpecTests)));
+            JObject json = GetResourceAsJObject(Test2Dg);
             var childProject = @"f:\validation\test\dg\Project.Core\Project.Core\Project.Core.csproj";
             var parentProject = @"f:\validation\test\dg\Project.Core\Project\Project.csproj";
             var tool = @"atool-netcoreapp2.0-[1.0.0, )";
@@ -116,7 +176,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadEmptyJObject()
+        public void Constructor_WhenJsonIsEmptyObject_CreatesEmptyDgSpec()
         {
             // Arrange
             var json = new JObject();
@@ -125,19 +185,17 @@ namespace NuGet.ProjectModel.Test
             var dg = new DependencyGraphSpec(json);
 
             // Assert
-            Assert.Equal(json, dg.Json);
             Assert.Equal(0, dg.Restore.Count);
             Assert.Equal(0, dg.Projects.Count);
         }
 
         [Fact]
-        public void DependencyGraphSpec_ReadEmpty()
+        public void DefaultConstructor_Always_CreatesEmptyDgSpec()
         {
             // Arrange && Act
             var dg = new DependencyGraphSpec();
 
             // Assert
-            Assert.Equal(0, dg.Json.Properties().Count());
             Assert.Equal(0, dg.Restore.Count);
             Assert.Equal(0, dg.Projects.Count);
         }
@@ -145,11 +203,27 @@ namespace NuGet.ProjectModel.Test
         [Theory]
         [InlineData("")]
         [InlineData("[]")]
-        public void Load_WithPath_WhenJsonIsInvalid_Throws(string json)
+        public void Load_WithPath_WhenJsonIsInvalidDgSpec_Throws(string json)
         {
-            using (var test = Test.Create(json))
+            using (Test test = Test.Create(json))
             {
-                Assert.Throws<InvalidDataException>(() => DependencyGraphSpec.Load(test.FilePath));
+                InvalidDataException exception = Assert.Throws<InvalidDataException>(
+                    () => DependencyGraphSpec.Load(test.FilePath));
+
+                Assert.Null(exception.InnerException);
+            }
+        }
+
+        [Theory]
+        [InlineData("{}{}")]
+        [InlineData("{}[]")]
+        public void Load_WithPath_WhenJsonContainsMultipleTopLevelEntities_IgnoresNonFirstEntities(string json)
+        {
+            using (Test test = Test.Create(json))
+            {
+                DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
+
+                Assert.Equal("{}", dgSpec.Json.ToString());
             }
         }
 
@@ -161,8 +235,8 @@ namespace NuGet.ProjectModel.Test
 {
 }";
 
-            using (var test = Test.Create(json))
-            { 
+            using (Test test = Test.Create(json))
+            {
                 DependencyGraphSpec dgSpec = DependencyGraphSpec.Load(test.FilePath);
 
                 Assert.NotNull(dgSpec);
@@ -173,17 +247,17 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_ReadMSBuildMetadata()
         {
             // Arrange
-            var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project1.json", typeof(DependencyGraphSpecTests));
+            string json = GetResourceAsJson(Project1Json);
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, PackageSpecName, PackageSpecPath);
             var msbuildMetadata = spec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -199,17 +273,17 @@ namespace NuGet.ProjectModel.Test
         public void DependencyGraphSpec_ReadMSBuildMetadata_WithProperDefaults()
         {
             // Arrange
-            var json = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.project2.json", typeof(DependencyGraphSpecTests));
+            string json = GetResourceAsJson(Project2Json);
 
             // Act
-            var spec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            var spec = JsonPackageSpecReader.GetPackageSpec(json, PackageSpecName, PackageSpecPath);
             var msbuildMetadata = spec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -229,7 +303,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
@@ -262,7 +336,7 @@ namespace NuGet.ProjectModel.Test
             Assert.NotNull(msbuildMetadata);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata.ProjectPath);
-            Assert.Equal("x", msbuildMetadata.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata.PackagesPath);
@@ -289,7 +363,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectJsonPath = "c:\\x\\project.json";
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
             msbuildMetadata.PackagesPath = "c:\\packages";
@@ -321,17 +395,14 @@ namespace NuGet.ProjectModel.Test
             msbuildMetadata.LegacyPackagesDirectory = true;
 
             // Act
-            var writer = new RuntimeModel.JsonObjectWriter();
-            PackageSpecWriter.Write(spec, writer);
-            var json = writer.GetJson();
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
-            var msbuildMetadata2 = readSpec.RestoreMetadata;
+            PackageSpec readSpec = PackageSpecTestUtility.RoundTrip(spec, PackageSpecName, PackageSpecPath);
+            ProjectRestoreMetadata msbuildMetadata2 = readSpec.RestoreMetadata;
 
             // Assert
             Assert.NotNull(msbuildMetadata2);
             Assert.Equal("A55205E7-4D08-4672-8011-0925467CC45F", msbuildMetadata2.ProjectUniqueName);
             Assert.Equal("c:\\x\\x.csproj", msbuildMetadata2.ProjectPath);
-            Assert.Equal("x", msbuildMetadata2.ProjectName);
+            Assert.Equal(PackageSpecName, msbuildMetadata2.ProjectName);
             Assert.Equal("c:\\x\\project.json", msbuildMetadata2.ProjectJsonPath);
             Assert.Equal(ProjectStyle.PackageReference, msbuildMetadata2.ProjectStyle);
             Assert.Equal("c:\\packages", msbuildMetadata2.PackagesPath);
@@ -362,7 +433,7 @@ namespace NuGet.ProjectModel.Test
 
             msbuildMetadata.ProjectUniqueName = "A55205E7-4D08-4672-8011-0925467CC45F";
             msbuildMetadata.ProjectPath = "c:\\x\\x.csproj";
-            msbuildMetadata.ProjectName = "x";
+            msbuildMetadata.ProjectName = PackageSpecName;
             msbuildMetadata.ProjectStyle = ProjectStyle.PackageReference;
 
             var tfmGroup = new ProjectRestoreMetadataFrameworkInfo(NuGetFramework.Parse("net45"));
@@ -392,12 +463,8 @@ namespace NuGet.ProjectModel.Test
             tfmGroup2.ProjectReferences.Add(ref1);
             tfmGroup2.ProjectReferences.Add(ref2);
 
-            var writer = new RuntimeModel.JsonObjectWriter();
-
             // Act
-            PackageSpecWriter.Write(spec, writer);
-            var json = writer.GetJson();
-            var readSpec = JsonPackageSpecReader.GetPackageSpec(json, "x", "c:\\fake\\project.json");
+            PackageSpec readSpec = PackageSpecTestUtility.RoundTrip(spec, PackageSpecName, PackageSpecPath);
 
             // Assert
             Assert.Equal(2, readSpec.RestoreMetadata.TargetFrameworks.Count);
@@ -418,48 +485,51 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void DependencyGraphSpec_Save_SerializesMembersAsJson()
+        public void Save_WithNonEmptyDgSpec_SerializesCorrectly()
         {
-            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_Save_SerializesMembersAsJson.json", typeof(DependencyGraphSpecTests));
-            var dependencyGraphSpec = CreateDependencyGraphSpec();
-            var actualJson = GetJson(dependencyGraphSpec);
+            string expectedJson = GetResourceAsJson("DependencyGraphSpec_Save_SerializesMembersAsJson.json");
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpec();
+            string actualJson = GetJson(dependencyGraphSpec);
 
             Assert.Equal(expectedJson, actualJson);
         }
 
         [Fact]
-        public void DependencyGraphSpec_Save_SerializesMembersAsJson_CentralVersionDependencies()
+        public void Save_WithCentralVersionDependencies_SerializesMembersAsJson()
         {
             // Arrange
-            var expectedJson = ResourceTestUtility.GetResource("NuGet.ProjectModel.Test.compiler.resources.DependencyGraphSpec_CentralVersionDependencies.json", typeof(DependencyGraphSpecTests));
+            string expectedJson = GetResourceAsJson(DgSpecWithCentralDependencies);
 
             // Act
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies();
-            var actualJson = GetJson(dependencyGraphSpec);
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies();
+            string actualJson = GetJson(dependencyGraphSpec);
 
             // Assert
             Assert.Equal(expectedJson, actualJson);
         }
 
         [Fact]
-        public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreMergedWhenNullVersion()
+        public void AddProject_WhenDependencyVersionIsNull_CentralPackageVersionAppliesOnlyWhenAutoReferencedIsFalse()
         {
             // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
-            var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: true,
-               generatePathProperty: true);
-            var dependencyBoom = new LibraryDependency(new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.All),
+            var dependencyFoo = new LibraryDependency(
+                new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+            var dependencyBar = new LibraryDependency(
+                new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: true,
+                generatePathProperty: true);
+            var dependencyBoom = new LibraryDependency(
+                new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
@@ -470,63 +540,154 @@ namespace NuGet.ProjectModel.Test
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
             var centralVersionBoom = new CentralPackageVersion("boom", VersionRange.Parse("4.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar, dependencyBoom }, new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar, centralVersionBoom });
+            var tfi = CreateTargetFrameworkInformation(
+                new List<LibraryDependency>() { dependencyFoo, dependencyBar, dependencyBoom },
+                new List<CentralPackageVersion>() { centralVersionFoo, centralVersionBar, centralVersionBoom });
 
             // Act
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
 
             // Assert
             Assert.Equal(1, dependencyGraphSpec.Projects.Count);
-            var packSpec = dependencyGraphSpec.Projects[0];
-            var tfms = packSpec.TargetFrameworks;
+            PackageSpec packSpec = dependencyGraphSpec.Projects[0];
+            IList<TargetFrameworkInformation> tfms = packSpec.TargetFrameworks;
+            IList<LibraryDependency> dependencies = tfms[0].Dependencies;
 
             Assert.Equal(1, tfms.Count);
-            Assert.Equal(3, tfms[0].Dependencies.Count);
-            Assert.Equal("[1.0.0, )", tfms[0].Dependencies.Where( d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
-
-            Assert.Equal("[3.0.0, )", tfms[0].Dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.False(tfms[0].Dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
-
-            Assert.Null(tfms[0].Dependencies.Where(d => d.Name == "boom").First().LibraryRange.VersionRange);
+            Assert.Equal(3, dependencies.Count);
+            Assert.Equal("[1.0.0, )", dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
+            Assert.Equal("[3.0.0, )", dependencies.Where(d => d.Name == "bar").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.False(dependencies.Where(d => d.Name == "bar").First().VersionCentrallyManaged);
+            Assert.Null(dependencies.Where(d => d.Name == "boom").First().LibraryRange.VersionRange);
         }
 
         [Fact]
-        public void DependencyGraphSpec_AddProjectWithCentralVersionDependencies_DependenciesAreVersionAllWhenNotInCentralVersion()
+        public void AddProject_WhenDependencyIsNotInCentralPackageVersions_DependencyVersionIsAllVersions()
         {
             // Arrange
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
-            var dependencyBar = new LibraryDependency(new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.All),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
+            var dependencyFoo = new LibraryDependency(
+                new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+            var dependencyBar = new LibraryDependency(
+                new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
 
             // only a central dependency for bar not for foo
             // foo will be set to VersionRange.All
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
-            var tfi = CreateTargetFrameworkInformation(new List<LibraryDependency>() { dependencyFoo, dependencyBar }, new List<CentralPackageVersion>() { centralVersionBar });
+            TargetFrameworkInformation tfi = CreateTargetFrameworkInformation(
+                new List<LibraryDependency>() { dependencyFoo, dependencyBar },
+                new List<CentralPackageVersion>() { centralVersionBar });
 
             // Act
-            var dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
+            DependencyGraphSpec dependencyGraphSpec = CreateDependencyGraphSpecWithCentralDependencies(tfi);
 
             // Assert
-            var packSpec = dependencyGraphSpec.Projects[0];
-            var tfms = packSpec.TargetFrameworks;
+            PackageSpec packSpec = dependencyGraphSpec.Projects[0];
+            IList<TargetFrameworkInformation> tfms = packSpec.TargetFrameworks;
+            IList<LibraryDependency> dependencies = tfms[0].Dependencies;
 
             Assert.Equal(1, tfms.Count);
-            Assert.Equal(2, tfms[0].Dependencies.Count);
-            Assert.Equal("(, )", tfms[0].Dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
-            Assert.True(tfms[0].Dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
+            Assert.Equal(2, dependencies.Count);
+            Assert.Equal("(, )", dependencies.Where(d => d.Name == "foo").First().LibraryRange.VersionRange.ToNormalizedString());
+            Assert.True(dependencies.Where(d => d.Name == "foo").First().VersionCentrallyManaged);
+        }
+
+        [Fact]
+        public void AddProject_WhenRestoreMetadataIsNull_AddsProject()
+        {
+            var expectedResult = new PackageSpec();
+            var dgSpec = new DependencyGraphSpec();
+
+            dgSpec.AddProject(expectedResult);
+
+            Assert.Collection(
+                dgSpec.Projects,
+                actualResult => Assert.Same(expectedResult, actualResult));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        public void CreateFromClosure_WhenProjectUniqueNameIsNullOrEmpty_Throws(string projectUniqueName)
+        {
+            IReadOnlyList<PackageSpec> closure = new[] { new PackageSpec() };
+            var dgSpec = new DependencyGraphSpec();
+
+            ArgumentException exception = Assert.Throws<ArgumentException>(
+                () => dgSpec.CreateFromClosure(projectUniqueName, closure));
+
+            Assert.Equal("projectUniqueName", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenClosureIsNull_Throws()
+        {
+            var dgSpec = new DependencyGraphSpec();
+
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => dgSpec.CreateFromClosure(PackageSpecName, closure: null));
+
+            Assert.Equal("closure", exception.ParamName);
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenReadOnlyIsTrue_ReturnsSameClosure()
+        {
+            var expectedResult = new PackageSpec()
+            {
+                RestoreMetadata = new ProjectRestoreMetadata()
+            };
+            IReadOnlyList<PackageSpec> closure = new[] { expectedResult };
+            var dgSpec = new DependencyGraphSpec(isReadOnly: true);
+
+            DependencyGraphSpec newDgSpec = dgSpec.CreateFromClosure(PackageSpecName, closure);
+
+            Assert.Collection(
+                newDgSpec.Restore,
+                actualResult => Assert.Equal(PackageSpecName, actualResult));
+
+            Assert.Collection(
+                newDgSpec.Projects,
+                actualResult => Assert.Same(expectedResult, actualResult));
+        }
+
+        [Fact]
+        public void CreateFromClosure_WhenReadOnlyIsFalse_ReturnsClonedClosure()
+        {
+            var expectedResult = new PackageSpec()
+            {
+                IsDefaultVersion = false,
+                RestoreMetadata = new ProjectRestoreMetadata()
+            };
+            IReadOnlyList<PackageSpec> closure = new[] { expectedResult };
+            var dgSpec = new DependencyGraphSpec(isReadOnly: false);
+
+            DependencyGraphSpec newDgSpec = dgSpec.CreateFromClosure(PackageSpecName, closure);
+
+            Assert.Collection(
+                newDgSpec.Restore,
+                actualResult => Assert.Equal(PackageSpecName, actualResult));
+
+            Assert.Collection(
+                newDgSpec.Projects,
+                actualResult =>
+                {
+                    Assert.True(expectedResult.Equals(actualResult));
+                    Assert.NotSame(expectedResult, actualResult);
+                });
         }
 
         private static DependencyGraphSpec CreateDependencyGraphSpec()
@@ -546,10 +707,10 @@ namespace NuGet.ProjectModel.Test
 
         private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies()
         {
-            return CreateDependencyGraphSpecWithCentralDependencies( CreateTargetFrameworkInformation() );
+            return CreateDependencyGraphSpecWithCentralDependencies(CreateTargetFrameworkInformation());
         }
 
-        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies( params TargetFrameworkInformation[] tfis)
+        private static DependencyGraphSpec CreateDependencyGraphSpecWithCentralDependencies(params TargetFrameworkInformation[] tfis)
         {
             var packageSpec = new PackageSpec(tfis);
             packageSpec.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = "a", CentralPackageVersionsEnabled = true };
@@ -561,8 +722,9 @@ namespace NuGet.ProjectModel.Test
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation()
         {
-            NuGetFramework nugetFramework = new NuGetFramework("net40");
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", null, LibraryDependencyTarget.All),
+            var nugetFramework = new NuGetFramework("net40");
+            var dependencyFoo = new LibraryDependency(
+                new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryDependencyType.Default,
                 LibraryIncludeFlags.All,
                 LibraryIncludeFlags.All,
@@ -577,7 +739,7 @@ namespace NuGet.ProjectModel.Test
             var assetTargetFallback = true;
             var warn = false;
 
-            TargetFrameworkInformation tfi = new TargetFrameworkInformation()
+            var tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = assetTargetFallback,
                 Dependencies = dependencies,
@@ -593,9 +755,9 @@ namespace NuGet.ProjectModel.Test
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
-            NuGetFramework nugetFramework = new NuGetFramework("net40");
-                   
-            TargetFrameworkInformation tfi = new TargetFrameworkInformation()
+            var nugetFramework = new NuGetFramework("net40");
+
+            var tfi = new TargetFrameworkInformation()
             {
                 AssetTargetFallback = true,
                 Warn = false,
@@ -603,7 +765,7 @@ namespace NuGet.ProjectModel.Test
                 Dependencies = dependencies,
             };
 
-            foreach (var cvd in centralVersionsDependencies)
+            foreach (CentralPackageVersion cvd in centralVersionsDependencies)
             {
                 tfi.CentralPackageVersions.Add(cvd.Name, cvd);
             }
@@ -613,14 +775,28 @@ namespace NuGet.ProjectModel.Test
 
         private static string GetJson(DependencyGraphSpec dgSpec)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (TestDirectory testDirectory = TestDirectory.Create())
             {
-                var filePath = Path.Combine(testDirectory.Path, "out.json");
+                string filePath = Path.Combine(testDirectory.Path, "out.json");
 
                 dgSpec.Save(filePath);
 
                 return File.ReadAllText(filePath);
             }
+        }
+
+        private static JObject GetResourceAsJObject(string fileName)
+        {
+            string json = GetResourceAsJson(fileName);
+
+            return JObject.Parse(json);
+        }
+
+        private static string GetResourceAsJson(string fileName)
+        {
+            var resourceName = $"NuGet.ProjectModel.Test.compiler.resources.{fileName}";
+
+            return ResourceTestUtility.GetResource(resourceName, typeof(DependencyGraphSpecTests));
         }
 
         private sealed class Test : IDisposable
@@ -656,5 +832,6 @@ namespace NuGet.ProjectModel.Test
                 }
             }
         }
+#pragma warning restore CS0618
     }
 }

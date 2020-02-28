@@ -195,16 +195,23 @@ namespace NuGet.ProjectModel
             {
                 if (lockFile.PackageSpec != null)
                 {
-                    var writer = new JsonObjectWriter();
-                    PackageSpecWriter.Write(lockFile.PackageSpec, writer);
-                    var packageSpec = writer.GetJObject();
-                    json[PackageSpecProperty] = packageSpec;
+                    using (var jsonWriter = new JTokenWriter())
+                    using (var writer = new JsonObjectWriter(jsonWriter))
+                    {
+                        writer.WriteObjectStart();
+
+                        PackageSpecWriter.Write(lockFile.PackageSpec, writer);
+
+                        writer.WriteObjectEnd();
+
+                        json[PackageSpecProperty] = (JObject)jsonWriter.Token;
+                    }
                 }
             }
 
-            if(lockFile.Version >= 3)
+            if (lockFile.Version >= 3)
             {
-                if(lockFile.LogMessages.Count > 0)
+                if (lockFile.LogMessages.Count > 0)
                 {
                     var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
                     json[LogsProperty] = WriteLogMessages(lockFile.LogMessages, projectPath);
@@ -270,7 +277,7 @@ namespace NuGet.ProjectModel
             }
 
             WritePathArray(json, FilesProperty, library.Files, JsonUtility.WriteString);
-            
+
             return new JProperty(
                 library.Name + "/" + library.Version.ToNormalizedString(),
                 json);
@@ -318,7 +325,7 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.WARNING_LEVEL] = (int)logMessage.WarningLevel;
             }
 
-            if (logMessage.FilePath != null && 
+            if (logMessage.FilePath != null &&
                (projectPath == null || !PathUtility.GetStringComparerBasedOnOS().Equals(logMessage.FilePath, projectPath)))
             {
                 // Do not write the file path if it is the same as the project path.
@@ -356,8 +363,8 @@ namespace NuGet.ProjectModel
                 logJObject[LogMessageProperties.LIBRARY_ID] = logMessage.LibraryId;
             }
 
-            if (logMessage.TargetGraphs != null && 
-                logMessage.TargetGraphs.Any() && 
+            if (logMessage.TargetGraphs != null &&
+                logMessage.TargetGraphs.Any() &&
                 logMessage.TargetGraphs.All(l => !string.IsNullOrEmpty(l)))
             {
                 logJObject[LogMessageProperties.TARGET_GRAPHS] = new JArray(logMessage.TargetGraphs);
@@ -448,7 +455,7 @@ namespace NuGet.ProjectModel
         internal static JArray WriteLogMessages(IEnumerable<IAssetsLogMessage> logMessages, string projectPath)
         {
             var logMessageArray = new JArray();
-            foreach(var logMessage in logMessages)
+            foreach (var logMessage in logMessages)
             {
                 logMessageArray.Add(WriteLogMessage(logMessage, projectPath));
             }
@@ -529,7 +536,7 @@ namespace NuGet.ProjectModel
                 json[RuntimeProperty] = JsonUtility.WriteObject(ordered, WriteFileItem);
             }
 
-            if(library.FrameworkReferences.Count > 0)
+            if (library.FrameworkReferences.Count > 0)
             {
                 var ordered = library.FrameworkReferences.OrderBy(reference => reference, StringComparer.Ordinal);
 
@@ -619,11 +626,13 @@ namespace NuGet.ProjectModel
                 return null;
             }
 
+#pragma warning disable CS0618
             return JsonPackageSpecReader.GetPackageSpec(
                 json,
                 name: null,
                 packageSpecPath: null,
                 snapshotValue: null);
+#pragma warning restore CS0618
         }
 
         private static JProperty WriteProjectFileDependencyGroup(ProjectFileDependencyGroup frameworkInfo)
@@ -638,7 +647,7 @@ namespace NuGet.ProjectModel
             return ReadFileItem(property, json, path => new LockFileItem(path));
         }
 
-        private static T ReadFileItem<T>(string property, JToken json, Func<string, T> factory) where T: LockFileItem
+        private static T ReadFileItem<T>(string property, JToken json, Func<string, T> factory) where T : LockFileItem
         {
             var item = factory(property);
             foreach (var subProperty in json.OfType<JProperty>())
@@ -679,7 +688,7 @@ namespace NuGet.ProjectModel
             foreach (var child in json)
             {
                 var item = readItem(child);
-                if(item != null)
+                if (item != null)
                 {
                     items.Add(item);
                 }

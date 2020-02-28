@@ -20,8 +20,9 @@ namespace NuGet.ProjectModel
 
         private readonly SortedSet<string> _restore = new SortedSet<string>(PathUtility.GetStringComparerBasedOnOS());
         private readonly SortedDictionary<string, PackageSpec> _projects = new SortedDictionary<string, PackageSpec>(PathUtility.GetStringComparerBasedOnOS());
+        private readonly Lazy<JObject> _json;
 
-        private const int _version = 1;
+        private const int Version = 1;
 
         private readonly bool _isReadOnly;
 
@@ -30,6 +31,7 @@ namespace NuGet.ProjectModel
             return string.Format(DGSpecFileNameExtension, projectName);
         }
 
+        [Obsolete("This constructor is obsolete and will be removed in a future release.")]
         public DependencyGraphSpec(JObject json)
         {
             if (json == null)
@@ -38,8 +40,7 @@ namespace NuGet.ProjectModel
             }
 
             ParseJson(json);
-
-            Json = json;
+            _json = new Lazy<JObject>(() => json);
         }
 
         public DependencyGraphSpec()
@@ -49,8 +50,13 @@ namespace NuGet.ProjectModel
 
         public DependencyGraphSpec(bool isReadOnly)
         {
-            Json = new JObject();
+            _json = new Lazy<JObject>(() => new JObject());
             _isReadOnly = isReadOnly;
+        }
+
+        private DependencyGraphSpec(string filePath)
+        {
+            _json = new Lazy<JObject>(() => ReadJson(filePath));
         }
 
         /// <summary>
@@ -78,7 +84,8 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// File json.
         /// </summary>
-        public JObject Json { get; }
+        [Obsolete("This property is obsolete and will be removed in a future release.")]
+        public JObject Json { get => _json.Value; }
 
         public PackageSpec GetProjectSpec(string projectUniqueName)
         {
@@ -135,6 +142,39 @@ namespace NuGet.ProjectModel
             }
 
             return projectDependencyGraphSpec;
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="DependencyGraphSpec" /> from a project name and project closure.
+        /// </summary>
+        /// <param name="projectUniqueName">The project's unique name.</param>
+        /// <param name="closure">The project's closure</param>
+        /// <returns>A <see cref="DependencyGraphSpec" />.</returns>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="projectUniqueName" />
+        /// is <c>null</c> or an empty string.</exception>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="closure" /> is <c>null</c>.</exception>
+        public DependencyGraphSpec CreateFromClosure(string projectUniqueName, IReadOnlyList<PackageSpec> closure)
+        {
+            if (string.IsNullOrEmpty(projectUniqueName))
+            {
+                throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(projectUniqueName));
+            }
+
+            if (closure == null)
+            {
+                throw new ArgumentNullException(nameof(closure));
+            }
+
+            var dgSpec = new DependencyGraphSpec();
+
+            dgSpec.AddRestore(projectUniqueName);
+
+            foreach (PackageSpec packageSpec in closure)
+            {
+                dgSpec.AddProject(_isReadOnly ? packageSpec : packageSpec.Clone());
+            }
+
+            return dgSpec;
         }
 
         /// <summary>
@@ -201,13 +241,14 @@ namespace NuGet.ProjectModel
         public void AddProject(PackageSpec projectSpec)
         {
             // Find the unique name in the spec, otherwise generate a new one.
-            var projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
+            string projectUniqueName = projectSpec.RestoreMetadata?.ProjectUniqueName
                 ?? Guid.NewGuid().ToString();
 
             if (!_projects.ContainsKey(projectUniqueName))
             {
-                var projectToRestore = projectSpec;
-                if (projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+                PackageSpec projectToRestore = projectSpec;
+
+                if (projectSpec.RestoreMetadata != null && projectSpec.RestoreMetadata.CentralPackageVersionsEnabled)
                 {
                     projectToRestore = ToPackageSpecWithCentralVersionInformation(projectSpec);
                 }
@@ -254,11 +295,59 @@ namespace NuGet.ProjectModel
 
         public static DependencyGraphSpec Load(string path)
         {
-            var json = ReadJson(path);
+            using (var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read))
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+            {
+                var dgspec = new DependencyGraphSpec(path);
+                bool wasObjectRead;
 
-            return Load(json);
+                try
+                {
+                    wasObjectRead = jsonReader.ReadObject(propertyName =>
+                    {
+                        switch (propertyName)
+                        {
+                           case "restore":
+                                jsonReader.ReadObject(restorePropertyName =>
+                                {
+                                    if (!string.IsNullOrEmpty(restorePropertyName))
+                                    {
+                                        dgspec._restore.Add(restorePropertyName);
+                                    }
+                                });
+                                break;
+
+                            case "projects":
+                                jsonReader.ReadObject(projectsPropertyName =>
+                                {
+                                    PackageSpec packageSpec = JsonPackageSpecReader.GetPackageSpec(jsonReader, path);
+
+                                    dgspec._projects.Add(projectsPropertyName, packageSpec);
+                                });
+                                break;
+
+                            default:
+                                jsonReader.Skip();
+                                break;
+                        }
+                    });
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw FileFormatException.Create(ex, path);
+                }
+
+                if (!wasObjectRead || jsonReader.TokenType != JsonToken.EndObject)
+                {
+                    throw new InvalidDataException();
+                }
+
+                return dgspec;
+            }
         }
 
+        [Obsolete("This method is obsolete and will be removed in a future release.")]
         public static DependencyGraphSpec Load(JObject json)
         {
             return new DependencyGraphSpec(json);
@@ -266,22 +355,15 @@ namespace NuGet.ProjectModel
 
         public void Save(string path)
         {
-            var json = GetJson();
-
             using (var fileStream = new FileStream(path, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
+            using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var writer = new RuntimeModel.JsonObjectWriter(jsonWriter))
             {
-                textWriter.Write(json);
+                jsonWriter.Formatting = Formatting.Indented;
+
+                Write(writer, PackageSpecWriter.Write);
             }
-        }
-
-        private string GetJson()
-        {
-            var writer = new RuntimeModel.JsonObjectWriter();
-
-            Write(writer, PackageSpecWriter.Write);
-
-            return writer.GetJson();
         }
 
         private void ParseJson(JObject json)
@@ -298,8 +380,9 @@ namespace NuGet.ProjectModel
                 foreach (var prop in projectsObj.Properties())
                 {
                     var specJson = (JObject)prop.Value;
+#pragma warning disable CS0618
                     var spec = JsonPackageSpecReader.GetPackageSpec(specJson);
-
+#pragma warning restore CS0618
                     _projects.Add(prop.Name, spec);
                 }
             }
@@ -307,22 +390,18 @@ namespace NuGet.ProjectModel
 
         private static JObject ReadJson(string packageSpecPath)
         {
-            JObject json;
-
             using (var stream = new FileStream(packageSpecPath, FileMode.Open, FileAccess.Read, FileShare.Read))
             using (var reader = new StreamReader(stream))
             {
                 try
                 {
-                    json = JsonUtility.LoadJson(reader);
+                    return JsonUtility.LoadJson(reader);
                 }
                 catch (JsonReaderException ex)
                 {
                     throw FileFormatException.Create(ex, packageSpecPath);
                 }
             }
-
-            return json;
         }
 
         public string GetHash()
@@ -337,7 +416,8 @@ namespace NuGet.ProjectModel
 
         private void Write(RuntimeModel.IObjectWriter writer, Action<PackageSpec, RuntimeModel.IObjectWriter> writeAction)
         {
-            writer.WriteNameValue("format", _version);
+            writer.WriteObjectStart();
+            writer.WriteNameValue("format", Version);
 
             writer.WriteObjectStart("restore");
 
@@ -362,6 +442,7 @@ namespace NuGet.ProjectModel
                 writer.WriteObjectEnd();
             }
 
+            writer.WriteObjectEnd();
             writer.WriteObjectEnd();
         }
 

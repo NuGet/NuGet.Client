@@ -185,6 +185,8 @@ namespace NuGet.Commands
                         packagesLockFilePath: null,
                         packagesLockFile: null,
                         projectStyle: _request.ProjectStyle,
+                        dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                        dependencyGraphSpec: _request.DependencyGraphSpec,
                         elapsedTime: restoreTime.Elapsed);
                 }
 
@@ -235,6 +237,8 @@ namespace NuGet.Commands
                             cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
                             packagesLockFilePath: packagesLockFilePath,
                             packagesLockFile: packagesLockFile,
+                            dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                            dependencyGraphSpec: _request.DependencyGraphSpec,
                             projectStyle: _request.ProjectStyle,
                             elapsedTime: restoreTime.Elapsed);
                     }
@@ -392,6 +396,8 @@ namespace NuGet.Commands
                     cacheFilePath,
                     packagesLockFilePath,
                     packagesLockFile,
+                    dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                    dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
             }
@@ -601,13 +607,6 @@ namespace NuGet.Commands
             {
                 cacheFile = new CacheFile(newDgSpecHash);
 
-            }
-
-            // We only persist the dg spec file if it nooped or the dg spec does not exist.
-            var dgPath = NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request);
-            if (dgPath != null && (!noOp || !File.Exists(dgPath)))
-            {
-                NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
 
             // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.

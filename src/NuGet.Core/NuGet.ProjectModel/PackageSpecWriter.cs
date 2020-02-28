@@ -82,16 +82,14 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            var writer = new JsonObjectWriter();
-
-            Write(packageSpec, writer);
-
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
             using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var writer = new JsonObjectWriter(jsonWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-                writer.WriteTo(jsonWriter);
+
+                Write(packageSpec, writer);
             }
         }
 
@@ -144,7 +142,7 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             if (msbuildMetadata.CrossTargeting)
             {
-                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy( c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy(c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
             }
             else
             {
@@ -360,7 +358,7 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteObjectEnd();
-        } 
+        }
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
         {
@@ -479,7 +477,7 @@ namespace NuGet.ProjectModel
             {
                 var version = string.Join(";", dependency.Select(dep => dep.VersionRange).OrderBy(dep => dep.MinVersion).Select(dep => dep.ToNormalizedString()));
 
-                writer.WriteObjectInArrayStart();
+                writer.WriteObjectStart();
                 SetValue(writer, "name", dependency.Key);
                 SetValue(writer, "version", version);
                 writer.WriteObjectEnd();

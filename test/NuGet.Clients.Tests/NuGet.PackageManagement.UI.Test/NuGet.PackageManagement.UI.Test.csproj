@@ -39,7 +39,9 @@
     <Compile Include="PackageLicenseUtilitiesTests.cs" />
     <Compile Include="PackageManagerListItemsTest.cs" />
     <Compile Include="PackageManagerProviderTest.cs" />
+    <Compile Include="TestNuGetUILogger.cs" />
     <Compile Include="TestPackageManagerProviders.cs" />
+    <Compile Include="TestPackageSearchMetadata.cs" />
     <Compile Include="WpfFactAttribute.cs" />
     <Compile Include="WpfFactDiscoverer.cs" />
     <Compile Include="WpfTestCase.cs" />

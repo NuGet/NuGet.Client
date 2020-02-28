@@ -79,7 +79,6 @@ jobs:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
-    DesktopTargetFramework: "net472"
 
   pool:
     name: VSEng-MicroBuildVS2019
@@ -706,7 +705,7 @@ jobs:
     demands: 
     - sh
     - VSTS_OS -equals Mac_Mojave_10.14
-    - Mono -equals 6.4.0
+    - Team -equals NuGet Client Team
 
   steps:
   - task: PowerShell@2

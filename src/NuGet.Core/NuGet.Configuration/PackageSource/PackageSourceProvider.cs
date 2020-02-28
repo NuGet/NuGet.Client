@@ -323,7 +323,7 @@ namespace NuGet.Configuration
             IEnumerable<PackageSource> packageSources = LoadPackageSources();
             foreach (PackageSource packageSource in packageSources)
             {
-                if (packageSource.Name.StartsWith(namePrefix))
+                if (packageSource.Name.StartsWith(namePrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     names.Add(packageSource.Name);
                 }

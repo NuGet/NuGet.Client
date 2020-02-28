@@ -2,301 +2,330 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
-using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace NuGet.RuntimeModel.Test
 {
-    public class JsonObjectWriterTests
+    public class JsonObjectWriterTests : IDisposable
     {
+        private const string PropertyName = "a";
+
+        private readonly StringWriter _stringWriter;
+        private readonly JsonTextWriter _jsonWriter;
         private readonly JsonObjectWriter _writer;
 
         public JsonObjectWriterTests()
         {
-            _writer = new JsonObjectWriter();
+            _stringWriter = new StringWriter();
+            _jsonWriter = new JsonTextWriter(_stringWriter);
+            _writer = new JsonObjectWriter(_jsonWriter);
+        }
+
+        public void Dispose()
+        {
+            _writer.Dispose();
+            ((IDisposable)_jsonWriter).Dispose();
+            _stringWriter.Dispose();
         }
 
         [Fact]
-        public void GetJson_HasDefaultValue()
+        public void Constructor_WhenWriterIsNull_Throws()
         {
-            var actualResult = _writer.GetJson();
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new JsonObjectWriter(writer: null));
 
-            Assert.Equal("{}", actualResult);
+            Assert.Equal("writer", exception.ParamName);
         }
 
         [Fact]
-        public void GetJson()
+        public void Dispose_Always_IsIdempotent()
         {
-            _writer.WriteNameValue("a", 1);
-            _writer.WriteNameValue("B", "C");
-            _writer.WriteNameArray("d", new[] { "e", "f" });
+            _writer.Dispose();
+            _writer.Dispose();
+        }
 
-            _writer.WriteObjectStart("g");
-            _writer.WriteNameValue("h", "i");
+        [Fact]
+        public void WriteObjectStart_WithNoParameters_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectStart());
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithNoParameters_WhenCalled_WritesObjectStart()
+        {
+            Assert.Equal(string.Empty, _stringWriter.ToString());
+
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithWriter_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteObjectStart(name: null));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithWriter_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectStart(PropertyName));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(PropertyName)]
+        public void WriteObjectStart_WithValidName_WritesObjectStart(string name)
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteObjectStart(name);
+
+            Assert.Equal($"{{\"{name}\":{{", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectEnd());
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WithoutObjectStart_Throws()
+        {
+            Assert.Throws<JsonWriterException>(() => _writer.WriteObjectEnd());
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WhenCalled_WritesObjectEnd()
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
             _writer.WriteObjectEnd();
 
-            const string expectedJson = @"{
-  ""a"": 1,
-  ""B"": ""C"",
-  ""d"": [
-    ""e"",
-    ""f""
-  ],
-  ""g"": {
-    ""h"": ""i""
-  }
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
+            Assert.Equal("{}", _stringWriter.ToString());
         }
 
         [Fact]
-        public void GetJObject()
+        public void WriteArrayStart_WhenDisposed_Throws()
         {
-            _writer.WriteNameValue("a", 1);
-            _writer.WriteNameValue("B", "C");
-            _writer.WriteNameArray("d", new[] { "e", "f" });
+            _writer.Dispose();
 
-            _writer.WriteObjectStart("g");
-            _writer.WriteNameValue("h", "i");
-            _writer.WriteObjectEnd();
-
-            var expectedJson = new JObject();
-
-            expectedJson["a"] = 1;
-            expectedJson["B"] = "C";
-            expectedJson["d"] = new JArray("e", "f");
-            expectedJson["g"] = new JObject();
-            expectedJson["g"]["h"] = "i";
-
-            var actualJson = _writer.GetJObject();
-
-            Assert.Equal(expectedJson, actualJson);
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteArrayStart(PropertyName));
         }
 
         [Fact]
-        public void GetJObject_MakesWriterReadOnly()
+        public void WriteArrayStart_WhenNameIsNull_Throws()
         {
-            _writer.GetJObject();
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteArrayStart(name: null));
 
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", 1));
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData(PropertyName)]
+        public void WriteArrayStart_WithValidName_WritesArrayStart(string name)
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteArrayStart(name);
+
+            Assert.Equal($"{{\"{name}\":[", _stringWriter.ToString());
         }
 
         [Fact]
-        public void WriteObjectStart_ThrowsForNullName()
+        public void WriteArrayEnd_WhenDisposed_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteObjectStart(name: null));
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteArrayEnd());
         }
 
         [Fact]
-        public void WriteObjectStart_ThrowsIfReadOnly()
+        public void WriteArrayEnd_WithoutArrayStart_Throws()
         {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectStart("a"));
+            Assert.Throws<JsonWriterException>(() => _writer.WriteArrayEnd());
         }
 
         [Fact]
-        public void WriteObjectStart_SupportsEmptyName()
+        public void WriteArrayEnd_WhenCalled_WritesArrayEnd()
         {
-            _writer.WriteObjectStart(name: "");
-            _writer.WriteObjectEnd();
+            _writer.WriteObjectStart();
+            _writer.WriteArrayStart(PropertyName);
 
-            const string expectedJson = @"{
-  """": {}
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
-        }
-
-        [Fact]
-        public void WriteObjectEnd_ThrowsIfReadOnly()
-        {
-            _writer.WriteObjectStart("a");
-
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
-        }
-
-        [Fact]
-        public void WriteObjectEnd_ThrowsIfCalledOnRoot()
-        {
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: 0));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", 1));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithBoolValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: true));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithBoolValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", true));
-        }
-
-        [Fact]
-        public void WriteArrayStart_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteArrayStart("a"));
-        }
-
-        [Fact]
-        public void WriteArrayEnd_ThrowsIfReadOnly()
-        {
-            _writer.WriteArrayStart("a");
-
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteArrayEnd());
-        }
-
-        [Fact]
-        public void WriteObjectStartParameterless_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectInArrayStart());
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_SupportsEmptyName()
-        {
-            _writer.WriteNameValue(name: "", value: 3);
-
-            const string expectedJson = @"{
-  """": 3
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: "a"));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", "b"));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_SupportsEmptyNameAndEmptyValue()
-        {
-            _writer.WriteNameValue(name: "", value: "");
-
-            const string expectedJson = @"{
-  """": """"
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
-        }
-
-        [Fact]
-        public void WriteNameArray_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameArray(name: null, values: new[] { "b", "c" }));
-        }
-
-        [Fact]
-        public void WriteNameArray_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameArray("a", new[] { "b", "c" }));
-        }
-
-        [Fact]
-        public void WriteNameArray_SupportsEmptyNameAndEmptyValues()
-        {
-            _writer.WriteNameArray(name: "", values: Enumerable.Empty<string>());
-
-            const string expectedJson = @"{
-  """": []
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
-        }
-
-        [Fact]
-        public void WriteNewArray_SupportsEmptyNameAndEmptyValues()
-        {
-            _writer.WriteArrayStart("");
-            _writer.WriteArrayEnd();
-
-            const string expectedJson = @"{
-  """": []
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
-        }
-
-        [Fact]
-        public void WriteNewArray_CanWriteSimpleObjects()
-        {
-            _writer.WriteArrayStart("a");
-
-            _writer.WriteObjectInArrayStart();
-            _writer.WriteNameValue("b", "");
-            _writer.WriteObjectEnd();
-
-            _writer.WriteObjectInArrayStart();
-            _writer.WriteNameValue("c", "");
-            _writer.WriteObjectEnd();
+            Assert.Equal($"{{\"{PropertyName}\":[", _stringWriter.ToString());
 
             _writer.WriteArrayEnd();
 
-            const string expectedJson = @"{
-  ""a"": [
-    {
-      ""b"": """"
-    },
-    {
-      ""c"": """"
-    }
-  ]
-}";
-            var actualJson = _writer.GetJson();
-
-            Assert.Equal(expectedJson, actualJson);
+            Assert.Equal($"{{\"{PropertyName}\":[]", _stringWriter.ToString());
         }
 
-
-        private void MakeReadOnly()
+        [Fact]
+        public void WriteNameValue_WithIntValue_WhenNameIsNull_Throws()
         {
-            _writer.GetJson();
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: 0));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithIntValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: 0));
+        }
+
+        [Theory]
+        [InlineData("", -1)]
+        [InlineData(PropertyName, 1)]
+        public void WriteNameValue_WithIntValue_WithValidName_WritesNameValue(string name, int value)
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNameValue(name, value);
+
+            Assert.Equal($"{{\"{name}\":{value}", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: true));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: true));
+        }
+
+        [Theory]
+        [InlineData("", true)]
+        [InlineData(PropertyName, false)]
+        public void WriteNameValue_WithBoolValue_WithValidName_WritesNameValue(string name, bool value)
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNameValue(name, value);
+
+            Assert.Equal($"{{\"{name}\":{value.ToString().ToLower()}", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNameValue_WithStringValue_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: "a"));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithStringValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: "a"));
+        }
+
+        [Theory]
+        [InlineData("", "")]
+        [InlineData(PropertyName, "b")]
+        public void WriteNameValue_WithStringValue_WithValidName_WritesNameValue(string name, string value)
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNameValue(name, value);
+
+            Assert.Equal($"{{\"{name}\":\"{value}\"", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameArray(name: null, values: new[] { "b", "c" }));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenValuesIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameArray(PropertyName, values: null));
+
+            Assert.Equal("values", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(
+                () => _writer.WriteNameArray(PropertyName, values: Enumerable.Empty<string>()));
+        }
+
+        [Theory]
+        [InlineData("", null)]
+        [InlineData(PropertyName, "b")]
+        public void WriteNameArray_WithValidValues_WritesNameArray(string name, string value)
+        {
+            IEnumerable<string> values = value == null ? Enumerable.Empty<string>() : new[] { value };
+
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNameArray(name, values);
+
+            string stringValues = values.Any() ? $"\"{values.SingleOrDefault()}\"" : "";
+
+            Assert.Equal($"{{\"{name}\":[{stringValues}]", _stringWriter.ToString());
+        }
+
+        [Fact]
+        public void WriteNameArray_WithNullValue_WritesNameArray()
+        {
+            _writer.WriteObjectStart();
+
+            Assert.Equal("{", _stringWriter.ToString());
+
+            _writer.WriteNameArray(PropertyName, new string[] { null });
+
+            Assert.Equal($"{{\"{PropertyName}\":[null]", _stringWriter.ToString());
         }
     }
 }

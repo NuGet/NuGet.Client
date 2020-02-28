@@ -9,7 +9,7 @@
 <#
     string InitCaps(string input)
     {
-        string output = input.Substring(0,1).ToUpper() + input.Substring(1);
+        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
         return output;
     }
 
@@ -20,7 +20,7 @@
 
     string GetProperty(XElement element)
     {
-        switch  (element.Name.LocalName)
+        switch (element.Name.LocalName)
         {
             case "SingleValueOption":
                 return "Option";
@@ -29,7 +29,7 @@
             case "Argument":
                 return "Argument";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
@@ -44,12 +44,12 @@
             case "Value":
                 return "Value";
             default:
-                return "Unknown Element Type" + element.Name.LocalName;
+                return "Unknown Element Type " + element.Name.LocalName;
         }
     }
 
-    var commandFile = this.Host.ResolvePath("..\\..\\NuGet.CommandLine.XPlat\\Commands\\Commands.xml");
-    var commands = XDocument.Load(commandFile);
+    string commandFile = this.Host.ResolvePath("..\\..\\NuGet.CommandLine.XPlat\\Commands\\Commands.xml");
+    XDocument commands = XDocument.Load(commandFile);
 #>
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -66,23 +66,23 @@ namespace NuGet.Commands
 {
 <#
     // VerbNounArgs class
-     foreach (var verb in commands.Descendants(XName.Get("Verb","")))
+     foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
      {
-        var verbName = verb.Attribute(XName.Get("Name", "")).Value;
-        var verbFormalName = InitCaps(verbName);
-        foreach (var noun in verb.Descendants(XName.Get("Noun")))
+        string verbName = verb.Attribute(XName.Get("Name", "")).Value;
+        string verbFormalName = InitCaps(verbName);
+        foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
         {
-            var nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
-            var nounFormalName = InitCaps(nounName);
+            string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
+            string nounFormalName = InitCaps(nounName);
 #>
     public partial class <#= verbFormalName #><#= nounFormalName #>Args
     {
 <#
-            foreach (var option in noun.Descendants())
+            foreach (XElement option in noun.Descendants())
             {
-                var optionName = option.Attribute(XName.Get("Name", "")).Value;
-                var optionType = option.Attribute(XName.Get("Type", ""))?.Value;
-                var optionFormalName = InitCaps(optionName.Replace("-",""));
+                string optionName = option.Attribute(XName.Get("Name", "")).Value;
+                string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
+                string optionFormalName = InitCaps(optionName.Replace("-",""));
                 if (IsArgument(GetProperty(option)))
                 {
 #>
