@@ -46,7 +46,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Dynamic.Runtime" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

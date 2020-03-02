@@ -20,30 +20,31 @@
       <HintPath>$(EnlistmentRoot)\packages\microsoft.build\15.1.262-preview5\lib\net46\Microsoft.Build.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" Version="$(VSServicesVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="$(VSServicesVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="$(VSServicesVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" Version="15.0.25123-Dev15Preview">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" Version="16.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.Telemetry" Version="16.3.2" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Data" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" Version="$(VSComponentsVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" Version="$(VSFrameworkVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading" Version="$(VSThreadingVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj" Version="7.0.3300" />
-    <PackageReference Include="System.Collections.Immutable" Version="1.5.0" />
+    <PackageReference Include="Microsoft.TeamFoundationServer.ExtendedClient" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
+    <PackageReference Include="Microsoft.VisualStudio.CoreUtility" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.StandardClassification" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.Client" />
+    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.Logic" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI" />
+    <PackageReference Include="Microsoft.VisualStudio.Text.UI.Wpf" />
+    <PackageReference Include="Microsoft.VisualStudio.ImageCatalog" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading" />
+    <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="VSLangProj" />
+    <PackageReference Include="System.Collections.Immutable" />
+    <PackageReference Include="EnvDTE80" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />  
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />
@@ -51,11 +52,6 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="WindowsBase" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="EnvDTE80" Version="8.0.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30111" />
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.PackageManagement\NuGet.PackageManagement.csproj" />

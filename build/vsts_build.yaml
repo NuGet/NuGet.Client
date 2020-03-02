@@ -190,6 +190,16 @@ jobs:
       msbuildVersion: "16.0"
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
+  
+  - task: MSBuild@1
+    displayName: "Ensure package versions are declared in packages.targets"
+    continueOnError: "false"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
+    condition: "succeeded()"
+
 
   - task: MSBuild@1	
     displayName: "Localize Assemblies"	
