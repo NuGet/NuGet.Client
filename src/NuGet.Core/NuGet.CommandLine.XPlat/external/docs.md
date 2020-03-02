@@ -1,10 +1,10 @@
     
-
+---file:/dotnet/core/tools/dotnet-nuget-add-source
 ---
 title: dotnet nuget add source command
 description: The `dotnet nuget add source` command adds a new package source to your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget add source
 
@@ -89,12 +89,12 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
     
-
+---file:/dotnet/core/tools/dotnet-nuget-disable-source
 ---
 title: dotnet nuget disable source command
 description: The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget disable source
 
@@ -142,12 +142,12 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
     
-
+---file:/dotnet/core/tools/dotnet-nuget-enable-source
 ---
 title: dotnet nuget enable source command
 description: The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget enable source
 
@@ -195,12 +195,12 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
     
-
+---file:/dotnet/core/tools/dotnet-nuget-list-source
 ---
 title: dotnet nuget list source command
 description: The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget list source
 
@@ -245,12 +245,12 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
     
-
+---file:/dotnet/core/tools/dotnet-nuget-remove-source
 ---
 title: dotnet nuget remove source command
 description: The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget remove source
 
@@ -298,12 +298,12 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
     
-
+---file:/dotnet/core/tools/dotnet-nuget-update-source
 ---
 title: dotnet nuget update source command
 description: The `dotnet nuget update source` command updates an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 02/28/2020
+ms.date: 03/02/2020
 ---
 # dotnet nuget update source
 

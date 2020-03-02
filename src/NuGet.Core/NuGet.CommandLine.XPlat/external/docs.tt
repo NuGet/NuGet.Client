@@ -137,7 +137,7 @@
             string commandSyntax = commandSyntaxBuilder.ToString();
 #>
     
-
+---file:/dotnet/core/tools/dotnet-nuget-<#= verbFormalName #>-<#= nounFormalName #>
 ---
 title: dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command
 description: The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
