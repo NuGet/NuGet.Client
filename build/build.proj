@@ -417,24 +417,23 @@
   </Target>
 
 
-
+  <!--
+    ============================================================
+    Generate documentation for source projects
+    ============================================================
+  -->
   <UsingTask AssemblyFile="$(RepositoryRootDirectory)\tools-local\doc.tasks\bin\Debug\netstandard2.0\doc.tasks.dll" TaskName="NuGetTasks.GenerateMarkdownDoc" />
   <Target Name="GenerateDocs">
-    <Message Text="@(AllSolutionProjects)" Importance="High" />
-
     <XmlPeek
       Query="/Project/PropertyGroup/Description"
       XmlInputPath="%(AllSolutionProjects.Identity)">
        <Output TaskParameter="Result" ItemName="ProjectDescriptions" />
     </XmlPeek>
 
-    <Message Text="@(ProjectDescriptions)" Importance="High" />
-
     <GenerateMarkdownDoc
       ProjectFiles="@(AllSolutionProjects)"
-      OutputFile="$(RepositoryRootDirectory)\docs\overview.md"
+      OutputFile="$(RepositoryRootDirectory)\artifacts\docs-generated\overview.md"
     />
   </Target>
-
 
 </Project>
