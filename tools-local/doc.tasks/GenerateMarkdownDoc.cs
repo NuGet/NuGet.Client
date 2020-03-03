@@ -3,13 +3,12 @@ using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 
-namespace doc.tasks
+namespace NuGetTasks
 {
-    public class MarkdownDocTask : Task
+    public class GenerateMarkdownDoc : Task
     {
         public ITaskItem[] ProjectFiles { get; set; }
         public ITaskItem[] Descriptions { get; set; }
-
         public ITaskItem OutputFile { get; set; }
 
         public override bool Execute()
@@ -19,16 +18,25 @@ namespace doc.tasks
                 throw new ArgumentException("List doesn't match");
             }
 
-            using (var file = new StreamWriter(OutputFile.GetMetadata("Identity")))
+            var outputFilePath = OutputFile.GetMetadata("Identity");
+
+            Log.LogMessage(MessageImportance.High, "Creating directories");
+            Directory.CreateDirectory(outputFilePath);
+
+            Log.LogMessage(MessageImportance.High, "Creating documentation");
+            using (var file = new StreamWriter(outputFilePath))
             {
+                file.WriteLine("## NuGet Project Overview\n\n");
+
                 for (int i = 0; i < ProjectFiles.Length; i++)
                 {
                     var project = ProjectFiles[i];
                     var desc = Descriptions[i];
 
-                    file.WriteLine($"Project: {project.ItemSpec} {desc.GetMetadata("Identity")}");
+                    file.WriteLine($"- Project: {project.ItemSpec} {desc.GetMetadata("Identity")}");
                 }
             }
+            Log.LogMessage(MessageImportance.High, "Documentation complete");
 
             return true;
         }
