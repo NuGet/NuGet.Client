@@ -415,4 +415,26 @@
     <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' == '0' " Importance="High" />
     <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' == '0' " Importance="High" />
   </Target>
+
+
+
+  <UsingTask AssemblyFile="doc.tasks.dll" TaskName="SimpleTask.SetEnvironmentVariable" />
+
+  <Target Name="GenerateDocs">
+
+    <Message Text="@(AllSolutionProjects)" Importance="High" />
+
+    <XmlPeek
+      Query="/Project/PropertyGroup/Description"
+      XmlInputPath="%(AllSolutionProjects.Identity)">
+       <Output TaskParameter="Result" ItemName="ProjectDescriptions" />
+    </XmlPeek>
+
+    <Message Text="@(ProjectDescriptions)" Importance="High" />
+
+
+
+  </Target>
+
+
 </Project>
