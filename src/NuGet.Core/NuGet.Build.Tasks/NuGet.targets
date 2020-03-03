@@ -58,7 +58,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
     <!-- Flag if the Central package file is enabled -->
-    <ManagePackageVersionsCentrally Condition="'$(ManagePackageVersionsCentrally)' == ''">false</ManagePackageVersionsCentrally>
     <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
 
