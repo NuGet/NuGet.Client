@@ -424,12 +424,6 @@
   -->
   <UsingTask AssemblyFile="$(RepositoryRootDirectory)\tools-local\doc.tasks\bin\Debug\netstandard2.0\doc.tasks.dll" TaskName="NuGetTasks.GenerateMarkdownDoc" />
   <Target Name="GenerateDocs">
-    <XmlPeek
-      Query="/Project/PropertyGroup/Description"
-      XmlInputPath="%(AllSolutionProjects.Identity)">
-       <Output TaskParameter="Result" ItemName="ProjectDescriptions" />
-    </XmlPeek>
-
     <GenerateMarkdownDoc
       ProjectFiles="@(AllSolutionProjects)"
       OutputFile="$(RepositoryRootDirectory)\artifacts\docs-generated\overview.md"
