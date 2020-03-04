@@ -518,8 +518,6 @@ namespace NuGet.Frameworks
                     break;
                 case "netcoreapp5.0":
                 case "netcoreapp50":
-                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp50;
-                    break;
                 case "net5.0":
                 case "net50":
                     framework = FrameworkConstants.CommonFrameworks.Net50;

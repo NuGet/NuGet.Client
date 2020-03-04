@@ -189,8 +189,6 @@ namespace NuGet.Frameworks
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 0, 0, 0));
             public static readonly NuGetFramework NetCoreApp31
                 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, new Version(3, 1, 0, 0));
-            public static readonly NuGetFramework NetCoreApp50
-                = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
 
             // .NET 5.0 and later has NetCoreApp identifier
             public static readonly NuGetFramework Net50 = new NuGetFramework(FrameworkIdentifiers.NetCoreApp, Version5);
