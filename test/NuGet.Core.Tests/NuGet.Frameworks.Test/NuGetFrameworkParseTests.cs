@@ -238,9 +238,9 @@ namespace NuGet.Test
 
         [Theory]
         // Net5.0 ERA
-        [InlineData("net5.0", ".NETFramework,Version=v5.0")]
-        [InlineData("net10.1.2.3", ".NETFramework,Version=v10.1.2.3")]
-        [InlineData("netcoreapp5.0", ".NETFramework,Version=v5.0")]
+        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
+        [InlineData("net10.1.2.3", ".NETCoreApp,Version=v10.1.2.3")]
+        [InlineData("netcoreapp5.0", ".NETCoreApp,Version=v5.0")]
 
         // Pre-Net5.0 ERA
         [InlineData("net45", ".NETFramework,Version=v4.5")]

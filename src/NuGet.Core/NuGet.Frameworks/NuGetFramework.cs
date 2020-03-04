@@ -122,7 +122,7 @@ namespace NuGet.Frameworks
 
             if (framework.IsSpecificFramework)
             {
-                var parts = new List<string>(3) { GetFrameworkIdentifier() };
+                var parts = new List<string>(3) { Framework };
 
                 parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
 
