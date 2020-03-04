@@ -211,12 +211,12 @@ namespace NuGet.Frameworks
                                     }
                                     else
                                     {
-                                        result = new NuGetFramework(framework, version, profileShort, isInvalid: true);
+                                        result = new NuGetFramework(framework, version, profileShort.ToLower(), isInvalid: true);
                                     }
                                 }
                                 else
                                 {
-                                    result = new NuGetFramework(framework, version, profileShort);
+                                    result = new NuGetFramework(framework, version, string.Empty);
                                 }
                             }
                             else
@@ -244,7 +244,6 @@ namespace NuGet.Frameworks
                                         }
                                         else
                                         {
-                                            // TODO: 7 tests break if we mark this invalid here.  but we should, shouldn't we?
                                             result = new NuGetFramework(framework, version, profileShort);
                                         }
                                     }

@@ -255,11 +255,6 @@ namespace NuGet.Common
         NU1702 = 1702,
 
         /// <summary>
-        /// FrameworkReference for WindowsDesktop used by 5.0era tfms.
-        /// </summary>
-        NU1703 = 1703,
-
-        /// <summary>
         /// Feed error converted to a warning when ignoreFailedSources is true.
         /// </summary>
         NU1801 = 1801,

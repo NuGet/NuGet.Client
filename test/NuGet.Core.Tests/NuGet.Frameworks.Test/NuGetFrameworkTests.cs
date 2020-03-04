@@ -13,6 +13,7 @@ namespace NuGet.Test
         [Theory]
         [InlineData("net45", "net45")]
         [InlineData("net5.0", "net5.0")]
+        [InlineData("net50", "net5.0")]
         [InlineData("portable-net45+win8+monoandroid", "portable-net45+win8")]
         [InlineData("portable-net45+win8+xamarin.ios", "portable-net45+win8")]
         [InlineData("portable-net45+win8", "portable-net45+win8")]

@@ -37,7 +37,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Allowed list of profiles in Net5.0ERA
         /// </summary>
-        public static HashSet<string> FrameworkProfiles
+        internal static HashSet<string> FrameworkProfiles
             = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
                 { };
 
@@ -95,7 +95,6 @@ namespace NuGet.Frameworks
             public static readonly NuGetFramework Net461 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 1, 0));
             public static readonly NuGetFramework Net462 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 2, 0));
             public static readonly NuGetFramework Net463 = new NuGetFramework(FrameworkIdentifiers.Net, new Version(4, 6, 3, 0));
-
 
             public static readonly NuGetFramework NetCore45 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 0, 0));
             public static readonly NuGetFramework NetCore451 = new NuGetFramework(FrameworkIdentifiers.NetCore, new Version(4, 5, 1, 0));

@@ -1475,15 +1475,6 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package &apos;{0}&apos; was restored using a targetFramework with a FrameworkReference in &apos;{2}&apos; instead of the project target framework &apos;{1}&apos;. This package may not be fully compatible with your project..
-        /// </summary>
-        internal static string Log_UsingWindowsDesktopFrameworkRefWarning {
-            get {
-                return ResourceManager.GetString("Log_UsingWindowsDesktopFrameworkRefWarning", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Version conflict detected for {0}. Install/reference {1} directly to project {2} to resolve this issue..
         /// </summary>
         internal static string Log_VersionConflict {

@@ -178,10 +178,6 @@ namespace NuGet.Commands
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
 
-                // Check if warnings should be shown for this targetFramework if a package is used with a FrameworkRef pulling in WPF or WinForms
-                bool warnFor30FrameworkRefs = target.TargetFramework.IsNet5Era
-                    && !StringComparer.OrdinalIgnoreCase.Equals(target.TargetFramework.Profile, FrameworkConstants.PlatformIdentifiers.Windows);
-
                 foreach (var graphItem in targetGraph.Flattened.OrderBy(x => x.Key))
                 {
                     var library = graphItem.Key;
@@ -259,43 +255,6 @@ namespace NuGet.Commands
 
                                 var logMessage = RestoreLogMessage.CreateWarning(
                                     NuGetLogCode.NU1701,
-                                    message,
-                                    library.Name,
-                                    targetGraph.TargetGraphName);
-
-                                _logger.Log(logMessage);
-
-                                // only log the warning once per library
-                                librariesWithWarnings.Add(library);
-                            }
-                        }
-
-                        if (warnFor30FrameworkRefs && targetLibrary.FrameworkReferences.Any())
-                        {
-                            bool referencedMicrosoftWindowsDesktopApp = false;
-
-                            foreach (var frameworkReference in targetLibrary.FrameworkReferences)
-                            {
-                                if (frameworkReference.StartsWith("Microsoft.WindowsDesktop.App|"))
-                                {
-                                    referencedMicrosoftWindowsDesktopApp = true;
-                                }
-                            }
-
-                            if (referencedMicrosoftWindowsDesktopApp)
-                            {
-                                var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
-
-                                var libraryName = DiagnosticUtility.FormatIdentity(library);
-
-                                var message = string.Format(CultureInfo.CurrentCulture,
-                                    Strings.Log_UsingWindowsDesktopFrameworkRefWarning,
-                                    libraryName,
-                                    nonFallbackFramework,
-                                    "Microsoft.WindowsDesktop.App");
-
-                                var logMessage = RestoreLogMessage.CreateWarning(
-                                    NuGetLogCode.NU1703,
                                     message,
                                     library.Name,
                                     targetGraph.TargetGraphName);

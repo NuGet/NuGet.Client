@@ -181,26 +181,20 @@ namespace NuGet.Frameworks
 
         private static bool IsCompatibleWithTargetCore(NuGetFramework target, NuGetFramework candidate)
         {
-            return (
-                NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
-                && IsVersionCompatible(target.Version, candidate.Version)
-                &&
-                    (
-                        // profile comparison rules for Net5Era
-                        (
-                            target.IsNet5Era
-                         && !target.IsInvalid
-                         && !candidate.IsInvalid
-                         && (StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile) || !candidate.HasProfile)
-                        )
-                        ||
-                        // earlier profile comparison rules
-                        (
-                            !target.IsNet5Era
-                         && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile)
-                        )
-                    )
-                );
+            if (target.IsNet5Era)
+            {
+                return NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                    && IsVersionCompatible(target.Version, candidate.Version)
+                    && (!candidate.HasProfile || StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile))
+                    && !target.IsUnsupported
+                    && !candidate.IsUnsupported;
+            }
+            else
+            {
+                return NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
+                    && IsVersionCompatible(target.Version, candidate.Version)
+                    && StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile);
+            }
         }
 
         private static bool IsVersionCompatible(Version target, Version candidate)

@@ -41,11 +41,13 @@ namespace NuGet.Frameworks
         {
         }
 
-        public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, bool isInvalid)
+        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, bool isInvalid)
             : this(frameworkIdentifier, frameworkVersion, frameworkProfile)
         {
             IsInvalid = isInvalid;
         }
+
+        private const int Version5 = 5;
 
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
         {
@@ -62,7 +64,7 @@ namespace NuGet.Frameworks
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
-            IsNet5Era = (_frameworkVersion.Major >= 5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
+            IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
         }
 
         /// <summary>
@@ -120,7 +122,7 @@ namespace NuGet.Frameworks
 
             if (framework.IsSpecificFramework)
             {
-                var parts = new List<string>(3) { framework.IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : framework.Framework };
+                var parts = new List<string>(3) { GetFrameworkIdentifier() };
 
                 parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
 
@@ -151,7 +153,15 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this NuGetFramework is not valid and therefore not functional.
         /// </summary>
-        public bool IsInvalid { get; private set; }
+        private bool IsInvalid { get; set; }
+
+        /// <summary>
+        /// Helper that is .NET 5 Era aware to replace identifier when appropriate
+        /// </summary>
+        private string GetFrameworkIdentifier()
+        {
+            return IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : Framework;
+        }
 
         /// <summary>
         /// Creates the shortened version of the framework using the given mappings.
@@ -169,7 +179,7 @@ namespace NuGet.Frameworks
 
                 // get the framework
                 if (!mappings.TryGetShortIdentifier(
-                    framework.IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : framework.Framework,
+                    GetFrameworkIdentifier(),
                     out shortFramework))
                 {
                     shortFramework = GetLettersAndDigitsOnly(framework.Framework);
@@ -321,7 +331,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsUnsupported
         {
-            get { return UnsupportedFramework.Equals(this); }
+            get { return IsInvalid || UnsupportedFramework.Equals(this); }
         }
 
         /// <summary>
@@ -351,10 +361,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// True if this framework is Net5 or later, until we invent something new.
         /// </summary>
-        public bool IsNet5Era
-        {
-            get; private set;
-        }
+        internal bool IsNet5Era { get; set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version

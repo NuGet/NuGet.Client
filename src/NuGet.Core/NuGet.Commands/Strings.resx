@@ -202,9 +202,6 @@
   <data name="Log_ImportsFallbackWarning" xml:space="preserve">
     <value>Package '{0}' was restored using '{1}' instead of the project target framework '{2}'. This package may not be fully compatible with your project.</value>
   </data>
-  <data name="Log_UsingWindowsDesktopFrameworkRefWarning" xml:space="preserve">
-    <value>Package '{0}' was restored using a targetFramework with a FrameworkReference in '{2}' instead of the project target framework '{1}'. This package may not be fully compatible with your project.</value>
-  </data>
   <data name="Log_CycleDetected" xml:space="preserve">
     <value>Cycle detected.</value>
   </data>

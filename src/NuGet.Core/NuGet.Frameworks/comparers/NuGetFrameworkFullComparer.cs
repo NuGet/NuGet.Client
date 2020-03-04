@@ -33,7 +33,7 @@ namespace NuGet.Frameworks
             return x.Version == y.Version
                    && StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
                    && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
-                   && !x.IsInvalid;
+                   && !x.IsUnsupported;
         }
 
         public int GetHashCode(NuGetFramework obj)
