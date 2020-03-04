@@ -211,7 +211,7 @@ namespace NuGet.Frameworks
                                     }
                                     else
                                     {
-                                        result = new NuGetFramework(framework, version, profileShort.ToLower(), isInvalid: true);
+                                        return result; // with result == UnsupportedFramework
                                     }
                                 }
                                 else

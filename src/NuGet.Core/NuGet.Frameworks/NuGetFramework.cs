@@ -41,12 +41,6 @@ namespace NuGet.Frameworks
         {
         }
 
-        internal NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile, bool isInvalid)
-            : this(frameworkIdentifier, frameworkVersion, frameworkProfile)
-        {
-            IsInvalid = isInvalid;
-        }
-
         private const int Version5 = 5;
 
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
@@ -149,11 +143,6 @@ namespace NuGet.Frameworks
         {
             return GetShortFolderName(DefaultFrameworkNameProvider.Instance);
         }
-
-        /// <summary>
-        /// True if this NuGetFramework is not valid and therefore not functional.
-        /// </summary>
-        private bool IsInvalid { get; set; }
 
         /// <summary>
         /// Helper that is .NET 5 Era aware to replace identifier when appropriate
@@ -331,7 +320,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool IsUnsupported
         {
-            get { return IsInvalid || UnsupportedFramework.Equals(this); }
+            get { return UnsupportedFramework.Equals(this); }
         }
 
         /// <summary>

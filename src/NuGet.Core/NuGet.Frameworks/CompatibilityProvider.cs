@@ -185,9 +185,7 @@ namespace NuGet.Frameworks
             {
                 return NuGetFramework.FrameworkNameComparer.Equals(target, candidate)
                     && IsVersionCompatible(target.Version, candidate.Version)
-                    && (!candidate.HasProfile || StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile))
-                    && !target.IsUnsupported
-                    && !candidate.IsUnsupported;
+                    && (!candidate.HasProfile || StringComparer.OrdinalIgnoreCase.Equals(target.Profile, candidate.Profile));
             }
             else
             {
