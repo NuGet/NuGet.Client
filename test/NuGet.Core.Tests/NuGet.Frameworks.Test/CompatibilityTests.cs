@@ -42,7 +42,7 @@ namespace NuGet.Test
         [InlineData("net5.1", "netcoreapp3.1", true)]
         [InlineData("net6.0", "netcoreapp3.1", true)]
 
-        // net5.0-<osname> is not yet supported with this change.
+        // net5.0-<osname> is not supported yet
         [InlineData("net5.0-android", "net5.0", false)]
         [InlineData("net5.0-android", "netcoreapp3.1", false)]
         [InlineData("net5.0-ios", "net5.0", false)]
