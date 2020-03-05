@@ -56,7 +56,6 @@ namespace NuGet.Test
         [InlineData("net5.0-madeupname", "net5.0", false)]
         [InlineData("net5.0", "net5.0-madeupname", false)]
 
-
         // dotnet
         [InlineData("dotnet", "dotnet", true)]
         [InlineData("dotnet5.1", "dotnet", true)]
