@@ -95,7 +95,7 @@ namespace NuGet.Test.Utility
         /// <param name="path"></param>
         /// <param name="searchPattern"><see cref="System.IO.Directory.EnumerateFiles(string, string)"/></param>
         /// <returns></returns>
-        public static string GetFirstFileName(string path, string searchPattern)
+        public static string GetFirstFileNameOrNull(string path, string searchPattern)
         {
             IEnumerable<string> files = Directory.EnumerateFiles(path, searchPattern);
 

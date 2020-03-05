@@ -358,7 +358,7 @@ namespace NuGet.Packaging.CrossVerify.Verify.Test
             string caseName = TestPackages.Package1.ToString();
 
             var signedPackageFolder = Path.Combine(dir, caseName, "package");
-            var signedPackagePath = TestFileSystemUtility.GetFirstFileName(signedPackageFolder, "*.nupkg");
+            var signedPackagePath = TestFileSystemUtility.GetFirstFileNameOrNull(signedPackageFolder, "*.nupkg");
 
             using (FileStream stream = File.OpenRead(signedPackagePath))
             using (var reader = new PackageArchiveReader(stream))

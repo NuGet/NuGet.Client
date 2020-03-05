@@ -16,7 +16,7 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
     public class GenerateSignedPackages
     {
         private readonly GenerateFixture _generateFixture;
-        private string _directoryPath;
+        private readonly string _directoryPath;
 
         private readonly SigningTestFixture _signingTestFixture_Author;
         private readonly TrustedTestCert<TestCertificate> _authorSignningCert;
@@ -396,6 +396,8 @@ namespace NuGet.Packaging.CrossVerify.Generate.Test
                         nupkg,
                         packagePath,
                         timestampService.Url);
+
+                    Assert.True(File.Exists(signedPackagePath));
                 }
             }
         }
