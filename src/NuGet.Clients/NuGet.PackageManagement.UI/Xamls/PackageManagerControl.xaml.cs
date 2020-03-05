@@ -97,6 +97,7 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
+        private readonly Stopwatch _sinceUserAction;
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -107,6 +108,7 @@ namespace NuGet.PackageManagement.UI
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
             _sinceLastRefresh = Stopwatch.StartNew();
+            _sinceUserAction = new Stopwatch();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -322,7 +324,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, TimeSpan? timeSinceLastUserAction = null)
         {
             TelemetryActivity.EmitTelemetryEvent(
                                 new PackageManagerUIRefreshEvent(
@@ -331,7 +333,8 @@ namespace NuGet.PackageManagement.UI
                                     refreshOperationSource,
                                     status,
                                     _topPanel.Filter.ToString(),
-                                    timeSpan));
+                                    timeSpan,
+                                    timeSinceLastUserAction));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -344,7 +347,7 @@ namespace NuGet.PackageManagement.UI
             }
             return elapsed;
         }
-
+      
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -998,12 +1001,14 @@ namespace NuGet.PackageManagement.UI
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
+            RestartUserActionClock();
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
+                var timeSinceLastUserAction = GetTimeSinceLastUserAction();
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, timeSinceLastUserAction);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
@@ -1369,6 +1374,16 @@ namespace NuGet.PackageManagement.UI
                             TelemetryUtility.CreateFileAndForgetEventName(
                                 nameof(PackageManagerControl),
                                 nameof(UpgradeButton_Click)));
+        }
+
+        private void RestartUserActionClock()
+        {
+            _sinceUserAction.Restart();
+        }
+
+        private TimeSpan GetTimeSinceLastUserAction()
+        {
+            return _sinceUserAction.Elapsed;
         }
     }
 }
