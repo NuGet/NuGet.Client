@@ -374,7 +374,7 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var actualTfi = actualProjectSpec.TargetFrameworks.Single();
             var actualImports = string.Join(";", actualTfi.Imports.Select(x => x.GetShortFolderName()));
-            Assert.Equal("dotnet5.3;portable-net452+win81", actualImports);
+            Assert.Equal("dotnet53;portable-net452+win81", actualImports);
         }
 
         [Theory]

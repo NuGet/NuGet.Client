@@ -104,7 +104,7 @@ namespace NuGet.Frameworks
                 var versionPart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0));
                 var profilePart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Profile=", StringComparison.OrdinalIgnoreCase) == 0));
 
-                if (!String.IsNullOrEmpty(versionPart))
+                if (!string.IsNullOrEmpty(versionPart))
                 {
                     var versionString = versionPart.Split('=')[1].TrimStart('v');
 
@@ -122,7 +122,7 @@ namespace NuGet.Frameworks
                     }
                 }
 
-                if (!String.IsNullOrEmpty(profilePart))
+                if (!string.IsNullOrEmpty(profilePart))
                 {
                     profile = profilePart.Split('=')[1];
                 }
@@ -196,37 +196,62 @@ namespace NuGet.Frameworks
                             || mappings.TryGetVersion(parts.Item2, out version))
                         {
                             var profileShort = parts.Item3;
-                            string profile = null;
-                            if (!mappings.TryGetProfile(framework, profileShort, out profile))
+                            
+                            if (version.Major >= 5
+                                && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
                             {
-                                profile = profileShort ?? string.Empty;
-                            }
-
-                            if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
-                            {
-                                IEnumerable<NuGetFramework> clientFrameworks = null;
-                                if (!mappings.TryGetPortableFrameworks(profileShort, out clientFrameworks))
+                                // net should be treated as netcoreapp in 5.0 and later
+                                framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
+                                if (!string.IsNullOrEmpty(profileShort))
                                 {
-                                    result = UnsupportedFramework;
-                                }
-                                else
-                                {
-                                    var profileNumber = -1;
-                                    if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                                    bool validProfile = FrameworkConstants.FrameworkProfiles.Contains(profileShort);
+                                    if (validProfile)
                                     {
-                                        var portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
-                                        result = new NuGetFramework(framework, version, portableProfileNumber);
+                                        result = new NuGetFramework(framework, version, profileShort.ToLower());
                                     }
                                     else
                                     {
-                                        // TODO: should this be unsupported?
-                                        result = new NuGetFramework(framework, version, profileShort);
+                                        return result; // with result == UnsupportedFramework
                                     }
+                                }
+                                else
+                                {
+                                    result = new NuGetFramework(framework, version, string.Empty);
                                 }
                             }
                             else
                             {
-                                result = new NuGetFramework(framework, version, profile);
+                                string profile = null;
+                                if (!mappings.TryGetProfile(framework, profileShort, out profile))
+                                {
+                                    profile = profileShort ?? string.Empty;
+                                }
+
+                                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework))
+                                {
+                                    IEnumerable<NuGetFramework> clientFrameworks = null;
+                                    if (!mappings.TryGetPortableFrameworks(profileShort, out clientFrameworks))
+                                    {
+                                        result = UnsupportedFramework;
+                                    }
+                                    else
+                                    {
+                                        var profileNumber = -1;
+                                        if (mappings.TryGetPortableProfile(clientFrameworks, out profileNumber))
+                                        {
+                                            var portableProfileNumber = FrameworkNameHelpers.GetPortableProfileNumberString(profileNumber);
+                                            result = new NuGetFramework(framework, version, portableProfileNumber);
+                                        }
+                                        else
+                                        {
+                                            result = new NuGetFramework(framework, version, profileShort);
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    result = new NuGetFramework(framework, version, profile);
+                                }
                             }
                         }
                     }
@@ -415,31 +440,6 @@ namespace NuGet.Frameworks
                 case "dotnet5.0":
                     framework = FrameworkConstants.CommonFrameworks.DotNet50;
                     break;
-                case "dotnet5.1":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet51;
-                    break;
-                case "dotnet5.2":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet52;
-                    break;
-                case "dotnet5.3":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet53;
-                    break;
-                case "dotnet5.4":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet54;
-                    break;
-                case "dotnet5.5":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet55;
-                    break;
-                case "dotnet5.6":
-                    framework = FrameworkConstants.CommonFrameworks.DotNet56;
-                    break;
-                case "dnx451":
-                    framework = FrameworkConstants.CommonFrameworks.Dnx451;
-                    break;
-                case "dnxcore50":
-                case "dnxcore":
-                    framework = FrameworkConstants.CommonFrameworks.DnxCore50;
-                    break;
                 case "net40":
                 case "net4":
                     framework = FrameworkConstants.CommonFrameworks.Net4;
@@ -508,21 +508,19 @@ namespace NuGet.Frameworks
                 case "netstandard21":
                     framework = FrameworkConstants.CommonFrameworks.NetStandard21;
                     break;
-                case "netstandardapp1.5":
-                case "netstandardapp15":
-                    framework = FrameworkConstants.CommonFrameworks.NetStandardApp15;
+                case "netcoreapp2.1":
+                case "netcoreapp21":
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp21;
                     break;
-                case "netcoreapp1.0":
-                case "netcoreapp10":
-                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+                case "netcoreapp3.1":
+                case "netcoreapp31":
+                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp31;
                     break;
-                case "netcoreapp2.0":
-                case "netcoreapp20":
-                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp20;
-                    break;
-                case "netcoreapp3.0":
-                case "netcoreapp30":
-                    framework = FrameworkConstants.CommonFrameworks.NetCoreApp30;
+                case "netcoreapp5.0":
+                case "netcoreapp50":
+                case "net5.0":
+                case "net50":
+                    framework = FrameworkConstants.CommonFrameworks.Net50;
                     break;
             }
 

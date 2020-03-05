@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -23,7 +23,7 @@ namespace NuGet.Frameworks
         private readonly string _frameworkIdentifier;
         private readonly Version _frameworkVersion;
         private readonly string _frameworkProfile;
-        private const string _portable = "portable";
+        private const string Portable = "portable";
         private int? _hashCode;
 
         public NuGetFramework(NuGetFramework framework)
@@ -41,6 +41,8 @@ namespace NuGet.Frameworks
         {
         }
 
+        private const int Version5 = 5;
+
         public NuGetFramework(string frameworkIdentifier, Version frameworkVersion, string frameworkProfile)
         {
             if (frameworkIdentifier == null)
@@ -56,6 +58,7 @@ namespace NuGet.Frameworks
             _frameworkIdentifier = frameworkIdentifier;
             _frameworkVersion = NormalizeVersion(frameworkVersion);
             _frameworkProfile = frameworkProfile ?? string.Empty;
+            IsNet5Era = (_frameworkVersion.Major >= Version5 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, _frameworkIdentifier));
         }
 
         /// <summary>
@@ -79,7 +82,7 @@ namespace NuGet.Frameworks
         /// </summary>
         public bool HasProfile
         {
-            get { return !String.IsNullOrEmpty(Profile); }
+            get { return !string.IsNullOrEmpty(Profile); }
         }
 
         /// <summary>
@@ -113,20 +116,20 @@ namespace NuGet.Frameworks
 
             if (framework.IsSpecificFramework)
             {
-                var parts = new List<string>(3) { framework.Framework };
+                var parts = new List<string>(3) { Framework };
 
-                parts.Add(String.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
+                parts.Add(string.Format(CultureInfo.InvariantCulture, "Version=v{0}", GetDisplayVersion(framework.Version)));
 
-                if (!String.IsNullOrEmpty(framework.Profile))
+                if (!string.IsNullOrEmpty(framework.Profile))
                 {
-                    parts.Add(String.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
+                    parts.Add(string.Format(CultureInfo.InvariantCulture, "Profile={0}", framework.Profile));
                 }
 
-                result = String.Join(",", parts);
+                result = string.Join(",", parts);
             }
             else
             {
-                result = String.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
+                result = string.Format(CultureInfo.InvariantCulture, "{0},Version=v0.0", framework.Framework);
             }
 
             return result;
@@ -139,6 +142,14 @@ namespace NuGet.Frameworks
         public string GetShortFolderName()
         {
             return GetShortFolderName(DefaultFrameworkNameProvider.Instance);
+        }
+
+        /// <summary>
+        /// Helper that is .NET 5 Era aware to replace identifier when appropriate
+        /// </summary>
+        private string GetFrameworkIdentifier()
+        {
+            return IsNet5Era ? FrameworkConstants.FrameworkIdentifiers.Net : Framework;
         }
 
         /// <summary>
@@ -156,12 +167,14 @@ namespace NuGet.Frameworks
                 var shortFramework = string.Empty;
 
                 // get the framework
-                if (!mappings.TryGetShortIdentifier(framework.Framework, out shortFramework))
+                if (!mappings.TryGetShortIdentifier(
+                    GetFrameworkIdentifier(),
+                    out shortFramework))
                 {
                     shortFramework = GetLettersAndDigitsOnly(framework.Framework);
                 }
 
-                if (String.IsNullOrEmpty(shortFramework))
+                if (string.IsNullOrEmpty(shortFramework))
                 {
                     throw new FrameworkException(string.Format(
                         CultureInfo.CurrentCulture,
@@ -195,7 +208,7 @@ namespace NuGet.Frameworks
                         // sort the PCL frameworks by alphabetical order
                         var sortedFrameworks = required.Select(e => e.GetShortFolderName(mappings)).OrderBy(e => e, StringComparer.OrdinalIgnoreCase).ToList();
 
-                        sb.Append(String.Join("+", sortedFrameworks));
+                        sb.Append(string.Join("+", sortedFrameworks));
                     }
                     else
                     {
@@ -216,7 +229,7 @@ namespace NuGet.Frameworks
                         shortProfile = framework.Profile;
                     }
 
-                    if (!String.IsNullOrEmpty(shortProfile))
+                    if (!string.IsNullOrEmpty(shortProfile))
                     {
                         sb.Append("-");
                         sb.Append(shortProfile);
@@ -234,7 +247,7 @@ namespace NuGet.Frameworks
 
         private static string GetDisplayVersion(Version version)
         {
-            var sb = new StringBuilder(String.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
+            var sb = new StringBuilder(string.Format(CultureInfo.InvariantCulture, "{0}.{1}", version.Major, version.Minor));
 
             if (version.Build > 0
                 || version.Revision > 0)
@@ -256,7 +269,7 @@ namespace NuGet.Frameworks
 
             foreach (var c in s.ToCharArray())
             {
-                if (Char.IsLetterOrDigit(c))
+                if (char.IsLetterOrDigit(c))
                 {
                     sb.Append(c);
                 }
@@ -282,7 +295,7 @@ namespace NuGet.Frameworks
             get
             {
                 // For these frameworks all versions are packages based.
-                if (_packagesBased.Contains(Framework))
+                if (PackagesBased.Contains(Framework))
                 {
                     return true;
                 }
@@ -333,6 +346,11 @@ namespace NuGet.Frameworks
         {
             get { return !IsAgnostic && !IsAny && !IsUnsupported; }
         }
+
+        /// <summary>
+        /// True if this framework is Net5 or later, until we invent something new.
+        /// </summary>
+        internal bool IsNet5Era { get; set; }
 
         /// <summary>
         /// Full framework comparison of the identifier, version, profile, platform, and platform version
@@ -408,7 +426,7 @@ namespace NuGet.Frameworks
         /// <summary>
         /// Frameworks that are packages based across all versions.
         /// </summary>
-        private static readonly SortedSet<string> _packagesBased = new SortedSet<string>(
+        private static readonly SortedSet<string> PackagesBased = new SortedSet<string>(
             new[]
             {
                         FrameworkConstants.FrameworkIdentifiers.DnxCore,

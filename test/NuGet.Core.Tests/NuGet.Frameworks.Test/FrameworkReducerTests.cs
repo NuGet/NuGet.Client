@@ -58,7 +58,7 @@ namespace NuGet.Test
         [InlineData("net461", "dotnet,portable-net45+win8,portable-net45+win8+wpa81", "dotnet")]
         [InlineData("net461", "portable-net45+win8,portable-net45+win8+wpa81", "portable-net45+win8")]
         [InlineData("net461", "portable-net45+win8+wpa81,native", "portable-net45+win8+wpa81")]
-        [InlineData("net7", "dotnet6.0,dotnet5.6,dotnet5.5,dotnet5.4,portable-net45+win8", "dotnet5.6")]
+        [InlineData("net49", "dotnet6.0,dotnet5.6,dotnet5.5,dotnet5.4,portable-net45+win8", "dotnet5.6")]
         // netstandard
         [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard1.4", "netstandard1.4")]
         [InlineData("netstandard1.5", "net4,netstandard7.0,netstandard1.5", "netstandard1.5")]
