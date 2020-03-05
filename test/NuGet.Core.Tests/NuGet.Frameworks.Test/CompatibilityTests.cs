@@ -52,13 +52,9 @@ namespace NuGet.Test
         [InlineData("net5.0-windows", "net5.0", false)]
         [InlineData("net5.0", "net5.0-windows", false)]
 
-        // net5.0 profiles aren't compat with eachother
-        [InlineData("net5.0-windows", "net5.0-ios", false)]
-
         // net5.0 profile names cannot be made up. they will not be compat with anything. profile name will be changed to "Unsupported".
         [InlineData("net5.0-madeupname", "net5.0", false)]
         [InlineData("net5.0", "net5.0-madeupname", false)]
-        [InlineData("net5.0-madeupname", "net5.0-madeupname", false)]
 
 
         // dotnet
