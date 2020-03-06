@@ -97,7 +97,7 @@ namespace NuGet.Console.TestContract
                 return;
             }
 
-            UIInvoke(() => _wpfConsole.Clear());
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _wpfConsole.ClearAsync());
         }
 
         public void RunCommand(string command, TimeSpan timeout)
@@ -114,7 +114,7 @@ namespace NuGet.Console.TestContract
                     var wpfHost = _wpfConsole.Host;
                     if (wpfHost.IsCommandEnabled)
                     {
-                        _wpfConsole.WriteLine(command);
+                        await _wpfConsole.WriteLineAsync(command);
                         await Task.Run(() => wpfHost.Execute(_wpfConsole, command, null));
                     }
                 });
