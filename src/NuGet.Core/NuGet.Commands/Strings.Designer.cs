@@ -854,6 +854,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to All projects are up-to-date for restore..
+        /// </summary>
+        internal static string Log_AllProjectsUpToDate {
+            get {
+                return ResourceManager.GetString("Log_AllProjectsUpToDate", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The expected assets file for {0} does not exist, no-op is not possible. Continuing restore..
         /// </summary>
         internal static string Log_AssetsFileNotOnDisk {
@@ -1228,6 +1237,15 @@ namespace NuGet.Commands {
         internal static string Log_ProjectsIncompatible {
             get {
                 return ResourceManager.GetString("Log_ProjectsIncompatible", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} of {1} projects are up-to-date for restore..
+        /// </summary>
+        internal static string Log_ProjectUpToDateSummary {
+            get {
+                return ResourceManager.GetString("Log_ProjectUpToDateSummary", resourceCulture);
             }
         }
         
