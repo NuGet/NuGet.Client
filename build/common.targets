@@ -46,7 +46,7 @@
     <Import Project="test.targets" />
   </ImportGroup>
 
-  <!-- Centrally managed packages -->
+  <!-- Centrally managed packages. SkipCentralPackageVersions is used to enforce that the packages are centrally managed through a check in build.proj -->
   <ImportGroup Condition=" '$(SkipCentralPackageVersions)' != 'true' ">
     <Import Project="packages.targets" />
   </ImportGroup>
