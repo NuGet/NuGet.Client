@@ -85,11 +85,9 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                // TODO NK - do work.
                 await OutputConsole.WriteLineAsync(Resources.Finished);
                 await OutputConsole.WriteLineAsync(string.Empty);
 
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 // Give the error list focus
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
             });
@@ -128,7 +126,7 @@ namespace NuGetVSExtension
             }
         }
 
-        private int GetMSBuildVerbosityLevel()
+        private Task<int> GetMSBuildVerbosityLevelAsync()
         {
             var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
             var value = properties.Item(MSBuildVerbosityKey).Value;
@@ -146,10 +144,7 @@ namespace NuGetVSExtension
             {
                 await OutputConsole.ActivateAsync();
                 await OutputConsole.ClearAsync();
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _verbosityLevel = GetMSBuildVerbosityLevel();
+                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
         }

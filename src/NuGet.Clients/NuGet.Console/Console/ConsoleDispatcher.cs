@@ -201,7 +201,6 @@ namespace NuGetConsole.Implementation.Console
                                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                                         {
                                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                            // TODO NK - this is probably not necessary
                                             if (task.IsFaulted)
                                             {
                                                 var exception = ExceptionUtilities.Unwrap(task.Exception);

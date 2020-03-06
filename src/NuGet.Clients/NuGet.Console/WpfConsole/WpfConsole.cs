@@ -804,9 +804,9 @@ namespace NuGetConsole.Implementation.Console
                 _impl.WriteLine(text);
             }
 
-            public async Task WriteLineAsync(string format, params object[] args)
+            public Task WriteLineAsync(string format, params object[] args)
             {
-                await WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
+                return WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
             }
 
             public async Task WriteBackspaceAsync()

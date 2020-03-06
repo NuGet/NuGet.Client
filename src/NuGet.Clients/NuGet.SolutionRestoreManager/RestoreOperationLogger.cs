@@ -12,7 +12,6 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
-using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
@@ -241,7 +240,7 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="verbosity">The verbosity level.</param>
         /// <param name="format">The format string.</param>
         /// <param name="args">An array of objects to write using format. </param>
-        public void WriteLine(VerbosityLevel verbosity, string format, params object[] args)
+        public void WriteLine(MSBuildVerbosityLevel verbosity, string format, params object[] args)
         {
             ThreadHelper.ThrowIfNotOnUIThread();
 
@@ -280,7 +279,7 @@ namespace NuGet.SolutionRestoreManager
         /// <summary>
         /// True if this message will be written out.
         /// </summary>
-        public bool ShouldShowMessageAsOutput(VerbosityLevel verbosity)
+        public bool ShouldShowMessageAsOutput(MSBuildVerbosityLevel verbosity)
         {
             return _outputConsole != null && OutputVerbosity >= (int)verbosity;
         }

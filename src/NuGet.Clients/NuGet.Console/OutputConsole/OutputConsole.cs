@@ -81,9 +81,8 @@ namespace NuGetConsole
             }
 
             Start();
-            // TODO NK - Does Start need to be invoked on the UI thread?
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             VsOutputWindowPane.OutputStringThreadSafe(text);
         }
 

@@ -74,7 +74,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override Version Version
         {
-            get { return this.GetType().Assembly.GetName().Version; }
+            get { return GetType().Assembly.GetName().Version; }
         }
 
         #region IHostSupportsInteractiveSession Members
