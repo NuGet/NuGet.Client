@@ -23,10 +23,10 @@ namespace NuGetConsole
 
         public int ConsoleWidth => 120;
 
-        public async Task WriteAsync(string text, Color? foreground, Color? background)
+        public Task WriteAsync(string text, Color? foreground, Color? background)
         {
             // the output window doesn't allow setting text color
-            await WriteAsync(text);
+            return WriteAsync(text);
         }
 
         public Task WriteBackspaceAsync()
@@ -34,14 +34,14 @@ namespace NuGetConsole
             throw new NotSupportedException();
         }
 
-        public async Task WriteLineAsync(string text)
+        public Task WriteLineAsync(string text)
         {
-            await WriteAsync(text + Environment.NewLine);
+            return WriteAsync(text + Environment.NewLine);
         }
 
-        public async Task WriteLineAsync(string format, params object[] args)
+        public Task WriteLineAsync(string format, params object[] args)
         {
-            await WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
+            return WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
         }
 
         public Task WriteProgressAsync(string operation, int percentComplete)

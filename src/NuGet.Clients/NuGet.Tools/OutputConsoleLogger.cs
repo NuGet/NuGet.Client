@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -105,7 +106,7 @@ namespace NuGetVSExtension
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                RunTaskOnUI(() => OutputConsole.WriteLineAsync(message));
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message));
             }
         }
 
@@ -116,18 +117,20 @@ namespace NuGetVSExtension
                 || message.Level == LogLevel.Warning
                 || _verbosityLevel > DefaultVerbosityLevel)
             {
-                RunTaskOnUI(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
                 {
-                    RunTaskOnUI(() => ReportError(message));
+                    ReportError(message);
                 }                    
             }
         }
 
-        private Task<int> GetMSBuildVerbosityLevelAsync()
+        private async Task<int> GetMSBuildVerbosityLevelAsync()
         {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
             var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
             var value = properties.Item(MSBuildVerbosityKey).Value;
             if (value is int)
@@ -152,34 +155,13 @@ namespace NuGetVSExtension
         public void ReportError(string message)
         {
             var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
+            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
         }
 
         public void ReportError(ILogMessage message)
         {
             var errorListEntry = new ErrorListTableEntry(message);
-            RunTaskOnUI(() => ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry));
-        }
-
-        private static void RunTaskOnUI(Action action)
-        {
-            // Optimization for when this is already on the UI thread since
-            // RunAsync cannot be used.
-            if (ThreadHelper.CheckAccess())
-            {
-                // Run directly
-                action();
-            }
-            else
-            {
-                // Run in JTF
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                    action();
-                });
-            }
+            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
         }
     }
 }
