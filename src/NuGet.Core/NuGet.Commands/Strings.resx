@@ -250,11 +250,11 @@
     <value>Found project root directory: {0}.</value>
   </data>
   <data name="Log_RestoreComplete" xml:space="preserve">
-    <value>Restored {0} (in {1})</value>
+    <value>Restored {0} (in {1}).</value>
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailed" xml:space="preserve">
-    <value>Failed to restore {0} (in {1})</value>
+    <value>Failed to restore {0} (in {1}).</value>
     <comment>{0} is the path to the project file.
     {1} is the restore duration.</comment>
   </data>
@@ -876,11 +876,11 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - name</comment>
   </data>
   <data name="Log_RestoreCompleteDotnetTool" xml:space="preserve">
-    <value>Restore completed in {0}.</value>
+    <value>Restored {0} (in {1}).</value>
     <comment>{0} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailedDotnetTool" xml:space="preserve">
-    <value>Failed to restore {0} (in {1})</value>
+    <value>Failed to restore {0} (in {1}).</value>
     <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
