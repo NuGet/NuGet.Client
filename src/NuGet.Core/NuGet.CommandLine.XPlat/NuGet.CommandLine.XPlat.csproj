@@ -18,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
-    <PackageReference Include="System.Runtime.Serialization.Primitives" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" />
+    <PackageReference Include="System.Runtime.Serialization.Primitives" />
   </ItemGroup>
 
   <!-- Microsoft.Build.Locator is needed when debugging, but should not be used in the assemblies we insert.
@@ -27,13 +27,13 @@
   <Choose>
     <When Condition=" '$(Configuration)' == 'Debug' ">
       <ItemGroup>
-        <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" ExcludeAssets="runtime" />
-        <PackageReference Include="Microsoft.Build.Locator" Version="1.2.2" />
+        <PackageReference Include="Microsoft.Build" ExcludeAssets="runtime" />
+        <PackageReference Include="Microsoft.Build.Locator" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
-        <PackageReference Include="Microsoft.Build" Version="$(MicrosoftBuildPackageVersion)" />
+        <PackageReference Include="Microsoft.Build" />
       </ItemGroup>
     </Otherwise>
   </Choose>

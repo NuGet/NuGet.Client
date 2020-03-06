@@ -292,11 +292,11 @@
   </ItemGroup>
   <ItemGroup>
     <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the above no warn. -->
-    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" Version="15.0.198-pre" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
-    <PackageReference Include="VSLangProj110" Version="11.0.61030" />
-    <PackageReference Include="VSLangProj2" Version="7.0.5000" />
-    <PackageReference Include="VSLangProj157" Version="15.7.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="VSLangProj110" />
+    <PackageReference Include="VSLangProj2" />
+    <PackageReference Include="VSLangProj157" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />

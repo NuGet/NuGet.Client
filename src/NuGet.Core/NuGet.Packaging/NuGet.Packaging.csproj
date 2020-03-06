@@ -40,11 +40,11 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Dynamic.Runtime" />
   </ItemGroup>
 
   <ItemGroup>

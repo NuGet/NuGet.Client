@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Parallel" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Diagnostics.TraceSource" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

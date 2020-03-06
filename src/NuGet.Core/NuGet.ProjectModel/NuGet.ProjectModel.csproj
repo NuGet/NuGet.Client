@@ -22,8 +22,8 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="System.Dynamic.Runtime" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Threading.Thread" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Dynamic.Runtime" />
+    <PackageReference Include="System.Threading.Thread" />
   </ItemGroup>
 
   <ItemGroup>

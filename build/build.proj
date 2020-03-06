@@ -19,7 +19,7 @@
   -->
   <Target Name="GetXPLATProjects">
       <MsBuild
-      Projects="@(AllSolutionProjects)"
+      Projects="@(ProductProjects)"
       Targets="GetXPLATProject">
       <Output
           TaskParameter="TargetOutputs"
@@ -320,6 +320,19 @@
                   $(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion)">
     </MSBuild>
+  </Target>
+
+    <!--
+    ============================================================
+    EnsurePackageReferenceVersionsInSolution
+    ============================================================
+  -->
+  <Target Name="EnsurePackageReferenceVersionsInSolution">
+      <MsBuild
+        Projects="@(AllRepoProjects)"
+        Targets="EnsurePackageReferenceVersions"
+        Properties="SkipCentralPackageVersions=true">
+    </MsBuild>
   </Target>
 
   <!--
