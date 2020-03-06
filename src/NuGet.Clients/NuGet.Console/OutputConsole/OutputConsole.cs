@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Windows.Media;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -76,7 +77,7 @@ namespace NuGetConsole
 
         public int ConsoleWidth => DefaultConsoleWidth;
 
-        public void Write(string text)
+        public override async Task WriteAsync(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -85,65 +86,57 @@ namespace NuGetConsole
 
             Start();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                VsOutputWindowPane.OutputStringThreadSafe(text);
-            });
+            VsOutputWindowPane.OutputStringThreadSafe(text);
         }
 
-        public void Write(string text, Color? foreground, Color? background)
+        public async Task WriteAsync(string text, Color? foreground, Color? background)
         {
             // the Output window doesn't allow setting text color
-            Write(text);
+            WriteAsync(text);
         }
 
-        public void WriteBackspace()
+        public Task WriteBackspaceAsync()
         {
             throw new NotSupportedException();
         }
 
-        public void WriteLine(string text)
+        public async Task WriteLine(string text)
         {
-            Write(text + Environment.NewLine);
+            await WriteAsync(text + Environment.NewLine);
         }
 
-        public void WriteLine(string format, params object[] args)
+        public async Task WriteLineAsync(string format, params object[] args)
         {
-            WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
+            await WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
         }
 
-        public void WriteProgress(string operation, int percentComplete)
+        public async Task  WriteProgressAsync(string operation, int percentComplete)
         {
+            return Task.CompletedTask;
         }
 
-        public void Activate()
+        public override async Task ActivateAsync()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _vsUiShell.FindToolWindow(0,
-                    ref GuidList.guidVsWindowKindOutput,
-                    out var toolWindow);
-                toolWindow?.Show();
+            _vsUiShell.FindToolWindow(0,
+                ref GuidList.guidVsWindowKindOutput,
+                out var toolWindow);
+            toolWindow?.Show();
 
-                VsOutputWindowPane.Activate();
-            });
+            VsOutputWindowPane.Activate();
         }
 
-        public void Clear()
+        public override async Task ClearAsync()
         {
             Start();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                VsOutputWindowPane.Activate();
-                VsOutputWindowPane.Clear();
-            });
+            VsOutputWindowPane.Activate();
+            VsOutputWindowPane.Clear();
         }
 
         #endregion IConsole
@@ -197,7 +190,7 @@ namespace NuGetConsole
 
         public void ClearConsole()
         {
-            Clear();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ClearAsync());
         }
 
         #endregion IConsoleDispatcher

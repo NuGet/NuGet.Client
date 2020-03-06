@@ -85,11 +85,11 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                // TODO NK - do work.
+                await OutputConsole.WriteLineAsync(Resources.Finished);
+                await OutputConsole.WriteLineAsync(string.Empty);
+
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                OutputConsole.WriteLine(Resources.Finished);
-                OutputConsole.WriteLine(string.Empty);
-
                 // Give the error list focus
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
             });
@@ -107,7 +107,7 @@ namespace NuGetVSExtension
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                RunTaskOnUI(() => OutputConsole.WriteLine(message));
+                RunTaskOnUI(() => OutputConsole.WriteLineAsync(message));
             }
         }
 
@@ -118,7 +118,7 @@ namespace NuGetVSExtension
                 || message.Level == LogLevel.Warning
                 || _verbosityLevel > DefaultVerbosityLevel)
             {
-                RunTaskOnUI(() => OutputConsole.WriteLine(message.FormatWithCode()));
+                RunTaskOnUI(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
@@ -144,13 +144,12 @@ namespace NuGetVSExtension
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
+                await OutputConsole.ActivateAsync();
+                await OutputConsole.ClearAsync();
+
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 _verbosityLevel = GetMSBuildVerbosityLevel();
-
-                OutputConsole.Activate();
-                OutputConsole.Clear();
-
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
         }

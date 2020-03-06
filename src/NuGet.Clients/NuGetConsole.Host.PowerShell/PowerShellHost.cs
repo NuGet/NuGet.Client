@@ -633,12 +633,12 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         private void WriteErrorLine(string message)
         {
-            ActiveConsole?.Write(message + Environment.NewLine, Colors.White, Colors.DarkRed);
+            ActiveConsole?.WriteAsync(message + Environment.NewLine, Colors.White, Colors.DarkRed);
         }
 
         private void WriteLine(string message = "")
         {
-            ActiveConsole?.WriteLine(message);
+            ActiveConsole?.WriteLineAsync(message);
         }
 
         public string[] GetPackageSources() => _packageSources;

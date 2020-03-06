@@ -21,12 +21,12 @@ namespace NuGetConsole.Host
         public void Initialize(IConsole console)
         {
             // display the error message at the beginning
-            console.Write(PowerShell.Resources.Host_PSNotInstalled, Colors.Red, null);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => console.WriteAsync(PowerShell.Resources.Host_PSNotInstalled, Colors.Red, null));
         }
 
         public string Prompt
         {
-            get { return String.Empty; }
+            get { return string.Empty; }
         }
 
         public bool Execute(IConsole console, string command, object[] inputs)

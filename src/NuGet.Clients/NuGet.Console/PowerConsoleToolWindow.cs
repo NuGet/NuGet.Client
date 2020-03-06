@@ -513,7 +513,7 @@ namespace NuGetConsole.Implementation
                     // hide the text "initialize host" when an error occurs.
                     ConsoleParentPane.NotifyInitializationCompleted();
 
-                    WpfConsole.WriteLine(x.GetBaseException().ToString());
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteLineAsync(x.GetBaseException().ToString()));
                     ExceptionHelper.WriteErrorToActivityLog(x);
                 }
             }
@@ -617,7 +617,7 @@ namespace NuGetConsole.Implementation
         {
             if (ConsoleStatus.IsBusy)
             {
-                VSOutputConsole.WriteLine(Resources.PackageManagerConsoleBusy);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => VSOutputConsole.WriteLineAsync(Resources.PackageManagerConsoleBusy));
                 throw new NotSupportedException(Resources.PackageManagerConsoleBusy);
             }
 
@@ -649,7 +649,7 @@ namespace NuGetConsole.Implementation
 
                 // We should write the command to the console just to imitate typical user action before executing it
                 // Asserts get fired otherwise. Also, the log is displayed in a disorderly fashion
-                powerShellConsole.WriteLine(command);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => powerShellConsole.WriteLineAsync(command));
 
                 return host.Execute(powerShellConsole, command, null);
             }
@@ -682,7 +682,7 @@ namespace NuGetConsole.Implementation
             {
                 if (_previousPosition < _snapshot.Length)
                 {
-                    VSOutputConsole.WriteLine(_snapshot.GetText(_previousPosition, (_snapshot.Length - _previousPosition)));
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => VSOutputConsole.WriteLineAsync(_snapshot.GetText(_previousPosition, (_snapshot.Length - _previousPosition))));
                 }
                 _previousPosition = _snapshot.Length;
             }
@@ -691,7 +691,7 @@ namespace NuGetConsole.Implementation
             WpfConsole.SetExecutionMode(false);
 
             // This does NOT imply that the command succeeded. It just indicates that the console is ready for input now
-            VSOutputConsole.WriteLine(Resources.PackageManagerConsoleCommandExecuted);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => VSOutputConsole.WriteLineAsync(Resources.PackageManagerConsoleCommandExecuted));
             ExecuteEnd.Raise(this, EventArgs.Empty);
         }
 

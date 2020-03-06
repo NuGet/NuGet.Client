@@ -4,8 +4,8 @@
 using System;
 using System.Globalization;
 using System.Windows.Media;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
@@ -36,9 +36,9 @@ namespace NuGetConsole
 
         public int ConsoleWidth => DefaultConsoleWidth;
 
-        public void Activate()
+        public override async Task ActivateAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (_outputWindowPane == null)
             {
@@ -48,20 +48,19 @@ namespace NuGetConsole
             _outputWindowPane?.Activate();
         }
 
-        public void Clear()
+        public override Task ClearAsync()
         {
+            // It's not our job to clear the build console.
+            return Task.CompletedTask;
         }
 
-        public void Write(string text)
+        public override async Task WriteAsync(string text)
         {
             if (_outputWindowPane != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    _outputWindowPane.OutputStringThreadSafe(text);
-                });
+                _outputWindowPane.OutputStringThreadSafe(text);
             }
         }
 
