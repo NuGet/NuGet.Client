@@ -17,10 +17,8 @@ namespace NuGetConsole
     /// This class implements the IConsole interface in order to integrate with the PowerShellHost.
     /// It sends PowerShell host outputs to the VS Output tool window.
     /// </summary>
-    internal sealed class OutputConsole : IConsole, IConsoleDispatcher
+    internal sealed class OutputConsole : SharedOutputConsole, IConsole, IConsoleDispatcher
     {
-        private const int DefaultConsoleWidth = 120;
-
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
         private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
@@ -75,8 +73,6 @@ namespace NuGetConsole
 
         public IConsoleDispatcher Dispatcher => this;
 
-        public int ConsoleWidth => DefaultConsoleWidth;
-
         public override async Task WriteAsync(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -85,36 +81,10 @@ namespace NuGetConsole
             }
 
             Start();
-
+            // TODO NK - Does Start need to be invoked on the UI thread?
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             VsOutputWindowPane.OutputStringThreadSafe(text);
-        }
-
-        public async Task WriteAsync(string text, Color? foreground, Color? background)
-        {
-            // the Output window doesn't allow setting text color
-            WriteAsync(text);
-        }
-
-        public Task WriteBackspaceAsync()
-        {
-            throw new NotSupportedException();
-        }
-
-        public async Task WriteLine(string text)
-        {
-            await WriteAsync(text + Environment.NewLine);
-        }
-
-        public async Task WriteLineAsync(string format, params object[] args)
-        {
-            await WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
-        }
-
-        public async Task  WriteProgressAsync(string operation, int percentComplete)
-        {
-            return Task.CompletedTask;
         }
 
         public override async Task ActivateAsync()
