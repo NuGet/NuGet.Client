@@ -4,7 +4,7 @@
 title: dotnet nuget add source command
 description: The `dotnet nuget add source` command adds a new package source to your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget add source
 
@@ -39,7 +39,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
 - **`-u|--username`**
 
-  UserName to be used when connecting to an authenticated source.
+  Username to be used when connecting to an authenticated source.
 
 - **`-p|--password`**
 
@@ -74,7 +74,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 - Add a source that needs authentication:
 
   ```dotnetcli
-  dotnet nuget add source https://someServer/myTeam -n myTeam -u myUserName -p myPassword --store-password-in-clear-text
+  dotnet nuget add source https://someServer/myTeam -n myTeam -u myUsername -p myPassword --store-password-in-clear-text
   ```
 
 - Add a source that needs authentication (then go install credential provider):
@@ -94,7 +94,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 title: dotnet nuget disable source command
 description: The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget disable source
 
@@ -147,7 +147,7 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 title: dotnet nuget enable source command
 description: The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget enable source
 
@@ -200,7 +200,7 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 title: dotnet nuget list source command
 description: The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget list source
 
@@ -225,7 +225,7 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 
 - **`--format`**
 
-  Applies to the list action. Accepts two values: Detailed (the default) and Short.
+  The format of the list command output: `Detailed` (the default) and `Short`.
 
 - **`--configfile`**
 
@@ -250,7 +250,7 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 title: dotnet nuget remove source command
 description: The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget remove source
 
@@ -303,7 +303,7 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 title: dotnet nuget update source command
 description: The `dotnet nuget update source` command updates an existing source in your NuGet configuration files. 
 author: nugetClient
-ms.date: 03/02/2020
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget update source
 
@@ -339,7 +339,7 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
 - **`-u|--username`**
 
-  UserName to be used when connecting to an authenticated source.
+  Username to be used when connecting to an authenticated source.
 
 - **`-p|--password`**
 
@@ -359,10 +359,10 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
 ## Examples
 
-- Enable a source with name of `mySource`:
+- Update a source with name of `mySource`:
 
   ```dotnetcli
-  dotnet nuget remove source mySource
+  dotnet nuget update source mySource --source c:\packages
   ```
 
 ## See also

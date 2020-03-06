@@ -76,11 +76,11 @@
         }
     }
 
-    string commandFile = this.Host.ResolvePath("..\\..\\NuGet.CommandLine.XPlat\\Commands\\Commands.xml");
+    string commandFile = this.Host.ResolvePath(@"..\..\NuGet.CommandLine.XPlat\Commands\Commands.xml");
     XDocument commands = XDocument.Load(commandFile);
 
     // harvest all strings in strings.resx to string dictionary, so we can use it later in codegen.
-    var stringsResXPath = @"C:\repos\n.client-commandDocsAndCli\src\NuGet.Core\NuGet.CommandLine.XPlat\Strings.resx";
+    string stringsResXPath = this.Host.ResolvePath(@"..\..\NuGet.CommandLine.XPlat\Strings.resx");
     XElement resxRoot = XDocument.Load(stringsResXPath).Root;
     var stringDictionary = new Dictionary<string, string>();
     foreach (XElement data in resxRoot.Descendants())
@@ -142,7 +142,7 @@
 title: dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command
 description: The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
 author: nugetClient
-ms.date: <#= DateTime.Now.ToString("MM/dd/yyyy") #>
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget <#= verbFormalName #> <#= nounFormalName #>
 

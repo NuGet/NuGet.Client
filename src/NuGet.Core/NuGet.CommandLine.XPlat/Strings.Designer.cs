@@ -1455,11 +1455,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UserName to be used when connecting to an authenticated source..
+        ///   Looks up a localized string similar to Username to be used when connecting to an authenticated source..
         /// </summary>
-        internal static string SourcesCommandUserNameDescription {
+        internal static string SourcesCommandUsernameDescription {
             get {
-                return ResourceManager.GetString("SourcesCommandUserNameDescription", resourceCulture);
+                return ResourceManager.GetString("SourcesCommandUsernameDescription", resourceCulture);
             }
         }
         
