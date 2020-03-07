@@ -187,8 +187,7 @@ namespace NuGet.Versioning
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.Major, new NuGetVersion(new Version(0, 0)));
                 }
-                else if (versionString.Length == 3
-                    && firstStarPosition == 0 && lastStarPosition == 2 && versionString[1] == '-')
+                else if (versionString.Equals("*-*"))
                 {
                     range = new FloatRange(NuGetVersionFloatBehavior.AbsoluteLatest, new NuGetVersion("0.0.0-0"), releasePrefix: string.Empty);
                 }
