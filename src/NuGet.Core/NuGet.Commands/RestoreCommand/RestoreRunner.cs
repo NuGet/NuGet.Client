@@ -273,8 +273,8 @@ namespace NuGet.Commands
                         summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
                             Strings.Log_RestoreCompleteDotnetTool :
                             Strings.Log_RestoreComplete,
-                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
-                        summaryRequest.InputPath));
+                        summaryRequest.InputPath,
+                        DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
             else
             {
@@ -283,8 +283,8 @@ namespace NuGet.Commands
                     summaryRequest.Request.ProjectStyle == ProjectStyle.DotnetToolReference ?
                     Strings.Log_RestoreFailedDotnetTool :
                     Strings.Log_RestoreFailed,
-                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime),
-                    summaryRequest.InputPath));
+                    summaryRequest.InputPath,
+                    DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
 
             // Remote the summary messages from the assets file. This will be removed later.

@@ -1286,7 +1286,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore completed in {0} for {1}..
+        ///   Looks up a localized string similar to Restored {0} (in {1})..
         /// </summary>
         internal static string Log_RestoreComplete {
             get {
@@ -1295,7 +1295,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore completed in {0}..
+        ///   Looks up a localized string similar to Restored {0} (in {1})..
         /// </summary>
         internal static string Log_RestoreCompleteDotnetTool {
             get {
@@ -1304,7 +1304,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore failed in {0} for {1}..
+        ///   Looks up a localized string similar to Failed to restore {0} (in {1})..
         /// </summary>
         internal static string Log_RestoreFailed {
             get {
@@ -1313,7 +1313,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Restore failed in {0}..
+        ///   Looks up a localized string similar to Failed to restore {0} (in {1})..
         /// </summary>
         internal static string Log_RestoreFailedDotnetTool {
             get {

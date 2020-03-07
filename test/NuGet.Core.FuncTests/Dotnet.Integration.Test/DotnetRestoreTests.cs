@@ -248,7 +248,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Restore completed", result.AllOutput);
+                Assert.Contains("Restored ", result.AllOutput);
 
                 Directory.Move(projectDirectory, movedDirectory);
 
@@ -256,7 +256,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.DoesNotContain("Restore completed", result.AllOutput);
+                Assert.DoesNotContain("Restored ", result.AllOutput);
 
             }
         }
