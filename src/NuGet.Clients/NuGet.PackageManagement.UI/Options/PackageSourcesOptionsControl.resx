@@ -139,7 +139,7 @@
     <value>0</value>
   </data>
   <data name="HeaderLabel.Text" xml:space="preserve">
-    <value>Available &amp;package sources:</value>
+    <value>Package sources:</value>
   </data>
   <data name="HeaderLabel.TextAlign" type="System.Drawing.ContentAlignment, System.Drawing">
     <value>MiddleLeft</value>
