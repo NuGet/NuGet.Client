@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal(iconUrl, image.UriSource);
         }
 
-        [Fact(Skip = "Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
+        [Fact(Skip="Fails on CI. Tracking issue: https://github.com/NuGet/Home/issues/2474")]
         public void Convert_WithValidImageUrl_DownloadsImage()
         {
             var iconUrl = new Uri("http://fake.com/image.png");
@@ -300,7 +300,7 @@ namespace NuGet.PackageManagement.UI.Test
                 nuspec.Write(writer);
                 writer.Flush();
                 nuspecStream.Position = 0;
-                var pkgBuilder = new PackageBuilder( stream: nuspecStream, basePath: folderPath);
+                var pkgBuilder = new PackageBuilder(stream: nuspecStream, basePath: folderPath);
                 pkgBuilder.Save(nupkgStream);
             }
         }

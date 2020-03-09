@@ -80,8 +80,6 @@ namespace NuGet.PackageManagement.UI
 
             if (IsEmbeddedIconUri(iconUrl))
             {
-                var iconEntry = Uri.UnescapeDataString(iconUrl.Fragment).Substring(1); // skip the '#' in a URI fragment
-                var iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(iconEntry) ;
                 // Check if we have enough info to read the icon from the package
                 if (values.Length == 2 && values[1] is Func<PackageReaderBase> lazyReader)
                 {
@@ -90,6 +88,9 @@ namespace NuGet.PackageManagement.UI
                         PackageReaderBase reader = lazyReader(); // Always returns a new reader. That avoids using an already disposed one
                         if (reader is PackageArchiveReader par) // This reader is closed in BitmapImage events
                         {
+                            var iconEntryNormalized = PathUtility.StripLeadingDirectorySeparators(
+                                Uri.UnescapeDataString(iconUrl.Fragment)
+                                    .Substring(1)); // Substring skips the '#' in the URI fragment
                             iconBitmapImage.StreamSource = par.GetEntry(iconEntryNormalized).Open();
 
                             iconBitmapImage.DecodeFailed += (sender, args) =>
@@ -119,9 +120,8 @@ namespace NuGet.PackageManagement.UI
                             imageResult = defaultPackageIcon;
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception)
                     {
-                        System.Diagnostics.Debug.WriteLine($"msg: {ex.Message} stack: {ex.StackTrace}");
                         AddToCache(iconUrl, defaultPackageIcon);
                         imageResult = defaultPackageIcon;
                     }
