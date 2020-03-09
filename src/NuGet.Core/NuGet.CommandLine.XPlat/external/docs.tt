@@ -96,10 +96,10 @@
         }
     }
 #>
-**Run scripts\utils\ttGen.ps1 after changes to update docs.md
-**Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
-**
-**[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
+***Run scripts\utils\ttGen.ps1 after changes to update docs.md
+***Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
+***
+***[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
 <#
      // Generate command docs
      foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
@@ -212,7 +212,6 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 - **`<#= optionName.ToUpper() #>`**
 
   <#= stringDictionary[helpText.ToLower()] #>
-
 <#
                     }
                 }

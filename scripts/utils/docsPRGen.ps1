@@ -20,14 +20,14 @@ foreach($line in [System.IO.File]::ReadLines($mdFile))
     }
     elseif ($line.StartsWith("ms.date:"))
     {
-        Add-Content "$outFile" "ms.date: $todayShortDate"
+        Add-Content "$outFile" "ms.date: $todayShortDate" -Encoding UTF8
     }
-    elseif ($line.StartsWith("**"))
+    elseif ($line.StartsWith("***"))
     {
         #skip each line of the instructions at top of docs.md file
     }
     else
     {
-        Add-Content "$outFile" $line    
+        Add-Content "$outFile" $line -Encoding UTF8
     }
 }

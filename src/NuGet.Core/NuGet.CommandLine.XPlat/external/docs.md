@@ -1,7 +1,7 @@
-**Run scripts\utils\ttGen.ps1 after changes to update docs.md
-**Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
-**
-**[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
+***Run scripts\utils\ttGen.ps1 after changes to update docs.md
+***Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
+***
+***[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
 ---file:docs\core\tools\dotnet-nuget-add-source.md
 ---
 title: dotnet nuget add source command
@@ -123,7 +123,6 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 
   Name of the source.
 
-
 ## Options
 
 - **`--configfile`**
@@ -174,7 +173,6 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 - **`NAME`**
 
   Name of the source.
-
 
 ## Options
 
@@ -276,7 +274,6 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 
   Name of the source.
 
-
 ## Options
 
 - **`--configfile`**
@@ -327,7 +324,6 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 - **`NAME`**
 
   Name of the source.
-
 
 ## Options
 
