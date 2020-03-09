@@ -11,7 +11,7 @@ namespace NuGet.Packaging.Signing
 {
     public class KeyPairFileReader : IDisposable
     {
-        private static readonly Regex _namePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$");
+        private static readonly Regex NamePattern = new Regex("^[a-zA-Z0-9\\.\\-/]+$", RegexOptions.CultureInvariant);
 
         private readonly StreamReader _reader;
 
@@ -79,7 +79,7 @@ namespace NuGet.Packaging.Signing
             {
                 var key = line.Substring(0, pos);
 
-                if (_namePattern.IsMatch(key))
+                if (NamePattern.IsMatch(key))
                 {
                     var value = line.Substring(pos + 1);
 

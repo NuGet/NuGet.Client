@@ -86,7 +86,7 @@ namespace NuGet.Packaging.Licenses
         /// <returns>whether the value has valid characters</returns>
         private static bool HasValidCharacters(string value)
         {
-            var regex = new Regex("^[a-zA-Z0-9\\.\\-]+$");
+            var regex = new Regex("^[a-zA-Z0-9\\.\\-]+$", RegexOptions.CultureInvariant);
             return regex.IsMatch(value);
         }
 

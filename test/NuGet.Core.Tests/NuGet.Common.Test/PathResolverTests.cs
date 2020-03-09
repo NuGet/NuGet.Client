@@ -678,11 +678,11 @@ namespace NuGet.Common.Test
         private void PopulateTestDirectory()
         {
             var rootDirectory = new DirectoryInfo(_rootDirectory.Path);
-            var directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
-            var directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
-            var directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
-            var directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
-            var directory5 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
+            DirectoryInfo directory1 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir1"));
+            DirectoryInfo directory2 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir2"));
+            DirectoryInfo directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
+            DirectoryInfo directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
+            Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
             var directory6 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir6"));
 
             CreateTestFiles(rootDirectory);
