@@ -5,8 +5,7 @@
 ---file:docs\core\tools\dotnet-nuget-add-source.md
 ---
 title: dotnet nuget add source command
-description: The `dotnet nuget add source` command adds a new package source to your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget add source command adds a new package source to your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget add source
@@ -20,8 +19,10 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget add source PACKAGESOURCEPATH [--name] [--username] [--password] [--store-password-in-clear-text] [--valid-authentication-types] [--configfile]`
-`dotnet nuget add source [-h|--help]`
+dotnet nuget add source <PACKAGE_SOURCE_PATH> [--name] [--username]
+    [--password] [--store-password-in-clear-text] [--valid-authentication-types]
+    [--configfile]
+dotnet nuget add source [-h|--help]
 ```
 
 ## Description
@@ -30,9 +31,9 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
 ## Arguments
 
-- **`PACKAGESOURCEPATH`**
+- **`PACKAGE_SOURCE_PATH`**
 
-  Path to the package(s) source.
+  Path to the package source.
 
 ## Options
 
@@ -58,7 +59,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 
@@ -94,8 +95,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 ---file:docs\core\tools\dotnet-nuget-disable-source.md
 ---
 title: dotnet nuget disable source command
-description: The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget disable source command disables an existing source in your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget disable source
@@ -109,8 +109,8 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget disable source NAME [--configfile]`
-`dotnet nuget disable source [-h|--help]`
+dotnet nuget disable source <NAME> [--configfile]
+dotnet nuget disable source [-h|--help]
 ```
 
 ## Description
@@ -127,7 +127,7 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 
@@ -145,8 +145,7 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 ---file:docs\core\tools\dotnet-nuget-enable-source.md
 ---
 title: dotnet nuget enable source command
-description: The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget enable source command enables an existing source in your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget enable source
@@ -160,8 +159,8 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget enable source NAME [--configfile]`
-`dotnet nuget enable source [-h|--help]`
+dotnet nuget enable source <NAME> [--configfile]
+dotnet nuget enable source [-h|--help]
 ```
 
 ## Description
@@ -178,7 +177,7 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 
@@ -196,8 +195,7 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 ---file:docs\core\tools\dotnet-nuget-list-source.md
 ---
 title: dotnet nuget list source command
-description: The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget list source command lists all existing sources from your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget list source
@@ -211,8 +209,8 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget list source [--format] [--configfile]`
-`dotnet nuget list source [-h|--help]`
+dotnet nuget list source [--format] [--configfile]
+dotnet nuget list source [-h|--help]
 ```
 
 ## Description
@@ -227,7 +225,7 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 
@@ -245,8 +243,7 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 ---file:docs\core\tools\dotnet-nuget-remove-source.md
 ---
 title: dotnet nuget remove source command
-description: The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget remove source command removes an existing source from your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget remove source
@@ -260,8 +257,8 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget remove source NAME [--configfile]`
-`dotnet nuget remove source [-h|--help]`
+dotnet nuget remove source <NAME> [--configfile]
+dotnet nuget remove source [-h|--help]
 ```
 
 ## Description
@@ -278,7 +275,7 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 
@@ -296,8 +293,7 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 ---file:docs\core\tools\dotnet-nuget-update-source.md
 ---
 title: dotnet nuget update source command
-description: The `dotnet nuget update source` command updates an existing source in your NuGet configuration files. 
-author: nugetClient
+description: The dotnet nuget update source command updates an existing source in your NuGet configuration files. 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget update source
@@ -311,8 +307,10 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget update source NAME [--source] [--username] [--password] [--store-password-in-clear-text] [--valid-authentication-types] [--configfile]`
-`dotnet nuget update source [-h|--help]`
+dotnet nuget update source <NAME> [--source] [--username]
+    [--password] [--store-password-in-clear-text] [--valid-authentication-types]
+    [--configfile]
+dotnet nuget update source [-h|--help]
 ```
 
 ## Description
@@ -329,7 +327,7 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
 - **`-s|--source`**
 
-  Path to the package(s) source.
+  Path to the package source.
 
 - **`-u|--username`**
 
@@ -349,7 +347,7 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
 - **`--configfile`**
 
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 ## Examples
 

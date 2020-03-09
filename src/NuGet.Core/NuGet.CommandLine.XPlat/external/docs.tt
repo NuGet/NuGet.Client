@@ -76,6 +76,39 @@
         }
     }
 
+    string GetArgumentName(string argName, string longArgName)
+    {
+        Char[] charsToProcess = string.IsNullOrEmpty(longArgName) ? argName.ToCharArray() : longArgName.ToCharArray();
+        StringBuilder resultNameBuilder = new StringBuilder();
+
+        for (int i = 0; i < charsToProcess.Length; i++)
+        {
+            char upperChar = char.ToUpper(charsToProcess[i]);
+            if (charsToProcess[i] == upperChar && resultNameBuilder.Length != 0)
+            {
+                resultNameBuilder.Append("_" + upperChar.ToString());
+            }
+            else
+            {
+                resultNameBuilder.Append(upperChar);
+            }
+        }
+
+        return resultNameBuilder.ToString();
+    }
+
+    string GetHelpTextWithOverride(Dictionary<string, string> stringDictionary, string helpText)
+    {
+        if (stringDictionary.ContainsKey(helpText.ToLower() + "_docs"))
+        {
+            return stringDictionary[helpText.ToLower() + "_docs"];
+        }
+        else
+        {
+            return stringDictionary[helpText.ToLower()];
+        }
+    }
+
     string commandFile = this.Host.ResolvePath(@"..\..\NuGet.CommandLine.XPlat\Commands\Commands.xml");
     XDocument commands = XDocument.Load(commandFile);
 
@@ -115,7 +148,9 @@
 
             // calculate commandSyntax
             var commandSyntaxBuilder = new StringBuilder();
-            commandSyntaxBuilder.AppendFormat("{0} {1}", verbFormalName, nounFormalName);
+            commandSyntaxBuilder.AppendFormat("dotnet nuget {0} {1}", verbFormalName, nounFormalName);
+            int lastLineBreak = 0;
+            
             foreach (XElement option in noun.Descendants())
             {
                 string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
@@ -125,11 +160,19 @@
                 string helpText = option.Attribute(XName.Get("Help", ""))?.Value;
                 string optionFormalName = MakeFormal(optionName, shortcut);
                 bool required =false;
-                 //option.Attribute(XName.Get("Required", ""))?.Value == "true";
+
+                if (commandSyntaxBuilder.Length - lastLineBreak > 55)
+                {
+                    // linewrap so line isn't too long.
+                    commandSyntaxBuilder.AppendLine();
+                    lastLineBreak = commandSyntaxBuilder.Length;
+                    commandSyntaxBuilder.Append("   ");
+                }
 
                 if (IsArgument(GetProperty(option)))
                 {
-                    commandSyntaxBuilder.Append(optionLongName != null ? " " + optionLongName.ToUpper() : " " + optionName.ToUpper());
+                    string argumentName = GetArgumentName(optionName, optionLongName);
+                    commandSyntaxBuilder.Append(" <" + argumentName + ">");
                 }
                 else if (IsOption(GetProperty(option)))
                 {
@@ -144,8 +187,7 @@
 ---file:docs\core\tools\dotnet-nuget-<#= verbFormalName #>-<#= nounFormalName #>.md
 ---
 title: dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command
-description: The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
-author: nugetClient
+description: The dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command <#= description #> 
 ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ---
 # dotnet nuget <#= verbFormalName #> <#= nounFormalName #>
@@ -159,8 +201,8 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 ## Synopsis
 
 ```dotnetcli
-`dotnet nuget <#= commandSyntax #>`
-`dotnet nuget <#= verbFormalName #> <#= nounFormalName #> [-h|--help]`
+<#= commandSyntax #>
+dotnet nuget <#= verbFormalName #> <#= nounFormalName #> [-h|--help]
 ```
 
 ## Description
@@ -180,40 +222,22 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                 string helpText = option.Attribute(XName.Get("Help", ""))?.Value;
                 if (IsArgument(GetProperty(option)))
                 {
-                    if (optionLongName != null)
+                    string argumentName = GetArgumentName(optionName, optionLongName);
+                    if (!headerForArgumentsShown)
                     {
-                        if (!headerForArgumentsShown)
-                        {
 #>
 
 ## Arguments
 
 <#
-                            headerForArgumentsShown = true;
-                        }
-#>
-- **`<#= optionLongName.ToUpper() #>`**
-
-  <#= stringDictionary[helpText.ToLower()] #>
-<#
+                        headerForArgumentsShown = true;
                     }
-                    else
-                    {
-                        if (!headerForArgumentsShown)
-                        {
 #>
+- **`<#= argumentName #>`**
 
-## Arguments
-
+  <#= 
+      GetHelpTextWithOverride(stringDictionary, helpText) #>
 <#
-                            headerForArgumentsShown = true;
-                        }
-#>
-- **`<#= optionName.ToUpper() #>`**
-
-  <#= stringDictionary[helpText.ToLower()] #>
-<#
-                    }
                 }
                 else if (IsExample(GetProperty(option)))
                 {
@@ -270,7 +294,7 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 #>
 - **`<#= optionFormalName #>`**
 
-  <#= stringDictionary[helpText.ToLower()] #>
+  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
 
 <#
                         break;
@@ -287,7 +311,7 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 #>
 - **`<#= optionFormalName #>`**
 
-  <#= stringDictionary[helpText.ToLower()] #>
+  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
 
 <#
                         break;
@@ -304,7 +328,7 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
 #>
 - **`<#= optionFormalName #>`**
 
-  <#= stringDictionary[helpText.ToLower()] #>
+  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
 
 <#
                         break;
