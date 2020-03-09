@@ -42,8 +42,8 @@
     <LocalizationFilesDirectory>$(ArtifactsDirectory)LocalizedFiles</LocalizationFilesDirectory>
     <MicroBuildDirectory>$(SolutionPackagesFolder)microbuild.core\0.2.0\build\</MicroBuildDirectory>
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
-    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\2.2.0-beta.19178.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
-    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.19178.1\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
+    <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\5.0.0-beta.20159.1\tools\net472\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
+    <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20065.7\tools\net472\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
     <NoWarn>$(NoWarn);NU5105</NoWarn>
   </PropertyGroup>
 
