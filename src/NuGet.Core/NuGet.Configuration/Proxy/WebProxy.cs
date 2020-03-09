@@ -77,7 +77,7 @@ namespace NuGet.Configuration
         {
             _regExBypassList = _bypassList?
                 .Select(x => WildcardToRegex(x))
-                .Select(x => new Regex(x, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant))
+                .Select(x => new Regex(x, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.CultureInvariant))
                 .ToArray();
         }
 

@@ -11,7 +11,7 @@ namespace NuGet.Packaging
     public static class PackageIdValidator
     {
         public const int MaxPackageIdLength = 100;
-        private static readonly Regex _idRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+        private static readonly Regex _idRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
 
         public static bool IsValidPackageId(string packageId)
         {
