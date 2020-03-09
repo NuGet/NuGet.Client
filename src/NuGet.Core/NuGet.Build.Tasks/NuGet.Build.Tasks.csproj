@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -21,8 +21,7 @@
   <ItemGroup>
     <Content Include="NuGet.RestoreEx.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackagePath>runtimes\any\native</PackagePath>
-      <Pack>true</Pack>
+      <Pack>false</Pack>
     </Content>
     <Content Include="NuGet.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
