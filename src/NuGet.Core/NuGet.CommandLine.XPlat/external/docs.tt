@@ -95,7 +95,12 @@
             }
         }
     }
- 
+#>
+**Run scripts\utils\ttGen.ps1 after changes to update docs.md
+**Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
+**
+**[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
+<#
      // Generate command docs
      foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
      {
@@ -136,8 +141,7 @@
 
             string commandSyntax = commandSyntaxBuilder.ToString();
 #>
-    
----file:/dotnet/core/tools/dotnet-nuget-<#= verbFormalName #>-<#= nounFormalName #>
+---file:docs\core\tools\dotnet-nuget-<#= verbFormalName #>-<#= nounFormalName #>.md
 ---
 title: dotnet nuget <#= verbFormalName #> <#= nounFormalName #> command
 description: The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 

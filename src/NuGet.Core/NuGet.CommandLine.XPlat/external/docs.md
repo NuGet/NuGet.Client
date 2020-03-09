@@ -1,5 +1,8 @@
-    
----file:/dotnet/core/tools/dotnet-nuget-add-source
+**Run scripts\utils\ttGen.ps1 after changes to update docs.md
+**Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
+**
+**[Dotnet docs repo contrib guidelines](https://github.com/dotnet/docs/blob/master/CONTRIBUTING.md#process-for-contributing)
+---file:docs\core\tools\dotnet-nuget-add-source.md
 ---
 title: dotnet nuget add source command
 description: The `dotnet nuget add source` command adds a new package source to your NuGet configuration files. 
@@ -88,8 +91,7 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
-    
----file:/dotnet/core/tools/dotnet-nuget-disable-source
+---file:docs\core\tools\dotnet-nuget-disable-source.md
 ---
 title: dotnet nuget disable source command
 description: The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files. 
@@ -141,8 +143,7 @@ The `dotnet nuget disable source` command disables an existing source in your Nu
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
-    
----file:/dotnet/core/tools/dotnet-nuget-enable-source
+---file:docs\core\tools\dotnet-nuget-enable-source.md
 ---
 title: dotnet nuget enable source command
 description: The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files. 
@@ -194,8 +195,7 @@ The `dotnet nuget enable source` command enables an existing source in your NuGe
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
-    
----file:/dotnet/core/tools/dotnet-nuget-list-source
+---file:docs\core\tools\dotnet-nuget-list-source.md
 ---
 title: dotnet nuget list source command
 description: The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files. 
@@ -244,8 +244,7 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
-    
----file:/dotnet/core/tools/dotnet-nuget-remove-source
+---file:docs\core\tools\dotnet-nuget-remove-source.md
 ---
 title: dotnet nuget remove source command
 description: The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files. 
@@ -297,8 +296,7 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
-    
----file:/dotnet/core/tools/dotnet-nuget-update-source
+---file:docs\core\tools\dotnet-nuget-update-source.md
 ---
 title: dotnet nuget update source command
 description: The `dotnet nuget update source` command updates an existing source in your NuGet configuration files. 
