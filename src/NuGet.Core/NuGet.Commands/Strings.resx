@@ -973,8 +973,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Enabled</value>
   </data>
   <data name="Source_DefaultNamePrefix" xml:space="preserve">
-    <value>Package source {0}</value>
-    <comment>{0} will be a number</comment>
+    <value>Package source </value>
   </data>
   <data name="Source_InvalidFormatValue" xml:space="preserve">
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
