@@ -20,7 +20,7 @@ foreach($line in [System.IO.File]::ReadLines($mdFile))
     }
     elseif ($line.StartsWith("ms.date:"))
     {
-        Add-Content "$outFile" "ms.date: $todayShortDate" -Encoding UTF8
+        Add-Content "$outFile" "ms.date: $todayShortDate" -Encoding ASCII 
     }
     elseif ($line.StartsWith("***"))
     {
@@ -28,6 +28,6 @@ foreach($line in [System.IO.File]::ReadLines($mdFile))
     }
     else
     {
-        Add-Content "$outFile" $line -Encoding UTF8
+        Add-Content "$outFile" $line -Encoding ASCII             
     }
 }
