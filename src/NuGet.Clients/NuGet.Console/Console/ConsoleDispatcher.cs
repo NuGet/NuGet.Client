@@ -317,7 +317,7 @@ namespace NuGetConsole.Implementation.Console
             [SuppressMessage("Microsoft.Globalization", "CA1303")]
             protected void PromptNewLine()
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(WpfConsole.Host.Prompt + ' ');
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(WpfConsole.Host.Prompt + ' '));
                 WpfConsole.BeginInputLine();
             }
 
