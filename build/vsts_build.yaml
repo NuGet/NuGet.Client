@@ -106,7 +106,10 @@ jobs:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
+        Write-Host "##vso[task.setvariable variable=BarDirectory]$(Build.Repository.LocalPath)\artifacts\manifests\"
         Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
+        Write-Host "##vso[task.setvariable variable=BarBinariesLogFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\bar-binaries.binlog"
+        Write-Host "##vso[task.setvariable variable=BarManifestLogFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\bar-manifest.binlog"
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 5.0.0"
@@ -531,7 +534,7 @@ jobs:
   - task: CmdLine@2
     displayName: "Publish the packages to the .NET Core build asset registry (BAR)"
     inputs:
-      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1)
+      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1) /bl:$(BarBinariesLogFilePath)
       workingDirectory: cli
       failOnStderr: true
     env:
@@ -553,7 +556,15 @@ jobs:
       solution: 'build\\publish.proj'
       msbuildVersion: 16.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken)'
+      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken) /bl:$(BarManifestLogFilePath)'
+    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish BAR logs as an artifact'
+    inputs:
+      ArtifactName: 'BAR logs'
+      ArtifactType: 'Container'
+      PathToPublish: '$(BarDirectory)'
     condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MicroBuildCleanup@1
