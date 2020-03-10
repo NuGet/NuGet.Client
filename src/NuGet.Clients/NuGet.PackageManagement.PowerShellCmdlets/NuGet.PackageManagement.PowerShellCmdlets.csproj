@@ -12,11 +12,9 @@
     <RootNamespace>NuGet.PackageManagement.PowerShellCmdlets</RootNamespace>
     <AssemblyName>NuGet.PackageManagement.PowerShellCmdlets</AssemblyName>
     <FileAlignment>512</FileAlignment>
-    <NuGetPackageImportStamp>44966557</NuGetPackageImportStamp>
-    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
+    <Description>NuGet's PowerShell cmdlets for the Visual Studio client.</Description>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

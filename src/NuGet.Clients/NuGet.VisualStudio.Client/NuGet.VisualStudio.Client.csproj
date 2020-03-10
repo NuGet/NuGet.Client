@@ -19,15 +19,12 @@
     <CopyBuildOutputToOutputDirectory>true</CopyBuildOutputToOutputDirectory>
     <CopyOutputSymbolsToOutputDirectory>false</CopyOutputSymbolsToOutputDirectory>
     <DeployExtension>false</DeployExtension>
+    <Description>NuGet Visual Studio extension package project.</Description>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <AssemblyName>NuGet.VisualStudio.Client</AssemblyName>
     <TargetVsixContainerName>NuGet.Tools.vsix</TargetVsixContainerName>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>$(VisualStudioVersion)</MinimumVisualStudioVersion>
-    <FileUpgradeFlags />
-    <UpgradeBackupLocation />
-    <OldToolsVersion>14.0</OldToolsVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <IsProductComponent>true</IsProductComponent>
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\NuGet</ExtensionInstallationFolder>

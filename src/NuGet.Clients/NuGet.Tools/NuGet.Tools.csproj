@@ -17,12 +17,9 @@
     <CreateVsixContainer>false</CreateVsixContainer>
     <FileAlignment>512</FileAlignment>
     <DeployExtension>false</DeployExtension>
+    <Description>NuGet's Visual Studio extension Package.</Description>
     <VSSDKTargetPlatformRegRootSuffix>Exp</VSSDKTargetPlatformRegRootSuffix>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
-    <FileUpgradeFlags />
-    <UpgradeBackupLocation />
-    <OldToolsVersion>14.0</OldToolsVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

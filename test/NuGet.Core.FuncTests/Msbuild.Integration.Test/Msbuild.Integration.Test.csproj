@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
+    <Description>Integration tests for NuGet powered msbuild functionalities (restore/pack).</Description>
   </PropertyGroup>
 
   <ItemGroup>

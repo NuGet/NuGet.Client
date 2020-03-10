@@ -19,7 +19,7 @@ using System.Windows.Markup;
 #endif
 
 [assembly: AssemblyTitle("NuGet.PackageManagement.UI")]
-[assembly: AssemblyDescription("NuGet's Package Management UI for Visual Studio")]
+[assembly: AssemblyDescription("Package Management UI elements for Visual Studio, Package Manager UI, Migrator, Options dialog")]
 [assembly: ComVisible(false)]
 
 [assembly: ThemeInfo(ResourceDictionaryLocation.None, ResourceDictionaryLocation.SourceAssembly)]

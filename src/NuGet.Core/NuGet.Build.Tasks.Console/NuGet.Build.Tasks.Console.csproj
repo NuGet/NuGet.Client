@@ -9,9 +9,8 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <SkipShared>true</SkipShared>
-    <Description>NuGet restore console application.</Description>
-    <!-- NU5100: Suppress warning about a DLL not in a lib folder since on .NET Core the EXE is technically a DLL -->
-    <NoWarn>$(NoWarn);CS1591;NU5100</NoWarn>
+    <Description>NuGet Build tasks for MSBuild and dotnet restore. Contains restore logic using the MSBuild static graph functionality.</Description>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>

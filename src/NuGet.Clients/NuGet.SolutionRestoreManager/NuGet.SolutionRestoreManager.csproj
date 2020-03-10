@@ -13,6 +13,7 @@
     <RootNamespace>NuGet.SolutionRestoreManager</RootNamespace>
     <AssemblyName>NuGet.SolutionRestoreManager</AssemblyName>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
+    <Description>NuGet's Visual Studio Solution Restore Manager.</Description>
     <FileAlignment>512</FileAlignment>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <ImportVSSDKTargets>true</ImportVSSDKTargets>
@@ -22,7 +23,6 @@
     <Shipping>true</Shipping>
     <PackProject>false</PackProject>
     <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

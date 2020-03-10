@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>NuGet wrapper for dotnet.exe.</Description>
+    <Description>NuGet executable wrapper for the dotnet CLI nuget functionality.</Description>
     <TargetFrameworks>$(TargetFrameworksExe)</TargetFrameworks>
     <RuntimeIdentifier Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">win7-x86</RuntimeIdentifier>
     <NoWarn>$(NoWarn);CS1591;CS1701</NoWarn>

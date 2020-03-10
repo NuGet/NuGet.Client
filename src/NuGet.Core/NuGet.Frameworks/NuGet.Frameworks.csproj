@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>The understanding of target frameworks for NuGet.Packaging.</Description>
+    <Description>NuGet's understanding of target frameworks.</Description>
     <TargetFrameworks>$(TargetFrameworksLibrary);net40</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574;CS1573</NoWarn>

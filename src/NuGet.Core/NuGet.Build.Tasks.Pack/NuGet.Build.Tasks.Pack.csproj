@@ -17,7 +17,7 @@
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);CreatePackNupkg</TargetsForTfmSpecificContentInPackage>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
-    <PackageDescription>NuGet pack for dotnet CLI.</PackageDescription>
+    <Description>NuGet tasks for MSBuild and dotnet pack.</Description>
     <NoWarn>$(NoWarn);NU5100</NoWarn>
     <DepsFileGenerationMode>old</DepsFileGenerationMode>
   </PropertyGroup>

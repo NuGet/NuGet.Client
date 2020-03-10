@@ -4,7 +4,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>NuGet.Indexing Class Library.</Description>
+    <Description>NuGet's indexing library for the Visual Studio client search functionality.</Description>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <PackProject>true</PackProject>

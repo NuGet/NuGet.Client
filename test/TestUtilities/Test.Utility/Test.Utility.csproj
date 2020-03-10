@@ -11,6 +11,7 @@
     <IsPackable>true</IsPackable>
     <SkipShared>true</SkipShared>
     <NoWarn>$(NoWarn);VSTHRD001;VSTHRD002;VSTHRD110</NoWarn>
+    <Description>A collection of test utilities, such as generating packages, mocking servers, stub implementations of interfaces, etc.</Description>
   </PropertyGroup>
 
   <ItemGroup>

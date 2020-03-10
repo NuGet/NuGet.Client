@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>The (former home to) core data structures for NuGet.Packaging.</Description>
+    <Description>The (former home to) core data structures for NuGet.Packaging. Contains only the type forwarders to the new assembly.</Description>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591</NoWarn>

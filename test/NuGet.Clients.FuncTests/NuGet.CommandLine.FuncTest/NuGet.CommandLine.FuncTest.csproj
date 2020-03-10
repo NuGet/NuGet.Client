@@ -6,6 +6,7 @@
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
+    <Description>A functional (end-to-end) test suite for NuGet.CommandLine. Contains tests for every nuget.exe command.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -15,7 +15,7 @@
     <PackageId>NuGet.CommandLine</PackageId>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
-    <Description>NuGet Command Line Tool.</Description>
+    <Description>NuGet Command Line Interface.</Description>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <Shipping>true</Shipping>
     <OutputType>Exe</OutputType>
