@@ -507,24 +507,25 @@ function Test-UpdateProjectLevelPackageNotInstalledInAnyProject {
     Assert-Throws { Update-Package Ninject } "'Ninject' was not installed in any project. Update failed."
 }
 
-function Test-UpdatePackageMissingPackage {
-    # Arrange
-    # create project and install package
-    $proj = New-ClassLibrary
-    $proj | Install-Package Castle.Core -Version 1.2.0
-    Assert-Package $proj Castle.Core 1.2.0
-
-    # delete the packages folder
-    $packagesDir = Get-PackagesDir
-    RemoveDirectory $packagesDir
-    Assert-False (Test-Path $packagesDir)
-
-    # Act
-	Update-Package Castle.Core -Version 2.5.1
-	
-    # Assert
-	Assert-Package $proj Castle.Core 2.5.1
-}
+# https://github.com/NuGet/Home/issues/9283
+#function Test-UpdatePackageMissingPackage {
+#    # Arrange
+#    # create project and install package
+#    $proj = New-ClassLibrary
+#    $proj | Install-Package Castle.Core -Version 1.2.0
+#    Assert-Package $proj Castle.Core 1.2.0
+#
+#    # delete the packages folder
+#    $packagesDir = Get-PackagesDir
+#    RemoveDirectory $packagesDir
+#    Assert-False (Test-Path $packagesDir)
+#
+#    # Act
+#	Update-Package Castle.Core -Version 2.5.1
+#	
+#    # Assert
+#	Assert-Package $proj Castle.Core 2.5.1
+#}
 
 function Test-UpdatePackageMissingPackageNoConsent {
 	try {
