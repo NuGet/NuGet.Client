@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace NuGet.Test.Utility
@@ -74,41 +75,55 @@ namespace NuGet.Test.Utility
         /// <returns>A <c>StringBuilder</c> object with the .nuspec content</returns>
         public StringBuilder Build()
         {
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb);
 
-            sb.AppendLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-            sb.AppendLine("<package>");
-            sb.AppendLine("  <metadata>");
-            sb.Append("    <id>").Append(PackageIdEntry).AppendLine("</id>");
-            sb.Append("    <version>").Append(PackageVersionEntry).AppendLine("</version>");
-            sb.AppendLine("    <authors>Author1, author2</authors>");
-            sb.AppendLine("    <description>A short sample description</description>");
+            Write(sw);
+
+            return sb;
+        }
+
+        public void Write(TextWriter sb)
+        {
+            sb.WriteLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+            sb.WriteLine("<package>");
+            sb.WriteLine("  <metadata>");
+            sb.Write("    <id>");
+            sb.Write(PackageIdEntry);
+            sb.WriteLine("</id>");
+            sb.Write("    <version>");
+            sb.Write(PackageVersionEntry);
+            sb.WriteLine("</version>");
+            sb.WriteLine("    <authors>Author1, author2</authors>");
+            sb.WriteLine("    <description>A short sample description</description>");
 
             if (IconEntry != null)
             {
-                sb.Append("    <icon>").Append(IconEntry).AppendLine("</icon>");
+                sb.Write("    <icon>");
+                sb.Write(IconEntry);
+                sb.WriteLine("</icon>");
             }
 
             if (IconUrlEntry != null)
             {
-                sb.Append("    <iconUrl>").Append(IconUrlEntry).AppendLine("</iconUrl>");
+                sb.Write("    <iconUrl>");
+                sb.Write(IconUrlEntry);
+                sb.WriteLine("</iconUrl>");
             }
 
-            sb.AppendLine("  </metadata>");
-            sb.AppendLine("  <files>");
+            sb.WriteLine("  </metadata>");
+            sb.WriteLine("  <files>");
             foreach (var fe in FileEntries)
             {
-                sb.Append($"    <file src=\"{fe.Item1}\"");
+                sb.Write($"    <file src=\"{fe.Item1}\"");
                 if (!string.Empty.Equals(fe.Item2))
                 {
-                    sb.Append($" target=\"{fe.Item2}\"");
+                    sb.Write($" target=\"{fe.Item2}\"");
                 }
-                sb.AppendLine(" />");
+                sb.WriteLine(" />");
             }
-            sb.AppendLine("  </files>");
-            sb.AppendLine("</package>");
-
-            return sb;
+            sb.WriteLine("  </files>");
+            sb.WriteLine("</package>");
         }
     }
 }
