@@ -56,10 +56,9 @@ namespace NuGet.Build.Tasks.Pack.Test
                     var centralTransitiveDependentPackage = dependentPackages
                         .Where(p => p.Id.Equals("Newtonsoft.Json", StringComparison.OrdinalIgnoreCase))
                         .FirstOrDefault();
-                    var allPackageDependencies = string.Join(";", dependentPackages.Select(p => p.Id).OrderBy(id => id));
                     Assert.Equal(1, dependecyGroups.Count);
                     Assert.Equal(".NETStandard", dependecyGroupFramework);
-                    Assert.Equal("ClassLibrary2;NETStandard.Library;Newtonsoft.Json;NuGet.Build.Tasks.Pack", allPackageDependencies);
+                    Assert.NotNull(centralTransitiveDependentPackage);
                     Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }
             }
