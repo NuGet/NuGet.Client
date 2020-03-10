@@ -61,11 +61,9 @@
     <Compile Include="NuGetPackageSigningTests\RepositorySignedPackageTestCase.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Test.Apex.VisualStudio">
-      <Version>16.3.29131.53-pre</Version>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
-    <PackageReference Include="Xunit.StaFact" Version="0.2.9" />
+    <PackageReference Include="Microsoft.Test.Apex.VisualStudio" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Xunit.StaFact" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />

@@ -503,7 +503,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Resources\StatusOK_32x.png" />

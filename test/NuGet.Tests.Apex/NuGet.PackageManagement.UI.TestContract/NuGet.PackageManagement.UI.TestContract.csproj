@@ -16,7 +16,7 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.PackageManagement.UI\NuGet.PackageManagement.UI.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="PresentationCore" />

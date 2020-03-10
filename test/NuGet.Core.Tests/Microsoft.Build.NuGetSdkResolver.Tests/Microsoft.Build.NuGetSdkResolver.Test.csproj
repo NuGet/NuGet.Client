@@ -12,7 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)Microsoft.Build.NuGetSdkResolver\Microsoft.Build.NuGetSdkResolver.csproj" />
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

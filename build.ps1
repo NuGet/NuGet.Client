@@ -105,6 +105,8 @@ else {
 Invoke-BuildStep 'Running Restore' {
 
     # Restore
+    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:EnsurePackageReferenceVersionsInSolution /p:Configuration=$Configuration"
+    & $MSBuildExe build\build.proj /t:EnsurePackageReferenceVersionsInSolution /p:Configuration=$Configuration
     Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
     & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
 

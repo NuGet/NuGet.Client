@@ -20,10 +20,10 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="System.Diagnostics.TraceSource" />
+    <PackageReference Include="Microsoft.Build.Framework" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

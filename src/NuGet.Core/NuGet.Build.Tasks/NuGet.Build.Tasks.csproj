@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -21,8 +21,7 @@
   <ItemGroup>
     <Content Include="NuGet.RestoreEx.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-      <PackagePath>runtimes\any\native</PackagePath>
-      <Pack>true</Pack>
+      <Pack>false</Pack>
     </Content>
     <Content Include="NuGet.targets">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -48,13 +47,13 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="Microsoft.Build.Framework" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="4.9.0" />
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
   
   <ItemGroup>
