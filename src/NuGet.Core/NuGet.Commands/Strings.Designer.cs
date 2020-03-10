@@ -1790,7 +1790,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source {0}.
+        ///   Looks up a localized string similar to Package source .
         /// </summary>
         internal static string Source_DefaultNamePrefix {
             get {
