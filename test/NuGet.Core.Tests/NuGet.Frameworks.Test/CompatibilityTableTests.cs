@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -125,7 +125,7 @@ namespace NuGet.Test
         [Fact]
         public void CompatibilityTable_NearestSingle()
         {
-            var net50 = NuGetFramework.Parse("net50");
+            var net49 = NuGetFramework.Parse("net49");
             var net35 = NuGetFramework.Parse("net35");
             var net45 = NuGetFramework.Parse("net45");
             var net40 = NuGetFramework.Parse("net40");
@@ -134,7 +134,7 @@ namespace NuGet.Test
 
             CompatibilityTable table = new CompatibilityTable(all);
 
-            Assert.Equal(net45, table.GetNearest(net50).Single());
+            Assert.Equal(net45, table.GetNearest(net49).Single());
             Assert.Null(table.GetNearest(net35).SingleOrDefault());
         }
     }

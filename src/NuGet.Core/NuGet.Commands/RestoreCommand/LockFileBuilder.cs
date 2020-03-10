@@ -174,7 +174,7 @@ namespace NuGet.Commands
                 // Check if warnings should be displayed for the current framework.
                 var tfi = project.GetTargetFramework(targetGraph.Framework);
 
-                var warnForImportsOnGraph = tfi.Warn
+                bool warnForImportsOnGraph = tfi.Warn
                     && (target.TargetFramework is FallbackFramework
                         || target.TargetFramework is AssetTargetFallbackFramework);
 

@@ -58,8 +58,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Mark that this targets file supports package download. -->
     <PackageDownloadSupported>true</PackageDownloadSupported>
     <!-- Flag if the Central package file is enabled -->
-    <EnableCentralPackageVersions Condition="'$(EnableCentralPackageVersions)' == ''">false</EnableCentralPackageVersions>
-    <_CentralPackageVersionsEnabled Condition="'$(EnableCentralPackageVersions)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
+    <_CentralPackageVersionsEnabled Condition="'$(ManagePackageVersionsCentrally)' == 'true' AND '$(CentralPackageVersionsFileImported)' == 'true'">true</_CentralPackageVersionsEnabled>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -107,6 +106,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <UsingTask TaskName="NuGet.Build.Tasks.WarnForInvalidProjectsTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetReferenceNearestTargetFrameworkTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetRestoreProjectStyleTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
+  <UsingTask TaskName="NuGet.Build.Tasks.NuGetMessageTask" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <!--
     ============================================================
@@ -1094,6 +1094,8 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetAllRestoreProjectPathItems"
           DependsOnTargets="_FilterRestoreGraphProjectInputItems"
           Returns="@(_RestoreProjectPathItems)">
+
+    <NuGetMessageTask Name="DeterminingProjectsToRestore" Importance="High" />
 
     <!-- Walk projects -->
     <!-- With SkipNonexistentTargets -->

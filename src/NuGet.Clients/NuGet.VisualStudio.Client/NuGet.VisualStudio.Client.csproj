@@ -319,6 +319,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
+    <PackageReference Include="Lucene.Net" ExcludeAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="eula.rtf">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
@@ -362,14 +367,6 @@
   </ItemGroup>
   <ItemGroup>
     <VsixIgnoreFile Include=".vsixignore" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Lucene.Net">
-      <Version>3.0.3</Version>
-      <!-- This is important because otherwise the VSSDK will include the unsigned version coming from the global packages folder instead of the in-place signed one from the bootstrapped packages folder -->
-      <ExcludeAssets>all</ExcludeAssets>
-    </PackageReference>
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
   </ItemGroup>
   <Target Name="AfterBuild" DependsOnTargets="PublishVS" />
   <Target Name="PublishVS">

@@ -35,7 +35,7 @@ namespace NuGet.ProjectModel
         /// </summary>
         PackagesConfig = 5, 
 
-                /// <summary>
+        /// <summary>
         /// DotnetToolReference project
         /// </summary>
         DotnetToolReference = 6

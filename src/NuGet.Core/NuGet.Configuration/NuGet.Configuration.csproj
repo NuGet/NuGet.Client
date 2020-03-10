@@ -29,7 +29,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" />
   </ItemGroup>
   
   <ItemGroup>

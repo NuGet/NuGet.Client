@@ -189,14 +189,14 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
+                Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
                 // Act - make sure no-op does the same thing.
                 result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, $"restore proj.sln {$"--source \"{pathContext.PackageSource}\""}", ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
-                Assert.True(1 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
+                Assert.True(2 == result.AllOutput.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries).Length, result.AllOutput);
 
             }
         }
@@ -248,7 +248,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.Contains("Restore completed", result.AllOutput);
+                Assert.Contains("Restored ", result.AllOutput);
 
                 Directory.Move(projectDirectory, movedDirectory);
 
@@ -256,7 +256,7 @@ EndGlobal";
 
                 // Assert
                 Assert.True(result.ExitCode == 0, result.AllOutput);
-                Assert.DoesNotContain("Restore completed", result.AllOutput);
+                Assert.DoesNotContain("Restored ", result.AllOutput);
 
             }
         }

@@ -148,9 +148,9 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.TextManager.Interop.10.0" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
