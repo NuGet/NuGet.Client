@@ -9,10 +9,8 @@ using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 using System.Reflection;
-using NuGet.ContentModel;
 
 namespace NuGet.Build.Tasks.Pack.Test
 {
@@ -21,6 +19,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         [Fact]
         public void PackTaskLogic_ProducesBasicPackage()
         {
+            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file. 
             // Arrange
             using (var testDir = TestDirectory.Create())
             {
@@ -55,11 +54,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                     var dependecyGroupFramework = dependecyGroup.TargetFramework.Framework;
                     var dependentPackages = dependecyGroup.Packages.ToList();
                     var centralTransitiveDependentPackage = dependentPackages
-                        .Where(p => p.Id.Equals("Newtonsoft.Json", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                        .Where(p => p.Id.Equals("Newtonsoft.Json", StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault();
+                    var allPackageDependencies = string.Join(";", dependentPackages.Select(p => p.Id).OrderBy(id => id));
                     Assert.Equal(1, dependecyGroups.Count);
-                    Assert.Equal(4, dependentPackages.Count);
                     Assert.Equal(".NETStandard", dependecyGroupFramework);
-                    Assert.NotNull(centralTransitiveDependentPackage);
+                    Assert.Equal("ClassLibrary2;NETStandard.Library;Newtonsoft.Json;NuGet.Build.Tasks.Pack", allPackageDependencies);
                     Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }
             }

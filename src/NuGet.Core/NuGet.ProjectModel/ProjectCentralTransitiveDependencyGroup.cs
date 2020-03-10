@@ -14,6 +14,15 @@ namespace NuGet.ProjectModel
     {
         public ProjectCentralTransitiveDependencyGroup(NuGetFramework framework, IEnumerable<LibraryDependency> transitiveDependencies)
         {
+            if (framework == null)
+            {
+                throw new ArgumentNullException(nameof(framework));
+            }
+            if (transitiveDependencies == null)
+            {
+                throw new ArgumentNullException(nameof(transitiveDependencies));
+            }
+
             FrameworkName = framework.GetShortFolderName();
             TransitiveDependencies = transitiveDependencies;
         }
@@ -36,11 +45,6 @@ namespace NuGet.ProjectModel
 
             if (string.Equals(FrameworkName, other.FrameworkName, StringComparison.OrdinalIgnoreCase))
             {
-                if (TransitiveDependencies == null || other.TransitiveDependencies == null)
-                {
-                    return TransitiveDependencies == other.TransitiveDependencies;
-                }
-
                 return TransitiveDependencies.SequenceEqual(other.TransitiveDependencies);
             }
 
@@ -57,12 +61,9 @@ namespace NuGet.ProjectModel
             var combiner = new HashCodeCombiner();
             combiner.AddStringIgnoreCase(FrameworkName);
 
-            if (TransitiveDependencies != null)
+            foreach (var dependency in TransitiveDependencies)
             {
-                foreach (var dependency in TransitiveDependencies)
-                {
-                    combiner.AddObject(dependency);
-                }
+                combiner.AddObject(dependency);
             }
             return combiner.CombinedHash;
         }
