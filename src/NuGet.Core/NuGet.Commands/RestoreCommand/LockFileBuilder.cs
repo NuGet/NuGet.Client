@@ -325,8 +325,9 @@ namespace NuGet.Commands
                     graph.Framework.Equals(frameworkInfo.FrameworkName)
                     && string.IsNullOrEmpty(graph.RuntimeIdentifier));
 
-                var resolvedEntry = targetGraph?
-                    .Flattened
+                var flattenTargetGraph = targetGraph?.Flattened;
+
+                var resolvedEntry = flattenTargetGraph?
                     .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
 
                 Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
@@ -357,6 +358,23 @@ namespace NuGet.Commands
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
                 lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
+
+                var centralEnforcedTransitiveDependencies = flattenTargetGraph?
+                    .Where(graphItem => graphItem.CentralDependency != null)
+                    .Select(
+                        graphItem => graphItem.CentralDependency
+                    );
+
+                if (centralEnforcedTransitiveDependencies != null && centralEnforcedTransitiveDependencies.Any())
+                {
+                    var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
+                            (
+                                frameworkInfo.FrameworkName,
+                                centralEnforcedTransitiveDependencies
+                            );
+
+                    lockFile.ProjectCentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                }
             }
         }
 

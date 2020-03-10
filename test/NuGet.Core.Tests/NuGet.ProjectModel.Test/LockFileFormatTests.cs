@@ -1238,7 +1238,7 @@ namespace NuGet.ProjectModel.Test
 
                 // Act
                 var reader = new LockFileFormat();
-                lockFileObj = FileUtility.SafeRead(lockFile, (stream,path) => reader.Read(stream, NullLogger.Instance, path));
+                lockFileObj = FileUtility.SafeRead(lockFile, (stream, path) => reader.Read(stream, NullLogger.Instance, path));
                 logMessage = lockFileObj?.LogMessages?.First();
             }
 
@@ -1882,5 +1882,110 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(expected, output);
         }
 
+        [Fact]
+        public void LockFileFormat_WritesProjectCentralTransitiveDependencyGroups()
+        {
+            // Arrange
+            var lockFileContent = @"{
+  ""version"": 3,
+  ""targets"": {
+    "".NETPlatform,Version=v5.0"": {
+      ""System.Runtime/4.0.20-beta-22927"": {
+        ""type"": ""package"",
+        ""dependencies"": {
+          ""Frob"": ""4.0.20""
+        },
+        ""compile"": {
+          ""ref/dotnet/System.Runtime.dll"": {}
+        }
+      }
+    }
+  },
+  ""libraries"": {
+    ""System.Runtime/4.0.20-beta-22927"": {
+      ""sha512"": ""sup3rs3cur3"",
+      ""type"": ""package"",
+      ""files"": [
+        ""System.Runtime.nuspec""
+      ]
+    }
+  },
+  ""projectFileDependencyGroups"": {
+    """": [
+      ""System.Runtime [4.0.10-beta-*, )""
+    ],
+    "".NETPlatform,Version=v5.0"": []
+  },
+  ""projectCentralTransitiveDependencyGroups"": {
+     ""dotnet"": {
+      ""Newtonsoft.Json"": {
+                ""include"": ""Compile, Native, BuildTransitive"",
+                ""suppressParent"": ""All"",
+                ""target"": ""Package"",
+                ""version"": ""[12.0.3, )"",
+                ""autoReferenced"": true,
+                ""versionCentrallyManaged"": true              
+            }
+        }
+    }
+}";
+            var lockFile = new LockFile()
+            {
+                Version = 3
+            };
+
+            var target = new LockFileTarget()
+            {
+                TargetFramework = FrameworkConstants.CommonFrameworks.DotNet
+            };
+
+            var targetLib = new LockFileTargetLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package
+            };
+
+            targetLib.Dependencies.Add(new NuGet.Packaging.Core.PackageDependency("Frob",
+                new VersionRange(NuGetVersion.Parse("4.0.20"))));
+            targetLib.CompileTimeAssemblies.Add(new LockFileItem("ref/dotnet/System.Runtime.dll"));
+            target.Libraries.Add(targetLib);
+            lockFile.Targets.Add(target);
+
+            var lib = new LockFileLibrary()
+            {
+                Name = "System.Runtime",
+                Version = NuGetVersion.Parse("4.0.20-beta-22927"),
+                Type = LibraryType.Package,
+                Sha512 = "sup3rs3cur3"
+            };
+            lib.Files.Add("System.Runtime.nuspec");
+            lockFile.Libraries.Add(lib);
+
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup("", new string[] { "System.Runtime [4.0.10-beta-*, )" }));
+            lockFile.ProjectFileDependencyGroups.Add(
+                new ProjectFileDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet.DotNetFrameworkName, Array.Empty<string>()));
+
+            var newtonSoftDependency = new LibraryDependency(
+                        libraryRange: new LibraryRange("Newtonsoft.Json", VersionRange.Parse("[12.0.3, )"), LibraryDependencyTarget.Package),
+                        type: LibraryDependencyType.Default,
+                        includeType: LibraryIncludeFlags.Compile | LibraryIncludeFlags.BuildTransitive | LibraryIncludeFlags.Native,
+                        suppressParent: LibraryIncludeFlags.All,
+                        noWarn: new List<NuGetLogCode>(),
+                        autoReferenced: true,
+                        generatePathProperty: false);
+            newtonSoftDependency.VersionCentrallyManaged = true;
+
+            lockFile.ProjectCentralTransitiveDependencyGroups.Add(
+                new ProjectCentralTransitiveDependencyGroup(FrameworkConstants.CommonFrameworks.DotNet, new List<LibraryDependency>() { newtonSoftDependency }));
+            // Act
+            var lockFileFormat = new LockFileFormat();
+            var output = JObject.Parse(lockFileFormat.Render(lockFile));
+            var expected = JObject.Parse(lockFileContent);
+
+            // Assert
+            Assert.Equal(expected.ToString(), output.ToString());
+        }
     }
 }

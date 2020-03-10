@@ -52,7 +52,9 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
-            TransitiveCentralPackageVersions transitiveCentralPackageVersions)
+            TransitiveCentralPackageVersions transitiveCentralPackageVersions,
+            LibraryIncludeFlags inheritedIncludeFlags = LibraryIncludeFlags.All,
+            LibraryIncludeFlags inheritedSuppressParent = LibraryIncludeFlags.None)
         {
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
@@ -175,7 +177,9 @@ namespace NuGet.DependencyResolver
                             runtimeGraph,
                             ChainPredicate(predicate, node, dependency),
                             innerEdge,
-                            transitiveCentralPackageVersions));
+                            transitiveCentralPackageVersions,
+                            dependency.IncludeType & inheritedIncludeFlags,
+                            dependency.SuppressParent | inheritedSuppressParent));
                     }
                     else
                     {
@@ -183,6 +187,11 @@ namespace NuGet.DependencyResolver
                         // the centrally managed package versions need to be added to the graph explicitelly as they are not added otherwise
                         if (result.conflictingDependency != null && IsAutoReferencedCentralDependency(result.conflictingDependency))
                         {
+                            result.conflictingDependency.IncludeType = dependency.IncludeType & inheritedIncludeFlags;
+                            result.conflictingDependency.SuppressParent =
+                                (dependency.SuppressParent | inheritedSuppressParent) == LibraryIncludeFlags.None ?
+                                LibraryIncludeFlagUtils.DefaultSuppressParent :
+                                dependency.SuppressParent | inheritedSuppressParent;
                             MarkCentralVersionForTransitiveProcessing(framework, result.conflictingDependency, transitiveCentralPackageVersions);
                         }
 
@@ -398,8 +407,11 @@ namespace NuGet.DependencyResolver
                     runtimeGraph: runtimeGraph,
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
-                    transitiveCentralPackageVersions: transitiveCentralPackageVersions);
+                    transitiveCentralPackageVersions: transitiveCentralPackageVersions,
+                    inheritedIncludeFlags: centralPackageVersionDependency.IncludeType,
+                    inheritedSuppressParent: centralPackageVersionDependency.SuppressParent);
 
+            node.Item.CentralDependency = centralPackageVersionDependency;
             node.OuterNode = rootNode;
             rootNode.InnerNodes.Add(node);
         }

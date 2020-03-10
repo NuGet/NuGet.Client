@@ -915,6 +915,78 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
+
+        public async Task WalkAsyncAddsTransitiveCentralDependencyWithFlags()
+        {
+            var centralPackageVersion = "2.0.0";
+            var otherVersion = "1.0.0";
+            var centralPackageName = "D";
+            var framework = NuGetFramework.Parse("net45");
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+            provider.Package("A", otherVersion)
+                    .DependsOn(
+                            "B",
+                            otherVersion,
+                            LibraryDependencyTarget.Package,
+                            versionCentrallyManaged: false,
+                            autoReferenced: false,
+                            includeType: LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.Compile | LibraryIncludeFlags.Build | LibraryIncludeFlags.Runtime,
+                            suppressParent: LibraryIncludeFlags.Build)
+                    .DependsOn(
+                            centralPackageName,
+                            centralPackageVersion,
+                            LibraryDependencyTarget.Package,
+                            versionCentrallyManaged: true,
+                            autoReferenced: true);
+
+            provider.Package("B", otherVersion)
+                   .DependsOn(
+                            "C",
+                            otherVersion,
+                            LibraryDependencyTarget.Package,
+                            versionCentrallyManaged: false,
+                            autoReferenced: false,
+                            includeType: LibraryIncludeFlags.Build | LibraryIncludeFlags.Runtime,
+                            suppressParent: LibraryIncludeFlags.Analyzers);
+
+            provider.Package("C", otherVersion)
+                  .DependsOn(
+                            centralPackageName,
+                            otherVersion,
+                            LibraryDependencyTarget.Package,
+                            versionCentrallyManaged: false,
+                            autoReferenced: false,
+                            includeType: LibraryIncludeFlags.Runtime,
+                            suppressParent: LibraryIncludeFlags.ContentFiles);
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(2, rootNode.InnerNodes.Count);
+            var centralVersionNodeInGraph = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).FirstOrDefault();
+            Assert.NotNull(centralVersionNodeInGraph);
+            var centralDependency = centralVersionNodeInGraph.Item.CentralDependency;
+            Assert.NotNull(centralDependency);
+            Assert.Equal(LibraryIncludeFlags.Runtime, centralDependency.IncludeType);
+            var expectedSuppressParent = LibraryIncludeFlags.Build | LibraryIncludeFlags.Analyzers | LibraryIncludeFlags.ContentFiles;
+            Assert.Equal(expectedSuppressParent, centralDependency.SuppressParent);
+        }
+
+        [Fact]
         public async Task WalkAsyncDowngradesBecauseOfCentralDependecy()
         {
             var centralPackageName = "D";

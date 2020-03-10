@@ -27,6 +27,7 @@ namespace NuGet.ProjectModel
         public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
         public IList<IAssetsLogMessage> LogMessages { get; set; } = new List<IAssetsLogMessage>();
         public PackageSpec PackageSpec { get; set; }
+        public IList<ProjectCentralTransitiveDependencyGroup> ProjectCentralTransitiveDependencyGroups { get; set; } = new List<ProjectCentralTransitiveDependencyGroup>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -156,7 +157,7 @@ namespace NuGet.ProjectModel
 
             var length = orderedLogMessages.Length;
 
-            for (var i=0; i<length; i++)
+            for (var i = 0; i < length; i++)
             {
                 equals &= orderedLogMessages[i].Equals(orderedOtherLogMessages[i]);
 
@@ -166,7 +167,7 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            return equals;               
+            return equals;
         }
 
         public override bool Equals(object obj)

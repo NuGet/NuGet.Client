@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using FluentAssertions;
+using NuGet.ContentModel;
 using NuGet.LibraryModel;
 using NuGet.Versioning;
 using Xunit;
@@ -177,6 +178,134 @@ namespace NuGet.DependencyResolver.Core.Tests
             node.OuterNode = parent;
 
             node.GetPathWithLastRange().Should().Be("a -> b");
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        [InlineData(false, true)]
+
+        public void GraphOperations_GraphItem_EqualObjects(bool nullIdentity, bool nullCentralVersionDependency)
+        {
+            var libraryIdentity = nullIdentity ? null : new LibraryIdentity("a", new NuGetVersion("2.0.0"), LibraryType.Package);
+            var centralVersionDependency = nullCentralVersionDependency ? null : new LibraryDependency(
+                libraryRange: new LibraryRange("a", LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlags.None,
+                noWarn: null,
+                autoReferenced: true,
+                generatePathProperty: false,
+                versionCentrallyManaged: true);
+
+            var graphItem = new GraphItem<RemoteResolveResult>(libraryIdentity);
+            graphItem.CentralDependency = centralVersionDependency;
+
+            var graphItem2 = new GraphItem<RemoteResolveResult>(libraryIdentity);
+            graphItem2.CentralDependency = centralVersionDependency;
+
+            Assert.True(graphItem.Equals(graphItem));
+            Assert.True(graphItem.Equals(graphItem2));
+            Assert.Equal(graphItem.GetHashCode(), graphItem2.GetHashCode());
+        }
+
+        [Fact]
+
+        public void GraphOperations_GraphItem_NotEqualObjects()
+        {
+            var libraryIdentity1 = new LibraryIdentity("a", new NuGetVersion("2.0.0"), LibraryType.Package);
+            var libraryIdentity2 = new LibraryIdentity("b", new NuGetVersion("2.0.0"), LibraryType.Package);
+
+            var centralVersionDependency1 = new LibraryDependency(
+                libraryRange: new LibraryRange("a", LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlags.None,
+                noWarn: null,
+                autoReferenced: true,
+                generatePathProperty: false,
+                versionCentrallyManaged: true);
+            var centralVersionDependency2 = new LibraryDependency(
+                libraryRange: new LibraryRange("b", LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlags.None,
+                noWarn: null,
+                autoReferenced: true,
+                generatePathProperty: false,
+                versionCentrallyManaged: true);
+
+            var graphItem_1_1 = new GraphItem<RemoteResolveResult>(libraryIdentity1);
+            graphItem_1_1.CentralDependency = centralVersionDependency1;
+
+            var graphItem_1_2 = new GraphItem<RemoteResolveResult>(libraryIdentity1);
+            graphItem_1_2.CentralDependency = centralVersionDependency2;
+
+            var graphItem_1_null = new GraphItem<RemoteResolveResult>(libraryIdentity1);
+            graphItem_1_null.CentralDependency = null;
+
+            var graphItem_2_1 = new GraphItem<RemoteResolveResult>(libraryIdentity2);
+            graphItem_2_1.CentralDependency = centralVersionDependency1;
+
+            var graphItem_2_2 = new GraphItem<RemoteResolveResult>(libraryIdentity2);
+            graphItem_2_2.CentralDependency = centralVersionDependency2;
+
+            var graphItem_2_null = new GraphItem<RemoteResolveResult>(libraryIdentity2);
+            graphItem_2_null.CentralDependency = null;
+
+            var graphItem_null_1 = new GraphItem<RemoteResolveResult>(null);
+            graphItem_null_1.CentralDependency = centralVersionDependency1;
+
+            var graphItem_null_2 = new GraphItem<RemoteResolveResult>(null);
+            graphItem_null_2.CentralDependency = centralVersionDependency2;
+
+            var graphItem_null_null = new GraphItem<RemoteResolveResult>(null);
+            graphItem_null_null.CentralDependency = null;
+
+            Assert.False(graphItem_1_1.Equals(graphItem_1_2));
+            Assert.False(graphItem_1_1.Equals(graphItem_1_null));
+            Assert.False(graphItem_1_1.Equals(graphItem_2_1));
+            Assert.False(graphItem_1_1.Equals(graphItem_2_2));
+            Assert.False(graphItem_1_1.Equals(graphItem_2_null));
+            Assert.False(graphItem_1_1.Equals(graphItem_null_1));
+            Assert.False(graphItem_1_1.Equals(graphItem_null_2));
+            Assert.False(graphItem_1_1.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_1_2.Equals(graphItem_1_null));
+            Assert.False(graphItem_1_2.Equals(graphItem_2_1));
+            Assert.False(graphItem_1_2.Equals(graphItem_2_2));
+            Assert.False(graphItem_1_2.Equals(graphItem_2_null));
+            Assert.False(graphItem_1_2.Equals(graphItem_null_1));
+            Assert.False(graphItem_1_2.Equals(graphItem_null_2));
+            Assert.False(graphItem_1_2.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_1_null.Equals(graphItem_2_1));
+            Assert.False(graphItem_1_null.Equals(graphItem_2_2));
+            Assert.False(graphItem_1_null.Equals(graphItem_2_null));
+            Assert.False(graphItem_1_null.Equals(graphItem_null_1));
+            Assert.False(graphItem_1_null.Equals(graphItem_null_2));
+            Assert.False(graphItem_1_null.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_2_1.Equals(graphItem_2_2));
+            Assert.False(graphItem_2_1.Equals(graphItem_2_null));
+            Assert.False(graphItem_2_1.Equals(graphItem_null_1));
+            Assert.False(graphItem_2_1.Equals(graphItem_null_2));
+            Assert.False(graphItem_2_1.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_2_2.Equals(graphItem_2_null));
+            Assert.False(graphItem_2_2.Equals(graphItem_null_1));
+            Assert.False(graphItem_2_2.Equals(graphItem_null_2));
+            Assert.False(graphItem_2_2.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_2_null.Equals(graphItem_null_1));
+            Assert.False(graphItem_2_null.Equals(graphItem_null_2));
+            Assert.False(graphItem_2_null.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_null_1.Equals(graphItem_null_2));
+            Assert.False(graphItem_null_1.Equals(graphItem_null_null));
+
+            Assert.False(graphItem_null_2.Equals(graphItem_null_null));
         }
 
         public GraphNode<RemoteResolveResult> GetNode(string id, string range, LibraryDependencyTarget target, string version, LibraryType type)

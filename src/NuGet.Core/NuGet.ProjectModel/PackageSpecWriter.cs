@@ -370,7 +370,7 @@ namespace NuGet.ProjectModel
         /// This method sorts the libraries based on the name
         /// This method also writes out the normalized versions to avoid cases where original string is set because it was gotten through project system vs being installed from PM UI
         /// </summary>
-        private static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
+        internal static void SetDependencies(IObjectWriter writer, string name, IEnumerable<LibraryDependency> libraryDependencies)
         {
             if (!libraryDependencies.Any())
             {

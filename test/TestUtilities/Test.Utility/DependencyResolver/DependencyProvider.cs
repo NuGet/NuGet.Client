@@ -148,7 +148,13 @@ namespace Test.Utility
                 return this;
             }
 
-            public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All, bool versionCentrallyManaged = false, bool autoReferenced = false)
+            public TestPackage DependsOn(string id,
+                string version,
+                LibraryDependencyTarget target = LibraryDependencyTarget.All,
+                bool versionCentrallyManaged = false,
+                bool autoReferenced = false,
+                LibraryIncludeFlags includeType = LibraryIncludeFlags.All,
+                LibraryIncludeFlags suppressParent = LibraryIncludeFlags.Build | LibraryIncludeFlags.ContentFiles | LibraryIncludeFlags.Analyzers)
             {
                 _dependencies.Add(new LibraryDependency
                 {
@@ -160,6 +166,8 @@ namespace Test.Utility
                     },
                     VersionCentrallyManaged = versionCentrallyManaged,
                     AutoReferenced = autoReferenced,
+                    IncludeType = includeType,
+                    SuppressParent = suppressParent
                 });
 
                 return this;

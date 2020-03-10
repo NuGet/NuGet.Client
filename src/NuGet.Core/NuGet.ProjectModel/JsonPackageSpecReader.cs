@@ -311,7 +311,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadDependencies(
+        internal static void ReadDependencies(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath,
@@ -1431,6 +1431,156 @@ namespace NuGet.ProjectModel
 
             return targetFlagsValue;
         }
+
+        //private static List<ProjectCentralTransitiveDependencyGroup> ReadCentralTransitiveDependencyGroups(JsonTextReader jsonReader, string packageSpecPath)
+        //{
+        //    var centralTransitiveDependencyGroups = new List<ProjectCentralTransitiveDependencyGroup>();
+
+        //    List<CompatibilityProfile> compatibilityProfiles = null;
+        //    List<RuntimeDescription> runtimeDescriptions = null;
+        //    var wasPackOptionsSet = false;
+        //    var isMappingsNull = false;
+
+        //    string filePath = name == null ? null : Path.GetFullPath(packageSpecPath);
+
+        //    jsonReader.ReadObject(propertyName =>
+        //    {
+        //        if (string.IsNullOrWhiteSpace(propertyName))
+        //        {
+        //            return;
+        //        }
+
+        //        switch (propertyName)
+        //        {
+        //            case "authors":
+        //                packageSpec.Authors = ReadStringArray(jsonReader) ?? Array.Empty<string>();
+        //                break;
+
+        //            case "buildOptions":
+        //                ReadBuildOptions(jsonReader, packageSpec);
+        //                break;
+
+        //            case "contentFiles":
+        //                List<string> contentFiles = jsonReader.ReadStringArrayAsList();
+
+        //                if (contentFiles != null)
+        //                {
+        //                    packageSpec.ContentFiles = contentFiles;
+        //                }
+        //                break;
+
+        //            case "copyright":
+        //                packageSpec.Copyright = jsonReader.ReadNextTokenAsString();
+        //                break;
+
+        //            case "dependencies":
+        //                ReadDependencies(
+        //                    jsonReader,
+        //                    packageSpec.Dependencies,
+        //                    filePath,
+        //                    isGacOrFrameworkReference: false);
+        //                break;
+
+        //            case "description":
+        //                packageSpec.Description = jsonReader.ReadNextTokenAsString();
+        //                break;
+
+        //            case "frameworks":
+        //                ReadFrameworks(jsonReader, packageSpec);
+        //                break;
+
+        //            case "language":
+        //                packageSpec.Language = jsonReader.ReadNextTokenAsString();
+        //                break;
+
+        //            case "packInclude":
+        //                ReadPackInclude(jsonReader, packageSpec);
+        //                break;
+
+        //            case "packOptions":
+        //                ReadPackOptions(jsonReader, packageSpec, ref isMappingsNull);
+        //                wasPackOptionsSet = true;
+        //                break;
+
+        //            case "restore":
+        //                ReadMSBuildMetadata(jsonReader, packageSpec);
+        //                break;
+
+        //            case "restoreSettings":
+        //                ReadRestoreSettings(jsonReader, packageSpec);
+        //                break;
+
+        //            case "runtimes":
+        //                runtimeDescriptions = ReadRuntimes(jsonReader);
+        //                break;
+
+        //            case "scripts":
+        //                ReadScripts(jsonReader, packageSpec);
+        //                break;
+
+        //            case "supports":
+        //                compatibilityProfiles = ReadSupports(jsonReader);
+        //                break;
+
+        //            case "title":
+        //                packageSpec.Title = jsonReader.ReadNextTokenAsString();
+        //                break;
+
+        //            case "version":
+        //                string version = jsonReader.ReadAsString();
+
+        //                if (version != null)
+        //                {
+        //                    try
+        //                    {
+        //                        packageSpec.HasVersionSnapshot = PackageSpecUtility.IsSnapshotVersion(version);
+        //                        packageSpec.Version = PackageSpecUtility.SpecifySnapshot(version, snapshotValue);
+        //                    }
+        //                    catch (Exception ex)
+        //                    {
+        //                        throw FileFormatException.Create(ex, version, packageSpec.FilePath);
+        //                    }
+        //                }
+        //                break;
+        //        }
+        //    });
+
+        //    packageSpec.Name = name;
+        //    packageSpec.FilePath = name == null ? null : Path.GetFullPath(packageSpecPath);
+
+        //    if (!wasPackOptionsSet)
+        //    {
+        //        packageSpec.Owners = Array.Empty<string>();
+        //        packageSpec.PackOptions = new PackOptions()
+        //        {
+        //            PackageType = Array.Empty<PackageType>()
+        //        };
+        //        packageSpec.Tags = Array.Empty<string>();
+        //    }
+
+        //    if (isMappingsNull)
+        //    {
+        //        packageSpec.PackOptions.Mappings = null;
+        //    }
+
+        //    packageSpec.RuntimeGraph = new RuntimeGraph(
+        //        runtimeDescriptions ?? Enumerable.Empty<RuntimeDescription>(),
+        //        compatibilityProfiles ?? Enumerable.Empty<CompatibilityProfile>());
+
+        //    if (packageSpec.Name == null)
+        //    {
+        //        packageSpec.Name = packageSpec.RestoreMetadata?.ProjectName;
+        //    }
+
+        //    // Use the project.json path if one is set, otherwise use the project path
+        //    if (packageSpec.FilePath == null)
+        //    {
+        //        packageSpec.FilePath = packageSpec.RestoreMetadata?.ProjectJsonPath
+        //            ?? packageSpec.RestoreMetadata?.ProjectPath;
+        //    }
+
+        //    return packageSpec;
+        //}
 
         private static List<ProjectRestoreMetadataFrameworkInfo> ReadTargetFrameworks(JsonTextReader jsonReader)
         {
