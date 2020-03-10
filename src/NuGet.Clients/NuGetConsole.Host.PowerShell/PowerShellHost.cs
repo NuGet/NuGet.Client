@@ -632,13 +632,19 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         }
 
         private void WriteErrorLine(string message)
-        {
-            ActiveConsole?.WriteAsync(message + Environment.NewLine, Colors.White, Colors.DarkRed);
+        {   
+            if(ActiveConsole != null)
+            {
+                 NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ActiveConsole?.WriteAsync(message + Environment.NewLine, Colors.White, Colors.DarkRed));
+            }
         }
 
         private void WriteLine(string message = "")
         {
-            ActiveConsole?.WriteLineAsync(message);
+            if(ActiveConsole != null)
+            {
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ActiveConsole?.WriteLineAsync(message));
+            }
         }
 
         public string[] GetPackageSources() => _packageSources;
