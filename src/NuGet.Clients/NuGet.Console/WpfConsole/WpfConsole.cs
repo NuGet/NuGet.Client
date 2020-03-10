@@ -18,6 +18,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
 using EditorDefGuidList = Microsoft.VisualStudio.Editor.DefGuidList;
 using IOleServiceProvider = Microsoft.VisualStudio.OLE.Interop.IServiceProvider;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGetConsole.Implementation.Console
 {
@@ -791,39 +792,45 @@ namespace NuGetConsole.Implementation.Console
                 get { return Invoke(() => _impl.ConsoleWidth); }
             }
 
-            public void Write(string text)
+            public async Task WriteAsync(string text)
             {
-                Invoke(() => _impl.Write(text));
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.Write(text);
             }
 
-            public void WriteLine(string text)
+            public async Task WriteLineAsync(string text)
             {
-                Invoke(() => _impl.WriteLine(text));
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.WriteLine(text);
             }
 
-            public void WriteLine(string format, params object[] args)
+            public Task WriteLineAsync(string format, params object[] args)
             {
-                WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
+                return WriteLineAsync(string.Format(CultureInfo.CurrentCulture, format, args));
             }
 
-            public void WriteBackspace()
+            public async Task WriteBackspaceAsync()
             {
-                Invoke(_impl.WriteBackspace);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.WriteBackspace();
             }
 
-            public void Write(string text, Color? foreground, Color? background)
+            public async Task WriteAsync(string text, Color? foreground, Color? background)
             {
-                Invoke(() => _impl.Write(text, foreground, background));
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.Write(text, foreground, background);
             }
 
-            public void Activate()
+            public async Task ActivateAsync()
             {
-                Invoke(() => _impl.Activate());
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.Activate();
             }
 
-            public void Clear()
+            public async Task ClearAsync()
             {
-                Invoke(_impl.Clear);
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.Clear();
             }
 
             public void SetConsoleWidth(int consoleWidth)
@@ -841,9 +848,10 @@ namespace NuGetConsole.Implementation.Console
                 get { return Invoke(() => _impl.Content); }
             }
 
-            public void WriteProgress(string operation, int percentComplete)
+            public async Task WriteProgressAsync(string operation, int percentComplete)
             {
-                Invoke(() => _impl.WriteProgress(operation, percentComplete));
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                _impl.WriteProgress(operation, percentComplete);
             }
 
             public object VsTextView
