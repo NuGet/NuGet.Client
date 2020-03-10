@@ -15,7 +15,6 @@
     <XPLATProject>true</XPLATProject>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <ServerGarbageCollection>true</ServerGarbageCollection>
-    <BuildOutputTargetFolder>contentFiles\any</BuildOutputTargetFolder>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
   </PropertyGroup>
 
@@ -36,6 +35,14 @@
 
   <ItemGroup>
     <None Include="App.config" Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' " />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\NuGet.Build.Tasks\NuGet.RestoreEx.targets">
+      <Link>%(Filename)%(Extension)</Link>
+      <PackagePath>runtimes\any\native</PackagePath>
+      <Pack>true</Pack>
+    </Content>
   </ItemGroup>
 
   <ItemGroup Condition="$(DefineConstants.Contains(SIGNED_BUILD))">
