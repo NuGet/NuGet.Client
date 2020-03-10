@@ -118,8 +118,7 @@
         Targets="RunTestsOnProjects"
         Properties="$(CommonMSBuildProperties);
                     TestResultsFileName=$(TestResultsFileName);
-                    TestProjectPaths=$(TestProjectPaths);
-                    Verbosity=-verbose">
+                    TestProjectPaths=$(TestProjectPaths)">
       <Output TaskParameter="TargetOutputs"
               ItemName="TestAssemblyPath" />
     </MSBuild>
@@ -378,15 +377,15 @@
       <DesktopInputTestAssembliesSpaced>$(DesktopInputTestAssemblies.Replace(';', ' '))</DesktopInputTestAssembliesSpaced>
       
       <!-- Build exe commands -->
-      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced)</DesktopTestCommand>
-      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit) $(Verbosity)</DesktopTestCommand>
+      <DesktopTestCommand>$(XunitConsoleExePath) $(DesktopInputTestAssembliesSpaced) -verbose</DesktopTestCommand>
+      <DesktopTestCommand Condition=" '$(TestResultsXunit)' != '' ">$(DesktopTestCommand) -$(TestResultOutputFormat) $(TestResultsXunit)</DesktopTestCommand>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(SkipCoreAssemblies)' != 'true' ">
       <CoreInputTestAssemblies>@(TestAssemblyPath->WithMetadataValue("IsCore", "true"))</CoreInputTestAssemblies>
       <CoreInputTestAssembliesSpaced>$(CoreInputTestAssemblies.Replace(';', ' '))</CoreInputTestAssembliesSpaced>
 
-      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)</VsTestLogger>      
+      <VsTestLogger>--TestAdapterPath:$(XunitXmlLoggerDirectory) --logger:"xunit;LogFileName=$(TestResultsFileName)-vsts.$(TestResultOutputFormat)" --logger:"console;verbosity=detailed" --settings:$(MSBuildThisFileDirectory)xunit.runsettings</VsTestLogger>
       <VSTestCommand>$(DotnetExePath) vstest $(CoreInputTestAssembliesSpaced) $(VsTestLogger)</VSTestCommand>
     </PropertyGroup>
 
