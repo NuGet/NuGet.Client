@@ -431,7 +431,7 @@
                   VisualStudioVersion=$(VisualStudioVersion);" />
 
     <GenerateMarkdownDoc
-      ProjectFiles="@(AllSolutionProjects)"
+      ProjectFiles="@(ProductProjects)"
       OutputFile="$(RepositoryRootDirectory)\artifacts\docs-generated\overview.md"
       GitHubRepositoryUrl="$(RepositoryUrl)"
       RepositoryRoot="$(RepositoryRootDirectory)"
