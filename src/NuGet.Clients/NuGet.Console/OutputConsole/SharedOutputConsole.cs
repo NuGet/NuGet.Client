@@ -14,14 +14,14 @@ namespace NuGetConsole
     /// </summary>
     internal abstract class SharedOutputConsole : IOutputConsole
     {
+        public int ConsoleWidth => 120;
+
         // The next 3 methods are the ones that need to be overriden
         public abstract Task ActivateAsync();
 
         public abstract Task ClearAsync();
 
         public abstract Task WriteAsync(string text);
-
-        public int ConsoleWidth => 120;
 
         public Task WriteAsync(string text, Color? foreground, Color? background)
         {
