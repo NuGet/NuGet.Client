@@ -424,6 +424,12 @@
   -->
   <UsingTask AssemblyFile="$(RepositoryRootDirectory)\tools-local\doc.tasks\bin\Debug\netstandard2.0\doc.tasks.dll" TaskName="NuGetTasks.GenerateMarkdownDoc" />
   <Target Name="GenerateDocs">
+    <MsBuild
+      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Targets="Restore;Build"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion);" />
+
     <GenerateMarkdownDoc
       ProjectFiles="@(AllSolutionProjects)"
       OutputFile="$(RepositoryRootDirectory)\artifacts\docs-generated\overview.md"
