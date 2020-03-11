@@ -116,17 +116,6 @@ namespace NuGet.Versioning
                 return false;
             }
 
-            // Special case *-*
-            if (allowFloating
-                && charArray.Length == 3
-                && charArray[0] == '*'
-                && charArray[0] == '-'
-                && charArray[0] == '*')
-            {
-                versionRange = new VersionRange(new NuGetVersion("0.0.0-0"), true, null, true, FloatRange.Parse(trimmedValue), originalString: value);
-                return true;
-            }
-
             string minVersionString = null;
             string maxVersionString = null;
             var isMinInclusive = false;
