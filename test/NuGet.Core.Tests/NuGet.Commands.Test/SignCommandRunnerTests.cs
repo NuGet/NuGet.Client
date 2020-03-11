@@ -109,7 +109,8 @@ namespace NuGet.Commands.Test
             using (var test = await Test.CreateAsync(_fixture.GetDefaultCertificate()))
             {
                 test.Args.CertificateSubjectName = "Root";
-                test.Args.CertificateStoreLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();                
+                //X509 store is opened in ReadOnly mode in this code path. Hence StoreLocation is set to LocalMachine.
+                test.Args.CertificateStoreLocation = StoreLocation.LocalMachine;                
                 test.Args.CertificateStoreName = StoreName.Root;
 
                 var exception = await Assert.ThrowsAsync<SignCommandException>(
