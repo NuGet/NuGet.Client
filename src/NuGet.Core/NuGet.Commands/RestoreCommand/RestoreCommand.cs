@@ -824,7 +824,7 @@ namespace NuGet.Commands
 
                             if (isCpvmEnabled)
                             {
-                                messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1609, message, downgraded.Key.Name, graph.TargetGraphName));
+                                messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1109, message, downgraded.Key.Name, graph.TargetGraphName));
                             }
                             else
                             {

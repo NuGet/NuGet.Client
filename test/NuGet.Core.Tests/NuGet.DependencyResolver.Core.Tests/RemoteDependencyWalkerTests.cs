@@ -850,7 +850,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public void TransitiveCentralPackageVersions__TryAdd_DuplicatesAreIgnored()
+        public void TransitiveCentralPackageVersions_TryAdd_DuplicatesAreIgnored()
         {
             // Arrange
             var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
