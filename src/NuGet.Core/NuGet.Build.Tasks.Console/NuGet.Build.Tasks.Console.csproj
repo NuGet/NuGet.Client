@@ -12,6 +12,9 @@
     <Description>NuGet restore console application.</Description>
     <!-- NU5100: Suppress warning about a DLL not in a lib folder since on .NET Core the EXE is technically a DLL -->
     <NoWarn>$(NoWarn);CS1591;NU5100</NoWarn>
+    <!-- Set rollforward which propagates into runtimeconfig.json to make it loadable with an SDK that 
+         contains a higher shared framework than the one this project builds against. -->
+    <RollForward>LatestMajor</RollForward>
     <XPLATProject>true</XPLATProject>
     <EnableDefaultNoneItems>false</EnableDefaultNoneItems>
     <ServerGarbageCollection>true</ServerGarbageCollection>
