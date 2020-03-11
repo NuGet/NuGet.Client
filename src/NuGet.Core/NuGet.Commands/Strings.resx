@@ -982,5 +982,6 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="Log_CPVM_DowngradeError" xml:space="preserve">
     <value>Detected package downgrade: {0} from {1} to centrally defined {2}.</value>
+    <comment>{0} is package id, {1} is the package version, {2} is the downgraded package version.</comment>
   </data>
 </root>

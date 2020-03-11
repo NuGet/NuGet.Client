@@ -1463,7 +1463,7 @@ namespace NuGet.Commands.Test
             var logMessage = logger.LogMessages.First();
             Assert.Equal(LogLevel.Error, logMessage.Level);
             Assert.True(logMessage.Message.Contains("Detected package downgrade: D from 3.0.0 to centrally defined 2.0.0. "));
-            Assert.Equal(NuGetLogCode.NU1609, logMessage.Code);
+            Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
         }
 
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)

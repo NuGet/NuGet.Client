@@ -22,13 +22,7 @@ namespace Test.Utility
     {
         private readonly Dictionary<LibraryIdentity, List<LibraryDependency>> _graph = new Dictionary<LibraryIdentity, List<LibraryDependency>>();
 
-        public bool IsHttp
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsHttp => false;
 
         public PackageSource Source => new PackageSource("Test");
 

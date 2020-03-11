@@ -20,13 +20,14 @@ namespace NuGet.ProjectModel.Test
         {
             // Arrange
             var logger = new TestLogger();
-            var dependencyFoo = new LibraryDependency(new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
-               LibraryDependencyType.Default,
-               LibraryIncludeFlags.All,
-               LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
-               autoReferenced: false,
-               generatePathProperty: true);
+            var dependencyFoo = new LibraryDependency(
+                libraryRange: new LibraryRange("foo", versionRange: null, LibraryDependencyTarget.Package),
+                type: LibraryDependencyType.Default,
+                includeType: LibraryIncludeFlags.All,
+                suppressParent: LibraryIncludeFlags.None,
+                noWarn: new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
@@ -58,7 +59,6 @@ namespace NuGet.ProjectModel.Test
                 Assert.Equal(1, dependencies.Count);
                 var fooDep = dependencies.Where(d => d.Name == "foo").First();
                 Assert.NotNull(fooDep);
-                Assert.False(fooDep.VersionCentrallyManaged);
                 Assert.False(fooDep.VersionCentrallyManaged);
                 Assert.Null(fooDep.LibraryRange.VersionRange);
             }
