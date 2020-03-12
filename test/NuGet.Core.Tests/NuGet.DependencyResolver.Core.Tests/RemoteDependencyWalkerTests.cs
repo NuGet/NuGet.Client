@@ -4,16 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Threading;
 using System.Threading.Tasks;
-using NuGet.Common;
-using NuGet.Configuration;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
-using NuGet.Packaging.Core;
-using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 using Xunit;
 using Test.Utility;
@@ -887,15 +880,31 @@ namespace NuGet.DependencyResolver.Tests
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
             // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+
+            // Input 
+            // A -> B (version = otherVersion) -> C (version = otherVersion) -> D (version = otherVersion)
+            // A ~> D (the version 2.0.0 or as defined by "centralPackageVersion" argument
+            //         the dependency is not direct,
+            //         it simulates the fact that there is a centrally defined "D" package
+            //         the information is added to the provider)
+
+            // The expected output graph
+            //    -> B (version = otherVersion) -> C (version = otherVersion)
+            // A
+            //    -> D (version = 2.0.0)
+
             provider.Package("A", otherVersion)
-                    .DependsOn("B", otherVersion)
-                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+                    .DependsOn("B", otherVersion);
 
             provider.Package("B", otherVersion)
                    .DependsOn("C", otherVersion);
 
             provider.Package("C", otherVersion)
                   .DependsOn(centralPackageName, otherVersion);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", otherVersion)
+                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true);
 
             // Add central package to the source with multiple versions
             provider.Package(centralPackageName, "1.0.0");
@@ -910,8 +919,23 @@ namespace NuGet.DependencyResolver.Tests
 
             // Assert
             Assert.Equal(2, rootNode.InnerNodes.Count);
-            var centralVersionInGraph = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).Select(n => n.Item.Key.Version.ToNormalizedString()).FirstOrDefault();
-            Assert.Equal(centralPackageVersion, centralVersionInGraph);
+            var centralVersionInGraphNode = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).FirstOrDefault();
+            Assert.NotNull(centralVersionInGraphNode);
+            Assert.Equal(centralPackageVersion, centralVersionInGraphNode.Item.Key.Version.ToNormalizedString());
+            Assert.NotNull(centralVersionInGraphNode.Item.CentralDependency);
+            Assert.Equal(LibraryDependencyReferenceType.Transitve, centralVersionInGraphNode.Item.CentralDependency.ReferenceType);
+
+            var BNode = rootNode.InnerNodes.Where(n => n.Item.Key.Name == "B").FirstOrDefault();
+            Assert.NotNull(BNode);
+            Assert.Equal(1, BNode.InnerNodes.Count);
+            Assert.Equal(otherVersion, BNode.Item.Key.Version.ToNormalizedString());
+            Assert.Null(BNode.Item.CentralDependency);
+
+            var CNode = BNode.InnerNodes.Where(n => n.Item.Key.Name == "C").FirstOrDefault();
+            Assert.NotNull(CNode);
+            Assert.Equal(otherVersion, CNode.Item.Key.Version.ToNormalizedString());
+            Assert.Equal(0, CNode.InnerNodes.Count);
+            Assert.Null(CNode.Item.CentralDependency);
         }
 
         [Fact]
@@ -926,16 +950,27 @@ namespace NuGet.DependencyResolver.Tests
             var provider = new DependencyProvider();
             // D is a transitive dependency for package A through package B -> C -> D
             // D is defined as a Central Package Version
-            // In this context Package D with version 2.0.0 will be added as inner node of Node A, next to B 
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+
+            // Picture:
+            // A -> B -> C -> D (version 1.0.0 or 2.0.0 as defined by "otherVersion" argument.
+            // A ~> D (the version 2.0.0 or as defined by "centralPackageVersion" argument
+            //         the dependency is not direct,
+            //         it simulates the fact that there is a centrally defined "D" package
+            //         the information is added to the provider)
+
             provider.Package("A", otherVersion)
-                    .DependsOn("B", otherVersion)
-                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, autoReferenced: true);
+                    .DependsOn("B", otherVersion);
 
             provider.Package("B", otherVersion)
                    .DependsOn("C", otherVersion);
 
             provider.Package("C", otherVersion)
                   .DependsOn(centralPackageName, otherVersion);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", otherVersion)
+                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true);
 
             // Add central package to the source with multiple versions
             provider.Package(centralPackageName, "1.0.0");
@@ -960,11 +995,13 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
-        public void IsAutoReferencedCentralDependencyTest(bool autoReferenced, bool versionCentrallyManaged)
+        [InlineData(LibraryDependencyReferenceType.Direct, true)]
+        [InlineData(LibraryDependencyReferenceType.Transitve, true)]
+        [InlineData(LibraryDependencyReferenceType.None, true)]
+        [InlineData(LibraryDependencyReferenceType.Direct, false)]
+        [InlineData(LibraryDependencyReferenceType.Transitve, false)]
+        [InlineData(LibraryDependencyReferenceType.None, false)]
+        public void IsDependencyValidForGraphTest(LibraryDependencyReferenceType referenceType, bool versionCentrallyManaged)
         {
             var centralPackageName = "D";
             var framework = NuGetFramework.Parse("net45");
@@ -974,21 +1011,21 @@ namespace NuGet.DependencyResolver.Tests
             {
                 LibraryRange = new LibraryRange(centralPackageVersion.Name, centralPackageVersion.VersionRange, LibraryDependencyTarget.Package),
                 VersionCentrallyManaged = versionCentrallyManaged,
-                AutoReferenced = autoReferenced,
+                ReferenceType = referenceType,
             };
             var walker = new RemoteDependencyWalker(context);
 
             // Act
-            var isCentralDependency_VersionCentrallyManaged = walker.IsAutoReferencedCentralDependency(centralPackageVersionDependecy_VersionCentrallyManaged);
+            var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependecy_VersionCentrallyManaged);
 
             // Assert
-            if (autoReferenced && versionCentrallyManaged)
+            if (referenceType == LibraryDependencyReferenceType.Direct || !versionCentrallyManaged)
             {
-                Assert.True(isCentralDependency_VersionCentrallyManaged);
+                Assert.True(expectedResult);
             }
             else
             {
-                Assert.False(isCentralDependency_VersionCentrallyManaged);
+                Assert.False(expectedResult);
             }
         }
 

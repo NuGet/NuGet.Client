@@ -142,7 +142,7 @@ namespace NuGet.DependencyResolver
 
             // do not add nodes for all the centrally managed package versions to the graph
             // they will be added only if they are transitive
-            foreach (var dependency in node.Item.Data.Dependencies.Where(d => !IsAutoReferencedCentralDependency(d)))
+            foreach (var dependency in node.Item.Data.Dependencies.Where(d => IsDependencyValidForGraph(d)))
             {
                 // Skip dependencies if the dependency edge has 'all' excluded and
                 // the node is not a direct dependency.
@@ -179,9 +179,11 @@ namespace NuGet.DependencyResolver
                     }
                     else
                     {
-                        // In case of conflict because of a centrally managed version
+                        // In case of conflict because of a centrally managed version that is not direct dependency
                         // the centrally managed package versions need to be added to the graph explicitelly as they are not added otherwise
-                        if (result.conflictingDependency != null && IsAutoReferencedCentralDependency(result.conflictingDependency))
+                        if (result.conflictingDependency != null &&
+                            result.conflictingDependency.VersionCentrallyManaged
+                            && result.conflictingDependency.ReferenceType != LibraryDependencyReferenceType.Direct)
                         {
                             MarkCentralVersionForTransitiveProcessing(framework, result.conflictingDependency, transitiveCentralPackageVersions);
                         }
@@ -376,6 +378,8 @@ namespace NuGet.DependencyResolver
         /// </summary>
         private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryDependency libraryDependency, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
+            // Set the transitive flag once is marked as transitive
+            libraryDependency.ReferenceType = LibraryDependencyReferenceType.Transitve;
             transitiveCentralPackageVersions.TryAdd(libraryDependency);
         }
 
@@ -401,15 +405,21 @@ namespace NuGet.DependencyResolver
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
             node.OuterNode = rootNode;
+            node.Item.CentralDependency = centralPackageVersionDependency;
             rootNode.InnerNodes.Add(node);
         }
 
         /// <summary>
-        /// For a <see cref="LibraryDependency"/> validate if it is centrally managed and it coresponds with a central managed version of this context.
+        /// A centrally defined package version has the potential to become a transitive dependency.
+        /// A such dependency is defined by
+        ///     VersionCentrallyManaged = true
+        ///     ReferenceType != LibraryDependencyReferenceType.Direct
+        /// However do not include them in the graph for the begining.
         /// </summary>
-        internal bool IsAutoReferencedCentralDependency(LibraryDependency dependency)
+        internal bool IsDependencyValidForGraph(LibraryDependency dependency)
         {
-            return dependency.AutoReferenced && dependency.VersionCentrallyManaged;
+            return dependency.ReferenceType == LibraryDependencyReferenceType.Direct ||
+                   !dependency.VersionCentrallyManaged;
         }
 
         internal class TransitiveCentralPackageVersions

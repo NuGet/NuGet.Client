@@ -335,7 +335,7 @@ namespace NuGet.ProjectModel
                         {
                             LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
                             VersionCentrallyManaged = true,
-                            AutoReferenced = true,
+                            ReferenceType = LibraryDependencyReferenceType.None,
                         }));
                 }
 

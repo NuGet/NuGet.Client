@@ -110,6 +110,7 @@ namespace NuGet.Commands.Test
             updated.RestoreMetadata.ProjectUniqueName = spec.Name;
             updated.RestoreMetadata.ProjectPath = projectPath;
             updated.RestoreMetadata.ConfigFilePaths = new List<string>();
+            updated.RestoreMetadata.CentralPackageVersionsEnabled = spec.RestoreMetadata.CentralPackageVersionsEnabled;
 
             foreach (var framework in updated.TargetFrameworks.Select(e => e.FrameworkName))
             {

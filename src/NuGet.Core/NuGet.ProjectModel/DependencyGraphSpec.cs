@@ -271,6 +271,7 @@ namespace NuGet.ProjectModel
                     }
 
                     d.VersionCentrallyManaged = true;
+                    d.ReferenceType = LibraryDependencyReferenceType.Direct;
                 }
             }
 
@@ -308,7 +309,7 @@ namespace NuGet.ProjectModel
                     {
                         switch (propertyName)
                         {
-                           case "restore":
+                            case "restore":
                                 jsonReader.ReadObject(restorePropertyName =>
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))

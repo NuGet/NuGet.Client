@@ -271,7 +271,7 @@ namespace NuGet.Commands
                 IList<CompatibilityCheckResult> checkResults = null;
                 using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidateRestoreGraphs))
                 {
-                    _success &= await ValidateRestoreGraphsAsync(graphs, _logger, isCpvmEnabled);
+                    _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
                     // Check package compatibility
                     checkResults = await VerifyCompatibilityAsync(
@@ -717,7 +717,7 @@ namespace NuGet.Commands
         /// are not logged. This is to avoid flooding the log with long 
         /// dependency chains for every package.
         /// </summary>
-        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger, bool isCpvmEnabled)
+        private async Task<bool> ValidateRestoreGraphsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             // Check for cycles
             var success = await ValidateCyclesAsync(graphs, logger);
@@ -731,7 +731,7 @@ namespace NuGet.Commands
             if (success)
             {
                 // Log downgrades if everything else was successful
-                await LogDowngradeWarningsOrErrorsAsync(graphs, logger, isCpvmEnabled);
+                await LogDowngradeWarningsOrErrorsAsync(graphs, logger);
             }
 
             return success;
@@ -783,7 +783,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Log downgrade warnings from the graphs.
         /// </summary>
-        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger, bool isCpvmEnabled)
+        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             var messages = new List<RestoreLogMessage>();
 
@@ -814,15 +814,17 @@ namespace NuGet.Commands
                                             ?? downgradedBy.GetVersionRange().MinVersion
                                             ?? new NuGetVersion(0, 0, 0);
 
+                            var isCPVMdowngradedError = downgradedBy.Item.CentralDependency != null;
+
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    isCpvmEnabled ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
+                                    isCPVMdowngradedError ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            if (isCpvmEnabled)
+                            if (isCPVMdowngradedError)
                             {
                                 messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1109, message, downgraded.Key.Name, graph.TargetGraphName));
                             }
