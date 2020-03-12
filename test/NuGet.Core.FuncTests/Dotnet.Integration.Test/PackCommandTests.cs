@@ -188,11 +188,10 @@ namespace Dotnet.Integration.Test
                 var args = includeSymbols ? $"-o {workingDirectory} --include-symbols" : $"-o {workingDirectory}";
                 msbuildFixture.PackProject(workingDirectory, projectName, args);
 
-                var nupkgPath = includeSymbols
-                    ? Path.Combine(workingDirectory, $"{projectName}.1.0.0.symbols.nupkg")
-                    : Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nupkgExtension = includeSymbols ? ".symbols.nupkg" : ".nupkg";
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0{nupkgExtension}");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nupkgPath), $"The output {nupkgExtension} is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
