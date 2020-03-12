@@ -383,16 +383,20 @@ namespace NuGet.SolutionRestoreManager
                 var packageIdentity = args.Package;
                 Interlocked.Increment(ref _currentCount);
 
-                _logger.Do((_, progress) =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    progress?.ReportProgress(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resources.RestoredPackage,
-                            packageIdentity),
-                        (uint)_currentCount,
-                        (uint)_missingPackagesCount);
+                    // capture current progress from the current execution context
+                    var progress = RestoreOperationProgressUI.Current;
+
+                    await progress?.ReportProgressAsync(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.RestoredPackage,
+                        packageIdentity),
+                    (uint)_currentCount,
+                    (uint)_missingPackagesCount);
                 });
+
             }
         }
 

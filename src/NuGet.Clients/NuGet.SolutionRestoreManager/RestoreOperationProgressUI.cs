@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -24,7 +25,7 @@ namespace NuGet.SolutionRestoreManager
 
         public CancellationToken UserCancellationToken { get; protected set; } = CancellationToken.None;
 
-        public abstract void ReportProgress(
+        public abstract Task ReportProgressAsync(
             string progressMessage,
             uint currentStep = 0,
             uint totalSteps = 0);

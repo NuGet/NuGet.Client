@@ -193,12 +193,7 @@ namespace NuGet.SolutionRestoreManager
             // Progress dialog
             if (reportProgress)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                    progress?.ReportProgress(logMessage.Message);
-                });
-
+                await progress?.ReportProgressAsync(logMessage.Message);
             }
 
             // Output console
@@ -390,22 +385,6 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        /// <summary>
-        /// Helper synchronous method to run batch of logging call on the main UI thread.
-        /// </summary>
-        /// <param name="action">Sync callback invoking logger.</param>
-        public void Do(Action<RestoreOperationLogger, RestoreOperationProgressUI> action)
-        {
-            // capture current progress from the current execution context
-            var progress = RestoreOperationProgressUI.Current;
-
-            _taskFactory.Run(async () =>
-            {
-                await _taskFactory.SwitchToMainThreadAsync();
-                action(this, progress);
-            });
-        }
-
         public async Task RunWithProgressAsync(
             Func<RestoreOperationLogger, RestoreOperationProgressUI, CancellationToken, Task> asyncRunMethod,
             CancellationToken token)
@@ -541,12 +520,12 @@ namespace NuGet.SolutionRestoreManager
                 });
             }
 
-            public override void ReportProgress(
+            public override async Task ReportProgressAsync(
                 string progressMessage,
                 uint currentStep,
                 uint totalSteps)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                 var progressData = new ThreadedWaitDialogProgressData(
@@ -597,7 +576,7 @@ namespace NuGet.SolutionRestoreManager
                 statusBar.Animation(1, ref Icon);
 
                 RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
-                progress.ReportProgress(Resources.RestoringPackages);
+                await progress.ReportProgressAsync(Resources.RestoringPackages);
 
                 return progress;
             }
@@ -615,12 +594,12 @@ namespace NuGet.SolutionRestoreManager
                 });
             }
 
-            public override void ReportProgress(
+            public override async Task ReportProgressAsync(
                 string progressMessage,
                 uint currentStep,
                 uint totalSteps)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 // Make sure the status bar is not frozen
                 int frozen;
