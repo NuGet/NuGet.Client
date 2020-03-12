@@ -391,20 +391,6 @@ namespace NuGet.SolutionRestoreManager
         }
 
         /// <summary>
-        /// Helper async method to run batch of logging call on the main UI thread.
-        /// </summary>
-        /// <param name="action">Sync callback invoking logger.</param>
-        /// <returns>An awaitable task.</returns>
-        public async Task DoAsync(Action<RestoreOperationLogger, RestoreOperationProgressUI> action)
-        {
-            // capture current progress from the current execution context
-            var progress = RestoreOperationProgressUI.Current;
-
-            await _taskFactory.SwitchToMainThreadAsync();
-            action(this, progress);
-        }
-
-        /// <summary>
         /// Helper synchronous method to run batch of logging call on the main UI thread.
         /// </summary>
         /// <param name="action">Sync callback invoking logger.</param>

@@ -369,11 +369,7 @@ namespace NuGet.SolutionRestoreManager
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
-                // Log an error when restore is disabled and user explicitly restore.
-                await _logger.DoAsync((l, _) =>
-                {
-                    l.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
-                });
+                _logger.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
         }
 
@@ -561,21 +557,19 @@ namespace NuGet.SolutionRestoreManager
         /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
-        private async Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
+        private Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
         {
             var missingPackages = installedPackages.Where(p => p.IsMissing);
 
             if (missingPackages.Any())
             {
-                await _logger.DoAsync((l, _) =>
-                {
-                    var errorText = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.PackageNotRestoredBecauseOfNoConsent,
-                        string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
-                    l.ShowError(errorText);
-                });
+                var errorText = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.PackageNotRestoredBecauseOfNoConsent,
+                    string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
+                _logger.ShowError(errorText);
             }
+            return Task.CompletedTask;
         }
 
         private async Task RestoreMissingPackagesInSolutionAsync(
