@@ -602,26 +602,6 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        /// <summary>
-        /// Returns true if the package restore user consent is granted.
-        /// </summary>
-        /// <returns>True if the package restore user consent is granted.</returns>
-        private static bool IsConsentGranted(ISettings settings)
-        {
-            var packageRestoreConsent = new PackageRestoreConsent(settings);
-            return packageRestoreConsent.IsGranted;
-        }
-
-        /// <summary>
-        /// Returns true if automatic package restore on build is enabled.
-        /// </summary>
-        /// <returns>True if automatic package restore on build is enabled.</returns>
-        private static bool IsAutomatic(ISettings settings)
-        {
-            var packageRestoreConsent = new PackageRestoreConsent(settings);
-            return packageRestoreConsent.IsAutomatic;
-        }
-
         private async Task<bool> CheckPackagesConfigAsync()
         {
             return await NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>

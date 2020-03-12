@@ -137,9 +137,6 @@ namespace NuGet.SolutionRestoreManager
             Log(LogLevel.Debug, data);
         }
 
-        /// <summary>
-        /// Same as LogAsync but uses Do instead of DoAsync.
-        /// </summary>
         public sealed override void Log(ILogMessage logMessage)
         {
             HandleErrorsAndWarnings(logMessage);
@@ -417,7 +414,7 @@ namespace NuGet.SolutionRestoreManager
         /// </remarks>
         private async Task<int> GetMSBuildOutputVerbositySettingAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await _taskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
@@ -525,7 +522,7 @@ namespace NuGet.SolutionRestoreManager
                 uint currentStep,
                 uint totalSteps)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
 
                 // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                 var progressData = new ThreadedWaitDialogProgressData(
@@ -599,7 +596,7 @@ namespace NuGet.SolutionRestoreManager
                 uint currentStep,
                 uint totalSteps)
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await _taskFactory.SwitchToMainThreadAsync();
 
                 // Make sure the status bar is not frozen
                 int frozen;
