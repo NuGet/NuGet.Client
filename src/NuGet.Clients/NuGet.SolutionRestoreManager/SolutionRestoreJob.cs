@@ -175,12 +175,9 @@ namespace NuGet.SolutionRestoreManager
 
                     if (projects.Any() && solutionDirectory == null)
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            _status = NuGetOperationStatus.Failed;
-                            l.ShowError(Resources.SolutionIsNotSaved);
-                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
-                        });
+                        _status = NuGetOperationStatus.Failed;
+                        _logger.ShowError(Resources.SolutionIsNotSaved);
+                        await _logger.WriteLineAsync(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
 
                         return;
                     }
@@ -300,15 +297,13 @@ namespace NuGet.SolutionRestoreManager
                     var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
                     if (!Path.IsPathRooted(globalPackagesFolder))
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Resources.RelativeGlobalPackagesFolder,
-                                globalPackagesFolder);
 
-                            l.WriteLine(VerbosityLevel.Quiet, message);
-                        });
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Resources.RelativeGlobalPackagesFolder,
+                            globalPackagesFolder);
+
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, message);
 
                         // Cannot restore packages since globalPackagesFolder is a relative path
                         // and the solution is not available
@@ -437,12 +432,12 @@ namespace NuGet.SolutionRestoreManager
             {
                 _status = NuGetOperationStatus.Failed;
 
-                _logger.Do((l, _) =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     foreach (var projectName in args.ProjectNames)
                     {
                         var exceptionMessage =
-                            l.OutputVerbosity >= (int)VerbosityLevel.Detailed
+                            _logger.OutputVerbosity >= (int)VerbosityLevel.Detailed
                                 ? args.Exception.ToString()
                                 : args.Exception.Message;
                         var message = string.Format(
@@ -450,9 +445,9 @@ namespace NuGet.SolutionRestoreManager
                             Resources.PackageRestoreFailedForProject,
                             projectName,
                             exceptionMessage);
-                        l.WriteLine(VerbosityLevel.Quiet, message);
-                        l.ShowError(message);
-                        l.WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, message);
+                        _logger.ShowError(message);
+                        await _logger.WriteLineAsync(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
                     }
                 });
             }
@@ -483,11 +478,8 @@ namespace NuGet.SolutionRestoreManager
                     if (!isSolutionAvailable
                         && await CheckPackagesConfigAsync())
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            l.ShowError(Resources.SolutionIsNotSaved);
-                            l.WriteLine(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
-                        });
+                        _logger.ShowError(Resources.SolutionIsNotSaved);
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
                     }
 
                     // Restore is not applicable, since, there is no project with installed packages
