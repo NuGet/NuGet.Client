@@ -57,6 +57,8 @@ For example the following are correct:
     string fruit = null; // can't use "var" because the type isn't known (though you could do (string)null, don't!)
     const string expectedName = "name"; // can't use "var" with const
     FruitFlavor flavor = fruit.GetFlavor();
+    var nugetVersion = NuGetVersion.Parse("1.0.0");
+    var solutionManager = ComponentModel.GetService<ISolutionManager>();
     ```
 
     The following are incorrect:
