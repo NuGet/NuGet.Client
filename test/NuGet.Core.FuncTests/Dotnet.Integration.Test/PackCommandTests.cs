@@ -29,6 +29,194 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformFact(Platform.Windows)]
+        public void PackCommand_NewProject_OutputsInDefaultPaths()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var nupkgPath = Path.Combine(workingDirectory, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib");
+                msbuildFixture.PackProject(workingDirectory, projectName, string.Empty, null);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the default place");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_NewProject_ContinuousOutputInBothDefaultAndCustomPaths()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib");
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.BuildProject(workingDirectory, projectName, string.Empty);
+
+                // With default output path
+                var nupkgPath = Path.Combine(workingDirectory, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, "--no-build", null);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the default place");
+
+                // With custom output path
+                var publishDir = Path.Combine(workingDirectory, "publish");
+                nupkgPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nupkg");
+                nuspecPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nuspec");
+
+                // Act
+                msbuildFixture.PackProject(workingDirectory, projectName, $"--no-build -o {publishDir}", publishDir);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_NewSolution_OutputInDefaultPaths()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var solutionName = "Solution1";
+                var projectName = "ClassLibrary1";
+                var referencedProject1 = "ClassLibrary2";
+                var referencedProject2 = "ClassLibrary3";
+
+                var projectAndReference1Folder = "Src";
+                var reference2Folder = "src";
+
+                var projectFolder = Path.Combine(testDirectory.Path, projectAndReference1Folder, projectName);
+
+                var projectFileRelativ = Path.Combine(projectAndReference1Folder, projectName, $"{projectName}.csproj");
+                var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
+                var referencedProject2RelativDir = Path.Combine(reference2Folder, referencedProject2, $"{referencedProject2}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
+
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
+
+                var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var attributes = new Dictionary<string, string>();
+                    var properties = new Dictionary<string, string>();
+
+                    ProjectFileUtils.AddItem(xml, "ProjectReference", @"..\ClassLibrary2\ClassLibrary2.csproj", string.Empty, properties, attributes);
+                    ProjectFileUtils.AddItem(xml, "ProjectReference", @"..\ClassLibrary3\ClassLibrary3.csproj", string.Empty, properties, attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreSolution(testDirectory, solutionName, string.Empty);
+
+                var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
+
+                // Act
+                msbuildFixture.PackSolution(testDirectory, solutionName, string.Empty, null);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the default place");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_NewSolution_ContinuousOutputInBothDefaultAndCustomPaths()
+        {
+            // Arrange
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var solutionName = "Solution1";
+                var projectName = "ClassLibrary1";
+                var referencedProject1 = "ClassLibrary2";
+                var referencedProject2 = "ClassLibrary3";
+
+                var projectAndReference1Folder = "Src";
+                var reference2Folder = "src";
+
+                var projectFolder = Path.Combine(testDirectory.Path, projectAndReference1Folder, projectName);
+
+                var projectFileRelativ = Path.Combine(projectAndReference1Folder, projectName, $"{projectName}.csproj");
+                var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
+                var referencedProject2RelativDir = Path.Combine(reference2Folder, referencedProject2, $"{referencedProject2}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, reference2Folder), referencedProject2, "classlib");
+
+                msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject1RelativDir}");
+                msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {referencedProject2RelativDir}");
+
+                var projectFile = Path.Combine(testDirectory.Path, projectFileRelativ);
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    var attributes = new Dictionary<string, string>();
+                    var properties = new Dictionary<string, string>();
+
+                    ProjectFileUtils.AddItem(xml, "ProjectReference", @"..\ClassLibrary2\ClassLibrary2.csproj", string.Empty, properties, attributes);
+                    ProjectFileUtils.AddItem(xml, "ProjectReference", @"..\ClassLibrary3\ClassLibrary3.csproj", string.Empty, properties, attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreSolution(testDirectory, solutionName, string.Empty);
+                msbuildFixture.BuildSolution(testDirectory, solutionName, string.Empty);
+
+                // With default output path within project folder
+
+                // Arrange
+                var nupkgPath = Path.Combine(projectFolder, @"bin\Debug", $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(projectFolder, @"obj\Debug", $"{projectName}.1.0.0.nuspec");
+
+                // Act
+                msbuildFixture.PackSolution(testDirectory, solutionName, "--no-build", null);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the default place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the default place");
+
+                // With common publish path within solution folder
+
+                // Arrange
+                var publishDir = Path.Combine(testDirectory.Path, "publish");
+                nupkgPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nupkg");
+                nuspecPath = Path.Combine(publishDir, $"{projectName}.1.0.0.nuspec");
+
+                msbuildFixture.PackSolution(testDirectory, solutionName, $"--no-build -o {publishDir}", publishDir);
+
+                // Assert
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_NupkgExists()
         {
             using (var testDirectory = msbuildFixture.CreateTestDirectory())
