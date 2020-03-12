@@ -520,13 +520,17 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
 
             const string packProjectName = "NuGet.Build.Tasks.Pack";
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
-            // Copy the pack SDK.
 
+            // Copy the pack SDK.
             var packProjectBinDirectory = Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration);
             var tfmToCopy = GetTfmToCopy(sdkTfm, packProjectBinDirectory);
 
             var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(packProjectBinDirectory, tfmToCopy));
-            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
+
+            // We are only copying the CoreCLR assets, since, we're testing only them under Core MSBuild.
+            var targetRuntimeType = "CoreCLR";
+
+            var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, targetRuntimeType);
             // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
             // In VisualStudio, simply use the non il merged version.
             var ilMergedPackDirectoryPath = Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge");
@@ -542,23 +546,23 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
                         sourceFileName: Path.Combine(packProjectCoreArtifactsDirectory.FullName, "ilmerge", packFileName),
                         destFileName: Path.Combine(packAssemblyDestinationDirectory, packFileName));
                 }
-                else
-                {
-                    foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
-                    {
-                        File.Copy(
-                            sourceFileName: assembly.FullName,
-                            destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
-                            overwrite: true);
-                    }
-                }
-                // Copy the pack targets
-                var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
-                var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
-                var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
-                File.Copy(packTargetsSource, targetsDestination, overwrite: true);
-                File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
             }
+            else
+            {
+                foreach (var assembly in packProjectCoreArtifactsDirectory.EnumerateFiles("*.dll"))
+                {
+                    File.Copy(
+                        sourceFileName: assembly.FullName,
+                        destFileName: Path.Combine(packAssemblyDestinationDirectory, assembly.Name),
+                        overwrite: true);
+                }
+            }
+            // Copy the pack targets
+            var packTargetsSource = Path.Combine(packProjectCoreArtifactsDirectory.FullName, packTargetsName);
+            var targetsDestination = Path.Combine(pathToPackSdk, "build", packTargetsName);
+            var targetsDestinationCrossTargeting = Path.Combine(pathToPackSdk, "buildCrossTargeting", packTargetsName);
+            File.Copy(packTargetsSource, targetsDestination, overwrite: true);
+            File.Copy(packTargetsSource, targetsDestinationCrossTargeting, overwrite: true);
         }
 
         public void Dispose()

@@ -21,6 +21,9 @@ using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
 
+using PackageDependency_V2 = NuGet.PackageDependency;
+using PackageDependency_V3 = NuGet.Packaging.Core.PackageDependency;
+
 namespace NuGet.CommandLine.Test
 {
     public static class Util
@@ -53,9 +56,10 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static CommandRunnerResult Restore(SimpleTestPathContext pathContext, string inputPath, int expectedExitCode = 0, params string[] additionalArgs)
         {
-            var nugetexe = GetNuGetExePath();
+            var nugetExe = GetNuGetExePath();
 
-            var args = new string[] {
+            var args = new string[]
+                {
                     "restore",
                     inputPath,
                     "-Verbosity",
@@ -64,7 +68,7 @@ namespace NuGet.CommandLine.Test
 
             args = args.Concat(additionalArgs).ToArray();
 
-            return RunCommand(pathContext, nugetexe, expectedExitCode, args);
+            return RunCommand(pathContext, nugetExe, expectedExitCode, args);
         }
 
         public static CommandRunnerResult RunCommand(SimpleTestPathContext pathContext, string nugetExe, int expectedExitCode = 0, params string[] arguments)
@@ -100,10 +104,9 @@ namespace NuGet.CommandLine.Test
             string dependencyPackageId,
             string dependencyPackageVersion)
         {
-            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework,
-                new List<Packaging.Core.PackageDependency>()
+            var group = new PackageDependencyGroup(NuGetFramework.AnyFramework, new List<PackageDependency_V3>()
             {
-                new Packaging.Core.PackageDependency(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
+                new PackageDependency_V3(dependencyPackageId, VersionRange.Parse(dependencyPackageVersion))
             });
 
             return CreateTestPackage(packageId, version, path,
@@ -146,7 +149,7 @@ namespace NuGet.CommandLine.Test
                 var set = new PackageDependencySet(
                     null,
                     group.Packages.Select(package =>
-                        new PackageDependency(package.Id,
+                        new PackageDependency_V2(package.Id,
                             VersionUtility.ParseVersionSpec(package.VersionRange.ToNormalizedString()))));
 
                 packageBuilder.DependencySets.Add(set);
@@ -481,22 +484,23 @@ namespace NuGet.CommandLine.Test
         /// </summary>
         public static string GetNuGetExePath()
         {
-            return _nuGetExePath.Value;
-        }
-
-        private static readonly Lazy<string> _nuGetExePath = new Lazy<string>(GetNuGetExePathCore);
-
-        private static string GetNuGetExePathCore()
-        {
+            const string fileName = "NuGet.exe";
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var nugetexe = Path.Combine(targetDir, "NuGet", "NuGet.exe");
-            return nugetexe;
+            var nugetExe = Path.Combine(targetDir, "NuGet", fileName);
+            // Revert to parent dir if not found under layout dir.
+            if (!File.Exists(nugetExe)) nugetExe = Path.Combine(targetDir, fileName);
+            if (!File.Exists(nugetExe)) throw new FileNotFoundException($"The NuGet executable is not present in '{targetDir}'", fileName);
+            return nugetExe;
         }
 
         public static string GetTestablePluginPath()
         {
+            const string fileName = "CredentialProvider.Testable.exe";
             var targetDir = ConfigurationManager.AppSettings["TestTargetDir"] ?? Directory.GetCurrentDirectory();
-            var plugin = Path.Combine(targetDir, "TestableCredentialProvider", "CredentialProvider.Testable.exe");
+            var plugin = Path.Combine(targetDir, "TestableCredentialProvider", fileName);
+            // Revert to parent dir if not found under layout dir.
+            if (!File.Exists(plugin)) plugin = Path.Combine(targetDir, fileName);
+            if (!File.Exists(plugin)) throw new FileNotFoundException($"The CredentialProvider executable is not present in '{targetDir}'", fileName);
             return plugin;
         }
 
@@ -1059,10 +1063,10 @@ EndProject";
 
         public static void ClearWebCache()
         {
-            var nugetexe = Util.GetNuGetExePath();
+            var nugetExe = Util.GetNuGetExePath();
 
             var r = CommandRunner.Run(
-            nugetexe,
+            nugetExe,
             ".",
             "locals http-cache -Clear",
             waitForExit: true);
