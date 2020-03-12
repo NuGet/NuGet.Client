@@ -338,7 +338,9 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.*--")]
         [InlineData("1.0.*-alpha*+")]
         [InlineData("1.0.*-")]
-        public void FloatingRange_Parse_Invalid(string floatVersionString)
+        [InlineData(null)]
+        [InlineData("")]
+        public void FloatingRange_TryParse_Invalid(string floatVersionString)
         {
             // Arrange
             FloatRange range;
@@ -348,6 +350,7 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.False(valid);
+            Assert.Null(range);
         }
 
         [Theory]
@@ -362,6 +365,47 @@ namespace NuGet.Versioning.Test
         [InlineData("1.0.0--*")]
         public void FloatingRange_Parse_Valid(string floatVersionString)
         {
+            // Arrange && Act
+            var range = FloatRange.Parse(floatVersionString);
+
+            // Assert
+            Assert.NotNull(range);
+        }
+
+        [Theory]
+        [InlineData("1.0.0+*")]
+        [InlineData("1.0.**")]
+        [InlineData("1.*.0")]
+        [InlineData("1.0.*-*bla")]
+        [InlineData("1.0.*-*bla+*")]
+        [InlineData("**")]
+        [InlineData("1.0.0-preview.*+blabla")]
+        [InlineData("1.0.*--")]
+        [InlineData("1.0.*-alpha*+")]
+        [InlineData("1.0.*-")]
+        [InlineData(null)]
+        [InlineData("")]
+        public void FloatingRange_Parse_Invalid(string floatVersionString)
+        {
+            // Arrange && Act
+            var range = FloatRange.Parse(floatVersionString);
+
+            // Assert
+            Assert.Null(range);
+        }
+
+        [Theory]
+        [InlineData("1.0.0-preview.*")]
+        [InlineData("1.0.*-bla*")]
+        [InlineData("1.0.*-*")]
+        [InlineData("1.0.*-preview.1.*")]
+        [InlineData("1.0.*-preview.1*")]
+        [InlineData("1.0.0--")]
+        [InlineData("1.0.0-bla*")]
+        [InlineData("1.0.*--*")]
+        [InlineData("1.0.0--*")]
+        public void FloatingRange_TryParse_Valid(string floatVersionString)
+        {
             // Arrange
             FloatRange range;
 
@@ -370,6 +414,7 @@ namespace NuGet.Versioning.Test
 
             // Assert
             Assert.True(valid);
+            Assert.NotNull(range);
         }
 
         [Fact]
@@ -488,8 +533,6 @@ namespace NuGet.Versioning.Test
 
             Assert.Equal(normalizedMinVersion, range.MinVersion.ToNormalizedString());
         }
-
-        /// TODO NK - From here on below, the tests can probably be moved to VersionRangeFloatParsing_FindsBestMatch
 
         [Fact]
         public void FloatRange_FloatingPrereleaseRevision_OutsideOfRange()

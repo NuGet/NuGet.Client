@@ -176,7 +176,7 @@ namespace NuGet.Versioning
         {
             range = null;
 
-            if (versionString != null)
+            if (versionString != null && !string.IsNullOrWhiteSpace(versionString))
             {
                 var firstStarPosition = versionString.IndexOf('*');
                 var lastStarPosition = versionString.LastIndexOf('*');

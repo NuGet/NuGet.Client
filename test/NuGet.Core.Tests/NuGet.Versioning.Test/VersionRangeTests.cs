@@ -432,6 +432,16 @@ namespace NuGet.Versioning.Test
             ExceptionAssert.ThrowsArgNull(() => VersionRange.Parse(null), "value");
         }
 
+        [Theory]
+        [InlineData("")]
+        [InlineData("      ")]
+        public void ParseVersionRangeWithBadVersionThrows(string version)
+        {
+            // Act & Assert
+            var exception = Assert.Throws<ArgumentException>(() => VersionRange.Parse(version));
+            Assert.Equal($"'{version}' is not a valid version string.", exception.Message);
+        }
+
         [Fact]
         public void ParseVersionRangeSimpleVersionNoBrackets()
         {
