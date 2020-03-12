@@ -64,7 +64,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.NotNull(fooDep);
                 Assert.False(fooDep.VersionCentrallyManaged);
                 Assert.Null(fooDep.LibraryRange.VersionRange);
-                Assert.Equal(LibraryDependencyReferenceType.None, fooDep.ReferenceType);
+                Assert.Equal(LibraryDependencyReferenceType.Direct, fooDep.ReferenceType);
             }
         }
 

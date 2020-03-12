@@ -271,7 +271,6 @@ namespace NuGet.ProjectModel
                     }
 
                     d.VersionCentrallyManaged = true;
-                    d.ReferenceType = LibraryDependencyReferenceType.Direct;
                 }
             }
 

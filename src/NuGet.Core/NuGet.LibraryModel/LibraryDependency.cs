@@ -36,7 +36,7 @@ namespace NuGet.LibraryModel
         /// <summary>
         /// Information regarding if the dependency is direct or transitive.  
         /// </summary>
-        public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.None;
+        public LibraryDependencyReferenceType ReferenceType { get; set; } = LibraryDependencyReferenceType.Direct;
 
         public bool GeneratePathProperty { get; set; }
 
@@ -49,7 +49,7 @@ namespace NuGet.LibraryModel
             LibraryIncludeFlags suppressParent,
             IList<NuGetLogCode> noWarn,
             bool autoReferenced,
-            bool generatePathProperty) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false, libraryDependencyReferenceType: LibraryDependencyReferenceType.None)
+            bool generatePathProperty) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false, libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct)
         {
         }
 
