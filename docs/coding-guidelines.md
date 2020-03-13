@@ -58,7 +58,6 @@ For example the following are correct:
     const string expectedName = "name"; // can't use "var" with const
     FruitFlavor flavor = fruit.GetFlavor();
     var nugetVersion = NuGetVersion.Parse("1.0.0");
-    var solutionManager = ComponentModel.GetService<ISolutionManager>();
     ```
 
     The following are incorrect:
