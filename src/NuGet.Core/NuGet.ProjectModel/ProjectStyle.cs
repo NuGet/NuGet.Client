@@ -16,7 +16,7 @@ namespace NuGet.ProjectModel
         ProjectJson = 1,
 
         /// <summary>
-        /// MSBuild style, project.assets.json is generated in the RestoreOutputPath folder
+        /// MSBuild style, project.assets.json is generated in the RestoreOutputPath (aka MSBuildProjectExtensionsPath) folder
         /// </summary>
         PackageReference = 2,
 

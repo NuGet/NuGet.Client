@@ -354,7 +354,7 @@ namespace NuGet.CommandLine
             // resolved by name if the nuspec contains tokens
             _properties.Clear();
 
-            // Allow Id to be overriden by cmd line properties
+            // Allow Id to be overridden by cmd line properties
             if (ProjectProperties.ContainsKey("Id"))
             {
                 _properties.Add("Id", ProjectProperties["Id"]);
@@ -425,15 +425,13 @@ namespace NuGet.CommandLine
 
                 BuildProjectWithMsbuild();
             }
-            else
-            {
-                TargetPath = ResolveTargetPath();
 
-                // Make if the target path doesn't exist, fail
-                if (!Directory.Exists(TargetPath) && !File.Exists(TargetPath))
-                {
-                    throw new PackagingException(NuGetLogCode.NU5012, String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
-                }
+            TargetPath = ResolveTargetPath();
+
+            // Make if the target path doesn't exist, fail
+            if (!Directory.Exists(TargetPath) && !File.Exists(TargetPath))
+            {
+                throw new PackagingException(NuGetLogCode.NU5012, String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("UnableToFindBuildOutput"), TargetPath));
             }
         }
 
@@ -454,8 +452,6 @@ namespace NuGet.CommandLine
                 var error = String.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("FailedToBuildProject"), Path.GetFileName(_project.FullPath));
                 throw new PackagingException(NuGetLogCode.NU5013, error);
             }
-
-            TargetPath = ResolveTargetPath();
         }
 
         private string ResolveTargetPath()
@@ -482,9 +478,7 @@ namespace NuGet.CommandLine
             if (string.IsNullOrEmpty(targetPath))
             {
                 string outputPath = _project.GetPropertyValue("OutputPath");
-                string configuration = _project.GetPropertyValue("Configuration");
-                string projectName = Path.GetFileName(Path.GetDirectoryName(_project.FullPath));
-                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(outputPath, projectName, "bin", configuration));
+                targetPath = PathUtility.EnsureTrailingSlash(Path.Combine(_project.FullPath, outputPath));
             }
 
             return targetPath;

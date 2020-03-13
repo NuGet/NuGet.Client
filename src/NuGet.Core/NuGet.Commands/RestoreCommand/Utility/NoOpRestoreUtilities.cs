@@ -30,7 +30,8 @@ namespace NuGet.Commands
         }
 
         /// <summary>
-        /// The cache file path is $(MSBuildProjectExtensionsPath)\$(project).nuget.cache
+        /// The cache file path will be $(RestoreOutputPath)\$(project).nuget.cache
+        /// or $(MSBuildProjectExtensionsPath)\$(project).nuget.cache depending on the Project Style.
         /// </summary>
         private static string GetBuildIntegratedProjectCacheFilePath(RestoreRequest request)
         {

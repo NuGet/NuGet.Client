@@ -181,8 +181,8 @@ namespace NuGet.Commands
                 ProjectStyle = project.PackageSpec.RestoreMetadata.ProjectStyle,
                 //  Project.json is special cased to put assets file and generated .props and targets in the project folder
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
-                DependencyGraphSpec = projectDgSpec,
                 MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                DependencyGraphSpec = projectDgSpec,
                 AdditionalMessages = projectAdditionalMessages
             };
 
