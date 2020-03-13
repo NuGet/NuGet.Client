@@ -409,7 +409,7 @@ namespace NuGet.VisualStudio
         internal virtual void ShowWarningMessage(string message)
         {
             var console = _consoleProvider.CreatePackageManagerConsole();
-            console.WriteLine(message);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => console.WriteLineAsync(message));
         }
 
         void IWizard.BeforeOpeningFile(ProjectItem projectItem)

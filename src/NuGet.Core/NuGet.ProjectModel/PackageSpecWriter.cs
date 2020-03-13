@@ -82,16 +82,14 @@ namespace NuGet.ProjectModel
                 throw new ArgumentException(Strings.ArgumentNullOrEmpty, nameof(filePath));
             }
 
-            var writer = new JsonObjectWriter();
-
-            Write(packageSpec, writer);
-
             using (var fileStream = new FileStream(filePath, FileMode.Create))
             using (var textWriter = new StreamWriter(fileStream))
             using (var jsonWriter = new JsonTextWriter(textWriter))
+            using (var writer = new JsonObjectWriter(jsonWriter))
             {
                 jsonWriter.Formatting = Formatting.Indented;
-                writer.WriteTo(jsonWriter);
+
+                Write(packageSpec, writer);
             }
         }
 
@@ -144,7 +142,7 @@ namespace NuGet.ProjectModel
             SetArrayValue(writer, "configFilePaths", msbuildMetadata.ConfigFilePaths);
             if (msbuildMetadata.CrossTargeting)
             {
-                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy( c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
+                SetArrayValue(writer, "originalTargetFrameworks", msbuildMetadata.OriginalTargetFrameworks.OrderBy(c => c, StringComparer.Ordinal)); // This need to stay the original strings because the nuget.g.targets have conditional imports based on the original framework name
             }
             else
             {
@@ -173,6 +171,7 @@ namespace NuGet.ProjectModel
             SetValueIfTrue(writer, "legacyPackagesDirectory", msbuildMetadata.LegacyPackagesDirectory);
             SetValueIfTrue(writer, "validateRuntimeAssets", msbuildMetadata.ValidateRuntimeAssets);
             SetValueIfTrue(writer, "skipContentFileWrite", msbuildMetadata.SkipContentFileWrite);
+            SetValueIfTrue(writer, "centralPackageVersionsManagementEnabled", msbuildMetadata.CentralPackageVersionsEnabled);
         }
 
 
@@ -359,7 +358,7 @@ namespace NuGet.ProjectModel
             }
 
             writer.WriteObjectEnd();
-        } 
+        }
 
         private static void SetDependencies(IObjectWriter writer, IList<LibraryDependency> libraryDependencies)
         {
@@ -442,6 +441,7 @@ namespace NuGet.ProjectModel
                     }
 
                     SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
+                    SetValueIfTrue(writer, "versionCentrallyManaged", dependency.VersionCentrallyManaged);
 
                     writer.WriteObjectEnd();
                 }
@@ -477,7 +477,7 @@ namespace NuGet.ProjectModel
             {
                 var version = string.Join(";", dependency.Select(dep => dep.VersionRange).OrderBy(dep => dep.MinVersion).Select(dep => dep.ToNormalizedString()));
 
-                writer.WriteObjectInArrayStart();
+                writer.WriteObjectStart();
                 SetValue(writer, "name", dependency.Key);
                 SetValue(writer, "version", version);
                 writer.WriteObjectEnd();
@@ -498,6 +498,7 @@ namespace NuGet.ProjectModel
                     writer.WriteObjectStart(framework.FrameworkName.GetShortFolderName());
 
                     SetDependencies(writer, framework.Dependencies);
+                    SetCentralDependencies(writer, framework.CentralPackageVersions.Values);
                     SetImports(writer, framework.Imports);
                     SetValueIfTrue(writer, "assetTargetFallback", framework.AssetTargetFallback);
                     SetValueIfTrue(writer, "warn", framework.Warn);
@@ -525,6 +526,23 @@ namespace NuGet.ProjectModel
                 }
                 writer.WriteObjectEnd();
             }
+        }
+
+        private static void SetCentralDependencies(IObjectWriter writer, ICollection<CentralPackageVersion> centralPackageVersions)
+        {
+            if (!centralPackageVersions.Any())
+            {
+                return;
+            }
+
+            writer.WriteObjectStart("centralPackageVersions");
+
+            foreach (var dependency in centralPackageVersions.OrderBy(dep => dep.Name))
+            {
+                writer.WriteNameValue(name: dependency.Name, value: dependency.VersionRange.ToNormalizedString());
+
+            }
+            writer.WriteObjectEnd();
         }
 
         private static void SetValueIfTrue(IObjectWriter writer, string name, bool value)

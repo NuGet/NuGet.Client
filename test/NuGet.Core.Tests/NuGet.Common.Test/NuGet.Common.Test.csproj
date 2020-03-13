@@ -14,9 +14,9 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Threading.Tasks.Parallel" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Threading.Thread" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Threading.Tasks.Parallel" />
+    <PackageReference Include="System.Threading.Thread" />
+    <PackageReference Include="System.Diagnostics.TraceSource" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">

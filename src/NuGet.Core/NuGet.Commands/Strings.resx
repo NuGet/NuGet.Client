@@ -230,6 +230,14 @@
   <data name="Log_InstalledSummary" xml:space="preserve">
     <value>Installed:</value>
   </data>
+  <data name="Log_AllProjectsUpToDate" xml:space="preserve">
+    <value>All projects are up-to-date for restore.</value>
+  </data>
+  <data name="Log_ProjectUpToDateSummary" xml:space="preserve">
+    <value>{0} of {1} projects are up-to-date for restore.</value>
+    <comment>0 - number of projects that were up-to-date
+1 - Total number of projects</comment>
+  </data>
   <data name="Log_InstalledSummaryCount" xml:space="preserve">
     <value>{0} package(s) to {1}</value>
     <comment>0 - installed package count
@@ -242,14 +250,13 @@
     <value>Found project root directory: {0}.</value>
   </data>
   <data name="Log_RestoreComplete" xml:space="preserve">
-    <value>Restore completed in {0} for {1}.</value>
-    <comment>{0} is the restore duration.
-{1} is the path to the project file.</comment>
+    <value>Restored {0} (in {1}).</value>
+    <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailed" xml:space="preserve">
-    <value>Restore failed in {0} for {1}.</value>
-    <comment>{0} is the restore duration.
-{1} is the path to the project file.</comment>
+    <value>Failed to restore {0} (in {1}).</value>
+    <comment>{0} is the path to the project file.
+    {1} is the restore duration.</comment>
   </data>
   <data name="Log_RunningNonParallelRestore" xml:space="preserve">
     <value>Running non-parallel restore.</value>
@@ -869,12 +876,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <comment>0 - name</comment>
   </data>
   <data name="Log_RestoreCompleteDotnetTool" xml:space="preserve">
-    <value>Restore completed in {0}.</value>
+    <value>Restored {0} (in {1}).</value>
     <comment>{0} is the restore duration.</comment>
   </data>
   <data name="Log_RestoreFailedDotnetTool" xml:space="preserve">
-    <value>Restore failed in {0}.</value>
-    <comment>{0} is the restore duration.</comment>
+    <value>Failed to restore {0} (in {1}).</value>
+    <comment>{0} is the path to the project file. {1} is the restore duration.</comment>
   </data>
   <data name="Error_PackageDownload_OnlyExactVersionsAreAllowed" xml:space="preserve">
     <value>'{0}' is not an exact version like '[1.0.0]'. Only exact versions are allowed with PackageDownload.</value>
@@ -895,6 +902,12 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   <data name="Log_PackageContentHashValidationFailed" xml:space="preserve">
     <value>Package content hash validation failed for {0}. Expected: {1} Actual: {2}</value>
     <comment>0 - package ID, 1 - expected Sha, 2 - actual sha</comment>
+  </data>
+  <data name="Error_CentralPackageVersions_VersionsNotAllowed" xml:space="preserve">
+    <value>Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items: {0}.</value>
+  </data>
+  <data name="Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed" xml:space="preserve">
+    <value>The packages {0} are implicitly referenced. You do not typically need to reference them from your project or in your central package versions management file. For more information, see https://aka.ms/sdkimplicitrefs</value>
   </data>
   <data name="Error_SourceProviderIsNull" xml:space="preserve">
     <value>Property SourceProvider is null.</value>
@@ -960,8 +973,7 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Enabled</value>
   </data>
   <data name="Source_DefaultNamePrefix" xml:space="preserve">
-    <value>Package source {0}</value>
-    <comment>{0} will be a number</comment>
+    <value>Package source </value>
   </data>
   <data name="Source_InvalidFormatValue" xml:space="preserve">
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>

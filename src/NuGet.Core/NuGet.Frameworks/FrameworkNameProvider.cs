@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -138,7 +138,7 @@ namespace NuGet.Frameworks
         {
             version = null;
 
-            if (String.IsNullOrEmpty(versionString))
+            if (string.IsNullOrEmpty(versionString))
             {
                 version = new Version(0, 0);
             }
@@ -160,7 +160,7 @@ namespace NuGet.Frameworks
                     // take only the first 4 digits and add dots
                     // 451 -> 4.5.1
                     // 81233 -> 8123
-                    return Version.TryParse(String.Join(".", versionString.ToCharArray().Take(4)), out version);
+                    return Version.TryParse(string.Join(".", versionString.ToCharArray().Take(4)), out version);
                 }
             }
 
@@ -185,7 +185,7 @@ namespace NuGet.Frameworks
                 versionParts.Push(version.Revision > 0 ? version.Revision : 0);
 
                 // By default require the version to have 2 digits, for legacy frameworks 1 is allowed
-                var minPartCount = _singleDigitVersionFrameworks.Contains(framework) ? 1 : 2;
+                var minPartCount = SingleDigitVersionFrameworks.Contains(framework) ? 1 : 2;
 
                 // remove all trailing zeros beyond the minor version
                 while ((versionParts.Count > minPartCount
@@ -198,19 +198,11 @@ namespace NuGet.Frameworks
                 // netcoreapp, or if any parts of the version are over 9 we need to use decimals
                 if (string.Equals(
                         framework,
-                        FrameworkConstants.FrameworkIdentifiers.NetPlatform,
+                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         StringComparison.OrdinalIgnoreCase)
                     || string.Equals(
                         framework,
                         FrameworkConstants.FrameworkIdentifiers.NetStandard,
-                        StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(
-                        framework,
-                        FrameworkConstants.FrameworkIdentifiers.NetStandardApp,
-                        StringComparison.OrdinalIgnoreCase)
-                    || string.Equals(
-                        framework,
-                        FrameworkConstants.FrameworkIdentifiers.NetCoreApp,
                         StringComparison.OrdinalIgnoreCase)
                     || versionParts.Any(x => x > 9))
                 {
@@ -232,7 +224,7 @@ namespace NuGet.Frameworks
         }
 
         // Legacy frameworks that are allowed to have a single digit for the version number
-        private static readonly HashSet<string> _singleDigitVersionFrameworks = new HashSet<string>(
+        private static readonly HashSet<string> SingleDigitVersionFrameworks = new HashSet<string>(
             new string[] {
                 FrameworkConstants.FrameworkIdentifiers.Windows,
                 FrameworkConstants.FrameworkIdentifiers.WindowsPhone,
@@ -502,7 +494,7 @@ namespace NuGet.Frameworks
             if (profile.StartsWith("Profile", StringComparison.OrdinalIgnoreCase))
             {
                 var trimmed = profile.Substring(7, profile.Length - 7);
-                return Int32.TryParse(trimmed, out profileNumber);
+                return int.TryParse(trimmed, out profileNumber);
             }
 
             profileNumber = -1;

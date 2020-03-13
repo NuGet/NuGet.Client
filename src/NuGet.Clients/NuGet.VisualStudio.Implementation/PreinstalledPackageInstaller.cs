@@ -177,13 +177,14 @@ namespace NuGet.VisualStudio
             var failedPackageErrors = new List<string>();
 
             // find the project
-            var defaultProjectContext = new VSAPIProjectContext();
-            var logger = new LoggerAdapter(defaultProjectContext);
-            defaultProjectContext.PackageExtractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                ClientPolicyContext.GetClientPolicy(_settings, logger),
-                logger);
+            var defaultProjectContext = new VSAPIProjectContext
+            {
+                PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                    NullLogger.Instance)
+            };
 
             var nuGetProject = await _solutionManager.GetOrCreateProjectAsync(project, defaultProjectContext);
             if (preferPackageReferenceFormat && await NuGetProjectUpgradeUtility.IsNuGetProjectUpgradeableAsync(nuGetProject, project, needsAPackagesConfig: false))
@@ -394,14 +395,14 @@ namespace NuGet.VisualStudio
         /// <param name="packageInfos">The packages that were installed.</param>
         private void CopyNativeBinariesToBin(EnvDTE.Project project, string repositoryPath, IEnumerable<PreinstalledPackageInfo> packageInfos)
         {
-            var context = new VSAPIProjectContext();
-            var logger = new LoggerAdapter(context);
-
-            context.PackageExtractionContext = new PackageExtractionContext(
-                PackageSaveMode.Defaultv2,
-                PackageExtractionBehavior.XmlDocFileSaveMode,
-                ClientPolicyContext.GetClientPolicy(_settings, logger),
-                logger);
+            var context = new VSAPIProjectContext
+            {
+                PackageExtractionContext = new PackageExtractionContext(
+                    PackageSaveMode.Defaultv2,
+                    PackageExtractionBehavior.XmlDocFileSaveMode,
+                    ClientPolicyContext.GetClientPolicy(_settings, NullLogger.Instance),
+                    NullLogger.Instance)
+            };
             var projectSystem = new VsMSBuildProjectSystem(_vsProjectAdapterProvider.CreateAdapterForFullyLoadedProject(project), context);
 
             foreach (var packageInfo in packageInfos)

@@ -18,34 +18,39 @@ namespace NuGet.ProjectModel
 
         public bool HandleIncludeExcludeFiles(JObject jsonObject)
         {
-            var rawInclude = jsonObject["include"];
-            var rawExclude = jsonObject["exclude"];
-            var rawIncludeFiles = jsonObject["includeFiles"];
-            var rawExcludeFiles = jsonObject["excludeFiles"];
+            if (jsonObject == null)
+            {
+                throw new ArgumentNullException(nameof(jsonObject));
+            }
 
-            IEnumerable<string> include;
-            IEnumerable<string> exclude;
-            IEnumerable<string> includeFiles;
-            IEnumerable<string> excludeFiles;
-            bool foundOne = false;
-            if (rawInclude != null && JsonPackageSpecReader.TryGetStringEnumerableFromJArray(rawInclude, out include))
+            JToken rawInclude = jsonObject["include"];
+            JToken rawExclude = jsonObject["exclude"];
+            JToken rawIncludeFiles = jsonObject["includeFiles"];
+            JToken rawExcludeFiles = jsonObject["excludeFiles"];
+
+            var foundOne = false;
+
+            if (rawInclude != null && TryGetStringEnumerableFromJArray(rawInclude, out IReadOnlyList<string> include))
             {
-                Include = include.ToList();
+                Include = include;
                 foundOne = true;
             }
-            if (rawExclude != null && JsonPackageSpecReader.TryGetStringEnumerableFromJArray(rawExclude, out exclude))
+
+            if (rawExclude != null && TryGetStringEnumerableFromJArray(rawExclude, out IReadOnlyList<string> exclude))
             {
-                Exclude = exclude.ToList();
+                Exclude = exclude;
                 foundOne = true;
             }
-            if (rawIncludeFiles != null && JsonPackageSpecReader.TryGetStringEnumerableFromJArray(rawIncludeFiles, out includeFiles))
+
+            if (rawIncludeFiles != null && TryGetStringEnumerableFromJArray(rawIncludeFiles, out IReadOnlyList<string> includeFiles))
             {
-                IncludeFiles = includeFiles.ToList();
+                IncludeFiles = includeFiles;
                 foundOne = true;
             }
-            if (rawExcludeFiles != null && JsonPackageSpecReader.TryGetStringEnumerableFromJArray(rawExcludeFiles, out excludeFiles))
+
+            if (rawExcludeFiles != null && TryGetStringEnumerableFromJArray(rawExcludeFiles, out IReadOnlyList<string> excludeFiles))
             {
-                ExcludeFiles = excludeFiles.ToList();
+                ExcludeFiles = excludeFiles;
                 foundOne = true;
             }
 
@@ -81,10 +86,10 @@ namespace NuGet.ProjectModel
                 return true;
             }
 
-            return Include.SequenceEqualWithNullCheck(Include) &&
-                   Exclude.SequenceEqualWithNullCheck(Exclude) &&
-                   IncludeFiles.SequenceEqualWithNullCheck(IncludeFiles) &&
-                   ExcludeFiles.SequenceEqualWithNullCheck(ExcludeFiles);
+            return Include.SequenceEqualWithNullCheck(other.Include) &&
+                Exclude.SequenceEqualWithNullCheck(other.Exclude) &&
+                IncludeFiles.SequenceEqualWithNullCheck(other.IncludeFiles) &&
+                ExcludeFiles.SequenceEqualWithNullCheck(other.ExcludeFiles);
         }
 
         public IncludeExcludeFiles Clone()
@@ -95,6 +100,33 @@ namespace NuGet.ProjectModel
             clonedObject.IncludeFiles = IncludeFiles.ToList();
             clonedObject.ExcludeFiles = ExcludeFiles.ToList();
             return clonedObject;
+        }
+
+        private static bool TryGetStringEnumerableFromJArray(JToken token, out IReadOnlyList<string> result)
+        {
+            result = null;
+
+            if (token == null)
+            {
+                return false;
+            }
+            else if (token.Type == JTokenType.String)
+            {
+                result = new[]
+                {
+                    token.Value<string>()
+                };
+            }
+            else if (token.Type == JTokenType.Array)
+            {
+                result = token.ValueAsArray<string>();
+            }
+            else
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

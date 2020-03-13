@@ -30,10 +30,19 @@ namespace NuGet.ProjectModel
 
             return this;
         }
+
         private FileFormatException WithLineInfo(JsonReaderException exception)
         {
             Line = exception.LinePosition;
             Column = exception.LineNumber;
+
+            return this;
+        }
+
+        private FileFormatException WithLineInfo(int line, int column)
+        {
+            Line = line;
+            Column = column;
 
             return this;
         }
@@ -62,6 +71,20 @@ namespace NuGet.ProjectModel
             return ex.WithFilePath(path).WithLineInfo(lineInfo);
         }
 
+        internal static FileFormatException Create(Exception exception, int line, int column, string path)
+        {
+            var message = string.Format(CultureInfo.CurrentCulture,
+                Strings.Log_ErrorReadingProjectJsonWithLocation,
+                path,
+                line,
+                column,
+                exception.Message);
+
+            var ex = new FileFormatException(message, exception);
+
+            return ex.WithFilePath(path).WithLineInfo(line, column);
+        }
+
         public static FileFormatException Create(string message, JToken value, string path)
         {
             var lineInfo = (IJsonLineInfo)value;
@@ -69,6 +92,13 @@ namespace NuGet.ProjectModel
             var ex = new FileFormatException(message);
 
             return ex.WithFilePath(path).WithLineInfo(lineInfo);
+        }
+
+        internal static FileFormatException Create(string message, int line, int column, string path)
+        {
+            var ex = new FileFormatException(message);
+
+            return ex.WithFilePath(path).WithLineInfo(line, column);
         }
 
         internal static FileFormatException Create(Exception exception, string path)

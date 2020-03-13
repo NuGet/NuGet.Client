@@ -88,15 +88,6 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package details link.
-        /// </summary>
-        public static string Accessibility_PackageDetailsUrlLink {
-            get {
-                return ResourceManager.GetString("Accessibility_PackageDetailsUrlLink", resourceCulture);
-            }
-        }
-        
-        /// <summary>
         ///   Looks up a localized string similar to Package icon.
         /// </summary>
         public static string Accessibility_PackageIcon {
@@ -129,6 +120,15 @@ namespace NuGet.PackageManagement.UI {
         public static string Accessibility_PackageMetadata {
             get {
                 return ResourceManager.GetString("Accessibility_PackageMetadata", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Packages.
+        /// </summary>
+        public static string Accessibility_Packages {
+            get {
+                return ResourceManager.GetString("Accessibility_Packages", resourceCulture);
             }
         }
         
@@ -543,6 +543,15 @@ namespace NuGet.PackageManagement.UI {
         public static string CheckBox_SelectAllProjects_HelpText {
             get {
                 return ResourceManager.GetString("CheckBox_SelectAllProjects_HelpText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Selected.
+        /// </summary>
+        public static string CheckBox_Selected {
+            get {
+                return ResourceManager.GetString("CheckBox_Selected", resourceCulture);
             }
         }
         

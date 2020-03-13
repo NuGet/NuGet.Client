@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Windows.Media;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Threading;
@@ -16,10 +14,8 @@ namespace NuGetConsole
     /// This class implements the IConsole interface in order to integrate with the PowerShellHost.
     /// It sends PowerShell host outputs to the VS Output tool window.
     /// </summary>
-    internal sealed class OutputConsole : IConsole, IConsoleDispatcher
+    internal sealed class OutputConsole : SharedOutputConsole, IConsole, IConsoleDispatcher
     {
-        private const int DefaultConsoleWidth = 120;
-
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
         private readonly AsyncLazy<IVsOutputWindowPane> _outputWindowPane;
@@ -74,9 +70,7 @@ namespace NuGetConsole
 
         public IConsoleDispatcher Dispatcher => this;
 
-        public int ConsoleWidth => DefaultConsoleWidth;
-
-        public void Write(string text)
+        public override async Task WriteAsync(string text)
         {
             if (string.IsNullOrEmpty(text))
             {
@@ -85,65 +79,30 @@ namespace NuGetConsole
 
             Start();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                VsOutputWindowPane.OutputStringThreadSafe(text);
-            });
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            VsOutputWindowPane.OutputStringThreadSafe(text);
         }
 
-        public void Write(string text, Color? foreground, Color? background)
+        public override async Task ActivateAsync()
         {
-            // the Output window doesn't allow setting text color
-            Write(text);
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            _vsUiShell.FindToolWindow(0,
+                ref GuidList.guidVsWindowKindOutput,
+                out var toolWindow);
+            toolWindow?.Show();
+
+            VsOutputWindowPane.Activate();
         }
 
-        public void WriteBackspace()
-        {
-            throw new NotSupportedException();
-        }
-
-        public void WriteLine(string text)
-        {
-            Write(text + Environment.NewLine);
-        }
-
-        public void WriteLine(string format, params object[] args)
-        {
-            WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
-        }
-
-        public void WriteProgress(string operation, int percentComplete)
-        {
-        }
-
-        public void Activate()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _vsUiShell.FindToolWindow(0,
-                    ref GuidList.guidVsWindowKindOutput,
-                    out var toolWindow);
-                toolWindow?.Show();
-
-                VsOutputWindowPane.Activate();
-            });
-        }
-
-        public void Clear()
+        public override async Task ClearAsync()
         {
             Start();
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                VsOutputWindowPane.Activate();
-                VsOutputWindowPane.Clear();
-            });
+            VsOutputWindowPane.Activate();
+            VsOutputWindowPane.Clear();
         }
 
         #endregion IConsole
@@ -197,7 +156,7 @@ namespace NuGetConsole
 
         public void ClearConsole()
         {
-            Clear();
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ClearAsync());
         }
 
         #endregion IConsoleDispatcher

@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
+    <PackageReference Include="System.Diagnostics.TraceSource" />
   </ItemGroup>
 
   <ItemGroup>

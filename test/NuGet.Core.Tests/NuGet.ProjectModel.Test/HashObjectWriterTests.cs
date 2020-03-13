@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using NuGet.Packaging;
 using Xunit;
@@ -10,6 +11,8 @@ namespace NuGet.ProjectModel.Test
 {
     public class HashObjectWriterTests : IDisposable
     {
+        private const string PropertyName = "a";
+
         private readonly IHashFunction _hashFunc;
         private readonly HashObjectWriter _writer;
 
@@ -26,173 +29,300 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void Constructor_ThrowsForNullHashFunc()
+        public void Constructor_WhenHashFuncIsNull_Throws()
         {
-            Assert.Throws<ArgumentNullException>(() => new HashObjectWriter(hashFunc: null));
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => new HashObjectWriter(hashFunc: null));
+
+            Assert.Equal("hashFunc", exception.ParamName);
         }
 
         [Fact]
-        public void GetHash_HasDefaultValue()
+        public void Dispose_Always_IsIdempotent()
         {
-            const string expectedHash = "J8dGcK23UHX60FjVzq97IMTneGyDuuijL2Jvl4KvNMmjPCBG72D9Knh403jin+yFGAa72aZ4ePOp8c2kgwdj/Q==";
-            var actualHash = _writer.GetHash();
+            _writer.Dispose();
+            _writer.Dispose();
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithNoParameter_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectStart());
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithNoParameter_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectStart());
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithNoParameter_WhenCalled_WritesObjectStart()
+        {
+            _writer.WriteObjectStart();
+
+            const string expectedHash = "wtA8bvsWw/gGSw0FnkX5UfF0hCGmIlcaUgCd3MKmcIUeGtAmn72B1FhW+iD/rNCB3SD+znYRQgvvtJ65hLwjyg==";
+            string actualHash = _writer.GetHash();
 
             Assert.Equal(expectedHash, actualHash);
         }
 
         [Fact]
-        public void GetHash_ComputesOverEntireObject()
+        public void WriteObjectStart_WithName_WhenNameIsNull_Throws()
         {
-            _writer.WriteObjectStart("a");
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteObjectStart(name: null));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithName_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectStart(PropertyName));
+        }
+
+        [Fact]
+        public void WriteObjectStart_WithName_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectStart(PropertyName));
+        }
+
+        [Theory]
+        [InlineData("", "z6NXo38IFDLUr7F/bIoub9q2RcWGd9G0kd0sZ2LrUsjAAOxeICRcA8sN6CZR1kIMrZl/AluqG57zeTOuEBQ1Bw==")]
+        [InlineData(PropertyName, "7NPeUey7AxorbVFFvKtffuKjuI3T9fqrDmyP9jMRFaMIQZdiMqy4+dvV2ci7nhuZjOXx5qdfiIns7wluMZYjlQ==")]
+        public void WriteObjectStart_WithName_WithValidName_WritesObjectStart(string name, string expectedHash)
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteObjectStart(name);
+
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WhenDisposed_Throws()
+        {
+            _writer.WriteObjectStart();
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteObjectEnd());
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WhenReadOnly_Throws()
+        {
+            _writer.WriteObjectStart();
+
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
+        }
+
+        [Fact]
+        public void WriteObjectEnd_WithoutObjectStart_Throws()
+        {
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
+        }
+
+        [Fact]
+        public void WriteNameValue_WithIntValue_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: 3));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithIntValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: 3));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithIntValue_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue(PropertyName, value: 3));
+        }
+
+        [Theory]
+        [InlineData("", -1, "Py0m1BAc1GMLdv3VwUlClC/IwVxlRDmvpmUpLV1aQeFXw/eJsxWsbS/xi/Lu/HxvoufXcjJmlljwfe/B/aIccQ==")]
+        [InlineData(PropertyName, 1, "Z7FWuyPxOQ7v6uelHNSbq7no7P2EXqJRh0k6ONDfevPFA3yycn77N+keqUWo9rq6efTrRpjaKxKuvhdas2tzfg==")]
+        public void WriteNameValue_WithIntValue_WithValidValue_WritesNameValue(string name, int value, string expectedHash)
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteNameValue(name, value);
+
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: true));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: true));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithBoolValue_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue(PropertyName, value: true));
+        }
+
+        [Theory]
+        [InlineData("", true, "MuWFFw3nbGG78iKZZPcYZVMFfn8pxOZA3gBgB2KKL5Lysc/SX/xo5csUe9gvavVgis2wsA3EqJ8ZJkgU6s3SCA==")]
+        [InlineData(PropertyName, false, "/prsw57A47qiwYscCHCc5UJZdEJtaxpyeagaTzwlIDbFf0CSFJeU4EIqSBvh3q9iy9SwRk3Q+RGQH7KjrhvohQ==")]
+        public void WriteNameValue_WithBoolValue_WithValidValue_WritesNameValue(string name, bool value, string expectedHash)
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteNameValue(name, value);
+
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithStringValue_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameValue(name: null, value: "b"));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameValue_WithStringValue_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameValue(PropertyName, value: "b"));
+        }
+
+        [Fact]
+        public void WriteNameValue_WithStringValue_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue(PropertyName, value: "b"));
+        }
+
+        [Theory]
+        [InlineData("", "", "y119K+M0qb7ZuOPtqhZB3oSq3qICw6ulw46gpooqe+mgd11zySkL+dONrIm8asZiUOWKa1Vo8lSp0c4Df92gHQ==")]
+        [InlineData(PropertyName, null, "KYuQ62iFQ/6Cd6svsq38bCPZq2HUZJae+e8kyvFpxkjpBMGOa/88lvo++bIb2zHL7eO5MJN9I8r1/kwe0lSctg==")]
+        [InlineData(PropertyName, "b", "kQ/OLQaqRdPBgNd/wzuUuTmSoCW13jaonYx5//arvLFtDo85lv5kfr1ATCol6HH9lDFtNS44X/HSjSI7xnxSDA==")]
+        public void WriteNameValue_WithStringValue_WithValidValue_WritesNameValue(string name, string value, string expectedHash)
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteNameValue(name, value);
+
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenNameIsNull_Throws()
+        {
+            ArgumentNullException exception = Assert.Throws<ArgumentNullException>(
+                () => _writer.WriteNameArray(name: null, values: new[] { "b" }));
+
+            Assert.Equal("name", exception.ParamName);
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenDisposed_Throws()
+        {
+            _writer.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() => _writer.WriteNameArray(PropertyName, new[] { "b" }));
+        }
+
+        [Fact]
+        public void WriteNameArray_WhenReadOnly_Throws()
+        {
+            MakeReadOnly();
+
+            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameArray(PropertyName, new[] { "b" }));
+        }
+
+        [Theory]
+        [InlineData("", null, "bAe84bYqI4pvIFTbU9k55dzFYneWYlLw6w2Hbbw9F71iXKv9CYdVl6WE20O73WP2Gs8N1jY8vNLnpRy2uSOkIw==")]
+        [InlineData(PropertyName, "b", "6lWKPWARIKyDadU74W5+bb7W7/1mFLyZaljfm4UpudCTeiny7dbPU5hB/C63Xt6LDpqbjtLvoxS0hiWIbWGvkA==")]
+        public void WriteNameArray_WithValidValues_WritesNameArray(string name, string value, string expectedHash)
+        {
+            IEnumerable<string> values = value == null ? Enumerable.Empty<string>() : new[] { value };
+
+            _writer.WriteObjectStart();
+            _writer.WriteNameArray(name, values);
+
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void WriteNameArray_WithNullValue_WritesNameArray()
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteNameArray(PropertyName, new string[] { null });
+
+            const string expectedHash = "BqvCuFre4Siu1xS8bzI6rXbSTCoNBI/bqGRvUTFDtUAVlDGfDg5cqeBosLcw5sboEHqOFOb/MqJBOyK1Xj5Ueg==";
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void GetHash_WithNoOtherChanges_ReturnsDefaultValue()
+        {
+            const string expectedHash = "z4PhNX7vuL3xVChQ1m2AB9Yg5AULVxXcg/SpIdNs6c5H0NE8XYXysP+DGNKHfuwvY7kxvUdBeoGlODJ6+SfaPg==";
+            string actualHash = _writer.GetHash();
+
+            Assert.Equal(expectedHash, actualHash);
+        }
+
+        [Fact]
+        public void GetHash_WhenCalledOnCompleteObject_ReturnsHash()
+        {
+            _writer.WriteObjectStart();
+            _writer.WriteObjectStart(PropertyName);
             _writer.WriteNameValue("b", 0);
             _writer.WriteNameValue("c", "d");
             _writer.WriteNameArray("e", new[] { "f", "g" });
             _writer.WriteObjectEnd();
-
-            const string expectedHash = "TGP0LarTsGYQ2bqAC8lWyRQR+JsKzsO0Y+h6w7mtTj6mBOLTy8Dr0ZypSgzwzD9xuddh2ceDT7fEXve5ohuNeQ==";
-            var actualHash = _writer.GetHash();
-
-            Assert.Equal(expectedHash, actualHash);
-        }
-
-        [Fact]
-        public void WriteObjectStart_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteObjectStart(name: null));
-        }
-
-        [Fact]
-        public void WriteObjectStart_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectStart("a"));
-        }
-
-        [Fact]
-        public void WriteObjectStart_SupportsEmptyName()
-        {
-            _writer.WriteObjectStart(name: "");
             _writer.WriteObjectEnd();
 
-            const string expectedHash = "knKxm5x6Jpr2pv4LPmgc9Vt/eR3n4kSCkc18RMfY78x9B52j8BHbj0MjOK99Y28IcIpRppus2d/JoX/p5+jZHA==";
-            var actualHash = _writer.GetHash();
-
-            Assert.Equal(expectedHash, actualHash);
-        }
-
-        [Fact]
-        public void WriteObjectEnd_ThrowsIfReadOnly()
-        {
-            _writer.WriteObjectStart("a");
-
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
-        }
-
-        [Fact]
-        public void WriteObjectEnd_ThrowsIfCalledOnRoot()
-        {
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteObjectEnd());
-        }
-
-        [Fact]
-        public void WriteNameValue_WithBoolValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: true));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithBoolValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", value: true));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithBoolValue_SupportsEmptyName()
-        {
-            _writer.WriteNameValue(name: "", value: true);
-
-            const string expectedHash = "h+DBc/HiHXmYua4cJFF3KTsac/iwr0KN4TQNtXZdHgZA05PwtMldoPNkXQ/H+8bGw3OCxzDolEdgCkLF4F559A==";
-            var actualHash = _writer.GetHash();
-
-            Assert.Equal(expectedHash, actualHash);
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: 0));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", value: 1));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithIntValue_SupportsEmptyName()
-        {
-            _writer.WriteNameValue(name: "", value: 3);
-
-            const string expectedHash = "TnmYxd+nupymXRi9r+MPlKYv2xrgnd4owbVaJur49jN3sm2bQKXkFwBJIA+NlEArnz4QoMFJmomlXJDExHZKMQ==";
-            var actualHash = _writer.GetHash();
-
-            Assert.Equal(expectedHash, actualHash);
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameValue(name: null, value: "a"));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameValue("a", "b"));
-        }
-
-        [Fact]
-        public void WriteNameValue_WithStringValue_SupportsEmptyNameAndEmptyValue()
-        {
-            _writer.WriteNameValue(name: "", value: "");
-
-            const string expectedHash = "rRT9i81nhJdNPYfhfGo8b7u0lFCjmweC7fi4Gs3bE3aNzMrMLetck4BSgHTJ8DxbzomkNRsYNFKdROBep1HIXw==";
-            var actualHash = _writer.GetHash();
-
-            Assert.Equal(expectedHash, actualHash);
-        }
-
-        [Fact]
-        public void WriteNameArray_ThrowsForNullName()
-        {
-            Assert.Throws<ArgumentNullException>(() => _writer.WriteNameArray(name: null, values: new[] { "a" }));
-        }
-
-        [Fact]
-        public void WriteNameArray_ThrowsIfReadOnly()
-        {
-            MakeReadOnly();
-
-            Assert.Throws<InvalidOperationException>(() => _writer.WriteNameArray("a", new[] { "b" }));
-        }
-
-        [Fact]
-        public void WriteNameArray_SupportsEmptyNameAndEmptyValues()
-        {
-            _writer.WriteNameArray(name: "", values: Enumerable.Empty<string>());
-
-            const string expectedHash = "KPMSRUKjEBMaUdDcHOxPO/bVXtH5ITcjM9/Fq/BhWy4v9ZJxkOA0rMe7+6Uxc+s6bLv+zTcr4O+UfJ7ksu5k1Q==";
-            var actualHash = _writer.GetHash();
+            const string expectedHash = "TGP0LarTsGYQ2bqAC8lWyRQR+JsKzsO0Y+h6w7mtTj6mBOLTy8Dr0ZypSgzwzD9xuddh2ceDT7fEXve5ohuNeQ==";
+            string actualHash = _writer.GetHash();
 
             Assert.Equal(expectedHash, actualHash);
         }

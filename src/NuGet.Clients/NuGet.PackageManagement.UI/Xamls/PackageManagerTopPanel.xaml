@@ -4,6 +4,8 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
+             xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
+             xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"  
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="800">
   <UserControl.Resources>
@@ -26,46 +28,132 @@
     <Grid Grid.Row="0" Margin="0,10,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto" />
-        <ColumnDefinition Width="auto" />
         <ColumnDefinition Width="*" MinWidth="20"/>
       </Grid.ColumnDefinitions>
 
-      <nuget:FilterLabel
-        Grid.Column="0"
-        x:Name="_labelBrowse"
-        AutomationProperties.AutomationId="Tab_Browse"
-        Filter="All"
-        Text="{x:Static nuget:Resources.Label_Browse}"
-        ControlSelected="FilterLabel_ControlSelected" />
-      <nuget:FilterLabel
-        Grid.Column="1"
-        x:Name="_labelInstalled"
-        AutomationProperties.AutomationId="Tab_Installed"
-        Filter="Installed"
-        Margin="35,0,0,0"
-        Text="{x:Static nuget:Resources.Label_Installed}"
-        ControlSelected="FilterLabel_ControlSelected">
-      </nuget:FilterLabel>
-      <nuget:FilterLabel
-        Grid.Column="2"
-        x:Name="_labelUpgradeAvailable"
-        AutomationProperties.AutomationId="Tab_Updates"
-        Filter="UpdatesAvailable"
-        Margin="35,0,0,0"
-        Text="{x:Static nuget:Resources.Label_Updates}"
-        ControlSelected="FilterLabel_ControlSelected">
-      </nuget:FilterLabel>
-      <nuget:FilterLabel
-        Grid.Column="3"
-        x:Name="_labelConsolidate"
-        AutomationProperties.AutomationId="Tab_Consolidate"
-        Filter="Consolidate"
-        Margin="35,0,0,0"
-        Text="{x:Static nuget:Resources.Action_Consolidate}"
-        ControlSelected="FilterLabel_ControlSelected"
-        Visibility="Collapsed" />
+      <TabControl x:Name="tabsPackageManagement" IsSynchronizedWithCurrentItem="False" SelectionChanged="TabsPackageManagement_SelectionChanged">
+        <TabControl.Resources>
+          <Style TargetType="TabItem">
+            <Setter Property="Background" Value="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}" />
+            <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"/>
+            <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
+            <Setter Property="Padding" Value="20,0,20,0" />
+            <Setter Property="Template">
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TabItem}">
+                  <Grid x:Name="templateRoot" SnapsToDevicePixels="true">
+                    <Grid.RowDefinitions>
+                      <RowDefinition Height="auto" />
+                      <RowDefinition Height="auto" />
+                    </Grid.RowDefinitions>
+                    <Border x:Name="mainBorder" Background="{TemplateBinding Background}" BorderThickness="0" Margin="0">
+                    </Border>
+                    <ContentPresenter  Grid.Row="0" x:Name="contentPresenter" ContentSource="Header" Focusable="False" HorizontalAlignment="{Binding HorizontalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}" Margin="{TemplateBinding Padding}" RecognizesAccessKey="True" SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" VerticalAlignment="{Binding VerticalContentAlignment, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"/>
+                    <!-- the line under the text to indicate that this label is selected -->
+                    <Rectangle
+                      x:Name="_underline"
+                      Grid.Row="1"
+                      Height="3"
+                      Visibility="Collapsed"
+                      Width="{Binding ActualWidth, ElementName=contentPresenter}"
+                      HorizontalAlignment="Center"
+                      Fill="{DynamicResource {x:Static nuget:Brushes.TabSelectedBrushKey}}"/>
+                  </Grid>
+                  <ControlTemplate.Triggers>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Self}}" Value="true" />
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabHoverBrushKey }}" />
+                    </MultiDataTrigger>
+                    <MultiDataTrigger>
+                      <MultiDataTrigger.Conditions>
+                        <Condition Binding="{Binding IsSelected, RelativeSource={RelativeSource Self}}" Value="true"/>
+                      </MultiDataTrigger.Conditions>
+                      <Setter Property="Visibility" TargetName="_underline" Value="Visible" />
+                      <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.TabSelectedTextBrushKey }}" />
+                    </MultiDataTrigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+          <Style TargetType="{x:Type TabControl}">
+            <Setter Property="Padding" Value="2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template" >
+              <Setter.Value>
+                <ControlTemplate TargetType="{x:Type TabControl}">
+                  <Grid x:Name="templateRoot" ClipToBounds="true" SnapsToDevicePixels="true" KeyboardNavigation.TabNavigation="Local">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition x:Name="ColumnDefinition0"/>
+                      <ColumnDefinition x:Name="ColumnDefinition1" Width="0"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                      <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
+                  </Grid>
+                </ControlTemplate>
+              </Setter.Value>
+            </Setter>
+          </Style>
+        </TabControl.Resources>
+
+        <TabItem Name="tabBrowse" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Browse}" IsSelected="True"/>
+        <TabItem Name="tabInstalled" Tag="{x:Static nuget:ItemFilter.Installed}">
+          <AutomationProperties.Name>
+            <MultiBinding StringFormat="{}{0}{1}">
+              <Binding ElementName="textInstalled" Path="Text" />
+              <Binding ElementName="_warningIcon" Path="ToolTip" />
+            </MultiBinding>
+          </AutomationProperties.Name>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock x:Name="textInstalled" Text="{x:Static nuget:Resources.Label_Installed}"/>
+              <imaging:CrispImage
+                Name="_warningIcon"
+                Margin="3,0"
+                Width="13"
+                Height="13"
+                Visibility="Collapsed"
+                Moniker="{x:Static catalog:KnownMonikers.StatusWarning}" />
+            </StackPanel>
+          </TabItem.Header>
+        </TabItem>
+        <TabItem Name="tabUpdates" Tag="{x:Static nuget:ItemFilter.UpdatesAvailable}">
+          <AutomationProperties.Name>
+            <MultiBinding StringFormat="{}{0}{1}">
+              <Binding ElementName="textUpdates" Path="Text" />
+              <Binding ElementName="_countUpdates" Path="Text" />
+            </MultiBinding>
+          </AutomationProperties.Name>
+          <TabItem.Header>
+            <StackPanel Orientation="Horizontal">
+              <TextBlock x:Name="textUpdates" Text="{x:Static nuget:Resources.Label_Updates}"/>
+              <!-- the textblock that displays the count -->
+              <Border
+                x:Name="_countUpdatesContainer"
+                CornerRadius="2"
+                Margin="3,0"
+                Padding="3,0"
+                Visibility="Collapsed"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                Background="{DynamicResource {x:Static nuget:Brushes.TabPopupBrushKey}}">
+                <TextBlock
+                  x:Name="_countUpdates"
+                  HorizontalAlignment="Right"
+                  VerticalAlignment="Top"
+                  FontSize="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                  Foreground="{DynamicResource {x:Static nuget:Brushes.TabPopupTextBrushKey}}"/>
+              </Border>
+            </StackPanel>
+          </TabItem.Header>
+        </TabItem>
+        <!--Consolidate tab is added dynamically in code based on certain conditions.-->
+      </TabControl>
 
       <TextBlock
         x:Name="_label"
@@ -95,14 +183,14 @@
           <ColumnDefinition Width="auto" />
         </Grid.ColumnDefinitions>
         <!-- container of the search control -->
-          <Border
+        <Border
           Grid.Column="0"
           x:Name="_searchControlParent"
           VerticalAlignment="Center"
           MinHeight="22"
           MinWidth="118"/>
 
-          <Button
+        <Button
           Grid.Column="1"
           x:Name="_refreshButton"
           AutomationProperties.AutomationId="Button_Retry"
@@ -113,15 +201,15 @@
           AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_Refresh}"
           Style="{StaticResource ToolBarButtonStyle}"
           Command="{x:Static nuget:Commands.RestartSearchCommand}">
-            <Image
+          <Image
             Source="{StaticResource BitmapImage_Refresh}"
             Margin="2"
             Height="16"
             Width="16" />
-          </Button>
+        </Button>
 
-          <!-- prerelease checkbox -->
-          <CheckBox
+        <!-- prerelease checkbox -->
+        <CheckBox
           Grid.Column="2"
           x:Name="_checkboxPrerelease"
           AutomationProperties.AutomationId="CheckBox_Prerelease"

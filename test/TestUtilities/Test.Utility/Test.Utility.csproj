@@ -43,17 +43,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Portable.BouncyCastle" Version="1.8.1.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" />
+    <PackageReference Include="Portable.BouncyCastle" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="xunit" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
-    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" Version="15.0.751">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VSFrameworkVersion)">
-      <PrivateAssets>All</PrivateAssets>
-    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.ProjectSystem" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" PrivateAssets="All" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
@@ -65,14 +62,10 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
-  </ItemGroup>
-
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETCoreTargetFramework)' ">
-    <PackageReference Include="System.Diagnostics.Process" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.IO.Compression.ZipFile" Version="$(SystemPackagesVersion)" />
-    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="4.5.2" />
+    <PackageReference Include="System.Diagnostics.Process" />
+    <PackageReference Include="System.IO.Compression.ZipFile" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" />
   </ItemGroup>
 
   <!-- Remove files that do not support netcore -->

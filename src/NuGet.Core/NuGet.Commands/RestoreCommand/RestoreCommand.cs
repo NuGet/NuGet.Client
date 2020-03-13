@@ -69,6 +69,9 @@ namespace NuGet.Commands
         private const string IsLockFileValidForRestore = "IsLockFileValidForRestore";
         private const string LockFileEvaluationResult = "LockFileEvaluationResult";
 
+        // names for central package management version information
+        private const string IsCentralVersionManagementEnabled = "IsCentralVersionManagementEnabled";
+
         public RestoreCommand(RestoreRequest request)
         {
             _request = request ?? throw new ArgumentNullException(nameof(request));
@@ -101,6 +104,10 @@ namespace NuGet.Commands
             using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 _operationId = telemetry.OperationId;
+
+                var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
+                telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
+
                 var restoreTime = Stopwatch.StartNew();
 
                 // Local package folders (non-sources)
@@ -159,6 +166,29 @@ namespace NuGet.Commands
                     }
                 }
 
+                if (isCpvmEnabled && !await AreCentralVersionRequirementsSatisfiedAsync())
+                {
+                    restoreTime.Stop();
+                    _success = false;
+
+                    return new RestoreResult(
+                        success: _success,
+                        restoreGraphs: Enumerable.Empty<RestoreTargetGraph>(),
+                        compatibilityCheckResults: Enumerable.Empty<CompatibilityCheckResult>(),
+                        msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                        lockFile: _request.ExistingLockFile,
+                        previousLockFile: _request.ExistingLockFile,
+                        lockFilePath: _request.ExistingLockFile?.Path,
+                        cacheFile: null,
+                        cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
+                        packagesLockFilePath: null,
+                        packagesLockFile: null,
+                        projectStyle: _request.ProjectStyle,
+                        dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                        dependencyGraphSpec: _request.DependencyGraphSpec,
+                        elapsedTime: restoreTime.Elapsed);
+                }
+
                 // evaluate packages.lock.json file
                 var packagesLockFilePath = PackagesLockFileUtilities.GetNuGetLockFilePath(_request.Project);
                 var isLockFileValid = false;
@@ -206,6 +236,8 @@ namespace NuGet.Commands
                             cacheFilePath: _request.Project.RestoreMetadata.CacheFilePath,
                             packagesLockFilePath: packagesLockFilePath,
                             packagesLockFile: packagesLockFile,
+                            dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                            dependencyGraphSpec: _request.DependencyGraphSpec,
                             projectStyle: _request.ProjectStyle,
                             elapsedTime: restoreTime.Elapsed);
                     }
@@ -363,9 +395,32 @@ namespace NuGet.Commands
                     cacheFilePath,
                     packagesLockFilePath,
                     packagesLockFile,
+                    dependencyGraphSpecFilePath: NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request),
+                    dependencyGraphSpec: _request.DependencyGraphSpec,
                     _request.ProjectStyle,
                     restoreTime.Elapsed);
             }
+        }
+
+        private async Task<bool> AreCentralVersionRequirementsSatisfiedAsync()
+        {
+            // The dependencies should not have versions explicitelly defined if cpvm is enabled.
+            IEnumerable<LibraryDependency> dependenciesWithDefinedVersion = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => !d.VersionCentrallyManaged && !d.AutoReferenced));
+            if (dependenciesWithDefinedVersion.Any())
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1008, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_VersionsNotAllowed, string.Join(";", dependenciesWithDefinedVersion.Select(d => d.Name)))));
+
+                return false;
+            }
+            IEnumerable<LibraryDependency> autoReferencedAndDefinedInCentralFile = _request.Project.TargetFrameworks.SelectMany(tfm => tfm.Dependencies.Where(d => d.AutoReferenced && tfm.CentralPackageVersions.ContainsKey(d.Name)));
+            if (autoReferencedAndDefinedInCentralFile.Any())
+            {
+                await _logger.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1009, string.Format(CultureInfo.CurrentCulture, Strings.Error_CentralPackageVersions_AutoreferencedReferencesNotAllowed, string.Join(";", autoReferencedAndDefinedInCentralFile.Select(d => d.Name)))));
+
+                return false;
+            }
+
+            return true;
         }
 
         private string ConcatAsString<T>(IEnumerable<T> enumerable)
@@ -551,13 +606,6 @@ namespace NuGet.Commands
             {
                 cacheFile = new CacheFile(newDgSpecHash);
 
-            }
-
-            // We only persist the dg spec file if it nooped or the dg spec does not exist.
-            var dgPath = NoOpRestoreUtilities.GetPersistedDGSpecFilePath(_request);
-            if (dgPath != null && (!noOp || !File.Exists(dgPath)))
-            {
-                NoOpRestoreUtilities.PersistDGSpecFile(noOpDgSpec, dgPath, _logger);
             }
 
             // DotnetCliTool restores are special because the the assets file location is not known until after the restore itself. So we just clean up.
@@ -857,7 +905,7 @@ namespace NuGet.Commands
                 _success = false;
                 return Enumerable.Empty<RestoreTargetGraph>();
             }
-            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath)); 
+            _logger.LogInformation(string.Format(CultureInfo.CurrentCulture, Strings.Log_RestoringPackages, _request.Project.FilePath));
 
             // Get external project references
             // If the top level project already exists, update the package spec provided

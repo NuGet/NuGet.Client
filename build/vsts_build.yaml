@@ -79,7 +79,6 @@ jobs:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
-    DesktopTargetFramework: "net472"
 
   pool:
     name: VSEng-MicroBuildVS2019
@@ -191,6 +190,16 @@ jobs:
       msbuildVersion: "16.0"
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
+  
+  - task: MSBuild@1
+    displayName: "Ensure package versions are declared in packages.targets"
+    continueOnError: "false"
+    inputs:
+      solution: "build\\build.proj"
+      msbuildVersion: "16.0"
+      msbuildArguments: "/t:EnsurePackageReferenceVersionsInSolution"
+    condition: "succeeded()"
+
 
   - task: MSBuild@1	
     displayName: "Localize Assemblies"	
@@ -706,7 +715,7 @@ jobs:
     demands: 
     - sh
     - VSTS_OS -equals Mac_Mojave_10.14
-    - Mono -equals 6.4.0
+    - Team -equals NuGet Client Team
 
   steps:
   - task: PowerShell@2

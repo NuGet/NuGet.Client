@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.Frameworks;
@@ -11,6 +12,7 @@ using NuGet.Packaging.Core;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 using Xunit;
+
 namespace NuGet.ProjectModel.Test
 {
     public class PackageSpecCloningTests
@@ -35,7 +37,6 @@ namespace NuGet.ProjectModel.Test
             //Assert
             Assert.Equal(originalBuildOptions.OutputName, clonedBuildOptions.OutputName);
             Assert.False(object.ReferenceEquals(originalBuildOptions, clonedBuildOptions));
-
         }
 
         [Fact]
@@ -146,6 +147,7 @@ namespace NuGet.ProjectModel.Test
             files.ExcludeFiles = new List<string>() { "ExlcludeFiles0" };
             return files;
         }
+
         private PackOptions CreatePackOptions()
         {
             var originalPackOptions = new PackOptions();
@@ -157,39 +159,39 @@ namespace NuGet.ProjectModel.Test
         private PackageSpec CreatePackageSpec()
         {
             var originalTargetFrameworkInformation = CreateTargetFrameworkInformation();
-            var PackageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation });
-            PackageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
-            PackageSpec.FilePath = "FilePath";
-            PackageSpec.Name = "Name";
-            PackageSpec.Title = "Title";
-            PackageSpec.Version = new Versioning.NuGetVersion("1.0.0");
-            PackageSpec.HasVersionSnapshot = true;
-            PackageSpec.Description = "Description";
-            PackageSpec.Summary = "Summary";
-            PackageSpec.ReleaseNotes = "ReleaseNotes";
-            PackageSpec.Authors = new string[] { "Author1" };
-            PackageSpec.Owners = new string[] { "Owner1" };
-            PackageSpec.ProjectUrl = "ProjectUrl";
-            PackageSpec.IconUrl = "IconUrl";
-            PackageSpec.LicenseUrl = "LicenseUrl";
-            PackageSpec.Copyright = "Copyright";
-            PackageSpec.Language = "Language";
-            PackageSpec.RequireLicenseAcceptance = true;
-            PackageSpec.Tags = new string[] { "Tags" };
-            PackageSpec.BuildOptions = CreateBuildOptions();
-            PackageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
-            PackageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
+            var packageSpec = new PackageSpec(new List<TargetFrameworkInformation>() { originalTargetFrameworkInformation });
+            packageSpec.RestoreMetadata = CreateProjectRestoreMetadata();
+            packageSpec.FilePath = "FilePath";
+            packageSpec.Name = "Name";
+            packageSpec.Title = "Title";
+            packageSpec.Version = new Versioning.NuGetVersion("1.0.0");
+            packageSpec.HasVersionSnapshot = true;
+            packageSpec.Description = "Description";
+            packageSpec.Summary = "Summary";
+            packageSpec.ReleaseNotes = "ReleaseNotes";
+            packageSpec.Authors = new string[] { "Author1" };
+            packageSpec.Owners = new string[] { "Owner1" };
+            packageSpec.ProjectUrl = "ProjectUrl";
+            packageSpec.IconUrl = "IconUrl";
+            packageSpec.LicenseUrl = "LicenseUrl";
+            packageSpec.Copyright = "Copyright";
+            packageSpec.Language = "Language";
+            packageSpec.RequireLicenseAcceptance = true;
+            packageSpec.Tags = new string[] { "Tags" };
+            packageSpec.BuildOptions = CreateBuildOptions();
+            packageSpec.ContentFiles = new List<string>() { "contentFile1", "contentFile2" };
+            packageSpec.Dependencies = new List<LibraryDependency>() { CreateLibraryDependency(), CreateLibraryDependency() };
 
-            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
-            PackageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
+            packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
+            packageSpec.Scripts.Add(Guid.NewGuid().ToString(), new List<string>() { Guid.NewGuid().ToString() });
 
-            PackageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
+            packageSpec.PackInclude.Add(Guid.NewGuid().ToString(), Guid.NewGuid().ToString());
 
-            PackageSpec.PackOptions = CreatePackOptions();
+            packageSpec.PackOptions = CreatePackOptions();
 
-            PackageSpec.RuntimeGraph = CreateRuntimeGraph();
-            PackageSpec.RestoreSettings = CreateProjectRestoreSettings();
-            return PackageSpec;
+            packageSpec.RuntimeGraph = CreateRuntimeGraph();
+            packageSpec.RestoreSettings = CreateProjectRestoreSettings();
+            return packageSpec;
         }
 
         public static RuntimeGraph CreateRuntimeGraph()
@@ -219,39 +221,38 @@ namespace NuGet.ProjectModel.Test
         public void PackageSpecCloneTest(string methodName, bool validateJson)
         {
             // Set up
-            var PackageSpec = CreatePackageSpec();
-            var clonedPackageSpec = PackageSpec.Clone();
+            var packageSpec = CreatePackageSpec();
+            var clonedPackageSpec = packageSpec.Clone();
 
             //Preconditions
-            Assert.Equal(PackageSpec, clonedPackageSpec);
-            var originalPackageSpecWriter = new JsonObjectWriter();
-            var clonedPackageSpecWriter = new JsonObjectWriter();
-            PackageSpecWriter.Write(PackageSpec, originalPackageSpecWriter);
-            PackageSpecWriter.Write(clonedPackageSpec, clonedPackageSpecWriter);
-            Assert.Equal(originalPackageSpecWriter.GetJson().ToString(), clonedPackageSpecWriter.GetJson().ToString());
-            Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
+            Assert.Equal(packageSpec, clonedPackageSpec);
+
+            JObject originalJObject = packageSpec.ToJObject();
+            JObject clonedJObject = clonedPackageSpec.ToJObject();
+
+            Assert.Equal(originalJObject.ToString(), clonedJObject.ToString());
+            Assert.False(ReferenceEquals(packageSpec, clonedPackageSpec));
 
             // Act
             var methodInfo = typeof(PackageSpecModify).GetMethod(methodName);
-            methodInfo.Invoke(null, new object[] { PackageSpec });
+            methodInfo.Invoke(null, new object[] { packageSpec });
 
             // Assert
+            Assert.NotEqual(packageSpec, clonedPackageSpec);
 
-            Assert.NotEqual(PackageSpec, clonedPackageSpec);
             if (validateJson)
             {
-                var oPackageSpecWriter = new JsonObjectWriter();
-                var cPackageSpecWriter = new JsonObjectWriter();
-                PackageSpecWriter.Write(PackageSpec, oPackageSpecWriter);
-                PackageSpecWriter.Write(clonedPackageSpec, cPackageSpecWriter);
-                Assert.NotEqual(oPackageSpecWriter.GetJson().ToString(), cPackageSpecWriter.GetJson().ToString());
+                originalJObject = packageSpec.ToJObject();
+                clonedJObject = clonedPackageSpec.ToJObject();
+
+                Assert.NotEqual(originalJObject.ToString(), clonedJObject.ToString());
             }
-            Assert.False(object.ReferenceEquals(PackageSpec, clonedPackageSpec));
+
+            Assert.False(object.ReferenceEquals(packageSpec, clonedPackageSpec));
         }
 
         public class PackageSpecModify
         {
-
             public static void ModifyAuthors(PackageSpec packageSpec)
             {
                 packageSpec.Authors[0] = "NewAuthor";
@@ -334,7 +335,6 @@ namespace NuGet.ProjectModel.Test
             {
                 packageSpec.RestoreSettings.HideWarningsAndErrors = false;
             }
-
         }
 
         private ProjectRestoreMetadata CreateProjectRestoreMetadata()
@@ -613,7 +613,7 @@ namespace NuGet.ProjectModel.Test
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("frameworkRef", FrameworkDependencyFlags.All));
             originalTargetFrameworkInformation.FrameworkReferences.Add(new FrameworkDependency("FrameworkReference", FrameworkDependencyFlags.None));
             originalTargetFrameworkInformation.RuntimeIdentifierGraphPath = @"path/to/dotnet/sdk/3.0.100/runtime.json";
-
+            originalTargetFrameworkInformation.CentralPackageVersions.Add("CVD", new CentralPackageVersion("CVD", VersionRange.Parse("1.0.0")));
             return originalTargetFrameworkInformation;
         }
 
@@ -767,5 +767,22 @@ namespace NuGet.ProjectModel.Test
             Assert.Equal(2, clone.RestoreContexts.Count);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Clone_WhenIsDefaultVersionVaries_ReturnsEqualClone(bool expectedResult)
+        {
+            var packageSpec = new PackageSpec();
+
+            packageSpec.IsDefaultVersion = expectedResult;
+
+            Assert.Equal(expectedResult, packageSpec.IsDefaultVersion);
+
+            PackageSpec clone = packageSpec.Clone();
+
+            Assert.Equal(expectedResult, packageSpec.IsDefaultVersion);
+            Assert.Equal(expectedResult, clone.IsDefaultVersion);
+            Assert.True(packageSpec.Equals(clone));
+        }
     }
 }

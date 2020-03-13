@@ -21,29 +21,29 @@ namespace NuGet.CommandLine.XPlat
             {
                 AddCmd.Command("source", SourceCmd =>
                 {
-                    var Source = SourceCmd.Argument(
+                    CommandArgument Source = SourceCmd.Argument(
                         "PackageSourcePath", Strings.SourcesCommandSourceDescription);
-                    var name = SourceCmd.Option(
+                    CommandOption name = SourceCmd.Option(
                         "-n|--name",
                         Strings.SourcesCommandNameDescription,
                         CommandOptionType.SingleValue);
-                    var username = SourceCmd.Option(
+                    CommandOption username = SourceCmd.Option(
                         "-u|--username",
                         Strings.SourcesCommandUserNameDescription,
                         CommandOptionType.SingleValue);
-                    var password = SourceCmd.Option(
+                    CommandOption password = SourceCmd.Option(
                         "-p|--password",
                         Strings.SourcesCommandPasswordDescription,
                         CommandOptionType.SingleValue);
-                    var storePasswordInClearText = SourceCmd.Option(
+                    CommandOption storePasswordInClearText = SourceCmd.Option(
                         "--store-password-in-clear-text",
                         Strings.SourcesCommandStorePasswordInClearTextDescription,
                         CommandOptionType.NoValue);
-                    var validAuthenticationTypes = SourceCmd.Option(
+                    CommandOption validAuthenticationTypes = SourceCmd.Option(
                         "--valid-authentication-types",
                         Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -68,7 +68,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 AddCmd.HelpOption("-h|--help");
                 AddCmd.Description = Strings.Add_Description;
-                AddCmd.OnExecute(() => 
+                AddCmd.OnExecute(() =>
                 {
                     app.ShowHelp("add");
                     return 0;
@@ -86,9 +86,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 DisableCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Argument(
+                    CommandArgument name = SourceCmd.Argument(
                         "name", Strings.SourcesCommandNameDescription);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -108,7 +108,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 DisableCmd.HelpOption("-h|--help");
                 DisableCmd.Description = Strings.Disable_Description;
-                DisableCmd.OnExecute(() => 
+                DisableCmd.OnExecute(() =>
                 {
                     app.ShowHelp("disable");
                     return 0;
@@ -126,9 +126,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 EnableCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Argument(
+                    CommandArgument name = SourceCmd.Argument(
                         "name", Strings.SourcesCommandNameDescription);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -148,7 +148,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 EnableCmd.HelpOption("-h|--help");
                 EnableCmd.Description = Strings.Enable_Description;
-                EnableCmd.OnExecute(() => 
+                EnableCmd.OnExecute(() =>
                 {
                     app.ShowHelp("enable");
                     return 0;
@@ -166,11 +166,11 @@ namespace NuGet.CommandLine.XPlat
             {
                 ListCmd.Command("source", SourceCmd =>
                 {
-                    var format = SourceCmd.Option(
+                    CommandOption format = SourceCmd.Option(
                         "--format",
                         Strings.SourcesCommandFormatDescription,
                         CommandOptionType.SingleValue);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -190,7 +190,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 ListCmd.HelpOption("-h|--help");
                 ListCmd.Description = Strings.List_Description;
-                ListCmd.OnExecute(() => 
+                ListCmd.OnExecute(() =>
                 {
                     app.ShowHelp("list");
                     return 0;
@@ -208,9 +208,9 @@ namespace NuGet.CommandLine.XPlat
             {
                 RemoveCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Argument(
+                    CommandArgument name = SourceCmd.Argument(
                         "name", Strings.SourcesCommandNameDescription);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -230,7 +230,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 RemoveCmd.HelpOption("-h|--help");
                 RemoveCmd.Description = Strings.Remove_Description;
-                RemoveCmd.OnExecute(() => 
+                RemoveCmd.OnExecute(() =>
                 {
                     app.ShowHelp("remove");
                     return 0;
@@ -248,29 +248,29 @@ namespace NuGet.CommandLine.XPlat
             {
                 UpdateCmd.Command("source", SourceCmd =>
                 {
-                    var name = SourceCmd.Argument(
+                    CommandArgument name = SourceCmd.Argument(
                         "name", Strings.SourcesCommandNameDescription);
-                    var source = SourceCmd.Option(
+                    CommandOption source = SourceCmd.Option(
                         "-s|--source",
                         Strings.SourcesCommandSourceDescription,
                         CommandOptionType.SingleValue);
-                    var username = SourceCmd.Option(
+                    CommandOption username = SourceCmd.Option(
                         "-u|--username",
                         Strings.SourcesCommandUserNameDescription,
                         CommandOptionType.SingleValue);
-                    var password = SourceCmd.Option(
+                    CommandOption password = SourceCmd.Option(
                         "-p|--password",
                         Strings.SourcesCommandPasswordDescription,
                         CommandOptionType.SingleValue);
-                    var storePasswordInClearText = SourceCmd.Option(
+                    CommandOption storePasswordInClearText = SourceCmd.Option(
                         "--store-password-in-clear-text",
                         Strings.SourcesCommandStorePasswordInClearTextDescription,
                         CommandOptionType.NoValue);
-                    var validAuthenticationTypes = SourceCmd.Option(
+                    CommandOption validAuthenticationTypes = SourceCmd.Option(
                         "--valid-authentication-types",
                         Strings.SourcesCommandValidAuthenticationTypesDescription,
                         CommandOptionType.SingleValue);
-                    var configfile = SourceCmd.Option(
+                    CommandOption configfile = SourceCmd.Option(
                         "--configfile",
                         Strings.Option_ConfigFile,
                         CommandOptionType.SingleValue);
@@ -295,7 +295,7 @@ namespace NuGet.CommandLine.XPlat
                 });
                 UpdateCmd.HelpOption("-h|--help");
                 UpdateCmd.Description = Strings.Update_Description;
-                UpdateCmd.OnExecute(() => 
+                UpdateCmd.OnExecute(() =>
                 {
                     app.ShowHelp("update");
                     return 0;

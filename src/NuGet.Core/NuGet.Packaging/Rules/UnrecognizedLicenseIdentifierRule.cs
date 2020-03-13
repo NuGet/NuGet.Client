@@ -10,7 +10,7 @@ using NuGet.Packaging.Licenses;
 
 namespace NuGet.Packaging.Rules
 {
-    class UnrecognizedLicenseIdentifierRule : IPackageRule
+    internal class UnrecognizedLicenseIdentifierRule : IPackageRule
     {
         public string MessageFormat { get; }
 

@@ -315,6 +315,7 @@
     <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
+      AutomationProperties.Name="{x:Static nuget:Resources.Accessibility_Packages}"
       DockPanel.Dock="Bottom"
       PreviewKeyUp="List_PreviewKeyUp"
       Background="{DynamicResource {x:Static nuget:Brushes.ListPaneBackground}}"

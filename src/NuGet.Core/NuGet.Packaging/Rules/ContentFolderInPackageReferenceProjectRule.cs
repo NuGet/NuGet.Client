@@ -6,7 +6,7 @@ using NuGet.Common;
 
 namespace NuGet.Packaging.Rules
 {
-    class ContentFolderInPackageReferenceProjectRule : IPackageRule
+    internal class ContentFolderInPackageReferenceProjectRule : IPackageRule
     {
         public string MessageFormat
         {

@@ -56,7 +56,7 @@ namespace NuGet.Protocol.Tests
             Assert.Equal("A client library for working with Microsoft Azure storage services including blobs, files, tables, and queues.", latestPackage.Summary);
             Assert.Equal("Microsoft Azure Storage Table Blob File Queue Scalable windowsazureofficial", latestPackage.Tags);
             Assert.Equal(6, latestPackage.DependencySets.Count());
-            Assert.Equal("dotnet5.4", latestPackage.DependencySets.First().TargetFramework.GetShortFolderName());
+            Assert.Equal("dotnet54", latestPackage.DependencySets.First().TargetFramework.GetShortFolderName());
         }
 
         [Fact]

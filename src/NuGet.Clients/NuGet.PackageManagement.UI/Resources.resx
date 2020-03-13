@@ -666,6 +666,9 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="ColumnHeader_Selected" xml:space="preserve">
     <value>Selected</value>
   </data>
+  <data name="CheckBox_Selected" xml:space="preserve">
+    <value>Selected</value>
+  </data>
   <data name="AutoReferenced" xml:space="preserve">
     <value>Implicitly referenced by an SDK. To update the package, update the SDK to which it belongs.</value>
   </data>
@@ -844,9 +847,6 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_PackageDetailsUrlIcon" xml:space="preserve">
     <value>Package details URL icon</value>
   </data>
-  <data name="Accessibility_PackageDetailsUrlLink" xml:space="preserve">
-    <value>Package details link</value>
-  </data>
   <data name="Label_Deprecated" xml:space="preserve">
     <value>Deprecated</value>
   </data>
@@ -896,5 +896,8 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   </data>
   <data name="Hyperlink_ReportAbuse" xml:space="preserve">
     <value>Report Abuse</value>
+  </data>
+  <data name="Accessibility_Packages" xml:space="preserve">
+    <value>Packages</value>
   </data>
 </root>

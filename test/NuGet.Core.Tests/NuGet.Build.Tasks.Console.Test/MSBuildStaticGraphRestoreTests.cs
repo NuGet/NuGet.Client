@@ -15,6 +15,7 @@ using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Test.Utility;
+using Moq;
 using Xunit;
 
 namespace NuGet.Build.Tasks.Console.Test
@@ -170,7 +171,7 @@ namespace NuGet.Build.Tasks.Console.Test
                     }
                 };
 
-                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project);
+                var actual = MSBuildStaticGraphRestore.GetPackageReferences(project, false);
 
                 actual.ShouldBeEquivalentTo(new List<LibraryDependency>
                 {
@@ -699,6 +700,92 @@ namespace NuGet.Build.Tasks.Console.Test
                     actual.Should().BeFalse();
                 }
             }
+        }
+
+        [Theory]
+        [InlineData(true, ProjectStyle.PackageReference)]
+        [InlineData(false, ProjectStyle.DotnetCliTool)]
+        [InlineData(false, ProjectStyle.DotnetToolReference)]
+        [InlineData(false, ProjectStyle.PackagesConfig)]
+        [InlineData(false, ProjectStyle.ProjectJson)]
+        [InlineData(false, ProjectStyle.Standalone)]
+        [InlineData(false, ProjectStyle.Unknown)]
+        public void IsCentralVersionsManagementEnabled_OnlyPackageReferenceWithProjectCPVMEnabledProperty(bool expected, ProjectStyle projectStyle)
+        {
+            // Arrange
+            var project = new MockMSBuildProject(new Dictionary<string, string>
+            {
+                ["_CentralPackageVersionsEnabled"] = "true",
+            });
+
+            // Act + Assert
+            var result = MSBuildStaticGraphRestore.IsCentralVersionsManagementEnabled(project, projectStyle);
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void GetTargetFrameworkInfos_TheCentralVersionInformationIsAdded()
+        {
+            // Arrange
+            NuGetFramework netstandard22 = new NuGetFramework("netstandard2.2");
+            NuGetFramework netstandard20 = new NuGetFramework("netstandard2.0");
+
+            var innerNodes = new Dictionary<NuGetFramework, IMSBuildProject>
+            {
+                [netstandard20] = new MockMSBuildProject("Project-netstandard2.0",
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["IsImplicitlyDefined"] = bool.FalseString }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.0.0" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.0.0" }),
+                        },
+                    }),
+                [netstandard22] = new MockMSBuildProject("Project-netstandard2.2",
+                    new Dictionary<string, string>(),
+                    new Dictionary<string, IList<IMSBuildItem>>
+                    {
+                        ["PackageReference"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "11.0.0", ["IsImplicitlyDefined"] = bool.FalseString }),
+                        },
+                        ["PackageVersion"] = new List<IMSBuildItem>
+                        {
+                            new MSBuildItem("PackageA", new Dictionary<string, string> { ["Version"] = "2.2.2" }),
+                            new MSBuildItem("PackageB", new Dictionary<string, string> { ["Version"] = "3.2.0" }),
+                        },
+                    }),
+            };
+
+            var targetFrameworkInfos = MSBuildStaticGraphRestore.GetTargetFrameworkInfos(innerNodes, isCpvmEnabled: true);
+
+            // Assert
+            Assert.Equal(2, targetFrameworkInfos.Count);
+            var framework20 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.0,Version=v0.0").ToList();
+            var framework22 = targetFrameworkInfos.Where(f => f.FrameworkName.DotNetFrameworkName == "netstandard2.2,Version=v0.0").ToList();
+
+            Assert.Equal(1, framework20.Count);
+            Assert.Equal(1, framework20.First().Dependencies.Count);
+            Assert.Equal("PackageA", framework20.First().Dependencies.First().Name);
+            Assert.Null(framework20.First().Dependencies.First().LibraryRange.VersionRange);
+
+            Assert.Equal(2, framework20.First().CentralPackageVersions.Count);
+            Assert.Equal("2.0.0", framework20.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.0.0", framework20.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
+
+            Assert.Equal(1, framework22.Count);
+            Assert.Equal(1, framework22.First().Dependencies.Count);
+            Assert.Equal("PackageA", framework22.First().Dependencies.First().Name);
+            Assert.Equal("11.0.0", framework22.First().Dependencies.First().LibraryRange.VersionRange.OriginalString);
+
+            Assert.Equal(2, framework22.First().CentralPackageVersions.Count);
+            Assert.Equal("2.2.2", framework22.First().CentralPackageVersions["PackageA"].VersionRange.OriginalString);
+            Assert.Equal("3.2.0", framework22.First().CentralPackageVersions["PackageB"].VersionRange.OriginalString);
         }
     }
 }

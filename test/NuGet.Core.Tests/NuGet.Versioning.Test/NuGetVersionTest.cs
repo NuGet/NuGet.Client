@@ -344,5 +344,23 @@ namespace NuGet.Versioning.Test
             Assert.Equal(new Version("1.3.2.0"), version.Version);
             Assert.Equal("CTP-2-Refresh-Alpha", version.Release);
         }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("NotAVersion")]
+        [InlineData("1")]
+        [InlineData("1.0")]
+        [InlineData("v1.0.0")]
+        [InlineData("1.0.3.120")]
+        public void TryParseReturnsFalseWhenUnableToParseString(string versionString)
+        {
+            // Act
+            NuGetVersion version;
+            var result = NuGetVersion.TryParseStrict(versionString, out version);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(version);
+        }
     }
 }

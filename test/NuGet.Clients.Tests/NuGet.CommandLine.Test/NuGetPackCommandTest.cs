@@ -9,6 +9,7 @@ using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Xml.Linq;
+using FluentAssertions;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Frameworks;
@@ -4484,7 +4485,7 @@ namespace Proj1
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("NU5105", false)]
+        [InlineData("NU5115", false)]
         [InlineData("NU5106", true)]
         public void PackCommand_NoWarn_SuppressesWarnings(string value, bool expectToWarn)
         {
@@ -4492,7 +4493,6 @@ namespace Proj1
 
             using (var workingDirectory = TestDirectory.Create())
             {
-                var semver2Version = "1.0.0-rtm+asdassd";
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
                 // create project 1
@@ -4536,16 +4536,23 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("WARNING: " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToWarn);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                var expectedMessage = "WARNING: " + NuGetLogCode.NU5115.ToString();
+                if (expectToWarn)
+                {
+                    r.AllOutput.Should().Contain(expectedMessage);
+                }
+                else
+                {
+                    r.AllOutput.Should().NotContain(expectedMessage);
+                }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("WarningsAsErrors", "NU5105", true)]
+        [InlineData("WarningsAsErrors", "NU5115", true)]
         [InlineData("WarningsAsErrors", "NU5106", false)]
         [InlineData("TreatWarningsAsErrors", "true", true)]
         public void PackCommand_WarnAsError_PrintsWarningsAsErrors(string property, string value, bool expectToError)
@@ -4554,7 +4561,6 @@ namespace Proj1
 
             using (var workingDirectory = TestDirectory.Create())
             {
-                var semver2Version = "1.0.0-rtm+asdassd";
                 var proj1Directory = Path.Combine(workingDirectory, "proj1");
 
                 // create project 1
@@ -4599,11 +4605,19 @@ namespace Proj1
                 var r = CommandRunner.Run(
                     nugetexe,
                     proj1Directory,
-                    $"pack proj1.csproj -build -version {semver2Version}",
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
-                var expectedWarning = string.Format("Error " + NuGetLogCode.NU5105 + ": " + AnalysisResources.LegacyVersionWarning, semver2Version);
-                Assert.Equal(r.AllOutput.Contains(expectedWarning), expectToError);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+
+                var expectedMessage = "Error " + NuGetLogCode.NU5115.ToString();
+                if (expectToError)
+                {
+                    r.AllOutput.Should().Contain(expectedMessage);
+                }
+                else
+                {
+                    r.AllOutput.Should().NotContain(expectedMessage);
+                }
             }
         }
 
@@ -5631,16 +5645,19 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
             TestPackIconSuccess(testDir, "utils/icon.jpg");
         }
 
-        [Fact]
-        public void PackCommand_PackIcon_FolderNested_Succeeds()
+        [Theory]
+        [InlineData('/')]
+        [InlineData('\\')]
+        public void PackCommand_PackIcon_FolderNested_Succeeds(char iconSeparator)
         {
             var nuspec = NuspecBuilder.Create();
             var testDirBuilder = TestDirectoryBuilder.Create();
             var s = Path.DirectorySeparatorChar;
+            var u = iconSeparator;
 
             nuspec
                 .WithFile($"content{s}**", "utils")
-                .WithIcon($"utils/nested/icon.jpg");
+                .WithIcon($"utils{u}nested{u}icon.jpg");
 
             testDirBuilder
                 .WithFile($"content{s}nested{s}icon.jpg", 6)
@@ -5893,7 +5910,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
         /// </list>
         /// </remarks>
         /// <param name="testDirBuilder">A TestDirectory builder with the info for creating the package</param>
-        /// <param name="iconEntry">Zip entry to validate</param>
+        /// <param name="iconEntry">Normalized Zip entry to validate</param>
         /// <param name="message">If not nulll, check that the message is in the command output</param>
         private void TestPackIconSuccess(TestDirectoryBuilder testDirBuilder, string iconEntry = "icon.jpg", string message = null)
         {
@@ -5917,8 +5934,9 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     var nuspecReader = nupkgReader.NuspecReader;
 
                     Assert.NotNull(nuspecReader.GetIcon());
-                    Assert.True(nupkgReader.GetEntry(iconEntry) != null);
-                    Assert.True(iconEntry.Equals(nuspecReader.GetIcon()));
+                    Assert.NotNull(nupkgReader.GetEntry(iconEntry));
+                    var normalizedPackedIconEntry = Common.PathUtility.StripLeadingDirectorySeparators(nuspecReader.GetIcon());
+                    Assert.Equal(iconEntry, normalizedPackedIconEntry);
                 }
             }
         }
@@ -6284,6 +6302,64 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                     waitForExit: true);
                 Util.VerifyResultSuccess(r2);
                 Assert.True(File.Exists(Path.Combine(proj3Directory, "proj3.0.0.0.nupkg")));
+            }
+        }
+
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_WhenUsingSemver2Version_NU5105_IsNotRaised()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var proj1Directory = Path.Combine(workingDirectory, "proj1");
+
+                // create project 1
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1.csproj",
+    $@"<Project ToolsVersion='4.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>out</OutputPath>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include='proj1_file1.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj1_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file1.cs",
+    @"using System;
+
+namespace Proj1
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+                Util.CreateFile(
+                    proj1Directory,
+                    "proj1_file2.txt",
+                    "file2");
+
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    proj1Directory,
+                    $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
+                    waitForExit: true);
+                r.Success.Should().BeTrue(because: r.AllOutput);
+                r.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
             }
         }
     }

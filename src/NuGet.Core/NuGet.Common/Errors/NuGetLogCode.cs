@@ -31,6 +31,9 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
+    /// 
+    /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
+    /// 
     /// </summary>
     public enum NuGetLogCode
     {
@@ -78,6 +81,16 @@ namespace NuGet.Common
         /// Project provided runtime graph is invalid. Either does not exist or cannot be parsed.
         /// </summary>
         NU1007 = 1007,
+
+        /// <summary>
+        /// Projects that use central package version management should not define the version on the PackageReference items but on the PackageVersion items.
+        /// </summary>
+        NU1008 = 1008,
+
+        /// <summary>
+        /// Projects that use central package version management should not define SDK implicit referenced packages. For more information, see https://aka.ms/sdkimplicitrefs
+        /// </summary>
+        NU1009 = 1009,
 
         /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.

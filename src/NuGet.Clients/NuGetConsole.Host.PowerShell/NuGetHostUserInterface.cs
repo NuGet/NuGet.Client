@@ -396,7 +396,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             if (builder.Length > 0)
                             {
                                 builder.Remove(builder.Length - 1, 1);
-                                Console.WriteBackspace();
+                                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteBackspaceAsync());
                             }
                         }
                         else
@@ -438,7 +438,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
                             if (secureString.Length > 0)
                             {
                                 secureString.RemoveAt(secureString.Length - 1);
-                                Console.WriteBackspace();
+                                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteBackspaceAsync());
                             }
                         }
                         else
@@ -506,17 +506,17 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override void Write(string value)
         {
-            Console.Write(value);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteAsync(value));
         }
 
         public override void WriteLine(string value)
         {
-            Console.WriteLine(value);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteLineAsync(value));
         }
 
         private void Write(string value, ConsoleColor foregroundColor, ConsoleColor backgroundColor = NoColor)
         {
-            Console.Write(value, ToColor(foregroundColor), ToColor(backgroundColor));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteAsync(value, ToColor(foregroundColor), ToColor(backgroundColor)));
         }
 
         private void WriteLine(string value, ConsoleColor foregroundColor, ConsoleColor backgroundColor = NoColor)
@@ -543,9 +543,9 @@ namespace NuGetConsole.Host.PowerShell.Implementation
         public override void WriteProgress(long sourceId, ProgressRecord record)
         {
             string operation = record.CurrentOperation ?? record.StatusDescription;
-            if (!String.IsNullOrEmpty(operation))
+            if (!string.IsNullOrEmpty(operation))
             {
-                Console.WriteProgress(operation, record.PercentComplete);
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => Console.WriteProgressAsync(operation, record.PercentComplete));
             }
         }
 

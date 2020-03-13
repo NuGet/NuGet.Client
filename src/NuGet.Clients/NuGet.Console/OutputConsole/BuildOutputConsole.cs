@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Globalization;
-using System.Windows.Media;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.VisualStudio;
 
@@ -16,9 +14,8 @@ namespace NuGetConsole
     /// As the build output is not owned by NuGet but is rather shared with other providers
     /// this implementation doesn't allow certain invasive operations like Clear.
     /// </summary>
-    internal sealed class BuildOutputConsole : IOutputConsole
+    internal sealed class BuildOutputConsole : SharedOutputConsole
     {
-        private const int DefaultConsoleWidth = 120;
         private static Guid BuildWindowPaneGuid = VSConstants.BuildOutput;
 
         private readonly IVsOutputWindow _vsOutputWindow;
@@ -34,11 +31,9 @@ namespace NuGetConsole
             _vsOutputWindow = vsOutputWindow;
         }
 
-        public int ConsoleWidth => DefaultConsoleWidth;
-
-        public void Activate()
+        public override async Task ActivateAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             if (_outputWindowPane == null)
             {
@@ -48,39 +43,20 @@ namespace NuGetConsole
             _outputWindowPane?.Activate();
         }
 
-        public void Clear()
+        public override Task ClearAsync()
         {
+            // It's not our job to clear the build console.
+            return Task.CompletedTask;
         }
 
-        public void Write(string text)
+        public override async Task WriteAsync(string text)
         {
             if (_outputWindowPane != null)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    _outputWindowPane.OutputStringThreadSafe(text);
-                });
+                _outputWindowPane.OutputStringThreadSafe(text);
             }
-        }
-
-        public void Write(string text, Color? foreground, Color? background) => Write(text);
-
-        public void WriteBackspace()
-        {
-            throw new NotSupportedException();
-        }
-
-        public void WriteLine(string text) => Write(text + Environment.NewLine);
-
-        public void WriteLine(string format, params object[] args)
-        {
-            WriteLine(string.Format(CultureInfo.CurrentCulture, format, args));
-        }
-
-        public void WriteProgress(string currentOperation, int percentComplete)
-        {
         }
     }
 }

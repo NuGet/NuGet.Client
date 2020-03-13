@@ -44,85 +44,76 @@ namespace NuGet.Commands
                 IgnoreFailedSources = true,
             })
             {
-                // Create a unique temporary directory for the project
-                var projectDirectory = Directory.CreateDirectory(Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N")));
+                var projectDirectory = Path.Combine(NuGetEnvironment.GetFolderPath(NuGetFolderPath.Temp), Guid.NewGuid().ToString("N"));
 
-                try
+                var projectName = Guid.NewGuid().ToString("N");
+
+                var projectFullPath = Path.Combine(projectDirectory, $"{projectName}.proj");
+
+                // The package spec details what packages to restore
+                var packageSpec = new PackageSpec(TargetFrameworks.Select(i => new TargetFrameworkInformation
                 {
-                    var projectName = Guid.NewGuid().ToString("N");
-
-                    var projectFullPath = Path.Combine(projectDirectory.FullName, $"{projectName}.proj");
-
-                    // The package spec details what packages to restore
-                    var packageSpec = new PackageSpec(TargetFrameworks.Select(i => new TargetFrameworkInformation
-                    {
-                        FrameworkName = i,
-                    }).ToList())
-                    {
-                        Dependencies = new List<LibraryDependency>
-                        {
-                            new LibraryDependency
-                            {
-                                LibraryRange = new LibraryRange(
-                                    libraryIdentity.Name,
-                                    new VersionRange(
-                                        minVersion: libraryIdentity.Version,
-                                        includeMinVersion: true,
-                                        maxVersion: libraryIdentity.Version,
-                                        includeMaxVersion: true),
-                                    LibraryDependencyTarget.Package),
-                                SuppressParent = LibraryIncludeFlags.All,
-                                AutoReferenced = true,
-                                IncludeType = LibraryIncludeFlags.None,
-                                Type = LibraryDependencyType.Build
-                            }
-                        },
-                        RestoreMetadata = new ProjectRestoreMetadata
-                        {
-                            ProjectPath = projectFullPath,
-                            ProjectName = projectName,
-                            ProjectStyle = ProjectStyle.PackageReference,
-                            ProjectUniqueName = projectFullPath,
-                            OutputPath = projectDirectory.FullName,
-                            OriginalTargetFrameworks = TargetFrameworks.Select(i => i.ToString()).ToList(),
-                            ConfigFilePaths = settings.GetConfigFilePaths(),
-                            PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
-                            Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
-                            FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList()
-                        },
-                        FilePath = projectFullPath,
-                        Name = projectName,
-                    };
-
-                    var dependencyGraphSpec = new DependencyGraphSpec();
-
-                    dependencyGraphSpec.AddProject(packageSpec);
-
-                    dependencyGraphSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
-
-                    IPreLoadedRestoreRequestProvider requestProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dependencyGraphSpec);
-
-                    var restoreArgs = new RestoreArgs
-                    {
-                        AllowNoOp = false,
-                        CacheContext = sourceCacheContext,
-    #pragma warning disable CS0618 // Type or member is obsolete
-                        CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)),
-    #pragma warning restore CS0618 // Type or member is obsolete
-                        Log = logger,
-                    };
-
-                    // Create requests from the arguments
-                    var requests = requestProvider.CreateRequests(restoreArgs).Result;
-
-                    // Restore the package without generating extra files
-                    return RestoreRunner.RunWithoutCommit(requests, restoreArgs);
-
-                }
-                finally
+                    FrameworkName = i,
+                }).ToList())
                 {
-                    LocalResourceUtils.DeleteDirectoryTree(projectDirectory.FullName, new List<string>());
-                }
+                    Dependencies = new List<LibraryDependency>
+                    {
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                libraryIdentity.Name,
+                                new VersionRange(
+                                    minVersion: libraryIdentity.Version,
+                                    includeMinVersion: true,
+                                    maxVersion: libraryIdentity.Version,
+                                    includeMaxVersion: true),
+                                LibraryDependencyTarget.Package),
+                            SuppressParent = LibraryIncludeFlags.All,
+                            AutoReferenced = true,
+                            IncludeType = LibraryIncludeFlags.None,
+                            Type = LibraryDependencyType.Build
+                        }
+                    },
+                    RestoreMetadata = new ProjectRestoreMetadata
+                    {
+                        ProjectPath = projectFullPath,
+                        ProjectName = projectName,
+                        ProjectStyle = ProjectStyle.PackageReference,
+                        ProjectUniqueName = projectFullPath,
+                        OutputPath = projectDirectory,
+                        OriginalTargetFrameworks = TargetFrameworks.Select(i => i.ToString()).ToList(),
+                        ConfigFilePaths = settings.GetConfigFilePaths(),
+                        PackagesPath = SettingsUtility.GetGlobalPackagesFolder(settings),
+                        Sources = SettingsUtility.GetEnabledSources(settings).ToList(),
+                        FallbackFolders = SettingsUtility.GetFallbackPackageFolders(settings).ToList()
+                    },
+                    FilePath = projectFullPath,
+                    Name = projectName,
+                };
+
+                var dependencyGraphSpec = new DependencyGraphSpec();
+
+                dependencyGraphSpec.AddProject(packageSpec);
+
+                dependencyGraphSpec.AddRestore(packageSpec.RestoreMetadata.ProjectUniqueName);
+
+                IPreLoadedRestoreRequestProvider requestProvider = new DependencyGraphSpecRequestProvider(new RestoreCommandProvidersCache(), dependencyGraphSpec);
+
+                var restoreArgs = new RestoreArgs
+                {
+                    AllowNoOp = false,
+                    CacheContext = sourceCacheContext,
+#pragma warning disable CS0618 // Type or member is obsolete
+                    CachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(settings, enablePackageSourcesChangedEvent: false)),
+#pragma warning restore CS0618 // Type or member is obsolete
+                    Log = logger,
+                };
+
+                // Create requests from the arguments
+                var requests = requestProvider.CreateRequests(restoreArgs).Result;
+
+                // Restore the package without generating extra files
+                return RestoreRunner.RunWithoutCommit(requests, restoreArgs);
             }
         }
     }

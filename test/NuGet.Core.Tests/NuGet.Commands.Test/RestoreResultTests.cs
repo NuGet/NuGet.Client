@@ -10,6 +10,7 @@ using Xunit;
 using NuGet.Commands;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
+using FluentAssertions.Common;
 
 namespace NuGet.Commands.Test
 {
@@ -35,6 +36,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: null,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -71,6 +74,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: null,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -87,7 +92,7 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
-        public async Task RestoreResult_WritesCommitToMinimalAssetsAndCache()
+        public async Task RestoreResult_WritesCommitToInformation_AssetsAndCache()
         {
             // Arrange
             using (var td = TestDirectory.Create())
@@ -107,6 +112,8 @@ namespace NuGet.Commands.Test
                     cacheFilePath: cachePath,
                     packagesLockFilePath: null,
                     packagesLockFile: null,
+                    dependencyGraphSpecFilePath: null,
+                    dependencyGraphSpec: null,
                     projectStyle: ProjectStyle.Unknown,
                     elapsedTime: TimeSpan.MinValue);
 
@@ -227,6 +234,59 @@ namespace NuGet.Commands.Test
                 // Assert
                 Assert.Equal(1, actual.Libraries.Count);
                 Assert.Equal("System.Runtime", actual.Libraries[0].Name);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreResult_Commit_WritesDependencyGraphSpec()
+        {
+            // Arrange
+            using (var td = TestDirectory.Create())
+            {
+                var path = Path.Combine(td, "project.assets.json");
+                var cachePath = Path.Combine(td, "project.csproj.nuget.cache");
+                var dgSpecPath = Path.Combine(td, "project1.nuget.g.dgspec.json");
+                var dgSpec = new DependencyGraphSpec();
+                var configJson = @"
+                {
+                    ""dependencies"": {
+                    },
+                     ""frameworks"": {
+                        ""net45"": { }
+                    }
+                }";
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson, "TestProject", Path.Combine(td, "project.csproj")).WithTestRestoreMetadata();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var logger = new TestLogger();
+                var result = new RestoreResult(
+                    success: true,
+                    restoreGraphs: null,
+                    compatibilityCheckResults: null,
+                    lockFile: new LockFile(),
+                    previousLockFile: null, // different lock file
+                    lockFilePath: path,
+                    msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                    cacheFile: new CacheFile("NotSoRandomString"),
+                    cacheFilePath: cachePath,
+                    packagesLockFilePath: null,
+                    packagesLockFile: null,
+                    dependencyGraphSpecFilePath: dgSpecPath,
+                    dependencyGraphSpec: dgSpec,
+                    projectStyle: ProjectStyle.Unknown,
+                    elapsedTime: TimeSpan.MinValue);
+
+                // Act
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                Assert.Empty(logger.MinimalMessages);
+                Assert.Contains(
+                    $"Persisting dg to {dgSpecPath}",
+                    logger.VerboseMessages);
+                Assert.True(File.Exists(dgSpecPath));
             }
         }
     }

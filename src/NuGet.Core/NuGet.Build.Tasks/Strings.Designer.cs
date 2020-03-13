@@ -79,6 +79,15 @@ namespace NuGet.Build.Tasks {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Determining projects to restore....
+        /// </summary>
+        public static string DeterminingProjectsToRestore {
+            get {
+                return ResourceManager.GetString("DeterminingProjectsToRestore", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &apos;{0}&apos; is not an exact version like &apos;[1.0.0]&apos;. Only exact versions are allowed with PackageDownload..
         /// </summary>
         public static string Error_PackageDownload_OnlyExactVersionsAreAllowed {
