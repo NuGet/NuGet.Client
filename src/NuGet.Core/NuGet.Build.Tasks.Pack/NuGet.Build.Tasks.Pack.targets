@@ -1,7 +1,7 @@
 
 <!--
 ***********************************************************************************************
-NuGet.targets
+NuGet.Build.Tasks.Pack.targets
 
 WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
           created a backup copy.  Incorrect changes to this file will make it
@@ -19,6 +19,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
   </PropertyGroup>
 
+  <!-- Tasks -->
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.PackTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.Pack.GetPackOutputItemsTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
   <UsingTask TaskName="NuGet.Build.Tasks.GetProjectTargetFrameworksTask" AssemblyFile="$(NuGetPackTaskAssemblyFile)" />
