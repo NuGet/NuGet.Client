@@ -99,7 +99,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_TargetFrameworks)">
 
     <PropertyGroup>
-      <_ProjectFrameworks></_ProjectFrameworks>
+      <_ProjectFrameworks/>
     </PropertyGroup>
 
       <GetProjectTargetFrameworksTask
@@ -192,8 +192,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
   </Target>
 
-  <Target Name="GenerateNuspec" DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions;_InitializeNuspecRepositoryInformationProperties" Condition="$(IsPackable) == 'true'"
-          Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)">
+  <Target Name="GenerateNuspec"
+          Condition="$(IsPackable) == 'true'"
+          Inputs="@(NuGetPackInput)" Outputs="@(NuGetPackOutput)"
+          DependsOnTargets="$(GenerateNuspecDependsOn);_CalculateInputsOutputsForPack;_GetProjectReferenceVersions;_InitializeNuspecRepositoryInformationProperties">
     <!-- Call Pack -->
     <PackTask PackItem="$(PackProjectInputFile)"
               PackageFiles="@(_PackageFiles)"

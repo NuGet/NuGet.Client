@@ -504,7 +504,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     Returns="@(_RestoreTargetFrameworksOutputFiltered)">
 
     <PropertyGroup>
-      <_RestoreProjectFramework></_RestoreProjectFramework>
+      <_RestoreProjectFramework/>
     </PropertyGroup>
 
     <!-- For project.json projects target frameworks will be read from project.json. -->
