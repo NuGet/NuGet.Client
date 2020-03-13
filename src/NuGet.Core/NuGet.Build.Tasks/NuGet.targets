@@ -281,7 +281,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Remove projects that do not support restore. -->
     <!-- With SkipNonexistentTargets support -->
-    <MsBuild Condition=" '$(RestoreUseSkipNonexistentTargets)' == 'true' "
+    <MSBuild Condition=" '$(RestoreUseSkipNonexistentTargets)' == 'true' "
         BuildInParallel="$(RestoreBuildInParallel)"
         Projects="@(FilteredRestoreGraphProjectInputItemsWithoutDuplicates)"
         Targets="_IsProjectRestoreSupported"
@@ -291,10 +291,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="FilteredRestoreGraphProjectInputItems" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Without SkipNonexistentTargets support -->
-    <MsBuild Condition=" '$(RestoreUseSkipNonexistentTargets)' != 'true' "
+    <MSBuild Condition=" '$(RestoreUseSkipNonexistentTargets)' != 'true' "
       Projects="@(FilteredRestoreGraphProjectInputItemsWithoutDuplicates)"
       Targets="_IsProjectRestoreSupported"
       ContinueOnError="$(RestoreContinueOnError)"
@@ -303,7 +303,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="FilteredRestoreGraphProjectInputItems" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Warn for projects that do not support restore. -->
     <WarnForInvalidProjectsTask
@@ -331,7 +331,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
 
     <!-- Add top level entries to the direct restore list. These projects will also restore tools. -->
-    <MsBuild
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Projects="@(_GenerateRestoreGraphProjectEntryInput)"
         Targets="_GenerateRestoreGraphProjectEntry"
@@ -340,10 +340,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreGraphEntry" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Generate a spec for every project including dependencies. -->
-    <MsBuild
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Projects="@(_RestoreProjectPathItems)"
         Targets="_GenerateProjectRestoreGraph"
@@ -352,7 +352,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreGraphEntry" />
-    </MsBuild>
+    </MSBuild>
   </Target>
 
   <!--
@@ -1102,7 +1102,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Walk projects -->
     <!-- With SkipNonexistentTargets -->
-    <MsBuild
+    <MSBuild
         Condition=" '$(RestoreUseSkipNonexistentTargets)' == 'true' "
         BuildInParallel="$(RestoreBuildInParallel)"
         Projects="@(FilteredRestoreGraphProjectInputItems)"
@@ -1114,10 +1114,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreProjectPathItemsOutputs" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Without SkipNonexistentTargets -->
-    <MsBuild
+    <MSBuild
       Condition=" '$(RestoreUseSkipNonexistentTargets)' != 'true' "
       Projects="@(FilteredRestoreGraphProjectInputItems)"
       Targets="_GenerateRestoreProjectPathWalk"
@@ -1127,7 +1127,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreProjectPathItemsOutputs" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Remove duplicates -->
     <RemoveDuplicates
@@ -1139,7 +1139,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Remove projects that do not support restore. -->
     <!-- With SkipNonexistentTargets -->
-    <MsBuild
+    <MSBuild
         Condition=" '$(RestoreUseSkipNonexistentTargets)' == 'true' "
         BuildInParallel="$(RestoreBuildInParallel)"
         Projects="@(_RestoreProjectPathItemsWithoutDupes)"
@@ -1151,10 +1151,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreProjectPathItems" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- Without SkipNonexistentTargets -->
-    <MsBuild
+    <MSBuild
       Condition=" '$(RestoreUseSkipNonexistentTargets)' != 'true' "
       Projects="@(_RestoreProjectPathItemsWithoutDupes)"
       Targets="_IsProjectRestoreSupported"
@@ -1164,7 +1164,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           ItemName="_RestoreProjectPathItems" />
-    </MsBuild>
+    </MSBuild>
   </Target>
 
   <!--
@@ -1180,7 +1180,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Returns="$(_RestorePackagesPathOverride);$(_RestoreRepositoryPathOverride);$(_RestoreSourcesOverride);$(_RestoreFallbackFoldersOverride)">
 
     <!-- RestorePackagesPathOverride -->
-    <MsBuild
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(RestorePackagesPath)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
@@ -1189,10 +1189,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_RestorePackagesPathOverride" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- RestoreRepositoryPathOverride -->
-    <MsBuild
+    <MSBuild
       BuildInParallel="$(RestoreBuildInParallel)"
       Condition=" '$(RestoreRepositoryPathOverride)' != '' "
       Projects="$(MSBuildThisFileFullPath)"
@@ -1201,10 +1201,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="TargetOutputs"
         PropertyName="_RestoreRepositoryPathOverride" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- RestoreSourcesOverride -->
-    <MsBuild
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(RestoreSources)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
@@ -1213,10 +1213,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_RestoreSourcesOverride" />
-    </MsBuild>
+    </MSBuild>
 
     <!-- RestoreFallbackFoldersOverride -->
-    <MsBuild
+    <MSBuild
         BuildInParallel="$(RestoreBuildInParallel)"
         Condition=" '$(RestoreFallbackFolders)' != '' "
         Projects="$(MSBuildThisFileFullPath)"
@@ -1225,7 +1225,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
           TaskParameter="TargetOutputs"
           PropertyName="_RestoreFallbackFoldersOverride" />
-    </MsBuild>
+    </MSBuild>
   </Target>
 
   <!--

@@ -302,7 +302,7 @@ Copyright (c) .NET Foundation. All rights reserved.
         ItemName="_ProjectReferencesFromAssetsFile" />
     </GetProjectReferencesFromAssetsFileTask>
 
-    <Msbuild
+    <MSBuild
       Projects="@(_ProjectReferencesFromAssetsFile)"
       Targets="_GetProjectVersion"
       SkipNonexistentTargets="true"
@@ -311,7 +311,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output
         TaskParameter="TargetOutputs"
         ItemName="_ProjectReferencesWithVersions"/>
-    </Msbuild>
+    </MSBuild>
   </Target>
 
   <Target Name="_GetProjectVersion" DependsOnTargets="$(GetPackageVersionDependsOn)"
