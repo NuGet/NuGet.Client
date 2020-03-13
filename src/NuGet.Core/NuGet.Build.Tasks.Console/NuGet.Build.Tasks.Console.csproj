@@ -62,7 +62,7 @@
   <Target Name="PackBuildOutputs">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
-      <TfmSpecificPackageFile Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="$(ProjectRuntimeConfigFilePath)" PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
+      <TfmSpecificPackageFile Include="$(ProjectRuntimeConfigFilePath)" Condition="'$(TargetFramework)' == '$(NetCoreTargetFramework)'" PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
     </ItemGroup>
   </Target>
 
