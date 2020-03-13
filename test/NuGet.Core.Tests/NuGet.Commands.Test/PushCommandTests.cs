@@ -18,7 +18,8 @@ namespace NuGet.Commands.Test
 {
     public class PushCommandTests
     {
-        [Fact(Skip = "https://github.com/NuGet/Home/issues/9299")]
+        // Skipping linux: https://github.com/NuGet/Home/issues/9299
+        [PlatformFact(Platform.Windows, Platform.Darwin)]
         public async Task PushCommand_AbsolutePathSourceAsync()
         {
             using (var workingDir = TestDirectory.Create())
