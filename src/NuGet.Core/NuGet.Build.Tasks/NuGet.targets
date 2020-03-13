@@ -33,6 +33,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   4. DotnetCliTool references
   -->
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
     <!-- Mark that this target file has been loaded.  -->
     <IsRestoreTargetsFileLoaded>true</IsRestoreTargetsFileLoaded>
@@ -1301,4 +1302,5 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Import Project="NuGet.RestoreEx.targets" Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true' And Exists('NuGet.RestoreEx.targets')" />
+
 </Project>

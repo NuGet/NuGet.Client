@@ -11,9 +11,11 @@ Copyright (c) .NET Foundation. All rights reserved.
 -->
 
 <Project>
+
   <!--
       Import 'Directory.Packages.props'
   -->
+
   <PropertyGroup>
     <ImportDirectoryPackagesProps Condition="'$(ImportDirectoryPackagesProps)' == ''">true</ImportDirectoryPackagesProps>
   </PropertyGroup>
@@ -29,4 +31,5 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and Exists('$(DirectoryPackagesPropsPath)')">
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
+
 </Project>
