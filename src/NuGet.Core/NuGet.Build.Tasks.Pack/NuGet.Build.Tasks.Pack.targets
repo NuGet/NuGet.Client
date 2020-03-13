@@ -103,13 +103,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
       <GetProjectTargetFrameworksTask
-      ProjectPath="$(MSBuildProjectFullPath)"
-      TargetFrameworks="$(TargetFrameworks)"
-      TargetFramework="$(TargetFramework)"
-      TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
-      TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
-      TargetPlatformVersion="$(TargetPlatformVersion)"
-      TargetPlatformMinVersion="$(TargetPlatformMinVersion)">
+        ProjectPath="$(MSBuildProjectFullPath)"
+        TargetFrameworks="$(TargetFrameworks)"
+        TargetFramework="$(TargetFramework)"
+        TargetFrameworkMoniker="$(TargetFrameworkMoniker)"
+        TargetPlatformIdentifier="$(TargetPlatformIdentifier)"
+        TargetPlatformVersion="$(TargetPlatformVersion)"
+        TargetPlatformMinVersion="$(TargetPlatformMinVersion)">
       <Output
         TaskParameter="ProjectTargetFrameworks"
         PropertyName="_ProjectFrameworks" />
@@ -402,7 +402,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name ="_GetFrameworkAssemblyReferences" DependsOnTargets="ResolveReferences" Returns="@(TfmSpecificFrameworkAssemblyReferences)">
     <ItemGroup>
       <TfmSpecificFrameworkAssemblyReferences Include="@(ReferencePath->'%(OriginalItemSpec)')"
-      Condition="'%(ReferencePath.Pack)' != 'false' AND '%(ReferencePath.ResolvedFrom)' == '{TargetFrameworkDirectory}'">
+        Condition="'%(ReferencePath.Pack)' != 'false' AND '%(ReferencePath.ResolvedFrom)' == '{TargetFrameworkDirectory}'">
         <TargetFramework>$(TargetFramework)</TargetFramework>
       </TfmSpecificFrameworkAssemblyReferences>
     </ItemGroup>
@@ -468,46 +468,46 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Include PackageFiles and Content of the project being packed -->
     <ItemGroup>
       <_PackageFiles Include="@(Content)" Condition=" %(Content.Pack) != 'false' ">
-        <BuildAction Condition = "'%(Content.BuildAction)' == ''">Content</BuildAction>
+        <BuildAction Condition="'%(Content.BuildAction)' == ''">Content</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(Compile)" Condition=" %(Compile.Pack) == 'true' ">
-        <BuildAction Condition = "'%(Compile.BuildAction)' == ''">Compile</BuildAction>
+        <BuildAction Condition="'%(Compile.BuildAction)' == ''">Compile</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(None)" Condition=" %(None.Pack) == 'true' ">
-        <BuildAction Condition = "'%(None.BuildAction)' == ''">None</BuildAction>
+        <BuildAction Condition="'%(None.BuildAction)' == ''">None</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(EmbeddedResource)" Condition=" %(EmbeddedResource.Pack) == 'true' ">
-        <BuildAction Condition = "'%(EmbeddedResource.BuildAction)' == ''">EmbeddedResource</BuildAction>
+        <BuildAction Condition="'%(EmbeddedResource.BuildAction)' == ''">EmbeddedResource</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(ApplicationDefinition)" Condition=" %(ApplicationDefinition.Pack) == 'true' ">
-        <BuildAction Condition = "'%(ApplicationDefinition.BuildAction)' == ''">ApplicationDefinition</BuildAction>
+        <BuildAction Condition="'%(ApplicationDefinition.BuildAction)' == ''">ApplicationDefinition</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(Page)" Condition=" %(Page.Pack) == 'true' ">
-        <BuildAction Condition = "'%(Page.BuildAction)' == ''">Page</BuildAction>
+        <BuildAction Condition="'%(Page.BuildAction)' == ''">Page</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(Resource)" Condition=" %(Resource.Pack) == 'true' ">
-        <BuildAction Condition = "'%(Resource.BuildAction)' == ''">Resource</BuildAction>
+        <BuildAction Condition="'%(Resource.BuildAction)' == ''">Resource</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(SplashScreen)" Condition=" %(SplashScreen.Pack) == 'true' ">
-        <BuildAction Condition = "'%(SplashScreen.BuildAction)' == ''">SplashScreen</BuildAction>
+        <BuildAction Condition="'%(SplashScreen.BuildAction)' == ''">SplashScreen</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(DesignData)" Condition=" %(DesignData.Pack) == 'true' ">
-        <BuildAction Condition = "'%(DesignData.BuildAction)' == ''">DesignData</BuildAction>
+        <BuildAction Condition="'%(DesignData.BuildAction)' == ''">DesignData</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(DesignDataWithDesignTimeCreatableTypes)" Condition=" %(DesignDataWithDesignTimeCreatableTypes.Pack) == 'true' ">
-        <BuildAction Condition = "'%(DesignDataWithDesignTimeCreatableTypes.BuildAction)' == ''">DesignDataWithDesignTimeCreatableTypes</BuildAction>
+        <BuildAction Condition="'%(DesignDataWithDesignTimeCreatableTypes.BuildAction)' == ''">DesignDataWithDesignTimeCreatableTypes</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(CodeAnalysisDictionary)" Condition=" %(CodeAnalysisDictionary.Pack) == 'true' ">
-        <BuildAction Condition = "'%(CodeAnalysisDictionary.BuildAction)' == ''">CodeAnalysisDictionary</BuildAction>
+        <BuildAction Condition="'%(CodeAnalysisDictionary.BuildAction)' == ''">CodeAnalysisDictionary</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(AndroidAsset)" Condition=" %(AndroidAsset.Pack) == 'true' ">
-        <BuildAction Condition = "'%(AndroidAsset.BuildAction)' == ''">AndroidAsset</BuildAction>
+        <BuildAction Condition="'%(AndroidAsset.BuildAction)' == ''">AndroidAsset</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(AndroidResource)" Condition=" %(AndroidResource.Pack) == 'true' ">
-        <BuildAction Condition = "'%(AndroidResource.BuildAction)' == ''">AndroidResource</BuildAction>
+        <BuildAction Condition="'%(AndroidResource.BuildAction)' == ''">AndroidResource</BuildAction>
       </_PackageFiles>
       <_PackageFiles Include="@(BundleResource)" Condition=" %(BundleResource.Pack) == 'true' ">
-        <BuildAction Condition = "'%(BundleResource.BuildAction)' == ''">BundleResource</BuildAction>
+        <BuildAction Condition="'%(BundleResource.BuildAction)' == ''">BundleResource</BuildAction>
       </_PackageFiles>
     </ItemGroup>
   </Target>

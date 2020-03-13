@@ -52,7 +52,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <RestoreBuildInParallel Condition=" '$(BuildInParallel)' != '' ">$(BuildInParallel)</RestoreBuildInParallel>
     <RestoreBuildInParallel Condition=" '$(RestoreBuildInParallel)' == '' ">true</RestoreBuildInParallel>
     <!-- Check if the restore target was executed on a sln file -->
-    <_RestoreSolutionFileUsed Condition=" '$(_RestoreSolutionFileUsed)' == '' AND '$(SolutionDir)' != '' AND $(MSBuildProjectFullPath.EndsWith('.metaproj')) == 'true' " >true</_RestoreSolutionFileUsed>
+    <_RestoreSolutionFileUsed Condition=" '$(_RestoreSolutionFileUsed)' == '' AND '$(SolutionDir)' != '' AND $(MSBuildProjectFullPath.EndsWith('.metaproj')) == 'true' ">true</_RestoreSolutionFileUsed>
     <!-- We default to MSBuildInteractive. -->
     <NuGetInteractive Condition=" '$(NuGetInteractive)' == '' ">$(MSBuildInteractive)</NuGetInteractive>
     <!-- Mark that this targets file supports package download. -->
@@ -557,21 +557,21 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
     <!-- For transitive project styles, we rely on evaluating all the settings and including them in the dg spec to faciliate no-op restore-->
     <GetRestoreSettingsTask
-     ProjectUniqueName="$(MSBuildProjectFullPath)"
-     RestoreSources="$(RestoreSources)"
-     RestorePackagesPath="$(RestorePackagesPath)"
-     RestoreRepositoryPath="$(RestoreRepositoryPath)"
-     RestoreFallbackFolders="$(RestoreFallbackFolders)"
-     RestoreConfigFile="$(RestoreConfigFile)"
-     RestoreRootConfigDirectory="$(RestoreRootConfigDirectory)"
-     RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
-     RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
-     RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
-     RestoreRepositoryPathOverride="$(_RestoreRepositoryPathOverride)"
-     RestoreSourcesOverride="$(_RestoreSourcesOverride)"
-     RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
-     RestoreProjectStyle="$(RestoreProjectStyle)"
-     MSBuildStartupDirectory="$(MSBuildStartupDirectory)">
+      ProjectUniqueName="$(MSBuildProjectFullPath)"
+      RestoreSources="$(RestoreSources)"
+      RestorePackagesPath="$(RestorePackagesPath)"
+      RestoreRepositoryPath="$(RestoreRepositoryPath)"
+      RestoreFallbackFolders="$(RestoreFallbackFolders)"
+      RestoreConfigFile="$(RestoreConfigFile)"
+      RestoreRootConfigDirectory="$(RestoreRootConfigDirectory)"
+      RestoreSolutionDirectory="$(RestoreSolutionDirectory)"
+      RestoreSettingsPerFramework="@(_RestoreSettingsPerFramework)"
+      RestorePackagesPathOverride="$(_RestorePackagesPathOverride)"
+      RestoreRepositoryPathOverride="$(_RestoreRepositoryPathOverride)"
+      RestoreSourcesOverride="$(_RestoreSourcesOverride)"
+      RestoreFallbackFoldersOverride="$(_RestoreFallbackFoldersOverride)"
+      RestoreProjectStyle="$(RestoreProjectStyle)"
+      MSBuildStartupDirectory="$(MSBuildStartupDirectory)">
       <Output
         TaskParameter="OutputSources"
         PropertyName="_OutputSources" />
@@ -657,7 +657,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Determine the restore output path -->
     <PropertyGroup Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson' ">
-      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' " >$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
+      <RestoreOutputPath Condition=" '$(RestoreOutputPath)' == '' ">$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
     </PropertyGroup>
 
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)" Condition=" '$(PackageReferenceCompatibleProjectStyle)' == 'true' OR '$(RestoreProjectStyle)' == 'ProjectJson'">
