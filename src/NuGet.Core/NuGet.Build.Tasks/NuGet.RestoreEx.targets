@@ -3,7 +3,9 @@
 Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
+
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <UsingTask TaskName="NuGet.Build.Tasks.RestoreTaskEx" AssemblyFile="$(RestoreTaskAssemblyFile)" />
 
   <Target Name="Restore">
@@ -22,4 +24,5 @@ Copyright (c) .NET Foundation. All rights reserved.
         RestorePackagesConfig="$(RestorePackagesConfig)"
         SolutionPath="$(SolutionPath)" />
   </Target>
+
 </Project>

@@ -10,22 +10,26 @@ Copyright (c) .NET Foundation. All rights reserved.
 ***********************************************************************************************
 -->
 
-<Project>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+      Import 'Directory.Packages.props'
+  -->
+
   <PropertyGroup>
     <ImportDirectoryPackagesProps Condition="'$(ImportDirectoryPackagesProps)' == ''">true</ImportDirectoryPackagesProps>
   </PropertyGroup>
-  <!-- 
-        Import Directory.Packages.props.
-    -->
+
   <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' == ''">
     <_DirectoryPackagesPropsFile Condition="'$(_DirectoryPackagesPropsFile)' == ''">Directory.Packages.props</_DirectoryPackagesPropsFile>
     <_DirectoryPackagesPropsBasePath Condition="'$(_DirectoryPackagesPropsBasePath)' == ''">$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildProjectDirectory), '$(_DirectoryPackagesPropsFile)'))</_DirectoryPackagesPropsBasePath>
     <DirectoryPackagesPropsPath Condition="'$(_DirectoryPackagesPropsBasePath)' != '' and '$(_DirectoryPackagesPropsFile)' != ''">$([MSBuild]::GetPathOfFileAbove('$(_DirectoryPackagesPropsFile)', '$(MSBuildProjectDirectory)'))</DirectoryPackagesPropsPath>
   </PropertyGroup>
 
-  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')"/>
+  <Import Project="$(DirectoryPackagesPropsPath)" Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and Exists('$(DirectoryPackagesPropsPath)')"/>
 
-  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and exists('$(DirectoryPackagesPropsPath)')">
+  <PropertyGroup Condition="'$(ImportDirectoryPackagesProps)' == 'true' and '$(DirectoryPackagesPropsPath)' != '' and Exists('$(DirectoryPackagesPropsPath)')">
     <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
   </PropertyGroup>
+
 </Project>
