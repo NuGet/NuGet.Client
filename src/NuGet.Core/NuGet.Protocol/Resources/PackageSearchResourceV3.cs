@@ -34,7 +34,7 @@ namespace NuGet.Protocol
             return searchResults;
         }
 
-        private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
+        protected static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
         {
             var versions = metadata.ParsedVersions;
 

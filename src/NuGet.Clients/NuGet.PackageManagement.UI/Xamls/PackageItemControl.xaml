@@ -127,6 +127,17 @@
                       ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
                       AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
                       Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}"/>
+        <imaging:CrispImage
+                      x:Name="_recommendedStar"
+                      Grid.Row="0"
+                      Margin="18,0,0,0"
+                      Width="16"
+                      Height="16"
+                      VerticalAlignment="Top"
+                      Visibility="{Binding Recommended, Converter={StaticResource BooleanToVisibilityConverter}}"
+                      ToolTip="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                      AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                      Moniker="{x:Static nuget:PackageIconMonikers.RecommendedIndicator}"/>
 
         <TextBlock
                       Grid.Row="1"

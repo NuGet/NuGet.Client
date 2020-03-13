@@ -20,8 +20,9 @@ namespace NuGet.PackageManagement.UI
         private readonly string _searchText;
         private readonly bool _includePrerelease;
 
-        private readonly IPackageFeed _packageFeed;
+        private readonly IEnumerable<IPackageFeed> _packageFeeds;
         private PackageCollection _installedPackages;
+        private List<string> _recommendedPackages;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
         private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
@@ -34,7 +35,7 @@ namespace NuGet.PackageManagement.UI
 
         public IItemLoaderState State => _state;
 
-        public bool IsMultiSource => _packageFeed.IsMultiSource;
+        public bool IsMultiSource => _packageFeeds.Last().IsMultiSource;
 
         private class PackageFeedSearchState : IItemLoaderState
         {
@@ -80,7 +81,7 @@ namespace NuGet.PackageManagement.UI
 
         public PackageItemLoader(
             PackageLoadContext context,
-            IPackageFeed packageFeed,
+            IEnumerable<IPackageFeed> packageFeeds,
             string searchText = null,
             bool includePrerelease = true)
         {
@@ -90,11 +91,11 @@ namespace NuGet.PackageManagement.UI
             }
             _context = context;
 
-            if (packageFeed == null)
+            if (packageFeeds == null || packageFeeds.Count() < 1)
             {
-                throw new ArgumentNullException(nameof(packageFeed));
+                throw new ArgumentNullException(nameof(packageFeeds));
             }
-            _packageFeed = packageFeed;
+            _packageFeeds = packageFeeds;
 
             _searchText = searchText ?? string.Empty;
             _includePrerelease = includePrerelease;
@@ -114,7 +115,7 @@ namespace NuGet.PackageManagement.UI
                 var searchResult = await SearchAsync(nextToken, cancellationToken);
                 while (searchResult.RefreshToken != null)
                 {
-                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
+                    searchResult = await _packageFeeds.Last().RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
                 }
                 totalCount += searchResult.Items?.Count() ?? 0;
                 nextToken = searchResult.NextToken;
@@ -137,7 +138,7 @@ namespace NuGet.PackageManagement.UI
                 var searchResult = await SearchAsync(nextToken, cancellationToken);
                 while (searchResult.RefreshToken != null)
                 {
-                    searchResult = await _packageFeed.RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
+                    searchResult = await _packageFeeds.Last().RefreshSearchAsync(searchResult.RefreshToken, cancellationToken);
                 }
 
                 nextToken = searchResult.NextToken;
@@ -182,7 +183,7 @@ namespace NuGet.PackageManagement.UI
             var refreshToken = _state.Results?.RefreshToken;
             if (refreshToken != null)
             {
-                var searchResult = await _packageFeed.RefreshSearchAsync(refreshToken, cancellationToken);
+                var searchResult = await _packageFeeds.Last().RefreshSearchAsync(refreshToken, cancellationToken);
 
                 cancellationToken.ThrowIfCancellationRequested();
 
@@ -190,6 +191,65 @@ namespace NuGet.PackageManagement.UI
             }
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
+        }
+
+        private SearchResult<IPackageSearchMetadata> AggregateSearchResults(
+            IEnumerable<SearchResult<IPackageSearchMetadata>> results)
+        {
+            // initialize result to last of the incoming results.
+            // This is the one that will determine the status and continuation token if there are
+            // multiple results.
+            SearchResult<IPackageSearchMetadata> result = results.Last();
+
+            if (results.Count() > 1)
+            {
+                var items = results.Select(r => r.Items).ToArray();
+                var aggregatedItems = items.Aggregate(new List<IPackageSearchMetadata>(), (agg, next) => agg.Concat(next).ToList());
+                result.Items = aggregatedItems.ToArray();
+
+                // set correct count of merged items
+                result.RawItemsCount = items.Aggregate(0, (r, next) => r + next.Count);
+            }
+
+            return result;
+        }
+
+        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
+            ContinuationToken continuationToken,
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_packageFeeds.Count() == 0)
+            {
+                return SearchResult.Empty<IPackageSearchMetadata>();
+            }
+
+            var feedTasks = _packageFeeds.Select<IPackageFeed, Task<SearchResult<IPackageSearchMetadata>>>(f => f.SearchAsync(_searchText, SearchFilter, cancellationToken));
+            var aggregatedTask = Task.WhenAll(feedTasks);
+
+            // The results are sorteed in the same order as the package feed tasks, so recommendations will be first
+            // and search results will be last. No need to re-sort these. 
+            var results = await aggregatedTask;
+
+            // If one of the feeds is the RecommenderPackageFeed, update _recommendedPackages
+            foreach (var iterator in _packageFeeds.Select((x, i) => new { feed = x, index = i }))
+            {
+                if (iterator.feed.GetType() == typeof(RecommenderPackageFeed))
+                {
+                    _recommendedPackages = new List<string>();
+                    foreach (IPackageSearchMetadata result in results[iterator.index])
+                    {
+                        _recommendedPackages.Add(result.Identity.Id);
+                    }
+
+                }
+            }
+
+            SearchResult<IPackageSearchMetadata> aggregated;
+            aggregated = AggregateSearchResults(results);
+
+            return aggregated;
         }
 
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
@@ -205,10 +265,14 @@ namespace NuGet.PackageManagement.UI
 
             if (continuationToken != null)
             {
-                return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
+                // only continue search for the last package feed in the list. When getting recommendations while doing
+                // a search, this will be the search feed.
+                return await _packageFeeds.Last().ContinueSearchAsync(continuationToken, cancellationToken);
             }
 
-            return await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            // get the results of all package feeds in _packageFeeds. For example, this could contain the recommender as the first
+            // feed and the browse search as the second feed.
+            return await CombineSearchAsync(continuationToken, cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -272,6 +336,7 @@ namespace NuGet.PackageManagement.UI
                         AllowedVersions = allowedVersions,
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
+                        Recommended = _recommendedPackages != null && _recommendedPackages.Contains(metadata.Identity.Id),
                         PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
                     };
 

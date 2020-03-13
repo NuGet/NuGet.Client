@@ -3,12 +3,15 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
@@ -49,6 +52,80 @@ namespace NuGet.PackageManagement.UI
         }
 
         public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
+
+        // get lock file for projects
+        public async Task<List<LockFile>> getLockFiles(IEnumerable<NuGetProject> nuGetProjects)
+        {
+            var nuGetProjectList = nuGetProjects.ToList();
+            var buildIntegratedProjects = nuGetProjectList.OfType<BuildIntegratedNuGetProject>().ToList();
+
+            List<LockFile> lockFiles = new List<LockFile>();
+            var lockFileFormat = new LockFileFormat();
+
+            foreach (var project in buildIntegratedProjects)
+            {
+                var lockFilePath = await project.GetAssetsFilePathAsync();
+                if (File.Exists(lockFilePath))
+                {
+                    lockFiles = lockFiles.Append(lockFileFormat.Read(lockFilePath)).ToList();
+                }
+            }
+            return lockFiles;
+        }
+
+        // get the dependent packages from the lock files for projects
+        public async Task<PackageCollection> GetDependentPackagesAsync()
+        {
+            // get lock files from projects. This will add all dependency packages for all projects in the list
+            List<LockFile> lockFiles = await getLockFiles(Projects.ToList());
+            List<PackageCollectionItem> dependentPackages = new List<PackageCollectionItem>();
+
+            foreach (LockFile lockFile in lockFiles)
+            {
+                foreach (LockFileTarget target in lockFile.Targets)
+                {
+                    foreach(LockFileTargetLibrary lib in target.Libraries)
+                    {
+                        foreach (Packaging.Core.PackageDependency dep in lib.Dependencies)
+                        {
+                            Versioning.NuGetVersion version;
+                            if(dep.VersionRange.HasUpperBound)
+                            {
+                                version = dep.VersionRange.MaxVersion;
+                            }
+                            else
+                            {
+                                version = dep.VersionRange.MinVersion;
+                            }
+                            PackageCollectionItem newItem = new PackageCollectionItem(dep.Id, dep.VersionRange.MaxVersion, null);
+                            if (!dependentPackages.Contains(newItem))
+                            {
+                                dependentPackages = dependentPackages.Append(new PackageCollectionItem(dep.Id, dep.VersionRange.MaxVersion, null)).ToList();
+                            }
+                        }
+                    }
+                }
+            }
+            return new PackageCollection(dependentPackages.ToArray());
+        }
+
+        // get target frameworks for BuildIntegratedNuGetProjects
+        public async Task<IEnumerable<string>> GetTargetFrameworksAsync()
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var buildIntegratedProjects = Projects.OfType<BuildIntegratedNuGetProject>().ToList();
+
+            foreach (var project in buildIntegratedProjects)
+            {
+                var dgcContext = new DependencyGraphCacheContext();
+                var packageSpecs = await project.GetPackageSpecsAsync(dgcContext);
+                foreach (var packageSpec in packageSpecs)
+                {
+                    frameworks = frameworks.Concat(packageSpec.TargetFrameworks.Select(tf => tf.FrameworkName.ToString())).ToHashSet();
+                }
+            }
+            return frameworks;
+        }
 
         // Returns the list of frameworks that we need to pass to the server during search
         public IEnumerable<string> GetSupportedFrameworks()

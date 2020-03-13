@@ -2135,6 +2135,15 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Recommended package.
+        /// </summary>
+        public static string ToolTip_PackageRecommended {
+            get {
+                return ResourceManager.GetString("ToolTip_PackageRecommended", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The ID prefix of this package has been reserved for the owner of the package by the currently selected feed.
         /// </summary>
         public static string Tooltip_PrefixReserved {
