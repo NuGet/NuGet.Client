@@ -155,7 +155,7 @@ namespace NuGet.DependencyResolver
                     // since the predicate will not be called for leaf nodes.
                     if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
                     {
-                        result = (DependencyResult.Cycle, dependency);
+                        result = (dependencyResult: DependencyResult.Cycle, conflictingDependency: dependency);
                     }
 
                     if (result.dependencyResult == DependencyResult.Acceptable)
@@ -378,7 +378,6 @@ namespace NuGet.DependencyResolver
         /// </summary>
         private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryDependency libraryDependency, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
-            // Set the transitive flag once is marked as transitive
             libraryDependency.ReferenceType = LibraryDependencyReferenceType.Transitve;
             transitiveCentralPackageVersions.TryAdd(libraryDependency);
         }
@@ -413,12 +412,12 @@ namespace NuGet.DependencyResolver
         /// A centrally defined package version has the potential to become a transitive dependency.
         /// A such dependency is defined by
         ///     VersionCentrallyManaged = true
-        ///     ReferenceType != LibraryDependencyReferenceType.Direct
+        ///     ReferenceType == LibraryDependencyReferenceType.None
         /// However do not include them in the graph for the begining.
         /// </summary>
         internal bool IsDependencyValidForGraph(LibraryDependency dependency)
         {
-            return dependency.ReferenceType == LibraryDependencyReferenceType.Direct ||
+            return dependency.ReferenceType != LibraryDependencyReferenceType.None ||
                    !dependency.VersionCentrallyManaged;
         }
 

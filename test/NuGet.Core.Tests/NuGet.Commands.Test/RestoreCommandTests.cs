@@ -1599,7 +1599,6 @@ namespace NuGet.Commands.Test
 
                 packageA_Version200.Dependencies.Add(packageB_Version200);
 
-
                 await SimpleTestPackageUtility.CreateFolderFeedV3Async(
                     pathContext.PackageSource,
                     PackageSaveMode.Defaultv3,
@@ -1655,7 +1654,6 @@ namespace NuGet.Commands.Test
             };
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
-
         }
     }
 }

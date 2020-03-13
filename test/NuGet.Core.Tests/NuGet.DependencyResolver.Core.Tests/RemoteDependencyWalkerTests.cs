@@ -819,7 +819,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public void TransitiveCentralPackageVersions__AddAndTake()
+        public void TransitiveCentralPackageVersions_AddAndTake()
         {
             // Arrange
             var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
@@ -1004,7 +1004,6 @@ namespace NuGet.DependencyResolver.Tests
         public void IsDependencyValidForGraphTest(LibraryDependencyReferenceType referenceType, bool versionCentrallyManaged)
         {
             var centralPackageName = "D";
-            var framework = NuGetFramework.Parse("net45");
             var context = new TestRemoteWalkContext();
             var centralPackageVersion = new CentralPackageVersion(centralPackageName, VersionRange.Parse("2.0.0"));
             var centralPackageVersionDependecy_VersionCentrallyManaged = new LibraryDependency()
@@ -1019,7 +1018,7 @@ namespace NuGet.DependencyResolver.Tests
             var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependecy_VersionCentrallyManaged);
 
             // Assert
-            if (referenceType == LibraryDependencyReferenceType.Direct || !versionCentrallyManaged)
+            if (referenceType != LibraryDependencyReferenceType.None || !versionCentrallyManaged)
             {
                 Assert.True(expectedResult);
             }
@@ -1045,7 +1044,6 @@ namespace NuGet.DependencyResolver.Tests
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name)
         {
             return DoWalkAsync(walker, name, NuGetFramework.Parse("net45"));
-
         }
 
         private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)
