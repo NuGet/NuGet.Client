@@ -282,8 +282,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <PackProjectInputFile>$(MSBuildProjectFullPath)</PackProjectInputFile>
     </PropertyGroup>
   </Target>
-  
-  <Target Name="_GetProjectReferenceVersions" 
+
+  <Target Name="_GetProjectReferenceVersions"
           Condition="'$(NuspecFile)' == ''"
           DependsOnTargets="_CalculateInputsOutputsForPack;$(GetPackageVersionDependsOn)">
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
@@ -407,7 +407,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       </TfmSpecificFrameworkAssemblyReferences>
     </ItemGroup>
   </Target>
-  
+
   <Target Name="_GetBuildOutputFilesWithTfm"
           DependsOnTargets="BuiltProjectOutputGroup;DocumentationProjectOutputGroup;SatelliteDllsProjectOutputGroup;_AddPriFileToPackBuildOutput;$(TargetsForTfmSpecificBuildOutput)"
           Returns="@(BuildOutputInPackage)">

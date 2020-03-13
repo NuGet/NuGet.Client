@@ -182,7 +182,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="CollectCentralPackageVersions" Returns="@(PackageVersion)" />
-  
+
   <!--
     ============================================================
     CollectPackageDownloads
