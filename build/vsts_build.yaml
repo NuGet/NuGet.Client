@@ -711,11 +711,7 @@ jobs:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   pool:
-    name: VSEng-MicroBuildMacCustom
-    demands: 
-    - sh
-    - VSTS_OS -equals Mac_Mojave_10.14
-    - Team -equals NuGet Client Team
+    name: macos-latest
 
   steps:
   - task: PowerShell@2
