@@ -27,7 +27,7 @@ jobs:
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
-        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1 
+        . $(Build.Repository.LocalPath)\\scripts\\utils\\PostGitCommitStatus.ps1
         CheckVstsPersonalAccessToken -VstsPersonalAccessToken $(VstsPersonalAccessToken)
 
   - task: PowerShell@1
@@ -82,7 +82,7 @@ jobs:
 
   pool:
     name: VSEng-MicroBuildVS2019
-    demands: 
+    demands:
       - DotNetFramework
       - msbuild
   strategy:
@@ -183,7 +183,7 @@ jobs:
       msbuildVersion: "16.0"
       msbuildArguments: "/t:EnsureNewtonsoftJsonVersion"
     condition: "succeeded()"
-  
+
   - task: MSBuild@1
     displayName: "Ensure package versions are declared in packages.targets"
     continueOnError: "false"
@@ -194,28 +194,28 @@ jobs:
     condition: "succeeded()"
 
 
-  - task: MSBuild@1	
-    displayName: "Localize Assemblies"	
-    inputs:	
-      solution: "build\\loc.proj"	
-      msbuildVersion: "16.0"	
-      configuration: "$(BuildConfiguration)"	
-      msbuildArguments: "/t:AfterBuild"	
+  - task: MSBuild@1
+    displayName: "Localize Assemblies"
+    inputs:
+      solution: "build\\loc.proj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
+      msbuildArguments: "/t:AfterBuild"
 
-  - task: MSBuild@1	
-    displayName: "Build Final NuGet.exe (via ILMerge)"	
-    inputs:	
-      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"	
-      msbuildVersion: "16.0"	
-      configuration: "$(BuildConfiguration)"	
+  - task: MSBuild@1
+    displayName: "Build Final NuGet.exe (via ILMerge)"
+    inputs:
+      solution: "src\\NuGet.Clients\\NuGet.CommandLine\\NuGet.CommandLine.csproj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:ILMergeNuGetExe /p:ExpectedLocalizedArtifactCount=$(LocalizedLanguageCount)"
 
-  - task: MSBuild@1	
-    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"	
-    inputs:	
-      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"	
-      msbuildVersion: "16.0"	
-      configuration: "$(BuildConfiguration)"	
+  - task: MSBuild@1
+    displayName: "Publish NuGet.exe (ILMerged) into NuGet.CommandLine.Test (Mac tests use this)"
+    inputs:
+      solution: "test\\NuGet.Clients.Tests\\NuGet.CommandLine.Test\\NuGet.CommandLine.Test.csproj"
+      msbuildVersion: "16.0"
+      configuration: "$(BuildConfiguration)"
       msbuildArguments: "/t:CopyFinalNuGetExeToOutputPath"
     condition: "and(succeeded(),eq(variables['BuildRTM'], 'true'))"
 
@@ -554,8 +554,8 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
-    name: VSEng-MicroBuildSxS
-    demands: 
+    name: VSEng-MicroBuildVS2019
+    demands:
         - DotNetFramework
         - msbuild
   strategy:
@@ -564,7 +564,7 @@ jobs:
         SkipCoreAssemblies: "true"
       IsCore:
         SkipDesktopAssemblies: "true"
-        
+
   steps:
   - task: PowerShell@1
     displayName: "Print Environment Variables"

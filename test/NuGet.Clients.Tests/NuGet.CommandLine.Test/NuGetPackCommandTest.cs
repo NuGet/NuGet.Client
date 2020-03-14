@@ -1629,7 +1629,7 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithNuspecFile, but with -MSBuidVersion
         // set to 14
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1851,7 +1851,7 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithJsonFile, but with -MSBuidVersion
         // set to 14
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_ReferencedProjectWithJsonFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -2349,7 +2349,7 @@ public class B
 
                 // Act
 
-                // Execute the pack command and feed in some properties for token replacements and 
+                // Execute the pack command and feed in some properties for token replacements and
                 // set the flag to save the resolved nuspec to output directory.\
                 var arguments = string.Format(
                     "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
@@ -2399,7 +2399,7 @@ public class B
                 var resolveNuSpecPath = Path.Combine(workingDirectory, nuspecName);
                 Assert.True(File.Exists(resolveNuSpecPath));
 
-                // Verify the nuspec contents in the zip file and the resolved nuspec side by 
+                // Verify the nuspec contents in the zip file and the resolved nuspec side by
                 // side with the package are the same
                 var resolvedNuSpecContents = File.ReadAllText(resolveNuSpecPath);
                 var packageOutputDirectoryNuSpecXml = XDocument.Parse(resolvedNuSpecContents);
@@ -2456,7 +2456,7 @@ public class B
 
                 // Act
 
-                // Execute the pack command and feed in some properties for token replacements and 
+                // Execute the pack command and feed in some properties for token replacements and
                 // set the flag to save the resolved nuspec to output directory.\
                 var commandRunner = CommandRunner.Run(
                     Util.GetNuGetExePath(),
@@ -3114,8 +3114,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -3134,7 +3134,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -3153,7 +3153,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -3221,7 +3221,7 @@ namespace Proj1
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
-                // Verify that testPackage2 is added as dependency in addition to testPackage1. 
+                // Verify that testPackage2 is added as dependency in addition to testPackage1.
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
                 Assert.Equal(4, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
@@ -3235,8 +3235,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -3255,7 +3255,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -3274,7 +3274,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -3447,7 +3447,7 @@ namespace Proj1
 
         // Tests that with -MSBuildVersion set to 14, a projec using C# 6.0 features (nameof in this test)
         // can be built successfully.
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_WithMsBuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -5661,7 +5661,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 }
             }
         }
-        
+
         [Fact]
         public void PackCommand_PackIcon_HappyPath_Succeeds()
         {
@@ -5696,7 +5696,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             TestPackIconSuccess(testDir);
         }
-                
+
         [Fact]
         public void PackCommand_PackIcon_Folder_Succeeds()
         {
@@ -5885,7 +5885,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Verify
                 Util.VerifyResultSuccess(r);
-                
+
                 Assert.True(File.Exists(nupkgPath));
                 Assert.True(File.Exists(snupkgPath));
 
