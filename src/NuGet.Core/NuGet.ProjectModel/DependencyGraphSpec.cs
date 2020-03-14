@@ -508,19 +508,6 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// Create a minimal DependencyGraphSpec that will pass restore. Typically used for error handling.
-        /// </summary>
-        /// <param name="projectPath">Full path to project file.</param>
-        /// <returns>DependencyGraphSpec</returns>
-        public static DependencyGraphSpec CreateMinimal(string projectPath, string outputPath)
-        {
-            var dgSpec = new DependencyGraphSpec();
-            dgSpec.AddProject(PackageSpec.CreateMinimal(projectPath, outputPath));
-
-            return dgSpec;
-        }
-
-        /// <summary>
         /// PackageSpec -> id
         /// </summary>
         private static string GetPackageSpecId(PackageSpec spec)

@@ -17,6 +17,14 @@ namespace NuGet.Commands
         /// </summary>
         public static void ValidateDependencySpec(DependencyGraphSpec spec)
         {
+            ValidateDependencySpec(spec, projectsToSkip: new HashSet<string>());
+        }
+
+        /// <summary>
+        /// Validate a dg file. This will throw a RestoreSpecException if there are errors.
+        /// </summary>
+        public static void ValidateDependencySpec(DependencyGraphSpec spec, HashSet<string> projectsToSkip)
+        {
             if (spec == null)
             {
                 throw new ArgumentNullException(nameof(spec));
@@ -27,7 +35,10 @@ namespace NuGet.Commands
                 // Verify projects
                 foreach (var projectSpec in spec.Projects)
                 {
-                    ValidateProjectSpec(projectSpec);
+                    if (!projectsToSkip.Contains(projectSpec.FilePath))
+                    {
+                        ValidateProjectSpec(projectSpec);
+                    }
                 }
 
                 var restoreSet = new HashSet<string>(spec.Restore, StringComparer.Ordinal);

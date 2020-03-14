@@ -125,8 +125,8 @@ namespace NuGet.SolutionRestoreManager
                 }
                 catch (Exception e)
                 {
-                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1010, string.Format(Resources.NU1010, e.Message));
-                    restoreLogMessage.ProjectPath = projectUniqueName;
+                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(Resources.NU1105, projectNames.ShortName, e.Message));
+                    restoreLogMessage.LibraryId = projectUniqueName;
 
                     nominationErrors = new List<IAssetsLogMessage>()
                     {
@@ -138,7 +138,7 @@ namespace NuGet.SolutionRestoreManager
                         ? projectRestoreInfo2.BaseIntermediatePath
                         : projectRestoreInfo.BaseIntermediatePath;
                     var dgSpecOutputPath = GetProjectOutputPath(projectDirectory, projectIntermediatePath);
-                    dgSpec = DependencyGraphSpec.CreateMinimal(projectUniqueName, dgSpecOutputPath);
+                    dgSpec = CreateMinimalDependencyGraphSpec(projectUniqueName, dgSpecOutputPath);
                 }
 
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, nominationErrors);
@@ -259,6 +259,21 @@ namespace NuGet.SolutionRestoreManager
                 Path.Combine(
                     projectDirectory,
                     msbuildProjectExtensionsPath));
+        }
+
+        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
+        {
+            var packageSpec = new PackageSpec();
+            packageSpec.FilePath = projectPath;
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
+            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.OutputPath = outputPath;
+
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(packageSpec);
+
+            return dgSpec;
         }
     }
 }

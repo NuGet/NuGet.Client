@@ -1363,7 +1363,7 @@ namespace NuGet.Commands.Test
                 project1.Create();
                 sources.Add(new PackageSource(packageSource.FullName));
 
-                var dgspec1 = DependencyGraphSpec.CreateMinimal(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
+                var dgspec1 = CreateMinimalDependencyGraphSpec(Path.Combine(project1.FullName, "project1.csproj"), project1Obj.FullName);
                 var spec1 = dgspec1.Projects[0];
 
                 var logger = new TestLogger();
@@ -1695,6 +1695,21 @@ namespace NuGet.Commands.Test
             };
 
             return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
+        }
+        
+        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
+        {
+            var packageSpec = new PackageSpec();
+            packageSpec.FilePath = projectPath;
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
+            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.OutputPath = outputPath;
+
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(packageSpec);
+
+            return dgSpec;
         }
     }
 }

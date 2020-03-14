@@ -53,14 +53,16 @@ namespace NuGet.Commands
                 throw new ArgumentNullException(nameof(dgFile));
             }
 
-            // When the project has an parsing error, for example an invalid TFM or version, we expect a fake dgSpec,
-            // in order to getnerate the assets file. Downstream tools, particularly Visual Studio's project system
-            // expects an assets file with errors, not exceptions being thrown.
-            if (restoreContext.AdditionalMessages == null || !restoreContext.AdditionalMessages.Any(m => m.Level == Common.LogLevel.Error))
+            // Validate the dg file input, this throws if errors are found.
+            var projectsWithErrors = new HashSet<string>();
+            if (restoreContext.AdditionalMessages != null)
             {
-                // Validate the dg file input, this throws if errors are found.
-                SpecValidationUtility.ValidateDependencySpec(dgFile);
+                foreach (var projectPath in restoreContext.AdditionalMessages.Where(m => m.Level == Common.LogLevel.Error).Select(m => m.ProjectPath))
+                {
+                    projectsWithErrors.Add(projectPath);
+                }
             }
+            SpecValidationUtility.ValidateDependencySpec(dgFile, projectsWithErrors);
 
             // Create requests
             var requests = new ConcurrentBag<RestoreSummaryRequest>();

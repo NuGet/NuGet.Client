@@ -93,11 +93,6 @@ namespace NuGet.Common
         NU1009 = 1009,
 
         /// <summary>
-        /// Unable to parse project information.
-        /// </summary>
-        NU1010 = 1010,
-
-        /// <summary>
         /// Unable to resolve package, generic message for unknown type constraints.
         /// </summary>
         NU1100 = 1100,
@@ -124,7 +119,7 @@ namespace NuGet.Common
         NU1104 = 1104,
 
         /// <summary>
-        /// Project reference was not in the dg spec.
+        /// Unable to read project information for 'ProjectFile'. The project file may be invalid or missing targets required for restore.
         /// </summary>
         NU1105 = 1105,
 

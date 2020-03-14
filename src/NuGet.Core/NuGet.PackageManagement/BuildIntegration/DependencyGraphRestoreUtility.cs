@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement
             return dgSpec;
         }
 
-        public static async Task<(DependencyGraphSpec dgSpec, IReadOnlyList<IAssetsLogMessage> additioalMessages)> GetSolutionRestoreSpecAndAdditionalMessages(
+        public static async Task<(DependencyGraphSpec dgSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetSolutionRestoreSpecAndAdditionalMessages(
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
