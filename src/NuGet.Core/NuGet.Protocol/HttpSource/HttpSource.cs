@@ -24,6 +24,8 @@ namespace NuGet.Protocol
         private string _httpCacheDirectory;
         private readonly PackageSource _packageSource;
         private readonly IThrottle _throttle;
+        private readonly IHttpCacheUtility _httpCacheUtility;
+        private readonly IConcurrencyUtility _concurrencyUtility;
 
         // Only one thread may re-create the http client at a time.
         private readonly SemaphoreSlim _httpClientLock = new SemaphoreSlim(1, 1);
@@ -37,27 +39,28 @@ namespace NuGet.Protocol
         public HttpSource(
             PackageSource packageSource,
             Func<Task<HttpHandlerResource>> messageHandlerFactory,
-            IThrottle throttle)
+            IThrottle throttle,
+            IHttpCacheUtility httpCacheUtility,
+            IConcurrencyUtility concurrencyUtility)
         {
-            if (packageSource == null)
-            {
-                throw new ArgumentNullException(nameof(packageSource));
-            }
-
-            if (messageHandlerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(messageHandlerFactory));
-            }
-
-            if (throttle == null)
-            {
-                throw new ArgumentNullException(nameof(throttle));
-            }
-
-            _packageSource = packageSource;
+            _packageSource = packageSource ?? throw new ArgumentNullException(nameof(packageSource));
+            _messageHandlerFactory = messageHandlerFactory ?? throw new ArgumentNullException(nameof(messageHandlerFactory));
+            _throttle = throttle ?? throw new ArgumentNullException(nameof(throttle));
+            _httpCacheUtility = httpCacheUtility ?? throw new ArgumentNullException(nameof(httpCacheUtility));
+            _concurrencyUtility = concurrencyUtility ?? throw new ArgumentNullException(nameof(concurrencyUtility));
             _sourceUri = packageSource.SourceUri;
-            _messageHandlerFactory = messageHandlerFactory;
-            _throttle = throttle;
+        }
+
+        public HttpSource(
+            PackageSource packageSource,
+            Func<Task<HttpHandlerResource>> messageHandlerFactory,
+            IThrottle throttle) : this(
+                packageSource,
+                messageHandlerFactory,
+                throttle,
+                FileSystemHttpCacheUtility.Instance,
+                FileSystemConcurrencyUtility.Instance)
+        {
         }
 
         /// <summary>
@@ -69,17 +72,17 @@ namespace NuGet.Protocol
             ILogger log,
             CancellationToken token)
         {
-            var cacheResult = HttpCacheUtility.InitializeHttpCacheResult(
+            var cacheResult = _httpCacheUtility.InitializeHttpCacheResult(
                 HttpCacheDirectory,
                 _sourceUri,
                 request.CacheKey,
                 request.CacheContext);
 
-            return await ConcurrencyUtilities.ExecuteWithFileLockedAsync(
+            return await _concurrencyUtility.ExecuteWithFileLockedAsync(
                 cacheResult.CacheFile,
                 action: async lockedToken =>
                 {
-                    cacheResult.Stream = TryReadCacheFile(request.Uri, cacheResult.MaxAge, cacheResult.CacheFile);
+                    cacheResult.Stream = await TryReadCacheFileAsync(request.Uri, cacheResult.MaxAge, cacheResult.CacheFile);
 
                     if (cacheResult.Stream != null)
                     {
@@ -155,7 +158,7 @@ namespace NuGet.Protocol
 
                         if (!request.CacheContext.DirectDownload)
                         {
-                            await HttpCacheUtility.CreateCacheFileAsync(
+                            await _httpCacheUtility.CreateCacheFileAsync(
                                 cacheResult,
                                 throttledResponse.Response,
                                 request.EnsureValidContents,
@@ -381,10 +384,10 @@ namespace NuGet.Protocol
             set { _httpCacheDirectory = value; }
         }
 
-        protected virtual Stream TryReadCacheFile(string uri, TimeSpan maxAge, string cacheFile)
+        protected virtual async Task<Stream> TryReadCacheFileAsync(string uri, TimeSpan maxAge, string cacheFile)
         {
             // Do not need the uri here
-            return CachingUtility.ReadCacheFile(maxAge, cacheFile);
+            return await _httpCacheUtility.TryReadCacheFileAsync(maxAge, cacheFile);
         }
 
         public static HttpSource Create(SourceRepository source)
@@ -394,19 +397,23 @@ namespace NuGet.Protocol
 
         public static HttpSource Create(SourceRepository source, IThrottle throttle)
         {
+            return Create(source, throttle, FileSystemHttpCacheUtility.Instance, FileSystemConcurrencyUtility.Instance);
+        }
+
+        public static HttpSource Create(
+            SourceRepository source,
+            IThrottle throttle,
+            IHttpCacheUtility httpCacheUtility,
+            IConcurrencyUtility concurrencyUtility)
+        {
             if (source == null)
             {
                 throw new ArgumentNullException(nameof(source));
             }
 
-            if (throttle == null)
-            {
-                throw new ArgumentNullException(nameof(throttle));
-            }
-
             Func<Task<HttpHandlerResource>> factory = () => source.GetResourceAsync<HttpHandlerResource>();
 
-            return new HttpSource(source.PackageSource, factory, throttle);
+            return new HttpSource(source.PackageSource, factory, throttle, httpCacheUtility, concurrencyUtility);
         }
 
         public void Dispose()
