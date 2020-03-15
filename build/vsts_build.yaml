@@ -711,7 +711,7 @@ jobs:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   pool:
-    name: macos-latest
+    vmImage: macos-latest
 
   steps:
   - task: PowerShell@2
