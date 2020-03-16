@@ -175,12 +175,9 @@ namespace NuGet.SolutionRestoreManager
 
                     if (projects.Any() && solutionDirectory == null)
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            _status = NuGetOperationStatus.Failed;
-                            l.ShowError(Resources.SolutionIsNotSaved);
-                            l.WriteLine(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
-                        });
+                        _status = NuGetOperationStatus.Failed;
+                        _logger.ShowError(Resources.SolutionIsNotSaved);
+                        await _logger.WriteLineAsync(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
 
                         return;
                     }
@@ -300,15 +297,13 @@ namespace NuGet.SolutionRestoreManager
                     var globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(_settings);
                     if (!Path.IsPathRooted(globalPackagesFolder))
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            var message = string.Format(
-                                CultureInfo.CurrentCulture,
-                                Resources.RelativeGlobalPackagesFolder,
-                                globalPackagesFolder);
 
-                            l.WriteLine(VerbosityLevel.Quiet, message);
-                        });
+                        var message = string.Format(
+                            CultureInfo.CurrentCulture,
+                            Resources.RelativeGlobalPackagesFolder,
+                            globalPackagesFolder);
+
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, message);
 
                         // Cannot restore packages since globalPackagesFolder is a relative path
                         // and the solution is not available
@@ -374,11 +369,7 @@ namespace NuGet.SolutionRestoreManager
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
-                // Log an error when restore is disabled and user explicitly restore.
-                await _logger.DoAsync((l, _) =>
-                {
-                    l.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
-                });
+                _logger.ShowError(Resources.PackageRefNotRestoredBecauseOfNoConsent);
             }
         }
 
@@ -392,16 +383,20 @@ namespace NuGet.SolutionRestoreManager
                 var packageIdentity = args.Package;
                 Interlocked.Increment(ref _currentCount);
 
-                _logger.Do((_, progress) =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
-                    progress?.ReportProgress(
-                        string.Format(
-                            CultureInfo.CurrentCulture,
-                            Resources.RestoredPackage,
-                            packageIdentity),
-                        (uint)_currentCount,
-                        (uint)_missingPackagesCount);
+                    // capture current progress from the current execution context
+                    var progress = RestoreOperationProgressUI.Current;
+
+                    await progress?.ReportProgressAsync(
+                    string.Format(
+                        CultureInfo.CurrentCulture,
+                        Resources.RestoredPackage,
+                        packageIdentity),
+                    (uint)_currentCount,
+                    (uint)_missingPackagesCount);
                 });
+
             }
         }
 
@@ -437,12 +432,12 @@ namespace NuGet.SolutionRestoreManager
             {
                 _status = NuGetOperationStatus.Failed;
 
-                _logger.Do((l, _) =>
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                 {
                     foreach (var projectName in args.ProjectNames)
                     {
                         var exceptionMessage =
-                            l.OutputVerbosity >= (int)VerbosityLevel.Detailed
+                            _logger.OutputVerbosity >= (int)VerbosityLevel.Detailed
                                 ? args.Exception.ToString()
                                 : args.Exception.Message;
                         var message = string.Format(
@@ -450,9 +445,9 @@ namespace NuGet.SolutionRestoreManager
                             Resources.PackageRestoreFailedForProject,
                             projectName,
                             exceptionMessage);
-                        l.WriteLine(VerbosityLevel.Quiet, message);
-                        l.ShowError(message);
-                        l.WriteLine(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, message);
+                        _logger.ShowError(message);
+                        await _logger.WriteLineAsync(VerbosityLevel.Normal, Resources.PackageRestoreFinishedForProject, projectName);
                     }
                 });
             }
@@ -483,11 +478,8 @@ namespace NuGet.SolutionRestoreManager
                     if (!isSolutionAvailable
                         && await CheckPackagesConfigAsync())
                     {
-                        await _logger.DoAsync((l, _) =>
-                        {
-                            l.ShowError(Resources.SolutionIsNotSaved);
-                            l.WriteLine(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
-                        });
+                        _logger.ShowError(Resources.SolutionIsNotSaved);
+                        await _logger.WriteLineAsync(VerbosityLevel.Quiet, Resources.SolutionIsNotSaved);
                     }
 
                     // Restore is not applicable, since, there is no project with installed packages
@@ -569,21 +561,19 @@ namespace NuGet.SolutionRestoreManager
         /// Checks if there are missing packages that should be restored. If so, a warning will
         /// be added to the error list.
         /// </summary>
-        private async Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
+        private Task CheckForMissingPackagesAsync(IEnumerable<PackageRestoreData> installedPackages)
         {
             var missingPackages = installedPackages.Where(p => p.IsMissing);
 
             if (missingPackages.Any())
             {
-                await _logger.DoAsync((l, _) =>
-                {
-                    var errorText = string.Format(
-                        CultureInfo.CurrentCulture,
-                        Resources.PackageNotRestoredBecauseOfNoConsent,
-                        string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
-                    l.ShowError(errorText);
-                });
+                var errorText = string.Format(
+                    CultureInfo.CurrentCulture,
+                    Resources.PackageNotRestoredBecauseOfNoConsent,
+                    string.Join(", ", missingPackages.Select(p => p.PackageReference.PackageIdentity.ToString())));
+                _logger.ShowError(errorText);
             }
+            return Task.CompletedTask;
         }
 
         private async Task RestoreMissingPackagesInSolutionAsync(
@@ -610,26 +600,6 @@ namespace NuGet.SolutionRestoreManager
                     logger,
                     token);
             }
-        }
-
-        /// <summary>
-        /// Returns true if the package restore user consent is granted.
-        /// </summary>
-        /// <returns>True if the package restore user consent is granted.</returns>
-        private static bool IsConsentGranted(ISettings settings)
-        {
-            var packageRestoreConsent = new PackageRestoreConsent(settings);
-            return packageRestoreConsent.IsGranted;
-        }
-
-        /// <summary>
-        /// Returns true if automatic package restore on build is enabled.
-        /// </summary>
-        /// <returns>True if automatic package restore on build is enabled.</returns>
-        private static bool IsAutomatic(ISettings settings)
-        {
-            var packageRestoreConsent = new PackageRestoreConsent(settings);
-            return packageRestoreConsent.IsAutomatic;
         }
 
         private async Task<bool> CheckPackagesConfigAsync()

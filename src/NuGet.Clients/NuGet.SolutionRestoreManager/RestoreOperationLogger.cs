@@ -137,9 +137,6 @@ namespace NuGet.SolutionRestoreManager
             Log(LogLevel.Debug, data);
         }
 
-        /// <summary>
-        /// Same as LogAsync but uses Do instead of DoAsync.
-        /// </summary>
         public sealed override void Log(ILogMessage logMessage)
         {
             HandleErrorsAndWarnings(logMessage);
@@ -159,19 +156,16 @@ namespace NuGet.SolutionRestoreManager
                     // to actually show it.
                     _loggedMessages.Enqueue(Tuple.Create(reportProgress, showAsOutputMessage, logMessage));
 
-                    // Run on the UI thread
                     var _ = _taskFactory.RunAsync(async () =>
                     {
                         // capture current progress from the current execution context
                         var progress = RestoreOperationProgressUI.Current;
 
-                        await _taskFactory.SwitchToMainThreadAsync();
-
                         // This might be a different message than the one enqueued above, but overall the printing order
                         // will match the order of calls to LogAsync.
                         if (_loggedMessages.TryDequeue(out var message))
                         {
-                            LogToVS(reportProgress: message.Item1, showAsOutputMessage: message.Item2, logMessage: message.Item3, progress: progress);
+                            await LogToVSAsync(reportProgress: message.Item1, showAsOutputMessage: message.Item2, logMessage: message.Item3, progress: progress);
                         }
                     });
                 }
@@ -189,20 +183,20 @@ namespace NuGet.SolutionRestoreManager
             return Task.CompletedTask;
         }
 
-        private void LogToVS(bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage, RestoreOperationProgressUI progress)
+        private async Task LogToVSAsync(bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage, RestoreOperationProgressUI progress)
         {
             var verbosityLevel = GetMSBuildLevel(logMessage.Level);
 
             // Progress dialog
             if (reportProgress)
             {
-                progress?.ReportProgress(logMessage.Message);
+                await progress?.ReportProgressAsync(logMessage.Message);
             }
 
             // Output console
             if (showAsOutputMessage)
             {
-                WriteLine(verbosityLevel, logMessage.FormatWithCode());
+                await WriteLineAsync(verbosityLevel, logMessage.FormatWithCode());
             }
         }
 
@@ -240,14 +234,13 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="verbosity">The verbosity level.</param>
         /// <param name="format">The format string.</param>
         /// <param name="args">An array of objects to write using format. </param>
-        public void WriteLine(MSBuildVerbosityLevel verbosity, string format, params object[] args)
+        public Task WriteLineAsync(MSBuildVerbosityLevel verbosity, string format, params object[] args)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
-
             if (ShouldShowMessageAsOutput(verbosity))
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _outputConsole.WriteLineAsync(format, args));
+                return _outputConsole.WriteLineAsync(format, args);
             }
+            return Task.CompletedTask;
         }
 
         /// <summary>
@@ -284,36 +277,33 @@ namespace NuGet.SolutionRestoreManager
             return _outputConsole != null && OutputVerbosity >= (int)verbosity;
         }
 
-        public Task LogExceptionAsync(Exception ex)
+        public async Task LogExceptionAsync(Exception ex)
         {
-            return DoAsync((_, __) =>
+            string message;
+            if (OutputVerbosity < 3)
             {
-                string message;
-                if (OutputVerbosity < 3)
-                {
-                    message = string.Format(CultureInfo.CurrentCulture,
-                        Resources.ErrorOccurredRestoringPackages,
-                        ex.Message);
-                }
-                else
-                {
-                    // output exception detail when _msBuildOutputVerbosity is >= Detailed.
-                    message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
-                }
+                message = string.Format(CultureInfo.CurrentCulture,
+                    Resources.ErrorOccurredRestoringPackages,
+                    ex.Message);
+            }
+            else
+            {
+                // output exception detail when _msBuildOutputVerbosity is >= Detailed.
+                message = string.Format(CultureInfo.CurrentCulture, Resources.ErrorOccurredRestoringPackages, ex);
+            }
 
-                if (_operationSource == RestoreOperationSource.Explicit)
-                {
-                    // Write to the error window and console
-                    Log(LogMessage.Create(LogLevel.Error, message));
-                }
-                else
-                {
-                    // Write to console
-                    WriteLine(MSBuildVerbosityLevel.Quiet, message);
-                }
+            if (_operationSource == RestoreOperationSource.Explicit)
+            {
+                // Write to the error window and console
+                Log(LogMessage.Create(LogLevel.Error, message));
+            }
+            else
+            {
+                // Write to console
+                await WriteLineAsync(MSBuildVerbosityLevel.Quiet, message);
+            }
 
-                ExceptionHelper.WriteErrorToActivityLog(ex);
-            });
+            ExceptionHelper.WriteErrorToActivityLog(ex);
         }
 
         public void ShowError(string errorText)
@@ -330,104 +320,66 @@ namespace NuGet.SolutionRestoreManager
             {
                 _hasHeaderBeenShown = true;
 
-                return DoAsync((_, __) =>
+                switch (_operationSource)
                 {
-                    switch (_operationSource)
-                    {
-                        case RestoreOperationSource.Implicit:
-                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
-                            break;
-                        case RestoreOperationSource.OnBuild:
-                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.PackageRestoreOptOutMessage);
-                            break;
-                        case RestoreOperationSource.Explicit:
-                            WriteLine(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
-                            break;
-                    }
-                });
+                    case RestoreOperationSource.Implicit:
+                        return WriteLineAsync(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
+                    case RestoreOperationSource.OnBuild:
+                        return WriteLineAsync(MSBuildVerbosityLevel.Normal, Resources.PackageRestoreOptOutMessage);
+                    case RestoreOperationSource.Explicit:
+                        return WriteLineAsync(MSBuildVerbosityLevel.Normal, Resources.RestoringPackages);
+                }
             }
-            else
-            {
-                return Task.CompletedTask;
-            }
+            return Task.CompletedTask;
         }
 
-        public Task WriteSummaryAsync(NuGetOperationStatus operationStatus, TimeSpan duration)
+        public async Task WriteSummaryAsync(NuGetOperationStatus operationStatus, TimeSpan duration)
         {
             var forceStatusWrite = _operationSource == RestoreOperationSource.Explicit;
             var quietOrMinimal = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Minimal;
             var quietOrNormal = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Normal;
             var quietOrDetailed = forceStatusWrite ? MSBuildVerbosityLevel.Quiet : MSBuildVerbosityLevel.Detailed;
 
-            return DoAsync((_, __) =>
+            switch (operationStatus)
             {
-                switch (operationStatus)
-                {
-                    case NuGetOperationStatus.Cancelled:
-                        WriteLine(
-                            quietOrMinimal,
-                            Resources.PackageRestoreCanceled);
-                        break;
-                    case NuGetOperationStatus.NoOp:
-                        if (forceStatusWrite)
-                        {
-                            WriteLine(
+                case NuGetOperationStatus.Cancelled:
+                    await WriteLineAsync(
+                        quietOrMinimal,
+                        Resources.PackageRestoreCanceled);
+                    break;
+                case NuGetOperationStatus.NoOp:
+                    if (forceStatusWrite)
+                    {
+                        await WriteLineAsync(
                                 quietOrDetailed,
                                 Resources.NothingToRestore);
-                        }
-                        break;
-                    case NuGetOperationStatus.Failed:
-                        WriteLine(
+                    }
+                    break;
+                case NuGetOperationStatus.Failed:
+                    await WriteLineAsync(
                             quietOrMinimal,
                             Resources.PackageRestoreFinishedWithError);
-                        break;
-                    case NuGetOperationStatus.Succeeded:
-                        WriteLine(
+                    break;
+                case NuGetOperationStatus.Succeeded:
+                    await WriteLineAsync(
                             quietOrNormal,
                             Resources.PackageRestoreFinished);
-                        break;
-                }
+                    break;
+            }
 
-                if (_operationSource != RestoreOperationSource.OnBuild && (_hasHeaderBeenShown || forceStatusWrite))
-                {
-                    WriteLine(
-                        quietOrMinimal,
-                        Resources.Operation_TotalTime,
-                        duration);
-                    WriteLine(quietOrMinimal, Resources.Operation_Finished);
-                    WriteLine(quietOrMinimal, string.Empty);
-                }
-            });
-        }
-
-        /// <summary>
-        /// Helper async method to run batch of logging call on the main UI thread.
-        /// </summary>
-        /// <param name="action">Sync callback invoking logger.</param>
-        /// <returns>An awaitable task.</returns>
-        public async Task DoAsync(Action<RestoreOperationLogger, RestoreOperationProgressUI> action)
-        {
-            // capture current progress from the current execution context
-            var progress = RestoreOperationProgressUI.Current;
-
-            await _taskFactory.SwitchToMainThreadAsync();
-            action(this, progress);
-        }
-
-        /// <summary>
-        /// Helper synchronous method to run batch of logging call on the main UI thread.
-        /// </summary>
-        /// <param name="action">Sync callback invoking logger.</param>
-        public void Do(Action<RestoreOperationLogger, RestoreOperationProgressUI> action)
-        {
-            // capture current progress from the current execution context
-            var progress = RestoreOperationProgressUI.Current;
-
-            _taskFactory.Run(async () =>
+            if (_operationSource != RestoreOperationSource.OnBuild && (_hasHeaderBeenShown || forceStatusWrite))
             {
-                await _taskFactory.SwitchToMainThreadAsync();
-                action(this, progress);
-            });
+                // Submit all messages at once. Avoid needless thread switching
+                var fullMessage =
+                    string.Format(CultureInfo.CurrentCulture, Resources.Operation_TotalTime, duration) +
+                    Environment.NewLine +
+                    Resources.Operation_Finished +
+                    Environment.NewLine +
+                    string.Empty +
+                    Environment.NewLine;
+
+                await WriteLineAsync(quietOrMinimal, fullMessage);
+            }
         }
 
         public async Task RunWithProgressAsync(
@@ -462,7 +414,7 @@ namespace NuGet.SolutionRestoreManager
         /// </remarks>
         private async Task<int> GetMSBuildOutputVerbositySettingAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+            await _taskFactory.SwitchToMainThreadAsync();
 
             var dte = await _asyncServiceProvider.GetDTEAsync();
 
@@ -565,12 +517,12 @@ namespace NuGet.SolutionRestoreManager
                 });
             }
 
-            public override void ReportProgress(
+            public override async Task ReportProgressAsync(
                 string progressMessage,
                 uint currentStep,
                 uint totalSteps)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                await _taskFactory.SwitchToMainThreadAsync();
 
                 // When both currentStep and totalSteps are 0, we get a marquee on the dialog
                 var progressData = new ThreadedWaitDialogProgressData(
@@ -621,7 +573,7 @@ namespace NuGet.SolutionRestoreManager
                 statusBar.Animation(1, ref Icon);
 
                 RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
-                progress.ReportProgress(Resources.RestoringPackages);
+                await progress.ReportProgressAsync(Resources.RestoringPackages);
 
                 return progress;
             }
@@ -639,12 +591,12 @@ namespace NuGet.SolutionRestoreManager
                 });
             }
 
-            public override void ReportProgress(
+            public override async Task ReportProgressAsync(
                 string progressMessage,
                 uint currentStep,
                 uint totalSteps)
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
+                await _taskFactory.SwitchToMainThreadAsync();
 
                 // Make sure the status bar is not frozen
                 int frozen;
