@@ -1531,8 +1531,8 @@ namespace NuGet.Commands.Test
                     packageB_Version100,
                     packageB_Version200
                     );
-                // set up the project
 
+                // set up the project
                 var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
 
                 var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)

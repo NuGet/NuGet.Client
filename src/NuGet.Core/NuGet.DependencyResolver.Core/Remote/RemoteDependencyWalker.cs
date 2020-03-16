@@ -185,7 +185,7 @@ namespace NuGet.DependencyResolver
                             result.conflictingDependency.VersionCentrallyManaged
                             && result.conflictingDependency.ReferenceType != LibraryDependencyReferenceType.Direct)
                         {
-                            MarkCentralVersionForTransitiveProcessing(framework, result.conflictingDependency, transitiveCentralPackageVersions);
+                            MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions);
                         }
 
                         // Keep the node in the tree if we need to look at it later
@@ -376,9 +376,8 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Mark a central package version that it is transitive and need to be added to the graph.
         /// </summary>
-        private void MarkCentralVersionForTransitiveProcessing(NuGetFramework framework, LibraryDependency libraryDependency, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
+        private void MarkCentralVersionForTransitiveProcessing(LibraryDependency libraryDependency, TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
-            libraryDependency.ReferenceType = LibraryDependencyReferenceType.Transitve;
             transitiveCentralPackageVersions.TryAdd(libraryDependency);
         }
 
@@ -417,8 +416,8 @@ namespace NuGet.DependencyResolver
         /// </summary>
         internal bool IsDependencyValidForGraph(LibraryDependency dependency)
         {
-            return dependency.ReferenceType != LibraryDependencyReferenceType.None ||
-                   !dependency.VersionCentrallyManaged;
+            return !(dependency.ReferenceType == LibraryDependencyReferenceType.None &&
+                   dependency.VersionCentrallyManaged);
         }
 
         internal class TransitiveCentralPackageVersions

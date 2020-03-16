@@ -923,7 +923,6 @@ namespace NuGet.DependencyResolver.Tests
             Assert.NotNull(centralVersionInGraphNode);
             Assert.Equal(centralPackageVersion, centralVersionInGraphNode.Item.Key.Version.ToNormalizedString());
             Assert.NotNull(centralVersionInGraphNode.Item.CentralDependency);
-            Assert.Equal(LibraryDependencyReferenceType.Transitve, centralVersionInGraphNode.Item.CentralDependency.ReferenceType);
 
             var BNode = rootNode.InnerNodes.Where(n => n.Item.Key.Name == "B").FirstOrDefault();
             Assert.NotNull(BNode);
