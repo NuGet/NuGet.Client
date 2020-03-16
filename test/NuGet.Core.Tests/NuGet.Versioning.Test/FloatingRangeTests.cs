@@ -480,7 +480,6 @@ namespace NuGet.Versioning.Test
         [InlineData("1.1.0-beta.*", "1.1.0-beta.0")]
         [InlineData("1.1.*-beta.*", "1.1.0-beta.0")]
         [InlineData("*-beta.*", "0.0.0-beta.0")]
-
         public void FloatRange_ParsesCorrectMinVersion(string versionRange, string normalizedMinVersion)
         {
             var range = FloatRange.Parse(versionRange);
