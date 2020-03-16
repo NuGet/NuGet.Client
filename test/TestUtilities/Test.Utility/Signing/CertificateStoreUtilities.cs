@@ -8,10 +8,14 @@ namespace Test.Utility.Signing
 {
     public static class CertificateStoreUtilities
     {
-        public static StoreLocation GetTrustedCertificateStoreLocation()
+        public static StoreLocation GetTrustedCertificateStoreLocation(bool readOnly = false)
         {
             // According to https://github.com/dotnet/runtime/blob/master/docs/design/features/cross-platform-cryptography.md#x509store   
             // use different approaches for Windows, Mac and Linux.
+            if(readOnly)
+            {
+                return StoreLocation.LocalMachine;
+            }
             return (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsMacOSX) ? StoreLocation.LocalMachine : StoreLocation.CurrentUser;
         }
     }
