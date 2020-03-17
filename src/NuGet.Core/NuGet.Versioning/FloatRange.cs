@@ -206,7 +206,7 @@ namespace NuGet.Versioning
                         // Get the stable part.
                         var stablePart = versionString.Substring(0, dashPosition - 1); // Get the part without the *
                         stablePart += "0";
-                        var versionParts = CountOccurrences(stablePart, '.');
+                        var versionParts = CalculateVersionParts(stablePart);
                         switch (versionParts)
                         {
                             case 1:
@@ -255,7 +255,7 @@ namespace NuGet.Versioning
                         // replace the * with a 0
                         actualVersion += "0";
 
-                        var versionParts = CountOccurrences(actualVersion, '.');
+                        var versionParts = CalculateVersionParts(actualVersion);
 
                         if (versionParts == 2)
                         {
@@ -314,14 +314,14 @@ namespace NuGet.Versioning
             return range != null;
         }
 
-        private static int CountOccurrences(string line, char ch)
+        private static int CalculateVersionParts(string line)
         {
-            var count = 0;
+            var count = 1;
             if (line != null)
             {
                 for (var i = 0; i < line.Length; i++)
                 {
-                    if (line[i] == ch)
+                    if (line[i] == '.')
                     {
                         count++;
                     }
