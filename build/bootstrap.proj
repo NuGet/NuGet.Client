@@ -16,7 +16,6 @@
         <PackageDownload Include="Microsoft.DotNet.Maestro.Tasks" version="[1.1.0-beta.19178.1]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
         <PackageDownload Include="Microsoft.VisualStudio.Composition" version="[15.8.98]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.0.201-pre-g7d366164d0]" />
-        <PackageDownload Include="Microsoft.VSSDK.BuildTools" version="[15.9.3032]" />
         <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
         <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
         <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[4.9.2]" />
