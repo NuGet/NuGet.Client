@@ -426,17 +426,25 @@
   <Target Name="GenerateDocs">
     <MsBuild
       Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
-      Targets="Restore;Build"
+      Targets="Restore"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion);" />
+
+    <MsBuild
+      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Targets="Build"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion);" />
 
     <GenerateMarkdownDoc
-      ProjectFiles="@(ProductProjects)"
-      OutputFile="$(RepositoryRootDirectory)\artifacts\docs-generated\overview.md"
+      ProductProjects="@(ProductProjects)"
+      TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
+      OutputFile="$(RepositoryRootDirectory)\docs\overview.md"
       GitHubRepositoryUrl="$(RepositoryUrl)"
       RepositoryRoot="$(RepositoryRootDirectory)"
-      Title="NuGet Project Overview"
-    />
+      Title="NuGet Project Overview" />
+
+    <Message Text="Documentation complete!" Importance="High" />
   </Target>
 
 </Project>
