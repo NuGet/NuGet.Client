@@ -245,37 +245,9 @@ namespace NuGet.CommandLine
             return new CommandLineSourceRepositoryProvider(SourceProvider);
         }
 
-        private DependencyBehavior TryGetDependencyBehavior(string behaviorStr)
-        {
-            DependencyBehavior dependencyBehavior;
 
-            if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) || !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
-            {
-                throw new CommandException(string.Format(CultureInfo.CurrentCulture, LocalizedResourceManager.GetString("InstallCommandUnknownDependencyVersion"), behaviorStr));
-            }
 
-            return dependencyBehavior;
-        }
 
-        private DependencyBehavior GetDependencyBehavior()
-        {
-            // If dependencyVersion is not set by either the config or commandline, default dependency behavior is 'Lowest'.
-            var dependencyBehavior = DependencyBehavior.Lowest;
-
-            var settingsDependencyVersion = SettingsUtility.GetConfigValue(Settings, "dependencyVersion");
-
-            // Check to see if commandline flag is set. Else check for dependencyVersion in .config.
-            if (!string.IsNullOrEmpty(DependencyVersion))
-            {
-                dependencyBehavior = TryGetDependencyBehavior(DependencyVersion);
-            }
-            else if (!string.IsNullOrEmpty(settingsDependencyVersion))
-            {
-                dependencyBehavior = TryGetDependencyBehavior(settingsDependencyVersion);
-            }
-
-            return dependencyBehavior;
-        }
 
         private async Task InstallPackageAsync(
             string packageId,
@@ -307,7 +279,7 @@ namespace NuGet.CommandLine
 
             var allowPrerelease = Prerelease || (version != null && version.IsPrerelease);
 
-            var dependencyBehavior = GetDependencyBehavior();
+            var dependencyBehavior = DependencyBehaviorHelper.GetDependencyBehavior(DependencyBehavior.Lowest, DependencyVersion, Settings);
 
             using (var sourceCacheContext = new SourceCacheContext())
             {

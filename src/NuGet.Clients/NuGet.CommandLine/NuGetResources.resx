@@ -5367,10 +5367,6 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
   <data name="PackageRestoreConsentCheckBoxText" xml:space="preserve">
     <value>&amp;Allow NuGet to download missing packages</value>
   </data>
-  <data name="InstallCommandUnknownDependencyVersion" xml:space="preserve">
-    <value>Invalid value given for 'DependencyVersion': "{0}".</value>
-    <comment>Please don't localize "DependencyVersion".</comment>
-  </data>
   <data name="UnsupportedFramework" xml:space="preserve">
     <value>'{0}' is not a valid target framework.</value>
   </data>
@@ -5416,5 +5412,9 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>`project.json` pack is deprecated. Please consider migrating '{0}' to `PackageReference` and using the pack targets.</value>
     <comment>Do not localize project.json and `PackageReference` 
 0 - project path (project.json file path)</comment>
+  </data>
+  <data name="Error_UnknownDependencyVersion" xml:space="preserve">
+    <value>Invalid value given for 'DependencyVersion': "{0}".</value>
+    <comment>Please don't localize "DependencyVersion".</comment>
   </data>
 </root>
