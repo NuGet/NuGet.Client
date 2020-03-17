@@ -209,6 +209,10 @@ namespace NuGet.Versioning
             if (!HasPrereleaseBounds
                 && considering.IsPrerelease
                 && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.Prerelease
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.PrereleaseMajor
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.PrereleaseMinor
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.PrereleasePatch
+                && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.PrereleaseRevision
                 && _floatRange?.FloatBehavior != NuGetVersionFloatBehavior.AbsoluteLatest)
             {
                 return false;
