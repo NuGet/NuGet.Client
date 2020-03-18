@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>True if valid, False if invalid.</returns>
         public static bool IsValidSource(string source)
         {
-            return IsValidLocalPath(source) || IsValidUncPath(source) || IsValidUrl(source);
+            return IsValidLocalPath(source) || IsValidUncPath(source) || Common.PathValidator.IsValidUrl(source);
         }
 
         /// <summary>
@@ -79,20 +79,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        /// <summary>
-        /// Validates that url is properly formatted as an URL based on .NET <see cref="System.Uri">Uri</see> class.
-        /// </summary>
-        /// <param name="url">The url to validate.</param>
-        /// <returns>True if valid, False if invalid.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "We're trying to validate that a stirng is infct a uri")]
-        public static bool IsValidUrl(string url)
-        {
-            Uri result;
-
-            // Make sure url starts with protocol:// because Uri.TryCreate() returns true for local and UNC paths even if badly formed.
-            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase) && Uri.TryCreate(url, UriKind.Absolute, out result);
-        }
-
         public static string GetCanonicalPath(string path)
         {
             if (IsValidLocalPath(path)
@@ -100,7 +86,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return Path.GetFullPath(PathUtility.EnsureTrailingSlash(path));
             }
-            if (IsValidUrl(path))
+            if (Common.PathValidator.IsValidUrl(path))
             {
                 var url = new Uri(path);
                 // return canonical representation of Uri
