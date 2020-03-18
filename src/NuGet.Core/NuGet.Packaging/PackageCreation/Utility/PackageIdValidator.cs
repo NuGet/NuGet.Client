@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -11,7 +11,7 @@ namespace NuGet.Packaging
     public static class PackageIdValidator
     {
         public const int MaxPackageIdLength = 100;
-        private static readonly Regex _idRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
+        private static readonly Regex IdRegex = new Regex(@"^\w+([_.-]\w+)*$", RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture | RegexOptions.CultureInvariant);
 
         public static bool IsValidPackageId(string packageId)
         {
@@ -19,7 +19,7 @@ namespace NuGet.Packaging
             {
                 throw new ArgumentException(nameof(packageId));
             }
-            return _idRegex.IsMatch(packageId);
+            return IdRegex.IsMatch(packageId);
         }
 
         public static void ValidatePackageId(string packageId)
@@ -31,7 +31,7 @@ namespace NuGet.Packaging
 
             if (!IsValidPackageId(packageId))
             {
-                throw new ArgumentException(String.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture, NuGetResources.InvalidPackageId, packageId));
             }
         }
     }

@@ -20,7 +20,7 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <returns>True if valid, False if invalid.</returns>
         public static bool IsValidSource(string source)
         {
-            return IsValidLocalPath(source) || IsValidUncPath(source) || IsValidUrl(source);
+            return IsValidLocalPath(source) || IsValidUncPath(source) || Common.PathValidator.IsValidUrl(source);
         }
 
         /// <summary>
@@ -85,12 +85,10 @@ namespace NuGet.PackageManagement.VisualStudio
         /// <param name="url">The url to validate.</param>
         /// <returns>True if valid, False if invalid.</returns>
         [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "We're trying to validate that a stirng is infct a uri")]
+        [Obsolete("Use NuGet.Common.PathValidator.IsValidUrl(string) instead")]
         public static bool IsValidUrl(string url)
         {
-            Uri result;
-
-            // Make sure url starts with protocol:// because Uri.TryCreate() returns true for local and UNC paths even if badly formed.
-            return Regex.IsMatch(url, @"^\w+://", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant) && Uri.TryCreate(url, UriKind.Absolute, out result);
+            return Common.PathValidator.IsValidUrl(url);
         }
 
         public static string GetCanonicalPath(string path)
@@ -100,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return Path.GetFullPath(PathUtility.EnsureTrailingSlash(path));
             }
-            if (IsValidUrl(path))
+            if (Common.PathValidator.IsValidUrl(path))
             {
                 var url = new Uri(path);
                 // return canonical representation of Uri
@@ -108,6 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             return path;
         }
+
 
         public static string SafeTrim(string value)
         {

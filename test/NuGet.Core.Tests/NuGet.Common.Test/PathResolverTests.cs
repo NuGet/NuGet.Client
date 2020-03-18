@@ -683,7 +683,7 @@ namespace NuGet.Common.Test
             DirectoryInfo directory3 = Directory.CreateDirectory(System.IO.Path.Combine(directory2.FullName, "dir3"));
             DirectoryInfo directory4 = Directory.CreateDirectory(System.IO.Path.Combine(directory1.FullName, "dir4"));
             Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir5"));
-            var directory6 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir6"));
+            DirectoryInfo directory6 = Directory.CreateDirectory(System.IO.Path.Combine(rootDirectory.FullName, "dir6"));
 
             CreateTestFiles(rootDirectory);
             CreateTestFiles(directory1);
