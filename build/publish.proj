@@ -14,9 +14,14 @@
   <UsingTask TaskName="Microsoft.DotNet.Maestro.Tasks.PushMetadataToBuildAssetRegistry" AssemblyFile="$(MicrosoftDotNetMaestroTasksFilePath)" />
 
 
-  <Target Name="PublishPackagesToBuildAssetRegistry">
+  <Target Name="PublishToBuildAssetRegistry">
+    <PropertyGroup>
+      <AssetManifestFileName>nuget.client.xml</AssetManifestFileName>
+      <AssetManifestPath>$(ArtifactsLogDir)AssetManifest\$(AssetManifestFileName)</AssetManifestPath>
+    </PropertyGroup>
+
     <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
-    <Error Condition="Exists($(ManifestFilePath))" Text="The manifest file '$(ManifestFilePath)' already exists." />
+    <Error Condition="Exists($(AssetManifestPath))" Text="The manifest file '$(AssetManifestPath)' already exists." />
     <Error Condition="'$(FeedUrl)' == ''" Text="The FeedUrl property is required." />
 
     <CreateItem Include="$([System.IO.Path]::Combine($(NuGetClientNupkgsDirectoryPath), '*.nupkg'))">
@@ -25,33 +30,33 @@
 
     <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
 
-    <Error Condition="'$(BuildId)' == ''" Text="The BuildId property is required." />
-    <Error Condition="'$(ManifestFilePath)' == ''" Text="The ManifestFilePath property is required." />
-    <Error Condition="'$(RepoBranch)' == ''" Text="The RepoBranch property is required." />
-    <Error Condition="'$(RepoCommit)' == ''" Text="The RepoCommit property is required." />
-    <Error Condition="'$(RepoUri)' == ''" Text="The RepoUri property is required." />
+    <Error Condition="'$(BUILD_BUILDNUMBER)' == ''" Text="The BUILD_BUILDNUMBER property is required." />
+    <Error Condition="'$(ArtifactsLogDir)' == ''" Text="The ArtifactsLogDir property is required." />
+    <Error Condition="'$(BUILD_SOURCEBRANCH)' == ''" Text="The BUILD_SOURCEBRANCH property is required." />
+    <Error Condition="'$(BUILD_SOURCEVERSION)' == ''" Text="The BUILD_SOURCEVERSION property is required." />
+    <Error Condition="'$(BUILD_REPOSITORY_URI)' == ''" Text="The BUILD_REPOSITORY_URI property is required." />
+    <Error Condition="'$(MaestroAccessToken)' == ''" Text="The MaestroAccessToken property is required." />
+    <Error Condition="'$(MaestroApiEndpoint)' == ''" Text="The MaestroApiEndpoint property is required." />
 
     <Message Text="Publishing %(ItemsToPush.Identity)" Importance="normal" />
 
     <PushToAzureDevOpsArtifacts
       ItemsToPush="@(ItemsToPush)"
       ManifestBuildData="Location=$(FeedUrl)"
-      ManifestRepoUri="$(RepoUri)"
-      ManifestBranch="$(RepoBranch)"
-      ManifestBuildId="$(BuildId)"
-      ManifestCommit="$(RepoCommit)"
-      AssetManifestPath="$(ManifestFilePath)" />
-  </Target>
+      ManifestRepoUri="$(BUILD_REPOSITORY_URI)"
+      ManifestBranch="$(BUILD_SOURCEBRANCH)"
+      ManifestBuildId="$(BUILD_BUILDNUMBER)"
+      ManifestCommit="$(BUILD_SOURCEVERSION)"
+      AssetManifestPath="$(AssetManifestPath)" />
 
-
-  <Target Name="PublishManifestToBuildAssetRegistry">
-    <Error Condition="'$(MaestroAccessToken)' == ''" Text="The MaestroAccessToken property is required." />
-    <Error Condition="'$(MaestroApiEndpoint)' == ''" Text="The MaestroApiEndpoint property is required." />
-    <Error Condition="!Exists($(ManifestsDirectoryPath))" Text="The manifests directory path '$(ManifestsDirectoryPath)' does not exist." />
+    <Message
+      Text="##vso[artifact.upload containerfolder=AssetManifests;artifactname=AssetManifests]$(AssetManifestPath)"
+      Importance="high" />
 
     <PushMetadataToBuildAssetRegistry
       BuildAssetRegistryToken="$(MaestroAccessToken)"
       MaestroApiEndpoint="$(MaestroApiEndpoint)"
-      ManifestsPath="$(ManifestsDirectoryPath)" />
+      ManifestsPath="$(ArtifactsLogDir)AssetManifest\" />
   </Target>
+
 </Project>
