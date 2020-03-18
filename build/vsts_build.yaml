@@ -72,7 +72,7 @@ jobs:
 
 - job: Build_and_UnitTest
   dependsOn: Initialize_Build
-  timeoutInMinutes: 90
+  timeoutInMinutes: 110
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
