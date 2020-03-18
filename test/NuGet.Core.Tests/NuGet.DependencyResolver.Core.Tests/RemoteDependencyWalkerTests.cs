@@ -904,7 +904,7 @@ namespace NuGet.DependencyResolver.Tests
 
             // Simulates the existence of a D centrally defined package that is not direct dependency
             provider.Package("A", otherVersion)
-                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             // Add central package to the source with multiple versions
             provider.Package(centralPackageName, "1.0.0");
@@ -1017,7 +1017,7 @@ namespace NuGet.DependencyResolver.Tests
             var expectedResult = walker.IsDependencyValidForGraph(centralPackageVersionDependecy_VersionCentrallyManaged);
 
             // Assert
-            if (referenceType != LibraryDependencyReferenceType.None || !versionCentrallyManaged)
+            if (referenceType != LibraryDependencyReferenceType.None)
             {
                 Assert.True(expectedResult);
             }

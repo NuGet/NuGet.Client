@@ -1447,7 +1447,7 @@ namespace NuGet.Commands.Test
             //    -> D (version = 2.0.0)
             provider.Package("A", otherVersion)
                     .DependsOn("B", otherVersion)
-                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             provider.Package("B", otherVersion)
                    .DependsOn("C", otherVersion);
@@ -1457,7 +1457,7 @@ namespace NuGet.Commands.Test
 
             // Simulates the existence of a D centrally defined package that is not direct dependency
             provider.Package("A", otherVersion)
-                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             // Add central package to the source with multiple versions
             provider.Package(centralPackageName, "1.0.0");

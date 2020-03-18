@@ -142,7 +142,7 @@ namespace Test.Utility
                 return this;
             }
 
-            public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All, bool versionCentrallyManaged = false, LibraryDependencyReferenceType libraryDependencyReferenceType = LibraryDependencyReferenceType.None)
+            public TestPackage DependsOn(string id, string version, LibraryDependencyTarget target = LibraryDependencyTarget.All, bool versionCentrallyManaged = false, LibraryDependencyReferenceType libraryDependencyReferenceType = LibraryDependencyReferenceType.Direct)
             {
                 _dependencies.Add(new LibraryDependency
                 {
