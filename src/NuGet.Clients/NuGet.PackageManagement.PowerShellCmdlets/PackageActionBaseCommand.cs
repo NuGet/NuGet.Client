@@ -293,8 +293,23 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task CheckPackageManagementFormat()
         {
-            // check if Project has any packages installed
-            if (!(await Project.GetInstalledPackagesAsync(Token)).Any())
+            bool packagesConfigAndSupportsPackageReferences = false;
+
+            if (Project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
+            {
+                try
+                {
+                    packagesConfigAndSupportsPackageReferences = Project.ProjectServices.Capabilities.SupportsPackageReferences;
+                }
+                catch (NotImplementedException)
+                {
+                    //If Capabilities aren't implemented, then we assume it doesn't support Package References.
+                    return;
+                }
+            }
+
+            // If Package Reference is supported, then check if Project has any packages installed.
+            if (packagesConfigAndSupportsPackageReferences && !(await Project.GetInstalledPackagesAsync(Token)).Any())
             {
                 var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
 
