@@ -10,7 +10,7 @@
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
 
-  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToBlobFeed" AssemblyFile="$(MicrosoftDotNetBuildTasksFeedFilePath)" />
+  <UsingTask TaskName="Microsoft.DotNet.Build.Tasks.Feed.PushToAzureDevOpsArtifacts" AssemblyFile="$(MicrosoftDotNetBuildTasksFeedFilePath)" />
   <UsingTask TaskName="Microsoft.DotNet.Maestro.Tasks.PushMetadataToBuildAssetRegistry" AssemblyFile="$(MicrosoftDotNetMaestroTasksFilePath)" />
 
 
@@ -18,16 +18,13 @@
     <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
     <Error Condition="Exists($(ManifestFilePath))" Text="The manifest file '$(ManifestFilePath)' already exists." />
     <Error Condition="'$(FeedUrl)' == ''" Text="The FeedUrl property is required." />
+    <Error Condition="'$(TempWorkingDirectory)' == ''" Text="The TempWorkingDirectory property is required" />
 
     <CreateItem Include="$([System.IO.Path]::Combine($(NuGetClientNupkgsDirectoryPath), '*.nupkg'))">
       <Output TaskParameter="Include" ItemName="ItemsToPush" />
     </CreateItem>
 
     <Error Condition="'@(ItemsToPush)' == ''" Text="No packages to push." />
-
-    <ItemGroup>
-      <BuildData Include="Location=$(FeedUrl)" />
-    </ItemGroup>
 
     <Error Condition="'$(BuildId)' == ''" Text="The BuildId property is required." />
     <Error Condition="'$(ManifestFilePath)' == ''" Text="The ManifestFilePath property is required." />
@@ -39,7 +36,7 @@
 
     <PushToAzureDevOpsArtifacts
       ItemsToPush="@(ItemsToPush)"
-      ManifestBuildData="BuildData"
+      ManifestBuildData="Location=$(FeedUrl)"
       ManifestRepoUri="$(RepoUri)"
       ManifestBranch="$(RepoBranch)"
       ManifestBuildId="$(BuildId)"
