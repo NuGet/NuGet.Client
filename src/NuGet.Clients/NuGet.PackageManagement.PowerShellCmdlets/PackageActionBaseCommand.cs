@@ -297,23 +297,15 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
             if (Project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
             {
-                try
-                {
-                    packagesConfigAndSupportsPackageReferences = Project.ProjectServices.Capabilities.SupportsPackageReferences;
-                }
-                catch (NotImplementedException)
-                {
-                    //If Capabilities aren't implemented, then we assume it doesn't support Package References.
-                    return;
-                }
+                packagesConfigAndSupportsPackageReferences = Project.ProjectServices.Capabilities.SupportsPackageReferences;
             }
 
-            // If Package Reference is supported, then check if Project has any packages installed.
+            // The Project is compatible with, but is currently not a PackageReference-style project, and no packages are currently installed.
             if (packagesConfigAndSupportsPackageReferences && !(await Project.GetInstalledPackagesAsync(Token)).Any())
             {
                 var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
 
-                // if default format is PackageReference then update NuGet Project
+                // The "Default Package Management Format" setting is PackageReference, so we can migrate this NuGet Project.
                 if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
                     var newProject = await VsSolutionManager.UpgradeProjectToPackageReferenceAsync(Project);
