@@ -79,18 +79,6 @@ namespace NuGet.PackageManagement.VisualStudio
             }
         }
 
-        /// <summary>
-        /// Validates that url is properly formatted as an URL based on .NET <see cref="System.Uri">Uri</see> class.
-        /// </summary>
-        /// <param name="url">The url to validate.</param>
-        /// <returns>True if valid, False if invalid.</returns>
-        [SuppressMessage("Microsoft.Design", "CA1054:UriParametersShouldNotBeStrings", MessageId = "0#", Justification = "We're trying to validate that a stirng is infct a uri")]
-        [Obsolete("Use NuGet.Common.PathValidator.IsValidUrl(string) instead")]
-        public static bool IsValidUrl(string url)
-        {
-            return Common.PathValidator.IsValidUrl(url);
-        }
-
         public static string GetCanonicalPath(string path)
         {
             if (IsValidLocalPath(path)
