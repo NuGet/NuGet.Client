@@ -308,7 +308,7 @@ namespace NuGet.ProjectModel
                     {
                         switch (propertyName)
                         {
-                            case "restore":
+                           case "restore":
                                 jsonReader.ReadObject(restorePropertyName =>
                                 {
                                     if (!string.IsNullOrEmpty(restorePropertyName))

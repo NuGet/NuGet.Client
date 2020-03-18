@@ -1420,11 +1420,11 @@ namespace NuGet.Commands.Test
         [Fact]
         public async Task RestoreCommand_LogDowngradeWarningsOrErrorsAsync_ErrorWhenCpvmEnabled()
         {
-            // Arange
+            // Arrange
             // create graph with a downgrade
-            string centralPackageName = "D";
-            string centralPackageVersion = "2.0.0";
-            string otherVersion = "3.0.0";
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var otherVersion = "3.0.0";
             NuGetFramework framework = NuGetFramework.Parse("net45");
             var logger = new TestLogger();
 

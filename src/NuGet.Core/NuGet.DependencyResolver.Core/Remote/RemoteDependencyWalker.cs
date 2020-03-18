@@ -182,8 +182,8 @@ namespace NuGet.DependencyResolver
                         // In case of conflict because of a centrally managed version that is not direct dependency
                         // the centrally managed package versions need to be added to the graph explicitelly as they are not added otherwise
                         if (result.conflictingDependency != null &&
-                            result.conflictingDependency.VersionCentrallyManaged
-                            && result.conflictingDependency.ReferenceType != LibraryDependencyReferenceType.Direct)
+                            result.conflictingDependency.VersionCentrallyManaged &&
+                            result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
                         {
                             MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions);
                         }
@@ -410,14 +410,12 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// A centrally defined package version has the potential to become a transitive dependency.
         /// A such dependency is defined by
-        ///     VersionCentrallyManaged = true
         ///     ReferenceType == LibraryDependencyReferenceType.None
         /// However do not include them in the graph for the begining.
         /// </summary>
         internal bool IsDependencyValidForGraph(LibraryDependency dependency)
         {
-            return !(dependency.ReferenceType == LibraryDependencyReferenceType.None &&
-                   dependency.VersionCentrallyManaged);
+            return dependency.ReferenceType != LibraryDependencyReferenceType.None;
         }
 
         internal class TransitiveCentralPackageVersions
