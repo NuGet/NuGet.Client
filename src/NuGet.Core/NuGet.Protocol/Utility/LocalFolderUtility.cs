@@ -989,26 +989,16 @@ namespace NuGet.Protocol
         /// <summary>
         /// If there isn't at least one Path specified, throw that no file paths were resolved for this Package.
         /// </summary>
-        /// <param name="packagePath">The package path the user originally provided for use while creating logs.</param>
+        /// <param name="packagePath">The package path the user originally provided.</param>
         /// <param name="matchingPackagePaths">A list of matching package paths that were previously resolved.</param>
         public static void EnsurePackageFileExists(string packagePath, IEnumerable<string> matchingPackagePaths)
         {
-            if (!ResolvedAnyPackagePath(matchingPackagePaths))
+            if (!(matchingPackagePaths != null && matchingPackagePaths.Any()))
             {
-                ErrorFileNotFound(packagePath);
-            }
-        }
-
-        public static void ErrorFileNotFound(string packagePath)
-        {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.UnableToFindFile,
                     packagePath));
-        }
-
-        public static bool ResolvedAnyPackagePath(IEnumerable<string> matchingPackagePaths)
-        {
-            return matchingPackagePaths != null && matchingPackagePaths.Any();
+            }
         }
 
         /// <summary>

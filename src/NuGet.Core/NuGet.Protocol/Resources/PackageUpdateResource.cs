@@ -176,14 +176,16 @@ namespace NuGet.Protocol.Core.Types
             var symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
 
             var symbolsToPush = LocalFolderUtility.ResolvePackageFromPath(symbolPackagePath, isSnupkg: isSymbolEndpointSnupkgCapable);
-            bool symbolsPathResolved = LocalFolderUtility.ResolvedAnyPackagePath(symbolsToPush);
+            bool symbolsPathResolved = symbolsToPush != null && symbolsToPush.Any();
 
             //No files were resolved.
             if (!symbolsPathResolved)
             {
                 if (explicitSymbolsPush)
                 {
-                    LocalFolderUtility.ErrorFileNotFound(symbolPackagePath);
+                    throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                        Strings.UnableToFindFile,
+                        packagePath));
                 }
             }
             else
@@ -199,7 +201,7 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, symbolsToPush, token);
+                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: symbolsToPush, token);
             }
         }
 
@@ -214,9 +216,11 @@ namespace NuGet.Protocol.Core.Types
         {
             var nupkgsToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkg: false);
 
-            if (!LocalFolderUtility.ResolvedAnyPackagePath(nupkgsToPush))
+            if (!(nupkgsToPush != null && nupkgsToPush.Any()))
             {
-                LocalFolderUtility.ErrorFileNotFound(packagePath);
+                throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
+                    Strings.UnableToFindFile,
+                    packagePath));
             }
 
             var sourceUri = UriUtility.CreateSourceUri(source);
@@ -228,7 +232,7 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, nupkgsToPush, token);
+            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, packagesToPush: nupkgsToPush, token);
         }
 
         private async Task PushAll(string source, string apiKey, bool noServiceEndpoint, bool skipDuplicate, TimeSpan requestTimeout, ILogger log, IEnumerable<string> packagesToPush, CancellationToken token)
