@@ -139,6 +139,11 @@ namespace NuGet.Common
         NU1108 = 1108,
 
         /// <summary>
+        /// Package dependency downgraded because of centrally defined package version.
+        /// </summary>
+        NU1109 = 1109,
+
+        /// <summary>
         /// Dependency project has an incompatible framework.
         /// </summary>
         NU1201 = 1201,
@@ -159,7 +164,7 @@ namespace NuGet.Common
         NU1204 = 1204, 
 
         /// <summary>
-        /// project has an invalid dependency count
+        /// Project has an invalid dependency count
         /// </summary>
         NU1211 = 1211,
 

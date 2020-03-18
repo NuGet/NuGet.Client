@@ -104,7 +104,7 @@ namespace NuGet.ProjectModel
             if (projectStyle == ProjectStyle.PackageReference)
             {
                 // NETCore
-                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework)); 
+                dependencies.AddRange(GetDependenciesFromSpecRestoreMetadata(packageSpec, targetFramework));
             }
             else
             {
@@ -311,7 +311,7 @@ namespace NuGet.ProjectModel
             return dependencies;
         }
 
-        private static List<LibraryDependency> GetSpecDependencies(
+        internal static List<LibraryDependency> GetSpecDependencies(
             PackageSpec packageSpec,
             NuGetFramework targetFramework)
         {
@@ -326,6 +326,19 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
+                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true)
+                {
+                    var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
+                    dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
+                        .Where(item => !dependencyNamesSet.Contains(item.Key))
+                        .Select(item => new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
+                            VersionCentrallyManaged = true,
+                            ReferenceType = LibraryDependencyReferenceType.None,
+                        }));
+                }
+
                 // Remove all framework assemblies
                 dependencies.RemoveAll(d => d.LibraryRange.TypeConstraint == LibraryDependencyTarget.Reference);
 
@@ -334,7 +347,6 @@ namespace NuGet.ProjectModel
                     // Clone the library dependency so we can safely modify it. The instance cloned here is from the
                     // original package spec, which should not be modified.
                     dependencies[i] = dependencies[i].Clone();
-                    
                     // Remove "project" from the allowed types for this dependency
                     // This will require that projects referenced by an msbuild project
                     // must be external projects.

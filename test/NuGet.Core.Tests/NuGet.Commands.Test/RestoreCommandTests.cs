@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -1416,6 +1417,215 @@ namespace NuGet.Commands.Test
             Assert.True(errorMessage.Contains(autoreferencedpackageId));
         }
 
+        [Fact]
+        public async Task RestoreCommand_LogDowngradeWarningsOrErrorsAsync_ErrorWhenCpvmEnabled()
+        {
+            // Arrange
+            // create graph with a downgrade
+            var centralPackageName = "D";
+            var centralPackageVersion = "2.0.0";
+            var otherVersion = "3.0.0";
+            NuGetFramework framework = NuGetFramework.Parse("net45");
+            var logger = new TestLogger();
+
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+            // D is a transitive dependency for package A through package B -> C -> D
+            // D is defined as a Central Package Version
+            // In this context Package D with version centralPackageVersion will be added as inner node of Node A, next to B 
+
+            // Input 
+            // A -> B (version = 3.0.0) -> C (version = 3.0.0) -> D (version = 3.0.0)
+            // A ~> D (version = 2.0.0
+            //         the dependency is not direct,
+            //         it simulates the fact that there is a centrally defined "D" package
+            //         the information is added to the provider)
+
+            // The expected output graph
+            //    -> B (version = 3.0.0) -> C (version = 3.0.0)
+            // A
+            //    -> D (version = 2.0.0)
+            provider.Package("A", otherVersion)
+                    .DependsOn("B", otherVersion)
+                    .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            provider.Package("B", otherVersion)
+                   .DependsOn("C", otherVersion);
+
+            provider.Package("C", otherVersion)
+                  .DependsOn(centralPackageName, otherVersion);
+
+            // Simulates the existence of a D centrally defined package that is not direct dependency
+            provider.Package("A", otherVersion)
+                     .DependsOn(centralPackageName, centralPackageVersion, LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+
+            // Add central package to the source with multiple versions
+            provider.Package(centralPackageName, "1.0.0");
+            provider.Package(centralPackageName, centralPackageVersion);
+            provider.Package(centralPackageName, "3.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+            RestoreTargetGraph restoreTargetGraph = RestoreTargetGraph.Create(new List<GraphNode<RemoteResolveResult>>() { rootNode }, context, logger, framework);
+
+            await RestoreCommand.LogDowngradeWarningsOrErrorsAsync(new List<RestoreTargetGraph>() { restoreTargetGraph }, logger);
+
+            // Assert
+            Assert.Equal(1, logger.Errors);
+            Assert.Equal(1, logger.LogMessages.Count);
+            var logMessage = logger.LogMessages.First();
+            Assert.Equal(LogLevel.Error, logMessage.Level);
+            Assert.True(logMessage.Message.Contains("Detected package downgrade: D from 3.0.0 to centrally defined 2.0.0. "));
+            Assert.Equal(NuGetLogCode.NU1109, logMessage.Code);
+        }
+
+        [Fact]
+        public async Task RestoreCommand_DowngradeIsErrorWhen_DowngradedByCentralTransitiveDependency()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                var project1Json = @"
+                {
+                  ""version"": ""1.0.0"",
+                    ""restore"": {
+                                    ""projectUniqueName"": ""TestProject"",
+                                    ""centralPackageVersionsManagementEnabled"": true
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""[2.0.0)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0)"",
+                            ""packageB"": ""[1.0.0)""
+                        }
+                    }
+                  }
+                }";
+
+                var packageA_Version200 = new SimpleTestPackageContext("packageA", "2.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                packageA_Version200.Dependencies.Add(packageB_Version200);
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version200,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                // set up the project
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.False(result.Success);
+                var downgradeErrorMessages = logger.Messages.Where(s => s.Contains("Detected package downgrade: packageB from 2.0.0 to centrally defined 1.0.0.")).ToList();
+                Assert.Equal(1, downgradeErrorMessages.Count);
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_DowngradeIsNotErrorWhen_DowngradedByCentralDirectDependency()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var logger = new TestLogger();
+                var projectName = "TestProject";
+                var projectPath = Path.Combine(pathContext.SolutionRoot, projectName);
+                var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+
+                var project1Json = @"
+                {
+                  ""version"": ""1.0.0"",
+                    ""restore"": {
+                                    ""projectUniqueName"": ""TestProject"",
+                                    ""centralPackageVersionsManagementEnabled"": true
+                    },
+                  ""frameworks"": {
+                    ""net472"": {
+                        ""dependencies"": {
+                                ""packageA"": {
+                                    ""version"": ""[2.0.0)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                },
+                                ""packageB"": {
+                                    ""version"": ""[1.0.0)"",
+                                    ""target"": ""Package"",
+                                    ""versionCentrallyManaged"": true
+                                }
+                        },
+                        ""centralPackageVersions"": {
+                            ""packageA"": ""[2.0.0)"",
+                            ""packageB"": ""[1.0.0)""
+                        }
+                    }
+                  }
+                }";
+
+                var packageA_Version200 = new SimpleTestPackageContext("packageA", "2.0.0");
+                var packageB_Version100 = new SimpleTestPackageContext("packageB", "1.0.0");
+                var packageB_Version200 = new SimpleTestPackageContext("packageB", "2.0.0");
+
+                packageA_Version200.Dependencies.Add(packageB_Version200);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA_Version200,
+                    packageB_Version100,
+                    packageB_Version200
+                    );
+
+                // set up the project
+                var spec = JsonPackageSpecReader.GetPackageSpec(project1Json, projectName, Path.Combine(projectPath, $"{projectName}.json")).WithTestRestoreMetadata();
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    LockFilePath = Path.Combine(projectPath, "project.assets.json"),
+                    ProjectStyle = ProjectStyle.PackageReference
+                };
+
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+
+                // Assert
+                Assert.True(result.Success);
+            }
+        }
+
         private static TargetFrameworkInformation CreateTargetFrameworkInformation(List<LibraryDependency> dependencies, List<CentralPackageVersion> centralVersionsDependencies)
         {
             NuGetFramework nugetFramework = new NuGetFramework("net40");
@@ -1433,6 +1643,17 @@ namespace NuGet.Commands.Test
             }
 
             return tfi;
+        }
+
+        private Task<GraphNode<RemoteResolveResult>> DoWalkAsync(RemoteDependencyWalker walker, string name, NuGetFramework framework)
+        {
+            var range = new LibraryRange
+            {
+                Name = name,
+                VersionRange = new VersionRange(new NuGetVersion("1.0"))
+            };
+
+            return walker.WalkAsync(range, framework, runtimeIdentifier: null, runtimeGraph: null, recursive: true);
         }
     }
 }

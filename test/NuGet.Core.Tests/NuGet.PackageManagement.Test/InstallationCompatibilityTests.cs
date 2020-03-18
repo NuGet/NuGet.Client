@@ -13,7 +13,6 @@ using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
-using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -24,6 +23,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Test;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.PackageManagement.Test

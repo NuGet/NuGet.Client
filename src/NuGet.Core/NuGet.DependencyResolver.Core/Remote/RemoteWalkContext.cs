@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 
 namespace NuGet.DependencyResolver
