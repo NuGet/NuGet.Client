@@ -95,7 +95,6 @@ namespace NuGet.PackageManagement.VisualStudio
             return path;
         }
 
-
         public static string SafeTrim(string value)
         {
             return value == null ? null : value.Trim();
