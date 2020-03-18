@@ -79,9 +79,8 @@ jobs:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
-    ManifestsDirectoryPath: $[Build.Repository.LocalPath]\artifacts\manifests\publish\
-    ManifestFilePath: $[Build.Repository.LocalPath]\artifacts\manifests\publish\nuget.client.xml
-    ManifestFileTempPath: $[Build.Repository.LocalPath]\artifacts\manifests\temp\
+    ManifestsDirectoryPath: $(Build.Repository.LocalPath)\artifacts\manifests\
+    ManifestFilePath: $(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml
 
   pool:
     name: VSEng-MicroBuildVS2019
@@ -527,7 +526,7 @@ jobs:
   - task: CmdLine@2
     displayName: "Publish the packages to the .NET Core build asset registry (BAR)"
     inputs:
-      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1) /p:TempWorkingDirectory=$(ManifestFileTempPath)
+      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1)
       workingDirectory: cli
       failOnStderr: true
     env:

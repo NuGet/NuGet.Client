@@ -18,7 +18,6 @@
     <Error Condition="!Exists($(NuGetClientNupkgsDirectoryPath))" Text="The package directory path '$(NuGetClientNupkgsDirectoryPath)' does not exist." />
     <Error Condition="Exists($(ManifestFilePath))" Text="The manifest file '$(ManifestFilePath)' already exists." />
     <Error Condition="'$(FeedUrl)' == ''" Text="The FeedUrl property is required." />
-    <Error Condition="'$(TempWorkingDirectory)' == ''" Text="The TempWorkingDirectory property is required" />
 
     <CreateItem Include="$([System.IO.Path]::Combine($(NuGetClientNupkgsDirectoryPath), '*.nupkg'))">
       <Output TaskParameter="Include" ItemName="ItemsToPush" />
@@ -41,8 +40,7 @@
       ManifestBranch="$(RepoBranch)"
       ManifestBuildId="$(BuildId)"
       ManifestCommit="$(RepoCommit)"
-      AssetManifestPath="$(ManifestFilePath)"
-      AssetsTemporaryDirectory="$(TempWorkingDirectory)" />
+      AssetManifestPath="$(ManifestFilePath)" />
   </Target>
 
 
