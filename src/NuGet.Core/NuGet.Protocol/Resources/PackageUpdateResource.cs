@@ -74,11 +74,15 @@ namespace NuGet.Protocol.Core.Types
                 tokenSource.CancelAfter(requestTimeout);
                 var apiKey = getApiKey(_source);
 
-                // if only a snupkg is being pushed, then don't try looking for nupkgs.
-                if(!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate
-                                      , requestTimeout, log, tokenSource.Token, isSnupkgPush: false);
+                bool explicitSnupkgPush = true;
+                
+                if (!packagePath.EndsWith(NuGetConstants.SnupkgExtension, StringComparison.OrdinalIgnoreCase))
+                {   
+                    await PushPackage(packagePath, _source, apiKey, noServiceEndpoint, skipDuplicate,
+                                      requestTimeout, log, tokenSource.Token);
+
+                    //Since this was not a snupkg push (probably .nupkg), when we try pushing symbols later, don't error if there are no snupkg files found.
+                    explicitSnupkgPush = false;
                 }
 
                 // symbolSource is only set when:
@@ -89,12 +93,13 @@ namespace NuGet.Protocol.Core.Types
                     var symbolApiKey = getSymbolApiKey(symbolSource);
 
                     await PushSymbols(packagePath, symbolSource, symbolApiKey,
-                        noServiceEndpoint, symbolPackageUpdateResource,
-                        requestTimeout, log, tokenSource.Token);
+                        noServiceEndpoint, skipDuplicate, symbolPackageUpdateResource,
+                        requestTimeout, log, explicitSnupkgPush, tokenSource.Token);
                 }
             }
         }
 
+        [Obsolete("Consolidating to one PackageUpdateResource.Push method which has all parameters defined.")]
         public async Task Push(
             string packagePath,
             string symbolSource, // empty to not push symbols
@@ -158,17 +163,30 @@ namespace NuGet.Protocol.Core.Types
             string source,
             string apiKey,
             bool noServiceEndpoint,
+            bool skipDuplicate,
             SymbolPackageUpdateResourceV3 symbolPackageUpdateResource,
             TimeSpan requestTimeout,
             ILogger log,
+            bool explicitSymbolsPush,
             CancellationToken token)
         {
+
             var isSymbolEndpointSnupkgCapable = symbolPackageUpdateResource != null;
             // Get the symbol package for this package
             var symbolPackagePath = GetSymbolsPath(packagePath, isSymbolEndpointSnupkgCapable);
 
-            // Push the symbols package if it exists
-            if (File.Exists(symbolPackagePath) || symbolPackagePath.IndexOf('*') != -1)
+            var symbolsToPush = LocalFolderUtility.ResolvePackageFromPath(symbolPackagePath, isSnupkg: isSymbolEndpointSnupkgCapable);
+            bool symbolsPathResolved = LocalFolderUtility.ResolvedAnyPackagePath(symbolsToPush);
+
+            //No files were resolved.
+            if (!symbolsPathResolved)
+            {
+                if (explicitSymbolsPush)
+                {
+                    LocalFolderUtility.ErrorFileNotFound(symbolPackagePath);
+                }
+            }
+            else
             {
                 var sourceUri = UriUtility.CreateSourceUri(source);
 
@@ -181,19 +199,8 @@ namespace NuGet.Protocol.Core.Types
                         Strings.DefaultSymbolServer));
                 }
 
-                var skipDuplicate = false;
-                await PushPackage(symbolPackagePath, source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, token, isSnupkgPush: isSymbolEndpointSnupkgCapable);
+                await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, symbolsToPush, token);
             }
-        }
-
-        /// <summary>
-        /// Get the symbols package from the original package. Removes the .nupkg and adds .symbols.nupkg
-        /// </summary>
-        private static string GetSymbolsPath(string packagePath, bool isSnupkg)
-        {
-            var symbolPath = Path.GetFileNameWithoutExtension(packagePath) + (isSnupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension);
-            var packageDir = Path.GetDirectoryName(packagePath);
-            return Path.Combine(packageDir, symbolPath);
         }
 
         private async Task PushPackage(string packagePath,
@@ -203,9 +210,15 @@ namespace NuGet.Protocol.Core.Types
             bool skipDuplicate,
             TimeSpan requestTimeout,
             ILogger log,
-            CancellationToken token,
-            bool isSnupkgPush)
+            CancellationToken token)
         {
+            var nupkgsToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkg: false);
+
+            if (!LocalFolderUtility.ResolvedAnyPackagePath(nupkgsToPush))
+            {
+                LocalFolderUtility.ErrorFileNotFound(packagePath);
+            }
+
             var sourceUri = UriUtility.CreateSourceUri(source);
 
             if (string.IsNullOrEmpty(apiKey) && !sourceUri.IsFile)
@@ -215,10 +228,11 @@ namespace NuGet.Protocol.Core.Types
                     GetSourceDisplayName(source)));
             }
 
-            var packagesToPush = LocalFolderUtility.ResolvePackageFromPath(packagePath, isSnupkgPush);
+            await PushAll(source, apiKey, noServiceEndpoint, skipDuplicate, requestTimeout, log, nupkgsToPush, token);
+        }
 
-            LocalFolderUtility.EnsurePackageFileExists(packagePath, packagesToPush);
-
+        private async Task PushAll(string source, string apiKey, bool noServiceEndpoint, bool skipDuplicate, TimeSpan requestTimeout, ILogger log, IEnumerable<string> packagesToPush, CancellationToken token)
+        {
             foreach (var packageToPush in packagesToPush)
             {
                 await PushPackageCore(source, apiKey, packageToPush, noServiceEndpoint, skipDuplicate, requestTimeout, log, token);
@@ -282,7 +296,17 @@ namespace NuGet.Protocol.Core.Types
             //that for file system, the "httpSource" is null.
             return _httpSource == null;
         }
- 
+
+        /// <summary>
+        /// Get the symbols package from the original package. Removes the .nupkg and adds .snupkg or .symbols.nupkg.
+        /// </summary>
+        private static string GetSymbolsPath(string packagePath, bool isSnupkg)
+        {
+            var symbolPath = Path.GetFileNameWithoutExtension(packagePath) + (isSnupkg ? NuGetConstants.SnupkgExtension : NuGetConstants.SymbolsExtension);
+            var packageDir = Path.GetDirectoryName(packagePath);
+            return Path.Combine(packageDir, symbolPath);
+        }
+
         /// <summary>
         /// Pushes a package to the Http server.
         /// </summary>
@@ -330,7 +354,8 @@ namespace NuGet.Protocol.Core.Types
                                 response =>
                                 {
                                     var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-                                    var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, logger);
+                                    
+                                    var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                                     showPushCommandPackagePushed = !logOccurred;
 
                                     return Task.FromResult(0);
@@ -372,7 +397,7 @@ namespace NuGet.Protocol.Core.Types
                     response =>
                     {
                         var responseStatusCode = EnsureSuccessStatusCode(response, codeNotToThrow, logger);
-                        var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, logger);
+                        var logOccurred = DetectAndLogSkippedErrorOccurrence(responseStatusCode, source, pathToPackage, response.ReasonPhrase, logger);
                         showPushCommandPackagePushed = !logOccurred;
 
                         return Task.FromResult(0);
@@ -416,34 +441,40 @@ namespace NuGet.Protocol.Core.Types
         /// <param name="skippedErrorStatusCode">If provided, it indicates that this StatusCode occurred but was flagged as to be Skipped.</param>
         /// <param name="logger"></param>
         /// <returns>Indication of whether the log occurred.</returns>
-        private static bool DetectAndLogSkippedErrorOccurrence(HttpStatusCode? skippedErrorStatusCode, string source, string packageIdentity, ILogger logger)
+        private static bool DetectAndLogSkippedErrorOccurrence(HttpStatusCode? skippedErrorStatusCode, string source, string packageIdentity, string reasonMessage, ILogger logger)
         {
             bool skippedErrorOccurred = false;
 
             if (skippedErrorStatusCode != null)
             {
                 string messageToLog = null;
-                var conflictMessage = string.Format(
+                string messageToLogVerbose = null;
+                
+                switch (skippedErrorStatusCode.Value)
+                {
+                    case HttpStatusCode.Conflict:
+                        
+                        messageToLog = string.Format(
                                    CultureInfo.CurrentCulture,
                                    Strings.AddPackage_PackageAlreadyExists,
                                    packageIdentity,
                                    source);
-
-                switch (skippedErrorStatusCode.Value)
-                {
-                    case HttpStatusCode.Conflict:
-                        messageToLog = conflictMessage;
+                        messageToLogVerbose = reasonMessage;
                         skippedErrorOccurred = true;
                         break;
                     case HttpStatusCode.BadRequest:
                         messageToLog = Strings.NupkgPath_Invalid;
                         skippedErrorOccurred = true;
                         break;
-                    default: break; //Not a supported response code.
+                    default: break; //Not a skippable response code.
                 }
                 if (messageToLog != null)
                 {
                     logger?.LogMinimal(messageToLog);
+                }
+                if (messageToLogVerbose != null)
+                {
+                    logger?.LogVerbose(messageToLogVerbose);
                 }
             }
 
