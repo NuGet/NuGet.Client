@@ -79,6 +79,7 @@ jobs:
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
     LocalizedLanguageCount: "13"
+    ManifestsDirectoryPath: $[Build.Repository.LocalPath]\artifacts\manifests\publish\
     ManifestFilePath: $[Build.Repository.LocalPath]\artifacts\manifests\publish\nuget.client.xml
     ManifestFileTempPath: $[Build.Repository.LocalPath]\artifacts\manifests\temp\
 
@@ -548,7 +549,7 @@ jobs:
       solution: 'build\\publish.proj'
       msbuildVersion: 16.0
       configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken)'
+      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(ManifestsDirectoryPath) /p:MaestroAccessToken=$(MaestroAccessToken)'
     condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MicroBuildCleanup@1
