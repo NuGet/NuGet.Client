@@ -29,7 +29,6 @@
       <BuildData Include="Location=$(FeedUrl)" />
     </ItemGroup>
 
-    <Error Condition="'$(AccountKey)' == ''" Text="The AccountKey property is required." />
     <Error Condition="'$(BuildId)' == ''" Text="The BuildId property is required." />
     <Error Condition="'$(ManifestFilePath)' == ''" Text="The ManifestFilePath property is required." />
     <Error Condition="'$(RepoBranch)' == ''" Text="The RepoBranch property is required." />
@@ -38,19 +37,15 @@
 
     <Message Text="Publishing %(ItemsToPush.Identity)" Importance="normal" />
 
-    <PushToBlobFeed
-      AccountKey="$(AccountKey)"
-      AssetManifestPath="$(ManifestFilePath)"
-      ExpectedFeedUrl="$(FeedUrl)"
+    <PushToAzureDevOpsArtifacts
       ItemsToPush="@(ItemsToPush)"
+      ManifestBuildData="BuildData"
+      ManifestRepoUri="$(RepoUri)"
       ManifestBranch="$(RepoBranch)"
       ManifestBuildId="$(BuildId)"
-      ManifestBuildData="$(BuildData)"
       ManifestCommit="$(RepoCommit)"
-      ManifestRepoUri="$(RepoUri)"
-      MaxClients="8"
-      Overwrite="false"
-      PassIfExistingItemIdentical="true" />
+      AssetManifestPath="$(ManifestFilePath)"
+      AssetsTemporaryDirectory="$(TempWorkingDirectory)" />
   </Target>
 
 
