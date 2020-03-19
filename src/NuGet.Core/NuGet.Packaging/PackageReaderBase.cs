@@ -26,7 +26,7 @@ namespace NuGet.Packaging
     public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignedPackageReader
     {
         private NuspecReader _nuspecReader;
-        private static readonly Regex _resourceDllRegex = new Regex(@"[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[.]resources[.]dll$", RegexOptions.IgnoreCase);
+        private static readonly Regex _resourceDllRegex = new Regex(@"lib[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[.]resources[.]dll$", RegexOptions.IgnoreCase);
         protected IFrameworkNameProvider FrameworkProvider { get; set; }
         protected IFrameworkCompatibilityProvider CompatibilityProvider { get; set; }
 
