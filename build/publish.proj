@@ -59,10 +59,6 @@
       ManifestCommit="$(BUILD_SOURCEVERSION)"
       AssetManifestPath="$(AssetManifestPath)" />
 
-    <Message
-      Text="##vso[artifact.upload containerfolder=AssetManifests;artifactname=AssetManifests]$(AssetManifestPath)"
-      Importance="high" />
-
     <PushMetadataToBuildAssetRegistry
       BuildAssetRegistryToken="$(MaestroAccessToken)"
       MaestroApiEndpoint="$(MaestroApiEndpoint)"
