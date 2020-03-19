@@ -1852,7 +1852,6 @@ namespace NuGet.SolutionRestoreManager.Test
         }
 
         [Fact]
-
         public void ToPackageSpec_CentralVersions_AreAddedToThePackageSpecIfCPVMIsEnabled()
         {
             // Arrange
@@ -1865,7 +1864,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 projectReferences: emptyReferenceItems,
                 packageDownloads: emptyReferenceItems,
                 frameworkReferences: emptyReferenceItems,
-                projectProperties: new VsProjectProperty[] { new VsProjectProperty("DisableCentralPackageVersions", "false") },
+                projectProperties: new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") },
                 centralPackageVersions: new[]
                         {
                             new VsReferenceItem("foo", new VsReferenceProperties(new []
@@ -1893,11 +1892,10 @@ namespace NuGet.SolutionRestoreManager.Test
         /// The default for DisableCentralPackageVersions should be disabled.
         /// </summary>
         [Theory]
-        [InlineData("1.0.0", "true")]
+        [InlineData("1.0.0", "false")]
         [InlineData(null, null)]
         [InlineData("1.0.0", "")]
-
-        public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string packRefVersion, string disableCentralPackageVersionsValue)
+        public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string packRefVersion, string managePackageVersionsCentrally)
         {
             // Arrange
             ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
@@ -1905,9 +1903,9 @@ namespace NuGet.SolutionRestoreManager.Test
             var packageReferenceProperties = packRefVersion == null ?
                 new VsReferenceProperties() :
                 new VsReferenceProperties(new[] { new VsReferenceProperty("Version", packRefVersion) });
-            var projectProperties = disableCentralPackageVersionsValue == null ?
+            var projectProperties = managePackageVersionsCentrally == null ?
                 new VsProjectProperty[0] :
-                new VsProjectProperty[] { new VsProjectProperty("DisableCentralPackageVersions", disableCentralPackageVersionsValue) };
+                new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", managePackageVersionsCentrally) };
 
             var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
                 targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),

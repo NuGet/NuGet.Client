@@ -40,7 +40,6 @@ namespace NuGet.SolutionRestoreManager
                 .Select(e => new PackageSource(e))
                 .ToList();
 
-
             toolReferences
                 .Cast<IVsReferenceItem>()
                 .Select(r => ToolRestoreUtility.GetSpec(
@@ -137,7 +136,7 @@ namespace NuGet.SolutionRestoreManager
                         tfi.CentralPackageVersions.AddRange(
                            targetFrameworkInfo3.CentralPackageVersions
                                .Cast<IVsReferenceItem>()
-                               .Select(ToCentralPackagevVersion).ToDictionary(cpv => cpv.Name));
+                               .Select(ToCentralPackageVersion).ToDictionary(cpv => cpv.Name));
                     }
                 }
 
@@ -360,7 +359,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: GetVersionRange(item, cpvmEnabled ? null : VersionRange.All),
+                    versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? null : VersionRange.All),
                     typeConstraint: LibraryDependencyTarget.Package),
 
                 // Mark packages coming from the SDK as AutoReferenced
@@ -398,7 +397,7 @@ namespace NuGet.SolutionRestoreManager
             return downloadDependency;
         }
 
-        private static CentralPackageVersion ToCentralPackagevVersion(IVsReferenceItem item)
+        private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem item)
         {
             var id = item.Name;
             var versionRange = GetVersionRange(item);
