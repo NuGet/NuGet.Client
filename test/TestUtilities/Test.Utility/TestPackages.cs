@@ -1,7 +1,8 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -47,6 +48,27 @@ namespace Test.Utility
                     "lib/net40/test40b.dll",
                     "lib/net45/test45.dll"
                 });
+        }
+
+        public static FileInfo GetLegacyTestPackageWithSatellites(string path,
+           string packageId = "packageA",
+           string packageAssemblyName = "solution.resources",
+           string packageVersion = "2.0.3")
+        {
+            var libs = new System.Collections.Generic.List<string>()
+                {
+                    "lib/" + packageAssemblyName + ".dll",
+                    "lib/net40/" + packageAssemblyName + ".dll",
+                    "lib/net40/" + packageAssemblyName + "a.dll",
+                    "lib/net40/" + packageAssemblyName + "b.dll",
+                    "lib/net45/" + packageAssemblyName + ".dll"
+                };
+
+            libs.Add("lib/net45/de/" + packageAssemblyName + ".resources.dll");
+            libs.Add("lib/net45/zh-Hans/" + packageAssemblyName + ".resources.dll");
+            libs.Add("lib/net45/abc/" + packageAssemblyName + ".resources.dll");
+    
+            return GeneratePackage(path, packageId, packageVersion, libs.ToArray());
         }
 
         public static FileInfo GetLegacyTestPackageWithMultipleReferences(string path,
