@@ -14,6 +14,7 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
+using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -730,7 +731,7 @@ namespace NuGet.Commands
             if (success)
             {
                 // Log downgrades if everything else was successful
-                await LogDowngradeWarningsAsync(graphs, logger);
+                await LogDowngradeWarningsOrErrorsAsync(graphs, logger);
             }
 
             return success;
@@ -782,7 +783,7 @@ namespace NuGet.Commands
         /// <summary>
         /// Log downgrade warnings from the graphs.
         /// </summary>
-        private static Task LogDowngradeWarningsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
+        internal static Task LogDowngradeWarningsOrErrorsAsync(IEnumerable<RestoreTargetGraph> graphs, ILogger logger)
         {
             var messages = new List<RestoreLogMessage>();
 
@@ -813,15 +814,24 @@ namespace NuGet.Commands
                                             ?? downgradedBy.GetVersionRange().MinVersion
                                             ?? new NuGetVersion(0, 0, 0);
 
+                            var isCPVMdowngradedError = downgradedBy.Item.CentralDependency != null;
+
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    Strings.Log_DowngradeWarning,
+                                    isCPVMdowngradedError ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                            if (isCPVMdowngradedError)
+                            {
+                                messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1109, message, downgraded.Key.Name, graph.TargetGraphName));
+                            }
+                            else
+                            {
+                                messages.Add(RestoreLogMessage.CreateWarning(NuGetLogCode.NU1605, message, downgraded.Key.Name, graph.TargetGraphName));
+                            }
                         }
                     }
                 }

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Xml.Linq;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -151,6 +152,40 @@ namespace NuGet.CommandLine.Test
     <tags>Tag1 Tag2</tags>
   </metadata>
 </package>".Replace("\r\n", "\n"), nuspec.Replace("\r\n", "\n"));
+            }
+        }
+
+        [Fact]
+        public void SpecCommand_WithoutXmlNamespace_Succeds()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "spec",
+                    waitForExit: true);
+
+                Util.VerifyResultSuccess(r);
+
+                XDocument xdoc = XmlUtility.LoadSafe(Path.Combine(workingDirectory, "Package.nuspec"));
+
+                AssertWithoutNamespace(xdoc.Root);
+            }
+        }
+
+        private void AssertWithoutNamespace(XElement node)
+        {
+            foreach (var attr in node.Attributes())
+            {
+                Assert.False(attr.Name.ToString().StartsWith("xmlns"));
+            }
+
+            foreach(var x in node.Descendants())
+            {
+                AssertWithoutNamespace(x);
             }
         }
     }

@@ -9,7 +9,6 @@ using Moq;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.DependencyResolver;
-using NuGet.DependencyResolver.Tests;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
@@ -19,6 +18,7 @@ using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+using Test.Utility;
 using Xunit;
 
 namespace NuGet.Commands.Test
@@ -44,7 +44,7 @@ namespace NuGet.Commands.Test
                     identity.Version.ToString());
 
                 var logger = new TestLogger();
-                var graph = GetRestoreTargetGraph(sourceDirectory,identity, packagePath, logger);
+                var graph = GetRestoreTargetGraph(sourceDirectory, identity, packagePath, logger);
 
                 var request = GetRestoreRequest(packagesDirectory, logger);
                 var resolver = new VersionFolderPathResolver(packagesDirectory, isLowercase: false);
