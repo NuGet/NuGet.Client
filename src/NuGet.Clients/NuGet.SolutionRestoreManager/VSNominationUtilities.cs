@@ -260,7 +260,7 @@ namespace NuGet.SolutionRestoreManager
         internal static bool IsCentralPackageVersionManagementEnabled(IEnumerable tfms)
         {
             // If the property is not defined the default value will be disabled. 
-            return !GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.DisableCentralPackageVersions, MSBuildStringUtility.IsTrue, defaultValue: true);
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue, defaultValue: false);
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
