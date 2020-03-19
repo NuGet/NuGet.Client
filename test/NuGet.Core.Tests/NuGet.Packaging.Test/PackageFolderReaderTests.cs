@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -12,6 +13,7 @@ using NuGet.Packaging.Core;
 using NuGet.Repositories;
 using NuGet.Test.Utility;
 using Xunit;
+using static NuGet.Test.Utility.TestPackagesCore;
 
 namespace NuGet.Packaging.Test
 {
@@ -46,11 +48,38 @@ namespace NuGet.Packaging.Test
             }
         }
 
+        [Fact]
+        public void ResourceAssembliesProperlyDetermined()
+        {
+            var packageAssemblyName = "solution.resources";
+            var libs = new System.Collections.Generic.List<string>()
+                {
+                    "lib/" + packageAssemblyName + ".dll",
+                    "lib/net40/" + packageAssemblyName + ".dll",
+                    "lib/net40/" + packageAssemblyName + "a.dll",
+                    "lib/net40/" + packageAssemblyName + "b.dll",
+                    "lib/net45/" + packageAssemblyName + ".dll",
+                    "lib/" + packageAssemblyName + "_extra.dll",
+                    "lib/" + packageAssemblyName + ".js",
+                };
+
+            var assembliesCount = libs.Count() - 1; // one is ignored because of the ext.
+            foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures).Where(p => !string.IsNullOrEmpty(p.Name)).Select(c => c.Name))
+            {
+                // Add all non-standart cultures.
+                libs.Add("lib/net45/" + culture + "/" + packageAssemblyName + ".resources.dll");
+            }
+
+            var asemblyReferencesCount = libs.Where(p => PackageReaderBase.IsAssemblyReference(p)).Count();
+            Assert.Equal(asemblyReferencesCount, assembliesCount);
+        }
+
         // verify that assemblies titles ended up with the "resources.dll" are still processed.
         [Fact]
         public void PackagesEndedWithResourcesShouldBeProcessed()
         {
-            using (var packageFile = TestPackagesCore.GetLegacyTestPackage("test.resources"))
+            var packageName = "solution.resources";
+            using (var packageFile = TestPackagesCore.GetLegacyResourcesPackage(packageName))
             {
                 using (var zip = new ZipArchive(File.OpenRead(packageFile)))
                 using (var zipReader = new PackageArchiveReader(zip))
@@ -73,19 +102,19 @@ namespace NuGet.Packaging.Test
 
                         Assert.Equal(group1.Count(), group2.Count());
 
-                        // Check that resource assembly not filtered out.
+                        // Check that assemblies with the 'resource' in a title are not filtered out.
                         Assert.True(group1.First().Items.Any(p => p.EndsWith("resources.dll")));
                         // Check that resource assembly not filtered out.
                         Assert.True(group2.First().Items.Any(p => p.EndsWith("resources.dll")));
 
                         foreach (var item in group1)
                         {  
-                            Assert.False(item.Items.Any(p=>p.EndsWith("resources.resources.dll")));
+                            Assert.False(item.Items.Any(p => p.EndsWith(packageName)));
                         }
 
                         foreach (var item in group2)
                         {
-                            Assert.False(item.Items.Any(p => p.EndsWith("resources.resources.dll")));
+                            Assert.False(item.Items.Any(p => p.EndsWith(packageName)));
                         }
                     }
                 }

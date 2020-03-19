@@ -821,7 +821,7 @@ namespace NuGet.Protocol.Plugins
             // filter out non reference assemblies
             foreach (var group in await GetLibItemsAsync(cancellationToken))
             {
-                fileGroups.Add(new FrameworkSpecificGroup(group.TargetFramework, group.Items.Where(e => IsReferenceAssembly(e))));
+                fileGroups.Add(new FrameworkSpecificGroup(group.TargetFramework, group.Items.Where(e => IsAssemblyReference(e))));
             }
 
             // results

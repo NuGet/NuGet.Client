@@ -8,6 +8,7 @@ using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -187,7 +188,7 @@ namespace NuGet.ProjectManagement
                 ?? new PackageArchiveReader(downloadResourceResult.PackageStream, leaveStreamOpen: true);
             IAsyncPackageContentReader packageContentReader = packageReader;
             IAsyncPackageCoreReader packageCoreReader = packageReader;
-
+            
             var libItemGroups = await packageContentReader.GetLibItemsAsync(token);
             var referenceItemGroups = await packageContentReader.GetReferenceItemsAsync(token);
             var frameworkReferenceGroups = await packageContentReader.GetFrameworkItemsAsync(token);
@@ -313,7 +314,7 @@ namespace NuGet.ProjectManagement
             {
                 foreach (var referenceItem in compatibleReferenceItemsGroup.Items)
                 {
-                    if (IsAssemblyReference(packageIdentity, referenceItem))
+                    if (IsAssemblyReference(referenceItem))
                     {
                         var referenceItemFullPath = Path.Combine(packageInstallPath, referenceItem);
                         var referenceName = Path.GetFileName(referenceItem);
@@ -530,7 +531,7 @@ namespace NuGet.ProjectManagement
                 {
                     foreach (var item in compatibleReferenceItemsGroup.Items)
                     {
-                        if (IsAssemblyReference(packageIdentity, item))
+                        if (IsAssemblyReference(item))
                         {
                             await ProjectSystem.RemoveReferenceAsync(Path.GetFileName(item));
                         }
@@ -601,13 +602,8 @@ namespace NuGet.ProjectManagement
             return base.PostProcessAsync(nuGetProjectContext, token);
         }
 
-        private static bool IsAssemblyReference(PackageIdentity packageIdentity, string filePath)
+        private static bool IsAssemblyReference(string filePath)
         {
-            if (packageIdentity == null)
-            {
-                throw new ArgumentNullException(nameof(packageIdentity));
-            }
-
             // assembly reference must be under lib/
             if (!filePath.StartsWith(PackagingConstants.Folders.Lib + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)
                 && !filePath.StartsWith(PackagingConstants.Folders.Lib + Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
@@ -623,20 +619,8 @@ namespace NuGet.ProjectManagement
                 return true;
             }
 
-            // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly;
-            if (Constants.AssemblyReferencesExtensions.Contains(Path.GetExtension(filePath), StringComparer.OrdinalIgnoreCase))
-            {
-                // Assembly name can be ended as ".resources" by itself. 
-                // We should check full name + resources.dll postfix here.
-                if (filePath.EndsWith(packageIdentity.Id + Constants.ResourceAssemblyExtension, StringComparison.OrdinalIgnoreCase))
-                {
-                    return false;
-                }
-
-                return true;
-            }
-
-            return false;                   
+            // Assembly reference must have a .dll|.exe|.winmd extension and is not a resource assembly:
+            return PackageReaderBase.IsAssemblyReference(filePath);                
         }
 
         private static IDictionary<XName, Action<XElement, XElement>> GetConfigMappings()

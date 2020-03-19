@@ -26,7 +26,7 @@ namespace NuGet.Packaging
     public abstract class PackageReaderBase : IPackageCoreReader, IPackageContentReader, IAsyncPackageCoreReader, IAsyncPackageContentReader, ISignedPackageReader
     {
         private NuspecReader _nuspecReader;
-        private static readonly Regex _resourceDllRegex = new Regex(@"[\\\/](\w{2}|\w{2}[-]\w{2})[\\\/].+[.]resources[.]dll$", RegexOptions.IgnoreCase);
+        private static readonly Regex _resourceDllRegex = new Regex(@"[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[\\\/][^\\\/\n]+?[.]resources[.]dll$", RegexOptions.IgnoreCase);
         protected IFrameworkNameProvider FrameworkProvider { get; set; }
         protected IFrameworkCompatibilityProvider CompatibilityProvider { get; set; }
 
@@ -257,7 +257,7 @@ namespace NuGet.Packaging
             // filter out non reference assemblies
             foreach (var group in GetLibItems())
             {
-                fileGroups.Add(new FrameworkSpecificGroup(group.TargetFramework, group.Items.Where(e => IsReferenceAssembly(e))));
+                fileGroups.Add(new FrameworkSpecificGroup(group.TargetFramework, group.Items.Where(e => IsAssemblyReference(e))));
             }
 
             // results
@@ -491,18 +491,24 @@ namespace NuGet.Packaging
         }
 
         /// <summary>
-        /// True only for assemblies that should be added as references to msbuild projects
+        /// True only for assemblies that should be added as references to msbuild projects.
+        /// Assembly reference must have a .dll|.exe|.winmd extension and it is not a satellite resource assembly.
         /// </summary>
-        protected static bool IsReferenceAssembly(string path)
+        public static bool IsAssemblyReference(string path)
         {
+            if (string.IsNullOrEmpty(path))
+            {
+                return false;
+            }
+
             var result = false;
 
             var extension = Path.GetExtension(path);
 
             if (StringComparer.OrdinalIgnoreCase.Equals(extension, ".dll"))
             {
-                // Resource assembly suppose to be located in the culture folder.
-                // In other case proper assemblies that are ended with "resources" can be filtered.
+                // Satellite assemblies suppose to be located under the culture folder. ex: 'net40\en\*.resource.dll'
+                // Assemblies ended up as '.resources.dll' should be still processed.
                 if (!_resourceDllRegex.IsMatch(path))
                 {
                     result = true;

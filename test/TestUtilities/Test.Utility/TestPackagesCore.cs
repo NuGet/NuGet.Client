@@ -174,7 +174,7 @@ namespace NuGet.Test.Utility
             return file;
         }
 
-        public static TempFile GetLegacyTestPackage(string packageName="test")
+        public static TempFile GetLegacyResourcesPackage(string packageName)
         {
             var file = new TempFile();
 
@@ -182,10 +182,54 @@ namespace NuGet.Test.Utility
             {
                 zip.AddEntry("lib/"+ packageName + ".dll", ZeroContent);
                 zip.AddEntry("lib/net40/"+ packageName + "40.dll", ZeroContent);
-                zip.AddEntry("lib/net40/"+ packageName + "40b.dll", ZeroContent);
-                zip.AddEntry("lib/net45/"+ packageName + "45.dll", ZeroContent);
-                zip.AddEntry("lib/net40/en/" + packageName + ".resources.dll", ZeroContent);
-                zip.AddEntry("lib/net45/en-GB/" + packageName + ".resources.dll", ZeroContent);
+                zip.AddEntry("lib/net40/" + packageName + "40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/" + packageName + "45.dll", ZeroContent);
+                foreach (var culture in CultureInfo.GetCultures(CultureTypes.AllCultures).Where(p => !string.IsNullOrEmpty(p.Name)).Select(c => c.Name))
+                {
+                    zip.AddEntry("lib/net40/" + culture + "/" + packageName + ".resources.dll", ZeroContent);
+                    zip.AddEntry("lib/net45/" + culture + "/" + packageName + ".resources.dll", ZeroContent);
+                }
+
+                zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
+                            <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
+                              <metadata>
+                                <id>packageA</id>
+                                <version>2.0.3</version>
+                                <authors>Author1, author2</authors>
+                                <description>Sample description</description>
+                                <language>en-US</language>
+                                <projectUrl>http://www.nuget.org/</projectUrl>
+                                <licenseUrl>http://www.nuget.org/license</licenseUrl>
+                                <dependencies>
+                                   <group>
+                                      <dependency id=""RouteMagic"" version=""1.1.0"" />
+                                   </group>
+                                   <group targetFramework=""net40"">
+                                      <dependency id=""jQuery"" />
+                                      <dependency id=""WebActivator"" />
+                                   </group>
+                                   <group targetFramework=""sl30"">
+                                   </group>
+                                </dependencies>
+                              </metadata>
+                            </package>", Encoding.UTF8);
+            }
+
+            return file;
+        }
+
+        public static TempFile GetLegacyTestPackage()
+        {
+            var file = new TempFile();
+
+            using (var zip = new ZipArchive(File.Create(file), ZipArchiveMode.Create))
+            {
+                zip.AddEntry("lib/test.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40.dll", ZeroContent);
+                zip.AddEntry("lib/net40/test40b.dll", ZeroContent);
+                zip.AddEntry("lib/net45/test45.dll", ZeroContent);
+                zip.AddEntry("lib/net40/en/test.resources.dll", ZeroContent);
+                zip.AddEntry("lib/net45/en-GB/test.resources.dll", ZeroContent);
 
                 zip.AddEntry("packageA.nuspec", @"<?xml version=""1.0"" encoding=""utf-8""?>
                             <package xmlns=""http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd"">
