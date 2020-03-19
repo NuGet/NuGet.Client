@@ -21,7 +21,7 @@
     <Reference Include="WindowsBase" />
     <Reference Include="System.IO.Compression" />
   </ItemGroup>
-  <ItemGroup >
+  <ItemGroup>
     <Compile Include="ProjectSystems\LegacyPackageReferenceProjectTests.cs" />
     <Compile Include="DispatcherThreadCollection.cs" />
     <Compile Include="Feeds\MultiSourcePackageMetadataProviderTests.cs" />
@@ -34,6 +34,7 @@
     <Compile Include="ProjectSystems\TestVSProjectAdapter.cs" />
     <Compile Include="Services\NuGetLockServiceTests.cs" />
     <Compile Include="Telemetry\ActionsTelemetryServiceTests.cs" />
+    <Compile Include="Telemetry\IntervalTrackerTests.cs" />
     <Compile Include="Telemetry\NuGetTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\RestoreTelemetryServiceTests.cs" />
     <Compile Include="Telemetry\TestTelemetryUtility.cs" />

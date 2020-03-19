@@ -12,6 +12,11 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class RestoreTelemetryEvent : ActionEventBase
     {
+        public static string RestoreOperationChecks = nameof(RestoreOperationChecks);
+        public static string PackagesConfigRestore = nameof(PackagesConfigRestore);
+        public static string SolutionDependencyGraphSpecCreation = nameof(SolutionDependencyGraphSpecCreation);
+        public static string PackageReferenceRestoreDuration = nameof(PackageReferenceRestoreDuration);
+
         public RestoreTelemetryEvent(
             string operationId,
             string[] projectIds,
@@ -21,10 +26,16 @@ namespace NuGet.VisualStudio
             int packageCount,
             int noOpProjectsCount,
             DateTimeOffset endTime,
-            double duration) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
+            double duration,
+            IntervalTracker intervalTimingTracker) : base(RestoreActionEventName, operationId, projectIds, startTime, status, packageCount, endTime, duration)
         {
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
+
+            foreach (var (intervalName, intervalDuration) in intervalTimingTracker.GetIntervals())
+            {
+                base[intervalName] = intervalDuration;
+            }
         }
 
         public const string RestoreActionEventName = "RestoreInformation";
