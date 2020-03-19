@@ -52,7 +52,7 @@
 
     <PushToAzureDevOpsArtifacts
       ItemsToPush="@(ItemsToPush)"
-      ManifestBuildData="Location=$(FeedUrl)"
+      ManifestBuildData="@(ManifestBuildData)"
       ManifestRepoUri="$(BUILD_REPOSITORY_URI)"
       ManifestBranch="$(BUILD_SOURCEBRANCH)"
       ManifestBuildId="$(BUILD_BUILDNUMBER)"
