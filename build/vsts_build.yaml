@@ -72,7 +72,7 @@ jobs:
 
 - job: Build_and_UnitTest
   dependsOn: Initialize_Build
-  timeoutInMinutes: 90
+  timeoutInMinutes: 110
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
@@ -100,13 +100,6 @@ jobs:
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
-
-  - task: PowerShell@1
-    displayName: "Define variables"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "##vso[task.setvariable variable=ManifestFilePath]$(Build.Repository.LocalPath)\artifacts\manifests\nuget.client.xml"
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 5.0.0"
@@ -529,31 +522,14 @@ jobs:
     # The Microsoft.DotNet.Build.Tasks.Feed package includes NuGet.Common 4.9.0.6 and a binding redirection in Microsoft.DotNet.Build.Tasks.Feed.dll.config but the binding redirection is not processed.
     # This would probably solve it:  https://github.com/Microsoft/msbuild/issues/1309
   - task: CmdLine@2
-    displayName: "Publish the packages to the .NET Core build asset registry (BAR)"
+    displayName: "Publish to the .NET Core build asset registry (BAR)"
     inputs:
-      script: dotnet msbuild ..\build\publish.proj /t:PublishPackagesToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BuildId=$(Build.BuildNumber) /p:RepoBranch=$(Build.SourceBranchName) /p:RepoCommit=$(Build.SourceVersion) /p:RepoUri=$(Build.Repository.Uri) /p:ManifestFilePath=$(ManifestFilePath) /p:AccountKey=$(dotnetfeed-storage-access-key-1)
+      script: dotnet msbuild ..\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
       workingDirectory: cli
       failOnStderr: true
     env:
       DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
       DOTNET_MULTILEVEL_LOOKUP: true
-    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
-  - task: PowerShell@1
-    displayName: "Upload the build manifest file as a build artifact"
-    inputs:
-      scriptType: "inlineScript"
-      inlineScript: |
-        Write-Host "##vso[task.uploadfile]$(ManifestFilePath)"
-    condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
-
-  - task: MSBuild@1
-    displayName: "Publish the build manifest file to the .NET Core build asset registry (BAR)"
-    inputs:
-      solution: 'build\\publish.proj'
-      msbuildVersion: 16.0
-      configuration: '$(BuildConfiguration)'
-      msbuildArguments: '/t:PublishManifestToBuildAssetRegistry /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:ManifestsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\manifests /p:MaestroAccessToken=$(MaestroAccessToken)'
     condition: " and(succeeded(),eq(variables['PublishArtifactsToDotNetBuildAssetRegistry'], 'true'), eq(variables['BuildRTM'], 'false')) "
 
   - task: MicroBuildCleanup@1
