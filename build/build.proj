@@ -439,12 +439,12 @@
     <GenerateMarkdownDoc
       ProductProjects="@(ProductProjects)"
       TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
-      OutputFile="$(RepositoryRootDirectory)\docs\overview.md"
+      OutputFile="$(RepositoryRootDirectory)\docs\project-list.md"
       GitHubRepositoryUrl="$(RepositoryUrl)"
       RepositoryRoot="$(RepositoryRootDirectory)"
       Title="NuGet Project Overview" />
 
-    <Message Text="Documentation complete!" Importance="High" />
+    <Message Text="Documentation generated!" Importance="High" />
   </Target>
 
 </Project>
