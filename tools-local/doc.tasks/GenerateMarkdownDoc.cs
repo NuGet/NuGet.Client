@@ -62,6 +62,7 @@ namespace NuGetTasks
             {
                 file.WriteLine("---");
                 file.WriteLine($"date-generated: {DateTime.Now:s}");
+                file.WriteLine($"tool: {typeof(GenerateMarkdownDoc).FullName}");
                 file.WriteLine("---\n");
 
                 file.WriteLine($"\n\n# {Title}\n\n");

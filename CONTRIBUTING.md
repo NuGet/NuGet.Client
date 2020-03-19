@@ -93,9 +93,18 @@ NuGet members may contribute directly to the main remote.
 
 - `$(NuGetClientRoot)\artifacts\VS15` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`NuGet.exe`)
 - `$(NuGetClientRoot)\artifacts\nupkgs` - this folder will contain all our projects packages
-- `$(NuGetClientRoot)\artifacts\docs-generated` - Containes generated docs. Created with `msbuild .\build\build.proj /t:GenerateDocs`
-
+  
 ## Resources for NuGet.Client development
 
 - [Workflow](docs/workflow.md)
 - [Coding Guidelines](docs/coding-guidelines.md)
+
+## Docs generation
+
+To update the auto-generated documentation, run the following in the repo root:
+
+ ```
+ dotnet msbuild .\build\build.proj /t:GenerateDocs
+ ```
+
+Updated docs will be at `$(NuGetClientRoot)\artifacts`
