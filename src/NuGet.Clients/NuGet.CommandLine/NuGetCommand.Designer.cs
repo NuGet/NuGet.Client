@@ -1814,7 +1814,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the server URL..
+        ///   Looks up a localized string similar to Package source (URL, UNC/folder path or package source name) to delete from. Defaults to DefaultPushSource if specified in NuGet.Config..
         /// </summary>
         internal static string DeleteCommandSourceDescription {
             get {
@@ -9015,7 +9015,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file..
+        ///   Looks up a localized string similar to Package source (URL, UNC/folder path or package source name) to push to. Defaults to DefaultPushSource if specified in NuGet.Config..
         /// </summary>
         internal static string PushCommandSourceDescription {
             get {
@@ -9141,7 +9141,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org..
+        ///   Looks up a localized string similar to Symbol server URL to push to..
         /// </summary>
         internal static string PushCommandSymbolSourceDescription {
             get {
@@ -9150,7 +9150,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes)..
+        ///   Looks up a localized string similar to Timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes)..
         /// </summary>
         internal static string PushCommandTimeoutDescription {
             get {

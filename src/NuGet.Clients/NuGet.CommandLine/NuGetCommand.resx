@@ -143,7 +143,7 @@ nuget config HTTP_PROXY</value>
     <value>Do not prompt when deleting.</value>
   </data>
   <data name="DeleteCommandSourceDescription" xml:space="preserve">
-    <value>Specifies the server URL.</value>
+    <value>Package source (URL, UNC/folder path or package source name) to delete from. Defaults to DefaultPushSource if specified in NuGet.Config.</value>
   </data>
   <data name="DeleteCommandUsageDescription" xml:space="preserve">
     <value>Specify the Id and version of the package to delete from the server.</value>
@@ -324,14 +324,14 @@ nuget pack foo.nuspec -Version 2.1.0</value>
     <value>Pushes a package to the server and publishes it.</value>
   </data>
   <data name="PushCommandSourceDescription" xml:space="preserve">
-    <value>Specifies the server URL. If not specified, nuget.org is used unless DefaultPushSource config value is set in the NuGet config file.</value>
+    <value>Package source (URL, UNC/folder path or package source name) to push to. Defaults to DefaultPushSource if specified in NuGet.Config.</value>
     <comment>Please don't localize "DefaultPushSource"</comment>
   </data>
   <data name="PushCommandSymbolSourceDescription" xml:space="preserve">
-    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+    <value>Symbol server URL to push to.</value>
   </data>
   <data name="PushCommandTimeoutDescription" xml:space="preserve">
-    <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
+    <value>Timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
   </data>
   <data name="PushCommandUsageDescription" xml:space="preserve">
     <value>Specify the path to the package and your API key to push the package to the server.</value>
