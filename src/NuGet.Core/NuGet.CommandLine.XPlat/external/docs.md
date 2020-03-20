@@ -1,3 +1,4 @@
+
 ***Run scripts\utils\ttGen.ps1 after changes to update docs.md
 ***Then run scripts\utils\docsPRGen.ps1 to split into several files in dotnet docs fork.
 ***
@@ -27,7 +28,7 @@ dotnet nuget add source [-h|--help]
 
 ## Description
 
-The `dotnet nuget add source` command adds a new package source to your NuGet configuration files. 
+The `dotnet nuget add source` command adds a new package source to your NuGet configuration files.
 
 ## Arguments
 
@@ -37,13 +38,13 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
 ## Options
 
+- **`--configfile`**
+
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
 - **`-n|--name`**
 
   Name of the source.
-
-- **`-u|--username`**
-
-  Username to be used when connecting to an authenticated source.
 
 - **`-p|--password`**
 
@@ -53,13 +54,13 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 
   Enables storing portable package source credentials by disabling password encryption.
 
+- **`-u|--username`**
+
+  Username to be used when connecting to an authenticated source.
+
 - **`--valid-authentication-types`**
 
-  Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate
-
-- **`--configfile`**
-
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+  Comma-separated list of valid authentication types for this source. Set this to basic if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include negotiate, kerberos, ntlm, and digest, but these values are unlikely to be useful.
 
 ## Examples
 
@@ -115,7 +116,7 @@ dotnet nuget disable source [-h|--help]
 
 ## Description
 
-The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files. 
+The `dotnet nuget disable source` command disables an existing source in your NuGet configuration files.
 
 ## Arguments
 
@@ -165,7 +166,7 @@ dotnet nuget enable source [-h|--help]
 
 ## Description
 
-The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files. 
+The `dotnet nuget enable source` command enables an existing source in your NuGet configuration files.
 
 ## Arguments
 
@@ -215,17 +216,17 @@ dotnet nuget list source [-h|--help]
 
 ## Description
 
-The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files. 
+The `dotnet nuget list source` command lists all existing sources from your NuGet configuration files.
 
 ## Options
-
-- **`--format`**
-
-  The format of the list command output: `Detailed` (the default) and `Short`.
 
 - **`--configfile`**
 
   The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
+- **`--format`**
+
+  The format of the list command output: `Detailed` (the default) and `Short`.
 
 ## Examples
 
@@ -263,7 +264,7 @@ dotnet nuget remove source [-h|--help]
 
 ## Description
 
-The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files. 
+The `dotnet nuget remove source` command removes an existing source from your NuGet configuration files.
 
 ## Arguments
 
@@ -315,7 +316,7 @@ dotnet nuget update source [-h|--help]
 
 ## Description
 
-The `dotnet nuget update source` command updates an existing source in your NuGet configuration files. 
+The `dotnet nuget update source` command updates an existing source in your NuGet configuration files.
 
 ## Arguments
 
@@ -325,29 +326,29 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 
 ## Options
 
-- **`-s|--source`**
+- **`--configfile`**
 
-  Path to the package source.
-
-- **`-u|--username`**
-
-  Username to be used when connecting to an authenticated source.
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
 
 - **`-p|--password`**
 
   Password to be used when connecting to an authenticated source.
 
+- **`-s|--source`**
+
+  Path to the package source.
+
 - **`--store-password-in-clear-text`**
 
   Enables storing portable package source credentials by disabling password encryption.
 
+- **`-u|--username`**
+
+  Username to be used when connecting to an authenticated source.
+
 - **`--valid-authentication-types`**
 
-  Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate
-
-- **`--configfile`**
-
-  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+  Comma-separated list of valid authentication types for this source. Set this to basic if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include negotiate, kerberos, ntlm, and digest, but these values are unlikely to be useful.
 
 ## Examples
 

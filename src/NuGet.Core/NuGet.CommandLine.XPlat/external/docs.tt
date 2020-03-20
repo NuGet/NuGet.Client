@@ -3,12 +3,14 @@
 <#@ assembly name="System.Xml.Linq" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Core" #>
+<#@ assembly name="System.Collections" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ import namespace="System.Linq" #>
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.Xml.XPath" #>
 <#@ output extension=".md" #>
+<#@ include file="src\NuGet.Core\NuGet.CommandLine.XPlat\external\docsHelpers.t4" #>
 <#
     string MakeFormal(string optionName, string shortcut)
     {
@@ -78,6 +80,7 @@
 
     string GetArgumentName(string argName, string longArgName)
     {
+        if (argName == null) return null;
         Char[] charsToProcess = string.IsNullOrEmpty(longArgName) ? argName.ToCharArray() : longArgName.ToCharArray();
         StringBuilder resultNameBuilder = new StringBuilder();
 
@@ -207,22 +210,74 @@ dotnet nuget <#= verbFormalName #> <#= nounFormalName #> [-h|--help]
 
 ## Description
 
-The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #> 
+The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= description #>
 <#
             var headerForArgumentsShown = false;
             var headerForOptionsShown = false; 
             var headerForExamplesShown = false; 
             var headerForSeeAlsosShown = false;
+            
+            var arguments = new List<OptionItem>();
+            var examples = new List<OptionItem>();
+            var seeAlsos = new List<OptionItem>();
+            var sortedOptions = new List<OptionItem>();
+
             foreach (XElement option in noun.Descendants())
             {
                 string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
                 string shortcut = option.Attribute(XName.Get("Shortcut", ""))?.Value;
-                string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
                 string optionLongName = option.Attribute(XName.Get("LongName", ""))?.Value;
                 string helpText = option.Attribute(XName.Get("Help", ""))?.Value;
-                if (IsArgument(GetProperty(option)))
+
+                string titleText = option.Attribute(XName.Get("Title", ""))?.Value;
+                string commandText = option.Attribute(XName.Get("Command", ""))?.Value;
+                string urlText = option.Attribute(XName.Get("Url", ""))?.Value;
+
+                string optionFormalName = MakeFormal(optionName, shortcut)?.ToLower();
+
+                bool isArgument = IsArgument(GetProperty(option));
+                string argumentName = GetArgumentName(optionName, optionLongName);
+
+                var newOptionItem = new OptionItem()
                 {
-                    string argumentName = GetArgumentName(optionName, optionLongName);
+                    Category = GetProperty(option),
+                    OptionType = GetOptionType(option),
+                    Name = optionName,
+                    OptionFormalName = optionFormalName,
+                    Shortcut = shortcut,
+                    OptionLongName = optionLongName,
+                    HelpText = helpText,
+                    TitleText = titleText,
+                    CommandText = commandText,
+                    UrlText = urlText,
+                    IsArgument = isArgument,
+                    ArgumentName = argumentName,
+                };
+
+                switch (newOptionItem.Category)
+                {
+                    case "Argument":
+                        arguments.Add(newOptionItem);
+                        break;
+                    case "Example":
+                        examples.Add(newOptionItem);
+                        break;
+                    case "SeeAlso":
+                        seeAlsos.Add(newOptionItem);
+                        break;
+                    default:
+                        sortedOptions.Add(newOptionItem);
+                        break;
+                }
+            }
+
+            sortedOptions = sortedOptions.OrderBy(i => i.Name).ToList();
+#>
+<#
+            foreach (var argumentItem in arguments)
+            {
+                if (argumentItem.Category == "Argument")
+                {
                     if (!headerForArgumentsShown)
                     {
 #>
@@ -233,16 +288,60 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                         headerForArgumentsShown = true;
                     }
 #>
-- **`<#= argumentName #>`**
+- **`<#= argumentItem.ArgumentName #>`**
 
   <#= 
-      GetHelpTextWithOverride(stringDictionary, helpText) #>
+      GetHelpTextWithOverride(stringDictionary, argumentItem.HelpText) #>
 <#
                 }
-                else if (IsExample(GetProperty(option)))
+            }
+#>
+<#
+            foreach (var optionItem in sortedOptions)
+            {
+                if (!headerForOptionsShown)
                 {
-                    string titleText = option.Attribute(XName.Get("Title", ""))?.Value;
-                    string commandText = option.Attribute(XName.Get("Command", ""))?.Value;
+#>
+
+## Options
+
+<#
+                    headerForOptionsShown = true;
+                }
+
+                switch (optionItem.OptionType)
+                {
+                    case "SingleValue":
+#>
+- **`<#= optionItem.OptionFormalName #>`**
+
+  <#= GetHelpTextWithOverride(stringDictionary, optionItem.HelpText) #>
+
+<#
+                        break;
+                    case "NoValue":
+#>
+- **`<#= optionItem.OptionFormalName #>`**
+
+  <#= GetHelpTextWithOverride(stringDictionary, optionItem.HelpText) #>
+
+<#
+                        break;
+                    case "Value":
+#>
+- **`<#= optionItem.OptionFormalName #>`**
+
+  <#= GetHelpTextWithOverride(stringDictionary, optionItem.HelpText) #>
+
+<#
+                        break;
+                }
+            }
+#>
+<#
+            foreach (var exampleItem in examples)
+            {
+                {
                     if (!headerForExamplesShown)
                     {
 #>
@@ -252,89 +351,33 @@ The `dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` command <#= descr
                     }
 #>
 
-- <#= titleText #>
+- <#= exampleItem.TitleText #>
 
   ```dotnetcli
-  <#= commandText #>
+  <#= exampleItem.CommandText #>
   ```
 <#
                 }
-                else if (IsSeeAlso(GetProperty(option)))
+            }
+#>
+<#
+            foreach (var seeAlsoItem in seeAlsos)
+            {
+                if (!headerForSeeAlsosShown)
                 {
-                    string titleText = option.Attribute(XName.Get("Title", ""))?.Value;
-                    string urlText = option.Attribute(XName.Get("Url", ""))?.Value;
-                    if (!headerForSeeAlsosShown)
-                    {
 #>
 
 ## See also
 <#
-                        headerForSeeAlsosShown = true;
-                    }
-#>
-
-- [<#= titleText #>](<#= urlText #>)
-<#
+                    headerForSeeAlsosShown = true;
                 }
-                else
-                {
-                    string optionFormalName = MakeFormal(optionName, shortcut).ToLower();
-                    switch (GetOptionType(option))
-                    {
-                    case "SingleValue":
-                        if (!headerForOptionsShown)
-                        {
 #>
 
-## Options
-
+- [<#= seeAlsoItem.TitleText #>](<#= seeAlsoItem.UrlText #>)
 <#
-                            headerForOptionsShown = true;
-                        }
-#>
-- **`<#= optionFormalName #>`**
-
-  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
-
-<#
-                        break;
-                    case "NoValue":
-                        if (!headerForOptionsShown)
-                        {
-#>
-
-## Options
-
-<#
-                            headerForOptionsShown = true;
-                        }
-#>
-- **`<#= optionFormalName #>`**
-
-  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
-
-<#
-                        break;
-                    case "Value":
-                        if (!headerForOptionsShown)
-                        {
-#>
-
-## Options
-
-<#
-                            headerForOptionsShown = true;
-                        }
-#>
-- **`<#= optionFormalName #>`**
-
-  <#= GetHelpTextWithOverride(stringDictionary, helpText) #>
-
-<#
-                        break;
-                    }
-                }
             }
+#>
+<#
         }
     }
 #>
