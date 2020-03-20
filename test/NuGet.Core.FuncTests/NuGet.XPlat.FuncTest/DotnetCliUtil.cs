@@ -131,7 +131,11 @@ namespace NuGet.XPlat.FuncTest
 
                 var relativePaths = new string[]
                 {
-                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp5.0", XPlatDll)
+#if NETCORE3_1
+                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp3.1", XPlatDll),
+#else
+                    Path.Combine("artifacts", "NuGet.CommandLine.XPlat", "16.0", "bin", configuration, "netcoreapp5.0", XPlatDll),
+#endif
                 };
 
                 foreach (var relativePath in relativePaths)
