@@ -259,15 +259,13 @@ namespace NuGet.PackageManagement
                                         if (File.Exists(persistedDGSpecPath))
                                         {
                                             var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
-                                            foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
+                                            foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !knownProjects.Contains(e.RestoreMetadata.ProjectPath)))
                                             {
                                                 // Include all the missing projects from the closure.
                                                 // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
-                                                if (!knownProjects.Any(projectName => stringComparer.Equals(projectName, dependentPackageSpec.RestoreMetadata.ProjectPath)))
-                                                {
-                                                    knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                                    dgSpec.AddProject(dependentPackageSpec);
-                                                }
+                                                knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                                dgSpec.AddProject(dependentPackageSpec);
+
                                             }
                                         }
                                     }
