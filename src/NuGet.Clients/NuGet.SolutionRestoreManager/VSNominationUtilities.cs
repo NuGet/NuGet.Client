@@ -308,22 +308,6 @@ namespace NuGet.SolutionRestoreManager
                 .Distinct();
         }
 
-        private static IEnumerable<TValue> GetNonEvaluatedPropertyOrNull<TValue>(
-            IEnumerable values,
-            string propertyName,
-            Func<string, TValue> valueFactory,
-            TValue defaultValue)
-        {
-            return values
-                .Cast<IVsTargetFrameworkInfo>()
-                .Select(tfm =>
-                {
-                    var val = GetPropertyValueOrNull(tfm.Properties, propertyName);
-                    return val != null ? valueFactory(val) : defaultValue;
-                })
-                .Distinct();
-        }
-
         // Trying to fetch a property value from tfm property bags.
         // If defined the property should have identical values in all of the occurances.
         private static TValue GetSingleNonEvaluatedPropertyOrNull<TValue>(
