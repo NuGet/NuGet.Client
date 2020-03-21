@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -19,7 +18,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using NuGet.VisualStudio;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
@@ -1870,6 +1868,11 @@ namespace NuGet.SolutionRestoreManager.Test
                             new VsReferenceItem("foo", new VsReferenceProperties(new []
                             {
                                 new VsReferenceProperty("Version", "2.0.0")
+                            })),
+                            // the second centralPackageVersion with the same version name will be ignored 
+                            new VsReferenceItem("foo", new VsReferenceProperties(new []
+                            {
+                                new VsReferenceProperty("Version", "3.0.0")
                             }))
                         })
             };
@@ -1880,11 +1883,11 @@ namespace NuGet.SolutionRestoreManager.Test
             // Assert
             var tfm = result.TargetFrameworks.First();
 
-            Assert.Equal(1, tfm.CentralPackageVersions.Count);
-            Assert.True(tfm.CentralPackageVersions.ContainsKey("foo"));
-            Assert.Equal("[2.0.0, )", tfm.CentralPackageVersions["foo"].VersionRange.ToNormalizedString());
-            Assert.Equal(1, tfm.Dependencies.Count);
-            Assert.Null(tfm.Dependencies.First().LibraryRange.VersionRange);
+            var packageVersion = Assert.Single(tfm.CentralPackageVersions);
+            Assert.Equal("foo", packageVersion.Key);
+            Assert.Equal("[2.0.0, )", packageVersion.Value.VersionRange.ToNormalizedString()) ;
+            var packageReference = Assert.Single(tfm.Dependencies);
+            Assert.Null(packageReference.LibraryRange.VersionRange);
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 

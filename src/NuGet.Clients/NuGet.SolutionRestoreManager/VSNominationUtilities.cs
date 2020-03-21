@@ -136,7 +136,9 @@ namespace NuGet.SolutionRestoreManager
                         tfi.CentralPackageVersions.AddRange(
                            targetFrameworkInfo3.CentralPackageVersions
                                .Cast<IVsReferenceItem>()
-                               .Select(ToCentralPackageVersion).ToDictionary(cpv => cpv.Name));
+                               .Select(ToCentralPackageVersion)
+                               .Distinct(CentralPackageVersionNameComparer.Default)
+                               .ToDictionary(cpv => cpv.Name));
                     }
                 }
 
@@ -259,7 +261,7 @@ namespace NuGet.SolutionRestoreManager
         internal static bool IsCentralPackageVersionManagementEnabled(IEnumerable tfms)
         {
             // If the property is not defined the default value will be disabled. 
-            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue, defaultValue: false);
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue);
         }
 
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
@@ -296,7 +298,14 @@ namespace NuGet.SolutionRestoreManager
             string propertyName,
             Func<string, TValue> valueFactory)
         {
-            return GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory, default(TValue));
+            return values
+                .Cast<IVsTargetFrameworkInfo>()
+                .Select(tfm =>
+                {
+                    var val = GetPropertyValueOrNull(tfm.Properties, propertyName);
+                    return val != null ? valueFactory(val) : default(TValue);
+                })
+                .Distinct();
         }
 
         private static IEnumerable<TValue> GetNonEvaluatedPropertyOrNull<TValue>(
@@ -325,17 +334,6 @@ namespace NuGet.SolutionRestoreManager
             return GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory).SingleOrDefault();
         }
 
-        // Trying to fetch a property value from tfm property bags.
-        // If defined the property should have identical values in all of the occurances.
-        private static TValue GetSingleNonEvaluatedPropertyOrNull<TValue>(
-            IEnumerable values,
-            string propertyName,
-            Func<string, TValue> valueFactory,
-            TValue defaultValue)
-        {
-            return GetNonEvaluatedPropertyOrNull(values, propertyName, valueFactory, defaultValue).SingleOrDefault();
-        }
-
         /// <summary>
         /// Fetch all property values from each target framework and combine them.
         /// </summary>
@@ -355,11 +353,16 @@ namespace NuGet.SolutionRestoreManager
 
         private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item, bool cpvmEnabled)
         {
+            if (!TryGetVersionRange(item, out VersionRange versionRange))
+            {
+                versionRange = cpvmEnabled ? null : VersionRange.All;
+            }
+
             var dependency = new LibraryDependency
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: GetVersionRange(item, defaultValue: cpvmEnabled ? null : VersionRange.All),
+                    versionRange: versionRange,
                     typeConstraint: LibraryDependencyTarget.Package),
 
                 // Mark packages coming from the SDK as AutoReferenced
@@ -445,21 +448,26 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static VersionRange GetVersionRange(IVsReferenceItem item, VersionRange defaultValue)
+        private static bool TryGetVersionRange(IVsReferenceItem item, out VersionRange versionRange)
         {
-            var versionRange = GetPropertyValueOrNull(item, "Version");
+            versionRange = null;
+            string versionRangeItemValue = GetPropertyValueOrNull(item, "Version");
 
-            if (versionRange != null)
+            if (versionRangeItemValue != null)
             {
-                return VersionRange.Parse(versionRange);
+                versionRange = VersionRange.Parse(versionRangeItemValue);
             }
 
-            return defaultValue;
+            return versionRange != null;
         }
 
         private static VersionRange GetVersionRange(IVsReferenceItem item)
         {
-            return GetVersionRange(item, VersionRange.All);
+            if (TryGetVersionRange(item, out VersionRange versionRange))
+            {
+                return versionRange;
+            }
+            return VersionRange.All;
         }
 
         /// <summary>
