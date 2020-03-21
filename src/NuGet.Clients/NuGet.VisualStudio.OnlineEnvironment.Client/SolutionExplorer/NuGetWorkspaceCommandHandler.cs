@@ -22,8 +22,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public NuGetWorkspaceCommandHandler(JoinableTaskContext taskContext, IAsyncServiceProvider asyncServiceProvider)
         {
-            _taskContext = taskContext;
-            _serviceProvider = asyncServiceProvider;
+            _taskContext = taskContext ?? throw new ArgumentNullException(nameof(taskContext));
+            _serviceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
         }
 
         /// <summary>
@@ -87,7 +87,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         private static bool IsSolutionOnlySelection(List<WorkspaceVisualNodeBase> selection)
         {
-            return selection.Count().Equals(1) && selection.First().NodeMoniker.Equals(string.Empty);
+            return selection != null &&
+                selection.Count.Equals(1) &&
+                selection.First().NodeMoniker.Equals(string.Empty);
         }
 
     }
