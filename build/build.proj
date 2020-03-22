@@ -437,12 +437,19 @@
                   VisualStudioVersion=$(VisualStudioVersion);" />
 
     <GenerateMarkdownDoc
+      GitHubRepositoryUrl="$(RepositoryUrl)"
+      RepositoryRoot="$(RepositoryRootDirectory)"
+
+      Title="NuGet Project Overview" 
       ProductProjects="@(ProductProjects)"
       TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
       OutputFile="$(RepositoryRootDirectory)\docs\project-list.md"
-      GitHubRepositoryUrl="$(RepositoryUrl)"
-      RepositoryRoot="$(RepositoryRootDirectory)"
-      Title="NuGet Project Overview" />
+      
+      TestProjectTitle="NuGet Client Test Projects Overview"
+      CoreUnitTestProjects="@(CoreUnitTestProjects)"
+      CoreFuncTestProjects="@(CoreFuncTestProjects)"
+      VSUnitTestProjects="@(VSUnitTestProjects)"
+      TestOverviewOutputFile="$(RepositoryRootDirectory)\docs\test-overview.md"/>
 
     <Message Text="Documentation generated!" Importance="High" />
   </Target>
