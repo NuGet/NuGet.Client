@@ -1767,7 +1767,7 @@ namespace NuGet.SolutionRestoreManager.Test
             logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
             Assert.NotNull(additionalMessages);
             Assert.Equal(1, additionalMessages.Count);
-            Assert.Equal(NuGetLogCode.NU1010, additionalMessages[0].Code);
+            Assert.Equal(NuGetLogCode.NU1105, additionalMessages[0].Code);
             restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -1824,7 +1824,7 @@ namespace NuGet.SolutionRestoreManager.Test
             logger.Verify(l => l.LogError(It.IsAny<string>()), Times.Never);
             Assert.NotNull(additionalMessages);
             Assert.Equal(1, additionalMessages.Count);
-            Assert.Equal(NuGetLogCode.NU1010, additionalMessages[0].Code);
+            Assert.Equal(NuGetLogCode.NU1105, additionalMessages[0].Code);
             restoreWorker.Verify(rw => rw.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 

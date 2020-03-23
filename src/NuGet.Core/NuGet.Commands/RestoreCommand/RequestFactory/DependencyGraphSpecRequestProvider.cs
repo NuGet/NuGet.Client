@@ -242,7 +242,7 @@ namespace NuGet.Commands
             }
         }
 
-        private static IReadOnlyList<IAssetsLogMessage> GetMessagesForProject(IReadOnlyList<IAssetsLogMessage> allMessages, string projectPath)
+        internal static IReadOnlyList<IAssetsLogMessage> GetMessagesForProject(IReadOnlyList<IAssetsLogMessage> allMessages, string projectPath)
         {
             List<IAssetsLogMessage> projectAdditionalMessages = null;
 

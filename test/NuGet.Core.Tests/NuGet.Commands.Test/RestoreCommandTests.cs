@@ -1371,7 +1371,7 @@ namespace NuGet.Commands.Test
                 {
                     AdditionalMessages = new List<IAssetsLogMessage>()
                     {
-                        new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1010, "Test error")
+                        new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1105, "Test error")
                     }
                 };
 
