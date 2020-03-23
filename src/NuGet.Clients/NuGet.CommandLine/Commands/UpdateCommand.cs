@@ -21,6 +21,7 @@ using NuGet.Versioning;
 using NuGet.Packaging.Signing;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Resolver;
 
 namespace NuGet.CommandLine
 {

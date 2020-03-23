@@ -3,6 +3,7 @@
 
 using System;
 using System.Globalization;
+using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Resolver;
 
@@ -17,7 +18,7 @@ namespace NuGet.CommandLine
             if (!Enum.TryParse<DependencyBehavior>(behaviorStr, ignoreCase: true, result: out dependencyBehavior) ||
                 !Enum.IsDefined(typeof(DependencyBehavior), dependencyBehavior))
             {
-                throw new CommandLineException(string.Format(CultureInfo.CurrentCulture,
+                throw new CommandException(string.Format(CultureInfo.CurrentCulture,
                     LocalizedResourceManager.GetString("Error_UnknownDependencyVersion"), behaviorStr));
             }
 
