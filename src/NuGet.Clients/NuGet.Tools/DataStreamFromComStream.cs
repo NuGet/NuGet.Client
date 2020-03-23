@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.IO;
 using Microsoft.VisualStudio.OLE.Interop;
+using Microsoft.VisualStudio.Shell;
 
 namespace NuGetVSExtension
 {
@@ -38,6 +39,7 @@ namespace NuGetVSExtension
 
         public override void Flush()
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (_comStream != null)
             {
                 try
@@ -54,6 +56,7 @@ namespace NuGetVSExtension
         {
             get
             {
+                ThreadHelper.ThrowIfNotOnUIThread();
                 long currentPos = this.Position;
                 long endPos = Seek(0, SeekOrigin.End);
                 this.Position = currentPos;
@@ -63,12 +66,21 @@ namespace NuGetVSExtension
 
         public override long Position
         {
-            get { return Seek(0, SeekOrigin.Current); }
-            set { Seek(value, SeekOrigin.Begin); }
+            get
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                return Seek(0, SeekOrigin.Current);
+            }
+            set
+            {
+                ThreadHelper.ThrowIfNotOnUIThread();
+                Seek(value, SeekOrigin.Begin);
+            }
         }
 
         public override int Read(byte[] buffer, int offset, int count)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             uint bytesRead = 0;
             byte[] b = buffer;
 
@@ -90,6 +102,7 @@ namespace NuGetVSExtension
 
         public override long Seek(long offset, SeekOrigin origin)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             LARGE_INTEGER li = new LARGE_INTEGER();
             ULARGE_INTEGER[] ul = new ULARGE_INTEGER[1];
             ul[0] = new ULARGE_INTEGER();
@@ -100,6 +113,7 @@ namespace NuGetVSExtension
 
         public override void SetLength(long value)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             ULARGE_INTEGER ul = new ULARGE_INTEGER();
             ul.QuadPart = (ulong)value;
             _comStream.SetSize(ul);
@@ -107,6 +121,7 @@ namespace NuGetVSExtension
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             uint bytesWritten;
             if (count > 0)
             {

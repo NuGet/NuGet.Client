@@ -21,9 +21,13 @@ namespace NuGet.PackageManagement.VisualStudio
     [PartCreationPolicy(CreationPolicy.Shared)]
     internal sealed class DeferredProjectWorkspaceService : IDeferredProjectWorkspaceService
     {
+#pragma warning disable CS0618 // Type or member is obsolete
         private readonly AsyncLazy<IVsSolutionWorkspaceService> _solutionWorkspaceService;
+#pragma warning restore CS0618 // Type or member is obsolete
 
+#pragma warning disable CS0618 // Type or member is obsolete
         private IVsSolutionWorkspaceService SolutionWorkspaceService => NuGetUIThreadHelper.JoinableTaskFactory.Run(_solutionWorkspaceService.GetValueAsync);
+#pragma warning restore CS0618 // Type or member is obsolete
 
         [ImportingConstructor]
         public DeferredProjectWorkspaceService(
@@ -35,11 +39,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(serviceProvider));
             }
 
+#pragma warning disable CS0618 // Type or member is obsolete
             _solutionWorkspaceService = new AsyncLazy<IVsSolutionWorkspaceService>(
+#pragma warning restore CS0618 // Type or member is obsolete
                 async () =>
                 {
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+#pragma warning disable CS0618 // Type or member is obsolete
                     return (IVsSolutionWorkspaceService)serviceProvider.GetService(typeof(SVsSolutionWorkspaceService));
+#pragma warning restore CS0618 // Type or member is obsolete
                 },
                 NuGetUIThreadHelper.JoinableTaskFactory);
         }
@@ -67,7 +75,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+#pragma warning disable CS0618 // Type or member is obsolete
             var factory = SolutionWorkspaceService.GetService<IVsSolutionMSBuildProjectServiceFactory>();
+#pragma warning restore CS0618 // Type or member is obsolete
             Assumes.Present(factory);
 
             if (string.IsNullOrEmpty(targetFramework))
