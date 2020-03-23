@@ -1537,5 +1537,102 @@ namespace NuGet.CommandLine.Test
                 Assert.True(r.Item1 == 0, "Output is " + r.Item2 + ". Error is " + r.Item3);
             }
         }
+
+        [Theory]
+        [InlineData(null, "2.0.0")]
+        [InlineData("Lowest", "1.0.0")]
+        [InlineData("Highest", "2.0.0")]
+        [InlineData("HighestMinor", "1.2.0")]
+        [InlineData("HighestPatch", "1.0.1")]
+        public async Task UpdateCommand_DependencyResolution_Success(string dependencyVersion, string expectedVersion)
+        {
+            using (var packagesSourceDirectory = TestDirectory.Create())
+            using (var solutionDirectory = TestDirectory.Create())
+            using (var workingPath = TestDirectory.Create())
+            {
+                //Arrange
+                var projectDirectory = Path.Combine(solutionDirectory, "proj1");
+                var packagesDirectory = Path.Combine(solutionDirectory, "packages");
+                var nugetFramework = NuGetFramework.Parse("net45");
+                // version installed will be the 1.1.0  - Create Package a1
+                var a1PackageIdentity = new PackageIdentity("A", new NuGetVersion("1.1.0"));
+                var a1Package = Util.CreateTestPackage(a1PackageIdentity.Id, a1PackageIdentity.Version.ToString(), packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>()
+                    {
+                        new PackageDependencyGroup(nugetFramework,new List<Packaging.Core.PackageDependency>(){new Packaging.Core.PackageDependency("dep",new VersionRange(new NuGetVersion("1.0.0")))})
+                    });
+                //Create package a2
+                var a2PackageIdentity = new PackageIdentity("A", new NuGetVersion("2.0.0"));
+                var a2Package = Util.CreateTestPackage(a1PackageIdentity.Id, a1PackageIdentity.Version.ToString(), packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>()                     {
+                        new PackageDependencyGroup(nugetFramework,new List<Packaging.Core.PackageDependency>(){new Packaging.Core.PackageDependency("dep",new VersionRange(new NuGetVersion("1.0.0")))})
+                    });
+                //Create all the test packages
+                Util.CreateTestPackage("dep", "1.0.0", packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>() { });
+                Util.CreateTestPackage("dep", "1.0.1", packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>() { });
+                Util.CreateTestPackage("dep", "1.2.0", packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>() { });
+                Util.CreateTestPackage("dep", "2.0.0", packagesSourceDirectory, new List<NuGetFramework>() { nugetFramework }, new List<PackageDependencyGroup>() { });
+                Directory.CreateDirectory(projectDirectory);
+                //Create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj1.csproj",
+                    Util.CreateProjFileContent());
+                Util.CreateFile(solutionDirectory, "a.sln",
+                    Util.CreateSolutionFileContent());
+                var projectFile = Path.Combine(projectDirectory, "proj1.csproj");
+                var solutionFile = Path.Combine(solutionDirectory, "a.sln");
+                var testNuGetProjectContext = new TestNuGetProjectContext();
+                var msbuildDirectory = MsBuildUtility.GetMsBuildToolset(null, null).Path;
+                var projectSystem =
+                    new MSBuildProjectSystem(msbuildDirectory, projectFile, testNuGetProjectContext);
+                var msBuildProject = new MSBuildNuGetProject(projectSystem, packagesDirectory, projectDirectory);
+                using (var stream = File.OpenRead(a1Package))
+                {
+                    var downloadResult = new DownloadResourceResult(stream, packagesSourceDirectory);
+                    await msBuildProject.InstallPackageAsync(
+                        a1PackageIdentity,
+                        downloadResult,
+                        testNuGetProjectContext,
+                        CancellationToken.None);
+                }
+                string[] args;
+                //Test the case where the code is not provided to ensure it works as expected. (Highest by default)
+                if (string.IsNullOrEmpty(dependencyVersion))
+                {
+                    args = new[]
+                    {
+                            "update",
+                            solutionFile,
+                            "-Source",
+                            packagesSourceDirectory,
+                        };
+                }
+                else
+                {
+                    args = new[]
+                    {
+                            "update",
+                            solutionFile,
+                            "-Source",
+                            packagesSourceDirectory,
+                            "-DependencyVersion",
+                            dependencyVersion
+                        };
+                }
+
+                //Act
+                var commandRunResult = CommandRunner.Run(
+                    Util.GetNuGetExePath(),
+                    workingPath,
+                    string.Join(" ", args),
+                    waitForExit: true);
+
+                //Assert
+                Assert.True(commandRunResult.Item1 == 0, "Output is " + commandRunResult.Item2 + ". Error is " + commandRunResult.Item3);
+                var content = File.ReadAllText(projectFile);
+                // Assert no error
+                Assert.Equal(0, commandRunResult.Item1);
+                Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "dep." + expectedVersion, "lib", "net45", "file.dll"))));
+            }
+        }
     }
 }

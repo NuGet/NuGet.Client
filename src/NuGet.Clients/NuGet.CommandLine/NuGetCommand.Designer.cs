@@ -13640,7 +13640,14 @@ namespace NuGet.CommandLine {
                 return ResourceManager.GetString("TrustedSignersCommandUsageSummary", resourceCulture);
             }
         }
-        
+        /// <summary>
+        ///   Looks up a localized string similar to Overrides the default dependency resolution behavior..
+        /// </summary>
+        internal static string UpdateCommandDependencyVersion {
+            get {
+                return ResourceManager.GetString("UpdateCommandDependencyVersion", resourceCulture);
+            }
+        }
         /// <summary>
         ///   Looks up a localized string similar to Update packages to latest available versions. This command also updates NuGet.exe itself..
         /// </summary>
