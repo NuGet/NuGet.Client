@@ -3,6 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <Description>Common utilities and interfaces for all NuGet libraries.</Description>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />
     <NoWarn>$(NoWarn);CS1591;CS1574</NoWarn>

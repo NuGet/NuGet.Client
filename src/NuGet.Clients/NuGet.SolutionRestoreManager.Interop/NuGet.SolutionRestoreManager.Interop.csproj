@@ -10,8 +10,8 @@
     <IncludeInVsix>true</IncludeInVsix>
     <authors>Microsoft</authors>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <AssemblyDescription>APIs for invoking NuGet Restore Manager in Visual Studio.</AssemblyDescription>
     <Description>APIs for invoking NuGet Restore Manager in Visual Studio.</Description>
+    <AssemblyDescription>$(Description)</AssemblyDescription>
   </PropertyGroup>
 
   <ItemGroup>

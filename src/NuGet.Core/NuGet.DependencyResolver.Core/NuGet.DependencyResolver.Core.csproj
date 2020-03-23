@@ -11,6 +11,7 @@
     <RootNamespace>NuGet.DependencyResolver</RootNamespace>
     <IncludeInVSIX>true</IncludeInVSIX>
     <XPLATProject>true</XPLATProject>
+    <Description>NuGet's PackageReference dependency resolver implementation.</Description>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(IsVsixBuild)' == 'true' ">

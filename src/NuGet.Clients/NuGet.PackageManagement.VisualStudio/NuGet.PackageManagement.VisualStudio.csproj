@@ -13,10 +13,9 @@
     <RootNamespace>NuGet.PackageManagement.VisualStudio</RootNamespace>
     <AssemblyName>NuGet.PackageManagement.VisualStudio</AssemblyName>
     <FileAlignment>512</FileAlignment>
+    <Description>NuGet's Visual Studio functionalities, integrations and utilities.</Description>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>

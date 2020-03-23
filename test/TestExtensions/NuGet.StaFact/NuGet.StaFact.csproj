@@ -6,6 +6,7 @@
     <OutputType>Library</OutputType>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <Shipping>false</Shipping>
+    <Description>Test attribute extensions for the NuGet Apex tests.</Description>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="PresentationFramework" />

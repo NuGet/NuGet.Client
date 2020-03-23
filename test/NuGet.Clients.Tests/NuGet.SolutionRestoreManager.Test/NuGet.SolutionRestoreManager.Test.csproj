@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
+    <Description>Unit and integration tests for NuGet.SolutionRestoreManager.</Description>
   </PropertyGroup>
 
   <ItemGroup>

@@ -8,7 +8,7 @@
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <PackProject>true</PackProject>
-    <Description>NuGet restore for dotnet CLI.</Description>    
+    <Description>NuGet tasks for MSBuild and dotnet restore.</Description>    
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <XPLATProject>true</XPLATProject>
   </PropertyGroup>

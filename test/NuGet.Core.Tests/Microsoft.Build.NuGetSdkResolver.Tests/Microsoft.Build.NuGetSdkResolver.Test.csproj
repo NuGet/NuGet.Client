@@ -7,6 +7,7 @@
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' ">$(NETCoreTargetFramework)</TargetFrameworks>
     <TestProject>true</TestProject>
     <UseParallelXunit>true</UseParallelXunit>
+    <Description>Unit tests for Microsoft.Build.NuGetSdkResolver.</Description>
   </PropertyGroup>
 
   <ItemGroup>
