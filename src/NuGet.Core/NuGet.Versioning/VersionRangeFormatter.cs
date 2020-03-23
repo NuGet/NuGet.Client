@@ -159,7 +159,6 @@ namespace NuGet.Versioning
         /// </summary>
         private string GetNormalizedString(VersionRange range)
         {
-            // TODO: write out the float version
             var sb = new StringBuilder();
 
             sb.Append(range.HasLowerBound && range.IsMinInclusive ? '[' : '(');

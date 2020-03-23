@@ -286,5 +286,34 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 .Setup(x => x.GetMetadataAsync(id, It.IsAny<bool>(), It.IsAny<bool>(), It.IsAny<SourceCacheContext>(), It.IsAny<Common.ILogger>(), It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(metadata));
         }
+
+        [Fact]
+        public async Task GetPackagesWithUpdatesAsync_WithMultiplePackages_SortedByPackageId()
+        {
+            // Arrange
+            var testPackageIdentity = new PackageCollectionItem("FakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity2 = new PackageCollectionItem("AFakePackage", NuGetVersion.Parse("1.0.0"), null);
+            var testPackageIdentity3 = new PackageCollectionItem("ZFakePackage", NuGetVersion.Parse("1.0.0"), null);
+
+            var projectA = SetupProject("FakePackage", "1.0.0");
+            var projectB = SetupProject("ZFakePackage", "1.0.0");
+            var projectC = SetupProject("AFakePackage", "1.0.0");
+            SetupRemotePackageMetadata("FakePackage", "0.0.1", "1.0.0", "2.0.1", "2.0.0", "1.0.1");
+            SetupRemotePackageMetadata("ZFakePackage", "0.0.1", "1.0.0", "4.0.0");
+            SetupRemotePackageMetadata("AFakePackage", "1.0.0", "3.0.1");
+
+            var _target = new UpdatePackageFeed(new[] { testPackageIdentity, testPackageIdentity2, testPackageIdentity3 }
+                        , _metadataProvider, new[] { projectA, projectB, projectC }, null, new TestLogger());
+
+            // Act
+            var packages = await _target.GetPackagesWithUpdatesAsync(
+                "fake", new SearchFilter(includePrerelease: false), CancellationToken.None);
+
+            var actualPackageIds = packages.Select(p => p.Identity.Id);
+
+            // Assert
+            var expectedPackageIdsSorted = new List<string>(){ "AFakePackage", "FakePackage", "ZFakePackage" };
+            Assert.Equal(expectedPackageIdsSorted, actualPackageIds); //Equal considers sort order of collections.
+        }
     }
 }

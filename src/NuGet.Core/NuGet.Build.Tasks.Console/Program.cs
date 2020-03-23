@@ -38,7 +38,7 @@ namespace NuGet.Build.Tasks.Console
             if (debug)
             {
 #if IS_CORECLR
-                System.Console.WriteLine("Waiting for debugger to attach to Process ID: {Process.GetCurrentProcess().Id}");
+                System.Console.WriteLine($"Waiting for debugger to attach to Process ID: {Process.GetCurrentProcess().Id}");
 
                 while (!Debugger.IsAttached)
                 {

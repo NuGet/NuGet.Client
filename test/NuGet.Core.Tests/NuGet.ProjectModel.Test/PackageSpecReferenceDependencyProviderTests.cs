@@ -46,12 +46,15 @@ namespace NuGet.ProjectModel.Test
                 var barDep = dependencies.Where(d => d.Name == "bar").First();
                 Assert.NotNull(barDep);
                 Assert.True(barDep.VersionCentrallyManaged);
-                Assert.True(barDep.AutoReferenced);
+                Assert.False(barDep.AutoReferenced);
+                Assert.Equal(LibraryDependencyReferenceType.None, barDep.ReferenceType);
                 Assert.Equal("[2.0.0, )", barDep.LibraryRange.VersionRange.ToNormalizedString());
+
                 var fooDep = dependencies.Where(d => d.Name == "foo").First();
                 Assert.NotNull(fooDep);
                 Assert.False(fooDep.AutoReferenced);
                 Assert.True(fooDep.VersionCentrallyManaged);
+                Assert.Equal(LibraryDependencyReferenceType.Direct, fooDep.ReferenceType);
                 Assert.Equal("[2.0.0, )", fooDep.LibraryRange.VersionRange.ToNormalizedString());
             }
             else
@@ -61,6 +64,7 @@ namespace NuGet.ProjectModel.Test
                 Assert.NotNull(fooDep);
                 Assert.False(fooDep.VersionCentrallyManaged);
                 Assert.Null(fooDep.LibraryRange.VersionRange);
+                Assert.Equal(LibraryDependencyReferenceType.Direct, fooDep.ReferenceType);
             }
         }
 

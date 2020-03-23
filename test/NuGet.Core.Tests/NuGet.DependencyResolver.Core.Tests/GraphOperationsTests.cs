@@ -197,7 +197,8 @@ namespace NuGet.DependencyResolver.Core.Tests
                 noWarn: null,
                 autoReferenced: true,
                 generatePathProperty: false,
-                versionCentrallyManaged: true);
+                versionCentrallyManaged: true,
+                libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             var graphItem = new GraphItem<RemoteResolveResult>(libraryIdentity);
             graphItem.CentralDependency = centralVersionDependency;
@@ -225,7 +226,8 @@ namespace NuGet.DependencyResolver.Core.Tests
                 noWarn: null,
                 autoReferenced: true,
                 generatePathProperty: false,
-                versionCentrallyManaged: true);
+                versionCentrallyManaged: true,
+                libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
             var centralVersionDependency2 = new LibraryDependency(
                 libraryRange: new LibraryRange("b", LibraryDependencyTarget.Package),
                 type: LibraryDependencyType.Default,
@@ -234,7 +236,8 @@ namespace NuGet.DependencyResolver.Core.Tests
                 noWarn: null,
                 autoReferenced: true,
                 generatePathProperty: false,
-                versionCentrallyManaged: true);
+                versionCentrallyManaged: true,
+                libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
 
             var graphItem_1_1 = new GraphItem<RemoteResolveResult>(libraryIdentity1);
             graphItem_1_1.CentralDependency = centralVersionDependency1;

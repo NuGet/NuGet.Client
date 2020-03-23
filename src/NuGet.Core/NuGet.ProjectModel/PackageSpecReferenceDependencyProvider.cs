@@ -326,7 +326,7 @@ namespace NuGet.ProjectModel
                 var targetFrameworkInfo = packageSpec.GetTargetFramework(targetFramework);
                 dependencies.AddRange(targetFrameworkInfo.Dependencies);
 
-                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false)
+                if (packageSpec.RestoreMetadata?.CentralPackageVersionsEnabled == true)
                 {
                     var dependencyNamesSet = new HashSet<string>(targetFrameworkInfo.Dependencies.Select(d => d.Name), StringComparer.OrdinalIgnoreCase);
                     dependencies.AddRange(targetFrameworkInfo.CentralPackageVersions
@@ -335,7 +335,7 @@ namespace NuGet.ProjectModel
                         {
                             LibraryRange = new LibraryRange(item.Value.Name, item.Value.VersionRange, LibraryDependencyTarget.Package),
                             VersionCentrallyManaged = true,
-                            AutoReferenced = true,
+                            ReferenceType = LibraryDependencyReferenceType.None,
                         }));
                 }
 

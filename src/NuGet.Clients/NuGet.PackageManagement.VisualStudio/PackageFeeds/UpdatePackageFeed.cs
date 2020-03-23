@@ -102,8 +102,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var packages = _installedPackages
                 .Where(p => !p.IsAutoReferenced())
                 .GetEarliest()
-                .Where(p => p.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1)
-                .OrderBy(p => p.Id);
+                .Where(p => p.Id.IndexOf(searchText, StringComparison.OrdinalIgnoreCase) != -1);
 
             // Prefetch metadata for all installed packages
             var prefetch = await TaskCombinators.ThrottledAsync(
@@ -164,7 +163,9 @@ namespace NuGet.PackageManagement.VisualStudio
                     p => p.Identity,
                     (id, pl) => pl.First());
 
-            return uniquePackages.ToArray();
+            return uniquePackages
+                .OrderBy(p => p.Identity.Id)
+                .ToArray();
         }
 
         private static IEnumerable<VersionInfo> ToVersionInfo(IEnumerable<IPackageSearchMetadata> packages)

@@ -31,6 +31,9 @@ namespace NuGet.Common
     /// 1200/1700     - Compat
     /// 1300/1800     - Feed
     /// 1400/1900     - Package
+    /// 
+    /// All new codes need a corresponding MarkDown file under https://github.com/NuGet/docs.microsoft.com-nuget/tree/master/docs/reference/errors-and-warnings.
+    /// 
     /// </summary>
     public enum NuGetLogCode
     {

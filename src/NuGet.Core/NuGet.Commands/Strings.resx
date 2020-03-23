@@ -973,15 +973,14 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>Enabled</value>
   </data>
   <data name="Source_DefaultNamePrefix" xml:space="preserve">
-    <value>Package source {0}</value>
-    <comment>{0} will be a number</comment>
+    <value>Package source </value>
   </data>
   <data name="Source_InvalidFormatValue" xml:space="preserve">
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
     <comment>don't localize 'format', 'detailed' or 'short'</comment>
   </data>
   <data name="Log_CPVM_DowngradeError" xml:space="preserve">
-    <value>Detected package downgrade: {0} from {1} to centrally defined {2}.</value>
+    <value>Detected package downgrade: {0} from {1} to centrally defined {2}. Update the centrally managed package version to a higher version.</value>
     <comment>{0} is package id, {1} is the package version, {2} is the downgraded package version.</comment>
   </data>
 </root>

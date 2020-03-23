@@ -917,7 +917,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to centrally defined {2}..
+        ///   Looks up a localized string similar to Detected package downgrade: {0} from {1} to centrally defined {2}. Update the centrally managed package version to a higher version..
         /// </summary>
         internal static string Log_CPVM_DowngradeError {
             get {
@@ -1799,7 +1799,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package source {0}.
+        ///   Looks up a localized string similar to Package source .
         /// </summary>
         internal static string Source_DefaultNamePrefix {
             get {

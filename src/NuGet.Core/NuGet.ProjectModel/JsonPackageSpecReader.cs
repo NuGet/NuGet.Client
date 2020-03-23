@@ -503,7 +503,10 @@ namespace NuGet.ProjectModel
                         SuppressParent = suppressParentFlagsValue,
                         AutoReferenced = autoReferenced,
                         GeneratePathProperty = generatePathProperty,
-                        VersionCentrallyManaged = versionCentrallyManaged
+                        VersionCentrallyManaged = versionCentrallyManaged,
+                        // The ReferenceType is not persisted to the assets file
+                        // Default to LibraryDependencyReferenceType.Direct on Read
+                        ReferenceType = LibraryDependencyReferenceType.Direct
                     };
 
                     if (noWarn != null)

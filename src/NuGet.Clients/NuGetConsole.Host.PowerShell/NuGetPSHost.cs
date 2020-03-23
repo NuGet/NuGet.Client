@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -74,7 +74,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
 
         public override Version Version
         {
-            get { return this.GetType().Assembly.GetName().Version; }
+            get { return GetType().Assembly.GetName().Version; }
         }
 
         #region IHostSupportsInteractiveSession Members
@@ -142,7 +142,7 @@ namespace NuGetConsole.Host.PowerShell.Implementation
             {
                 if (_host.ActiveConsole != null)
                 {
-                    _host.ActiveConsole.Clear();
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => _host.ActiveConsole.ClearAsync());
                 }
             }
         }

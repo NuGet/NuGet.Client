@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -57,7 +57,7 @@ namespace NuGetConsole.Implementation.Console
         {
             UtilityMethods.ThrowIfArgumentNull(wpfConsole);
 
-            this.WpfConsole = wpfConsole;
+            WpfConsole = wpfConsole;
         }
 
         public bool IsExecutingCommand
@@ -201,11 +201,13 @@ namespace NuGetConsole.Implementation.Console
                                     NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                                         {
                                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
                                             if (task.IsFaulted)
                                             {
                                                 var exception = ExceptionUtilities.Unwrap(task.Exception);
-                                                WriteError(exception.Message);
+                                                if (WpfConsole != null)
+                                                {
+                                                    await WpfConsole.WriteAsync(exception.Message + Environment.NewLine, Colors.Red, null);
+                                                }
                                             }
 
                                             if (host.IsCommandEnabled
@@ -221,14 +223,6 @@ namespace NuGetConsole.Implementation.Console
                             TaskContinuationOptions.NotOnCanceled
                         );
                 }
-            }
-        }
-
-        private void WriteError(string message)
-        {
-            if (WpfConsole != null)
-            {
-                WpfConsole.Write(message + Environment.NewLine, Colors.Red, null);
             }
         }
 
@@ -300,12 +294,12 @@ namespace NuGetConsole.Implementation.Console
 
                     if (inputLine.Flags.HasFlag(InputLineFlag.Execute))
                     {
-                        WpfConsole.WriteLine(inputLine.Text);
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteLineAsync(inputLine.Text));
                         inputSpan = WpfConsole.EndInputLine(true).Value;
                     }
                     else
                     {
-                        WpfConsole.Write(inputLine.Text);
+                        NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(inputLine.Text));
                     }
                 }
 
@@ -323,7 +317,7 @@ namespace NuGetConsole.Implementation.Console
             [SuppressMessage("Microsoft.Globalization", "CA1303")]
             protected void PromptNewLine()
             {
-                WpfConsole.Write(WpfConsole.Host.Prompt + (char)32); // 32 is the space
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.WriteAsync(WpfConsole.Host.Prompt + ' '));
                 WpfConsole.BeginInputLine();
             }
 
@@ -333,12 +327,12 @@ namespace NuGetConsole.Implementation.Console
                 if (WpfConsole.InputLineStart != null)
                 {
                     WpfConsole.Host.Abort(); // Clear constructing multi-line command
-                    WpfConsole.Clear();
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.ClearAsync());
                     PromptNewLine();
                 }
                 else
                 {
-                    WpfConsole.Clear();
+                    NuGetUIThreadHelper.JoinableTaskFactory.Run(() => WpfConsole.ClearAsync());
                 }
             }
 
@@ -538,20 +532,20 @@ namespace NuGetConsole.Implementation.Console
 
         public InputLine(string text, bool execute)
         {
-            this.Text = text;
-            this.Flags = InputLineFlag.Echo;
+            Text = text;
+            Flags = InputLineFlag.Echo;
 
             if (execute)
             {
-                this.Flags |= InputLineFlag.Execute;
+                Flags |= InputLineFlag.Execute;
             }
         }
 
         public InputLine(SnapshotSpan snapshotSpan)
         {
-            this.SnapshotSpan = snapshotSpan;
-            this.Text = snapshotSpan.GetText();
-            this.Flags = InputLineFlag.Execute;
+            SnapshotSpan = snapshotSpan;
+            Text = snapshotSpan.GetText();
+            Flags = InputLineFlag.Execute;
         }
     }
 }
