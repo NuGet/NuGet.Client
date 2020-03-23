@@ -84,6 +84,7 @@ Microsoft.VisualStudio.Services.WebApi.resources.dll
 Microsoft.VisualStudio.Setup.Configuration.Interop.dll
 Microsoft.VisualStudio.Shell.Embeddable.dll
 Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime.dll
+Microsoft.VisualStudio.Shell.Interop.16.3.DesignTime.dll
 Microsoft.VisualStudio.Workspace.Extensions.VS.dll
 Microsoft.VisualStudio.Workspace.Extensions.dll
 Microsoft.VisualStudio.Workspace.Extensions.resources.dll
