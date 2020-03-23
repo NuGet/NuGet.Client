@@ -524,7 +524,7 @@ jobs:
   - task: CmdLine@2
     displayName: "Publish to the .NET Core build asset registry (BAR)"
     inputs:
-      script: dotnet msbuild ..\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:FeedUrl=$(DotNetFeedUrl) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
+      script: dotnet msbuild $(Build.Repository.LocalPath)\build\publish.proj /t:PublishToBuildAssetRegistry /p:NuGetClientNupkgsDirectoryPath=$(Build.Repository.LocalPath)\artifacts\$(NupkgOutputDir) /p:BUILD_BUILDNUMBER=$(Build.BuildNumber) /p:BUILD_SOURCEBRANCH=$(Build.SourceBranchName) /p:BUILD_SOURCEVERSION=$(Build.SourceVersion) /p:BUILD_REPOSITORY_URI=$(Build.Repository.Uri) /p:ArtifactsLogDir=$(Build.Repository.LocalPath)\artifacts\manifests\ /p:MaestroApiEndpoint=$(MaestroApiEndpoint) /p:MaestroAccessToken=$(MaestroAccessToken)
       workingDirectory: cli
       failOnStderr: true
     env:

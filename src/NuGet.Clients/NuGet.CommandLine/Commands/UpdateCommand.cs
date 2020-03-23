@@ -21,6 +21,7 @@ using NuGet.Versioning;
 using NuGet.Packaging.Signing;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
+using NuGet.Resolver;
 
 namespace NuGet.CommandLine
 {
@@ -36,6 +37,9 @@ namespace NuGet.CommandLine
 
         [Option(typeof(NuGetCommand), "UpdateCommandVersionDescription")]
         public string Version { get; set; }
+
+        [Option(typeof(NuGetCommand), "UpdateCommandDependencyVersion")]
+        public string DependencyVersion { get; set; }
 
         [Option(typeof(NuGetCommand), "UpdateCommandRepositoryPathDescription")]
         public string RepositoryPath { get; set; }
@@ -282,8 +286,9 @@ namespace NuGet.CommandLine
 
             using (var sourceCacheContext = new SourceCacheContext())
             {
+                var dependencyBehavior = DependencyBehaviorHelper.GetDependencyBehavior(DependencyBehavior.Highest, DependencyVersion, Settings);
                 var resolutionContext = new ResolutionContext(
-                               Resolver.DependencyBehavior.Highest,
+                               dependencyBehavior,
                                Prerelease,
                                includeUnlisted: false,
                                versionConstraints: versionConstraints,

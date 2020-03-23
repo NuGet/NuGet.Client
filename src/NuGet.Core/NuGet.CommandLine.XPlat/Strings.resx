@@ -178,7 +178,7 @@
     <value>Specify the path to the package and your API key to push the package to the server.</value>
   </data>
   <data name="Push_Timeout_Description" xml:space="preserve">
-    <value>Specifies the timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
+    <value>Timeout for pushing to a server in seconds. Defaults to 300 seconds (5 minutes).</value>
   </data>
   <data name="Restore_Arg_ProjectName_Description" xml:space="preserve">
     <value>List of projects and project folders to restore. Each value can be: a path to a project.json or global.json file, or a folder to recursively search for project.json files.</value>
@@ -202,7 +202,7 @@
     <value>Specifies a NuGet package source to use during the restore.</value>
   </data>
   <data name="Source_Description" xml:space="preserve">
-    <value>Specifies the server URL</value>
+    <value>Package source (URL, UNC/folder path or package source name) to use. Defaults to DefaultPushSource if specified in NuGet.Config.</value>
   </data>
   <data name="Switch_Verbosity" xml:space="preserve">
     <value>The verbosity of logging to use. Allowed values: Debug, Verbose, Information, Minimal, Warning, Error.</value>
@@ -299,7 +299,7 @@
     <value>Sets the nuspec serviceable element to true.</value>
   </data>
   <data name="SymbolSource_Description" xml:space="preserve">
-    <value>Specifies the symbol server URL. If not specified, nuget.smbsrc.net is used when pushing to nuget.org.</value>
+    <value>Symbol server URL to use.</value>
   </data>
   <data name="SymbolApiKey_Description" xml:space="preserve">
     <value>The API key for the symbol server.</value>
