@@ -90,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled = false)
+            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled)
         {
             var tfi = new TargetFrameworkInformation
             {
@@ -129,7 +129,7 @@ namespace NuGet.SolutionRestoreManager
                            .Select(ToPackageDownloadDependency));
                 }
 
-                if (targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3 && cpvmEnabled)
+                if (cpvmEnabled && targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3)
                 {
                     if (targetFrameworkInfo3.CentralPackageVersions != null)
                     {
