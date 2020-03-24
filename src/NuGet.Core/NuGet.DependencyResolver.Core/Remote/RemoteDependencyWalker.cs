@@ -157,9 +157,12 @@ namespace NuGet.DependencyResolver
                     // since the predicate will not be called for leaf nodes.
                     if (StringComparer.OrdinalIgnoreCase.Equals(dependency.Name, libraryRange.Name))
                     {
-
                         result = (dependencyResult: DependencyResult.Cycle, conflictingDependency: dependency);
                     }
+
+                    // Make the IncludeType and SuppressParent more restrictive as they go down in the graph
+                    LibraryIncludeFlags includeType = dependency.IncludeType & inheritedIncludeFlags;
+                    LibraryIncludeFlags suppressParent = dependency.SuppressParent | inheritedSuppressParent;
 
                     if (result.dependencyResult == DependencyResult.Acceptable)
                     {
@@ -179,8 +182,8 @@ namespace NuGet.DependencyResolver
                             ChainPredicate(predicate, node, dependency),
                             innerEdge,
                             transitiveCentralPackageVersions,
-                            dependency.IncludeType & inheritedIncludeFlags,
-                            dependency.SuppressParent | inheritedSuppressParent));
+                            includeType,
+                            suppressParent));
                     }
                     else
                     {
@@ -190,11 +193,8 @@ namespace NuGet.DependencyResolver
                             result.conflictingDependency.VersionCentrallyManaged &&
                             result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
                         {
-                            result.conflictingDependency.IncludeType = dependency.IncludeType & inheritedIncludeFlags;
-                            result.conflictingDependency.SuppressParent =
-                                (dependency.SuppressParent | inheritedSuppressParent) == LibraryIncludeFlags.None ?
-                                LibraryIncludeFlagUtils.DefaultSuppressParent :
-                                dependency.SuppressParent | inheritedSuppressParent;
+                            result.conflictingDependency.IncludeType = includeType;
+                            result.conflictingDependency.SuppressParent = suppressParent;
                             MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions);
                         }
 
@@ -414,8 +414,8 @@ namespace NuGet.DependencyResolver
                     inheritedIncludeFlags: centralPackageVersionDependency.IncludeType,
                     inheritedSuppressParent: centralPackageVersionDependency.SuppressParent);
 
-            node.Item.CentralDependency = centralPackageVersionDependency;
             node.OuterNode = rootNode;
+            node.Item.CentralDependency = centralPackageVersionDependency;
             rootNode.InnerNodes.Add(node);
         }
 

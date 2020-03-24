@@ -359,13 +359,15 @@ namespace NuGet.Commands
 
                 lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
 
+                // The transitive dependencies enforced by the central package version management file
+                // are written to the assets to be used by the pack task.
                 var centralEnforcedTransitiveDependencies = flattenTargetGraph?
                     .Where(graphItem => graphItem.CentralDependency != null)
                     .Select(
                         graphItem => graphItem.CentralDependency
                     );
 
-                if (centralEnforcedTransitiveDependencies != null && centralEnforcedTransitiveDependencies.Any())
+                if (centralEnforcedTransitiveDependencies.Any())
                 {
                     var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
                             (

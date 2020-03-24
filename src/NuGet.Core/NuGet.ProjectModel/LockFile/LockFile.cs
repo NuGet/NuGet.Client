@@ -130,7 +130,8 @@ namespace NuGet.ProjectModel
                 && Targets.OrderedEquals(other.Targets, target => target.Name, StringComparer.Ordinal)
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
-                && LogsEqual(other.LogMessages);
+                && LogsEqual(other.LogMessages)
+                && ProjectCentralTransitiveDependencyGroups.OrderedEquals(other.ProjectCentralTransitiveDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase);
         }
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
@@ -199,6 +200,8 @@ namespace NuGet.ProjectModel
 
             HashLogMessages(combiner, LogMessages);
 
+            HashProjectCentralTransitiveDependencyGroups(combiner, ProjectCentralTransitiveDependencyGroups);
+
             return combiner.CombinedHash;
         }
 
@@ -211,6 +214,15 @@ namespace NuGet.ProjectModel
         }
 
         private static void HashProjectFileDependencyGroups(HashCodeCombiner combiner, IList<ProjectFileDependencyGroup> groups)
+        {
+            foreach (var item in groups.OrderBy(
+                group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            {
+                combiner.AddObject(item);
+            }
+        }
+
+        private static void HashProjectCentralTransitiveDependencyGroups(HashCodeCombiner combiner, IList<ProjectCentralTransitiveDependencyGroup> groups)
         {
             foreach (var item in groups.OrderBy(
                 group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
