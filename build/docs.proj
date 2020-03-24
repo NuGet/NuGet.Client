@@ -1,0 +1,32 @@
+<Project DefaultTargets="GenerateProjectList">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+
+  <PropertyGroup>
+    <MarkdownAssemblyPath>$(ArtifactsDirectory)doc.tasks\16.0\bin\Debug\netstandard2.0\doc.tasks.dll</MarkdownAssemblyPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="NuGetTasks.GenerateMarkdownDoc" AssemblyFile="$(MarkdownAssemblyPath)" />
+  <Target Name="GenerateProjectList">
+    <MsBuild
+      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Targets="Restore"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion);" />
+
+    <MsBuild
+      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Targets="Build"
+      Properties="$(CommonMSBuildProperties);
+                  VisualStudioVersion=$(VisualStudioVersion);" />
+
+    <GenerateMarkdownDoc
+      ProductProjects="@(ProductProjects)"
+      TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
+      OutputFile="$(RepositoryRootDirectory)\docs\project-list.md"
+      GitHubRepositoryUrl="$(RepositoryUrl)"
+      RepositoryRoot="$(RepositoryRootDirectory)"
+      Title="NuGet Project Overview" />
+
+    <Message Text="Documentation generated!" Importance="High" />
+  </Target>
+</Project>

@@ -415,34 +415,4 @@
     <Message Text="Desktop $(TestResultsFileName) tests passed! Results: $(TestResultsXunit)" Condition=" '$(SkipDesktopAssemblies)' != 'true' AND '$(DesktopTestErrorCode)' == '0' " Importance="High" />
     <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' == '0' " Importance="High" />
   </Target>
-
-  <!--
-    ============================================================
-    Generate documentation for source projects
-    ============================================================
-  -->
-  <UsingTask AssemblyFile="$(RepositoryRootDirectory)\tools-local\doc.tasks\bin\Debug\netstandard2.0\doc.tasks.dll" TaskName="NuGetTasks.GenerateMarkdownDoc" />
-  <Target Name="GenerateDocs">
-    <MsBuild
-      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
-      Targets="Restore"
-      Properties="$(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion);" />
-
-    <MsBuild
-      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
-      Targets="Build"
-      Properties="$(CommonMSBuildProperties);
-                  VisualStudioVersion=$(VisualStudioVersion);" />
-
-    <GenerateMarkdownDoc
-      ProductProjects="@(ProductProjects)"
-      TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
-      OutputFile="$(RepositoryRootDirectory)\docs\project-list.md"
-      GitHubRepositoryUrl="$(RepositoryUrl)"
-      RepositoryRoot="$(RepositoryRootDirectory)"
-      Title="NuGet Project Overview" />
-
-    <Message Text="Documentation generated!" Importance="High" />
-  </Target>
 </Project>

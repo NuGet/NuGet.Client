@@ -63,14 +63,19 @@ namespace NuGetTasks
                 file.WriteLine("---");
                 file.WriteLine($"date-generated: {DateTime.Now:s}");
                 file.WriteLine($"tool: {typeof(GenerateMarkdownDoc).FullName}");
-                file.WriteLine("---\n");
+                file.WriteLine("---");
 
-                file.WriteLine($"\n\n# {Title}\n\n");
+                file.WriteLine($"\n\n# {Title}\n");
+                file.WriteLine("Below is a list of all source code projects for NuGet libraries and supported NuGet clients\n");
 
-                file.WriteLine($"\n\n## {ProjectsSubtitle}\n\n");
+                file.WriteLine($"\n\n## {ProjectsSubtitle}\n");
+                file.WriteLine("All shipped NuGet libraries and clients lives in `src/` folder.\n");
+                file.WriteLine($"Projects count: {ProductProjects.Length}\n");
                 SortAndWriteDescriptions(ProductProjects, file);
 
-                file.WriteLine($"\n\n## {TestProjectsSubtitle}\n\n");
+                file.WriteLine($"\n\n## {TestProjectsSubtitle}\n");
+                file.WriteLine("Most production assemblies has an associated test project, whose name ends with `.Test`.\n");
+                file.WriteLine($"Test Projects count: {TestProjects.Length}\n");
                 SortAndWriteDescriptions(TestProjects, file);
             }
             Log.LogMessage(MessageImportance.Low, "Documentation complete");
@@ -87,7 +92,7 @@ namespace NuGetTasks
                 var projectPath = projects[i].GetMetadata(MetaFullPath);
                 var desc = GetDescriptions(projectPath);
 
-                file.WriteLine($"- [`{RelativizePath(projectPath)}`]({GenerateGitHubLink(projectPath)}): {desc}");
+                file.WriteLine($"- [`{RelativizePath(projectPath)}`]({GenerateRelativeLink(projectPath)}): {desc}");
             }
         }
 
@@ -112,11 +117,11 @@ namespace NuGetTasks
             return projectFilePath.Replace(RepositoryRoot, string.Empty);
         }
 
-        private string GenerateGitHubLink(string projectFilePath)
+        private string GenerateRelativeLink(string projectFilePath)
         {
             var relativePath = RelativizePath(projectFilePath).Replace("\\", "/");
 
-            return $"{GitHubRepositoryUrl}/tree/dev/{relativePath}";
+            return $"../{relativePath}";
         }
     }
 }

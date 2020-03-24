@@ -104,7 +104,7 @@ NuGet members may contribute directly to the main remote.
 To update the auto-generated documentation, run the following in the repo root:
 
  ```
- dotnet msbuild .\build\build.proj /t:GenerateDocs
+ dotnet msbuild .\build\docs.proj
  ```
 
-Updated docs will be at `$(NuGetClientRoot)\artifacts`
+Updated docs will be at `$(NuGetClientRoot)\docs`
