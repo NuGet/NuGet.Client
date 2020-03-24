@@ -10,6 +10,9 @@ namespace NuGet.LibraryModel
     {
         private static readonly Lazy<CentralPackageVersionNameComparer> _defaultComparer = new Lazy<CentralPackageVersionNameComparer>(() => new CentralPackageVersionNameComparer());
 
+        /// <summary>
+        /// Returns a singleton instance for the <see cref="CentralPackageVersionNameComparer"/>.
+        /// </summary>
         public static CentralPackageVersionNameComparer Default
         {
             get
@@ -18,6 +21,9 @@ namespace NuGet.LibraryModel
             }
         }
 
+        /// <summary>
+        /// Get a singleton instance only through the <see cref="CentralPackageVersionNameComparer.Default"/>.
+        /// </summary>
         private CentralPackageVersionNameComparer()
         {
         }

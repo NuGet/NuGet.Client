@@ -32,7 +32,7 @@ namespace NuGet.LibraryModel.Tests
             var distinctElements = cpvs.Distinct(CentralPackageVersionNameComparer.Default).ToList();
 
             // Assert
-            // There should be only two elements distinct as the comaprer is name comparer with StringComparison OrdinalIgnoreCase
+            // There should be only two elements distinct as the comparer is name comparer with StringComparison OrdinalIgnoreCase
             Assert.Equal(2, distinctElements.Count);
             Assert.Equal(name1, distinctElements[0].Name);
             Assert.Equal(name2, distinctElements[1].Name);

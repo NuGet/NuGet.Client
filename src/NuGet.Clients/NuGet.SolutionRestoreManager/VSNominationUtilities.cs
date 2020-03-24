@@ -258,9 +258,12 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreLockedMode, MSBuildStringUtility.IsTrue);
         }
 
+        /// <summary>
+        /// Evaluates the msbuild properties and returns the value of the ManagePackageVersionsCentrally property.
+        /// If it is not defined the default value will be disabled. 
+        /// </summary>
         internal static bool IsCentralPackageVersionManagementEnabled(IEnumerable tfms)
         {
-            // If the property is not defined the default value will be disabled. 
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue);
         }
 
@@ -386,8 +389,8 @@ namespace NuGet.SolutionRestoreManager
 
         private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem item)
         {
-            var id = item.Name;
-            var versionRange = GetVersionRange(item);
+            string id = item.Name;
+            VersionRange versionRange = GetVersionRange(item);
             var centralPackageVersion = new CentralPackageVersion(id, versionRange);
 
             return centralPackageVersion;

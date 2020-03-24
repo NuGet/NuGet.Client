@@ -1891,6 +1891,33 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
+        [Fact]
+        public void ToPackageSpec_CentralVersions_CPVMIsEnabled_NoPackageVersions()
+        {
+            // Arrange
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            var emptyReferenceItems = Array.Empty<VsReferenceItem>();
+
+            var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
+                targetFrameworkMoniker: CommonFrameworks.NetStandard20.ToString(),
+                packageReferences: new[] { new VsReferenceItem("foo", new VsReferenceProperties()) },
+                projectReferences: emptyReferenceItems,
+                packageDownloads: emptyReferenceItems,
+                frameworkReferences: emptyReferenceItems,
+                projectProperties: new VsProjectProperty[] { new VsProjectProperty("ManagePackageVersionsCentrally", "true") },
+                centralPackageVersions: Enumerable.Empty<IVsReferenceItem>())
+            };
+
+            // Act
+            var result = VsSolutionRestoreService.ToPackageSpec(projectName, targetFrameworks, CommonFrameworks.NetStandard20.ToString(), string.Empty);
+
+            // Assert
+            var tfm = result.TargetFrameworks.First();
+
+            Assert.Equal(0, tfm.CentralPackageVersions.Count);        
+            Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
+        }
+
         /// <summary>
         /// The default for DisableCentralPackageVersions should be disabled.
         /// </summary>
