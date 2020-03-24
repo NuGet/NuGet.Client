@@ -98,6 +98,13 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
 
+        // Helper class to pass back multiple package feeds
+        private class PackageFeeds
+        {
+            public IPackageFeed mainFeed = null;
+            public IPackageFeed recommenderFeed = null;
+        }
+
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -736,7 +743,7 @@ namespace NuGet.PackageManagement.UI
             var packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
 
             var loader = new PackageItemLoader(
-                loadContext, packageFeeds, searchText, IncludePrerelease);
+                loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, searchText, IncludePrerelease);
             var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                 ? Resx.Resources.Text_Loading
                 : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
@@ -795,7 +802,7 @@ namespace NuGet.PackageManagement.UI
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
-                    loadContext, packageFeeds, includePrerelease: IncludePrerelease);
+                    loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
                 // cancel previous refresh tabs task, if any
@@ -858,7 +865,7 @@ namespace NuGet.PackageManagement.UI
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                     var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
                     var loader = new PackageItemLoader(
-                        loadContext, packageFeeds, includePrerelease: IncludePrerelease);
+                        loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
 
                     _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
                 })
@@ -921,24 +928,26 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private static async Task<IEnumerable<IPackageFeed>> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
+        private static async Task<PackageFeeds> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
         {
             var logger = new VisualStudioActivityLogger();
+            PackageFeeds packageFeeds = new PackageFeeds();
 
             // only make recommendations when the single source repository is nuget.org and package manager was opened for a project, not a solution
             // TODO: we'll also want to check for A/B testing and options settings
             bool recommendPackages = false;
-            if (context.SourceRepositories.Count() == 1 && context.SourceRepositories.First().ToString().ToLower() == "nuget.org" && context.IsSolution == false)
+            if (context.SourceRepositories.Count() == 1 && context.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json" && context.IsSolution == false)
             {
                 recommendPackages = true;
             }
 
             if (filter == ItemFilter.All && recommendPackages == false)
             {
-                return new List<IPackageFeed>(){ new MultiSourcePackageFeed(
+                packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
                     uiLogger,
-                    TelemetryActivity.NuGetTelemetryService) };
+                    TelemetryActivity.NuGetTelemetryService);
+                return packageFeeds;
             }
 
             var metadataProvider = CreatePackageMetadataProvider(context);
@@ -955,44 +964,47 @@ namespace NuGet.PackageManagement.UI
                 // this gets the target frameworks for PackageReference style projects
                 targetFrameworks = targetFrameworks.Concat(await context.GetTargetFrameworksAsync()).ToHashSet<string>();
 
-                return new List<IPackageFeed>(){
-                    new RecommenderPackageFeed(
+                packageFeeds.mainFeed = new MultiSourcePackageFeed(
+                    context.SourceRepositories,
+                    uiLogger,
+                    TelemetryActivity.NuGetTelemetryService);
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                     context.SourceRepositories.First(),
                     installedPackages,
                     dependentPackages,
                     targetFrameworks,
                     metadataProvider,
-                    logger),
-                    new MultiSourcePackageFeed(
-                    context.SourceRepositories,
-                    uiLogger,
-                    TelemetryActivity.NuGetTelemetryService)};
+                    logger);
+                return packageFeeds;
             }
 
             if (filter == ItemFilter.Installed)
             {
-                return new List<IPackageFeed>() { new InstalledPackageFeed(installedPackages, metadataProvider, logger) };
+                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackages, metadataProvider, logger);
+                return packageFeeds;
             }
 
             if (filter == ItemFilter.Consolidate)
             {
-                return new List<IPackageFeed>() { new ConsolidatePackageFeed(installedPackages, metadataProvider, logger) };
+                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
+                return packageFeeds;
             }
 
             // Search all / updates available cannot work without a source repo
             if (context.SourceRepositories == null)
             {
-                return null;
+                return packageFeeds;
             }
 
             if (filter == ItemFilter.UpdatesAvailable)
             {
-                return new List<IPackageFeed>(){ new UpdatePackageFeed(
+                packageFeeds.mainFeed = new UpdatePackageFeed(
                     installedPackages,
                     metadataProvider,
                     context.Projects,
                     context.CachedPackages,
-                    logger) };
+                    logger);
+                return packageFeeds;
             }
 
             throw new InvalidOperationException("Unsupported feed type");

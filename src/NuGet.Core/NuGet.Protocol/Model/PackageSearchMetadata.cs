@@ -199,6 +199,9 @@ namespace NuGet.Protocol
         [JsonProperty(PropertyName = JsonProperties.Listed)]
         public bool IsListed { get; private set; } = true;
 
+        [JsonIgnore]
+        public bool IsRecommended { get; set; } = false;
+
         /// <summary>
         /// If deprecated, contains deprecation information for this package; otherwise <c>null</c>.
         /// </summary>

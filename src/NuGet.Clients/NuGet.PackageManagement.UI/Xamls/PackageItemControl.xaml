@@ -127,17 +127,6 @@
                       ToolTip="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
                       AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_UpdateAvailable}"
                       Moniker="{x:Static nuget:PackageIconMonikers.UpdateAvailableIndicator}"/>
-        <imaging:CrispImage
-                      x:Name="_recommendedStar"
-                      Grid.Row="0"
-                      Margin="18,0,0,0"
-                      Width="16"
-                      Height="16"
-                      VerticalAlignment="Top"
-                      Visibility="{Binding Recommended, Converter={StaticResource BooleanToVisibilityConverter}}"
-                      ToolTip="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
-                      AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
-                      Moniker="{x:Static nuget:PackageIconMonikers.RecommendedIndicator}"/>
 
         <TextBlock
                       Grid.Row="1"
@@ -160,6 +149,15 @@
         <StackPanel
                       Grid.Row="0"
                       Orientation="Horizontal">
+          <TextBlock
+                        FontWeight="Bold"
+                        FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
+                        TextWrapping="NoWrap"
+                        VerticalAlignment="Top"
+                        ToolTip="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                        Visibility="{Binding Recommended, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Text="&#x2605; " />
           <TextBlock
                         FontWeight="Bold"
                         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"

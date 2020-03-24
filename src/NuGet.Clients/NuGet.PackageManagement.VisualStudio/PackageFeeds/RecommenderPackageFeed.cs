@@ -8,6 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using Microsoft.VisualStudio.Shell;
+using Recommender = NugetRecommender.VisualStudio.Contracts;
+using System.Diagnostics;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -25,6 +28,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
+
+        Recommender.IVsNugetPackageRecommender NugetRecommender { get; set; }
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
@@ -69,6 +74,16 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(logger));
             }
             _logger = logger;
+
+            try
+            {
+                // Get NuGet package recommender service
+                NugetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNugetRecommenderService)) as Recommender.IVsNugetPackageRecommender;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -92,16 +107,31 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
-            // TODO: Using fixed list of packages for now. Need to get these from the recommender using _installedPackages, _dependentPackages and _targetFrameworks.
-            string[] recommendIds = new string[] { "antlr4", "xunit", "moq", "some_bogus_package_name" };
+            List<string> recommendIds = new List<string>();
+            try
+            {
+                if (NugetRecommender != null)
+                {
+                    // get lists of only the package ids to send to the recommender
+                    List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                    List<string> depPackages = _dependentPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                    // call the recommender to get package recommendations
+                    recommendIds = await NugetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
+                }
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+
+            // get PackageIdentity info for the top 5 recommended packages
             int _maxRecommend = 5;
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
-            while (recommendIds != null && index < recommendIds.Length && recommendPackages.Count <= _maxRecommend)
+            while (recommendIds != null && index < recommendIds.Count() && recommendPackages.Count < _maxRecommend)
             {
                 try
                 {
-                    // TODO: Check that cancellationToken is the correct token to use here.
                     MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
                     PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
@@ -114,25 +144,24 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
                 catch (System.Exception ex)
                 {
-                    string ex_string = ex.ToString();
-                    // TODO: need to handle exceptions correctly
+                    Debug.WriteLine(ex);
                 }
                 index++;
             }
             var packages = recommendPackages.ToArray();
 
+            // get metadata for recommended packages
             var searchToken = continuationToken as RecommendSearchToken;
             if (searchToken == null)
             {
                 throw new InvalidOperationException("Invalid token");
             }
-
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
-            if(items.Count() < 1)
+            if (items.Count() < 1)
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
@@ -145,17 +174,16 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 { _sourceRepository.ToString().ToLower(), LoadingStatus.NoMoreItems }
             };
-
             result.NextToken = null;
 
             return result;
         }
 
         public Task<SearchResult<IPackageSearchMetadata>> ContinueSearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
-            => Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
+            => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
 
         public Task<SearchResult<IPackageSearchMetadata>> RefreshSearchAsync(RefreshToken refreshToken, CancellationToken cancellationToken)
-            => Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
+            => System.Threading.Tasks.Task.FromResult(SearchResult.Empty<IPackageSearchMetadata>());
 
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
@@ -165,6 +193,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // and failing that we go to the network
                 packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
+            }
+            if (packageMetadata != null)
+            {
+                packageMetadata.IsRecommended = true;
             }
             return packageMetadata;
         }

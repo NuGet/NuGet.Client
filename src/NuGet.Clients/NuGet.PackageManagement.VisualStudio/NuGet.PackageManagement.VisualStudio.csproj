@@ -294,6 +294,9 @@
     <!-- This causes a NU5104 warning. When upgrading to a stable version of this package, remove the above no warn. -->
     <PackageReference Include="Microsoft.VisualStudio.Workspace.VSIntegration" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="NugetRecommender.VisualStudio.Contracts-Test">
+      <Version>1.1.2</Version>
+    </PackageReference>
     <PackageReference Include="VSLangProj110" />
     <PackageReference Include="VSLangProj2" />
     <PackageReference Include="VSLangProj157" />

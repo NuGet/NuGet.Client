@@ -35,6 +35,7 @@ namespace NuGet.Protocol
             Title = package.Title;
             Version = package.Version;
             IsListed = package.IsListed;
+            IsRecommended = false;
 
             long count;
             if (long.TryParse(package.DownloadCount, out count))
@@ -63,6 +64,7 @@ namespace NuGet.Protocol
             Title = package.Title;
             Version = package.Version;
             IsListed = package.IsListed;
+            IsRecommended = false;
 
             long count;
             if (long.TryParse(package.DownloadCount, out count))
@@ -141,5 +143,7 @@ namespace NuGet.Protocol
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync() => Task.FromResult<PackageDeprecationMetadata>(null);
 
         public bool IsListed { get; }
+
+        public bool IsRecommended { get; set; }
     }
 }

@@ -280,7 +280,6 @@
       <IDSymbol name="DownloadIndicator" value="4" />
       <IDSymbol name="InstalledIndicator" value="5" />
       <IDSymbol name="MigratorHelpIcon" value="6" />
-      <IDSymbol name="RecommendedIndicator" value="7" />
     </GuidSymbol>
     <GuidSymbol name="guidPackageManagementCmdSet" value="{E586270E-92EC-427D-B218-0E81A25226F5}">
       <IDSymbol name="idPackageManagementGroup" value="0x0100" />
