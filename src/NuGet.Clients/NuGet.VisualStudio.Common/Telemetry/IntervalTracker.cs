@@ -8,6 +8,12 @@ using System.Diagnostics;
 
 namespace NuGet.VisualStudio
 {
+    /// <summary>
+    /// A utility to help us measure named intervals.
+    /// To start a tracking call <see cref="StartIntervalMeasure"/> and to complete an interval call <see cref="EndIntervalMeasure(string)"/>.
+    /// Overlapping internals are not supported.
+    /// This utility is not thread safe.
+    /// </summary>
     public class IntervalTracker
     {
         private readonly Stopwatch _intervalWatch = new Stopwatch();

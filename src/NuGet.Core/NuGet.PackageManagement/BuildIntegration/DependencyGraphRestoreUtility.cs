@@ -223,10 +223,8 @@ namespace NuGet.PackageManagement
         {
             var dgSpec = new DependencyGraphSpec();
 
-            var stringComparer = PathUtility.GetStringComparerBasedOnOS();
-
             var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
-            var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet();
+            var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
 
             for (var i = 0; i < projects.Count; i++)
             {
@@ -265,7 +263,6 @@ namespace NuGet.PackageManagement
                                                 // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
                                                 knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
                                                 dgSpec.AddProject(dependentPackageSpec);
-
                                             }
                                         }
                                     }
