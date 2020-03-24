@@ -348,6 +348,47 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        [Fact]
+        public void SourcesCommandTest_ListSource()
+        {
+            // Arrange
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var configFileDirectory = TestDirectory.Create())
+            {
+                var configFileName = "nuget.config";
+                var configFilePath = Path.Combine(configFileDirectory, configFileName);
+
+                Util.CreateFile(configFileDirectory, configFileName,
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <add key=""test_source"" value=""http://test_source"" />
+  </packageSources>
+</configuration>");
+
+                var args = new string[] {
+                    "sources",
+                    "list",
+                    "-ConfigFile",
+                    configFilePath
+                };
+
+                // Main Act
+                var result = CommandRunner.Run(
+                    nugetexe,
+                    Directory.GetCurrentDirectory(),
+                    string.Join(" ", args),
+                    true);
+
+                // Assert
+                Util.VerifyResultSuccess(result);
+
+                // test to ensure detailed format is the default
+                Assert.True(result.Output.StartsWith("Registered Sources:"));
+            }
+        }
+
         [Theory]
         [InlineData("sources a b")]
         [InlineData("sources a b c")]
