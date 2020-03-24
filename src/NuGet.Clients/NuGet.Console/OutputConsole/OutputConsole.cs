@@ -14,7 +14,7 @@ namespace NuGetConsole
     /// This class implements the IConsole interface in order to integrate with the PowerShellHost.
     /// It sends PowerShell host outputs to the VS Output tool window.
     /// </summary>
-    internal sealed class OutputConsole : SharedOutputConsole, IConsole, IConsoleDispatcher
+    internal sealed class OutputConsole : BaseOutputConsole, IConsole
     {
         private readonly IVsOutputWindow _vsOutputWindow;
         private readonly IVsUIShell _vsUiShell;
@@ -62,14 +62,6 @@ namespace NuGetConsole
             }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
-        #region IConsole
-
-        public IHost Host { get; set; }
-
-        public bool ShowDisclaimerHeader => false;
-
-        public IConsoleDispatcher Dispatcher => this;
-
         public override async Task WriteAsync(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -105,60 +97,9 @@ namespace NuGetConsole
             VsOutputWindowPane.Clear();
         }
 
-        #endregion IConsole
-
-        #region IConsoleDispatcher
-
-        public void Start()
+        public override void StartConsoleDispatcher()
         {
-            if (!IsStartCompleted)
-            {
-                var ignore = VsOutputWindowPane;
-                StartCompleted?.Invoke(this, EventArgs.Empty);
-            }
-
-            IsStartCompleted = true;
+            _ = VsOutputWindowPane;
         }
-
-        public event EventHandler StartCompleted;
-
-        event EventHandler IConsoleDispatcher.StartWaitingKey
-        {
-            add { }
-            remove { }
-        }
-
-        public bool IsStartCompleted { get; private set; }
-
-        public bool IsExecutingCommand
-        {
-            get { return false; }
-        }
-
-        public bool IsExecutingReadKey
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public bool IsKeyAvailable
-        {
-            get { throw new NotSupportedException(); }
-        }
-
-        public void AcceptKeyInput()
-        {
-        }
-
-        public VsKeyInfo WaitKey()
-        {
-            throw new NotSupportedException();
-        }
-
-        public void ClearConsole()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ClearAsync());
-        }
-
-        #endregion IConsoleDispatcher
     }
 }

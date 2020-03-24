@@ -99,14 +99,14 @@ namespace NuGet.SolutionRestoreManager
                 switch (_operationSource)
                 {
                     case RestoreOperationSource.Implicit: // background auto-restore
-                        _outputConsole = _outputConsoleProvider.CreatePackageManagerConsole();
+                        _outputConsole = await _outputConsoleProvider.CreatePackageManagerConsoleAsync();
                         break;
                     case RestoreOperationSource.OnBuild:
-                        _outputConsole = _outputConsoleProvider.CreateBuildOutputConsole();
+                        _outputConsole = await _outputConsoleProvider.CreateBuildOutputConsoleAsync();
                         await _outputConsole.ActivateAsync();
                         break;
                     case RestoreOperationSource.Explicit:
-                        _outputConsole = _outputConsoleProvider.CreatePackageManagerConsole();
+                        _outputConsole = await _outputConsoleProvider.CreatePackageManagerConsoleAsync();
                         await _outputConsole.ActivateAsync();
                         await _outputConsole.ClearAsync();
                         break;

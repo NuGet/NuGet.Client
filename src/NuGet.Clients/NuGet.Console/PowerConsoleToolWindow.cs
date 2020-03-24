@@ -703,11 +703,15 @@ namespace NuGetConsole.Implementation
             {
                 if (_vsOutputConsole == null)
                 {
-                    var consoleProvider = ServiceLocator.GetInstance<IOutputConsoleProvider>();
-                    if (null != consoleProvider)
+                    _vsOutputConsole = NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                     {
-                        _vsOutputConsole = consoleProvider.CreatePackageManagerConsole();
-                    }
+                        var consoleProvider = await ServiceLocator.GetInstanceAsync<IOutputConsoleProvider>();
+                        if (null != consoleProvider)
+                        {
+                            return await consoleProvider.CreatePackageManagerConsoleAsync();
+                        }
+                        return null;
+                    });
                 }
                 return _vsOutputConsole;
             }

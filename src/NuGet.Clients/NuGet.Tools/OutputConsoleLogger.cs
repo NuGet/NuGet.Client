@@ -69,7 +69,7 @@ namespace NuGetVSExtension
                 _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 _solutionEvents = _dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-                OutputConsole = consoleProvider.CreatePackageManagerConsole();
+                OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
 
