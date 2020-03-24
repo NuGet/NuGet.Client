@@ -163,16 +163,18 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
+        internal static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
         {
+            var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(TargetFrameworks);
+
             var tfis = TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(VSNominationUtilities.ToTargetFrameworkInformation)
+                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled))
                 .ToArray();
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
-            
+
             // Initialize OTF and CT values when original value of OTF property is not provided.
             var originalTargetFrameworks = tfis
                 .Select(tfi => tfi.FrameworkName.GetShortFolderName())
@@ -223,7 +225,8 @@ namespace NuGet.SolutionRestoreManager
                                     .ToList(),
                     ProjectWideWarningProperties = VSNominationUtilities.GetProjectWideWarningProperties(TargetFrameworks),
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
-                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks)
+                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks),
+                    CentralPackageVersionsEnabled = cpvmEnabled,
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(TargetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
