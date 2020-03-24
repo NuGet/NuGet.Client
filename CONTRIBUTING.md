@@ -93,7 +93,7 @@ NuGet members may contribute directly to the main remote.
 
 - `$(NuGetClientRoot)\artifacts\VS15` - this folder will contain the Package Manager extension (`NuGet.Tools.vsix`) and NuGet command-line client application (`NuGet.exe`)
 - `$(NuGetClientRoot)\artifacts\nupkgs` - this folder will contain all our projects packages
-  
+
 ## Resources for NuGet.Client development
 
 - [Workflow](docs/workflow.md)

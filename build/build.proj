@@ -416,7 +416,6 @@
     <Message Text="NETCore $(TestResultsFileName) tests passed! Results: $(TestResultsVsts)" Condition=" '$(SkipCoreAssemblies)' != 'true' AND '$(VSTestErrorCode)' == '0' " Importance="High" />
   </Target>
 
-
   <!--
     ============================================================
     Generate documentation for source projects
@@ -446,5 +445,4 @@
 
     <Message Text="Documentation generated!" Importance="High" />
   </Target>
-
 </Project>
