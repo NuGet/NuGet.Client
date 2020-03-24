@@ -6,6 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
+    <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
   </PropertyGroup>
 
   <ItemGroup>

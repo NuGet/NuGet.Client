@@ -6,10 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Description>Implementation for NuGet.VisualStudio</Description>
+    <Description>Implementation of the NuGet.VisualStudio extensibility APIs.</Description>
     <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
     <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
   </PropertyGroup>

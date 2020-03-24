@@ -9,6 +9,7 @@
     <OutputType>Exe</OutputType>
     <AssemblyName>Plugin.Testable</AssemblyName>
     <NoWarn>$(NoWarn);CS1701</NoWarn>
+    <Description>A sample cross platform plugin used for end-to-end tests.</Description>
   </PropertyGroup>
 
   <ItemGroup>

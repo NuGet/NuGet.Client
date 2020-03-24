@@ -10,13 +10,9 @@
     <ProjectGuid>{50E33DA2-AF14-486D-81B8-BD8409744A38}</ProjectGuid>
     <CreateVsixContainer>False</CreateVsixContainer>
     <DeployExtension>False</DeployExtension>
-    <NuGetPackageImportStamp>751ce4af</NuGetPackageImportStamp>
-    <PackagesDirectory>$(UserProfile)\.nuget\packages</PackagesDirectory>
-    <ResolveNuGetPackages>true</ResolveNuGetPackages>
-    <SkipValidatePackageReferences>true</SkipValidatePackageReferences>
+    <Description>Package Manager PowerShell Console implementation.</Description>
     <TargetFrameworkProfile />
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

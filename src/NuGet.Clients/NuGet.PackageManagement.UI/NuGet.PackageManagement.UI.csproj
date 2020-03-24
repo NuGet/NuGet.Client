@@ -8,8 +8,8 @@
     <PackProject>true</PackProject>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
+    <Description>Package Management UI elements for Visual Studio, Package Manager UI, Migrator, Options dialog.</Description>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
-    <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
     <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
     <StrongNameCert>MsSharedLib72</StrongNameCert>
   </PropertyGroup>
@@ -23,7 +23,6 @@
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>3b445626</NuGetPackageImportStamp>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE;DEBUG;VS15</DefineConstants>
