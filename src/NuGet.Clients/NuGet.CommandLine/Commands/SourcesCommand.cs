@@ -78,6 +78,10 @@ namespace NuGet.CommandLine
                     EnableSourceRunner.Run(enableSourceArgs, () => Console);
                     break;
                 case SourcesAction.List:
+                    if (Format == SourcesListFormat.None)
+                    {
+                        Format = SourcesListFormat.Detailed;
+                    }
                     var listSourceArgs = new ListSourceArgs() { Configfile = ConfigFile, Format = Format.ToString() };
                     ListSourceRunner.Run(listSourceArgs, () => Console);
                     break;
