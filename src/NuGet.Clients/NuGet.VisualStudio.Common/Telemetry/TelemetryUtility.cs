@@ -25,6 +25,16 @@ namespace NuGet.VisualStudio.Telemetry
             return $"{VSTelemetrySession.VSEventNamePrefix}fileandforget/{typeName}/{memberName}";
         }
 
+        public static void EmitException(string className, string methodName, Exception exception)
+        {
+            TelemetryEvent telemetryEvent = new TelemetryEvent($"errors/{className}.{methodName}");
+            telemetryEvent["Message"] = exception.Message;
+            telemetryEvent["ExceptionType"] = exception.GetType().FullName;
+            telemetryEvent["StackTrace"] = exception.StackTrace;
+
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
+        }
+
         /// <summary>
         /// True if the source is http and ends with index.json
         /// </summary>

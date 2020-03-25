@@ -16,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -157,7 +158,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                throw;
+                TelemetryUtility.EmitException(nameof(VsSolutionRestoreService), nameof(NominateProjectAsync), e);
             }
         }
 
