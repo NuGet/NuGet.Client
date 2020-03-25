@@ -10,12 +10,15 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -33,6 +36,7 @@ namespace NuGet.SolutionRestoreManager
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
         private readonly ILogger _logger;
+        private bool _initialized;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
@@ -48,16 +52,15 @@ namespace NuGet.SolutionRestoreManager
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
 
-        public Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
+        public async Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
             Assumes.NotNullOrEmpty(projectUniqueName);
+            await EnsureInitializedAsync();
 
             // returned task completes when scheduled restore operation completes.
-            var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+            return await _restoreWorker.ScheduleRestoreAsync(
                 SolutionRestoreRequest.OnUpdate(),
                 token);
-
-            return restoreTask;
         }
 
         public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
@@ -81,6 +84,8 @@ namespace NuGet.SolutionRestoreManager
         /// <returns>The task that scheduled restore</returns>
         private Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
         {
+            await EnsureInitializedAsync();
+
             if (string.IsNullOrEmpty(projectUniqueName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
@@ -233,6 +238,26 @@ namespace NuGet.SolutionRestoreManager
             };
 
             return packageSpec;
+        }
+
+        private async Task EnsureInitializedAsync()
+        {
+            try
+            {
+                if (!_initialized)
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                    IVsShell shell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsShell, IVsShell>();
+                    shell.LoadPackage(new Guid(RestoreManagerPackage.PackageGuidString), out _);
+                    _initialized = true;
+                }
+            }
+            catch (Exception e)
+            {
+                // ignore errors
+                _logger.LogError(e.ToString());
+            }
         }
     }
 }
