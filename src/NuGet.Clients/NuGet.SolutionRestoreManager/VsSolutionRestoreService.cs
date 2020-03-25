@@ -159,6 +159,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 _logger.LogError(e.ToString());
                 TelemetryUtility.EmitException(nameof(VsSolutionRestoreService), nameof(NominateProjectAsync), e);
+                return Task.FromResult(false);
             }
         }
 
