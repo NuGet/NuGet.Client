@@ -508,6 +508,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally
@@ -756,6 +757,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally
