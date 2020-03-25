@@ -82,7 +82,7 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="token"></param>
         /// <remarks>Exactly one of projectRestoreInfos has to null.</remarks>
         /// <returns>The task that scheduled restore</returns>
-        private Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
+        private async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
         {
             await EnsureInitializedAsync();
 
@@ -128,11 +128,9 @@ namespace NuGet.SolutionRestoreManager
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
 
                 // returned task completes when scheduled restore operation completes.
-                var restoreTask = _restoreWorker.ScheduleRestoreAsync(
+                return await _restoreWorker.ScheduleRestoreAsync(
                     SolutionRestoreRequest.OnUpdate(),
                     token);
-
-                return restoreTask;
             }
             catch (OperationCanceledException)
             {
@@ -141,7 +139,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return Task.FromResult(false);
+                return false;
             }
         }
 
