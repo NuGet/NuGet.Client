@@ -14,7 +14,7 @@
     <!-- when changing any of the NuGetVersion props below, also update ProductVersion in src\NuGet.Clients\NuGet.Tools\NuGetPackage.cs -->
     <MajorNuGetVersion Condition="'$(MajorNuGetVersion)' == ''">5</MajorNuGetVersion>
     <MinorNuGetVersion Condition="'$(MinorNuGetVersion)' == ''">5</MinorNuGetVersion>
-    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">0</PatchNuGetVersion>
+    <PatchNuGetVersion Condition="'$(PatchNuGetVersion)' == ''">1</PatchNuGetVersion>
     <SemanticVersion Condition=" '$(SemanticVersion)' == '' ">$(MajorNuGetVersion).$(MinorNuGetVersion).$(PatchNuGetVersion)</SemanticVersion>
     
     <!-- ** Change for each new preview/rtm -->
@@ -24,7 +24,7 @@
     <!-- ** Increment each insertion, set to zero after incrementing Major/Minor or Patch version -->
     <!-- We need to update this netcoreassembly build number with EVERY insertion into VS to workaround any breaking api
     changes we might have made. -->
-    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">4</NetCoreAssemblyBuildNumber>
+    <NetCoreAssemblyBuildNumber Condition=" '$(NetCoreAssemblyBuildNumber)' == '' ">0</NetCoreAssemblyBuildNumber>
 
     <IsEscrowMode>true</IsEscrowMode>
 
