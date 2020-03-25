@@ -349,7 +349,7 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
-        public void SourcesCommandTest_ListSource()
+        public void SourcesList_WithDefaultFormat_UsesDetailedFormat()
         {
             // Arrange
             var nugetexe = Util.GetNuGetExePath();
