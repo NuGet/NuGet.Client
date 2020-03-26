@@ -253,7 +253,6 @@ namespace NuGet.SolutionRestoreManager
             }
             catch (Exception e)
             {
-                // ignore errors
                 _logger.LogError(e.ToString());
             }
         }
