@@ -66,6 +66,9 @@ namespace NuGet.Commands
 
         public bool RestoreForceEvaluate { get; set; }
 
+        /// <summary>
+        /// Messages that should be written to the assets file, in addition to any messages generated during the restore.
+        /// </summary>
         public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
 
         // Cache directory -> ISettings
