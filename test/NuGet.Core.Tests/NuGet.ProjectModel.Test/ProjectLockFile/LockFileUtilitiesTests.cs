@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
+using NuGet.LibraryModel;
+using NuGet.Versioning;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 using PackagesLockFileBuilder = NuGet.ProjectModel.Test.Builders.PackagesLockFileBuilder;
@@ -148,6 +151,205 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
             depKvp = actual.MatchedDependencies.Single(d => d.Key.Id == "PackageB");
             Assert.Equal("123", depKvp.Value.ContentHash);
             Assert.Equal("890", depKvp.Key.ContentHash);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_RemovedCentralPackageVersions_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+            var cpvm1 = new CentralPackageVersion("cpvm1", VersionRange.Parse("1.0.0"));
+            var cpvm2 = new CentralPackageVersion("cpvm2", VersionRange.Parse("1.0.0"));
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+
+            var tfm = new TargetFrameworkInformation();
+            tfm.FrameworkName = framework;
+            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
+            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
+            project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(CommonFrameworks.NetStandard20)
+                    .WithDependency(dep => dep
+                        .WithId("cpvm1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                    .WithDependency(dep => dep
+                        .WithId("cpvm2")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.CentralTransitive))
+                    .WithDependency(dep => dep
+                        .WithId("cpvm3")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.CentralTransitive)))
+                .Build();
+
+            // The central package version cpvm3 it was removed
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_DifferentCentralPackageVersions_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+            var cpvm1 = new CentralPackageVersion("cpvm1", VersionRange.Parse("1.0.0"));
+            var cpvm2 = new CentralPackageVersion("cpvm2", VersionRange.Parse("2.0.0"));
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+
+            var tfm = new TargetFrameworkInformation();
+            tfm.FrameworkName = framework;
+            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
+            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.Dependencies.Add(dependency1);
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
+            project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(CommonFrameworks.NetStandard20)
+                    .WithDependency(dep => dep
+                        .WithId("cpvm1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                    .WithDependency(dep => dep
+                        .WithId("cpvm2")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.CentralTransitive)))
+                .Build();
+
+            // The central package version cpvm2 has version changed
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_TransitiveVersionsMovedToCentralFile_InvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+            var cpvm1 = new CentralPackageVersion("cpvm1", VersionRange.Parse("1.0.0"));
+            var cpvm2 = new CentralPackageVersion("cpvm2", VersionRange.Parse("1.0.0"));
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+
+            var tfm = new TargetFrameworkInformation();
+            tfm.FrameworkName = framework;
+            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
+            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.Dependencies.Add(dependency1);
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
+            project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(CommonFrameworks.NetStandard20)
+                    .WithDependency(dep => dep
+                        .WithId("cpvm1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                    .WithDependency(dep => dep
+                        .WithId("cpvm2")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Transitive)))
+                .Build();
+
+            // The central package version cpvm2 has was changed from transitive to central 
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.False(actual);
+        }
+
+        [Fact]
+        public void IsLockFileStillValid_NoChangeInCentralPackageVersions_DoesNotInvalidateLockFile()
+        {
+            // Arrange
+            var framework = CommonFrameworks.NetStandard20;
+            var projectName = "project";
+            var cpvm1 = new CentralPackageVersion("cpvm1", VersionRange.Parse("1.0.0"));
+            var cpvm2 = new CentralPackageVersion("cpvm2", VersionRange.Parse("1.0.0"));
+            var dependency1 = new LibraryDependency(
+                new LibraryRange("cpvm1", versionRange: null, LibraryDependencyTarget.Package),
+                LibraryDependencyType.Default,
+                LibraryIncludeFlags.All,
+                LibraryIncludeFlags.All,
+                new List<Common.NuGetLogCode>(),
+                autoReferenced: false,
+                generatePathProperty: true);
+
+            var tfm = new TargetFrameworkInformation();
+            tfm.FrameworkName = framework;
+            tfm.CentralPackageVersions.Add("cpvm1", cpvm1);
+            tfm.CentralPackageVersions.Add("cpvm2", cpvm2);
+            tfm.Dependencies.Add(dependency1);
+
+            var project = new PackageSpec(new List<TargetFrameworkInformation>() { tfm });
+            project.RestoreMetadata = new ProjectRestoreMetadata() { ProjectUniqueName = projectName, CentralPackageVersionsEnabled = true };
+
+            DependencyGraphSpec dgSpec = new DependencyGraphSpec();
+            dgSpec.AddRestore(projectName);
+            dgSpec.AddProject(project);
+
+            var lockFile = new PackagesLockFileBuilder()
+                .WithTarget(target => target
+                    .WithFramework(CommonFrameworks.NetStandard20)
+                    .WithDependency(dep => dep
+                        .WithId("cpvm1")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Direct))
+                    .WithDependency(dep => dep
+                        .WithId("cpvm2")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.CentralTransitive))
+                    .WithDependency(dep => dep
+                        .WithId("otherDep")
+                        .WithRequestedVersion(VersionRange.Parse("1.0.0"))
+                        .WithType(PackageDependencyType.Transitive)))
+                .Build();
+
+            // Nothing changed in central package versions
+            var actual = PackagesLockFileUtilities.IsLockFileStillValid(dgSpec, lockFile);
+            Assert.True(actual);
         }
     }
 }

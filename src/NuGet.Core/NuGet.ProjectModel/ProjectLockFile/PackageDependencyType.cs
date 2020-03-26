@@ -18,6 +18,11 @@ namespace NuGet.ProjectModel
         /// <summary>
         /// 
         /// </summary>
-        Project = 2
+        Project = 2,
+
+        /// <summary>
+        /// Package is transitively available to the project instead of directly installed but is also enforced by the central package version file.
+        /// </summary>
+        CentralTransitive = 3
     }
 }

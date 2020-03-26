@@ -57,10 +57,18 @@ namespace NuGet.Commands
                     var framework_dep = framework?.Dependencies.FirstOrDefault(
                         dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Name, library.Name));
 
+                    CentralPackageVersion centralPackageVersion = null;
+                    var libraryVersionIsCentrallyDefined = framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion);
+
                     if (framework_dep != null)
                     {
                         dependency.Type = PackageDependencyType.Direct;
                         dependency.RequestedVersion = framework_dep.LibraryRange.VersionRange;
+                    }
+                    else if (libraryVersionIsCentrallyDefined.HasValue && libraryVersionIsCentrallyDefined.Value && centralPackageVersion != null)
+                    {
+                        dependency.Type = PackageDependencyType.CentralTransitive;
+                        dependency.RequestedVersion = centralPackageVersion.VersionRange;
                     }
                     else
                     {
@@ -76,7 +84,7 @@ namespace NuGet.Commands
 
                 foreach (var projectReference in libraries.Where(e => e.Type == LibraryType.Project || e.Type == LibraryType.ExternalProject))
                 {
-                    var projectIdentity= new PackageIdentity(projectReference.Name, projectReference.Version);
+                    var projectIdentity = new PackageIdentity(projectReference.Name, projectReference.Version);
                     var projectFullPath = projectFullPaths[projectIdentity];
                     var id = PathUtility.GetStringComparerBasedOnOS().Equals(Path.GetFileNameWithoutExtension(projectFullPath), projectReference.Name)
                         ? projectReference.Name.ToLowerInvariant()
