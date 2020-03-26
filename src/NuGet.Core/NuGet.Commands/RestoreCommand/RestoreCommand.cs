@@ -14,7 +14,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
