@@ -106,6 +106,7 @@ namespace NuGet.PackageManagement.VisualStudio
         #region IDependencyGraphProject
 
         public override string MSBuildProjectPath => _projectFullPath;
+
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
             var (dgSpec, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);

@@ -3,6 +3,8 @@
 
 using System;
 using System.IO;
+using System.Linq;
+using System.Windows.Documents;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -27,11 +29,44 @@ namespace NuGet.VisualStudio.Telemetry
 
         public static void EmitException(string className, string methodName, Exception exception)
         {
-            TelemetryEvent telemetryEvent = new TelemetryEvent($"errors/{className}.{methodName}");
-            telemetryEvent["Message"] = exception.Message;
-            telemetryEvent["ExceptionType"] = exception.GetType().FullName;
-            telemetryEvent["StackTrace"] = exception.StackTrace;
+            if (className == null)
+            {
+                throw new ArgumentNullException(nameof(className));
+            }
+            if (methodName == null)
+            {
+                throw new ArgumentNullException(nameof(methodName));
+            }
+            if (exception == null)
+            {
+                throw new ArgumentNullException(nameof(exception));
+            }
 
+            TelemetryEvent ToTelemetryEvent(Exception e, string name)
+            {
+                TelemetryEvent te = new TelemetryEvent(name);
+                te["Message"] = e.Message;
+                te["ExceptionType"] = e.GetType().FullName;
+                te["StackTrace"] = e.StackTrace;
+
+                if (e is AggregateException aggregateException)
+                {
+                    var exceptions =
+                        aggregateException.InnerExceptions
+                        .Select(ie => ToTelemetryEvent(ie, name: null))
+                        .ToList();
+                    te.ComplexData["InnerExceptions"] = exceptions;
+                }
+                else if (e.InnerException != null)
+                {
+                    var inner = ToTelemetryEvent(e.InnerException, name: null);
+                    te.ComplexData["InnerException"] = inner;
+                }
+
+                return te;
+            }
+
+            TelemetryEvent telemetryEvent = ToTelemetryEvent(exception, $"errors/{className}.{methodName}");
             TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
         }
 
