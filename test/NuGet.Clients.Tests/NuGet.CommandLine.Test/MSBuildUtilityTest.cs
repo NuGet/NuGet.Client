@@ -3,9 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -200,6 +202,56 @@ namespace NuGet.CommandLine.Test
                 // Assert
                 Assert.Equal(msBuildExePath, msBuild151BinPath, ignoreCase: true);
             }
+        }
+
+        [Fact]
+        public void TestMsBuildPathFromVsPathWithNonEnglishCulture()
+        {
+            CultureInfo startingCulture = Thread.CurrentThread.CurrentCulture;
+
+            // Change culture to Ukrainian (any culture with comma and period swapped compared to english in floating point)
+            Thread.CurrentThread.CurrentCulture 
+                = CultureInfo.GetCultureInfo("uk-UA");
+
+            using (var vsPath = TestDirectory.Create())
+            {
+                // Arrange
+                // Create this tree:
+                // VS
+                // |- MSBuild
+                //    |- 15.0
+                //    |  |- bin
+                //    |     |- msbuild.exe
+                //    |- 15.1
+                //       |- bin
+                //          |- msbuild.exe
+                // We want the highest version within the VS tree chosen (typically there's only one, but that's the logic 
+                // we'll go with in case there are more).
+                var msBuild15BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.0", "Bin")).FullName;
+                var msBuild151BinPath = Directory.CreateDirectory(Path.Combine(vsPath, "MSBuild", "15.1", "Bin")).FullName;
+
+                // Create dummy msbuild.exe files
+                var msBuild15ExePath = Path.Combine(msBuild15BinPath, "msbuild.exe").ToString();
+                using (var fs15 = File.CreateText(msBuild15ExePath))
+                {
+                    fs15.Write("foo 15");
+                }
+
+                var msBuild151ExePath = Path.Combine(msBuild151BinPath, "msbuild.exe").ToString();
+                using (var fs151 = File.CreateText(msBuild151ExePath))
+                {
+                    fs151.Write("foo 15.1");
+                }
+
+                // Act
+                var msBuildExePath = MsBuildToolset.GetMsBuildDirFromVsDir(vsPath);
+
+                // Assert
+                Assert.Equal(msBuildExePath, msBuild151BinPath, ignoreCase: true);
+            }
+
+            // reset culture
+            Thread.CurrentThread.CurrentCulture = startingCulture;
         }
 
         [Fact]
