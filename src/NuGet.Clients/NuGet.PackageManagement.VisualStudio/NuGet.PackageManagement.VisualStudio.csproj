@@ -222,7 +222,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
       <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
       <Name>NuGet.Indexing</Name>
     </ProjectReference>

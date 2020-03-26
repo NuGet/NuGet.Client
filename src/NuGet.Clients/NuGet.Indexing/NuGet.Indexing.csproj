@@ -13,7 +13,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Protocol\NuGet.Protocol.csproj" />
+    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Protocol\NuGet.Protocol.csproj" />
   </ItemGroup>
 
   <ItemGroup>

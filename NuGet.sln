@@ -119,7 +119,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.PackageManagement.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Utility", "test\TestUtilities\Test.Utility\Test.Utility.csproj", "{CA285053-F013-45CC-A2EA-7581A37585D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing", "src\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj", "{A2B06FA8-BDBC-4459-A92A-161862B2AA97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing", "src\NuGet.Clients\NuGet.Indexing\NuGet.Indexing.csproj", "{A2B06FA8-BDBC-4459-A92A-161862B2AA97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Common.Test", "test\NuGet.Core.Tests\NuGet.Common.Test\NuGet.Common.Test.csproj", "{7FACD9D7-F70D-41C4-BE61-2753E018057D}"
 EndProject
@@ -129,7 +129,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Commands.FuncTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Protocol.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Protocol.FuncTest\NuGet.Protocol.FuncTest.csproj", "{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing.Test", "test\NuGet.Core.Tests\NuGet.Indexing.Test\NuGet.Indexing.Test.csproj", "{626E0086-1375-4ABE-A0F8-412786D315FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing.Test", "test\NuGet.Clients.Tests\NuGet.Indexing.Test\NuGet.Indexing.Test.csproj", "{626E0086-1375-4ABE-A0F8-412786D315FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.XPlat.FuncTest", "test\NuGet.Core.FuncTests\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj", "{2034C981-C938-4F0F-8F3B-528B83CB8F7D}"
 EndProject
