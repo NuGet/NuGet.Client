@@ -38,6 +38,7 @@
             <Setter Property="FontSize" Value="{Binding FontSize, RelativeSource={RelativeSource AncestorType=UserControl},Converter={StaticResource Font122PercentSizeConverter}}"/>
             <Setter Property="Foreground" Value="{DynamicResource {x:Static nuget:Brushes.UIText}}" />
             <Setter Property="Padding" Value="20,0,20,0" />
+            <Setter Property="FocusVisualStyle" Value="{DynamicResource ControlsFocusVisualStyle}" />
             <Setter Property="Template">
               <Setter.Value>
                 <ControlTemplate TargetType="{x:Type TabItem}">
