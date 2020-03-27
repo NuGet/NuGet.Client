@@ -211,6 +211,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Task.FromResult(NuGetFramework.Parse(_targetFrameworkString));
         }
 
+        public Task<bool> IsCentralPackageFileManagementEnabledAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         public Task<bool> IsRestoreLockedAsync()
         {
             return Task.FromResult(_restoreLockedMode);

@@ -146,5 +146,11 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <returns></returns>
         Task<bool> IsRestoreLockedAsync();
+
+        /// <summary>
+        /// ManagePackageVersionsCentrally project property.
+        /// </summary>
+        /// <returns></returns>
+        Task<bool> IsCentralPackageFileManagementEnabledAsync();
     }
 }

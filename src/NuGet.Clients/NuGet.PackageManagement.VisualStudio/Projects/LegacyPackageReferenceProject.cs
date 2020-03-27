@@ -124,6 +124,31 @@ namespace NuGet.PackageManagement.VisualStudio
             return new[] { packageSpec };
         }
 
+        private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
+        {
+            // From ProjctSystem team - this should be executed on the UI thread 
+            ThreadHelper.ThrowIfNotOnUIThread();
+            Dictionary<string, CentralPackageVersion> result = null;
+            bool cpvmEnabled = await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
+            if (cpvmEnabled)
+            {
+                //var itemStorage = _vsProjectAdapter.VsHierarchy as IVsBuildItemStorage;
+                //        interface IVsBuildItemStorage
+                //{
+                //    void FindItems(string itemType, string[] metadataNames, IVsBuildItemStorageCallback callback);
+                //}
+
+                //interface IVsBuildItemStorageCallback
+                //{
+                //    void ItemFound(string itemSpec, string[] metadataValues);
+                //}
+
+
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region NuGetProject
@@ -351,8 +376,14 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectTfi = new TargetFrameworkInformation
             {
                 FrameworkName = targetFramework,
-                Dependencies = packageReferences,
+                Dependencies = packageReferences
             };
+
+            var centralPackageVersions = await GetCentralPackageVersionsAsync();
+            if (centralPackageVersions != null)
+            {
+                projectTfi.CentralPackageVersions.AddRange(centralPackageVersions);
+            }
 
             // Apply fallback settings
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
