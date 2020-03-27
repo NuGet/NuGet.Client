@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Internal.Contracts;
 
@@ -15,26 +16,25 @@ namespace NuGet.SolutionRestoreManager
     {
         [Import]
         internal Lazy<ISolutionRestoreWorker> SolutionRestoreWorker { get; set; }
+        private readonly AsyncLazyInitializer _initializer;
 
-        private bool _initialized = false;
+        public NuGetSolutionService()
+        {
+            _initializer = new AsyncLazyInitializer(InitializeAsync, NuGetUIThreadHelper.JoinableTaskFactory);
+        }
 
         public async Task RestoreSolutionAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await EnsureInitializedAsync();
+            await _initializer.InitializeAsync(cancellationToken);
             await SolutionRestoreWorker.Value.ScheduleRestoreAsync(SolutionRestoreRequest.ByMenu(), cancellationToken);
         }
 
-        private async Task EnsureInitializedAsync()
+        private async Task InitializeAsync()
         {
-            if (_initialized)
-            {
-                return;
-            }
-            var componentModel = await ServiceLocator.GetGlobalServiceAsync<SComponentModel, IComponentModel>();
+            var componentModel = await ServiceLocator.GetGlobalServiceFreeThreadedAsync<SComponentModel, IComponentModel>();
             // ensure we satisfy our imports
             componentModel?.DefaultCompositionService.SatisfyImportsOnce(this);
-            _initialized = true;
         }
         
     }

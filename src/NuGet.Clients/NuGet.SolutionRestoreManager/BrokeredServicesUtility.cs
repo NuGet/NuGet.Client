@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.Shell.ServiceBroker;
 
 namespace NuGet.SolutionRestoreManager
 {
-    internal class BrokeredServicesUtility
+    internal static class BrokeredServicesUtility
     {
         internal static BrokeredServiceFactory GetNuGetSolutionServicesFactory()
         {
