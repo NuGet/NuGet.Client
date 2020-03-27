@@ -69,7 +69,7 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
-    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
       <Project>{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}</Project>
       <Name>NuGet.VisualStudio.Internal.Contracts</Name>
     </ProjectReference>
