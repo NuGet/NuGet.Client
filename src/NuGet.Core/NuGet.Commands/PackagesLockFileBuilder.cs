@@ -58,14 +58,21 @@ namespace NuGet.Commands
                         dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Name, library.Name));
 
                     CentralPackageVersion centralPackageVersion = null;
-                    var libraryVersionIsCentrallyDefined = framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion);
+                    bool? libraryVersionIsCentrallyDefined = framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion);
 
                     if (framework_dep != null)
                     {
                         dependency.Type = PackageDependencyType.Direct;
                         dependency.RequestedVersion = framework_dep.LibraryRange.VersionRange;
                     }
-                    else if (libraryVersionIsCentrallyDefined.HasValue && libraryVersionIsCentrallyDefined.Value && centralPackageVersion != null)
+                    // The Direct dependencies do not matter if they are central or not;
+                    // The dgspec has clear list of the direct dependencies and changes in the direct dependencies will invlidate the lock file
+                    // A dgspec does not know about transitive dependencies.
+                    // At restore time the transitive dependencies could be pinned from central package version management file
+                    // marking them will allow to evaluate when to invalidate the packages.lock.json
+                    // in cases that a central transitive version is removed or added and an action like that will influence the restore and
+                    // in result could invalidate the lock file
+                    else if (libraryVersionIsCentrallyDefined == true && centralPackageVersion != null)
                     {
                         dependency.Type = PackageDependencyType.CentralTransitive;
                         dependency.RequestedVersion = centralPackageVersion.VersionRange;
