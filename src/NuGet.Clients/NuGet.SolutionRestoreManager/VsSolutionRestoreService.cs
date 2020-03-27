@@ -12,12 +12,14 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.SolutionRestoreManager
@@ -36,18 +38,34 @@ namespace NuGet.SolutionRestoreManager
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
         private readonly ILogger _logger;
-        private bool _initialized;
+        private readonly IAsyncServiceProvider _asyncServiceProvider;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<bool> _initializerTask;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
             [Import("VisualStudioActivityLogger")]
-            ILogger logger)
+            ILogger logger) :
+            this(projectSystemCache, restoreWorker, logger, AsyncServiceProvider.GlobalProvider)
+
+        {
+        }
+
+        public VsSolutionRestoreService(
+            IProjectSystemCache projectSystemCache,
+            ISolutionRestoreWorker restoreWorker,
+            [Import("VisualStudioActivityLogger")]
+            ILogger logger,
+            IAsyncServiceProvider asyncServiceProvider)
         {
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
             _restoreWorker = restoreWorker ?? throw new ArgumentNullException(nameof(restoreWorker));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
+
+            _initializerTask = new Microsoft.VisualStudio.Threading.AsyncLazy<bool>(InitializeAsync,NuGetUIThreadHelper.JoinableTaskFactory);
+
         }
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
@@ -55,7 +73,7 @@ namespace NuGet.SolutionRestoreManager
         public async Task<bool> NominateProjectAsync(string projectUniqueName, CancellationToken token)
         {
             Assumes.NotNullOrEmpty(projectUniqueName);
-            await EnsureInitializedAsync();
+            await _initializerTask.GetValueAsync();
 
             // returned task completes when scheduled restore operation completes.
             return await _restoreWorker.ScheduleRestoreAsync(
@@ -63,14 +81,16 @@ namespace NuGet.SolutionRestoreManager
                 token);
         }
 
-        public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
+        public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, CancellationToken token)
         {
-            return NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
+            await _initializerTask.GetValueAsync();
+            return await NominateProjectAsync(projectUniqueName, projectRestoreInfo, null, token);
         }
 
-        public Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token)
+        public async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo2 projectRestoreInfo, CancellationToken token)
         {
-            return NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
+            await _initializerTask.GetValueAsync();
+            return await NominateProjectAsync(projectUniqueName, null, projectRestoreInfo, token);
         }
 
         /// <summary>
@@ -82,10 +102,8 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="token"></param>
         /// <remarks>Exactly one of projectRestoreInfos has to null.</remarks>
         /// <returns>The task that scheduled restore</returns>
-        private async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
+        private Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
         {
-            await EnsureInitializedAsync();
-
             if (string.IsNullOrEmpty(projectUniqueName))
             {
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectUniqueName));
@@ -128,7 +146,7 @@ namespace NuGet.SolutionRestoreManager
                 _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
 
                 // returned task completes when scheduled restore operation completes.
-                return await _restoreWorker.ScheduleRestoreAsync(
+                return _restoreWorker.ScheduleRestoreAsync(
                     SolutionRestoreRequest.OnUpdate(),
                     token);
             }
@@ -139,7 +157,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
-                return false;
+                return Task.FromResult(false);
             }
         }
 
@@ -238,22 +256,20 @@ namespace NuGet.SolutionRestoreManager
             return packageSpec;
         }
 
-        private async Task EnsureInitializedAsync()
+        public async Task<bool> InitializeAsync()
         {
             try
             {
-                if (!_initialized)
-                {
-                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                    IVsShell shell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsShell, IVsShell>();
-                    shell.LoadPackage(new Guid(RestoreManagerPackage.PackageGuidString), out _);
-                    _initialized = true;
-                }
+                IVsShell shell = await _asyncServiceProvider.GetServiceAsync<SVsShell, IVsShell>();
+                var result = shell.LoadPackage(new Guid(RestoreManagerPackage.PackageGuidString), out _);
+                return result == Microsoft.VisualStudio.VSConstants.S_OK;
             }
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
+                return false;
             }
         }
     }

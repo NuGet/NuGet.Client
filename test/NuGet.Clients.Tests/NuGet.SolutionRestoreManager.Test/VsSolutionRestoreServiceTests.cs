@@ -69,7 +69,7 @@ namespace NuGet.SolutionRestoreManager.Test
             var actualRestoreTask = isV2Nomination ? service.NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None)
                 : service.NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo, CancellationToken.None);
 
-            Assert.Same(completedRestoreTask, actualRestoreTask);
+            Assert.Equal(completedRestoreTask.Result, actualRestoreTask.Result);
 
             Mock.Get(restoreWorker)
                 .Verify(
