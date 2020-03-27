@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -21,7 +22,7 @@ namespace NuGet.Commands
         internal const string NoOpCacheFileName = "project.nuget.cache";
 
         /// <summary>
-        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
+        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore.
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {

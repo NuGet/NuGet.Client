@@ -119,7 +119,7 @@ namespace NuGet.Common
         NU1104 = 1104,
 
         /// <summary>
-        /// Project reference was not in the dg spec.
+        /// Unable to read project information for 'ProjectFile'. The project file may be invalid or missing targets required for restore.
         /// </summary>
         NU1105 = 1105,
 

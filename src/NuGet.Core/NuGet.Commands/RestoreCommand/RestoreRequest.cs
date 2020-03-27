@@ -184,5 +184,7 @@ namespace NuGet.Commands
         public bool IsRestoreOriginalAction { get; set; } = true;
 
         public bool RestoreForceEvaluate { get; set; }
+
+        public IReadOnlyList<IAssetsLogMessage> AdditionalMessages { get; set; }
     }
 }
