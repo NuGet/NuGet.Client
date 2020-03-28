@@ -70,6 +70,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </ItemDefinitionGroup>
 
   <PropertyGroup>
+    <RestoreOutputPath Condition="'$(RestoreOutputPath)' == ''">$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(BaseOutputPath)$(Configuration)\</PackageOutputPath>
     <NuspecOutputPath Condition="'$(NuspecOutputPath)' == ''">$(BaseIntermediateOutputPath)$(Configuration)\</NuspecOutputPath>
   </PropertyGroup>
@@ -81,12 +82,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Target Name="_GetAbsoluteOutputPathsForPack">
-    <PropertyGroup>
-      <RestoreOutputPath Condition="'$(RestoreOutputPath)' == ''">$(MSBuildProjectExtensionsPath)</RestoreOutputPath>
-      <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(BaseOutputPath)$(Configuration)\</PackageOutputPath>
-      <NuspecOutputPath Condition="'$(NuspecOutputPath)' == ''">$(BaseIntermediateOutputPath)$(Configuration)\</NuspecOutputPath>
-    </PropertyGroup>
-
     <ConvertToAbsolutePath Paths="$(RestoreOutputPath)">
       <Output TaskParameter="AbsolutePaths" PropertyName="RestoreOutputAbsolutePath" />
     </ConvertToAbsolutePath>
