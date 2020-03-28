@@ -1305,6 +1305,10 @@ namespace Dotnet.Integration.Test
         [InlineData("build", "", "build")]
         [InlineData("../build", "", "build")]
         [InlineData("../build", "folderA/", "folderA/build")]
+        [InlineData("../Build-Info.txt", "/", "Build-Info.txt")]
+        [InlineData("BuildFoo.bar", "", "BuildFoo.bar")]
+        [InlineData("dataBuild.txt", "", "dataBuild.txt")]
+        [InlineData("BUILD.LOG", "", "BUILD.LOG")]
         public void PackCommand_PackProject_PackagePathPacksContentCorrectly(string sourcePath, string packagePath,
             string expectedTargetPaths)
         {

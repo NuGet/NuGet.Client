@@ -32,7 +32,12 @@ namespace NuGet.Packaging.Rules
             {
                 var files = builder.GetFiles()
                                     .Select(t => PathUtility.GetPathWithDirectorySeparator(t))
-                                    .Where(t => t.StartsWith(folder + Path.DirectorySeparatorChar));
+                                    .Where(t =>
+                                        t.StartsWith(
+                                            folder + Path.DirectorySeparatorChar,
+                                            StringComparison.OrdinalIgnoreCase
+                                        )
+                                    );
 
                 var packageId = builder.NuspecReader.GetId();
                 var conventionViolators = IdentifyViolators(files, packageId);
@@ -53,7 +58,10 @@ namespace NuGet.Packaging.Rules
                                                         PathUtility.GetPathWithDirectorySeparator(
                                                             t.ExpectedPath
                                                         )
-                                                        .StartsWith(folder + Path.DirectorySeparatorChar)
+                                                        .StartsWith(
+                                                            folder + Path.DirectorySeparatorChar,
+                                                            StringComparison.OrdinalIgnoreCase
+                                                        )
                                                     );
 
                 foreach (var conViolator in currentConventionViolators)
