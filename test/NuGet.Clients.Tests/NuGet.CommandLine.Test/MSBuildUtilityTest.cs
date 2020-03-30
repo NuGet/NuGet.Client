@@ -232,10 +232,7 @@ namespace NuGet.CommandLine.Test
 
                 // Create dummy msbuild.exe files
                 var msBuild15ExePath = Path.Combine(msBuild15BinPath, "msbuild.exe").ToString();
-                using (var fs15 = File.CreateText(msBuild15ExePath))
-                {
-                    fs15.Write("foo 15");
-                }
+                File.WriteAllText(msBuild15ExePath, "foo 15");
 
                 var msBuild151ExePath = Path.Combine(msBuild151BinPath, "msbuild.exe").ToString();
                 using (var fs151 = File.CreateText(msBuild151ExePath))
