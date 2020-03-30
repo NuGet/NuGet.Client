@@ -1,4 +1,4 @@
-<Project DefaultTargets="GenerateProjectList">
+<Project Sdk="Microsoft.Build.NoTargets/1.0.80" DefaultTargets="GenerateProjectList">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
 
   <PropertyGroup>
