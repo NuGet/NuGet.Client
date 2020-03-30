@@ -1,12 +1,12 @@
 ---
-date-generated: 2020-03-30T13:41:16
+date-generated: 2020-03-30T16:12:17
 tool: NuGetTasks.GenerateMarkdownDoc
 ---
 
 
 # NuGet Project Overview
 
-Below is a list of projects contained in the NuGet.Client repo, organized by source and test projects
+Below is a list of projects contained in the NuGet.Client repo, organized by product and test projects.
 
 ## Product Projects
 
@@ -94,3 +94,20 @@ Projects in section: 10
 - [`NuGet.VisualStudio.Implementation.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.VisualStudio.Implementation.Test/NuGet.VisualStudio.Implementation.Test.csproj): Unit and integration tests for NuGet.VisualStudio.Implementation.
 - [`NuGet.VisualStudio.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.VisualStudio.Test/NuGet.VisualStudio.Test.csproj): Unit and integration tests for NuGet.VisualStudio.
 - [`NuGetConsole.Host.PowerShell.Test.csproj`](../test/NuGet.Clients.Tests/NuGetConsole.Host.PowerShell.Test/NuGetConsole.Host.PowerShell.Test.csproj): Unit and integration tests for NuGetConsole.Host.PowerShell.
+
+
+## Functional Test Projects
+
+Projects in section: 11
+
+- [`NuGet.CommandLine.FuncTest.csproj`](../test/NuGet.Clients.FuncTests/NuGet.CommandLine.FuncTest/NuGet.CommandLine.FuncTest.csproj): A functional (end-to-end) test suite for NuGet.CommandLine. Contains tests for every nuget.exe command.
+- [`NuGet.MSSigning.Extensions.FuncTest.csproj`](../test/NuGet.Clients.FuncTests/NuGet.MSSigning.Extensions.FuncTest/NuGet.MSSigning.Extensions.FuncTest.csproj): A functional (end-to-end) test suite for NuGet.MSSigning.Extensions.
+- [`NuGet.CommandLine.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.CommandLine.Test/NuGet.CommandLine.Test.csproj): An end-to-end test suite for NuGet.CommandLine. Contains tests for every nuget.exe CLI command. Overlaps in tests with NuGet.CommandLine.FuncTest.
+- [`Dotnet.Integration.Test.csproj`](../test/NuGet.Core.FuncTests/Dotnet.Integration.Test/Dotnet.Integration.Test.csproj): Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.
+- [`Msbuild.Integration.Test.csproj`](../test/NuGet.Core.FuncTests/Msbuild.Integration.Test/Msbuild.Integration.Test.csproj): Integration tests for NuGet powered msbuild functionalities (restore/pack).
+- [`NuGet.Commands.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Commands.FuncTest/NuGet.Commands.FuncTest.csproj): Integration tests for the more involved NuGet.Commands, such as restore.
+- [`NuGet.Core.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Core.FuncTest/NuGet.Core.FuncTest.csproj): Integration tests for various functionality from the src/NuGet.Core projects.
+- [`NuGet.Packaging.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/NuGet.Packaging.FuncTest.csproj): Integration tests for the more involved NuGet.Packaging functionality, such as signing.
+- [`NuGet.Protocol.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Protocol.FuncTest/NuGet.Protocol.FuncTest.csproj): Integration tests for the more involved NuGet.Protocol functionality, such as plugins.
+- [`NuGet.XPlat.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.XPlat.FuncTest/NuGet.XPlat.FuncTest.csproj): Functional tests for nuget in dotnet CLI scenarios, using the NuGet.CommandLine.XPlat assembly.
+- [`NuGet.PackageManagement.Test.csproj`](../test/NuGet.Core.Tests/NuGet.PackageManagement.Test/NuGet.PackageManagement.Test.csproj): Unit tests for NuGet.PackageManagement.
