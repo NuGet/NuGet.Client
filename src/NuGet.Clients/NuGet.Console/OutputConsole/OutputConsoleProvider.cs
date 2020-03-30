@@ -67,9 +67,11 @@ namespace NuGetConsole
                     }
                 }, NuGetUIThreadHelper.JoinableTaskFactory);
 
-            _isServerMode = new AsyncLazy<bool>(() => {
-                return IsInServerModeAsync(CancellationToken.None);
-            }, NuGetUIThreadHelper.JoinableTaskFactory);
+            _isServerMode = new AsyncLazy<bool>(
+                () =>
+                {
+                    return IsInServerModeAsync(CancellationToken.None);
+                }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async Task<IOutputConsole> CreateBuildOutputConsoleAsync()
