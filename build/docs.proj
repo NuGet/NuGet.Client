@@ -3,29 +3,53 @@
 
   <PropertyGroup>
     <MarkdownAssemblyPath>$(ArtifactsDirectory)doc.tasks\16.0\bin\Debug\netstandard2.0\doc.tasks.dll</MarkdownAssemblyPath>
+    <DocTaskPath>$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj</DocTaskPath>
   </PropertyGroup>
 
-  <UsingTask TaskName="NuGetTasks.GenerateMarkdownDoc" AssemblyFile="$(MarkdownAssemblyPath)" />
-  <Target Name="GenerateProjectList">
+  <PropertyGroup>
+    <DocTitle>NuGet Project Overview</DocTitle>
+    <DocSummary>Below is a list of projects contained in the NuGet.Client repo, organized by source and test projects</DocSummary>
+  </PropertyGroup>
+  <ItemGroup>
+    <Section Include="DocItem">
+      <Title>Product Projects</Title>
+      <Summary>All shipped NuGet libraries and clients in `src/` folder.</Summary>
+      <Projects>@(ProductProjects)</Projects>
+    </Section>
+    <Section Include="DocItem">
+      <Title>Core Unit Test Projects</Title>
+      <Summary>Unit tests for libraries and some clients. Located in `test/` folder.</Summary>
+      <Projects>@(CoreUnitTestProjects)</Projects>
+    </Section>
+    <Section Include="DocItem">
+      <Title>Visual Studio Test Projects</Title>
+      <Projects>@(VSUnitTestProjects)</Projects>
+    </Section>
+  </ItemGroup>
+
+  <Target Name="BuildTasks">
     <MsBuild
-      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Projects="$(DocTaskPath)"
       Targets="Restore"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion);" />
 
     <MsBuild
-      Projects="$(RepositoryRootDirectory)\tools-local\doc.tasks\doc.tasks.csproj"
+      Projects="$(DocTaskPath)"
       Targets="Build"
       Properties="$(CommonMSBuildProperties);
                   VisualStudioVersion=$(VisualStudioVersion);" />
+  </Target>
 
+  <UsingTask TaskName="NuGetTasks.GenerateMarkdownDoc" AssemblyFile="$(MarkdownAssemblyPath)" />
+  <Target Name="GenerateProjectList" DependsOnTargets="BuildTasks">
     <GenerateMarkdownDoc
-      ProductProjects="@(ProductProjects)"
-      TestProjects="@(CoreUnitTestProjects);@(CoreFuncTestProjects);@(VSUnitTestProjects)"
-      OutputFile="$(RepositoryRootDirectory)\docs\project-list.md"
-      GitHubRepositoryUrl="$(RepositoryUrl)"
+      OutputFile="$(RepositoryRootDirectory)\docs\project-overview.md"
       RepositoryRoot="$(RepositoryRootDirectory)"
-      Title="NuGet Project Overview" />
+      Title="$(DocTitle)"
+      Summary="$(DocSummary)"
+      Sections="@(Section)">
+    </GenerateMarkdownDoc>
 
     <Message Text="Documentation generated!" Importance="High" />
   </Target>

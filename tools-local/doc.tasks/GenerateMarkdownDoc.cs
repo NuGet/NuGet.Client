@@ -13,45 +13,33 @@ namespace NuGetTasks
     public class GenerateMarkdownDoc : Task
     {
         /// <summary>
-        /// Project files item group
-        /// </summary>
-        public ITaskItem[] ProductProjects { get; set; }
-        /// <summary>
-        /// Test project files item group
-        /// </summary>
-        public ITaskItem[] TestProjects { get; set; }
-        /// <summary>
         /// Filepath to the generated documentation
         /// </summary>
+        [Required]
         public ITaskItem OutputFile { get; set; }
-        /// <summary>
-        /// Repository Url to create links to the file
-        /// </summary>
-        public string GitHubRepositoryUrl { get; set; }
         /// <summary>
         /// Repository path on disk to relativize paths
         /// </summary>
+        [Required]
         public string RepositoryRoot { get; set; }
         /// <summary>
         /// Title for the document
         /// </summary>
-        public string Title { get; set; } = "NuGet Client Projects Overview";
+        [Required]
+        public string Title { get; set; }
         /// <summary>
-        /// Sub-title for projects list
+        /// A brief description for the whole document
         /// </summary>
-        public string ProjectsSubtitle { get; set; } = "Projects";
+        public string Summary { get; set; }
         /// <summary>
-        /// Sub-title for test projects list
+        /// Section descriptors, including Title, Summary and projects
         /// </summary>
-        public string TestProjectsSubtitle { get; set; } = "Test Projects";
-        /// <summary>
-        /// FullPath MSBuild item metadata
-        /// </summary>
-        private static readonly string MetaFullPath = "FullPath";
+        [Required]
+        public ITaskItem[] Sections { get; set; }
 
         public override bool Execute()
         {
-            var outputFilePath = OutputFile.GetMetadata(MetaFullPath);
+            var outputFilePath = OutputFile.GetMetadata("FullPath");
 
             var dirname = Path.GetDirectoryName(outputFilePath);
             Directory.CreateDirectory(dirname);
@@ -66,33 +54,55 @@ namespace NuGetTasks
                 file.WriteLine("---");
 
                 file.WriteLine($"\n\n# {Title}\n");
-                file.WriteLine("Below is a list of all source code projects for NuGet libraries and supported NuGet clients\n");
 
-                file.WriteLine($"\n\n## {ProjectsSubtitle}\n");
-                file.WriteLine("All shipped NuGet libraries and clients lives in `src/` folder.\n");
-                file.WriteLine($"Projects count: {ProductProjects.Length}\n");
-                SortAndWriteDescriptions(ProductProjects, file);
+                if(!string.IsNullOrEmpty(Summary))
+                {
+                    file.WriteLine($"{Summary}\n");
+                }
+                
+                for (int j = 0; j < Sections.Length; j++) 
+                {
+                    string sectionTitle = Sections[j].GetMetadata("Title");
+                    if (!string.IsNullOrEmpty(sectionTitle))
+                    {
+                        file.WriteLine($"## {sectionTitle}\n");
+                    }
 
-                file.WriteLine($"\n\n## {TestProjectsSubtitle}\n");
-                file.WriteLine("Most production assemblies has an associated test project, whose name ends with `.Test`.\n");
-                file.WriteLine($"Test Projects count: {TestProjects.Length}\n");
-                SortAndWriteDescriptions(TestProjects, file);
+                    string summary = Sections[j].GetMetadata("Summary");
+                    if (!string.IsNullOrEmpty(summary))
+                    {
+                        file.WriteLine($"{summary}\n");
+                    }
+                    
+                    WriteSectionProjecs(Sections[j], file);
+
+                    if (j + 1 < Sections.Length)
+                    {
+                        file.WriteLine("\n");
+                    }
+                }
             }
             Log.LogMessage(MessageImportance.Low, "Documentation complete");
 
             return true;
         }
 
-        private void SortAndWriteDescriptions(ITaskItem[] projects, StreamWriter file)
+        private void WriteSectionProjecs(ITaskItem section, StreamWriter file)
         {
-            Array.Sort(projects, (a, b) => a.GetMetadata(MetaFullPath).CompareTo(b.GetMetadata(MetaFullPath)));
+            string[] projectFiles = section.GetMetadata("Projects").Split(';');
 
-            for (int i = 0; i < projects.Length; i++)
+            file.WriteLine($"Projects in section: {projectFiles.Length}\n");
+                    
+            Array.Sort(projectFiles, (a, b) => a.CompareTo(b));
+
+            for (int i = 0; i < projectFiles.Length; i++)
             {
-                var projectPath = projects[i].GetMetadata(MetaFullPath);
+                var projectPath = projectFiles[i];
                 var desc = GetDescriptions(projectPath);
+                var link = GenerateRelativeLink(projectPath);
+                var projectBullet = Path.GetFileName(projectPath);
 
-                file.WriteLine($"- [`{RelativizePath(projectPath)}`]({GenerateRelativeLink(projectPath)}): {desc}");
+                file.WriteLine($"- [`{projectBullet}`]({link}): {desc}");
             }
         }
 
