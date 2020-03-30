@@ -235,10 +235,7 @@ namespace NuGet.CommandLine.Test
                 File.WriteAllText(msBuild15ExePath, "foo 15");
 
                 var msBuild151ExePath = Path.Combine(msBuild151BinPath, "msbuild.exe").ToString();
-                using (var fs151 = File.CreateText(msBuild151ExePath))
-                {
-                    fs151.Write("foo 15.1");
-                }
+                File.WriteAllText(msBuild151ExePath, "foo 15.1");
 
                 // Act
                 var msBuildExePath = MsBuildToolset.GetMsBuildDirFromVsDir(vsPath);
