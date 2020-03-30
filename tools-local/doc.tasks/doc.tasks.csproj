@@ -12,6 +12,5 @@
     <PackageReference Include="Microsoft.Build.Utilities.Core" Version="16.4.0" />
   </ItemGroup>
 
-
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
