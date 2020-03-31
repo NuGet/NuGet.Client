@@ -15,7 +15,10 @@ namespace NuGet.ProjectModel
 {
     public class PackagesLockFileFormat
     {
-        public static readonly int Version = 1;
+        // Version 2 adds the a new metadata attribute CentralTransitive for the transitive package dependencies that are managed centrally for projects that are opt-in CPVM
+        //           a Version 2 lock file does not necessarily have an element with CentralTransitive attribute
+        //           the presence of the Central Transitive is influenced by the fact that a project is opted in central Package Management and transitive dependencies centrally defined exist
+        public static readonly int Version = 2;
 
         public static readonly string LockFileName = "packages.lock.json";
 
