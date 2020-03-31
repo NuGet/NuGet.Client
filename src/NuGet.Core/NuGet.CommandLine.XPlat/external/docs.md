@@ -79,13 +79,13 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 - Add a source that needs authentication:
 
   ```dotnetcli
-  dotnet nuget add source https://someServer/myTeam -n myTeam -u myUsername -p myPassword --store-password-in-clear-text
+  dotnet nuget add source https://contoso.com/litware -n myTeam -u myUsername -p myPassword --store-password-in-clear-text
   ```
 
 - Add a source that needs authentication (then go install credential provider):
 
   ```dotnetcli
-  dotnet nuget add source https://azureartifacts.microsoft.com/myTeam -n myTeam
+  dotnet nuget add source https://pkgs.dev.azure.com/contoso/litware/_packaging/litware-deps/nuget/v3/index.json -n myTeam
   ```
 
 ## See also
