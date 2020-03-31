@@ -363,22 +363,23 @@ namespace NuGet.Commands
             return result;
         }
 
-        public static string GetMSBuildFilePath(PackageSpec project, string extension)
-        {
-            if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference || project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetToolReference)
-            {
-                // PackageReference style projects
-                return GetMSBuildFilePathForPackageReferenceStyleProject(project, extension);
-            }
-
-            // Project.json style projects
-            var dir = Path.GetDirectoryName(project.FilePath);
-            return Path.Combine(dir, $"{project.Name}.nuget{extension}");
-        }
-
         public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
         {
-            return GetMSBuildFilePath(project, extension);
+            string path;
+
+            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference)
+            {
+                // PackageReference style projects
+                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
+                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
+            }
+            else
+            {
+                // Project.json style projects
+                var dir = Path.GetDirectoryName(project.FilePath);
+                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
+            }
+            return path;
         }
 
         public static string GetMSBuildFilePathForPackageReferenceStyleProject(PackageSpec project, string extension)
@@ -387,7 +388,6 @@ namespace NuGet.Commands
 
             return Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
         }
-
 
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
