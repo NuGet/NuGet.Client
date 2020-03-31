@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
@@ -134,7 +135,7 @@ namespace NuGet.CommandLine
         {
             var dirName = new DirectoryInfo(directoryName).Name;
             float dirValue;
-            if (float.TryParse(dirName, out dirValue))
+            if (float.TryParse(dirName, NumberStyles.Float, CultureInfo.InvariantCulture, out dirValue))
             {
                 return dirValue;
             }
