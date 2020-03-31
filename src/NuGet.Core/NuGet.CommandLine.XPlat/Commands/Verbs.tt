@@ -9,7 +9,10 @@
 <#
     string InitCaps(string input)
     {
-        if (input == null) return null;
+        if (input == null) 
+        {
+            return null;
+        }
 
         string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
         return output;
