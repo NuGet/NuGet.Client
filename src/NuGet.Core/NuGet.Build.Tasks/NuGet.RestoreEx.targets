@@ -8,6 +8,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Target Name="Restore">
     <RestoreTaskEx
+        CleanupAssetsForUnsupportedProjects="$([MSBuild]::ValueOrDefault('$(RestoreCleanupAssetsForUnsupportedProjects)', 'true'))"
         DisableParallel="$(RestoreDisableParallel)"
         Force="$(RestoreForce)"
         ForceEvaluate="$(RestoreForceEvaluate)"

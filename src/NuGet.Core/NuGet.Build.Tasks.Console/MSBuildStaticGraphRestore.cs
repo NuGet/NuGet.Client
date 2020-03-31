@@ -117,7 +117,7 @@ namespace NuGet.Build.Tasks.Console
                     forceEvaluate: IsOptionTrue(nameof(RestoreTaskEx.ForceEvaluate), options),
                     hideWarningsAndErrors: IsOptionTrue(nameof(RestoreTaskEx.HideWarningsAndErrors), options),
                     restorePC: IsOptionTrue(nameof(RestoreTaskEx.RestorePackagesConfig), options),
-                    cleanupAssetsForUnsupportedProjects: true,
+                    cleanupAssetsForUnsupportedProjects: IsOptionTrue(nameof(RestoreTaskEx.CleanupAssetsForUnsupportedProjects), options),
                     log: MSBuildLogger,
                     cancellationToken: CancellationToken.None);
             }
