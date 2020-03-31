@@ -18,7 +18,7 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
         {
             var x = new PackagesLockFileBuilder().Build();
             var y = new PackagesLockFileBuilder()
-                .WithVersion(2)
+                .WithVersion(PackagesLockFileFormat.Version + 1)
                 .Build();
 
             var actual = PackagesLockFileUtilities.IsLockFileStillValid(x, y);
