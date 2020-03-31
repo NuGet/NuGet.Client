@@ -5,18 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using NuGet.Common;
-using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -273,6 +269,8 @@ namespace NuGet.Commands
 
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
+            AddProjectCentralTransitiveDependencyGroupsForPackageReference(project, lockFile, targetGraphs);
+
             // Add the original package spec to the lock file.
             lockFile.PackageSpec = project;
 
@@ -325,9 +323,7 @@ namespace NuGet.Commands
                     graph.Framework.Equals(frameworkInfo.FrameworkName)
                     && string.IsNullOrEmpty(graph.RuntimeIdentifier));
 
-                var flattenTargetGraph = targetGraph?.Flattened;
-
-                var resolvedEntry = flattenTargetGraph?
+                var resolvedEntry = targetGraph?.Flattened?
                     .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
 
                 Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
@@ -357,25 +353,52 @@ namespace NuGet.Commands
                     uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
-                lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
+                lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);           
+            }
+        }
 
-                // The transitive dependencies enforced by the central package version management file
-                // are written to the assets to be used by the pack task.
-                var centralEnforcedTransitiveDependencies = flattenTargetGraph?
-                    .Where(graphItem => graphItem.CentralDependency != null)
-                    .Select(
-                        graphItem => graphItem.CentralDependency
-                    );
+        private void AddProjectCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
+        {
+            // TargetFrameworkInformations should have only distinct FrameworkNames
+            var centralPackageVersionsPerFramework = project.TargetFrameworks.ToDictionary(tfmi => tfmi.FrameworkName, tfmi => tfmi.CentralPackageVersions);
 
-                if (centralEnforcedTransitiveDependencies.Any())
+            foreach (var targetGraph in targetGraphs.OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal))
+            {
+                if (_includeFlagGraphs.TryGetValue(targetGraph, out Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags))
                 {
-                    var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
-                            (
-                                frameworkInfo.FrameworkName,
-                                centralEnforcedTransitiveDependencies
-                            );
+                    // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
+                    IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph.Flattened?
+                        .Where(graphItem => graphItem.IsCentralTransitive
+                            && centralPackageVersionsPerFramework.ContainsKey(targetGraph.Framework)
+                            && centralPackageVersionsPerFramework[targetGraph.Framework].ContainsKey(graphItem.Key.Name))
+                        .Select((graphItem) =>
+                        {
+                            var matchingCentralVersion = centralPackageVersionsPerFramework[targetGraph.Framework][graphItem.Key.Name];
+                            var libraryDependency = new LibraryDependency()
+                            {
+                                LibraryRange = new LibraryRange(matchingCentralVersion.Name, matchingCentralVersion.VersionRange, LibraryDependencyTarget.Package),
+                                ReferenceType = LibraryDependencyReferenceType.Transitve,
+                                VersionCentrallyManaged = true
+                            };
 
-                    lockFile.ProjectCentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                            if (dependenciesIncludeFlags.TryGetValue(graphItem.Key.Name, out LibraryIncludeFlags libraryIncludeFlags))
+                            {
+                                libraryDependency.IncludeType = libraryIncludeFlags;
+                            }
+
+                            return libraryDependency;
+                        });
+
+                    if (centralEnforcedTransitiveDependencies != null && centralEnforcedTransitiveDependencies.Any())
+                    {
+                        var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
+                                (
+                                    targetGraph.Framework,
+                                    centralEnforcedTransitiveDependencies
+                                );
+
+                        lockFile.ProjectCentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                    }
                 }
             }
         }

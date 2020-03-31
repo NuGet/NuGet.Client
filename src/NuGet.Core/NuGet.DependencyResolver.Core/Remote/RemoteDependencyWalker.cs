@@ -52,9 +52,7 @@ namespace NuGet.DependencyResolver
             RuntimeGraph runtimeGraph,
             Func<LibraryRange, (DependencyResult dependencyResult, LibraryDependency conflictingDependency)> predicate,
             GraphEdge<RemoteResolveResult> outerEdge,
-            TransitiveCentralPackageVersions transitiveCentralPackageVersions,
-            LibraryIncludeFlags inheritedIncludeFlags = LibraryIncludeFlags.All,
-            LibraryIncludeFlags inheritedSuppressParent = LibraryIncludeFlags.None)
+            TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             List<LibraryDependency> dependencies = null;
             HashSet<string> runtimeDependencies = null;
@@ -160,10 +158,6 @@ namespace NuGet.DependencyResolver
                         result = (dependencyResult: DependencyResult.Cycle, conflictingDependency: dependency);
                     }
 
-                    // Make the IncludeType and SuppressParent more restrictive as they go down in the graph
-                    LibraryIncludeFlags includeType = dependency.IncludeType & inheritedIncludeFlags;
-                    LibraryIncludeFlags suppressParent = dependency.SuppressParent | inheritedSuppressParent;
-
                     if (result.dependencyResult == DependencyResult.Acceptable)
                     {
                         // Dependency edge from the current node to the dependency
@@ -181,9 +175,7 @@ namespace NuGet.DependencyResolver
                             runtimeGraph,
                             ChainPredicate(predicate, node, dependency),
                             innerEdge,
-                            transitiveCentralPackageVersions,
-                            includeType,
-                            suppressParent));
+                            transitiveCentralPackageVersions));
                     }
                     else
                     {
@@ -193,8 +185,6 @@ namespace NuGet.DependencyResolver
                             result.conflictingDependency.VersionCentrallyManaged &&
                             result.conflictingDependency.ReferenceType == LibraryDependencyReferenceType.None)
                         {
-                            result.conflictingDependency.IncludeType = includeType;
-                            result.conflictingDependency.SuppressParent = suppressParent;
                             MarkCentralVersionForTransitiveProcessing(result.conflictingDependency, transitiveCentralPackageVersions);
                         }
 
@@ -410,12 +400,10 @@ namespace NuGet.DependencyResolver
                     runtimeGraph: runtimeGraph,
                     predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
-                    transitiveCentralPackageVersions: transitiveCentralPackageVersions,
-                    inheritedIncludeFlags: centralPackageVersionDependency.IncludeType,
-                    inheritedSuppressParent: centralPackageVersionDependency.SuppressParent);
+                    transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
             node.OuterNode = rootNode;
-            node.Item.CentralDependency = centralPackageVersionDependency;
+            node.Item.IsCentralTransitive = true;
             rootNode.InnerNodes.Add(node);
         }
 
