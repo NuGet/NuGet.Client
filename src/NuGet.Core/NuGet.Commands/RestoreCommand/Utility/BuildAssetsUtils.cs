@@ -363,23 +363,22 @@ namespace NuGet.Commands
             return result;
         }
 
-        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
+        public static string GetMSBuildFilePath(PackageSpec project, string extension)
         {
-            string path;
-
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference) 
+            if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference || project.RestoreMetadata.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
                 // PackageReference style projects
-                var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
+                return GetMSBuildFilePathForPackageReferenceStyleProject(project, extension);
             }
-            else
-            {
-                // Project.json style projects
-                var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
-            }
-            return path;
+
+            // Project.json style projects
+            var dir = Path.GetDirectoryName(project.FilePath);
+            return Path.Combine(dir, $"{project.Name}.nuget{extension}");
+        }
+
+        public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
+        {
+            return GetMSBuildFilePath(project, extension);
         }
 
         public static string GetMSBuildFilePathForPackageReferenceStyleProject(PackageSpec project, string extension)
