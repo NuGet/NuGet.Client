@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Xml.XPath;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -94,15 +96,31 @@ namespace NuGetTasks
             file.WriteLine($"Projects in section: {projectFiles.Length}\n");
                     
             Array.Sort(projectFiles, (a, b) => a.CompareTo(b));
+            Array.ForEach(projectFiles, pf => pf = RelativizePath(pf));
 
-            for (int i = 0; i < projectFiles.Length; i++)
+            var groupedPaths = projectFiles
+                .Where(pf => pf.StartsWith(RepositoryRoot))
+                .Select(pf => pf.Substring(pf.IndexOf(RepositoryRoot) + RepositoryRoot.Length))
+                .Select(pf => pf.Split('\\'))
+                .ToLookup(pf => $"{pf[0]}\\{pf[1]}", pf => new Tuple<string, string>(pf[2], pf[3]));
+
+            foreach (var srcFolders in groupedPaths)
             {
-                var projectPath = projectFiles[i];
-                var desc = GetDescriptions(projectPath);
-                var link = GenerateRelativeLink(projectPath);
-                var projectBullet = Path.GetFileName(projectPath);
+                var folder = srcFolders.Key;
+                file.WriteLine($"### {folder}\n");
 
-                file.WriteLine($"- [`{projectBullet}`]({link}): {desc}");
+                foreach (var subFolderTuple in srcFolders)
+                {
+                    var subfolder = subFolderTuple.Item1;
+                    var csproj = subFolderTuple.Item2;
+
+                    var projectPath = $"{RepositoryRoot}\\{folder}\\{subfolder}\\{csproj}";
+                    var desc = GetDescriptions(projectPath);
+                    var link = GenerateRelativeLink(projectPath);
+                    var projectBullet = Path.GetFileName(projectPath);
+
+                    file.WriteLine($"- [`{projectBullet}`]({link}): {desc}");
+                }
             }
         }
 
