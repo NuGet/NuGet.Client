@@ -223,7 +223,7 @@ namespace NuGet.ProjectModel
 
             if (lockFile.ProjectCentralTransitiveDependencyGroups.Any())
             {
-                var token = WriteProjectCentralTransitiveDependencyGroup(lockFile.ProjectCentralTransitiveDependencyGroups);
+                JToken token = WriteProjectCentralTransitiveDependencyGroup(lockFile.ProjectCentralTransitiveDependencyGroups);
                 json[ProjectCentralTransitiveDependencyGroupsProperty] = (JObject)token;
             }
 

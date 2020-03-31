@@ -850,7 +850,7 @@ namespace NuGet.Build.Tasks.Pack
                     continue;
                 }
 
-                var centralTransitiveDependencies = assetsFile.ProjectCentralTransitiveDependencyGroups
+                IEnumerable<LibraryDependency> centralTransitiveDependencies = assetsFile.ProjectCentralTransitiveDependencyGroups
                     .Where(ptg => ptg.FrameworkName.Equals(framework.FrameworkName.GetShortFolderName(), StringComparison.OrdinalIgnoreCase))
                     .SelectMany(ptg => ptg.TransitiveDependencies);
 

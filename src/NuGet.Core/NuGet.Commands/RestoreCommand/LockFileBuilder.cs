@@ -323,7 +323,8 @@ namespace NuGet.Commands
                     graph.Framework.Equals(frameworkInfo.FrameworkName)
                     && string.IsNullOrEmpty(graph.RuntimeIdentifier));
 
-                var resolvedEntry = targetGraph?.Flattened?
+                var resolvedEntry = targetGraph?
+                    .Flattened
                     .SingleOrDefault(library => library.Key.Name.Equals(project.Name, StringComparison.OrdinalIgnoreCase));
 
                 Debug.Assert(resolvedEntry != null, "Unable to find project entry in target graph, project references will not be added");
@@ -353,7 +354,7 @@ namespace NuGet.Commands
                     uniqueDependencies.Select(x => x.ToLockFileDependencyGroupString())
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
-                lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);           
+                lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
             }
         }
 
@@ -367,7 +368,8 @@ namespace NuGet.Commands
                 if (_includeFlagGraphs.TryGetValue(targetGraph, out Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags))
                 {
                     // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
-                    IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph.Flattened?
+                    IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
+                        .Flattened
                         .Where(graphItem => graphItem.IsCentralTransitive
                             && centralPackageVersionsPerFramework.ContainsKey(targetGraph.Framework)
                             && centralPackageVersionsPerFramework[targetGraph.Framework].ContainsKey(graphItem.Key.Name))
@@ -381,7 +383,7 @@ namespace NuGet.Commands
                                 VersionCentrallyManaged = true
                             };
 
-                            if (dependenciesIncludeFlags.TryGetValue(graphItem.Key.Name, out LibraryIncludeFlags libraryIncludeFlags))
+                            if (dependenciesIncludeFlags.TryGetValue(matchingCentralVersion.Name, out LibraryIncludeFlags libraryIncludeFlags))
                             {
                                 libraryDependency.IncludeType = libraryIncludeFlags;
                             }
@@ -389,7 +391,7 @@ namespace NuGet.Commands
                             return libraryDependency;
                         });
 
-                    if (centralEnforcedTransitiveDependencies != null && centralEnforcedTransitiveDependencies.Any())
+                    if (centralEnforcedTransitiveDependencies.Any())
                     {
                         var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
                                 (

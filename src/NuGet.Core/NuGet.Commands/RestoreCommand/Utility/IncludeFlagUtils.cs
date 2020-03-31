@@ -152,8 +152,8 @@ namespace NuGet.Commands
                         && dependency.SuppressParent != LibraryIncludeFlags.All)
                     {
                         // intersect the edges and remove any suppressParent flags
-                        LibraryIncludeFlags typeIntersection = 
-                            (node.DependencyType 
+                        LibraryIncludeFlags typeIntersection =
+                            (node.DependencyType
                             & dependency.IncludeType
                             & (~dependency.SuppressParent));
 

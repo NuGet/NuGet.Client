@@ -224,8 +224,7 @@ namespace NuGet.ProjectModel
 
         private static void HashProjectCentralTransitiveDependencyGroups(HashCodeCombiner combiner, IList<ProjectCentralTransitiveDependencyGroup> groups)
         {
-            foreach (var item in groups.OrderBy(
-                group => @group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            foreach (ProjectCentralTransitiveDependencyGroup item in groups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }
