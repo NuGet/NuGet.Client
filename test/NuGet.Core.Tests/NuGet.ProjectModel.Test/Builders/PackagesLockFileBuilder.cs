@@ -8,7 +8,7 @@ namespace NuGet.ProjectModel.Test.Builders
 {
     internal class PackagesLockFileBuilder
     {
-        private int _version = PackagesLockFileFormat.Version;
+        private int _version = PackagesLockFileFormat.PackageReferenceVersion;
         private List<PackagesLockFileTarget> _targets = new List<PackagesLockFileTarget>();
 
         public PackagesLockFileBuilder WithVersion(int version)

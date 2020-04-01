@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.Utility
             }
             else
             {
-                lockFile = new PackagesLockFile();
+                lockFile = new PackagesLockFile(PackagesLockFileFormat.Version);
                 lockFile.Targets.Add(new PackagesLockFileTarget());
             }
 
@@ -307,7 +307,7 @@ namespace NuGet.PackageManagement.Utility
                 throw new DirectoryNotFoundException(string.Format(Strings.Error_DirectoryDoesNotExist, packagesFolderPath));
             }
 
-            var lockFile = new PackagesLockFile();
+            var lockFile = new PackagesLockFile(PackagesLockFileFormat.Version);
             var target = new PackagesLockFileTarget();
             lockFile.Targets.Add(target);
             target.TargetFramework = projectTfm;
