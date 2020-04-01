@@ -55,7 +55,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                             return VSConstants.S_OK;                    }
                 }
             }
-            return VSConstants.S_OK;
+            return (int) Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
         }
 
         public bool QueryStatus(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, ref uint cmdf, ref string customTitle)
