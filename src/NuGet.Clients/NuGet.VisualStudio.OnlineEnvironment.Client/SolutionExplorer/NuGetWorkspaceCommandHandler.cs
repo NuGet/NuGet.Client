@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Workspace.VSIntegration.UI;
@@ -50,11 +52,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
                             _restoreCommandHandler.RunSolutionRestore();
-                            return 0;
-                    }
+                            return VSConstants.S_OK;                    }
                 }
             }
-            return 1;
+            return VSConstants.S_OK;
         }
 
         public bool QueryStatus(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, ref uint cmdf, ref string customTitle)
