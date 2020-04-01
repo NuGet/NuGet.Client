@@ -133,6 +133,23 @@ namespace NuGet.Build.Tasks
             ProjectStyle.ProjectJson
         };
 
+        public static Task<bool> RestoreAsync(
+            DependencyGraphSpec dependencyGraphSpec,
+            bool interactive,
+            bool recursive,
+            bool noCache,
+            bool ignoreFailedSources,
+            bool disableParallel,
+            bool force,
+            bool forceEvaluate,
+            bool hideWarningsAndErrors,
+            bool restorePC,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return RestoreAsync(dependencyGraphSpec, interactive, recursive, noCache, ignoreFailedSources, disableParallel, force, forceEvaluate, hideWarningsAndErrors, restorePC, cleanupAssetsForUnsupportedProjects: false, log, cancellationToken);
+        }
+
         public static async Task<bool> RestoreAsync(
             DependencyGraphSpec dependencyGraphSpec,
             bool interactive,
@@ -144,6 +161,7 @@ namespace NuGet.Build.Tasks
             bool forceEvaluate,
             bool hideWarningsAndErrors,
             bool restorePC,
+            bool cleanupAssetsForUnsupportedProjects,
             Common.ILogger log,
             CancellationToken cancellationToken)
         {
@@ -251,6 +269,35 @@ namespace NuGet.Build.Tasks
                         cancellationToken.ThrowIfCancellationRequested();
 
                         restoreSummaries.AddRange(await RestoreRunner.RunAsync(restoreContext, cancellationToken));
+                    }
+
+                    if (cleanupAssetsForUnsupportedProjects)
+                    {
+                        // Restore assets are normally left on disk between restores for all projects.  This can cause a condition where a project that supports PackageReference was restored
+                        // but then a user changes a branch or some other condition and now the project does not use PackageReference. Since the restore assets are left on disk, the build
+                        // consumes them which can cause build errors. The code below cleans up all of the files that we write so that they are not used during build
+                        Parallel.ForEach(dependencyGraphSpec.Projects.Where(i => !DoesProjectSupportRestore(i)), project =>
+                        {
+                            if (project.RestoreMetadata == null || string.IsNullOrWhiteSpace(project.RestoreMetadata.OutputPath) || string.IsNullOrWhiteSpace(project.RestoreMetadata.ProjectPath))
+                            {
+                                return;
+                            }
+                            
+                            // project.assets.json
+                            FileUtility.Delete(Path.Combine(project.RestoreMetadata.OutputPath, LockFileFormat.AssetsFileName));
+
+                            // project.csproj.nuget.cache
+                            FileUtility.Delete(project.RestoreMetadata.CacheFilePath);
+
+                            // project.csproj.nuget.g.props
+                            FileUtility.Delete(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.PropsExtension));
+
+                            // project..csproj.nuget.g.targets
+                            FileUtility.Delete(BuildAssetsUtils.GetMSBuildFilePathForPackageReferenceStyleProject(project, BuildAssetsUtils.TargetsExtension));
+
+                            // project.csproj.nuget.dgspec.json
+                            FileUtility.Delete(Path.Combine(project.RestoreMetadata.OutputPath, DependencyGraphSpec.GetDGSpecFileName(Path.GetFileName(project.RestoreMetadata.ProjectPath))));
+                        });
                     }
                 }
 

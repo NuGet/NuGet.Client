@@ -63,8 +63,8 @@ namespace NuGet.Build.Tasks.Console
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
 
-            // Only wire up an AssemblyResolve event handler if being debugged.
-            if (debug)
+            // Only wire up an AssemblyResolve event handler if being debugged or running under a unit test
+            if (debug || string.Equals(Environment.GetEnvironmentVariable("UNIT_TEST_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
             {
                 // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
                 // handler is used in order to locate the MSBuild assemblies
