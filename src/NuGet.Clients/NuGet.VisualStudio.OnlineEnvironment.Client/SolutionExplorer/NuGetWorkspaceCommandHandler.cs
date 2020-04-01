@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
@@ -52,7 +51,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
                             _restoreCommandHandler.RunSolutionRestore();
-                            return VSConstants.S_OK;                    
+                            return VSConstants.S_OK;
                     }
                 }
             }
