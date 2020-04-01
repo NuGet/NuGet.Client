@@ -52,7 +52,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
                             _restoreCommandHandler.RunSolutionRestore();
-                            return VSConstants.S_OK;                    }
+                            return VSConstants.S_OK;                    
+                    }
                 }
             }
             return (int) Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
