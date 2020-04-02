@@ -1918,7 +1918,7 @@ namespace NuGet.ProjectModel.Test
                 "".NETPlatform,Version=v5.0"": []
             },
             ""centralTransitiveDependencyGroups"": {
-                ""dotnet"": {
+                "".NETPlatform,Version=v5.0"": {
                 ""Newtonsoft.Json"": {
                             ""include"": ""Compile, Native, BuildTransitive"",
                             ""suppressParent"": ""All"",

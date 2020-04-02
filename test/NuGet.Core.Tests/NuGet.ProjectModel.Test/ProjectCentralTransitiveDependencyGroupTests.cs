@@ -48,7 +48,7 @@ namespace NuGet.ProjectModel.Test
 
             // Assert
             Assert.Equal(dependencies, tDependencies);
-            Assert.Equal(nuGetFramework.GetShortFolderName(), framework);
+            Assert.Equal(nuGetFramework.ToString(), framework);
         }
 
         [Fact]

@@ -3594,7 +3594,7 @@
       }
     }
   },
-  "projectCentralTransitiveDependencyGroups": {
+  "centralTransitiveDependencyGroups": {
     "netstandard1.4": {
         "Newtonsoft.Json": {
           "include": "Compile, Native, BuildTransitive",
