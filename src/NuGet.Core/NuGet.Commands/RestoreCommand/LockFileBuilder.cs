@@ -360,7 +360,7 @@ namespace NuGet.Commands
 
         private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
-            if(!project.RestoreMetadata.CentralPackageVersionsEnabled)
+            if(project.RestoreMetadata?.CentralPackageVersionsEnabled == false)
             {
                 return;
             }
@@ -378,6 +378,8 @@ namespace NuGet.Commands
                         .Select((graphItem) =>
                         {
                             CentralPackageVersion matchingCentralVersion = centralPackageVersionsForFramework[graphItem.Key.Name];
+
+                            Debug.Assert(dependenciesIncludeFlags.ContainsKey(matchingCentralVersion.Name));
 
                             var libraryDependency = new LibraryDependency()
                             {
