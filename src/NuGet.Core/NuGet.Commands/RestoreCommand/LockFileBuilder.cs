@@ -365,7 +365,11 @@ namespace NuGet.Commands
                 return;
             }
 
-            foreach (var targetGraph in targetGraphs.OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal))
+            // Do not pack anything from the runtime graphs
+            // The runtime graphs are added in addition to the graphs without a runtime 
+            foreach (var targetGraph in targetGraphs
+                .Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier))
+                .OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal))
             {
                 if (_includeFlagGraphs.TryGetValue(targetGraph, out Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags))
                 {
