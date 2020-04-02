@@ -814,33 +814,33 @@ namespace NuGet.ProjectModel.Test
                                originalString: "2.0.1"),
                            LibraryDependencyTarget.Package)
             };
-            var projCTDG_1_2 = new ProjectCentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
-            var projCTDG_11_22 = new ProjectCentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
+            var projCTDG_1_2 = new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
+            var projCTDG_11_22 = new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
 
             var lockFile_1_2 = new LockFile
             {
                 Version = 3,
-                ProjectCentralTransitiveDependencyGroups = new List<ProjectCentralTransitiveDependencyGroup>(){ projCTDG_1_2 }
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>(){ projCTDG_1_2 }
             };
             var lockFile_11_22 = new LockFile
             {
                 Version = 3,
-                ProjectCentralTransitiveDependencyGroups = new List<ProjectCentralTransitiveDependencyGroup>() { projCTDG_11_22 }
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>() { projCTDG_11_22 }
             };
             var lockFile_1 = new LockFile
             {
                 Version = 3,
-                ProjectCentralTransitiveDependencyGroups = new List<ProjectCentralTransitiveDependencyGroup>()
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>()
                     {
-                        new ProjectCentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1})
+                        new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1})
                     }
             };
             var lockFile_1_3 = new LockFile
             {
                 Version = 3,
-                ProjectCentralTransitiveDependencyGroups = new List<ProjectCentralTransitiveDependencyGroup>()
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>()
                     {
-                        new ProjectCentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1, libraryDependency_3})
+                        new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1, libraryDependency_3})
                     }
             };
 

@@ -10,9 +10,9 @@ using NuGet.Shared;
 
 namespace NuGet.ProjectModel
 {
-    public class ProjectCentralTransitiveDependencyGroup : IEquatable<ProjectCentralTransitiveDependencyGroup>
+    public class CentralTransitiveDependencyGroup : IEquatable<CentralTransitiveDependencyGroup>
     {
-        public ProjectCentralTransitiveDependencyGroup(NuGetFramework framework, IEnumerable<LibraryDependency> transitiveDependencies)
+        public CentralTransitiveDependencyGroup(NuGetFramework framework, IEnumerable<LibraryDependency> transitiveDependencies)
         {
             if (framework == null)
             {
@@ -23,7 +23,7 @@ namespace NuGet.ProjectModel
                 throw new ArgumentNullException(nameof(transitiveDependencies));
             }
 
-            FrameworkName = framework.GetShortFolderName();
+            FrameworkName = framework.ToString();
             TransitiveDependencies = transitiveDependencies;
         }
 
@@ -31,7 +31,7 @@ namespace NuGet.ProjectModel
 
         public IEnumerable<LibraryDependency> TransitiveDependencies { get; }
 
-        public bool Equals(ProjectCentralTransitiveDependencyGroup other)
+        public bool Equals(CentralTransitiveDependencyGroup other)
         {
             if (other == null)
             {
@@ -53,7 +53,7 @@ namespace NuGet.ProjectModel
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as ProjectCentralTransitiveDependencyGroup);
+            return Equals(obj as CentralTransitiveDependencyGroup);
         }
 
         public override int GetHashCode()

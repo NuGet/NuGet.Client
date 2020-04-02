@@ -269,7 +269,7 @@ namespace NuGet.Commands
 
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
-            AddProjectCentralTransitiveDependencyGroupsForPackageReference(project, lockFile, targetGraphs);
+            AddCentralTransitiveDependencyGroupsForPackageReference(project, lockFile, targetGraphs);
 
             // Add the original package spec to the lock file.
             lockFile.PackageSpec = project;
@@ -358,48 +358,47 @@ namespace NuGet.Commands
             }
         }
 
-        private void AddProjectCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
+        private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
         {
-            // TargetFrameworkInformations should have only distinct FrameworkNames
-            var centralPackageVersionsPerFramework = project.TargetFrameworks.ToDictionary(tfmi => tfmi.FrameworkName, tfmi => tfmi.CentralPackageVersions);
+            if(!project.RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                return;
+            }
 
             foreach (var targetGraph in targetGraphs.OrderBy(graph => graph.Framework.ToString(), StringComparer.Ordinal))
             {
                 if (_includeFlagGraphs.TryGetValue(targetGraph, out Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags))
                 {
+                    var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;
+
                     // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
                     IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
                         .Flattened
-                        .Where(graphItem => graphItem.IsCentralTransitive
-                            && centralPackageVersionsPerFramework.ContainsKey(targetGraph.Framework)
-                            && centralPackageVersionsPerFramework[targetGraph.Framework].ContainsKey(graphItem.Key.Name))
+                        .Where(graphItem => graphItem.IsCentralTransitive && centralPackageVersionsForFramework?.ContainsKey(graphItem.Key.Name) == true)
                         .Select((graphItem) =>
                         {
-                            var matchingCentralVersion = centralPackageVersionsPerFramework[targetGraph.Framework][graphItem.Key.Name];
+                            CentralPackageVersion matchingCentralVersion = centralPackageVersionsForFramework[graphItem.Key.Name];
+
                             var libraryDependency = new LibraryDependency()
                             {
                                 LibraryRange = new LibraryRange(matchingCentralVersion.Name, matchingCentralVersion.VersionRange, LibraryDependencyTarget.Package),
-                                ReferenceType = LibraryDependencyReferenceType.Transitve,
-                                VersionCentrallyManaged = true
+                                ReferenceType = LibraryDependencyReferenceType.Transitive,
+                                VersionCentrallyManaged = true,
+                                IncludeType = dependenciesIncludeFlags[matchingCentralVersion.Name]
                             };
-
-                            if (dependenciesIncludeFlags.TryGetValue(matchingCentralVersion.Name, out LibraryIncludeFlags libraryIncludeFlags))
-                            {
-                                libraryDependency.IncludeType = libraryIncludeFlags;
-                            }
-
+                            
                             return libraryDependency;
                         });
 
                     if (centralEnforcedTransitiveDependencies.Any())
                     {
-                        var centralEnforcedTransitiveDependencyGroup = new ProjectCentralTransitiveDependencyGroup
+                        var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
                                 (
                                     targetGraph.Framework,
                                     centralEnforcedTransitiveDependencies
                                 );
 
-                        lockFile.ProjectCentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                        lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
                     }
                 }
             }

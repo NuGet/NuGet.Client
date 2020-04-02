@@ -27,7 +27,7 @@ namespace NuGet.ProjectModel
         public IList<LockFileItem> PackageFolders { get; set; } = new List<LockFileItem>();
         public IList<IAssetsLogMessage> LogMessages { get; set; } = new List<IAssetsLogMessage>();
         public PackageSpec PackageSpec { get; set; }
-        public IList<ProjectCentralTransitiveDependencyGroup> ProjectCentralTransitiveDependencyGroups { get; set; } = new List<ProjectCentralTransitiveDependencyGroup>();
+        public IList<CentralTransitiveDependencyGroup> CentralTransitiveDependencyGroups { get; set; } = new List<CentralTransitiveDependencyGroup>();
 
         public bool IsValidForPackageSpec(PackageSpec spec)
         {
@@ -131,7 +131,7 @@ namespace NuGet.ProjectModel
                 && PackageFolders.SequenceEqual(other.PackageFolders)
                 && EqualityUtility.EqualsWithNullCheck(PackageSpec, other.PackageSpec)
                 && LogsEqual(other.LogMessages)
-                && ProjectCentralTransitiveDependencyGroups.OrderedEquals(other.ProjectCentralTransitiveDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase);
+                && CentralTransitiveDependencyGroups.OrderedEquals(other.CentralTransitiveDependencyGroups, group => group.FrameworkName, StringComparer.OrdinalIgnoreCase);
         }
 
         private bool LogsEqual(IList<IAssetsLogMessage> otherLogMessages)
@@ -200,7 +200,7 @@ namespace NuGet.ProjectModel
 
             HashLogMessages(combiner, LogMessages);
 
-            HashProjectCentralTransitiveDependencyGroups(combiner, ProjectCentralTransitiveDependencyGroups);
+            HashCentralTransitiveDependencyGroups(combiner, CentralTransitiveDependencyGroups);
 
             return combiner.CombinedHash;
         }
@@ -222,9 +222,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void HashProjectCentralTransitiveDependencyGroups(HashCodeCombiner combiner, IList<ProjectCentralTransitiveDependencyGroup> groups)
+        private static void HashCentralTransitiveDependencyGroups(HashCodeCombiner combiner, IList<CentralTransitiveDependencyGroup> groups)
         {
-            foreach (ProjectCentralTransitiveDependencyGroup item in groups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
+            foreach (CentralTransitiveDependencyGroup item in groups.OrderBy(group => group.FrameworkName, StringComparer.OrdinalIgnoreCase))
             {
                 combiner.AddObject(item);
             }

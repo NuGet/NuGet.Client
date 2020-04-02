@@ -1883,7 +1883,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void LockFileFormat_WritesProjectCentralTransitiveDependencyGroups()
+        public void LockFileFormat_WritesCentralTransitiveDependencyGroups()
         {
             // Arrange
             NuGetFramework framework = FrameworkConstants.CommonFrameworks.DotNet;
@@ -1917,7 +1917,7 @@ namespace NuGet.ProjectModel.Test
                 ],
                 "".NETPlatform,Version=v5.0"": []
             },
-            ""projectCentralTransitiveDependencyGroups"": {
+            ""centralTransitiveDependencyGroups"": {
                 ""dotnet"": {
                 ""Newtonsoft.Json"": {
                             ""include"": ""Compile, Native, BuildTransitive"",
@@ -1978,8 +1978,8 @@ namespace NuGet.ProjectModel.Test
                         generatePathProperty: false);
             newtonSoftDependency.VersionCentrallyManaged = true;
 
-            lockFile.ProjectCentralTransitiveDependencyGroups
-                .Add(new ProjectCentralTransitiveDependencyGroup(framework, new List<LibraryDependency>() { newtonSoftDependency }));
+            lockFile.CentralTransitiveDependencyGroups
+                .Add(new CentralTransitiveDependencyGroup(framework, new List<LibraryDependency>() { newtonSoftDependency }));
 
             // Act
             var lockFileFormat = new LockFileFormat();

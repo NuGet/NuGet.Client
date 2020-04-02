@@ -995,10 +995,10 @@ namespace NuGet.DependencyResolver.Tests
 
         [Theory]
         [InlineData(LibraryDependencyReferenceType.Direct, true)]
-        [InlineData(LibraryDependencyReferenceType.Transitve, true)]
+        [InlineData(LibraryDependencyReferenceType.Transitive, true)]
         [InlineData(LibraryDependencyReferenceType.None, true)]
         [InlineData(LibraryDependencyReferenceType.Direct, false)]
-        [InlineData(LibraryDependencyReferenceType.Transitve, false)]
+        [InlineData(LibraryDependencyReferenceType.Transitive, false)]
         [InlineData(LibraryDependencyReferenceType.None, false)]
         public void IsDependencyValidForGraphTest(LibraryDependencyReferenceType referenceType, bool versionCentrallyManaged)
         {

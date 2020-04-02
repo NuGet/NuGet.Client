@@ -850,9 +850,10 @@ namespace NuGet.Build.Tasks.Pack
                     continue;
                 }
 
-                IEnumerable<LibraryDependency> centralTransitiveDependencies = assetsFile.ProjectCentralTransitiveDependencyGroups
-                    .Where(ptg => ptg.FrameworkName.Equals(framework.FrameworkName.GetShortFolderName(), StringComparison.OrdinalIgnoreCase))
-                    .SelectMany(ptg => ptg.TransitiveDependencies);
+                IEnumerable<LibraryDependency> centralTransitiveDependencies = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .Where(centralTDG => centralTDG.FrameworkName.Equals(framework.FrameworkName.ToString(), StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(centralTDG => centralTDG.TransitiveDependencies);
 
                 // First, add each of the generic package dependencies to the framework-specific list.
                 var packageDependencies = assetsFile

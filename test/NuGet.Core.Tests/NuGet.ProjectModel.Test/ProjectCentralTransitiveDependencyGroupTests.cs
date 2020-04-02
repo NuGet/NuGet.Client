@@ -11,24 +11,24 @@ using Xunit;
 
 namespace NuGet.ProjectModel.Test
 {
-    public class ProjectCentralTransitiveDependencyGroupTests
+    public class CentralTransitiveDependencyGroupTests
     {
         [Theory]
         [InlineData(true, true)]
         [InlineData(true, false)]
         [InlineData(false, true)]
-        public void ProjectCentralTransitiveDependencyGroup_ConstructorNullArgumentCheck(bool nullFramework, bool nullDependencies)
+        public void CentralTransitiveDependencyGroup_ConstructorNullArgumentCheck(bool nullFramework, bool nullDependencies)
         {
             // Arrange
             var nuGetFramework = nullFramework ? null : NuGetFramework.Parse("NETStandard2.0");
             var dependencies = nullDependencies ? null : Enumerable.Empty<LibraryDependency>();
 
             // Act + Assert
-            Assert.Throws<ArgumentNullException>(() => new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework, dependencies));
+            Assert.Throws<ArgumentNullException>(() => new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework, dependencies));
         }
 
         [Fact]
-        public void ProjectCentralTransitiveDependencyGroup_GetProperties()
+        public void CentralTransitiveDependencyGroup_GetProperties()
         {
             // Arrange
             var nuGetFramework = NuGetFramework.Parse("NETStandard2.0");
@@ -40,11 +40,11 @@ namespace NuGet.ProjectModel.Test
                                 LibraryDependencyTarget.Package)
             };
             var dependencies = new List<LibraryDependency>() { libraryDep };
-            var projectCentralTransitiveDependencyGroup = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework, dependencies);
+            var centralTransitiveDependencyGroup = new CentralTransitiveDependencyGroup(nuGetFramework, dependencies);
 
             // Act
-            var framework = projectCentralTransitiveDependencyGroup.FrameworkName;
-            var tDependencies = projectCentralTransitiveDependencyGroup.TransitiveDependencies;
+            var framework = centralTransitiveDependencyGroup.FrameworkName;
+            var tDependencies = centralTransitiveDependencyGroup.TransitiveDependencies;
 
             // Assert
             Assert.Equal(dependencies, tDependencies);
@@ -52,7 +52,7 @@ namespace NuGet.ProjectModel.Test
         }
 
         [Fact]
-        public void ProjectCentralTransitiveDependencyGroup_EqualObjects()
+        public void CentralTransitiveDependencyGroup_EqualObjects()
         {
             // Arrange
             var nuGetFramework = NuGetFramework.Parse("NETStandard2.0");
@@ -64,17 +64,17 @@ namespace NuGet.ProjectModel.Test
                                 LibraryDependencyTarget.Package)
             };
             var dependencies = new List<LibraryDependency>() { libraryDep };
-            var projectCentralTransitiveDependencyGroup1 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework, dependencies);
-            var projectCentralTransitiveDependencyGroup2 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework, dependencies);
+            var centralTransitiveDependencyGroup1 = new CentralTransitiveDependencyGroup(nuGetFramework, dependencies);
+            var centralTransitiveDependencyGroup2 = new CentralTransitiveDependencyGroup(nuGetFramework, dependencies);
 
             // Act = Assert
-            Assert.True(projectCentralTransitiveDependencyGroup1.Equals(projectCentralTransitiveDependencyGroup1));
-            Assert.True(projectCentralTransitiveDependencyGroup1.Equals(projectCentralTransitiveDependencyGroup2));
-            Assert.Equal(projectCentralTransitiveDependencyGroup1.GetHashCode(), projectCentralTransitiveDependencyGroup2.GetHashCode());
+            Assert.True(centralTransitiveDependencyGroup1.Equals(centralTransitiveDependencyGroup1));
+            Assert.True(centralTransitiveDependencyGroup1.Equals(centralTransitiveDependencyGroup2));
+            Assert.Equal(centralTransitiveDependencyGroup1.GetHashCode(), centralTransitiveDependencyGroup2.GetHashCode());
         }
 
         [Fact]
-        public void ProjectCentralTransitiveDependencyGroup_NotEqualObjects()
+        public void CentralTransitiveDependencyGroup_NotEqualObjects()
         {
             // Arrange
             var nuGetFramework1 = NuGetFramework.Parse("NETStandard2.0");
@@ -96,21 +96,21 @@ namespace NuGet.ProjectModel.Test
             var dependencies1 = new List<LibraryDependency>() { libraryDep1 };
             var dependencies2 = new List<LibraryDependency>() { libraryDep2 };
 
-            var projectCentralTransitiveDependencyGroup11 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework1, dependencies1);
-            var projectCentralTransitiveDependencyGroup12 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework1, dependencies2);
-            var projectCentralTransitiveDependencyGroup21 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework2, dependencies1);
-            var projectCentralTransitiveDependencyGroup22 = new ProjectModel.ProjectCentralTransitiveDependencyGroup(nuGetFramework2, dependencies2);
+            var centralTransitiveDependencyGroup11 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework1, dependencies1);
+            var centralTransitiveDependencyGroup12 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework1, dependencies2);
+            var centralTransitiveDependencyGroup21 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework2, dependencies1);
+            var centralTransitiveDependencyGroup22 = new ProjectModel.CentralTransitiveDependencyGroup(nuGetFramework2, dependencies2);
 
             // Act = Assert
-            Assert.False(projectCentralTransitiveDependencyGroup11.Equals(null));
-            Assert.False(projectCentralTransitiveDependencyGroup11.Equals(projectCentralTransitiveDependencyGroup12));
-            Assert.False(projectCentralTransitiveDependencyGroup11.Equals(projectCentralTransitiveDependencyGroup21));
-            Assert.False(projectCentralTransitiveDependencyGroup11.Equals(projectCentralTransitiveDependencyGroup22));
+            Assert.False(centralTransitiveDependencyGroup11.Equals(null));
+            Assert.False(centralTransitiveDependencyGroup11.Equals(centralTransitiveDependencyGroup12));
+            Assert.False(centralTransitiveDependencyGroup11.Equals(centralTransitiveDependencyGroup21));
+            Assert.False(centralTransitiveDependencyGroup11.Equals(centralTransitiveDependencyGroup22));
 
-            Assert.False(projectCentralTransitiveDependencyGroup12.Equals(projectCentralTransitiveDependencyGroup21));
-            Assert.False(projectCentralTransitiveDependencyGroup12.Equals(projectCentralTransitiveDependencyGroup22));
+            Assert.False(centralTransitiveDependencyGroup12.Equals(centralTransitiveDependencyGroup21));
+            Assert.False(centralTransitiveDependencyGroup12.Equals(centralTransitiveDependencyGroup22));
 
-            Assert.False(projectCentralTransitiveDependencyGroup21.Equals(projectCentralTransitiveDependencyGroup22));
+            Assert.False(centralTransitiveDependencyGroup21.Equals(centralTransitiveDependencyGroup22));
         }
     }
 }

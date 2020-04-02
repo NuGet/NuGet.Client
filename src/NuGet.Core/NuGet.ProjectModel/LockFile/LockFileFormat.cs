@@ -51,7 +51,7 @@ namespace NuGet.ProjectModel
         internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
-        private const string ProjectCentralTransitiveDependencyGroupsProperty = "projectCentralTransitiveDependencyGroups";
+        private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
 
         public LockFile Parse(string lockFileContent, string path)
         {
@@ -171,7 +171,7 @@ namespace NuGet.ProjectModel
                 ProjectFileDependencyGroups = JsonUtility.ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = JsonUtility.ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
                 PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
-                ProjectCentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[ProjectCentralTransitiveDependencyGroupsProperty] as JObject)
+                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject)
             };
 
             lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
@@ -221,10 +221,10 @@ namespace NuGet.ProjectModel
                 }
             }
 
-            if (lockFile.ProjectCentralTransitiveDependencyGroups.Any())
+            if (lockFile.CentralTransitiveDependencyGroups.Any())
             {
-                JToken token = WriteProjectCentralTransitiveDependencyGroup(lockFile.ProjectCentralTransitiveDependencyGroups);
-                json[ProjectCentralTransitiveDependencyGroupsProperty] = (JObject)token;
+                JToken token = WriteCentralTransitiveDependencyGroup(lockFile.CentralTransitiveDependencyGroups);
+                json[CentralTransitiveDependencyGroupsProperty] = (JObject)token;
             }
 
             return json;
@@ -810,16 +810,16 @@ namespace NuGet.ProjectModel
             return path.Replace('/', '\\');
         }
 
-        private static JToken WriteProjectCentralTransitiveDependencyGroup(IList<ProjectCentralTransitiveDependencyGroup> projectCentralTransitiveDependencyGroups)
+        private static JToken WriteCentralTransitiveDependencyGroup(IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
         {
             using (var jsonWriter = new JTokenWriter())
             using (var writer = new JsonObjectWriter(jsonWriter))
             {
                 writer.WriteObjectStart();
 
-                foreach (var projectTransitiveDepGroup in projectCentralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
+                foreach (var centralTransitiveDepGroup in centralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
                 {
-                    PackageSpecWriter.SetDependencies(writer, projectTransitiveDepGroup.FrameworkName, projectTransitiveDepGroup.TransitiveDependencies);
+                    PackageSpecWriter.SetDependencies(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
                 }
 
                 writer.WriteObjectEnd();
@@ -827,9 +827,9 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static List<ProjectCentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json)
+        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json)
         {
-            var results = new List<ProjectCentralTransitiveDependencyGroup>();
+            var results = new List<CentralTransitiveDependencyGroup>();
 
             if (json == null)
             {
@@ -849,7 +849,7 @@ namespace NuGet.ProjectModel
                         results: dependencies,
                         packageSpecPath: "",
                         isGacOrFrameworkReference: false);
-                    results.Add(new ProjectCentralTransitiveDependencyGroup(framework, dependencies));
+                    results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
                 });
             }
 
