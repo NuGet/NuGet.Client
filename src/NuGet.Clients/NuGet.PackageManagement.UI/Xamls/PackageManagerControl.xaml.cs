@@ -29,6 +29,7 @@ using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
+using System.Windows.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -98,6 +99,7 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
         private readonly Stopwatch _sinceUserAction;
+        private PerformanceMetrics _performanceMetrics;
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -109,6 +111,7 @@ namespace NuGet.PackageManagement.UI
             VSThreadHelper.ThrowIfNotOnUIThread();
             _sinceLastRefresh = Stopwatch.StartNew();
             _sinceUserAction = new Stopwatch();
+            _performanceMetrics = new PerformanceMetrics();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -186,6 +189,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+
+            var gen = PackageList._list.ItemContainerGenerator;
+            gen.StatusChanged += Gen_StatusChanged;
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -324,7 +330,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, TimeSpan? timeSinceLastUserAction = null)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, PerformanceMetrics performanceMetrics = null)
         {
             TelemetryActivity.EmitTelemetryEvent(
                                 new PackageManagerUIRefreshEvent(
@@ -334,7 +340,7 @@ namespace NuGet.PackageManagement.UI
                                     status,
                                     _topPanel.Filter.ToString(),
                                     timeSpan,
-                                    timeSinceLastUserAction));
+                                    performanceMetrics));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -347,7 +353,7 @@ namespace NuGet.PackageManagement.UI
             }
             return elapsed;
         }
-      
+
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -1001,16 +1007,23 @@ namespace NuGet.PackageManagement.UI
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
-            RestartUserActionClock();
+            RestartUserActionMetrics();
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                var timeSinceLastUserAction = GetTimeSinceLastUserAction();
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, timeSinceLastUserAction);
+
+                _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
+
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+
+                Dispatcher.BeginInvoke(new Action(() =>
+                {
+                    _performanceMetrics.TimeSinceDispatcher = GetTimeSinceLastUserAction();
+                }), DispatcherPriority.Input);
             }
         }
 
@@ -1376,14 +1389,43 @@ namespace NuGet.PackageManagement.UI
                                 nameof(UpgradeButton_Click)));
         }
 
-        private void RestartUserActionClock()
+        private void RestartUserActionMetrics()
         {
+            _performanceMetrics = new PerformanceMetrics();
             _sinceUserAction.Restart();
         }
 
         private TimeSpan GetTimeSinceLastUserAction()
         {
             return _sinceUserAction.Elapsed;
+        }
+
+        protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
+        {
+            base.OnRender(drawingContext);
+            var timestamp = GetTimeSinceLastUserAction();
+            _performanceMetrics.TimeSinceOnRender = timestamp;
+        }
+
+        private void Gen_StatusChanged(object sender, EventArgs e)
+        {
+            ItemContainerGenerator gen = sender as ItemContainerGenerator;
+
+            if (gen.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+            {
+                var timestamp = GetTimeSinceLastUserAction();
+                _performanceMetrics.TimeSinceContainersGenerated = timestamp;
+            }
+        }
+
+
+        private void GridSplitter_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            var telemetryEvent = new TelemetryEvent("PMUI_TabSwitch_PerformanceMetrics");
+
+            _performanceMetrics.WriteTelemetry(telemetryEvent);
+
+            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
         }
     }
 }
