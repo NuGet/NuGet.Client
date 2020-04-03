@@ -65,6 +65,29 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
+        private int _selectedIndex = 0;
+        private int _numRecommended = 0;
+
+        public int SelectedIndex
+        {
+            get { return _selectedIndex; }
+        }
+        public int NumRecommended
+        {
+            get { return _numRecommended; }
+        }
+
+        /// <summary>
+        /// Sets the current selection info
+        /// </summary>
+        public void SetCurrentSelectionInfo(
+            int SelectedIndex,
+            int NumRecommended)
+        {
+            _selectedIndex = SelectedIndex;
+            _numRecommended = NumRecommended;
+        }
+
         /// <summary>
         /// Sets the package to be displayed in the detail control.
         /// </summary>

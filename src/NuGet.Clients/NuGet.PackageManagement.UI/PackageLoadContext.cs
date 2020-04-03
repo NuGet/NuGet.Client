@@ -109,24 +109,6 @@ namespace NuGet.PackageManagement.UI
             return new PackageCollection(dependentPackages.ToArray());
         }
 
-        // get target frameworks for BuildIntegratedNuGetProjects
-        public async Task<IEnumerable<string>> GetTargetFrameworksAsync()
-        {
-            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            var buildIntegratedProjects = Projects.OfType<BuildIntegratedNuGetProject>().ToList();
-
-            foreach (var project in buildIntegratedProjects)
-            {
-                var dgcContext = new DependencyGraphCacheContext();
-                var packageSpecs = await project.GetPackageSpecsAsync(dgcContext);
-                foreach (var packageSpec in packageSpecs)
-                {
-                    frameworks = frameworks.Concat(packageSpec.TargetFrameworks.Select(tf => tf.FrameworkName.ToString())).ToHashSet();
-                }
-            }
-            return frameworks;
-        }
-
         // Returns the list of frameworks that we need to pass to the server during search
         public IEnumerable<string> GetSupportedFrameworks()
         {

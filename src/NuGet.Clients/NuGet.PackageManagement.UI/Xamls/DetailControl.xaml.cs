@@ -131,6 +131,8 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.DisplayPreviewWindow = model.Options.ShowPreviewWindow;
                     nugetUi.DisplayDeprecatedFrameworkWindow = model.Options.ShowDeprecatedFrameworkWindow;
                     nugetUi.ProjectContext.ActionType = actionType;
+                    nugetUi.SelectedIndex = model.SelectedIndex;
+                    nugetUi.NumRecommended = model.NumRecommended;
                 });
         }
 

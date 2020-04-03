@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using Microsoft.VisualStudio.Shell;
-using Recommender = NugetRecommender.VisualStudio.Contracts;
+using Recommender = Microsoft.DataAI.NuGetRecommender.Contracts;
 using System.Diagnostics;
 
 namespace NuGet.PackageManagement.VisualStudio
@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
-        Recommender.IVsNugetPackageRecommender NugetRecommender { get; set; }
+        Recommender.IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.VisualStudio
             try
             {
                 // Get NuGet package recommender service
-                NugetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNugetRecommenderService)) as Recommender.IVsNugetPackageRecommender;
+                NuGetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNuGetRecommenderService)) as Recommender.IVsNuGetPackageRecommender;
             }
             catch (Exception ex)
             {
@@ -88,7 +88,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private class RecommendSearchToken : ContinuationToken
         {
-            public int StartIndex { get; set; }
             public string SearchString { get; set; }
             public SearchFilter SearchFilter { get; set; }
         }
@@ -99,7 +98,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 SearchString = searchText,
                 SearchFilter = searchFilter,
-                StartIndex = 0
             };
 
             return RecommendPackagesAsync(searchToken, cancellationToken);
@@ -107,16 +105,27 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<SearchResult<IPackageSearchMetadata>> RecommendPackagesAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
+            var searchToken = continuationToken as RecommendSearchToken;
+            if (searchToken == null)
+            {
+                throw new InvalidOperationException("Invalid token");
+            }
+            // don't make recommendations if the user entered a search string
+            if (searchToken.SearchString != "")
+            {
+                return SearchResult.Empty<IPackageSearchMetadata>();
+            }
+
             List<string> recommendIds = new List<string>();
             try
             {
-                if (NugetRecommender != null)
+                if (NuGetRecommender != null)
                 {
                     // get lists of only the package ids to send to the recommender
                     List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
                     List<string> depPackages = _dependentPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
                     // call the recommender to get package recommendations
-                    recommendIds = await NugetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
+                    recommendIds = await NuGetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
                 }
             }
             catch (Exception ex)
@@ -151,11 +160,6 @@ namespace NuGet.PackageManagement.VisualStudio
             var packages = recommendPackages.ToArray();
 
             // get metadata for recommended packages
-            var searchToken = continuationToken as RecommendSearchToken;
-            if (searchToken == null)
-            {
-                throw new InvalidOperationException("Invalid token");
-            }
             var items = await TaskCombinators.ThrottledAsync(
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),

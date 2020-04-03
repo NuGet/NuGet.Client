@@ -66,6 +66,7 @@ namespace NuGet.PackageManagement.UI
         private bool _missingPackageStatus;
         private readonly INuGetUILogger _uiLogger;
         private bool _loadedAndInitialized = false;
+        private bool _recommendPackages = false;
 
         public PackageManagerModel Model { get; }
 
@@ -740,7 +741,15 @@ namespace NuGet.PackageManagement.UI
                 loadContext.CachedPackages = Model.CachedUpdates;
             }
 
-            var packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+            // only make recommendations when the single source repository is nuget.org and package manager was opened for a project, not a solution
+            _recommendPackages = false;
+            // TODO: check for A/B experiment here
+            if (loadContext.SourceRepositories.Count() == 1 && loadContext.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json" && loadContext.IsSolution == false)
+            {
+                _recommendPackages = true;
+            }
+
+            var packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
 
             var loader = new PackageItemLoader(
                 loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, searchText, IncludePrerelease);
@@ -800,7 +809,7 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
+                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, false);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
@@ -863,7 +872,7 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     _topPanel.UpdateCountOnConsolidateTab(count: 0);
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
+                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, false);
                     var loader = new PackageItemLoader(
                         loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
 
@@ -891,6 +900,8 @@ namespace NuGet.PackageManagement.UI
         internal async Task UpdateDetailPaneAsync()
         {
             var selectedPackage = _packageList.SelectedItem;
+            var selectedIndex = _packageList.SelectedIndex;
+            var numRecommended = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -903,6 +914,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedPackage);
 
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, numRecommended);
 
                 _packageDetail.ScrollToHome();
 
@@ -916,30 +928,24 @@ namespace NuGet.PackageManagement.UI
         {
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
+            var numRecommended = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (_topPanel.Filter == ItemFilter.All
                 && operationId.HasValue
                 && selectedIndex >= 0)
             {
                 TelemetryActivity.EmitTelemetryEvent(new SearchSelectionTelemetryEvent(
                     operationId.Value,
+                    numRecommended,
                     selectedIndex,
                     selectedPackage.Id,
                     selectedPackage.Version));
             }
         }
 
-        private static async Task<PackageFeeds> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
+        private static async Task<PackageFeeds> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
         {
             var logger = new VisualStudioActivityLogger();
             PackageFeeds packageFeeds = new PackageFeeds();
-
-            // only make recommendations when the single source repository is nuget.org and package manager was opened for a project, not a solution
-            // TODO: we'll also want to check for A/B testing and options settings
-            bool recommendPackages = false;
-            if (context.SourceRepositories.Count() == 1 && context.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json" && context.IsSolution == false)
-            {
-                recommendPackages = true;
-            }
 
             if (filter == ItemFilter.All && recommendPackages == false)
             {
@@ -956,13 +962,14 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                //   i.e. context.SourceRepositories.Count() == 1 && context.SourceRepositories.First().ToString().ToLower() == "nuget.org" && context.IsSolution == false
                 // this will get the dependent packages only if a lock (assets) file is present
                 var dependentPackages = await context.GetDependentPackagesAsync();
-                // this gets the target frameworks for PackagesConfig style projects
-                HashSet<string> targetFrameworks = context.GetSupportedFrameworks().ToHashSet<string>();
-                // this gets the target frameworks for PackageReference style projects
-                targetFrameworks = targetFrameworks.Concat(await context.GetTargetFrameworksAsync()).ToHashSet<string>();
+
+                HashSet<string> targetFrameworks = new HashSet<string>();
+                foreach (var project in context.Projects)
+                {
+                    targetFrameworks.UnionWith(await NuGetPackageManager.GetTargetFramework(project));
+                }
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
@@ -1059,7 +1066,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private void Refresh()
         {
-            if (_topPanel.Filter != ItemFilter.All)
+            if (_topPanel.Filter != ItemFilter.All || _recommendPackages)
             {
                 // refresh the whole package list
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);

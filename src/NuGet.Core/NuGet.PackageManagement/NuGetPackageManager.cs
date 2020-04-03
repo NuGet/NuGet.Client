@@ -3392,5 +3392,29 @@ namespace NuGet.PackageManagement
 
             return _restoreProviderCache;
         }
+
+        public static async Task<HashSet<string>> GetTargetFramework(NuGetProject project)
+        {
+            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            NuGetFramework framework;
+            if (project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            {
+                frameworks.Add(framework.ToString());
+            }
+
+            if (project is BuildIntegratedNuGetProject)
+            {
+                var biproject = project as BuildIntegratedNuGetProject;
+                var dgcContext = new DependencyGraphCacheContext();
+                var packageSpecs = await biproject.GetPackageSpecsAsync(dgcContext);
+                foreach (var packageSpec in packageSpecs)
+                {
+                    frameworks = frameworks.Concat(packageSpec.TargetFrameworks.Select(tf => tf.FrameworkName.ToString())).ToHashSet();
+                }
+            }
+
+            return frameworks;
+        }
+
     }
 }

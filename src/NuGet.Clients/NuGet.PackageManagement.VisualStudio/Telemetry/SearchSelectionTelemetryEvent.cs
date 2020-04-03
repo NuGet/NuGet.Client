@@ -11,11 +11,13 @@ namespace NuGet.PackageManagement.Telemetry
     {
         public SearchSelectionTelemetryEvent(
             Guid parentId,
+            int numRecommended,
             int itemIndex,
             string packageId,
             NuGetVersion packageVersion) : base("SearchSelection")
         {
             base["ParentId"] = parentId.ToString();
+            base["NumRecommended"] = numRecommended;
             base["ItemIndex"] = itemIndex;
             AddPiiData("PackageId", packageId.ToLowerInvariant());
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());

@@ -502,6 +502,12 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
+                    HashSet<string> frameworks = new HashSet<string>();
+                    foreach (var project in uiService.Projects)
+                    {
+                        frameworks = (await NuGetPackageManager.GetTargetFramework(project));
+                    }
+
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         uiService.Projects,
@@ -512,7 +518,19 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    AddUiActionEngineTelemetryProperties(actionTelemetryEvent, continueAfterPreview, acceptedLicense, userAction, existingPackages, addedPackages, removedPackages, updatedPackagesOld, updatedPackagesNew);
+                    AddUiActionEngineTelemetryProperties(
+                        actionTelemetryEvent,
+                        continueAfterPreview,
+                        acceptedLicense,
+                        userAction,
+                        uiService.SelectedIndex,
+                        uiService.NumRecommended,
+                        existingPackages,
+                        addedPackages,
+                        removedPackages,
+                        updatedPackagesOld,
+                        updatedPackagesNew,
+                        frameworks.ToList());
 
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
@@ -526,11 +544,14 @@ namespace NuGet.PackageManagement.UI
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
+            int selectedIndex,
+            int numRecommended,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
-            List<Tuple<string, string>> updatedPackagesNew)
+            List<Tuple<string, string>> updatedPackagesNew,
+            List<string> targetFrameworks)
         {
             TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {
@@ -563,6 +584,8 @@ namespace NuGet.PackageManagement.UI
             {
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
+                actionTelemetryEvent["SelectedIndex"] = selectedIndex;
+                actionTelemetryEvent["NumRecommended"] = numRecommended;
             }
 
             // log the installed package state
@@ -612,6 +635,12 @@ namespace NuGet.PackageManagement.UI
             if (updatedPackagesOld != null && updatedPackagesOld.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesOld"] = ToTelemetryPackageList(updatedPackagesOld);
+            }
+
+            // target framworks
+            if (targetFrameworks != null && targetFrameworks.Count > 0)
+            {
+                actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
             }
         }
 
