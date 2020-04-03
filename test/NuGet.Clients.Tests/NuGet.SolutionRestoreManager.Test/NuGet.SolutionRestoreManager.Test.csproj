@@ -5,6 +5,7 @@
   <PropertyGroup>
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <TestProject>true</TestProject>
+    <Description>Unit and integration tests for NuGet.SolutionRestoreManager.</Description>
   </PropertyGroup>
 
   <ItemGroup>
@@ -26,6 +27,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

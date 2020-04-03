@@ -151,6 +151,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -203,6 +205,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -290,6 +294,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -354,6 +360,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -426,6 +434,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => apiKey,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -500,6 +510,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -551,6 +563,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: true,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -599,6 +613,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -660,6 +676,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert
@@ -730,6 +748,8 @@ namespace NuGet.Protocol.Tests
                         getApiKey: _ => apiKey,
                         getSymbolApiKey: _ => apiKey,
                         noServiceEndpoint: false,
+                        skipDuplicate: false,
+                        symbolPackageUpdateResource: null,
                         log: NullLogger.Instance));
 
                 // Assert
@@ -795,6 +815,8 @@ namespace NuGet.Protocol.Tests
                     getApiKey: _ => apiKey,
                     getSymbolApiKey: _ => null,
                     noServiceEndpoint: false,
+                    skipDuplicate: false,
+                    symbolPackageUpdateResource: null,
                     log: NullLogger.Instance);
 
                 // Assert

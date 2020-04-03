@@ -408,8 +408,12 @@ namespace NuGet.VisualStudio
 
         internal virtual void ShowWarningMessage(string message)
         {
-            var console = _consoleProvider.CreatePackageManagerConsole();
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => console.WriteLineAsync(message));
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            {
+                var console = await _consoleProvider.CreatePackageManagerConsoleAsync();
+                await console.WriteLineAsync(message);
+                }
+            );
         }
 
         void IWizard.BeforeOpeningFile(ProjectItem projectItem)

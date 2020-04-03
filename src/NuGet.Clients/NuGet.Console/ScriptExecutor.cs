@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -171,7 +171,7 @@ namespace NuGetConsole
         
         private async Task ExecuteScriptCoreAsync(ScriptExecutionRequest request)
         {
-            var console = OutputConsoleProvider.CreatePowerShellConsole();
+            var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();
             var host = await Host.GetValueAsync();
 
             // Host.Execute calls powershell's pipeline.Invoke and blocks the calling thread
@@ -187,7 +187,7 @@ namespace NuGetConsole
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             // create the console and instantiate the PS host on demand
-            var console = OutputConsoleProvider.CreatePowerShellConsole();
+            var console = await OutputConsoleProvider.CreatePowerShellConsoleAsync();
             var host = console.Host;
 
             // start the console 

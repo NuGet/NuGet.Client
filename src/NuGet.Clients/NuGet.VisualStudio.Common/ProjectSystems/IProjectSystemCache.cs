@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -49,8 +49,9 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <param name="projectRestoreInfo">Desired project restore info object, or null if not found.</param>
+        /// <param name="nominationMessages"></param>
         /// <returns>True if found, false otherwise.</returns>
-        bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo);
+        bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> nominationMessages);
 
         /// <summary>
         /// Finds a project name by short name, unique name or custom unique name.
@@ -109,7 +110,7 @@ namespace NuGet.VisualStudio
         /// <param name="projectNames">Primary key.</param>
         /// <param name="projectRestoreInfo">The project restore info including tools.</param>
         /// <returns>True if operation succeeded.</returns>
-        bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo);
+        bool AddProjectRestoreInfo(ProjectNames projectNames, DependencyGraphSpec projectRestoreInfo, IReadOnlyList<IAssetsLogMessage> additionalMessages);
 
         /// <summary>
         /// Removes a project associated with given name out of the cache.

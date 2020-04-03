@@ -7,6 +7,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>GenerateLicenseList</AssemblyName>
+    <Description>A utility for updating the NuGet license list from the SPDX source.</Description>
   </PropertyGroup>
 
   <ItemGroup>

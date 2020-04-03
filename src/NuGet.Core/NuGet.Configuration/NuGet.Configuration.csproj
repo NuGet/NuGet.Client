@@ -3,7 +3,7 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
-    <Description>NuGet's client configuration settings implementation.</Description>
+    <Description>NuGet's configuration settings implementation.</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <TargetFrameworks>$(TargetFrameworksLibrary)</TargetFrameworks>
     <TargetFramework />

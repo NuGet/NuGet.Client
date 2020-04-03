@@ -1,6 +1,8 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Linq;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -20,6 +22,7 @@ namespace NuGet.Test.Server
     /// </summary>
     public class PortReserver
     {
+        private static ConcurrentDictionary<string, bool> PortLock = new ConcurrentDictionary<string, bool>();
         private readonly int _basePort;
 
         public PortReserver(int basePort = 50231)
@@ -57,21 +60,26 @@ namespace NuGet.Test.Server
 
                 // WaitForLockAsync prevents port contention with this app.
                 string portLockName = $"NuGet-Port-{port}";
-                var tryOnceCts = new CancellationTokenSource(TimeSpan.Zero);
+
                 try
                 {
-                    var attemptedPort = port;
-                    return await ConcurrencyUtilities.ExecuteWithFileLockedAsync<T>(
-                        portLockName,
-                        t => action(attemptedPort, token),
-                        tryOnceCts.Token);
+                    if (PortLock.TryAdd(portLockName, true))
+                    {
+                        // Run the action within the lock
+                        return await action(port, token);
+                    }
                 }
-                catch (OperationCanceledException)
+                catch (OverflowException)
                 {
+                    throw;
+                }
+                finally
+                {
+                    PortLock.TryRemove(portLockName, out _);
                 }
             }
         }
-        
+
         private static bool IsTcpPortAvailable(int port)
         {
             var tcpListener = new TcpListener(IPAddress.Loopback, port);

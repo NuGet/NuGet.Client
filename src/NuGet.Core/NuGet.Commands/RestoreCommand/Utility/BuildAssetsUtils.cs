@@ -28,8 +28,8 @@ namespace NuGet.Commands
         internal static readonly string LanguageCondition = "'$(Language)' == '{0}'";
         internal static readonly string NegativeLanguageCondition = "'$(Language)' != '{0}'";
         internal static readonly string ExcludeAllCondition = "'$(ExcludeRestorePackageImports)' != 'true'";
-        private const string TargetsExtension = ".targets";
-        private const string PropsExtension = ".props";
+        public const string TargetsExtension = ".targets";
+        public const string PropsExtension = ".props";
 
         /// <summary>
         /// The macros that we may use in MSBuild to replace path roots.
@@ -367,21 +367,27 @@ namespace NuGet.Commands
         {
             string path;
 
-            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference) 
+            if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.DotnetToolReference)
             {
                 // PackageReference style projects
                 var projFileName = Path.GetFileName(request.Project.RestoreMetadata.ProjectPath);
-                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g.{extension}");
+                path = Path.Combine(request.RestoreOutputPath, $"{projFileName}.nuget.g{extension}");
             }
             else
             {
                 // Project.json style projects
                 var dir = Path.GetDirectoryName(project.FilePath);
-                path = Path.Combine(dir, $"{project.Name}.nuget.{extension}");
+                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
             }
             return path;
         }
 
+        public static string GetMSBuildFilePathForPackageReferenceStyleProject(PackageSpec project, string extension)
+        {
+            var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
+
+            return Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
+        }
 
         public static List<MSBuildOutputFile> GetMSBuildOutputFiles(PackageSpec project,
             LockFile assetsFile,
@@ -393,8 +399,8 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSBuildFilePath(project, request, "targets");
-            var propsPath = GetMSBuildFilePath(project, request, "props");
+            var targetsPath = GetMSBuildFilePath(project, request, TargetsExtension);
+            var propsPath = GetMSBuildFilePath(project, request, PropsExtension);
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.

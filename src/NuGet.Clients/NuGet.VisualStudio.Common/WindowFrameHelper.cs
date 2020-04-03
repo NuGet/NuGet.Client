@@ -23,5 +23,11 @@ namespace NuGet.VisualStudio
                 }
             }
         }
+
+        public static void DisableWindowAutoReopen(IVsWindowFrame windowFrame)
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            ErrorHandler.ThrowOnFailure(windowFrame.SetProperty((int)__VSFPROPID5.VSFPROPID_DontAutoOpen, true));
+        }
     }
 }

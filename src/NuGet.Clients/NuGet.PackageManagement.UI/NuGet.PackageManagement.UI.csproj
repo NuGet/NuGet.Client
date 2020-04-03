@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="14.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -8,8 +8,8 @@
     <PackProject>true</PackProject>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
+    <Description>Package Management UI elements for Visual Studio, Package Manager UI, Migrator, Options dialog.</Description>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
-    <PackagesDir>$(UserProfile)\.nuget\packages</PackagesDir>
     <AssemblyOriginatorKeyFile>$(MS_PFX_PATH)</AssemblyOriginatorKeyFile>
     <StrongNameCert>MsSharedLib72</StrongNameCert>
   </PropertyGroup>
@@ -23,7 +23,6 @@
     <FileAlignment>512</FileAlignment>
     <NuGetPackageImportStamp>3b445626</NuGetPackageImportStamp>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <DefineConstants>TRACE;DEBUG;VS15</DefineConstants>
@@ -457,7 +456,7 @@
       <Project>{9A9A9F26-597A-4FA6-A4F1-415063484D9C}</Project>
       <Name>NuGet.Frameworks</Name>
     </ProjectReference>
-    <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
+    <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Indexing\NuGet.Indexing.csproj">
       <Project>{a2b06fa8-bdbc-4459-a92a-161862b2aa97}</Project>
       <Name>NuGet.Indexing</Name>
     </ProjectReference>

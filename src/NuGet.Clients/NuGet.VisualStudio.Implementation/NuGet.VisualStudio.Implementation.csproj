@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -6,10 +6,7 @@
     <TargetFramework>$(NETFXTargetFramework)</TargetFramework>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <Description>Implementation for NuGet.VisualStudio</Description>
+    <Description>Implementation of the NuGet.VisualStudio extensibility APIs.</Description>
     <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
     <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
   </PropertyGroup>
@@ -35,6 +32,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">

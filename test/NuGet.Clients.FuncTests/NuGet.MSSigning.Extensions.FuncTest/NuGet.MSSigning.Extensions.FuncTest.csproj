@@ -6,6 +6,7 @@
     <TargetFrameworks>$(NETFXTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$(IsXPlat)' == 'true' "></TargetFrameworks>
     <TestProject>true</TestProject>
+    <Description>A functional (end-to-end) test suite for NuGet.MSSigning.Extensions.</Description>
   </PropertyGroup>
 
   <ItemGroup>

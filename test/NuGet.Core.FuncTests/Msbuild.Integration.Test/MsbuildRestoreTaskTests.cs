@@ -419,5 +419,101 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
                 Assert.True(File.Exists(Path.Combine(pkgPath, "x.nuspec")));
             }
         }
+
+        [PlatformTheory(Platform.Windows)]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task MsbuildRestore_StaticGraphEvaluation_CleanupAssetsForUnsupportedProjectsAsync(bool cleanupAssetsForUnsupportedProjects)
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var net461 = NuGetFramework.Parse("net461");
+
+                var projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.PackageReference,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                packageX.Files.Clear();
+                projectA.AddPackageToAllFrameworks(packageX);
+                packageX.AddFile("lib/net461/a.dll");
+
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                var configAPath = Path.Combine(Path.GetDirectoryName(projectA.ProjectPath), "NuGet.Config");
+                var configText =
+$@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""LocalSource"" value=""{pathContext.PackageSource}"" />
+    </packageSources>
+</configuration>";
+                using (var writer = new StreamWriter(configAPath))
+                {
+                    writer.Write(configText);
+                }
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    packageX);
+
+                // Restore the project with a PackageReference which generates assets
+                var result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true /p:RestoreCleanupAssetsForUnsupportedProjects={cleanupAssetsForUnsupportedProjects} {projectA.ProjectPath}", ignoreExitCode: true);
+
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+
+                var assets = new[]
+                {
+                    projectA.AssetsFileOutputPath,
+                    projectA.PropsOutput,
+                    projectA.TargetsOutput,
+                    projectA.CacheFileOutputPath,
+                };
+
+                foreach (var asset in assets)
+                {
+                    Assert.True(File.Exists(asset), result.AllOutput);
+                }
+
+                // Recreate the project with Unknown project style and no PackageReferences
+                projectA = new SimpleTestProjectContext(
+                    "a",
+                    ProjectStyle.Unknown,
+                    pathContext.SolutionRoot);
+                projectA.Frameworks.Add(new SimpleTestProjectFrameworkContext(net461));
+
+                projectA.Save();
+
+                // Restore the project with a PackageReference which generates assets
+                result = _msbuildFixture.RunMsBuild(pathContext.WorkingDirectory, $"/t:restore /p:RestoreUseStaticGraphEvaluation=true /p:RestoreCleanupAssetsForUnsupportedProjects={cleanupAssetsForUnsupportedProjects} {projectA.ProjectPath}", ignoreExitCode: true);
+
+                // Assert
+                Assert.True(result.ExitCode == 0, result.AllOutput);
+
+                foreach (var asset in assets)
+                {
+                    if (cleanupAssetsForUnsupportedProjects)
+                    {
+                        Assert.False(File.Exists(asset), result.AllOutput);
+                    }
+                    else
+                    {
+                        Assert.True(File.Exists(asset), result.AllOutput);
+                    }
+                }
+            }
+        }
     }
 }

@@ -40,7 +40,6 @@ namespace NuGet.SolutionRestoreManager
                 .Select(e => new PackageSource(e))
                 .ToList();
 
-            
             toolReferences
                 .Cast<IVsReferenceItem>()
                 .Select(r => ToolRestoreUtility.GetSpec(
@@ -91,7 +90,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         internal static TargetFrameworkInformation ToTargetFrameworkInformation(
-            IVsTargetFrameworkInfo targetFrameworkInfo)
+            IVsTargetFrameworkInfo targetFrameworkInfo, bool cpvmEnabled)
         {
             var tfi = new TargetFrameworkInformation
             {
@@ -111,16 +110,16 @@ namespace NuGet.SolutionRestoreManager
 
 
             tfi.RuntimeIdentifierGraphPath = GetPropertyValueOrNull(targetFrameworkInfo.Properties, ProjectBuildProperties.RuntimeIdentifierGraphPath);
-            
+
             if (targetFrameworkInfo.PackageReferences != null)
             {
                 tfi.Dependencies.AddRange(
                     targetFrameworkInfo.PackageReferences
                         .Cast<IVsReferenceItem>()
-                        .Select(ToPackageLibraryDependency));
+                        .Select(pr => ToPackageLibraryDependency(pr, cpvmEnabled)));
             }
-            
-            if(targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
+
+            if (targetFrameworkInfo is IVsTargetFrameworkInfo2 targetFrameworkInfo2)
             {
                 if (targetFrameworkInfo2.PackageDownloads != null)
                 {
@@ -128,6 +127,19 @@ namespace NuGet.SolutionRestoreManager
                        targetFrameworkInfo2.PackageDownloads
                            .Cast<IVsReferenceItem>()
                            .Select(ToPackageDownloadDependency));
+                }
+
+                if (cpvmEnabled && targetFrameworkInfo is IVsTargetFrameworkInfo3 targetFrameworkInfo3)
+                {
+                    if (targetFrameworkInfo3.CentralPackageVersions != null)
+                    {
+                        tfi.CentralPackageVersions.AddRange(
+                           targetFrameworkInfo3.CentralPackageVersions
+                               .Cast<IVsReferenceItem>()
+                               .Select(ToCentralPackageVersion)
+                               .Distinct(CentralPackageVersionNameComparer.Default)
+                               .ToDictionary(cpv => cpv.Name));
+                    }
                 }
 
                 if (targetFrameworkInfo2.FrameworkReferences != null)
@@ -246,6 +258,15 @@ namespace NuGet.SolutionRestoreManager
             return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.RestoreLockedMode, MSBuildStringUtility.IsTrue);
         }
 
+        /// <summary>
+        /// Evaluates the msbuild properties and returns the value of the ManagePackageVersionsCentrally property.
+        /// If it is not defined the default value will be disabled. 
+        /// </summary>
+        internal static bool IsCentralPackageVersionManagementEnabled(IEnumerable tfms)
+        {
+            return GetSingleNonEvaluatedPropertyOrNull(tfms, ProjectBuildProperties.ManagePackageVersionsCentrally, MSBuildStringUtility.IsTrue);
+        }
+
         private static NuGetFramework GetToolFramework(IEnumerable targetFrameworks)
         {
             return GetSingleNonEvaluatedPropertyOrNull(
@@ -317,13 +338,18 @@ namespace NuGet.SolutionRestoreManager
 
         #region IVSReferenceItemAPIs
 
-        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item)
+        private static LibraryDependency ToPackageLibraryDependency(IVsReferenceItem item, bool cpvmEnabled)
         {
+            if (!TryGetVersionRange(item, out VersionRange versionRange))
+            {
+                versionRange = cpvmEnabled ? null : VersionRange.All;
+            }
+
             var dependency = new LibraryDependency
             {
                 LibraryRange = new LibraryRange(
                     name: item.Name,
-                    versionRange: GetVersionRange(item),
+                    versionRange: versionRange,
                     typeConstraint: LibraryDependencyTarget.Package),
 
                 // Mark packages coming from the SDK as AutoReferenced
@@ -359,6 +385,15 @@ namespace NuGet.SolutionRestoreManager
             var downloadDependency = new DownloadDependency(id, versionRange);
 
             return downloadDependency;
+        }
+
+        private static CentralPackageVersion ToCentralPackageVersion(IVsReferenceItem item)
+        {
+            string id = item.Name;
+            VersionRange versionRange = GetVersionRange(item);
+            var centralPackageVersion = new CentralPackageVersion(id, versionRange);
+
+            return centralPackageVersion;
         }
 
         private static void PopulateFrameworkDependencies(TargetFrameworkInformation tfi, IVsTargetFrameworkInfo2 targetFrameworkInfo2)
@@ -400,15 +435,25 @@ namespace NuGet.SolutionRestoreManager
             return dependency;
         }
 
-        private static VersionRange GetVersionRange(IVsReferenceItem item)
+        private static bool TryGetVersionRange(IVsReferenceItem item, out VersionRange versionRange)
         {
-            var versionRange = GetPropertyValueOrNull(item, "Version");
+            versionRange = null;
+            string versionRangeItemValue = GetPropertyValueOrNull(item, "Version");
 
-            if (versionRange != null)
+            if (versionRangeItemValue != null)
             {
-                return VersionRange.Parse(versionRange);
+                versionRange = VersionRange.Parse(versionRangeItemValue);
             }
 
+            return versionRange != null;
+        }
+
+        private static VersionRange GetVersionRange(IVsReferenceItem item)
+        {
+            if (TryGetVersionRange(item, out VersionRange versionRange))
+            {
+                return versionRange;
+            }
             return VersionRange.All;
         }
 
@@ -418,7 +463,7 @@ namespace NuGet.SolutionRestoreManager
         private static FrameworkDependencyFlags GetFrameworkDependencyFlags(IVsReferenceItem item, string name)
         {
             var flags = GetPropertyValueOrNull(item, name);
-            
+
             return FrameworkDependencyFlagsUtils.GetFlags(flags);
         }
 

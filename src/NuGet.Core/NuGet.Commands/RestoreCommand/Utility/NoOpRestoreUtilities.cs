@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using NuGet.Common;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -21,7 +22,7 @@ namespace NuGet.Commands
         internal const string NoOpCacheFileName = "project.nuget.cache";
 
         /// <summary>
-        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore. 
+        /// If the dependencyGraphSpec is not set, we cannot no-op on this project restore.
         /// </summary>
         internal static bool IsNoOpSupported(RestoreRequest request)
         {
@@ -129,13 +130,13 @@ namespace NuGet.Commands
 
             if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "targets");
+                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, BuildAssetsUtils.TargetsExtension);
                 if (!File.Exists(targetsFilePath))
                 {
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, request.Project.Name, targetsFilePath));
                     return false;
                 }
-                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, "props");
+                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, BuildAssetsUtils.PropsExtension);
                 if (!File.Exists(propsFilePath))
                 {
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, request.Project.Name, propsFilePath));

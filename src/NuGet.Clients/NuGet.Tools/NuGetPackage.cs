@@ -383,7 +383,7 @@ namespace NuGetVSExtension
 
         private async Task<IVsWindowFrame> CreateNewWindowFrameAsync(Project project)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var vsProject = VsHierarchyUtility.ToVsHierarchy(project);
             var documentName = project.FullName;
@@ -434,7 +434,7 @@ namespace NuGetVSExtension
             IVsHierarchy hier,
             uint itemId)
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var windowFlags =
                 (uint)_VSRDTFLAGS.RDT_DontAddToMRU |
@@ -508,6 +508,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally
@@ -756,6 +757,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally
@@ -837,6 +839,7 @@ namespace NuGetVSExtension
         // For PowerShell, it's okay to query from the worker thread.
         private void BeforeQueryStatusForPowerConsole(object sender, EventArgs args)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (ShouldMEFBeInitialized())
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
@@ -871,7 +874,7 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                command.Visible = IsSolutionOpen && await IsPackagesConfigBasedProjectAsync();
+                command.Visible = GetIsSolutionOpen() && await IsPackagesConfigBasedProjectAsync();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
@@ -896,14 +899,14 @@ namespace NuGetVSExtension
                     isConsoleBusy = ConsoleStatus.Value.IsBusy;
                 }
 
-                command.Visible = IsSolutionOpen && IsPackagesConfigSelected();
+                command.Visible = GetIsSolutionOpen() && IsPackagesConfigSelected();
                 command.Enabled = !isConsoleBusy && IsSolutionExistsAndNotDebuggingAndNotBuilding() && HasActiveLoadedSupportedProject;
             });
         }
 
         private async Task<bool> IsPackagesConfigBasedProjectAsync()
         {
-            ThreadHelper.ThrowIfNotOnUIThread();
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var dteProject = EnvDTEProjectInfoUtility.GetActiveProject(VsMonitorSelection);
 
@@ -925,8 +928,11 @@ namespace NuGetVSExtension
             return true;
         }
 
-
-        private bool IsSolutionOpen => _dte?.Solution != null && _dte.Solution.IsOpen;
+        private bool GetIsSolutionOpen()
+        {
+            ThreadHelper.ThrowIfNotOnUIThread();
+            return _dte?.Solution != null && _dte.Solution.IsOpen;
+        }
 
         private bool IsPackagesConfigSelected()
         {
@@ -951,7 +957,7 @@ namespace NuGetVSExtension
                 // This is actually true. All the menu commands under the 'Project Menu' do go away when no solution is open.
                 // If 'Manage NuGet Packages' is disabled but visible, 'Project' menu shows up just because 1 menu command is visible, even though, it is disabled
                 // So, make it invisible when no solution is open
-                command.Visible = IsSolutionOpen;
+                command.Visible = GetIsSolutionOpen();
 
                 var isConsoleBusy = false;
                 if (ConsoleStatus != null)
@@ -1092,6 +1098,7 @@ namespace NuGetVSExtension
         // Called by the shell when a solution is opened and the SUO file is read.
         public int LoadUserOptions(IVsSolutionPersistence pPersistence, uint grfLoadOpts)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (ShouldMEFBeInitialized())
             {
                 NuGetUIThreadHelper.JoinableTaskFactory.Run(InitializeMEFAsync);
@@ -1110,6 +1117,8 @@ namespace NuGetVSExtension
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
+
             if (SolutionUserOptions != null && SolutionUserOptions.IsValueCreated)
             {
                 return SolutionUserOptions.Value.SaveUserOptions(pPersistence);

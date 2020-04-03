@@ -10,6 +10,7 @@
 
   <!-- Common -->
   <PropertyGroup>
+    <RestoreProjectStyle>PackageReference</RestoreProjectStyle>
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
@@ -97,8 +98,6 @@
   <PropertyGroup>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <DefineConstants>$(DefineConstants);VS15</DefineConstants>
-    <VSSDKRoot>$(RepositoryRootDirectory)packages\microsoft.vssdk.buildtools\15.9.3032</VSSDKRoot>
-    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(VSSDKRoot)\tools</VSToolsPath>
     <VsixOutputDirName>VS15</VsixOutputDirName>
     <CodeAnalysisRuleSet Condition="'$(CodeAnalysisRuleSet)' == ''">$(BuildCommonDirectory)NuGet.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
@@ -239,8 +238,7 @@
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*ProjectManagement*\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*VisualStudio*\*.csproj;
                                    $(RepositoryRootDirectory)test\NuGet.Core.Tests\*.Utility\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Credentials.Test\*.csproj;
-                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Indexing.Test\*.csproj" />
+                                   $(RepositoryRootDirectory)test\NuGet.Core.Tests\NuGet.Credentials.Test\*.csproj;" />
     <CoreFuncTestProjects Include="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\*\*.csproj"
                           Exclude="$(RepositoryRootDirectory)test\NuGet.Core.FuncTests\Msbuild.Integration.Test\*.csproj" />
   </ItemGroup>

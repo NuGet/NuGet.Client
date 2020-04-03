@@ -293,12 +293,19 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         protected async Task CheckPackageManagementFormat()
         {
-            // check if Project has any packages installed
-            if (!(await Project.GetInstalledPackagesAsync(Token)).Any())
+            bool packagesConfigAndSupportsPackageReferences = false;
+
+            if (Project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
+            {
+                packagesConfigAndSupportsPackageReferences = Project.ProjectServices.Capabilities.SupportsPackageReferences;
+            }
+
+            // The Project is compatible with, but is currently not a PackageReference-style project, and no packages are currently installed.
+            if (packagesConfigAndSupportsPackageReferences && !(await Project.GetInstalledPackagesAsync(Token)).Any())
             {
                 var packageManagementFormat = new PackageManagementFormat(ConfigSettings);
 
-                // if default format is PackageReference then update NuGet Project
+                // The "Default Package Management Format" setting is PackageReference, so we can migrate this NuGet Project.
                 if (packageManagementFormat.SelectedPackageManagementFormat == 1)
                 {
                     var newProject = await VsSolutionManager.UpgradeProjectToPackageReferenceAsync(Project);

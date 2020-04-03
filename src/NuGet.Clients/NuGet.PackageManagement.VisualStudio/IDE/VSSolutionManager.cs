@@ -284,7 +284,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // check if this .Net core project is nominated or not.
                 DependencyGraphSpec projectRestoreInfo;
-                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo) ||
+                if (!_projectSystemCache.TryGetProjectRestoreInfo(project.MSBuildProjectPath, out projectRestoreInfo, nominationMessages: out _) ||
                     projectRestoreInfo == null)
                 {
                     // there are projects still to be nominated.
