@@ -164,6 +164,12 @@ namespace NuGet.ProjectManagement.Projects
        
         public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
+            var (dgSpecs, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
+            return dgSpecs;
+        }
+
+        public override async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
+        {
             PackageSpec packageSpec = null;
             if (context == null || !context.PackageSpecCache.TryGetValue(MSBuildProjectPath, out packageSpec))
             {
@@ -248,7 +254,7 @@ namespace NuGet.ProjectManagement.Projects
                 context?.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
-            return new[] { packageSpec };
+            return (new[] { packageSpec }, null);
         }
 
         public async override Task<bool> InstallPackageAsync(

@@ -16,6 +16,7 @@ using NuGet.Configuration;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -117,10 +118,31 @@ namespace NuGet.SolutionRestoreManager
                     $"The nominate API is called for '{projectUniqueName}'.");
 
                 var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
+                DependencyGraphSpec dgSpec;
+                IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
+                try
+                {
+                    dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2);
+                }
+                catch (Exception e)
+                {
+                    var restoreLogMessage = RestoreLogMessage.CreateError(NuGetLogCode.NU1105, string.Format(Resources.NU1105, projectNames.ShortName, e.Message));
+                    restoreLogMessage.LibraryId = projectUniqueName;
 
-                var dgSpec = ToDependencyGraphSpec(projectNames, projectRestoreInfo, projectRestoreInfo2);
+                    nominationErrors = new List<IAssetsLogMessage>()
+                    {
+                        AssetsLogMessage.Create(restoreLogMessage)
+                    };
 
-                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec);
+                    var projectDirectory = Path.GetDirectoryName(projectUniqueName);
+                    string projectIntermediatePath = projectRestoreInfo == null
+                        ? projectRestoreInfo2.BaseIntermediatePath
+                        : projectRestoreInfo.BaseIntermediatePath;
+                    var dgSpecOutputPath = GetProjectOutputPath(projectDirectory, projectIntermediatePath);
+                    dgSpec = CreateMinimalDependencyGraphSpec(projectUniqueName, dgSpecOutputPath);
+                }
+
+                _projectSystemCache.AddProjectRestoreInfo(projectNames, dgSpec, nominationErrors);
 
                 // returned task completes when scheduled restore operation completes.
                 var restoreTask = _restoreWorker.ScheduleRestoreAsync(
@@ -136,6 +158,7 @@ namespace NuGet.SolutionRestoreManager
             catch (Exception e)
             {
                 _logger.LogError(e.ToString());
+                TelemetryUtility.EmitException(nameof(VsSolutionRestoreService), nameof(NominateProjectAsync), e);
                 return Task.FromResult(false);
             }
         }
@@ -163,16 +186,18 @@ namespace NuGet.SolutionRestoreManager
             return dgSpec;
         }
 
-        private static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
+        internal static PackageSpec ToPackageSpec(ProjectNames projectNames, IEnumerable TargetFrameworks, string originalTargetFrameworkstr, string msbuildProjectExtensionsPath)
         {
+            var cpvmEnabled = VSNominationUtilities.IsCentralPackageVersionManagementEnabled(TargetFrameworks);
+
             var tfis = TargetFrameworks
                 .Cast<IVsTargetFrameworkInfo>()
-                .Select(VSNominationUtilities.ToTargetFrameworkInformation)
+                .Select(tfi => VSNominationUtilities.ToTargetFrameworkInformation(tfi, cpvmEnabled))
                 .ToArray();
 
             var projectFullPath = Path.GetFullPath(projectNames.FullName);
             var projectDirectory = Path.GetDirectoryName(projectFullPath);
-            
+
             // Initialize OTF and CT values when original value of OTF property is not provided.
             var originalTargetFrameworks = tfis
                 .Select(tfi => tfi.FrameworkName.GetShortFolderName())
@@ -188,10 +213,7 @@ namespace NuGet.SolutionRestoreManager
                 crossTargeting = true;
             }
 
-            var outputPath = Path.GetFullPath(
-                                Path.Combine(
-                                    projectDirectory,
-                                    msbuildProjectExtensionsPath));
+            var outputPath = GetProjectOutputPath(projectDirectory, msbuildProjectExtensionsPath);
 
             var projectName = VSNominationUtilities.GetPackageId(projectNames, TargetFrameworks);
 
@@ -223,13 +245,37 @@ namespace NuGet.SolutionRestoreManager
                                     .ToList(),
                     ProjectWideWarningProperties = VSNominationUtilities.GetProjectWideWarningProperties(TargetFrameworks),
                     CacheFilePath = NoOpRestoreUtilities.GetProjectCacheFilePath(cacheRoot: outputPath),
-                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks)
+                    RestoreLockProperties = VSNominationUtilities.GetRestoreLockProperties(TargetFrameworks),
+                    CentralPackageVersionsEnabled = cpvmEnabled,
                 },
                 RuntimeGraph = VSNominationUtilities.GetRuntimeGraph(TargetFrameworks),
                 RestoreSettings = new ProjectRestoreSettings() { HideWarningsAndErrors = true }
             };
 
             return packageSpec;
+        }
+
+        private static string GetProjectOutputPath(string projectDirectory, string msbuildProjectExtensionsPath)
+        {
+            return Path.GetFullPath(
+                Path.Combine(
+                    projectDirectory,
+                    msbuildProjectExtensionsPath));
+        }
+
+        private static DependencyGraphSpec CreateMinimalDependencyGraphSpec(string projectPath, string outputPath)
+        {
+            var packageSpec = new PackageSpec();
+            packageSpec.FilePath = projectPath;
+            packageSpec.RestoreMetadata = new ProjectRestoreMetadata();
+            packageSpec.RestoreMetadata.ProjectUniqueName = projectPath;
+            packageSpec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+            packageSpec.RestoreMetadata.OutputPath = outputPath;
+
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(packageSpec);
+
+            return dgSpec;
         }
     }
 }

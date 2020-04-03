@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" DefaultTargets="Build">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -29,9 +29,11 @@
     <Reference Include="Microsoft.CSharp" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BrokeredServicesUtility.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
+    <Compile Include="NuGetSolutionService.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="RestoreEventPublisher.cs" />
     <Compile Include="RestoreManagerPackage.cs" />
@@ -67,10 +69,15 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
+      <Project>{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}</Project>
+      <Name>NuGet.VisualStudio.Internal.Contracts</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="All" GeneratePathProperty="true"/>
+    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" PrivateAssets="All" GeneratePathProperty="true" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">

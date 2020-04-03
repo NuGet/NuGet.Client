@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Workspace.VSIntegration.UI;
@@ -15,15 +16,16 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
     /// </summary>
     internal class NuGetWorkspaceCommandHandler : IWorkspaceCommandHandler
     {
-        private readonly JoinableTaskContext _taskContext;
-        private readonly IAsyncServiceProvider _serviceProvider;
-
-        private static bool IsNuGetFunctionalityAvailable = false;
+        private readonly RestoreCommandHandler _restoreCommandHandler;
 
         public NuGetWorkspaceCommandHandler(JoinableTaskContext taskContext, IAsyncServiceProvider asyncServiceProvider)
         {
-            _taskContext = taskContext ?? throw new ArgumentNullException(nameof(taskContext));
-            _serviceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
+            if (taskContext == null)
+            {
+                throw new ArgumentNullException(nameof(taskContext));
+            }
+
+            _restoreCommandHandler = new RestoreCommandHandler(taskContext.Factory, asyncServiceProvider);
         }
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
         public int Exec(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            if (IsNuGetFunctionalityAvailable && pguidCmdGroup == CommandGroup.NuGetOnlineEnvironmentsClientProjectCommandSetGuid)
+            if (pguidCmdGroup == CommandGroup.NuGetOnlineEnvironmentsClientProjectCommandSetGuid)
             {
                 var nCmdIDInt = (int)nCmdID;
 
@@ -48,20 +50,19 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     switch (nCmdIDInt)
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
-                            ExecuteSolutionRestore(selection.SingleOrDefault());
-
-                            return 0;
+                            _restoreCommandHandler.RunSolutionRestore();
+                            return VSConstants.S_OK;
                     }
                 }
             }
-            return 1;
+            return (int) Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
         }
 
         public bool QueryStatus(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, ref uint cmdf, ref string customTitle)
         {
             bool handled = false;
 
-            if (IsNuGetFunctionalityAvailable && pguidCmdGroup == CommandGroup.NuGetOnlineEnvironmentsClientProjectCommandSetGuid)
+            if (pguidCmdGroup == CommandGroup.NuGetOnlineEnvironmentsClientProjectCommandSetGuid)
             {
                 var nCmdIDInt = (int)nCmdID;
 
@@ -70,7 +71,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     switch (nCmdIDInt)
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
-                            cmdf = (uint)(Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
+                            var isRestoreActionInProgress = _restoreCommandHandler.IsRestoreActionInProgress();
+                            cmdf = (uint)((isRestoreActionInProgress ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
+                                | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
                             handled = true;
                             break;
                     }
@@ -78,11 +81,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             }
 
             return handled;
-        }
-
-        private void ExecuteSolutionRestore(WorkspaceVisualNodeBase node)
-        {
-            // TODO: https://github.com/NuGet/Home/issues/9308
         }
 
         private static bool IsSolutionOnlySelection(List<WorkspaceVisualNodeBase> selection)

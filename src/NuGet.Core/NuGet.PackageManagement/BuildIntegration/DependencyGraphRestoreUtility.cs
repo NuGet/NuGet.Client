@@ -28,6 +28,36 @@ namespace NuGet.PackageManagement
         /// <summary>
         /// Restore a solution and cache the dg spec to context.
         /// </summary>
+        public static Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
+            ISolutionManager solutionManager,
+            DependencyGraphSpec dgSpec,
+            DependencyGraphCacheContext context,
+            RestoreCommandProvidersCache providerCache,
+            Action<SourceCacheContext> cacheContextModifier,
+            IEnumerable<SourceRepository> sources,
+            Guid parentId,
+            bool forceRestore,
+            bool isRestoreOriginalAction,
+            ILogger log,
+            CancellationToken token)
+        {
+            return RestoreAsync(solutionManager,
+                dgSpec,
+                context,
+                providerCache,
+                cacheContextModifier,
+                sources,
+                parentId,
+                forceRestore,
+                isRestoreOriginalAction,
+                additionalMessages: null,
+                log,
+                token);
+        }
+
+        /// <summary>
+        /// Restore a solution and cache the dg spec to context.
+        /// </summary>
         public static async Task<IReadOnlyList<RestoreSummary>> RestoreAsync(
             ISolutionManager solutionManager,
             DependencyGraphSpec dgSpec,
@@ -38,6 +68,7 @@ namespace NuGet.PackageManagement
             Guid parentId,
             bool forceRestore,
             bool isRestoreOriginalAction,
+            IReadOnlyList<IAssetsLogMessage> additionalMessages,
             ILogger log,
             CancellationToken token)
         {
@@ -61,7 +92,8 @@ namespace NuGet.PackageManagement
                         parentId,
                         forceRestore,
                         isRestoreOriginalAction,
-                        restoreForceEvaluate);
+                        restoreForceEvaluate,
+                        additionalMessages);
 
                     var restoreSummaries = await RestoreRunner.RunAsync(restoreContext, token);
 
@@ -144,7 +176,8 @@ namespace NuGet.PackageManagement
                     parentId,
                     forceRestore: true,
                     isRestoreOriginalAction: false,
-                    restoreForceEvaluate: true);
+                    restoreForceEvaluate: true,
+                    additionalMessasges: null);
 
                 var requests = await RestoreRunner.GetRequests(restoreContext);
                 var results = await RestoreRunner.RunWithoutCommit(requests, restoreContext);
@@ -221,17 +254,33 @@ namespace NuGet.PackageManagement
             ISolutionManager solutionManager,
             DependencyGraphCacheContext context)
         {
+            var (dgSpec, _) = await GetSolutionRestoreSpecAndAdditionalMessages(solutionManager, context);
+            return dgSpec;
+        }
+
+        public static async Task<(DependencyGraphSpec dgSpec, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetSolutionRestoreSpecAndAdditionalMessages(
+            ISolutionManager solutionManager,
+            DependencyGraphCacheContext context)
+        {
             var dgSpec = new DependencyGraphSpec();
+            List<IAssetsLogMessage> allAdditionalMessages = null;
 
-            var stringComparer = PathUtility.GetStringComparerBasedOnOS();
+            var projects = (await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>().ToList();
+            var knownProjects = projects.Select(e => e.MSBuildProjectPath).ToHashSet(PathUtility.GetStringComparerBasedOnOS());
 
-            var uniqueProjectDependencies = new HashSet<string>(stringComparer);
-
-            var projects = ((await solutionManager.GetNuGetProjectsAsync()).OfType<IDependencyGraphProject>()).ToList();
-
-            for (var i=0; i< projects.Count; i++)
+            for (var i = 0; i < projects.Count; i++)
             {
-                var packageSpecs = await projects[i].GetPackageSpecsAsync(context);
+                var (packageSpecs, projectAdditionalMessages) = await projects[i].GetPackageSpecsAndAdditionalMessagesAsync(context);
+
+                if (projectAdditionalMessages != null && projectAdditionalMessages.Count > 0)
+                {
+                    if (allAdditionalMessages == null)
+                    {
+                        allAdditionalMessages = new List<IAssetsLogMessage>();
+                    }
+
+                    allAdditionalMessages.AddRange(projectAdditionalMessages);
+                }
 
                 foreach (var packageSpec in packageSpecs)
                 {
@@ -250,19 +299,24 @@ namespace NuGet.PackageManagement
 
                         if (!string.IsNullOrEmpty(outputPath))
                         {
-                            var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
-
-                            if (File.Exists(persistedDGSpecPath))
+                            for (int frameworkCount = 0; frameworkCount < packageSpec.RestoreMetadata.TargetFrameworks.Count; frameworkCount++)
                             {
-                                var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
-
-                                foreach (var dependentPackageSpec in persistedDGSpec.GetClosure(packageSpec.RestoreMetadata.ProjectUniqueName))
+                                for (var projectReferenceCount = 0; projectReferenceCount < packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences.Count; projectReferenceCount++)
                                 {
-                                    if (!(uniqueProjectDependencies.Contains(dependentPackageSpec.RestoreMetadata.ProjectPath) ||
-                                        projects.Any(p => stringComparer.Equals(p.MSBuildProjectPath, dependentPackageSpec.RestoreMetadata.ProjectPath))))
+                                    if (!knownProjects.Contains(packageSpec.RestoreMetadata.TargetFrameworks[frameworkCount].ProjectReferences[projectReferenceCount].ProjectPath))
                                     {
-                                        uniqueProjectDependencies.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
-                                        dgSpec.AddProject(dependentPackageSpec);
+                                        var persistedDGSpecPath = Path.Combine(outputPath, dgFileName);
+                                        if (File.Exists(persistedDGSpecPath))
+                                        {
+                                            var persistedDGSpec = DependencyGraphSpec.Load(persistedDGSpecPath);
+                                            foreach (var dependentPackageSpec in persistedDGSpec.Projects.Where(e => !knownProjects.Contains(e.RestoreMetadata.ProjectPath)))
+                                            {
+                                                // Include all the missing projects from the closure.
+                                                // Figuring out exactly what we need would be too and an overkill. That will happen later in the DependencyGraphSpecRequestProvider
+                                                knownProjects.Add(dependentPackageSpec.RestoreMetadata.ProjectPath);
+                                                dgSpec.AddProject(dependentPackageSpec);
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -272,7 +326,7 @@ namespace NuGet.PackageManagement
             }
 
             // Return dg file
-            return dgSpec;
+            return (dgSpec, allAdditionalMessages);
         }
 
         /// <summary>
@@ -287,7 +341,8 @@ namespace NuGet.PackageManagement
             Guid parentId,
             bool forceRestore,
             bool isRestoreOriginalAction,
-            bool restoreForceEvaluate)
+            bool restoreForceEvaluate,
+            IReadOnlyList<IAssetsLogMessage> additionalMessasges)
         {
 #pragma warning disable CS0618 // Type or member is obsolete
             var caching = new CachingSourceProvider(new PackageSourceProvider(context.Settings, enablePackageSourcesChangedEvent: false));
@@ -308,7 +363,8 @@ namespace NuGet.PackageManagement
                 CachingSourceProvider = caching,
                 ParentId = parentId,
                 IsRestoreOriginalAction = isRestoreOriginalAction,
-                RestoreForceEvaluate = restoreForceEvaluate
+                RestoreForceEvaluate = restoreForceEvaluate,
+                AdditionalMessages = additionalMessasges
             };
 
             return restoreContext;

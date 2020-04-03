@@ -27,6 +27,11 @@ namespace NuGet.Build.Tasks
         private static readonly Lazy<FileInfo> ThisAssemblyLazy = new Lazy<FileInfo>(() => new FileInfo(typeof(RestoreTaskEx).Assembly.Location));
 
         /// <summary>
+        /// Gets or sets a value indicating whether or not assets should be deleted for projects that don't support PackageReference.
+        /// </summary>
+        public bool CleanupAssetsForUnsupportedProjects { get; set; } = true;
+
+        /// <summary>
         /// Gets or sets a value indicating whether or not parallel restore should be enabled.
         /// Defaults to <code>false</code> if the current machine only has a single processor.
         /// </summary>
@@ -180,6 +185,7 @@ namespace NuGet.Build.Tasks
 
             var options = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase)
             {
+                [nameof(CleanupAssetsForUnsupportedProjects)] = CleanupAssetsForUnsupportedProjects,
                 [nameof(DisableParallel)] = DisableParallel,
                 [nameof(Force)] = Force,
                 [nameof(ForceEvaluate)] = ForceEvaluate,

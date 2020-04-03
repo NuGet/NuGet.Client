@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private PackageSpec GetPackageSpec()
         {
             DependencyGraphSpec projectRestoreInfo;
-            if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
+            if (_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo, out _))
             {
                 return projectRestoreInfo.GetProjectSpec(_projectFullPath);
             }
@@ -131,12 +131,19 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public override string ProjectName => _projectName;
 
-        public override Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        public override async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
+        {
+            var (dgSpecs, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
+            return dgSpecs;
+        }
+
+        public override Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
         {
             var projects = new List<PackageSpec>();
 
             DependencyGraphSpec projectRestoreInfo;
-            if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo))
+            IReadOnlyList<IAssetsLogMessage> additionalMessages;
+            if (!_projectSystemCache.TryGetProjectRestoreInfo(_projectFullPath, out projectRestoreInfo, out additionalMessages))
             {
                 throw new InvalidOperationException(
                     string.Format(Strings.ProjectNotLoaded_RestoreFailed, ProjectName));
@@ -177,7 +184,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 }
             }
 
-            return Task.FromResult<IReadOnlyList<PackageSpec>>(projects);
+            return Task.FromResult<(IReadOnlyList<PackageSpec>, IReadOnlyList<IAssetsLogMessage>)>((projects, additionalMessages));
         }
 
         private IList<string> GetConfigFilePaths(ISettings settings)

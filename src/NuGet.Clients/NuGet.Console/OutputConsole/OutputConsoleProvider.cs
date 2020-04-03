@@ -21,6 +21,7 @@ namespace NuGetConsole
     {
         private readonly IEnumerable<Lazy<IHostProvider, IHostMetadata>> _hostProviders;
         private readonly AsyncLazy<IConsole> _cachedOutputConsole;
+        private readonly AsyncLazy<bool> _isServerMode;
         private IAsyncServiceProvider _asyncServiceProvider;
 
         private readonly AsyncLazy<IVsOutputWindow> _vsOutputWindow;
@@ -49,7 +50,7 @@ namespace NuGetConsole
             _cachedOutputConsole = new AsyncLazy<IConsole>(
                 async () =>
                 {
-                    if (await IsInServerModeAsync(CancellationToken.None))
+                    if (await _isServerMode.GetValueAsync())
                     {
                         // This is disposable, but it lives for the duration of the process.
                         return new ChannelOutputConsole(
@@ -65,12 +66,25 @@ namespace NuGetConsole
                         return new OutputConsole(vsOutputWindow, vsUIShell);
                     }
                 }, NuGetUIThreadHelper.JoinableTaskFactory);
+
+            _isServerMode = new AsyncLazy<bool>(
+                () =>
+                {
+                    return IsInServerModeAsync(CancellationToken.None);
+                }, NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         public async Task<IOutputConsole> CreateBuildOutputConsoleAsync()
         {
-            var vsOutputWindow = await _vsOutputWindow.GetValueAsync();
-            return new BuildOutputConsole(vsOutputWindow);
+            if (await _isServerMode.GetValueAsync())
+            {
+                return await _cachedOutputConsole.GetValueAsync();
+            }
+            else
+            {
+                var vsOutputWindow = await _vsOutputWindow.GetValueAsync();
+                return new BuildOutputConsole(vsOutputWindow);
+            }
         }
 
         public async Task<IOutputConsole> CreatePackageManagerConsoleAsync()

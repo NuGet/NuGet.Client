@@ -1942,7 +1942,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9128")]
         public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_DoesNoOpAsync()
         {
             // Arrange

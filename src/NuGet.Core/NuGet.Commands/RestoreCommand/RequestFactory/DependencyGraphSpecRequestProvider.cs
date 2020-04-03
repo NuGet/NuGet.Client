@@ -54,7 +54,15 @@ namespace NuGet.Commands
             }
 
             // Validate the dg file input, this throws if errors are found.
-            SpecValidationUtility.ValidateDependencySpec(dgFile);
+            var projectsWithErrors = new HashSet<string>();
+            if (restoreContext.AdditionalMessages != null)
+            {
+                foreach (var projectPath in restoreContext.AdditionalMessages.Where(m => m.Level == Common.LogLevel.Error).Select(m => m.ProjectPath))
+                {
+                    projectsWithErrors.Add(projectPath);
+                }
+            }
+            SpecValidationUtility.ValidateDependencySpec(dgFile, projectsWithErrors);
 
             // Create requests
             var requests = new ConcurrentBag<RestoreSummaryRequest>();
@@ -159,6 +167,8 @@ namespace NuGet.Commands
 
             var rootPath = Path.GetDirectoryName(project.PackageSpec.FilePath);
 
+            IReadOnlyList<IAssetsLogMessage> projectAdditionalMessages = GetMessagesForProject(restoreArgs.AdditionalMessages, project.PackageSpec.FilePath);
+
             // Create request
             var request = new RestoreRequest(
                 project.PackageSpec,
@@ -172,7 +182,8 @@ namespace NuGet.Commands
                 //  Project.json is special cased to put assets file and generated .props and targets in the project folder
                 RestoreOutputPath = project.PackageSpec.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson ? rootPath : project.PackageSpec.RestoreMetadata.OutputPath,
                 DependencyGraphSpec = projectDgSpec,
-                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath
+                MSBuildProjectExtensionsPath = projectPackageSpec.RestoreMetadata.OutputPath,
+                AdditionalMessages = projectAdditionalMessages
             };
 
             var restoreLegacyPackagesDirectory = project.PackageSpec?.RestoreMetadata?.LegacyPackagesDirectory
@@ -229,6 +240,29 @@ namespace NuGet.Commands
                     CollectReferences(childProject, allProjects, references);
                 }
             }
+        }
+
+        internal static IReadOnlyList<IAssetsLogMessage> GetMessagesForProject(IReadOnlyList<IAssetsLogMessage> allMessages, string projectPath)
+        {
+            List<IAssetsLogMessage> projectAdditionalMessages = null;
+
+            if (allMessages != null)
+            {
+                foreach (var message in allMessages)
+                {
+                    if (message.ProjectPath == projectPath)
+                    {
+                        if (projectAdditionalMessages == null)
+                        {
+                            projectAdditionalMessages = new List<IAssetsLogMessage>();
+                        }
+
+                        projectAdditionalMessages.Add(message);
+                    }
+                }
+            }
+
+            return projectAdditionalMessages;
         }
     }
 }
