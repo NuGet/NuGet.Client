@@ -59,11 +59,15 @@ namespace NuGet.Build.Tasks
             foreach (var project in ProjectReferences)
             {
                 var refOutput = BuildTasksUtility.GetPropertyIfExists(project, "ReferenceOutputAssembly");
+                var copyToOutputProperty = BuildTasksUtility.GetPropertyIfExists(project, "CopyToOutputDirectory");
+                bool copyToOutput = !string.Equals(copyToOutputProperty, "never", StringComparison.OrdinalIgnoreCase) 
+                                       || string.IsNullOrWhiteSpace(copyToOutputProperty);
 
                 // Match the same behavior as NuGet.targets
-                // ReferenceOutputAssembly == '' OR ReferenceOutputAssembly == 'true'
+                // ReferenceOutputAssembly == '' OR ReferenceOutputAssembly == 'true' OR CopyToOuputProperty is not set to 'Never'
                 if (string.IsNullOrEmpty(refOutput)
-                    || Boolean.TrueString.Equals(refOutput, StringComparison.OrdinalIgnoreCase))
+                    || Boolean.TrueString.Equals(refOutput, StringComparison.OrdinalIgnoreCase) 
+                    || copyToOutput)
                 {
                     // Get the absolute path
                     var referencePath = Path.GetFullPath(Path.Combine(parentDirectory, project.ItemSpec));
