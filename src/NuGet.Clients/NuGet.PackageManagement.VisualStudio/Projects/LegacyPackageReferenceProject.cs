@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -26,6 +27,34 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
+
+    public class NuGetIVsBuildItemStorageCallback : IVsBuildItemStorageCallback
+    {
+        public List<(string Itemid, List<string> ItemMetadata)> Items { get; } = new List<(string Itemid, List<string> ItemMetadata)>();
+
+        private NuGetIVsBuildItemStorageCallback()
+        {
+
+        }
+
+        public static NuGetIVsBuildItemStorageCallback Instance()
+        {
+            return new NuGetIVsBuildItemStorageCallback();
+        }
+
+        public void ItemFound(string itemSpec, Array metadata)
+        {
+            var currentItemMetadata = new List<string>();
+
+            foreach(var a in metadata)
+            {
+                currentItemMetadata.Add((string)a);
+            }
+
+            Items.Add((itemSpec, currentItemMetadata));
+        }
+    }
+
     /// <summary>
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a legacy CSProj with package references.
@@ -124,14 +153,45 @@ namespace NuGet.PackageManagement.VisualStudio
             return new[] { packageSpec };
         }
 
+
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
+            
             // From ProjctSystem team - this should be executed on the UI thread 
             ThreadHelper.ThrowIfNotOnUIThread();
             Dictionary<string, CentralPackageVersion> result = null;
+            
             bool cpvmEnabled = await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
             if (cpvmEnabled)
             {
+                var itemStorage = _vsProjectAdapter.VsHierarchy as Microsoft.VisualStudio.Shell.Interop.IVsBuildItemStorage;
+                string[] metadataNames = new string[] { "Version" };
+                List<string> ids = new List<string>();
+                List<string> versions = new List<string>();
+
+                IVsBuildItemStorageCallback callback = NuGetIVsBuildItemStorageCallback.Instance();
+
+                //    delegate (string itemSpec, string[] metadataValues)
+                //{
+
+                //};
+                try
+                {
+                    //int vv = itemStorage.GetProperty((uint)Microsoft.VisualStudio.VSConstants.VSITEMID.Selection, (int)Microsoft.VisualStudio.Shell.Interop.__VSHPROPID.VSHPROPID_Name, out object pvar);
+
+
+                    if(itemStorage != null)
+                    {
+
+                        itemStorage.FindItems("PackageVersion", 1, metadataNames, callback);
+                    }
+                }
+                catch(Exception ex)
+                {
+                    string m = ex.Message;
+                }
+
+                //Microsoft.VisualStudio.Shell.Interop.IVSBui
                 //var itemStorage = _vsProjectAdapter.VsHierarchy as IVsBuildItemStorage;
                 //        interface IVsBuildItemStorage
                 //{
@@ -149,6 +209,10 @@ namespace NuGet.PackageManagement.VisualStudio
             return result;
         }
 
+        public static void Callback1(string itemSpec, string[] metadataValues)
+        {
+
+        }
         #endregion
 
         #region NuGetProject
