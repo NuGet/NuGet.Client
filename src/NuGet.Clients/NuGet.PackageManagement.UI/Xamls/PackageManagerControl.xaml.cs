@@ -1012,9 +1012,13 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
 
-                _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
+                //Installed and Updates tabs don't need to be refreshed.
+                if (_topPanel.Filter != ItemFilter.Installed && _topPanel.Filter != ItemFilter.UpdatesAvailable)
+                {
+                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                    _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
+                }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
