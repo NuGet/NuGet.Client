@@ -14,7 +14,7 @@ namespace NuGet.SolutionRestoreManager
         internal const string NuGetSolutionServiceName = "NuGetSolutionService";
         internal const string NuGetSolutionServiceVersion = "1.0.0";
 
-        internal static ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
+        internal static readonly ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(NuGetSolutionServiceName, new Version(NuGetSolutionServiceVersion)),
             ServiceJsonRpcDescriptor.Formatters.UTF8,
             ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
