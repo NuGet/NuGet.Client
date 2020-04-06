@@ -8,8 +8,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public static class NuGetServices
     {
-        internal static string NuGetSolutionServiceName = "NuGetSolutionService";
-        internal static string NuGetSolutionServiceVersion = "1.0.0";
+        private const string NuGetSolutionServiceName = "NuGetSolutionService";
+        private const string NuGetSolutionServiceVersion = "1.0.0";
         /// <summary>
         /// A service descriptor for the NuGetSolutionService service. 
         /// </summary>
