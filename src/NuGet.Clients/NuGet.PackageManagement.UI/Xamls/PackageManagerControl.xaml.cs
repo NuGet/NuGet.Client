@@ -752,7 +752,7 @@ namespace NuGet.PackageManagement.UI
             var packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
 
             var loader = new PackageItemLoader(
-                loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, searchText, IncludePrerelease);
+                loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
             var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                 ? Resx.Resources.Text_Loading
                 : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
@@ -811,7 +811,7 @@ namespace NuGet.PackageManagement.UI
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                 var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, false);
                 var loader = new PackageItemLoader(
-                    loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
+                    loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
                 // cancel previous refresh tabs task, if any
@@ -874,7 +874,7 @@ namespace NuGet.PackageManagement.UI
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
                     var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, false);
                     var loader = new PackageItemLoader(
-                        loadContext, packageFeeds.mainFeed, packageFeeds.recommenderFeed, includePrerelease: IncludePrerelease);
+                        loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
 
                     _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
                 })

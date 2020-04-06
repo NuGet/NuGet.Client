@@ -70,7 +70,7 @@ namespace NuGet.Protocol
 
         public string Title => !string.IsNullOrEmpty(_nuspec.GetTitle()) ? _nuspec.GetTitle() : _nuspec.GetId();
 
-        public bool IsRecommended { get; set; } = false;
+        public bool IsRecommended { get; set; }
 
         /// <summary>
         /// Gets a function that provides <c>PackageReaderBase</c>-like objects, for reading package content

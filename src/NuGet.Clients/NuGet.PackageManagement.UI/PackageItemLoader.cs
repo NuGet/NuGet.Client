@@ -83,9 +83,9 @@ namespace NuGet.PackageManagement.UI
         public PackageItemLoader(
             PackageLoadContext context,
             IPackageFeed packageFeed,
-            IPackageFeed recommenderPackageFeed,
             string searchText = null,
-            bool includePrerelease = true)
+            bool includePrerelease = true,
+            IPackageFeed recommenderPackageFeed = null)
         {
             if (context == null)
             {

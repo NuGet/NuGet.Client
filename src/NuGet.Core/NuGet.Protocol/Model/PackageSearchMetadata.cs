@@ -200,7 +200,7 @@ namespace NuGet.Protocol
         public bool IsListed { get; private set; } = true;
 
         [JsonIgnore]
-        public bool IsRecommended { get; set; } = false;
+        public bool IsRecommended { get; set; }
 
         /// <summary>
         /// If deprecated, contains deprecation information for this package; otherwise <c>null</c>.
