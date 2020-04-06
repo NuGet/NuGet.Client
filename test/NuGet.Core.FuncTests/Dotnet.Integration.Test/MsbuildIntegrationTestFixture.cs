@@ -75,7 +75,7 @@ namespace Dotnet.Integration.Test
 
         private static void CopyFromTemplate(string projectName, string args, string workingDirectory, DirectoryInfo templateDirectoryInfo)
         {
-            foreach(var file in templateDirectoryInfo.GetFiles())
+            foreach (var file in templateDirectoryInfo.GetFiles())
             {
                 File.Copy(file.FullName, Path.Combine(workingDirectory, file.Name));
             }
@@ -98,7 +98,8 @@ namespace Dotnet.Integration.Test
             var restoreSolutionDirectory = workingDirectory;
             var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
             var packageReference = string.Empty;
-            foreach (var package in packages) {
+            foreach (var package in packages)
+            {
                 packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
             }
 
@@ -170,7 +171,7 @@ namespace Dotnet.Integration.Test
         /// <summary>
         /// dotnet.exe args
         /// </summary>
-        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode=false)
+        internal CommandRunnerResult RunDotnet(string workingDirectory, string args, bool ignoreExitCode = false)
         {
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
@@ -186,6 +187,9 @@ namespace Dotnet.Integration.Test
             return result;
         }
 
+        internal CommandRunnerResult PackProjectWithRepoPackArtifacts(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
+            => PackProjectOrSolutionWithRepoPackArtifacts(workingDirectory, $"{projectName}.csproj", args, nuspecOutputPath, validateSuccess);
+
         internal CommandRunnerResult PackProject(string workingDirectory, string projectName, string args, string nuspecOutputPath = "obj", bool validateSuccess = true)
             => PackProjectOrSolution(workingDirectory, $"{projectName}.csproj", args, nuspecOutputPath, validateSuccess);
 
@@ -198,6 +202,28 @@ namespace Dotnet.Integration.Test
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {file} {args} /p:NuspecOutputPath={nuspecOutputPath}",
+                waitForExit: true,
+                environmentVariables: _processEnvVars);
+            if (validateSuccess)
+            {
+                Assert.True(result.Item1 == 0, $"Pack failed with following log information :\n {result.AllOutput}");
+                Assert.True(result.Item3 == "", $"Pack failed with following message in error stream :\n {result.AllOutput}");
+            }
+            return result;
+        }
+
+        private CommandRunnerResult PackProjectOrSolutionWithRepoPackArtifacts(string workingDirectory, string file, string args, string nuspecOutputPath, bool validateSuccess)
+        {
+            var cliDirectory = Path.GetDirectoryName(TestDotnetCli);
+            var pathToSdkInCli = Path.Combine(
+                   Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
+                       .First());
+            var pathOfNuGetBuildTasksPack = Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.Pack.dll");
+            var pathOfNuGetBuildTasksPackTragets = Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.Pack.targets");
+
+            var result = CommandRunner.Run(TestDotnetCli,
+                workingDirectory,
+                $"pack {file} {args} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true /p:NuGetBuildTasksPackTargets={pathOfNuGetBuildTasksPackTragets} /p:NuGetPackTaskAssemblyFile={pathOfNuGetBuildTasksPack} /p:NuspecOutputPath={nuspecOutputPath}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
             if (validateSuccess)
@@ -274,7 +300,8 @@ namespace Dotnet.Integration.Test
         {
             const string restoreProjectName = "NuGet.Build.Tasks";
             const string restoreTargetsName = "NuGet.targets";
-            var sdkDependencies = new List<string> { restoreProjectName, "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials" };
+            const string restorePropsName = "NuGet.props";
+            var sdkDependencies = new List<string> { restoreProjectName, "NuGet.Versioning", "NuGet.Protocol", "NuGet.ProjectModel", "NuGet.Packaging", "NuGet.LibraryModel", "NuGet.Frameworks", "NuGet.DependencyResolver.Core", "NuGet.Configuration", "NuGet.Common", "NuGet.Commands", "NuGet.CommandLine.XPlat", "NuGet.Credentials", "NuGet.Build.Tasks.Pack" };
 
             // Copy rest of the NuGet assemblies.
             foreach (var projectName in sdkDependencies)
@@ -296,6 +323,17 @@ namespace Dotnet.Integration.Test
                             File.Copy(
                                 sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restoreTargetsName),
                                 destFileName: Path.Combine(pathToSdkInCli, restoreTargetsName),
+                                overwrite: true);
+                            File.Copy(
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, restorePropsName),
+                                destFileName: Path.Combine(pathToSdkInCli, restorePropsName),
+                                overwrite: true);
+                        }
+                        if (projectName.Equals("NuGet.Build.Tasks.Pack"))
+                        {
+                            File.Copy(
+                                sourceFileName: Path.Combine(frameworkArtifactsFolder.FullName, "NuGet.Build.Tasks.Pack.targets"),
+                                destFileName: Path.Combine(pathToSdkInCli, "NuGet.Build.Tasks.Pack.targets"),
                                 overwrite: true);
                         }
                     }
@@ -410,7 +448,7 @@ namespace Dotnet.Integration.Test
 
                 for (var i = 0; i < MaxTries; i++)
                 {
-                    
+
                     try
                     {
                         Directory.Delete(path, recursive: true);
