@@ -384,8 +384,12 @@ namespace NuGet.ProjectModel
         }
 
         /// <summary>
-        /// All the transitive versions enforced by CPVM and present in the current lock file (packages.lock.json) need to match the versions in the central package management file.
-        /// If a central version that is a transitive dependency is removed from CPVM the lock file is invalidated. 
+        /// The method will return true if:
+        /// 1. If a transitive dependency from the lock file is now added to the central file.
+        ///     or
+        /// 1. If there is a mistmatch between the RequestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file.
+        ///     or
+        /// 2. If a central version that is a transitive dependency is removed from CPVM the lock file is invalidated.
         /// </summary>
         private static bool HasProjectTransitiveDependencyChanged(
             IDictionary<string, CentralPackageVersion> centralPackageVersions,
@@ -393,8 +397,6 @@ namespace NuGet.ProjectModel
             IList<LockFileDependency> lockTransitiveDependencies)
         {
             // Transitive dependencies moved to be centraly managed will invalidate the lock file
-            // as in this point there is no way to ensure that the resolved transitive dependency from the central file is going to be the same
-            // with the current lock file transitive dependency
             var transitiveDependenciesMovedToBeManagedCentrally = lockTransitiveDependencies.Where(dep => centralPackageVersions.ContainsKey(dep.Id));
 
             if (transitiveDependenciesMovedToBeManagedCentrally.Any())
