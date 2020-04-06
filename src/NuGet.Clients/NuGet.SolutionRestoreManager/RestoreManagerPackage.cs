@@ -46,9 +46,9 @@ namespace NuGet.SolutionRestoreManager
 
             await SolutionRestoreCommand.InitializeAsync(this);
 
-            // Set up brokered services
+            // Set up brokered services - Do not reference NuGet.VisualStudio.Internals.Contract explicitly to avoid an unnecessary assembly load
             IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            brokeredServiceContainer.Proffer(NuGetServices.NuGetSolutionService, factory: BrokeredServicesUtility.GetNuGetSolutionServicesFactory());
+            brokeredServiceContainer.Proffer(BrokeredServicesUtility.NuGetSolutionService, factory: BrokeredServicesUtility.GetNuGetSolutionServicesFactory());
 
             await base.InitializeAsync(cancellationToken, progress);
         }
