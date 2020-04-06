@@ -3,7 +3,6 @@
 
 using System;
 using System.Threading.Tasks;
-
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Shell.ServiceBroker;
 
@@ -12,7 +11,7 @@ namespace NuGet.SolutionRestoreManager
     internal static class BrokeredServicesUtility
     {
         // It is very important that these names and versions are kept the same as the ones in NuGet.VisualStudio.Internal.Contracts.NuGetServices.
-        internal static string NuGetSolutionServiceName = "NuGetSolutionService";
+        internal static const string NuGetSolutionServiceName = "NuGetSolutionService";
         internal static string NuGetSolutionServiceVersion = "1.0.0";
 
         internal static ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
