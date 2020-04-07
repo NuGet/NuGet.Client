@@ -998,7 +998,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private bool IsTabChanged = false;
+        internal bool IsTabChanged { get; set; } = false;
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {

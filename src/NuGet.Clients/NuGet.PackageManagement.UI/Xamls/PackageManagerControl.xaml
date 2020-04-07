@@ -20,6 +20,9 @@
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
+    <nuget:LiveTextLoadingConverter
+      x:Key="LiveTextLoadingConverter" />
+
   </UserControl.Resources>
   <UserControl.CommandBindings>
     <CommandBinding
@@ -115,7 +118,17 @@
               Visibility="Collapsed" 
               Text="{Binding StatusIndicator.LoadingMessage, ElementName=_packagesList}"
               IsFrequencyLimited="True"
-              Frequency="2" />
+              Frequency="2">
+              <LiveTextBlock.Text>
+                <MultiBinding 
+                    Converter="{StaticResource LiveTextLoadingConverter}"
+                    TargetNullValue="Nuuuuuuuul"
+                    FallbackValue="Faaaaaaaaail">
+                  <Binding RelativeSource="{RelativeSource Self}" Path="IsTabChanged" />
+                  <Binding ElementName="_topPanel" Path="LoadingStatus.LoadingMessage" />
+                </MultiBinding>
+              </LiveTextBlock.Text>
+            </vs:LiveTextBlock>
 
             <Border
               Grid.Row="2"
