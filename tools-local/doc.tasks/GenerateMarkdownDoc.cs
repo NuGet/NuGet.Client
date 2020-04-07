@@ -127,14 +127,20 @@ namespace NuGetTasks
                     fileName = pathSplit[end];
 
                     var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
-
-                    //Ignore the last subfolder if its name matches the filename.
-                    if (pathSplit[end-1] == fileNameWithoutExtension)
+                    if (end > 0)
                     {
-                        --end;
-                    }
+                        //Ignore the last subfolder if its name matches the filename.
+                        if (pathSplit[end - 1].Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            --end;
+                        }
 
-                    groupName = string.Join(separator.ToString(), pathSplit.Take(end));
+                        groupName = string.Join(separator.ToString(), pathSplit.Take(end));
+                    }
+                    else
+                    {
+                        groupName = pathSplit[0];
+                    }
                 }
 
                 //Output group name if it's a new group (relies on earlier sorting).
