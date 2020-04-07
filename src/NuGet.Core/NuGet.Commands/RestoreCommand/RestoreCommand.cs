@@ -18,6 +18,7 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
 using NuGet.RuntimeModel;
+using NuGet.Shared;
 using NuGet.Versioning;
 
 namespace NuGet.Commands
@@ -1152,6 +1153,22 @@ namespace NuGet.Commands
             foreach (var provider in request.DependencyProviders.RemoteProviders)
             {
                 context.RemoteLibraryProviders.Add(provider);
+            }
+
+            foreach (TargetFrameworkInformation tfi in request.Project.TargetFrameworks)
+            {
+                List<string> projectDependencies = tfi.Dependencies.Select(d => d.Name).ToList();
+                var centralPackageVersionsThatAreNotDirectDependencies = new Dictionary<string, CentralPackageVersion>(StringComparer.OrdinalIgnoreCase);
+
+                tfi.CentralPackageVersions.ForEach(kvp =>
+                {
+                    if (!projectDependencies.Contains(kvp.Key))
+                    {
+                        centralPackageVersionsThatAreNotDirectDependencies.Add(kvp.Key, kvp.Value);
+                    }
+                });
+
+                context.CentralPackageVersions.Add(tfi.FrameworkName, centralPackageVersionsThatAreNotDirectDependencies);
             }
 
             return context;

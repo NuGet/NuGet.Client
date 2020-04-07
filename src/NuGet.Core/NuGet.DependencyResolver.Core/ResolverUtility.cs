@@ -48,6 +48,9 @@ namespace NuGet.DependencyResolver
             // the package.
             for (var i = 0; i < 2 && graphItem == null; i++)
             {
+                Dictionary<string, CentralPackageVersion> centralPackageVersions = null;
+                context.CentralPackageVersions.TryGetValue(framework, out centralPackageVersions);
+
                 var match = await FindLibraryMatchAsync(
                     libraryRange,
                     framework,
@@ -56,6 +59,7 @@ namespace NuGet.DependencyResolver
                     context.LocalLibraryProviders,
                     context.ProjectLibraryProviders,
                     context.LockFileLibraries,
+                    centralPackageVersions,
                     currentCacheContext,
                     context.Logger,
                     cancellationToken);
@@ -143,6 +147,7 @@ namespace NuGet.DependencyResolver
             IEnumerable<IRemoteDependencyProvider> localProviders,
             IEnumerable<IDependencyProvider> projectProviders,
             IDictionary<LockFileCacheKey, IList<LibraryIdentity>> lockFileLibraries,
+            IDictionary<string, CentralPackageVersion> centralPackageVersions,
             SourceCacheContext cacheContext,
             ILogger logger,
             CancellationToken cancellationToken)
@@ -181,6 +186,13 @@ namespace NuGet.DependencyResolver
 
                 if (library != null)
                 {
+                    // This is a transitve dependency that might have been changed centrally
+                    // do not resolve to the verison defined in the lock file
+                    if(centralPackageVersions?.ContainsKey(library.Name) == true)
+                    {
+                        return await FindPackageLibraryMatchAsync(libraryRange, framework, remoteProviders, localProviders, cacheContext, logger, cancellationToken);
+                    }
+
                     // check for the exact library through local repositories
                     var localMatch = await FindLibraryByVersionAsync(library, framework, localProviders, cacheContext, logger, cancellationToken);
 
