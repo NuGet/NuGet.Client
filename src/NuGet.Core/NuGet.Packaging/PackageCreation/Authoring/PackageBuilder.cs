@@ -179,6 +179,12 @@ namespace NuGet.Packaging
             set;
         }
 
+        public bool SuppressRequireLicenseAcceptance
+        {
+            get;
+            set;
+        }
+
         public bool Serviceable
         {
             get;

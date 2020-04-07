@@ -122,6 +122,7 @@ namespace NuGet.Build.Tasks.Pack
                 Copyright = request.Copyright,
                 ReleaseNotes = request.ReleaseNotes,
                 RequireLicenseAcceptance = request.RequireLicenseAcceptance,
+                SuppressRequireLicenseAcceptance = !request.RequireLicenseAcceptance,
                 PackageTypes = ParsePackageTypes(request)
             };
 
