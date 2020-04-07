@@ -6,7 +6,6 @@
              xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
              xmlns:imaging="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.Imaging"
              xmlns:catalog="clr-namespace:Microsoft.VisualStudio.Imaging;assembly=Microsoft.VisualStudio.ImageCatalog"
-             xmlns:uia="clr-namespace:Microsoft.Internal.VisualStudio.PlatformUI.Automation;assembly=Microsoft.VisualStudio.Shell.15.0"
              mc:Ignorable="d"
              d:DesignHeight="100" d:DesignWidth="800">
   <UserControl.Resources>

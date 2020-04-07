@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
     public partial class InfiniteScrollList : UserControl
     {
-        private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
+        internal readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
 
         public event SelectionChangedEventHandler SelectionChanged;
@@ -79,6 +79,14 @@ namespace NuGet.PackageManagement.UI
 
             DataContext = Items;
             CheckBoxesEnabled = false;
+        }
+
+        internal LoadingStatusIndicator StatusIndicator
+        {
+            get
+            {
+                return _loadingStatusIndicator;
+            }
         }
 
         // Indicates wether check boxes are enabled on packages
