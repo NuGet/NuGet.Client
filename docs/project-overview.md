@@ -1,5 +1,5 @@
 ---
-date-generated: 2020-04-07T15:09:04
+date-generated: 2020-04-07T15:37:02
 tool: NuGetTasks.GenerateMarkdownDoc
 ---
 
@@ -34,6 +34,7 @@ Projects in section: 38
 - [`NuGet.VisualStudio.OnlineEnvironment.Client.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.OnlineEnvironment.Client/NuGet.VisualStudio.OnlineEnvironment.Client.csproj): 
 - [`NuGet.VisualStudio.csproj`](../src/NuGet.Clients/NuGet.VisualStudio/NuGet.VisualStudio.csproj): APIs for invoking NuGet services in Visual Studio.
 - [`NuGetConsole.Host.PowerShell.csproj`](../src/NuGet.Clients/NuGetConsole.Host.PowerShell/NuGetConsole.Host.PowerShell.csproj): Package Manager Console PowerShell host implementation.
+
 ### src\NuGet.Core
 
 - [`Microsoft.Build.NuGetSdkResolver.csproj`](../src/NuGet.Core/Microsoft.Build.NuGetSdkResolver/Microsoft.Build.NuGetSdkResolver.csproj): MSBuild SDK resolver for NuGet packages.
@@ -67,6 +68,7 @@ Projects in section: 18
 ### test\NuGet.Core.Tests\Microsoft.Build.NuGetSdkResolver.Tests
 
 - [`Microsoft.Build.NuGetSdkResolver.Test.csproj`](../test/NuGet.Core.Tests/Microsoft.Build.NuGetSdkResolver.Tests/Microsoft.Build.NuGetSdkResolver.Test.csproj): Unit tests for Microsoft.Build.NuGetSdkResolver.
+
 ### test\NuGet.Core.Tests
 
 - [`NuGet.Build.Tasks.Console.Test.csproj`](../test/NuGet.Core.Tests/NuGet.Build.Tasks.Console.Test/NuGet.Build.Tasks.Console.Test.csproj): Unit tests for NuGet.Build.Tasks.Console.
@@ -114,9 +116,11 @@ Projects in section: 11
 
 - [`NuGet.CommandLine.FuncTest.csproj`](../test/NuGet.Clients.FuncTests/NuGet.CommandLine.FuncTest/NuGet.CommandLine.FuncTest.csproj): A functional (end-to-end) test suite for NuGet.CommandLine. Contains tests for every nuget.exe command.
 - [`NuGet.MSSigning.Extensions.FuncTest.csproj`](../test/NuGet.Clients.FuncTests/NuGet.MSSigning.Extensions.FuncTest/NuGet.MSSigning.Extensions.FuncTest.csproj): A functional (end-to-end) test suite for NuGet.MSSigning.Extensions.
+
 ### test\NuGet.Clients.Tests
 
 - [`NuGet.CommandLine.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.CommandLine.Test/NuGet.CommandLine.Test.csproj): An end-to-end test suite for NuGet.CommandLine. Contains tests for every nuget.exe CLI command. Overlaps in tests with NuGet.CommandLine.FuncTest.
+
 ### test\NuGet.Core.FuncTests
 
 - [`Dotnet.Integration.Test.csproj`](../test/NuGet.Core.FuncTests/Dotnet.Integration.Test/Dotnet.Integration.Test.csproj): Integration tests for NuGet-powered dotnet CLI commands such as pack/restore/list package and dotnet nuget.
@@ -126,6 +130,7 @@ Projects in section: 11
 - [`NuGet.Packaging.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Packaging.FuncTest/NuGet.Packaging.FuncTest.csproj): Integration tests for the more involved NuGet.Packaging functionality, such as signing.
 - [`NuGet.Protocol.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.Protocol.FuncTest/NuGet.Protocol.FuncTest.csproj): Integration tests for the more involved NuGet.Protocol functionality, such as plugins.
 - [`NuGet.XPlat.FuncTest.csproj`](../test/NuGet.Core.FuncTests/NuGet.XPlat.FuncTest/NuGet.XPlat.FuncTest.csproj): Functional tests for nuget in dotnet CLI scenarios, using the NuGet.CommandLine.XPlat assembly.
+
 ### test\NuGet.Core.Tests
 
 - [`NuGet.PackageManagement.Test.csproj`](../test/NuGet.Core.Tests/NuGet.PackageManagement.Test/NuGet.PackageManagement.Test.csproj): Unit tests for NuGet.PackageManagement.

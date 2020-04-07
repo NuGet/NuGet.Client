@@ -96,7 +96,7 @@ namespace NuGetTasks
             string[] projectFiles = section.GetMetadata("Projects").Split(';');
             var separator = Path.DirectorySeparatorChar;
 
-            file.WriteLine($"Projects in section: {projectFiles.Length}\n");
+            file.WriteLine($"Projects in section: {projectFiles.Length}");
 
             //Logic below relies on pre-sorting to identify group/folder structure changes.
             Array.Sort(projectFiles, (a, b) => a.CompareTo(b));
@@ -141,7 +141,7 @@ namespace NuGetTasks
                 if (prevGroupName == null || prevGroupName != groupName)
                 {
                     prevGroupName = groupName;
-                    file.WriteLine($"### {groupName}\n");
+                    file.WriteLine($"\n### {groupName}\n");
                 }
 
                 var desc = GetDescriptions(projectPath);
