@@ -4,8 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.XPath;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -92,35 +94,61 @@ namespace NuGetTasks
         private void WriteSectionProjecs(ITaskItem section, StreamWriter file)
         {
             string[] projectFiles = section.GetMetadata("Projects").Split(';');
+            var separator = Path.DirectorySeparatorChar;
 
             file.WriteLine($"Projects in section: {projectFiles.Length}\n");
-                    
+
+            //Logic below relies on pre-sorting to identify group/folder structure changes.
             Array.Sort(projectFiles, (a, b) => a.CompareTo(b));
-            Array.ForEach(projectFiles, pf => pf = RelativizePath(pf));
 
-            var groupedPaths = projectFiles
-                .Where(pf => pf.StartsWith(RepositoryRoot))
-                .Select(pf => pf.Substring(pf.IndexOf(RepositoryRoot) + RepositoryRoot.Length))
-                .Select(pf => pf.Split('\\'))
-                .ToLookup(pf => $"{pf[0]}\\{pf[1]}", pf => new Tuple<string, string>(pf[2], pf[3]));
+            string prevGroupName = null;
 
-            foreach (var srcFolders in groupedPaths)
+            for (int i = 0; i < projectFiles.Length; i++)
             {
-                var folder = srcFolders.Key;
-                file.WriteLine($"### {folder}\n");
+                string groupName = null;
+                string fileName = null;
 
-                foreach (var subFolderTuple in srcFolders)
+                var projectPath = projectFiles[i];
+                var relativeProjectPath = RelativizePath(projectPath);
+                var pathSplit = relativeProjectPath.Split(separator);
+
+                if (pathSplit == null || pathSplit.Length < 1)
                 {
-                    var subfolder = subFolderTuple.Item1;
-                    var csproj = subFolderTuple.Item2;
-
-                    var projectPath = $"{RepositoryRoot}\\{folder}\\{subfolder}\\{csproj}";
-                    var desc = GetDescriptions(projectPath);
-                    var link = GenerateRelativeLink(projectPath);
-                    var projectBullet = Path.GetFileName(projectPath);
-
-                    file.WriteLine($"- [`{projectBullet}`]({link}): {desc}");
+                    continue;
                 }
+                else if (pathSplit.Length == 2)
+                {
+                    groupName = pathSplit[0];
+                    fileName = pathSplit[1];
+                }
+                else //More than 2 subfolders will be grouped by [subfolders] => [project name].
+                {
+                    var end = pathSplit.Length - 1;
+                    fileName = pathSplit[end];
+
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+
+                    //Ignore the last subfolder if its name matches the filename.
+                    if (pathSplit[end-1] == fileNameWithoutExtension)
+                    {
+                        --end;
+                    }
+
+                    groupName = string.Join(separator.ToString(), pathSplit.Take(end));
+                }
+
+                //Output group name if it's a new group (relies on earlier sorting).
+                if (prevGroupName == null || prevGroupName != groupName)
+                {
+                    prevGroupName = groupName;
+                    file.WriteLine($"### {groupName}\n");
+                }
+
+                var desc = GetDescriptions(projectPath);
+                var link = GenerateRelativeLink(projectPath);
+                var projectBullet = Path.GetFileName(projectPath);
+
+                file.WriteLine($"- [`{projectBullet}`]({link}): {desc}");
             }
         }
 
