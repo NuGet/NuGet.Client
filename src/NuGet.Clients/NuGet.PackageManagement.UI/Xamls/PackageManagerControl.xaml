@@ -5,7 +5,7 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
-  xlmns:vs="clr-namespace:Microsoft.VisualStudio.Platform.UI"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   Background="{DynamicResource {x:Static nuget:Brushes.HeaderBackground}}"
   Foreground="{DynamicResource {x:Static nuget:Brushes.UIText}}"
   x:Name="_self"
@@ -116,18 +116,17 @@
             <vs:LiveTextBlock 
               x:Name="LtbLoading" 
               Visibility="Collapsed" 
-              Text="{Binding StatusIndicator.LoadingMessage, ElementName=_packagesList}"
               IsFrequencyLimited="True"
               Frequency="2">
-              <LiveTextBlock.Text>
+              <vs:LiveTextBlock.Text>
                 <MultiBinding 
                     Converter="{StaticResource LiveTextLoadingConverter}"
                     TargetNullValue="Nuuuuuuuul"
                     FallbackValue="Faaaaaaaaail">
                   <Binding RelativeSource="{RelativeSource Self}" Path="IsTabChanged" />
-                  <Binding ElementName="_topPanel" Path="LoadingStatus.LoadingMessage" />
+                  <Binding ElementName="_packagesList" Path="LoadingStatus.LoadingMessage" />
                 </MultiBinding>
-              </LiveTextBlock.Text>
+              </vs:LiveTextBlock.Text>
             </vs:LiveTextBlock>
 
             <Border
