@@ -12,7 +12,6 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.Packaging.Licenses;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
@@ -72,7 +71,7 @@ namespace Dotnet.Integration.Test
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/netstandard2.0/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] {"lib/netstandard2.0/ClassLibrary1.dll"}, libItems[0].Items);
                 }
 
             }
@@ -437,7 +436,7 @@ namespace Dotnet.Integration.Test
                         packagesA.Count);
                     Assert.Equal("Microsoft.NETCore.App", packagesA[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.0.5")), packagesA[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[0].Exclude);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[0].Exclude);
                     Assert.Empty(packagesA[0].Include);
 
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, dependencyGroups[1].TargetFramework);
@@ -445,7 +444,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, packagesB.Count);
                     Assert.Equal("Newtonsoft.Json", packagesB[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("9.0.1")), packagesB[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesB[0].Exclude);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesB[0].Exclude);
                     Assert.Empty(packagesB[0].Include);
 
                     // Validate the assets.
@@ -457,7 +456,7 @@ namespace Dotnet.Integration.Test
                         new[]
                         {"lib/netcoreapp1.0/ClassLibrary1.dll", "lib/netcoreapp1.0/ClassLibrary1.runtimeconfig.json"},
                         libItems[0].Items);
-                    Assert.Equal(new[] { "lib/net45/ClassLibrary1.exe" },
+                    Assert.Equal(new[] {"lib/net45/ClassLibrary1.exe"},
                         libItems[1].Items);
                 }
             }
@@ -622,10 +621,10 @@ namespace Dotnet.Integration.Test
                     var packagesA = dependencyGroups[0].Packages.ToList();
                     Assert.Equal(1,
                         packagesA.Count);
-
+      
                     Assert.Equal("ClassLibrary2", packagesA[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.0.0")), packagesA[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packagesA[0].Exclude);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packagesA[0].Exclude);
                     Assert.Empty(packagesA[0].Include);
 
                     // Validate the assets.
@@ -793,7 +792,7 @@ namespace Dotnet.Integration.Test
 
                     Assert.Equal(tfmValue.Split(';').Count(),
                         dependencyGroups.Count);
-                    foreach (var depGroup in dependencyGroups)
+                    foreach(var depGroup in dependencyGroups)
                     {
                         var packages = depGroup.Packages.ToList();
                         var package = packages.Where(t => t.Id.Equals("ClassLibrary2")).First();
@@ -958,7 +957,7 @@ namespace Dotnet.Integration.Test
                 }
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-
+                
                 msbuildFixture.PackProject(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:NuspecFile=");
 
@@ -1101,7 +1100,7 @@ namespace Dotnet.Integration.Test
                 File.WriteAllText(Path.Combine(workingDirectory, "input.nuspec"), nuspecFileContent);
 
                 msbuildFixture.PackProject(
-                    workingDirectory,
+                    workingDirectory, 
                     projectName,
                     $"-o {workingDirectory} /p:NuspecFile=input.nuspec /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
 
@@ -1136,10 +1135,10 @@ namespace Dotnet.Integration.Test
             "1.2.3", "hello world", "tag1,tag2")]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags=;description="hello = world"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=;description=\"hello = world\"\\\"", "MyPackage",
-            "1.2.3", "hello = world", "")]
+            "1.2.3", "hello = world","")]
         // Command line : /p:NuspecProperties=\"id=MyPackage;version=1.2.3;tags="";description="hello = world with a %3B"\"
         [InlineData("/p:NuspecProperties=\\\"id=MyPackage;version=1.2.3;tags=\"\";description=\"hello = world with a %3B\"\\\"",
-            "MyPackage", "1.2.3", "hello = world with a ;", "")]
+            "MyPackage", "1.2.3", "hello = world with a ;","")]
         public void PackCommand_PackProject_PacksFromNuspecWithTokenSubstitution(
             string nuspecProperties,
             string expectedId,
@@ -1309,9 +1308,9 @@ namespace Dotnet.Integration.Test
                 {
                     sourcePath = sourcePath.Replace("##", workingDirectory);
                 }
-                else if (sourcePath.StartsWith("{AbsolutePath}"))
+                else if(sourcePath.StartsWith("{AbsolutePath}"))
                 {
-                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\', '/'));
+                    sourcePath = sourcePath.Replace("{AbsolutePath}", Path.GetTempPath().Replace('\\','/'));
                 }
 
                 // Create the subdirectory structure for testing possible source paths for the content file
@@ -1353,7 +1352,7 @@ namespace Dotnet.Integration.Test
                 {
                     pathToContent = Path.Combine(workingDirectory, sourcePath);
                 }
-
+                
                 File.WriteAllText(pathToContent, "this is sample text in the content file");
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
@@ -1711,14 +1710,14 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard14, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { "lib/netstandard1.4/ClassLibrary1.dll" }, libItems[0].Items);
+                    Assert.Equal(new[] {"lib/netstandard1.4/ClassLibrary1.dll"}, libItems[0].Items);
                 }
 
             }
@@ -1804,7 +1803,7 @@ namespace Dotnet.Integration.Test
                     var xml = XDocument.Load(stream);
 
                     var attributes = new Dictionary<string, string>();
-
+                    
                     attributes["Version"] = "9.0.1";
                     ProjectFileUtils.AddItem(
                         xml,
@@ -1880,7 +1879,7 @@ namespace Dotnet.Integration.Test
                     libItems = nupkgReader.GetItems(buildOutputTargetFolder).ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, libItems[0].TargetFramework);
-                    Assert.Equal(new[] { $"{buildOutputTargetFolder}/netstandard2.0/ClassLibrary1.dll" },
+                    Assert.Equal(new[] {$"{buildOutputTargetFolder}/netstandard2.0/ClassLibrary1.dll"},
                         libItems[0].Items);
                 }
             }
@@ -1971,46 +1970,46 @@ namespace Dotnet.Integration.Test
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
-        [InlineData("folderA/folderB/abc.txt", null, "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
-        [InlineData("../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("abc.txt", "folderA/", "folderA/abc.txt")]
-        [InlineData("abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
-        [InlineData("abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA/", "folderA/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;folderB", "folderA/folderA/abc.txt;folderB/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles\\", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles/", "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA;contentFiles/folderA", "folderA/folderA/abc.txt;contentFiles/folderA/folderA/abc.txt")]
-        [InlineData("folderA/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/folderA/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA/", "folderA/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("{AbsolutePath}/abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
-        [InlineData("../abc.txt", "folderA/", "folderA/abc.txt")]
-        [InlineData("../abc.txt", "folderA/xyz.txt", "folderA/xyz.txt/abc.txt")]
-        [InlineData("../abc.txt", "folderA;folderB", "folderA/abc.txt;folderB/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles/", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles\\", "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("../abc.txt", "folderA;contentFiles/folderA", "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("abc.txt",                  null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("folderA/abc.txt",          null,                               "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/folderB/abc.txt",  null,                               "content/folderA/folderB/abc.txt;contentFiles/any/netstandard1.4/folderA/folderB/abc.txt")]
+        [InlineData("../abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA/",                         "folderA/abc.txt")]
+        [InlineData("abc.txt",                  "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles",             "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles/",            "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles\\",           "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("abc.txt",                  "folderA;contentFiles/folderA",     "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA/",                         "folderA/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;folderB",                  "folderA/folderA/abc.txt;folderB/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles",             "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles\\",           "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles/",            "folderA/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA;contentFiles/folderA",     "folderA/folderA/abc.txt;contentFiles/folderA/folderA/abc.txt")]
+        [InlineData("folderA/abc.txt",          "folderA/xyz.txt",                  "folderA/xyz.txt/folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA/",                         "folderA/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles",             "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles\\",           "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles/",            "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("{AbsolutePath}/abc.txt",               "folderA;contentFiles/folderA",     "folderA/abc.txt;contentFiles/folderA/abc.txt")]
+        [InlineData("../abc.txt",               "folderA/",                         "folderA/abc.txt")]
+        [InlineData("../abc.txt",               "folderA/xyz.txt",                  "folderA/xyz.txt/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;folderB",                  "folderA/abc.txt;folderB/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles",             "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles/",            "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles\\",           "folderA/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("../abc.txt",               "folderA;contentFiles/folderA",     "folderA/abc.txt;contentFiles/folderA/abc.txt")]
         // ## is a special syntax specifically for this test which means that ## should be replaced by the absolute path to the project directory.
-        [InlineData("##/abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("##/folderA/abc.txt", null, "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
-        [InlineData("##/../abc.txt", null, "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
-        [InlineData("##/abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
-        [InlineData("##/folderA/abc.txt", "folderX;folderY", "folderX/folderA/abc.txt;folderY/folderA/abc.txt")]
-        [InlineData("##/../abc.txt", "folderX;folderY", "folderX/abc.txt;folderY/abc.txt")]
+        [InlineData("##/abc.txt",               null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("##/folderA/abc.txt",       null,                               "content/folderA/abc.txt;contentFiles/any/netstandard1.4/folderA/abc.txt")]
+        [InlineData("##/../abc.txt",            null,                               "content/abc.txt;contentFiles/any/netstandard1.4/abc.txt")]
+        [InlineData("##/abc.txt",               "folderX;folderY",                  "folderX/abc.txt;folderY/abc.txt")]
+        [InlineData("##/folderA/abc.txt",       "folderX;folderY",                  "folderX/folderA/abc.txt;folderY/folderA/abc.txt")]
+        [InlineData("##/../abc.txt",            "folderX;folderY",                  "folderX/abc.txt;folderY/abc.txt")]
 
         public void PackCommand_PackProject_ContentTargetFoldersPacksContentCorrectly(string sourcePath,
             string contentTargetFolders, string expectedTargetPaths)
@@ -2142,7 +2141,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal(1, packages.Count);
                     Assert.Equal("NETStandard.Library", packages[0].Id);
                     Assert.Equal(new VersionRange(new NuGetVersion("1.6.1")), packages[0].VersionRange);
-                    Assert.Equal(new List<string> { "Analyzers", "Build" }, packages[0].Exclude);
+                    Assert.Equal(new List<string> {"Analyzers", "Build"}, packages[0].Exclude);
                     Assert.Empty(packages[0].Include);
 
                     // Validate title property in intermediate nuspec
@@ -2378,13 +2377,13 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("folderA\\**\\*", null, "content/folderA/folderA.txt;content/folderA/folderB/folderB.txt;" +
+        [InlineData("folderA\\**\\*",                           null,                           "content/folderA/folderA.txt;content/folderA/folderB/folderB.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderA.txt;" +
                                                                                                 "contentFiles/any/netstandard1.4/folderA/folderB/folderB.txt")]
-        [InlineData("folderA\\**\\*", "pkgA", "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
-        [InlineData("folderA\\**\\*", "pkgA/", "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
-        [InlineData("folderA\\**\\*", "pkgA\\", "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
-        [InlineData("folderA\\**", "pkgA", "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
+        [InlineData("folderA\\**\\*",                           "pkgA",                         "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
+        [InlineData("folderA\\**\\*",                           "pkgA/",                        "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
+        [InlineData("folderA\\**\\*",                           "pkgA\\",                       "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
+        [InlineData("folderA\\**",                              "pkgA",                         "pkgA/folderA.txt;pkgA/folderB/folderB.txt")]
         public void PackCommand_PackProject_GlobbingPathsPacksContentCorrectly(string sourcePath, string packagePath,
             string expectedTargetPaths)
         {
@@ -2393,7 +2392,7 @@ namespace ClassLibrary
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-
+                
                 // Create the subdirectory structure for testing possible source paths for the content file
                 Directory.CreateDirectory(Path.Combine(workingDirectory, "folderA", "folderB"));
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
@@ -2451,11 +2450,11 @@ namespace ClassLibrary
 
         [PlatformTheory(Platform.Windows)]
 
-        [InlineData("PresentationFramework", true, "netstandard1.4;net461", "", "net461")]
-        [InlineData("PresentationFramework", false, "netstandard1.4;net461", "", "net461")]
-        [InlineData("System.IO", true, "netstandard1.4;net46", "", "net46")]
-        [InlineData("System.IO", true, "net46;net461", "net461", "net461")]
-        [InlineData("System.IO", true, "net461", "", "net461")]
+        [InlineData("PresentationFramework",                      true,                           "netstandard1.4;net461",                      "",                             "net461")]
+        [InlineData("PresentationFramework",                      false,                          "netstandard1.4;net461",                      "",                             "net461")]
+        [InlineData("System.IO",                                  true,                           "netstandard1.4;net46",                       "",                             "net46")]
+        [InlineData("System.IO",                                  true,                           "net46;net461",                               "net461",                       "net461")]
+        [InlineData("System.IO",                                  true,                           "net461",                                     "",                             "net461")]
         public void PackCommand_PackProject_AddsReferenceAsFrameworkAssemblyReference(string referenceAssembly, bool pack,
             string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
@@ -2464,7 +2463,7 @@ namespace ClassLibrary
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-
+                
                 // Create the subdirectory structure for testing possible source paths for the content file
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
@@ -2474,7 +2473,7 @@ namespace ClassLibrary
                 {
                     var xml = XDocument.Load(stream);
                     var frameworkProperty = "TargetFrameworks";
-                    if (targetFrameworks.Split(';').Count() == 1)
+                    if(targetFrameworks.Split(';').Count() == 1)
                     {
                         frameworkProperty = "TargetFramework";
                     }
@@ -2512,11 +2511,11 @@ namespace ClassLibrary
                 {
                     var expectedFrameworks = expectedTargetFramework.Split(';');
                     var frameworkItems = nupkgReader.GetFrameworkItems();
-                    foreach (var framework in expectedFrameworks)
+                    foreach(var framework in expectedFrameworks)
                     {
                         var nugetFramework = NuGetFramework.Parse(framework);
                         var frameworkSpecificGroup = frameworkItems.Where(t => t.TargetFramework.Equals(nugetFramework)).FirstOrDefault();
-                        if (pack)
+                        if(pack)
                         {
                             Assert.True(frameworkSpecificGroup?.Items.Contains(referenceAssembly));
                         }
@@ -2524,20 +2523,20 @@ namespace ClassLibrary
                         {
                             Assert.Null(frameworkSpecificGroup);
                         }
-
-                    }
+                        
+                    }                    
                 }
             }
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData("Content", "", "Content")]
-        [InlineData("Content", "Page", "Page")]
-        [InlineData("EmbeddedResource", "", "EmbeddedResource")]
-        [InlineData("EmbeddedResource", "ApplicationDefinition", "ApplicationDefinition")]
-        [InlineData("Content", "LinkDescription", "LinkDescription")]
-        [InlineData("Content", "RandomBuildAction", "RandomBuildAction")]
-        public void PackCommand_PackProject_OutputsBuildActionForContentFiles(string itemType, string buildAction, string expectedBuildAction)
+        [InlineData("Content",                                      "",                                     "Content")]
+        [InlineData("Content",                                      "Page",                                 "Page")]
+        [InlineData("EmbeddedResource",                             "",                                     "EmbeddedResource")]
+        [InlineData("EmbeddedResource",                             "ApplicationDefinition",                "ApplicationDefinition")]
+        [InlineData("Content",                                      "LinkDescription",                      "LinkDescription")]
+        [InlineData("Content",                                      "RandomBuildAction",                    "RandomBuildAction")]
+        public void PackCommand_PackProject_OutputsBuildActionForContentFiles(string itemType, string buildAction, string expectedBuildAction )
         {
             // Arrange
             using (var testDirectory = TestDirectory.Create())
@@ -2555,7 +2554,7 @@ namespace ClassLibrary
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-
+                    
                     var attributes = new Dictionary<string, string>();
                     attributes["Pack"] = "true";
                     var properties = new Dictionary<string, string>();
@@ -2739,10 +2738,10 @@ namespace ClassLibrary
                 Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 Assert.True(indexOfHelloWorld < indexOfPackSuccessful, "The custom target RunBeforePack did not run before pack target.");
-
+                
             }
         }
-
+        
         [PlatformTheory(Platform.Windows)]
         [InlineData("TargetFramework", "netstandard1.4")]
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
@@ -3229,7 +3228,7 @@ namespace ClassLibrary
                 {
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net45;netstandard1.3");
-                    if (!string.IsNullOrEmpty(frameworkToSuppress))
+                    if(!string.IsNullOrEmpty(frameworkToSuppress))
                     {
                         ProjectFileUtils.AddProperty(xml, "SuppressDependenciesWhenPacking", "true", $"'$(TargetFramework)'=='{frameworkToSuppress}'");
                     }
@@ -3237,7 +3236,7 @@ namespace ClassLibrary
                     {
                         ProjectFileUtils.AddProperty(xml, "SuppressDependenciesWhenPacking", "true");
                     }
-
+                    
                     var attributes = new Dictionary<string, string>();
 
                     attributes["Version"] = "9.0.1";
@@ -3273,10 +3272,10 @@ namespace ClassLibrary
                             new NuGetFrameworkSorter())
                         .ToList();
 
-                    Assert.Equal(expectedFrameworks.Where(t => !string.IsNullOrEmpty(t)).Count(),
+                    Assert.Equal(expectedFrameworks.Where(t=> !string.IsNullOrEmpty(t)).Count(),
                         dependencyGroups.Count);
 
-                    if (dependencyGroups.Count > 0)
+                    if(dependencyGroups.Count > 0)
                     {
                         Assert.Equal(dependencyGroups[0].TargetFramework, NuGetFramework.Parse(expectedFrameworks[0]));
                     }
@@ -3495,7 +3494,7 @@ namespace ClassLibrary
         }
 
         [PlatformTheory(Platform.Windows)]
-        [InlineData(@"LICENSE", ".")]
+        [InlineData(@"LICENSE", "." )]
         [InlineData("LICENSE.md", ".")]
         [InlineData("LICENSE.txt", "LICENSE.txt")]
         public void PackCommand_PackLicense_PackBasicLicenseFile(string licenseFileName, string packagesPath)
@@ -3789,7 +3788,7 @@ namespace ClassLibrary
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 using (var symbolReader = new PackageArchiveReader(symbolPath))
-                {
+                {   
                     // Validate the assets.
                     Assert.False(symbolReader.NuspecReader.GetRequireLicenseAcceptance());
                     Assert.Null(symbolReader.NuspecReader.GetLicenseMetadata());
@@ -4000,7 +3999,7 @@ namespace ClassLibrary
                     }
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, frameworkProperty, targetFrameworks);
 
-                    foreach (var frameworkRef in frameworkReftoPack)
+                    foreach(var frameworkRef in frameworkReftoPack)
                     {
                         var attributes = new Dictionary<string, string>();
 
@@ -4171,7 +4170,7 @@ namespace ClassLibrary
 
                 // Validate that other content is also included
                 var nupkgPath = Path.Combine(projectBuilder.ProjectFolder, "bin", "Debug", $"{projectBuilder.ProjectName}.1.0.0.nupkg");
-                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath)) 
                 {
                     Assert.NotNull(nupkgReader.GetEntry("content/other/files.txt"));
                     Assert.NotNull(nupkgReader.GetEntry("utils/sources.txt"));
@@ -4220,8 +4219,8 @@ namespace ClassLibrary
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(
-                    projectBuilder.ProjectFolder,
-                    projectBuilder.ProjectName,
+                    projectBuilder.ProjectFolder, 
+                    projectBuilder.ProjectName, 
                     $"--include-symbols /p:SymbolPackageFormat={symbolPackageFormat}");
             }
         }
@@ -4291,7 +4290,7 @@ namespace ClassLibrary
             }
         }
 
-        [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/9400")]
+        [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProjectWithCentralTransitiveDependencies()
         {
             using (var testDirectory = TestDirectory.Create())
@@ -4323,18 +4322,22 @@ namespace ClassLibrary
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
-                // The test depends on the presence of these packages and their versions. 
-                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Packages.props");
+                // The test depends on the presence of these packages and their versions.
+                // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
+                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
                 var directoryPackagesPropsContent = @"<Project>  
                         <ItemGroup>
                             <PackageVersion Include = ""Moq"" Version = ""4.10.0""/>
                             <PackageVersion Include = ""Castle.Core"" Version = ""4.4.0""/>
                         </ItemGroup>
+                        <PropertyGroup>
+	                        <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+                        </PropertyGroup>
                     </Project>";
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
-                msbuildFixture.PackProjectWithRepoPackArtifacts(workingDirectory, projectName, $"-o {workingDirectory}");
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
 
                 var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
                 var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");

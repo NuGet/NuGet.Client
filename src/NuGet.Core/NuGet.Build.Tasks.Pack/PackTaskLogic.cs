@@ -896,7 +896,6 @@ namespace NuGet.Build.Tasks.Pack
                                     minVersion: package.Version,
                                     includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive);
                             }
-
                         }
                     }
 
