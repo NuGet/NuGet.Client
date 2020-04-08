@@ -20,9 +20,6 @@
         <nuget:SharedResources/>
       </ResourceDictionary.MergedDictionaries>
     </ResourceDictionary>
-    <nuget:LiveTextLoadingConverter
-      x:Key="LiveTextLoadingConverter" />
-
   </UserControl.Resources>
   <UserControl.CommandBindings>
     <CommandBinding
