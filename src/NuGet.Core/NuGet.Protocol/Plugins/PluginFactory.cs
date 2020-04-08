@@ -165,8 +165,10 @@ namespace NuGet.Protocol.Plugins
 #else
             var startInfo = new ProcessStartInfo
             {
-                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH")
-                            ?? (RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet"),
+                FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
+                           (RuntimeEnvironmentHelper.IsWindows ?
+                                "dotnet.exe" :
+                                "dotnet"),
                 Arguments = $"\"{filePath}\" " + args,
                 UseShellExecute = false,
                 RedirectStandardError = false,
