@@ -389,7 +389,7 @@ nuget setapikey 4003d786-cc37-4004-bfdf-c4f3e8ef9b3a -Source http://example.com/
     <comment>Only localize "[name]" and "[source]"</comment>
   </data>
   <data name="SourcesCommandUserNameDescription" xml:space="preserve">
-    <value>UserName to be used when connecting to an authenticated source.</value>
+    <value>Username to be used when connecting to an authenticated source.</value>
   </data>
   <data name="SpecCommandAssemblyPathDescription" xml:space="preserve">
     <value>Assembly to use for metadata.</value>

@@ -18,6 +18,11 @@
         return type == "Argument";
     }
 
+    bool IsOption(string type)
+    {
+        return type == "Option";
+    }
+
     string GetProperty(XElement element)
     {
         switch (element.Name.LocalName)
@@ -26,8 +31,14 @@
                 return "Option";
             case "SwitchOption":
                 return "Option";
+            case "Value":
+                return "Option";
             case "Argument":
                 return "Argument";
+            case "Example":
+                return "Example";
+            case "SeeAlso":
+                return "SeeAlso";
             default:
                 return "Unknown Element Type " + element.Name.LocalName;
         }

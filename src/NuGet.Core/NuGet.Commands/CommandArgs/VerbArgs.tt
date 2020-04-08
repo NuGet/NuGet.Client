@@ -13,9 +13,19 @@
         return output;
     }
 
+    bool IsArgumentOrOption(string type)
+    {
+        return IsArgument(type) || IsOption(type);
+    }
+
     bool IsArgument(string type)
     {
         return type == "Argument";
+    }
+
+    bool IsOption(string type)
+    {
+        return type == "Option";
     }
 
     string GetProperty(XElement element)
@@ -26,8 +36,14 @@
                 return "Option";
             case "SwitchOption":
                 return "Option";
+            case "Value":
+                return "Option";
             case "Argument":
                 return "Argument";
+            case "Example":
+                return "Example";
+            case "SeeAlso":
+                return "SeeAlso";
             default:
                 return "Unknown Element Type " + element.Name.LocalName;
         }
@@ -80,34 +96,38 @@ namespace NuGet.Commands
 <#
             foreach (XElement option in noun.Descendants())
             {
-                string optionName = option.Attribute(XName.Get("Name", "")).Value;
-                string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
-                string optionFormalName = InitCaps(optionName.Replace("-",""));
-                if (IsArgument(GetProperty(option)))
+                if (IsArgumentOrOption(GetProperty(option)))
                 {
-#>
-        public string <#= optionFormalName #> { get; set; }
-<#
-                }
-                else
-                {
-                    switch (GetOptionType(option))
+                    string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
+                    string optionType = option.Attribute(XName.Get("Type", ""))?.Value;
+                    string optionFormalName = InitCaps(optionName?.Replace("-",""));
+
+                    if (IsArgument(GetProperty(option)))
                     {
-                    case "SingleValue":
 #>
         public string <#= optionFormalName #> { get; set; }
 <#
-                        break;
-                    case "NoValue":
+                    }
+                    else if (IsOption(GetProperty(option)))
+                    {
+                        switch (GetOptionType(option))
+                        {
+                        case "SingleValue":
+#>
+        public string <#= optionFormalName #> { get; set; }
+<#
+                            break;
+                        case "NoValue":
 #>
         public bool <#= optionFormalName #> { get; set; }
 <#
-                        break;
-                    case "Value":
+                            break;
+                        case "Value":
 #>
         public <#= optionType #> <#= optionFormalName #> { get; set; }
 <#
-                        break;
+                            break;
+                        }
                     }
                 }
             }
