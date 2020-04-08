@@ -525,6 +525,7 @@ namespace NuGet.PackageManagement.UI
                         userAction,
                         uiService.SelectedIndex,
                         uiService.NumRecommended,
+                        uiService.RecommendPackages,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -546,6 +547,7 @@ namespace NuGet.PackageManagement.UI
             UserAction userAction,
             int selectedIndex,
             int numRecommended,
+            bool recommendPackages,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -586,6 +588,7 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
                 actionTelemetryEvent["NumRecommended"] = numRecommended;
+                actionTelemetryEvent["RecommendPackages"] = recommendPackages;
             }
 
             // log the installed package state

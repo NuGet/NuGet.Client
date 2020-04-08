@@ -29,6 +29,7 @@ using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
+using Microsoft.VisualStudio.Experimentation;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -67,6 +68,7 @@ namespace NuGet.PackageManagement.UI
         private readonly INuGetUILogger _uiLogger;
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
+
 
         public PackageManagerModel Model { get; }
 
@@ -727,6 +729,12 @@ namespace NuGet.PackageManagement.UI
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
+        public bool IsRecommenderFlightEnabled()
+        {
+            // TODO: Need to use correct flight name
+            return ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+        }
+
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
@@ -741,15 +749,34 @@ namespace NuGet.PackageManagement.UI
                 loadContext.CachedPackages = Model.CachedUpdates;
             }
 
-            // only make recommendations when the single source repository is nuget.org and package manager was opened for a project, not a solution
-            _recommendPackages = false;
-            // TODO: check for A/B experiment here
-            if (loadContext.SourceRepositories.Count() == 1 && loadContext.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json" && loadContext.IsSolution == false)
+            // only make recommendations when
+            //   the single source repository is nuget.org,
+            //   the package manager was opened for a project, not a solution,
+            //   this is the Browse tab,
+            //   and the search text is an empty string
+            if (loadContext.SourceRepositories.Count() == 1
+                && loadContext.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json"
+                && loadContext.IsSolution == false
+                && _topPanel.Filter == ItemFilter.All
+                && searchText == "")
             {
                 _recommendPackages = true;
             }
+            else
+            {
+                _recommendPackages = false;
+            }
 
-            var packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
+            // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
+            PackageFeeds packageFeeds;
+            if (IsRecommenderFlightEnabled())
+            {
+                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
+            }
+            else
+            {
+                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, false);
+            }
 
             var loader = new PackageItemLoader(
                 loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
@@ -914,7 +941,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedPackage);
 
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, numRecommended);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, numRecommended, _recommendPackages);
 
                 _packageDetail.ScrollToHome();
 

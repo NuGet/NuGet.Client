@@ -67,6 +67,7 @@ namespace NuGet.PackageManagement.UI
 
         private int _selectedIndex = 0;
         private int _numRecommended = 0;
+        private bool _recommendPackages = false;
 
         public int SelectedIndex
         {
@@ -77,15 +78,22 @@ namespace NuGet.PackageManagement.UI
             get { return _numRecommended; }
         }
 
+        public bool RecommendPackages
+        {
+            get { return _recommendPackages; }
+        }
+
         /// <summary>
         /// Sets the current selection info
         /// </summary>
         public void SetCurrentSelectionInfo(
             int SelectedIndex,
-            int NumRecommended)
+            int NumRecommended,
+            bool RecommendPackages)
         {
             _selectedIndex = SelectedIndex;
             _numRecommended = NumRecommended;
+            _recommendPackages = RecommendPackages;
         }
 
         /// <summary>

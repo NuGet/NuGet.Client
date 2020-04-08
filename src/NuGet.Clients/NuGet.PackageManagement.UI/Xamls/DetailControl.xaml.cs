@@ -133,6 +133,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.ProjectContext.ActionType = actionType;
                     nugetUi.SelectedIndex = model.SelectedIndex;
                     nugetUi.NumRecommended = model.NumRecommended;
+                    nugetUi.RecommendPackages = model.RecommendPackages;
                 });
         }
 

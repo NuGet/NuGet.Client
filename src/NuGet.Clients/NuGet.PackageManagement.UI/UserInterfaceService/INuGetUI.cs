@@ -85,6 +85,7 @@ namespace NuGet.PackageManagement.UI
 
         int SelectedIndex { get; }
         int NumRecommended { get; }
+        bool RecommendPackages { get; }
 
         /// <summary>
         /// Reports that an error has occurred.
