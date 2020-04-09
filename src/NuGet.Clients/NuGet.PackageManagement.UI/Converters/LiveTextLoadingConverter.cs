@@ -7,7 +7,7 @@ namespace NuGet.PackageManagement.UI
     internal class LiveTextLoadingConverter : IMultiValueConverter
     {
         public object Convert(object[] values, Type targetType, object parameter, CultureInfo culture)
-        {
+        {   
             if (values == null || values.Length < 2)
             {
                 return null;

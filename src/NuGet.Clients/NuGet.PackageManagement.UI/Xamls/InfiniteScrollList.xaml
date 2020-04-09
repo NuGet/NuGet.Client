@@ -5,6 +5,8 @@
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
+  x:Name="_infList"
   mc:Ignorable="d"
   d:DesignHeight="200"
   d:DesignWidth="500">
@@ -247,6 +249,34 @@
         </Trigger>
       </Style.Triggers>
     </Style>
+
+    <!--
+    <Style TargetType="vs:LiveTextBlock" x:Key="xxyy">
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Unknown">
+          <Setter
+            Property="Text"
+            Value="Unkown..." />    
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Loading">
+          <Setter
+            Property="Text"
+            Value="Loading..." />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="NoItemsFound">
+          <Setter
+            Property="Text"
+            Value="No Items..." />
+        </DataTrigger>
+        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Ready">
+          <Setter
+            Property="Text"
+            Value="Ready!..." />
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+    -->
+    
     <!--
       This scrollviewer template has one change from the default - a -22 margin on the verical srollbar.
       This enables the loadingStatusBar to appear to be in the listbox.
@@ -267,6 +297,9 @@
           <ScrollBar x:Name="PART_HorizontalScrollBar" AutomationProperties.AutomationId="HorizontalScrollBar" Cursor="Arrow" Grid.Column="0" Maximum="{TemplateBinding ScrollableWidth}" Minimum="0" Orientation="Horizontal" Grid.Row="1" Visibility="{TemplateBinding ComputedHorizontalScrollBarVisibility}" Value="{Binding HorizontalOffset, Mode=OneWay, RelativeSource={RelativeSource TemplatedParent}}" ViewportSize="{TemplateBinding ViewportWidth}"/>
       </Grid>
     </ControlTemplate>
+
+    <nuget:LoadingTextConverter
+      x:Key="LoadingTextConverter" />
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -311,7 +344,36 @@
         DismissClick="_loadingStatusBar_DismissClick"
         Style="{StaticResource FadeAnimationStyle}"
         Visibility="Hidden"/>
+
+      <vs:LiveTextBlock 
+              x:Name="LtbLoading" 
+              Visibility="Visible" 
+              IsFrequencyLimited="True"
+              Frequency="2">
+        <!--
+        <vs:LiveTextBlock.Text>
+          <Binding
+          ElementName="_infList"
+          Converter="{StaticResource LoadingTextConverter}"
+          TargetNullValue="Live null"
+          FallbackValue="Live fail"
+          Path="LoadingStatus" />
+        </vs:LiveTextBlock.Text>
+        -->
+        <!--
+      <vs:LiveTextBlock.Text>
+        <MultiBinding 
+            Converter="{StaticResource LiveTextLoadingConverter}"
+            TargetNullValue="Nuuuuuuuul"
+            FallbackValue="Faaaaaaaaail">
+          <Binding ElementName="_self" Path="IsTabChanged" />
+          <Binding ElementName="_packageList" Path="LoadingMessage" />
+        </MultiBinding>
+      </vs:LiveTextBlock.Text>
+      -->
+      </vs:LiveTextBlock>
     </Grid>
+
     <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"

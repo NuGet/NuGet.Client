@@ -110,22 +110,6 @@
               UpdateButtonClicked="PackageList_UpdateButtonClicked"
               Width="{Binding ActualWidth, ElementName=_leftSide}"/>
 
-            <vs:LiveTextBlock 
-              x:Name="LtbLoading" 
-              Visibility="Collapsed" 
-              IsFrequencyLimited="True"
-              Frequency="2">
-              <vs:LiveTextBlock.Text>
-                <MultiBinding 
-                    Converter="{StaticResource LiveTextLoadingConverter}"
-                    TargetNullValue="Nuuuuuuuul"
-                    FallbackValue="Faaaaaaaaail">
-                  <Binding RelativeSource="{RelativeSource FindAncestor, AncestorLevel=1, AncestorType={x:Type nuget:PackageManagerControl}}" Path="IsTabChanged" />
-                  <Binding ElementName="_packagesList" Path="LoadingStatus.LoadingMessage" />
-                </MultiBinding>
-              </vs:LiveTextBlock.Text>
-            </vs:LiveTextBlock>
-
             <Border
               Grid.Row="2"
               BorderThickness="0,1,0,0"

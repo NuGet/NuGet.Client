@@ -79,13 +79,35 @@ namespace NuGet.PackageManagement.UI
 
             DataContext = Items;
             CheckBoxesEnabled = false;
+
+            _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
         }
 
-        internal LoadingStatusIndicator StatusIndicator
+        private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (e.PropertyName == nameof(LoadingStatusIndicator.Status) )
+            {
+                _joinableTaskFactory.Value.Run(async delegate
+                {
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    LtbLoading.Text = _loadingStatusIndicator.Status.ToString();
+                });
+            }
+        }
+
+        public LoadingStatus LoadingStatus
         {
             get
             {
-                return _loadingStatusIndicator;
+                return _loadingStatusIndicator.Status;
+            }
+        }
+
+        public string LoadingMessage
+        {
+            get
+            {
+                return _loadingStatusIndicator.LoadingMessage;
             }
         }
 
