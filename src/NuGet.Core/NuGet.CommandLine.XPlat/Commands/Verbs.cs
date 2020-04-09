@@ -29,7 +29,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
                     CommandOption username = SourceCmd.Option(
                         "-u|--username",
-                        Strings.SourcesCommandUserNameDescription,
+                        Strings.SourcesCommandUsernameDescription,
                         CommandOptionType.SingleValue);
                     CommandOption password = SourceCmd.Option(
                         "-p|--password",
@@ -256,7 +256,7 @@ namespace NuGet.CommandLine.XPlat
                         CommandOptionType.SingleValue);
                     CommandOption username = SourceCmd.Option(
                         "-u|--username",
-                        Strings.SourcesCommandUserNameDescription,
+                        Strings.SourcesCommandUsernameDescription,
                         CommandOptionType.SingleValue);
                     CommandOption password = SourceCmd.Option(
                         "-p|--password",

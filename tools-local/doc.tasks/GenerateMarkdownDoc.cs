@@ -3,7 +3,11 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Xml.XPath;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
@@ -90,14 +94,62 @@ namespace NuGetTasks
         private void WriteSectionProjecs(ITaskItem section, StreamWriter file)
         {
             string[] projectFiles = section.GetMetadata("Projects").Split(';');
+            var separator = Path.DirectorySeparatorChar;
 
-            file.WriteLine($"Projects in section: {projectFiles.Length}\n");
-                    
+            file.WriteLine($"Projects in section: {projectFiles.Length}");
+
+            //Logic below relies on pre-sorting to identify group/folder structure changes.
             Array.Sort(projectFiles, (a, b) => a.CompareTo(b));
+
+            string prevGroupName = null;
 
             for (int i = 0; i < projectFiles.Length; i++)
             {
+                string groupName = null;
+                string fileName = null;
+
                 var projectPath = projectFiles[i];
+                var relativeProjectPath = RelativizePath(projectPath);
+                var pathSplit = relativeProjectPath.Split(separator);
+
+                if (pathSplit == null || pathSplit.Length < 1)
+                {
+                    continue;
+                }
+                else if (pathSplit.Length == 2)
+                {
+                    groupName = pathSplit[0];
+                    fileName = pathSplit[1];
+                }
+                else //More than 2 subfolders will be grouped by [subfolders] => [project name].
+                {
+                    var end = pathSplit.Length - 1;
+                    fileName = pathSplit[end];
+
+                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(fileName);
+                    if (end > 0)
+                    {
+                        //Ignore the last subfolder if its name matches the filename.
+                        if (pathSplit[end - 1].Equals(fileNameWithoutExtension, StringComparison.OrdinalIgnoreCase))
+                        {
+                            --end;
+                        }
+
+                        groupName = string.Join(separator.ToString(), pathSplit.Take(end));
+                    }
+                    else
+                    {
+                        groupName = pathSplit[0];
+                    }
+                }
+
+                //Output group name if it's a new group (relies on earlier sorting).
+                if (prevGroupName == null || prevGroupName != groupName)
+                {
+                    prevGroupName = groupName;
+                    file.WriteLine($"\n### {groupName}\n");
+                }
+
                 var desc = GetDescriptions(projectPath);
                 var link = GenerateRelativeLink(projectPath);
                 var projectBullet = Path.GetFileName(projectPath);

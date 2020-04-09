@@ -8,14 +8,14 @@ namespace NuGet.VisualStudio.Internal.Contracts
 {
     public static class NuGetServices
     {
-        public static string NuGetSolutionServiceName = "NuGetSolutionService";
-        public static string NuGetSolutionServiceVersion = "1.0.0";
+        private const string NuGetSolutionServiceName = "NuGetSolutionService";
+        private const string NuGetSolutionServiceVersion = "1.0.0";
         /// <summary>
         /// A service descriptor for the NuGetSolutionService service. 
         /// </summary>
         public static ServiceRpcDescriptor NuGetSolutionService = new ServiceJsonRpcDescriptor(
-          new ServiceMoniker(NuGetSolutionServiceName, new Version(NuGetSolutionServiceVersion)),
-          ServiceJsonRpcDescriptor.Formatters.UTF8,
-          ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
+            new ServiceMoniker(NuGetSolutionServiceName, new Version(NuGetSolutionServiceVersion)),
+            ServiceJsonRpcDescriptor.Formatters.UTF8,
+            ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
     }
 }

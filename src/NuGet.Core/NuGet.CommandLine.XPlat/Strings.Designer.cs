@@ -1113,6 +1113,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior..
+        /// </summary>
+        internal static string Option_ConfigFile_Docs {
+            get {
+                return ResourceManager.GetString("Option_ConfigFile_Docs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Specifies the directory for the created NuGet package file. If not specified, uses the current directory.
         /// </summary>
         internal static string OutputDirectory_Description {
@@ -1455,11 +1464,11 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to UserName to be used when connecting to an authenticated source..
+        ///   Looks up a localized string similar to Username to be used when connecting to an authenticated source..
         /// </summary>
-        internal static string SourcesCommandUserNameDescription {
+        internal static string SourcesCommandUsernameDescription {
             get {
-                return ResourceManager.GetString("SourcesCommandUserNameDescription", resourceCulture);
+                return ResourceManager.GetString("SourcesCommandUsernameDescription", resourceCulture);
             }
         }
         
