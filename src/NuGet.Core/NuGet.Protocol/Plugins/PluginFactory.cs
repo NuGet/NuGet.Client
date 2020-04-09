@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+
 namespace NuGet.Protocol.Plugins
 {
     /// <summary>
@@ -166,7 +167,7 @@ namespace NuGet.Protocol.Plugins
             var startInfo = new ProcessStartInfo
             {
                 FileName = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH") ??
-                           (RuntimeEnvironmentHelper.IsWindows ?
+                           (NuGet.Common.RuntimeEnvironmentHelper.IsWindows ?
                                 "dotnet.exe" :
                                 "dotnet"),
                 Arguments = $"\"{filePath}\" " + args,
