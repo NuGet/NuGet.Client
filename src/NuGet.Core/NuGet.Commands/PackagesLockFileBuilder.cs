@@ -58,19 +58,19 @@ namespace NuGet.Commands
                         dep => StringComparer.OrdinalIgnoreCase.Equals(dep.Name, library.Name));
 
                     CentralPackageVersion centralPackageVersion = null;
-                    bool libraryVersionIsCentrallyDefined = framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion) == true;
+                    framework?.CentralPackageVersions.TryGetValue(library.Name, out centralPackageVersion);
 
                     if (framework_dep != null)
                     {
                         dependency.Type = PackageDependencyType.Direct;
                         dependency.RequestedVersion = framework_dep.LibraryRange.VersionRange;
                     }
-                    // The Direct dependencies do not matter if they are central or not;
+
                     // The dgspec has a list of the direct dependencies and changes in the direct dependencies will invalidate the lock file
-                    // A dgspec does not have information about transitive dependencies.
-                    // At restore time the transitive dependencies could be pinned from central package version management file
-                    // marking them will allow to evaluate when to invalidate the packages.lock.json
-                    // in cases that a central transitive version is updated, removed or added the lock file will be invalidated.
+                    // A dgspec does not have information about transitive dependencies
+                    // At the restore time the transitive dependencies could be pinned from central package version management file
+                    // By marking them will allow to evaluate when to invalidate the packages.lock.json
+                    // in cases that a central transitive version is updated, removed or added the lock file will be invalidated
                     else if (centralPackageVersion != null)
                     {
                         // This is a transitive dependency that is in the list of central dependencies.
