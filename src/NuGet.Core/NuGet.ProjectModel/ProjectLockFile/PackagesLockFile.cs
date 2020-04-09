@@ -24,7 +24,7 @@ namespace NuGet.ProjectModel
 
         public PackagesLockFile()
         {
-            Version = PackagesLockFileFormat.PackageReferenceVersion;
+            Version = PackagesLockFileFormat.Version;
         }
 
         public bool Equals(PackagesLockFile other)

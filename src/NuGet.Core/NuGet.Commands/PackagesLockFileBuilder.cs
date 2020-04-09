@@ -16,7 +16,7 @@ namespace NuGet.Commands
     {
         public PackagesLockFile CreateNuGetLockFile(LockFile assetsFile)
         {
-            var lockFile = new PackagesLockFile(PackagesLockFileFormat.PackageReferenceVersion);
+            var lockFile = new PackagesLockFile(GetPackagesLockFileVersion(assetsFile));
 
             var libraryLookup = assetsFile.Libraries.Where(e => e.Type == LibraryType.Package)
                 .ToDictionary(e => new PackageIdentity(e.Name, e.Version));
@@ -115,5 +115,15 @@ namespace NuGet.Commands
             return lockFile;
         }
 
+        private int GetPackagesLockFileVersion(LockFile assetsFile)
+        {
+            // Increase the version only for the projects opted-in central version management
+            if (assetsFile.PackageSpec.RestoreMetadata.CentralPackageVersionsEnabled)
+            {
+                return PackagesLockFileFormat.PackagesLockFileVersion;
+            }
+
+            return PackagesLockFileFormat.Version;
+        }
     }
 }

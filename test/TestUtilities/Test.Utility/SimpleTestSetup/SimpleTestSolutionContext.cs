@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -98,6 +98,11 @@ namespace NuGet.Test.Utility
                 // only save after updating everything
                 project.Save();
             }
+
+            if (CentralPackageVersionsManagementFile != null)
+            {
+                CentralPackageVersionsManagementFile.Save();
+            }
         }
 
         /// <summary>
@@ -147,5 +152,7 @@ namespace NuGet.Test.Utility
 
             return packages;
         }
+
+        public CentralPackageVersionsManagementFile CentralPackageVersionsManagementFile { get; set; }
     }
 }

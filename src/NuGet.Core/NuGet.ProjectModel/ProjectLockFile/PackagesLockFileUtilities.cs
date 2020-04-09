@@ -62,12 +62,19 @@ namespace NuGet.ProjectModel
         ///     3. The packages of the current project were updated.
         ///     4. The packages of the dependent projects were updated.
         ///     5. The framework list of the dependent projects were updated with frameworks incompatible with the main project framework.
+        ///     6. If the version of the <paramref name="nuGetLockFile"/> is larger than the current tools <see cref="PackagesLockFileFormat.PackagesLockFileVersion"/>.
         /// </summary>
         /// <param name="dgSpec">The <see cref="DependencyGraphSpec"/> for the new project defintion.</param>
         /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
         /// <returns>True if the lock file is valid false otherwise. </returns>
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
+            // Current tools know how to read only previous formats including the current
+            if (PackagesLockFileFormat.PackagesLockFileVersion < nuGetLockFile.Version)
+            {
+                return false;
+            }
+
             var uniqueName = dgSpec.Restore.First();
             var project = dgSpec.GetProjectSpec(uniqueName);
 
