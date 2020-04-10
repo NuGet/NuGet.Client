@@ -29,6 +29,7 @@
     <DeployExtension>false</DeployExtension>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="GuidList.cs" />
     <Compile Include="OnlineEnvironment.cs" />
     <Compile Include="Input\CommandGroup.cs" />

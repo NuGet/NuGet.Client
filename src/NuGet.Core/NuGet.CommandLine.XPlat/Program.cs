@@ -18,7 +18,9 @@ namespace NuGet.CommandLine.XPlat
 {
     public class Program
     {
+#if DEBUG
         private const string DebugOption = "--debug";
+#endif
         private const string DotnetNuGetAppName = "dotnet nuget";
         private const string DotnetPackageAppName = "NuGet.CommandLine.XPlat.dll package";
 
