@@ -62,7 +62,6 @@
     <Compile Include="Converters\AccessibleConverter.cs" />
     <Compile Include="Converters\DateTimeConverter.cs" />
     <Compile Include="Converters\InverseBooleanConverter.cs" />
-    <Compile Include="Converters\LiveTextLoadingConverter.cs" />
     <Compile Include="Converters\SubstractionConverter.cs" />
     <Compile Include="Converters\RadioBoolToIntConverter.cs" />
     <Compile Include="Converters\TooltipConverter.cs" />

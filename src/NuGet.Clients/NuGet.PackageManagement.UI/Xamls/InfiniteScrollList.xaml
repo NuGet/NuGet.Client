@@ -322,9 +322,7 @@
       <vs:LiveTextBlock
         x:Name="LtbLoading"
         Visibility="Collapsed"
-        IsFrequencyLimited="True"
-        Frequency="2"> <!-- More than one events per second to avoid clashing with LiveSearchBox -->
-      </vs:LiveTextBlock>
+        IsFrequencyLimited="True" />
     </Grid>
 
     <nuget:InfiniteScrollListBox
