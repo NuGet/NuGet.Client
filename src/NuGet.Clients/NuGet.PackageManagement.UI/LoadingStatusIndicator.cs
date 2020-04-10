@@ -92,19 +92,19 @@ namespace NuGet.PackageManagement.UI
                         return LoadingMessage;
 
                     case LoadingStatus.NoItemsFound:
-                        return "No Items found";
+                        return Resources.Text_NoPackagesFound;
 
                     case LoadingStatus.Cancelled:
-                        return "Search was cancelled";
+                        return Resources.Status_Canceled;
 
                     case LoadingStatus.ErrorOccurred:
-                        return "Error occurred when searching";
+                        return Resources.Status_ErrorOccurred;
 
                     case LoadingStatus.NoMoreItems:
-                        return "End of search";
+                        return Resources.Status_NoMoreItems;
 
                     case LoadingStatus.Ready:
-                        return "Results ready";
+                        return Resources.Status_Ready;
 
                     default:
                     case LoadingStatus.Unknown:

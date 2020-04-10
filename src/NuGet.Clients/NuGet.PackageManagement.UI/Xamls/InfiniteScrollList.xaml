@@ -316,11 +316,15 @@
         Style="{StaticResource FadeAnimationStyle}"
         Visibility="Hidden"/>
 
+      <!--
+        Special TextBlock to report loading status to assistive technologies (narrator).
+        Code behind changes in Text property trigger a narrator event
+      -->
       <vs:LiveTextBlock 
         x:Name="LtbLoading" 
-        Visibility="Visible" 
+        Visibility="Collapsed"
         IsFrequencyLimited="True"
-        Frequency="2">
+        Frequency="2"> <!-- More than one events per second to avoid clashing with LiveSearchBox -->
       </vs:LiveTextBlock>
     </Grid>
 
