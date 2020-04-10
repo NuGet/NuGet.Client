@@ -90,7 +90,7 @@ namespace NuGet.PackageManagement.UI
                 _joinableTaskFactory.Value.Run(async delegate
                 {
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-                    LtbLoading.Text = _loadingStatusIndicator.Status.ToString();
+                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 });
             }
         }

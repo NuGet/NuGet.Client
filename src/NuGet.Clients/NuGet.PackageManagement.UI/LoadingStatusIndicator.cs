@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
@@ -80,6 +80,37 @@ namespace NuGet.PackageManagement.UI
         {
             Status = LoadingStatus.ErrorOccurred;
             ErrorMessage = message;
+        }
+
+        internal string LocalizedStatus
+        {
+            get
+            {
+                switch (Status)
+                {
+                    case LoadingStatus.Loading:
+                        return LoadingMessage;
+
+                    case LoadingStatus.NoItemsFound:
+                        return "No Items found";
+
+                    case LoadingStatus.Cancelled:
+                        return "Search was cancelled";
+
+                    case LoadingStatus.ErrorOccurred:
+                        return "Error occurred when searching";
+
+                    case LoadingStatus.NoMoreItems:
+                        return "End of search";
+
+                    case LoadingStatus.Ready:
+                        return "Results ready";
+
+                    default:
+                    case LoadingStatus.Unknown:
+                        return string.Empty;
+                }
+            }
         }
     }
 }

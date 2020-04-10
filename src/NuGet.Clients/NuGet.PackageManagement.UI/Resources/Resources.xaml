@@ -56,8 +56,6 @@
     x:Key="SubstractionConverter" />
   <nuget:AdditionConverter
     x:Key="AdditionConverter" />
-  <nuget:LiveTextLoadingConverter
-      x:Key="LiveTextLoadingConverter" />
 
   <!-- Default styles -->
   <Style x:Key="ControlsFocusVisualStyle" TargetType="{x:Type Control}">

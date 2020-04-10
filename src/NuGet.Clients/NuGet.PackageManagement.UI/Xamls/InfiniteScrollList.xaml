@@ -251,33 +251,6 @@
     </Style>
 
     <!--
-    <Style TargetType="vs:LiveTextBlock" x:Key="xxyy">
-      <Style.Triggers>
-        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Unknown">
-          <Setter
-            Property="Text"
-            Value="Unkown..." />    
-        </DataTrigger>
-        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Loading">
-          <Setter
-            Property="Text"
-            Value="Loading..." />
-        </DataTrigger>
-        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="NoItemsFound">
-          <Setter
-            Property="Text"
-            Value="No Items..." />
-        </DataTrigger>
-        <DataTrigger Binding="{Binding ElementName=_infList, Path=LoadingStatus}" Value="Ready">
-          <Setter
-            Property="Text"
-            Value="Ready!..." />
-        </DataTrigger>
-      </Style.Triggers>
-    </Style>
-    -->
-    
-    <!--
       This scrollviewer template has one change from the default - a -22 margin on the verical srollbar.
       This enables the loadingStatusBar to appear to be in the listbox.
     -->
@@ -298,8 +271,6 @@
       </Grid>
     </ControlTemplate>
 
-    <nuget:LoadingTextConverter
-      x:Key="LoadingTextConverter" />
   </UserControl.Resources>
   <DockPanel LastChildFill="True">
     <Border
@@ -346,31 +317,10 @@
         Visibility="Hidden"/>
 
       <vs:LiveTextBlock 
-              x:Name="LtbLoading" 
-              Visibility="Visible" 
-              IsFrequencyLimited="True"
-              Frequency="2">
-        <!--
-        <vs:LiveTextBlock.Text>
-          <Binding
-          ElementName="_infList"
-          Converter="{StaticResource LoadingTextConverter}"
-          TargetNullValue="Live null"
-          FallbackValue="Live fail"
-          Path="LoadingStatus" />
-        </vs:LiveTextBlock.Text>
-        -->
-        <!--
-      <vs:LiveTextBlock.Text>
-        <MultiBinding 
-            Converter="{StaticResource LiveTextLoadingConverter}"
-            TargetNullValue="Nuuuuuuuul"
-            FallbackValue="Faaaaaaaaail">
-          <Binding ElementName="_self" Path="IsTabChanged" />
-          <Binding ElementName="_packageList" Path="LoadingMessage" />
-        </MultiBinding>
-      </vs:LiveTextBlock.Text>
-      -->
+        x:Name="LtbLoading" 
+        Visibility="Visible" 
+        IsFrequencyLimited="True"
+        Frequency="2">
       </vs:LiveTextBlock>
     </Grid>
 
