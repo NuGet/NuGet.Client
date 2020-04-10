@@ -773,7 +773,7 @@ namespace NuGet.CommandLine
                 // path or the gac. In this case, we should just skip it and extract metadata from the project.
                 try
                 {
-                    AssemblyMetadataExtractor.ExtractMetadata(builder, TargetPath);
+                    new AssemblyMetadataExtractor(Logger).ExtractMetadata(builder, TargetPath);
                 }
                 catch (Exception ex)
                 {
