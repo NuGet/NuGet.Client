@@ -1005,7 +1005,7 @@ namespace NuGet.PackageManagement.UI
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
-                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);   
+                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
         }
 
