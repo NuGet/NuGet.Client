@@ -6,7 +6,6 @@
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
   xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
-  x:Name="_infList"
   mc:Ignorable="d"
   d:DesignHeight="200"
   d:DesignWidth="500">
@@ -320,8 +319,8 @@
         Special TextBlock to report loading status to assistive technologies (narrator).
         Code behind changes in Text property trigger a narrator event
       -->
-      <vs:LiveTextBlock 
-        x:Name="LtbLoading" 
+      <vs:LiveTextBlock
+        x:Name="LtbLoading"
         Visibility="Collapsed"
         IsFrequencyLimited="True"
         Frequency="2"> <!-- More than one events per second to avoid clashing with LiveSearchBox -->

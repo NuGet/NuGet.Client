@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
     public partial class InfiniteScrollList : UserControl
     {
-        internal readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
+        private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
 
         public event SelectionChangedEventHandler SelectionChanged;
@@ -92,22 +92,6 @@ namespace NuGet.PackageManagement.UI
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
                     LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 });
-            }
-        }
-
-        public LoadingStatus LoadingStatus
-        {
-            get
-            {
-                return _loadingStatusIndicator.Status;
-            }
-        }
-
-        public string LoadingMessage
-        {
-            get
-            {
-                return _loadingStatusIndicator.LoadingMessage;
             }
         }
 

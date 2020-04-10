@@ -715,8 +715,6 @@ namespace NuGet.PackageManagement.UI
                     useCacheForUpdates: useCacheForUpdates,
                     pSearchCallback: null,
                     searchTask: null);
-
-                IsTabChanged = false;
             })
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
@@ -998,20 +996,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public bool IsTabChanged { get; set; } = false;
-
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
             if (_initialized)
             {
-                IsTabChanged = true;
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
-                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
-                
+                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);   
             }
         }
 
