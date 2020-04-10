@@ -50,7 +50,7 @@
 
   <!-- Defaults -->
   <PropertyGroup>
-    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors Condition=" '$(TreatWarningsAsErrors)' == '' ">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <!-- Default project configuration -->
