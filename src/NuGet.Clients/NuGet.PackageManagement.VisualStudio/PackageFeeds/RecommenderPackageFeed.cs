@@ -11,6 +11,8 @@ using NuGet.Protocol.Core.Types;
 using Microsoft.VisualStudio.Shell;
 using Recommender = Microsoft.DataAI.NuGetRecommender.Contracts;
 using System.Diagnostics;
+using NuGet.PackageManagement.Telemetry;
+using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -19,7 +21,6 @@ namespace NuGet.PackageManagement.VisualStudio
     /// </summary>
     public class RecommenderPackageFeed : IPackageFeed
     {
-        public int PageSize { get; protected set; } = 25;
         public bool IsMultiSource => false;
 
         private readonly SourceRepository _sourceRepository;
@@ -28,6 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
+        private readonly INuGetTelemetryService _telemetryService;
 
         Recommender.IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
@@ -37,7 +39,8 @@ namespace NuGet.PackageManagement.VisualStudio
             IEnumerable<PackageCollectionItem> dependentPackages,
             IEnumerable<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger)
+            Common.ILogger logger,
+            INuGetTelemetryService telemetryService)
         {
             if (sourceRepository == null)
             {
@@ -73,6 +76,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(logger));
             }
+            _telemetryService = telemetryService;
             _logger = logger;
 
             try
@@ -115,6 +119,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
+
+            TelemetryServiceUtility.StartOrResumeTimer();
 
             List<string> recommendIds = new List<string>();
             try
@@ -164,6 +170,17 @@ namespace NuGet.PackageManagement.VisualStudio
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
+
+            // Send telemetry
+            TelemetryServiceUtility.StopTimer();
+            var duration = TelemetryServiceUtility.GetTimerElapsedTime();
+            if (_telemetryService != null)
+            {
+                _telemetryService.EmitTelemetryEvent(new RecommendTelemetryEvent(
+                // this is the total number of package ids returned from the recommender, not the number actually recommended
+                recommendIds.Count(),
+                duration.TotalSeconds));
+            }
 
             if (items.Count() < 1)
             {

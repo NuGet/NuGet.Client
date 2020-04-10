@@ -1008,7 +1008,8 @@ namespace NuGet.PackageManagement.UI
                     dependentPackages,
                     targetFrameworks,
                     metadataProvider,
-                    logger);
+                    logger,
+                    TelemetryActivity.NuGetTelemetryService);
                 return packageFeeds;
             }
 
