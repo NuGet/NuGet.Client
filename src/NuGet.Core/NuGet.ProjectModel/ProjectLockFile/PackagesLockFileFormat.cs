@@ -17,6 +17,9 @@ namespace NuGet.ProjectModel
     {
         public static readonly int Version = 1;
 
+        // Diverge the lockfile version to allow evolving the lock file schema
+        public static readonly int PackagesLockFileVersion = 2;
+
         public static readonly string LockFileName = "packages.lock.json";
 
         private const string VersionProperty = "version";

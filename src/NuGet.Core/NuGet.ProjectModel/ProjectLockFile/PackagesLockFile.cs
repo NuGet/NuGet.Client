@@ -11,11 +11,21 @@ namespace NuGet.ProjectModel
 {
     public class PackagesLockFile : IEquatable<PackagesLockFile>
     {
-        public int Version { get; set; } = PackagesLockFileFormat.Version;
+        public int Version { get; set; }
 
         public string Path { get; set; }
 
         public IList<PackagesLockFileTarget> Targets { get; set; } = new List<PackagesLockFileTarget>();
+
+        public PackagesLockFile(int version)
+        {
+            Version = version;
+        }
+
+        public PackagesLockFile()
+        {
+            Version = PackagesLockFileFormat.Version;
+        }
 
         public bool Equals(PackagesLockFile other)
         {
