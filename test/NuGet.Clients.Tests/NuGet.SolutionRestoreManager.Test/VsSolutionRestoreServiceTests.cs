@@ -2015,6 +2015,49 @@ namespace NuGet.SolutionRestoreManager.Test
             return capturedRestoreSpec;
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task NominateProjectAsync_PackageReferenceWithAliases(bool isV2Nominate)
+        {
+            var properties = new VsReferenceProperties();
+            properties.Add("Aliases", "Core");
+            var packageReference = new VsReferenceItem("NuGet.Protocol", properties);
+
+            var vstfms = isV2Nominate ?
+                (IVsTargetFrameworkInfo)
+                new VsTargetFrameworkInfo2(
+                        "netcoreapp1.0",
+                        new IVsReferenceItem[] { packageReference },
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsProjectProperty>()
+                        ) :
+                new VsTargetFrameworkInfo(
+                        "netcoreapp1.0",
+                        new IVsReferenceItem[] { packageReference },
+                        Enumerable.Empty<IVsReferenceItem>(),
+                        Enumerable.Empty<IVsProjectProperty>()
+                        );
+
+            var cps = NewCpsProject("{ }");
+            var projectFullPath = cps.ProjectFullPath;
+            var builder = cps.Builder
+                .WithTargetFrameworkInfo(vstfms);
+
+            // Act
+            var actualRestoreSpec = isV2Nominate ?
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo2) :
+                    await CaptureNominateResultAsync(projectFullPath, builder.ProjectRestoreInfo);
+            // Assert
+            SpecValidationUtility.ValidateDependencySpec(actualRestoreSpec);
+
+            var actualProjectSpec = actualRestoreSpec.GetProjectSpec(projectFullPath);
+            Assert.NotNull(actualProjectSpec);
+            Assert.Equal("Core", actualProjectSpec.TargetFrameworks.First().Dependencies.First().Aliases);
+        }
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
             string projectFullPath, IVsProjectRestoreInfo2 pri)
         {

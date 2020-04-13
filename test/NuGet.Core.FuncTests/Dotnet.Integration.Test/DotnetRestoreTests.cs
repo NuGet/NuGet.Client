@@ -11,6 +11,7 @@ using FluentAssertions;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
+using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using Xunit;
 
@@ -556,6 +557,54 @@ EndGlobal";
                     projects[letter].AssetsFile.Should().NotBeNull(because: result.AllOutput);
                     projects[letter].AssetsFile.Libraries.Select(e => e.Name).Should().Contain($"package{letter}", because: result.AllOutput);
                 }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public async Task DotnetRestore_PackageReferenceWithAliases_ReflectedInTheAssetsFile()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, and project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var projFramework = FrameworkConstants.CommonFrameworks.Net462;
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   projFramework);
+
+                //Setup packages and feed
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile($"lib/{projFramework.GetShortFolderName()}/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+                packageX.Aliases = "Core";
+
+                //add the packe to the project
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var args = $" --source \"{pathContext.PackageSource}\" ";
+                var projdir = Path.GetDirectoryName(projectA.ProjectPath);
+                var projfilename = Path.GetFileNameWithoutExtension(projectA.ProjectName);
+
+                _msbuildFixture.RestoreProject(projdir, projfilename, args);
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+
+                var library = projectA.AssetsFile.Targets.First(e => e.RuntimeIdentifier == null).Libraries.First();
+                library.Should().NotBeNull("The assets file is expect to have a single library");
+                library.CompileTimeAssemblies.Count.Should().Be(1, because: "The package has 1 compatible file");
+                library.CompileTimeAssemblies.Single().Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "Core"));
             }
         }
 

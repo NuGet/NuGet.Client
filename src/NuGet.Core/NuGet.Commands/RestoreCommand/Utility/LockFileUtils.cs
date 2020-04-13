@@ -32,6 +32,7 @@ namespace NuGet.Commands
             LibraryIncludeFlags dependencyType)
         {
             return CreateLockFileTargetLibrary(
+                libraryDependency: null,
                 library,
                 package,
                 targetGraph,
@@ -41,7 +42,20 @@ namespace NuGet.Commands
                 cache: new LockFileBuilderCache());
         }
 
+        /// <summary>
+        /// Create a lock file target library for the given <paramref name="library"/>
+        /// </summary>
+        /// <param name="libraryDependency">The library dependency equivalent to <paramref name="library"/>. The library dependency contains metadata applicable during asset selection. Can be null.</param>
+        /// <param name="library">The lock file library, expected to be for the equivalent package as <paramref name="library"/> and <paramref name="package"/>. </param>
+        /// <param name="package">The local package info.</param>
+        /// <param name="targetGraph">The target graph for which the asset selection needs to happen.</param>
+        /// <param name="dependencyType">The resolved dependency type.</param>
+        /// <param name="targetFrameworkOverride">The original framework if the asset selection is happening for a fallback framework.</param>
+        /// <param name="dependencies">The dependencies of this package.</param>
+        /// <param name="cache">The lock file build cache.</param>
+        /// <returns></returns>
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
+                LibraryDependency libraryDependency,
                 LockFileLibrary library,
                 LocalPackageInfo package,
                 RestoreTargetGraph targetGraph,
@@ -86,7 +100,7 @@ namespace NuGet.Commands
                 }
                 else
                 { 
-                    AddAssets(library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
+                    AddAssets(libraryDependency, library, package, targetGraph, dependencyType, lockFileLib, framework, runtimeIdentifier, contentItems, nuspec, orderedCriteriaSets[i]);
                     // Check if compatile assets were found.
                     // If no compatible assets were found and this is the last check
                     // continue on with what was given, this will fail in the normal
@@ -138,10 +152,19 @@ namespace NuGet.Commands
             return orderedCriteriaSets;
         }
 
+        private static void ApplyAliases(LibraryDependency libraryDependency, LockFileItem item)
+        {
+            if (libraryDependency?.Aliases != null)
+            {
+                item.Properties.Add(LockFileItem.AliasesProperty, libraryDependency.Aliases);
+            }
+        }
+
         /// <summary>
         /// Populate assets for a <see cref="LockFileLibrary"/>.
         /// </summary>
         private static void AddAssets(
+            LibraryDependency libraryDependency,
             LockFileLibrary library,
             LocalPackageInfo package,
             RestoreTargetGraph targetGraph,
@@ -157,10 +180,14 @@ namespace NuGet.Commands
             AddFrameworkReferences(lockFileLib, framework, nuspec);
 
             // Compile
+            // Set-up action to update the compile time items.
+            Action<LockFileItem> applyAliases = (item) => ApplyAliases(libraryDependency, item);
+
             // ref takes precedence over lib
             var compileGroup = GetLockFileItems(
                 orderedCriteria,
                 contentItems,
+                applyAliases,
                 targetGraph.Conventions.Patterns.CompileRefAssemblies,
                 targetGraph.Conventions.Patterns.CompileLibAssemblies);
 
@@ -628,6 +655,7 @@ namespace NuGet.Commands
         private static IEnumerable<LockFileItem> GetLockFileItems(
             IReadOnlyList<SelectionCriteria> criteria,
             ContentItemCollection items,
+            Action<LockFileItem> additionalAction,
             params PatternSet[] patterns)
         {
             // Loop through each criteria taking the first one that matches one or more items.
@@ -647,6 +675,7 @@ namespace NuGet.Commands
                         {
                             newItem.Properties["locale"] = (string)locale;
                         }
+                        additionalAction?.Invoke(newItem);
                         yield return newItem;
                     }
 
@@ -656,6 +685,18 @@ namespace NuGet.Commands
             }
 
             yield break;
+        }
+
+        /// <summary>
+        /// Create lock file items for the best matching group.
+        /// </summary>
+        /// <remarks>Enumerate this once after calling.</remarks>
+        private static IEnumerable<LockFileItem> GetLockFileItems(
+            IReadOnlyList<SelectionCriteria> criteria,
+            ContentItemCollection items,
+            params PatternSet[] patterns)
+        {
+            return GetLockFileItems(criteria, items, additionalAction: null, patterns);
         }
 
         /// <summary>
@@ -755,21 +796,6 @@ namespace NuGet.Commands
             return managedCriteria;
         }
 
-        private static bool HasItems(ContentItemGroup compileGroup)
-        {
-            return (compileGroup != null && compileGroup.Items.Any());
-        }
-
-        private static LockFileItem ToResourceLockFileItem(ContentItem item)
-        {
-            return new LockFileItem(item.Path)
-            {
-                Properties =
-                {
-                    { "locale", item.Properties["locale"].ToString()}
-                }
-            };
-        }
 
         /// <summary>
         /// Clears a lock file group and replaces the first item with _._ if 

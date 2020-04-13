@@ -40,6 +40,8 @@ namespace NuGet.LibraryModel
 
         public bool GeneratePathProperty { get; set; }
 
+        public string Aliases { get; set; }
+
         public LibraryDependency() { }
 
         public LibraryDependency(
@@ -49,7 +51,19 @@ namespace NuGet.LibraryModel
             LibraryIncludeFlags suppressParent,
             IList<NuGetLogCode> noWarn,
             bool autoReferenced,
-            bool generatePathProperty) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false, libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct)
+            bool generatePathProperty) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, aliases: null)
+        {
+        }
+
+        public LibraryDependency(
+            LibraryRange libraryRange,
+            LibraryDependencyType type,
+            LibraryIncludeFlags includeType,
+            LibraryIncludeFlags suppressParent,
+            IList<NuGetLogCode> noWarn,
+            bool autoReferenced,
+            bool generatePathProperty,
+            string aliases) : this(libraryRange, type, includeType, suppressParent, noWarn, autoReferenced, generatePathProperty, versionCentrallyManaged: false, aliases: aliases, libraryDependencyReferenceType: LibraryDependencyReferenceType.Direct)
         {
         }
 
@@ -62,7 +76,9 @@ namespace NuGet.LibraryModel
             bool autoReferenced,
             bool generatePathProperty,
             bool versionCentrallyManaged,
-            LibraryDependencyReferenceType libraryDependencyReferenceType)
+            string aliases,
+            LibraryDependencyReferenceType libraryDependencyReferenceType
+            )
         {
             LibraryRange = libraryRange;
             Type = type;
@@ -72,6 +88,7 @@ namespace NuGet.LibraryModel
             AutoReferenced = autoReferenced;
             GeneratePathProperty = generatePathProperty;
             VersionCentrallyManaged = versionCentrallyManaged;
+            Aliases = aliases;
             ReferenceType = libraryDependencyReferenceType;
         }
 
@@ -106,6 +123,7 @@ namespace NuGet.LibraryModel
             hashCode.AddSequence(NoWarn);
             hashCode.AddObject(GeneratePathProperty);
             hashCode.AddObject(VersionCentrallyManaged);
+            hashCode.AddObject(Aliases);
             hashCode.AddObject(ReferenceType);
 
             return hashCode.CombinedHash;
@@ -136,6 +154,7 @@ namespace NuGet.LibraryModel
                    NoWarn.SequenceEqualWithNullCheck(other.NoWarn) &&
                    GeneratePathProperty == other.GeneratePathProperty &&
                    VersionCentrallyManaged == other.VersionCentrallyManaged &&
+                   Aliases == other.Aliases &&
                    ReferenceType == other.ReferenceType;
         }
 
@@ -144,7 +163,7 @@ namespace NuGet.LibraryModel
             var clonedLibraryRange = new LibraryRange(LibraryRange.Name, LibraryRange.VersionRange, LibraryRange.TypeConstraint);
             var clonedNoWarn = new List<NuGetLogCode>(NoWarn);
 
-            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, ReferenceType);
+            return new LibraryDependency(clonedLibraryRange, Type, IncludeType, SuppressParent, clonedNoWarn, AutoReferenced, GeneratePathProperty, VersionCentrallyManaged, Aliases, ReferenceType);
         }
     }
 }

@@ -215,6 +215,7 @@ namespace NuGet.Commands
                         var package = packageInfo.Package;
 
                         var targetLibrary = LockFileUtils.CreateLockFileTargetLibrary(
+                            tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)),
                             libraries[Tuple.Create(library.Name, library.Version)],
                             package,
                             targetGraph,
@@ -231,6 +232,7 @@ namespace NuGet.Commands
                             var nonFallbackFramework = new NuGetFramework(target.TargetFramework);
 
                             var targetLibraryWithoutFallback = LockFileUtils.CreateLockFileTargetLibrary(
+                            tfi.Dependencies.FirstOrDefault(e => e.Name.Equals(library.Name, StringComparison.OrdinalIgnoreCase)),
                                 libraries[Tuple.Create(library.Name, library.Version)],
                                 package,
                                 targetGraph,
