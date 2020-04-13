@@ -208,44 +208,23 @@ namespace NuGet.Packaging.Test
         }
 
         [Fact]
-        public void GenerateWarnings_PackageHasInvalidBuildAndValidBuildTransitiveAndValidBuildCross_ShouldWarnOnce()
+        public void GenerateWarnings_ViolationsForDifferentBuildFolders_AllViolationsReportedInMessage()
         {
             //Arrange
-            string packageId = "packageId";
-            var files = new string[]
+            var violations = new[]
             {
-                "build/package_Id.props",
-                "buildTransitive/packageId.props",
-                "buildCrossTargeting/packageId.props"
+                new UpholdBuildConventionRule.ConventionViolator("build/", ".props", "build/PackageId.props"),
+                new UpholdBuildConventionRule.ConventionViolator("buildTransitive/", ".props", "buildTransitive/PackageId.props"),
+                new UpholdBuildConventionRule.ConventionViolator("buildCrossTargeting/", ".props", "buildMultiTargeting/PackageId.props")
             };
 
             //Act
-            var issues = Run(packageId, files);
+            var target = new UpholdBuildConventionRule();
+            var issues = target.GenerateWarnings(violations);
 
             //Assert
-            Assert.Equal(issues.Count(), 1);
-            var singleIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129);
-            var expectedMessage = "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
-            Assert.Equal(expectedMessage, singleIssue.Message);
-        }
-
-        [Fact]
-        public void GenerateWarnings_PackageHasInvalidBuildAndInvalidBuildTransitiveAndValidBuildCross_ShouldWarnTwice()
-        {
-            //Arrange
-            string packageId = "packageId";
-            var files = new string[]
-            {
-                "build/package_Id.props",
-                "buildTransitive/package_Id.props",
-                "buildCrossTargeting/packageId.props"
-            };
-
-            //Act
-            var issues = Run(packageId, files);
-
-            //Assert
-            Assert.Equal(issues.Count(), 2);
+            Assert.Equal(issues.Count, 3);
+            Assert.True(issues.All(m => m.Code == NuGetLogCode.NU5129), "All messages should be NU5129");
             var firstIssue = issues.Single(p => p.Code == NuGetLogCode.NU5129 && p.Message.Contains("build/packageId.props"));
             var firstExpectedMessage = "- At least one .props file was found in 'build/', but 'build/packageId.props' was not." + Environment.NewLine;
             Assert.Equal(firstExpectedMessage, firstIssue.Message);
@@ -297,24 +276,6 @@ namespace NuGet.Packaging.Test
 
             // Assert
             Assert.Empty(actual);
-        }
-
-        private IEnumerable<PackagingLogMessage> Run(string packageId, IEnumerable<string> files)
-        {
-            var nuspecReader = new Mock<IValidationNuspec>();
-            nuspecReader.Setup(nr => nr.GetId())
-                .Returns(packageId);
-
-            var packageReader = new Mock<IValidationPackage>();
-            packageReader.Setup(pr => pr.NuspecReader)
-                .Returns(nuspecReader.Object);
-            packageReader.Setup(pr => pr.GetFiles())
-                .Returns(files);
-
-            var target = new UpholdBuildConventionRule();
-            var result = target.Validate(packageReader.Object);
-
-            return result;
         }
     }
 }

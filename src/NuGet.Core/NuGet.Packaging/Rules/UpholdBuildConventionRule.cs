@@ -18,27 +18,72 @@ namespace NuGet.Packaging.Rules
         private static ManagedCodeConventions ManagedCodeConventions = new ManagedCodeConventions(new RuntimeGraph());
         private static readonly IReadOnlyList<string> BuildFolders = new string[]
         {
-            PackagingConstants.Folders.Build + '/',
-            PackagingConstants.Folders.BuildTransitive + '/',
-            PackagingConstants.Folders.BuildCrossTargeting + '/',
-            "buildMultiTargeting/"
+            PackagingConstants.Folders.Build,
+            PackagingConstants.Folders.BuildTransitive,
+            PackagingConstants.Folders.BuildCrossTargeting,
+            "buildMultiTargeting"
         };
 
         public string MessageFormat => AnalysisResources.BuildConventionIsViolatedWarning;
 
         public IEnumerable<PackagingLogMessage> Validate(PackageArchiveReader builder)
         {
-            return Validate(new ValidationPackageAdapter(builder));
-        }
-
-        internal IEnumerable<PackagingLogMessage> Validate(IValidationPackage builder)
-        {
             var packageId = builder.NuspecReader.GetId();
             var filesInPackage = builder.GetFiles();
 
             var violations = IdentifyViolators(filesInPackage, packageId);
-            var warnings = GenerateWarnings(violations);
-            return warnings;
+            var warning = GenerateWarning(violations);
+            return warning == null
+                ? Array.Empty<PackagingLogMessage>()
+                : new[] { warning };
+        }
+
+        internal PackagingLogMessage GenerateWarning(ICollection<ConventionViolator> conventionViolators)
+        {
+            if (conventionViolators.Count == 0)
+            {
+                return null;
+            }
+
+            var warningMessage = new StringBuilder();
+            foreach (var conViolator in conventionViolators)
+            {
+                warningMessage.AppendLine(string.Format(MessageFormat, conViolator.Extension, conViolator.Path, conViolator.ExpectedPath));
+            }
+
+            var message = PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129);
+            return message;
+        }
+
+        internal List<ConventionViolator> IdentifyViolators(IEnumerable<string> files, string packageId)
+        {
+            var violations = new List<ConventionViolator>();
+
+            var msbuildFiles = files.Where(EndsWithMsbuildFileExtension);
+            var msbuildFilesInBuildFolder = msbuildFiles.Where(InsideBuildFolder);
+            var msbuildFilesGroupedByBuildFolder = msbuildFilesInBuildFolder.GroupBy(GetBuildFolder);
+
+            foreach (var buildFolder in msbuildFilesGroupedByBuildFolder)
+            {
+                foreach (var tfm in buildFolder.GroupBy(GetTfm))
+                {
+                    foreach (var extension in tfm.GroupBy(Path.GetExtension))
+                    {
+                        string expectedFileName = tfm.Key == string.Empty
+                            ? buildFolder.Key + packageId + extension.Key
+                            : buildFolder.Key + tfm.Key + '/' + packageId + extension.Key;
+                        if (!extension.Any(file => string.Equals(expectedFileName, file, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            string packageFolder = tfm.Key == string.Empty ? buildFolder.Key : buildFolder.Key + tfm.Key + '/';
+                            violations.Add(new ConventionViolator(packageFolder, extension.Key, expectedFileName));
+                        }
+                    }
+                }
+            }
+
+            violations.Sort(ConventionViolatorComparer.Instance);
+
+            return violations;
         }
 
         private string GetTfm(string file)
@@ -88,68 +133,6 @@ namespace NuGet.Packaging.Rules
             return false;
         }
 
-        internal IEnumerable<PackagingLogMessage> GenerateWarnings(IEnumerable<ConventionViolator> conventionViolators)
-        {
-
-            var issues = new List<PackagingLogMessage>();
-            foreach (var folder in BuildFolders)
-            {
-                var warningMessage = new StringBuilder();
-                var currentConventionViolators = conventionViolators.Where(t => t.ExpectedPath.StartsWith(folder));
-                foreach (var conViolator in currentConventionViolators)
-                {
-                    warningMessage.AppendLine(string.Format(MessageFormat, conViolator.Extension, conViolator.Path, conViolator.ExpectedPath));
-                }
-
-                if (warningMessage.ToString() != string.Empty)
-                {
-                    issues.Add(PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129));
-                }
-            }
-            return issues;
-        }
-
-        internal List<ConventionViolator> IdentifyViolators(IEnumerable<string> files, string packageId)
-        {
-            var violations = new List<ConventionViolator>();
-
-            var msbuildFiles = files.Where(EndsWithMsbuildFileExtension);
-            var msbuildFilesInBuildFolder = msbuildFiles.Where(InsideBuildFolder);
-            var msbuildFilesGroupedByBuildFolder = msbuildFilesInBuildFolder.GroupBy(GetBuildFolder);
-
-            foreach (var buildFolder in msbuildFilesGroupedByBuildFolder)
-            {
-                foreach (var tfm in buildFolder.GroupBy(GetTfm))
-                {
-                    foreach (var extension in tfm.GroupBy(Path.GetExtension))
-                    {
-                        string expectedFileName = tfm.Key == string.Empty
-                            ? buildFolder.Key + packageId + extension.Key
-                            : buildFolder.Key + tfm.Key + '/' + packageId + extension.Key;
-                        if (!extension.Any(file => string.Equals(expectedFileName, file, StringComparison.OrdinalIgnoreCase)))
-                        {
-                            string packageFolder = tfm.Key == string.Empty ? buildFolder.Key : buildFolder.Key + tfm.Key + '/';
-                            violations.Add(new ConventionViolator(packageFolder, extension.Key, expectedFileName));
-                        }
-                    }
-                }
-            }
-
-            violations.Sort(ConventionViolatorComparer.Instance);
-
-            return violations;
-        }
-
-        internal string GetFolderName(string filePath)
-        {
-            var hi = NuGetFramework.ParseFolder(filePath.Split('/')[1]).GetShortFolderName();
-            if (hi == "unsupported")
-            {
-                return filePath.Split('/')[0] + '/';
-            }
-            return filePath.Split('/')[0] + '/' + hi + '/';
-        }
-
         internal class ConventionViolator
         {
             public string Path { get; }
@@ -160,11 +143,19 @@ namespace NuGet.Packaging.Rules
 
             public ConventionViolator(string filePath, string extension, string expectedFile)
             {
-#if NETCOREAPP
-                Path = filePath.Replace(filePath.Split('/')[filePath.Count(p => p == '/')], string.Empty, StringComparison.OrdinalIgnoreCase);
-#else
-                Path = filePath.Replace(filePath.Split('/')[filePath.Count(p => p == '/')], string.Empty);
+#if DEBUG
+                if (filePath[filePath.Length - 1] != System.IO.Path.DirectorySeparatorChar)
+                {
+                    throw new ArgumentException("Path must end with directory separator", nameof(filePath));
+                }
+
+                if (extension[0] != '.')
+                {
+                    throw new ArgumentException("Extension must include period character", nameof(extension));
+                }
 #endif
+
+                Path = filePath;
                 Extension = extension;
                 ExpectedPath = expectedFile;
             }
