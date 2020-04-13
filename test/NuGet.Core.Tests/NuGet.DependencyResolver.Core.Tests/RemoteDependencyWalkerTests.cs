@@ -922,19 +922,19 @@ namespace NuGet.DependencyResolver.Tests
             var centralVersionInGraphNode = rootNode.InnerNodes.Where(n => n.Item.Key.Name == centralPackageName).FirstOrDefault();
             Assert.NotNull(centralVersionInGraphNode);
             Assert.Equal(centralPackageVersion, centralVersionInGraphNode.Item.Key.Version.ToNormalizedString());
-            Assert.NotNull(centralVersionInGraphNode.Item.CentralDependency);
+            Assert.True(centralVersionInGraphNode.Item.IsCentralTransitive);
 
             var BNode = rootNode.InnerNodes.Where(n => n.Item.Key.Name == "B").FirstOrDefault();
             Assert.NotNull(BNode);
             Assert.Equal(1, BNode.InnerNodes.Count);
             Assert.Equal(otherVersion, BNode.Item.Key.Version.ToNormalizedString());
-            Assert.Null(BNode.Item.CentralDependency);
+            Assert.False(BNode.Item.IsCentralTransitive);
 
             var CNode = BNode.InnerNodes.Where(n => n.Item.Key.Name == "C").FirstOrDefault();
             Assert.NotNull(CNode);
             Assert.Equal(otherVersion, CNode.Item.Key.Version.ToNormalizedString());
             Assert.Equal(0, CNode.InnerNodes.Count);
-            Assert.Null(CNode.Item.CentralDependency);
+            Assert.False(CNode.Item.IsCentralTransitive);
         }
 
         [Fact]
@@ -995,10 +995,10 @@ namespace NuGet.DependencyResolver.Tests
 
         [Theory]
         [InlineData(LibraryDependencyReferenceType.Direct, true)]
-        [InlineData(LibraryDependencyReferenceType.Transitve, true)]
+        [InlineData(LibraryDependencyReferenceType.Transitive, true)]
         [InlineData(LibraryDependencyReferenceType.None, true)]
         [InlineData(LibraryDependencyReferenceType.Direct, false)]
-        [InlineData(LibraryDependencyReferenceType.Transitve, false)]
+        [InlineData(LibraryDependencyReferenceType.Transitive, false)]
         [InlineData(LibraryDependencyReferenceType.None, false)]
         public void IsDependencyValidForGraphTest(LibraryDependencyReferenceType referenceType, bool versionCentrallyManaged)
         {

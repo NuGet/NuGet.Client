@@ -4290,6 +4290,80 @@ namespace ClassLibrary
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_PackProjectWithCentralTransitiveDependencies()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                // Act
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", 60000);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "Moq",
+                        string.Empty,
+                        new Dictionary<string, string>(),
+                        new Dictionary<string, string>());
+
+                    ProjectFileUtils.AddProperty(
+                        xml,
+                        "ManagePackageVersionsCentrally",
+                        "true");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // The test depends on the presence of these packages and their versions.
+                // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
+                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
+                var directoryPackagesPropsContent = @"<Project>  
+                        <ItemGroup>
+                            <PackageVersion Include = ""Moq"" Version = ""4.10.0""/>
+                            <PackageVersion Include = ""Castle.Core"" Version = ""4.4.0""/>
+                        </ItemGroup>
+                        <PropertyGroup>
+	                        <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+                        </PropertyGroup>
+                    </Project>";
+                File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    // Validate the output .nuspec.
+                    var dependencyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    Assert.Equal(1, dependencyGroups.Count);
+                    Assert.Equal(FrameworkConstants.CommonFrameworks.NetStandard20, dependencyGroups[0].TargetFramework);
+                    var packages = dependencyGroups[0].Packages.ToList();
+                    Assert.Equal(2, packages.Count);
+                    var moqPackage = packages.Where(p => p.Id.Equals("Moq", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    var castleCorePackage = packages.Where(p => p.Id.Equals("Castle.Core", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    Assert.NotNull(moqPackage);
+                    Assert.NotNull(castleCorePackage);
+                    Assert.Equal("[4.10.0, )", moqPackage.VersionRange.ToNormalizedString());
+                    Assert.Equal("[4.4.0, )", castleCorePackage.VersionRange.ToNormalizedString());
+                }
+            }
+        }
+
         private void ValidatePackIcon(ProjectFileBuilder projectBuilder)
         {
             Assert.True(File.Exists(projectBuilder.ProjectFilePath), "No project was produced");

@@ -311,7 +311,7 @@ namespace NuGet.ProjectModel
             }
         }
 
-        private static void ReadDependencies(
+        internal static void ReadDependencies(
             JsonTextReader jsonReader,
             IList<LibraryDependency> results,
             string packageSpecPath,

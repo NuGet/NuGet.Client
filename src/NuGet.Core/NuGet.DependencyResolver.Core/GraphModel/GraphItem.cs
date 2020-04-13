@@ -20,10 +20,9 @@ namespace NuGet.DependencyResolver
         public TItem Data { get; set; }
 
         /// <summary>
-        /// A <see cref="LibraryDependency"/> created from a <see cref="CentralPackageVersion"/>.
         /// If set it will indicate that the graph node was created due to a transitive dependency for a package that was also defined in the central packages management file. 
         /// </summary>
-        public LibraryDependency CentralDependency { get; set; }
+        public bool IsCentralTransitive { get; set; }
 
         public override bool Equals(object obj)
         {
@@ -34,14 +33,14 @@ namespace NuGet.DependencyResolver
         {
             return other != null &&
                 KeyCompare(other) &&
-                CentralDependencyCompare(other);
+                IsCentralTransitive == other.IsCentralTransitive;
         }
 
         public override int GetHashCode()
         {
             var combiner = new HashCodeCombiner();
             combiner.AddObject(Key);
-            combiner.AddObject(CentralDependency);
+            combiner.AddObject(IsCentralTransitive);
 
             return combiner.CombinedHash;
         }
@@ -53,15 +52,6 @@ namespace NuGet.DependencyResolver
                 return other.Key == null;
             }
             return Key.Equals(other.Key);
-        }
-
-        private bool CentralDependencyCompare(GraphItem<TItem> other)
-        {
-            if (CentralDependency == null)
-            {
-                return other.CentralDependency == null;
-            }
-            return CentralDependency.Equals(other.CentralDependency);
         }
     }
 }

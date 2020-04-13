@@ -5,18 +5,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using NuGet.Common;
-using NuGet.ContentModel;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging;
-using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
-using NuGet.Versioning;
 
 namespace NuGet.Commands
 {
@@ -273,6 +269,8 @@ namespace NuGet.Commands
 
             PopulatePackageFolders(localRepositories.Select(repo => repo.RepositoryRoot).Distinct(), lockFile);
 
+            AddCentralTransitiveDependencyGroupsForPackageReference(project, lockFile, targetGraphs);
+
             // Add the original package spec to the lock file.
             lockFile.PackageSpec = project;
 
@@ -357,6 +355,52 @@ namespace NuGet.Commands
                         .OrderBy(dependency => dependency, StringComparer.Ordinal));
 
                 lockFile.ProjectFileDependencyGroups.Add(dependencyGroup);
+            }
+        }
+
+        private void AddCentralTransitiveDependencyGroupsForPackageReference(PackageSpec project, LockFile lockFile, IEnumerable<RestoreTargetGraph> targetGraphs)
+        {
+            if (project.RestoreMetadata?.CentralPackageVersionsEnabled == false)
+            {
+                return;
+            }
+
+            // Do not pack anything from the runtime graphs
+            // The runtime graphs are added in addition to the graphs without a runtime 
+            foreach (var targetGraph in targetGraphs.Where(targetGraph => string.IsNullOrEmpty(targetGraph.RuntimeIdentifier)))
+            {
+                var centralPackageVersionsForFramework = project.TargetFrameworks.Where(tfmi => tfmi.FrameworkName.Equals(targetGraph.Framework)).FirstOrDefault()?.CentralPackageVersions;
+
+                // The transitive dependencies enforced by the central package version management file are written to the assets to be used by the pack task.
+                IEnumerable<LibraryDependency> centralEnforcedTransitiveDependencies = targetGraph
+                    .Flattened
+                    .Where(graphItem => graphItem.IsCentralTransitive && centralPackageVersionsForFramework?.ContainsKey(graphItem.Key.Name) == true)
+                    .Select((graphItem) =>
+                    {
+                        CentralPackageVersion matchingCentralVersion = centralPackageVersionsForFramework[graphItem.Key.Name];
+                        Dictionary<string, LibraryIncludeFlags> dependenciesIncludeFlags = _includeFlagGraphs[targetGraph];
+
+                        var libraryDependency = new LibraryDependency()
+                        {
+                            LibraryRange = new LibraryRange(matchingCentralVersion.Name, matchingCentralVersion.VersionRange, LibraryDependencyTarget.Package),
+                            ReferenceType = LibraryDependencyReferenceType.Transitive,
+                            VersionCentrallyManaged = true,
+                            IncludeType = dependenciesIncludeFlags[matchingCentralVersion.Name]
+                        };
+
+                        return libraryDependency;
+                    });
+
+                if (centralEnforcedTransitiveDependencies.Any())
+                {
+                    var centralEnforcedTransitiveDependencyGroup = new CentralTransitiveDependencyGroup
+                            (
+                                targetGraph.Framework,
+                                centralEnforcedTransitiveDependencies
+                            );
+
+                    lockFile.CentralTransitiveDependencyGroups.Add(centralEnforcedTransitiveDependencyGroup);
+                }
             }
         }
 

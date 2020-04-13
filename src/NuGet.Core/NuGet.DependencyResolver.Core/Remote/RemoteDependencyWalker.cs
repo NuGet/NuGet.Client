@@ -403,7 +403,7 @@ namespace NuGet.DependencyResolver
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
             node.OuterNode = rootNode;
-            node.Item.CentralDependency = centralPackageVersionDependency;
+            node.Item.IsCentralTransitive = true;
             rootNode.InnerNodes.Add(node);
         }
 

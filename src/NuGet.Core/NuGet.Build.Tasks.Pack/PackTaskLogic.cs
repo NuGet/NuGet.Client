@@ -845,16 +845,22 @@ namespace NuGet.Build.Tasks.Pack
             // From the package spec, we know the direct package dependencies of this project.
             foreach (var framework in assetsFile.PackageSpec.TargetFrameworks)
             {
-                if(frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
+                if (frameworkWithSuppressedDependencies.Contains(framework.FrameworkName))
                 {
                     continue;
                 }
+
+                IEnumerable<LibraryDependency> centralTransitiveDependencies = assetsFile
+                    .CentralTransitiveDependencyGroups
+                    .Where(centralTDG => centralTDG.FrameworkName.Equals(framework.FrameworkName.ToString(), StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(centralTDG => centralTDG.TransitiveDependencies);
 
                 // First, add each of the generic package dependencies to the framework-specific list.
                 var packageDependencies = assetsFile
                     .PackageSpec
                     .Dependencies
-                    .Concat(framework.Dependencies);
+                    .Concat(framework.Dependencies)
+                    .Concat(centralTransitiveDependencies);
 
                 HashSet<LibraryDependency> dependencies;
                 if (!dependenciesByFramework.TryGetValue(framework.FrameworkName, out dependencies))
@@ -876,7 +882,7 @@ namespace NuGet.Build.Tasks.Pack
                                 string.Equals(library.Name, packageDependency.Name, StringComparison.OrdinalIgnoreCase));
                         if (package != null)
                         {
-                            if(packageDependency.LibraryRange.VersionRange.HasUpperBound)
+                            if (packageDependency.LibraryRange.VersionRange.HasUpperBound)
                             {
                                 packageDependency.LibraryRange.VersionRange = new VersionRange(
                                     minVersion: package.Version,
@@ -890,7 +896,6 @@ namespace NuGet.Build.Tasks.Pack
                                     minVersion: package.Version,
                                     includeMinVersion: packageDependency.LibraryRange.VersionRange.IsMinInclusive);
                             }
-                            
                         }
                     }
 

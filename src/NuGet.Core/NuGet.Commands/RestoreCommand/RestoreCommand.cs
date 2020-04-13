@@ -827,17 +827,15 @@ namespace NuGet.Commands
                                             ?? downgradedBy.GetVersionRange().MinVersion
                                             ?? new NuGetVersion(0, 0, 0);
 
-                            var isCPVMdowngradedError = downgradedBy.Item.CentralDependency != null;
-
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    isCPVMdowngradedError ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
+                                    downgradedBy.Item.IsCentralTransitive ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            if (isCPVMdowngradedError)
+                            if (downgradedBy.Item.IsCentralTransitive)
                             {
                                 messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1109, message, downgraded.Key.Name, graph.TargetGraphName));
                             }
