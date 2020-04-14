@@ -98,6 +98,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new LibraryDependency[] { };
             }
 
+            bool isCpvmEnabled = await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
+
             var references = installedPackages
                 .Cast<string>()
                 .Where(r => !string.IsNullOrEmpty(r))
@@ -121,7 +123,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 })
                 .Where(p => p != null)
-                .Select(ToPackageLibraryDependency);
+                .Select(p => ToPackageLibraryDependency(p, isCpvmEnabled));
 
             return references.ToList();
         }
@@ -191,7 +193,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return string.Empty;
         }
 
-        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference)
+        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled)
         {
             var dependency = new LibraryDependency
             {
@@ -199,7 +201,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
-                    versionRange: VersionRange.Parse(reference.Version),
+                    versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 
@@ -217,6 +219,27 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             return dependency;
+        }
+
+
+        private static VersionRange ToVersionRange(string version, bool isCpvmEnabled)
+        {
+            if (isCpvmEnabled)
+            {
+                // When the projects are opted in CPVM the PackageReferences itmes should not have a version defined. 
+                if (string.IsNullOrEmpty(version))
+                {
+                    return null;
+                }
+
+                return VersionRange.Parse(version);
+            }
+            else
+            {
+                // preserve the current behavior
+                // Issue https://github.com/NuGet/Home/issues/9423
+                return VersionRange.Parse(version);
+            }
         }
 
         private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement)

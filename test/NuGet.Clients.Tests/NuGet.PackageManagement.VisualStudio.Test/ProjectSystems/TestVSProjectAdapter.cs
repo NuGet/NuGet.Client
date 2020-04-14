@@ -23,6 +23,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly string _restorePackagesWithLockFile;
         private readonly string _nuGetLockFilePath;
         private readonly bool _restoreLockedMode;
+        private readonly bool _isCPVMEnabled;
+        private readonly IEnumerable<(string PackageId, string Version)> _projectPackageVersions;
 
         public TestVSProjectAdapter(
             string fullProjectPath,
@@ -30,7 +32,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string targetFrameworkString,
             string restorePackagesWithLockFile = null,
             string nuGetLockFilePath = null,
-            bool restoreLockedMode = false)
+            bool restoreLockedMode = false,
+            IEnumerable<(string PackageId, string Version)> projectPackageVersions = null)
         {
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
@@ -38,6 +41,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _restorePackagesWithLockFile = restorePackagesWithLockFile;
             _nuGetLockFilePath = nuGetLockFilePath;
             _restoreLockedMode = restoreLockedMode;
+            _isCPVMEnabled = projectPackageVersions?.Any() == true;
+            _projectPackageVersions = projectPackageVersions;
         }
 
         public string AssetTargetFallback
@@ -211,14 +216,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Task.FromResult(NuGetFramework.Parse(_targetFrameworkString));
         }
 
-        public Task<bool> IsCentralPackageFileManagementEnabledAsync()
-        {
-            throw new NotImplementedException();
-        }
-
         public Task<bool> IsRestoreLockedAsync()
         {
             return Task.FromResult(_restoreLockedMode);
+        }
+
+        public Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync()
+        {
+            return Task.FromResult(_projectPackageVersions);
+        }
+
+        public Task<bool> IsCentralPackageFileManagementEnabledAsync()
+        {
+            return Task.FromResult(_isCPVMEnabled);
         }
     }
 }

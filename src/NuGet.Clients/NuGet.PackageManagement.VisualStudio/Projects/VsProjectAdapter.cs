@@ -9,7 +9,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
@@ -395,6 +394,23 @@ namespace NuGet.PackageManagement.VisualStudio
             var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally);
 
             return MSBuildStringUtility.IsTrue(value);
+        }
+
+        public async Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync()
+        {
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var itemStorage = VsHierarchy as IVsBuildItemStorage;
+            if(itemStorage != null)
+            {
+                var metadataNames = new string[] { "Version" };
+                var callback = VisualStudioBuildItemStorageCallback.Instance;
+                itemStorage.FindItems("PackageVersion", metadataNames.Length, metadataNames, callback);
+
+                return callback.Items.Select(item => (PackageId: item.Itemid, Version: item.ItemMetadata.FirstOrDefault()));
+            }
+
+            return Enumerable.Empty<(string PackageId, string Version)>();
         }
 
         private async Task<string> GetTargetFrameworkStringAsync()

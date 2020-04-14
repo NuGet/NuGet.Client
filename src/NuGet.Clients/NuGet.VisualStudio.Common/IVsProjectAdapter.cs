@@ -152,5 +152,10 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <returns></returns>
         Task<bool> IsCentralPackageFileManagementEnabledAsync();
+
+        /// <summary>
+        /// The information for all the PackageVersion items.
+        /// </summary>
+        Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync();
     }
 }

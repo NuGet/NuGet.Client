@@ -805,6 +805,49 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task GetPackageSpecAsync_CentralPackageVersionsValidation()
+        {
+            // Arrange
+            var packageA = (PackageId: "packageA", Version: "1.2.3");
+            var packageB = (PackageId: "packageB", Version: "3.4.5");
+            var packageAA = (PackageId: "packageA", Version: "5.0.0");
+
+            var projectNames = new ProjectNames(
+                        fullName: "projectName",
+                        uniqueName: "projectName",
+                        shortName: "projectName",
+                        customUniqueName: "projectName");
+
+            var vsProjectAdapter = new TestVSProjectAdapter(
+                        "projectPath",
+                        projectNames,
+                        "framework",
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode: false,
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageA, packageB, packageAA });
+
+            var legacyPRProject = new LegacyPackageReferenceProject(
+                       vsProjectAdapter,
+                       Guid.NewGuid().ToString(),
+                       new TestProjectSystemServices(),
+                       _threadingService);
+
+            var settings = NullSettings.Instance;
+            var context = new DependencyGraphCacheContext(NullLogger.Instance, settings);
+
+            var packageSpecs = await legacyPRProject.GetPackageSpecsAsync(context);
+
+            Assert.Equal(1, packageSpecs.Count);
+            Assert.True(packageSpecs.First().RestoreMetadata.CentralPackageVersionsEnabled);
+            var centralPackageVersions = packageSpecs.First().TargetFrameworks.First().CentralPackageVersions;
+
+            Assert.Equal(2, centralPackageVersions.Count);
+            Assert.Equal(VersionRange.Parse(packageA.Version), centralPackageVersions[packageA.PackageId].VersionRange);
+            Assert.Equal(VersionRange.Parse(packageB.Version), centralPackageVersions[packageB.PackageId].VersionRange);
+        }
+
         private static Mock<IVsProjectAdapter> CreateProjectAdapter()
         {
             var projectAdapter = new Mock<IVsProjectAdapter>();

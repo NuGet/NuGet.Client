@@ -1958,6 +1958,161 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             }
         }
 
+        [Fact]
+        public async Task DependencyGraphRestoreUtility_LegacyPackageRef_CPVM_Restore()
+        {
+            var packageA = (PackageId: "packageA", Version: "1.2.3");
+            var packageB = (PackageId: "packageB", Version: "3.4.5");
+
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var testLogger = new TestLogger();
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var testNuGetProjectContext = new TestNuGetProjectContext();
+                    var deleteOnRestartManager = new TestDeleteOnRestartManager();
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        deleteOnRestartManager);
+
+                    // set up projects
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPath = Path.Combine(testSolutionManager.TestDirectory, "Project2", "project2.csproj");
+                    var projectNames = new ProjectNames(
+                        fullName: fullProjectPath,
+                        uniqueName: Path.GetFileName(fullProjectPath),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
+                        customUniqueName: Path.GetFileName(fullProjectPath));
+                    var vsProjectAdapter = new TestVSProjectAdapter(
+                        fullProjectPath,
+                        projectNames,
+                        projectTargetFrameworkStr,
+                        restorePackagesWithLockFile: null,
+                        nuGetLockFilePath: null,
+                        restoreLockedMode:false,
+                        projectPackageVersions: new List<(string Id, string Version)>() {packageA, packageB });
+
+                    var projectServices = new TestProjectSystemServices();
+                    projectServices.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                packageA.PackageId,
+                                versionRange: null,
+                                LibraryDependencyTarget.Package),
+                        });
+
+                    var legacyPRProject = new LegacyPackageReferenceProject(
+                        vsProjectAdapter,
+                        Guid.NewGuid().ToString(),
+                        projectServices,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProject);
+
+                    var packageContextB = new SimpleTestPackageContext(packageB.PackageId, packageB.Version);
+                    packageContextB.Files.Clear();
+                    packageContextB.AddFile("build/packageB.targets");
+                    packageContextB.AddFile("build/packageB.props");
+                    packageContextB.AddFile("buildCrossTargeting/packageB.targets");
+                    packageContextB.AddFile("buildCrossTargeting/packageB.props");
+                    packageContextB.AddFile("buildTransitive/packageB.targets");
+                    packageContextB.AddFile("lib/net45/b.dll");
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextB);
+
+                    var packageContextA = new SimpleTestPackageContext(packageA.PackageId, packageA.Version);
+                    packageContextA.Files.Clear();
+                    packageContextA.AddFile("build/packageA.targets");
+                    packageContextA.AddFile("build/packageA.props");
+                    packageContextA.AddFile("buildCrossTargeting/packageA.targets");
+                    packageContextA.AddFile("buildCrossTargeting/packageA.props");
+                    packageContextA.AddFile("buildTransitive/packageA.targets");
+                    packageContextA.AddFile("lib/net45/a.dll");
+                    packageContextA.Dependencies.Add(packageContextB);
+
+                    await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextA);
+
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    var assetsFilePath = Path.Combine(vsProjectAdapter.MSBuildProjectExtensionsPath, "project.assets.json");
+                    Assert.True(File.Exists(assetsFilePath));
+
+                    var assetsFile = new LockFileFormat().Read(assetsFilePath);
+                    var targetFramework = assetsFile.PackageSpec.TargetFrameworks.First();
+
+                    Assert.NotNull(assetsFile);
+
+                    Assert.Equal(2, targetFramework.CentralPackageVersions.Count);
+                    Assert.Contains(targetFramework.CentralPackageVersions.Keys, k => k == packageA.PackageId);
+                    Assert.Contains(targetFramework.CentralPackageVersions.Keys, k => k == packageB.PackageId);
+
+                    foreach (var centralPackage in targetFramework.CentralPackageVersions)
+                    {
+                        switch (centralPackage.Key)
+                        {
+                            case "packageA":
+                                Assert.Equal(VersionRange.Parse(packageA.Version), centralPackage.Value.VersionRange);
+                                break;
+                            case "packageB":
+                                Assert.Equal(VersionRange.Parse(packageB.Version), centralPackage.Value.VersionRange);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+
+                    Assert.Equal(1, targetFramework.Dependencies.Count);
+                    Assert.Equal(packageA.PackageId, targetFramework.Dependencies.First().Name);
+                    Assert.Equal(VersionRange.Parse(packageA.Version), targetFramework.Dependencies.First().LibraryRange.VersionRange);
+                    Assert.True(targetFramework.Dependencies.First().VersionCentrallyManaged);
+
+                    Assert.Equal(2, assetsFile.Libraries.Count);
+                   
+                    Assert.Contains(assetsFile.Libraries, l => l.Name == packageA.PackageId);
+                    Assert.Contains(assetsFile.Libraries, l => l.Name == packageB.PackageId);
+
+                    Assert.Contains(assetsFile.Libraries, l => l.Version.ToNormalizedString() == packageA.Version);
+                    Assert.Contains(assetsFile.Libraries, l => l.Version.ToNormalizedString() == packageB.Version);
+                }
+            }
+        }
+
         private ISettings PopulateSettingsWithSources(SourceRepositoryProvider sourceRepositoryProvider, TestDirectory settingsDirectory)
         {
             var settings = new Settings(settingsDirectory);

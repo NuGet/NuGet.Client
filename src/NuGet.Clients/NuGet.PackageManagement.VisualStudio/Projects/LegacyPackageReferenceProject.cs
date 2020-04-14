@@ -28,33 +28,6 @@ using Task = System.Threading.Tasks.Task;
 namespace NuGet.PackageManagement.VisualStudio
 {
 
-    public class NuGetIVsBuildItemStorageCallback : IVsBuildItemStorageCallback
-    {
-        public List<(string Itemid, List<string> ItemMetadata)> Items { get; } = new List<(string Itemid, List<string> ItemMetadata)>();
-
-        private NuGetIVsBuildItemStorageCallback()
-        {
-
-        }
-
-        public static NuGetIVsBuildItemStorageCallback Instance()
-        {
-            return new NuGetIVsBuildItemStorageCallback();
-        }
-
-        public void ItemFound(string itemSpec, Array metadata)
-        {
-            var currentItemMetadata = new List<string>();
-
-            foreach(var a in metadata)
-            {
-                currentItemMetadata.Add((string)a);
-            }
-
-            Items.Add((itemSpec, currentItemMetadata));
-        }
-    }
-
     /// <summary>
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a legacy CSProj with package references.
@@ -153,66 +126,37 @@ namespace NuGet.PackageManagement.VisualStudio
             return new[] { packageSpec };
         }
 
+        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
+        {
+            return await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
+        }
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
-            
-            // From ProjctSystem team - this should be executed on the UI thread 
-            ThreadHelper.ThrowIfNotOnUIThread();
-            Dictionary<string, CentralPackageVersion> result = null;
-            
-            bool cpvmEnabled = await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
-            if (cpvmEnabled)
+            var allData = await _vsProjectAdapter.GetPackageVersionInformationAsync();
+
+            return allData
+                .Select(item => ToCentralPackageVersion(item.PackageId, item.Version))
+                .Distinct(CentralPackageVersionNameComparer.Default)
+                .ToDictionary(cpv => cpv.Name);
+        }
+
+
+        private CentralPackageVersion ToCentralPackageVersion(string packageId, string version)
+        {
+            if (string.IsNullOrEmpty(packageId))
             {
-                var itemStorage = _vsProjectAdapter.VsHierarchy as Microsoft.VisualStudio.Shell.Interop.IVsBuildItemStorage;
-                string[] metadataNames = new string[] { "Version" };
-                List<string> ids = new List<string>();
-                List<string> versions = new List<string>();
-
-                IVsBuildItemStorageCallback callback = NuGetIVsBuildItemStorageCallback.Instance();
-
-                //    delegate (string itemSpec, string[] metadataValues)
-                //{
-
-                //};
-                try
-                {
-                    //int vv = itemStorage.GetProperty((uint)Microsoft.VisualStudio.VSConstants.VSITEMID.Selection, (int)Microsoft.VisualStudio.Shell.Interop.__VSHPROPID.VSHPROPID_Name, out object pvar);
-
-
-                    if(itemStorage != null)
-                    {
-
-                        itemStorage.FindItems("PackageVersion", 1, metadataNames, callback);
-                    }
-                }
-                catch(Exception ex)
-                {
-                    string m = ex.Message;
-                }
-
-                //Microsoft.VisualStudio.Shell.Interop.IVSBui
-                //var itemStorage = _vsProjectAdapter.VsHierarchy as IVsBuildItemStorage;
-                //        interface IVsBuildItemStorage
-                //{
-                //    void FindItems(string itemType, string[] metadataNames, IVsBuildItemStorageCallback callback);
-                //}
-
-                //interface IVsBuildItemStorageCallback
-                //{
-                //    void ItemFound(string itemSpec, string[] metadataValues);
-                //}
-
-
+                throw new ArgumentNullException(nameof(packageId));
             }
 
-            return result;
+            if(string.IsNullOrEmpty(version))
+            {
+                return new CentralPackageVersion(packageId, VersionRange.All);
+            }
+
+            return new CentralPackageVersion(packageId, VersionRange.Parse(version));
         }
 
-        public static void Callback1(string itemSpec, string[] metadataValues)
-        {
-
-        }
         #endregion
 
         #region NuGetProject
@@ -280,7 +224,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 fullPath = FileSystemUtility.GetFullPath(_vsProjectAdapter.ProjectDirectory, filePath);
             }
 
-            var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists:true);
+            var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists: true);
 
             container.AddFromFileCopy(fullPath);
         }
@@ -404,9 +348,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
         {
+            // The VersionRange can be null for central package versions
             var identity = new PackageIdentity(
                 library.LibraryRange.Name,
-                library.LibraryRange.VersionRange.MinVersion);
+                library.LibraryRange.VersionRange?.MinVersion);
 
             return new PackageReference(identity, targetFramework);
         }
@@ -443,10 +388,11 @@ namespace NuGet.PackageManagement.VisualStudio
                 Dependencies = packageReferences
             };
 
-            var centralPackageVersions = await GetCentralPackageVersionsAsync();
-            if (centralPackageVersions != null)
+            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+
+            if (isCpvmEnabled)
             {
-                projectTfi.CentralPackageVersions.AddRange(centralPackageVersions);
+                projectTfi.CentralPackageVersions.AddRange(await GetCentralPackageVersionsAsync());
             }
 
             // Apply fallback settings
@@ -496,13 +442,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
-                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors, 
+                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors,
                         noWarn: _vsProjectAdapter.NoWarn,
                         warningsAsErrors: _vsProjectAdapter.WarningsAsErrors),
                     RestoreLockProperties = new RestoreLockProperties(
                         await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
                         await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
-                        await _vsProjectAdapter.IsRestoreLockedAsync())
+                        await _vsProjectAdapter.IsRestoreLockedAsync()),
+                    CentralPackageVersionsEnabled = isCpvmEnabled
                 }
             };
         }
