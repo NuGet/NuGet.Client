@@ -1613,7 +1613,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package results loading cancelled.
+        ///   Looks up a localized string similar to Canceled loading packages.
         /// </summary>
         public static string Status_Canceled {
             get {
@@ -1622,7 +1622,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Error occurred when loading package results.
+        ///   Looks up a localized string similar to An error occurred while loading packages.
         /// </summary>
         public static string Status_ErrorOccurred {
             get {
@@ -1631,7 +1631,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last package results page loaded.
+        ///   Looks up a localized string similar to Last package list loaded.
         /// </summary>
         public static string Status_NoMoreItems {
             get {
@@ -1640,7 +1640,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Package results page loaded.
+        ///   Looks up a localized string similar to Packages list loaded.
         /// </summary>
         public static string Status_Ready {
             get {

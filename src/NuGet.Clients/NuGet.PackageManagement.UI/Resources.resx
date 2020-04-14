@@ -901,15 +901,15 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
     <value>Packages</value>
   </data>
   <data name="Status_Canceled" xml:space="preserve">
-    <value>Package results loading cancelled</value>
+    <value>Canceled loading packages</value>
   </data>
   <data name="Status_ErrorOccurred" xml:space="preserve">
-    <value>Error occurred when loading package results</value>
+    <value>An error occurred while loading packages</value>
   </data>
   <data name="Status_NoMoreItems" xml:space="preserve">
-    <value>Last package results page loaded</value>
+    <value>Last package list loaded</value>
   </data>
   <data name="Status_Ready" xml:space="preserve">
-    <value>Package results page loaded</value>
+    <value>Packages list loaded</value>
   </data>
 </root>

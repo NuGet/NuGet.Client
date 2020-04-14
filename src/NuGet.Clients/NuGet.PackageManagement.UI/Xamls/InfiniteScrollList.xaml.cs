@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.Internal.VisualStudio.PlatformUI.Automation;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -87,10 +88,13 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
+            ThreadHelper.ThrowIfNotOnUIThread();
             if (e.PropertyName == nameof(LoadingStatusIndicator.Status))
             {
-                ThreadHelper.ThrowIfNotOnUIThread();
-                LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                if (LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                {
+                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                }
             }
         }
 
