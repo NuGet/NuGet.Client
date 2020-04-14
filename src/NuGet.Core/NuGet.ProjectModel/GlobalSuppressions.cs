@@ -120,3 +120,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA2237:Add [Serializable] to FileFormatException as this type implements ISerializable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.ProjectModel.FileFormatException")]
 [assembly: SuppressMessage("Build", "CA1052:Type 'JsonPackageSpecReader' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.ProjectModel.JsonPackageSpecReader")]
 [assembly: SuppressMessage("Build", "CA1052:Type 'PackagesLockFileFormat' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.ProjectModel.PackagesLockFileFormat")]
+[assembly: SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>", Scope = "member", Target = "~P:NuGet.ProjectModel.LockFile.CentralTransitiveDependencyGroups")]
