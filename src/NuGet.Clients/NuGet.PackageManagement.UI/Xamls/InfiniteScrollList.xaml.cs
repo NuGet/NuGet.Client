@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -20,6 +21,7 @@ using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -85,13 +87,10 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(LoadingStatusIndicator.Status) )
+            if (e.PropertyName == nameof(LoadingStatusIndicator.Status))
             {
-                _joinableTaskFactory.Value.Run(async delegate
-                {
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
-                });
+                ThreadHelper.ThrowIfNotOnUIThread();
+                LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
             }
         }
 

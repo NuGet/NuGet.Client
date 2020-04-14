@@ -65,11 +65,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void UpdateLoadingState(IItemLoaderState loaderState)
-        {
-            Status = loaderState.LoadingStatus;
-        }
-
         public void Reset(string loadingMessage)
         {
             Status = LoadingStatus.Unknown;
