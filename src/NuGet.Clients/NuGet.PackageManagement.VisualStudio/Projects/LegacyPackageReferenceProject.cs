@@ -133,9 +133,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
-            var allData = await _vsProjectAdapter.GetPackageVersionInformationAsync();
+            IEnumerable<(string PackageId, string Version)> packageVersions = await _vsProjectAdapter.GetPackageVersionInformationAsync();
 
-            return allData
+            return packageVersions
                 .Select(item => ToCentralPackageVersion(item.PackageId, item.Version))
                 .Distinct(CentralPackageVersionNameComparer.Default)
                 .ToDictionary(cpv => cpv.Name);
@@ -149,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(packageId));
             }
 
-            if(string.IsNullOrEmpty(version))
+            if (string.IsNullOrEmpty(version))
             {
                 return new CentralPackageVersion(packageId, VersionRange.All);
             }
@@ -348,7 +348,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
         {
-            // The VersionRange can be null for central package versions
+            // The VersionRange can be null when the PackageReference items are for a project opted in the central package version management.
             var identity = new PackageIdentity(
                 library.LibraryRange.Name,
                 library.LibraryRange.VersionRange?.MinVersion);
@@ -385,7 +385,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var projectTfi = new TargetFrameworkInformation
             {
                 FrameworkName = targetFramework,
-                Dependencies = packageReferences
+                Dependencies = packageReferences,
             };
 
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
