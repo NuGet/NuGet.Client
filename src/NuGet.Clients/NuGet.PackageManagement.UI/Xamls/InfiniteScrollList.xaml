@@ -317,7 +317,7 @@
 
       <!--
         Special TextBlock to report loading status to assistive technologies (narrator).
-        Code behind changes in Text property trigger a narrator event
+        Code behind changes to the Text property will trigger a narrator event.
       -->
       <vs:LiveTextBlock
         x:Name="LtbLoading"
