@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Shell;
 [assembly: AssemblyDescription("Visual Studio Extensibility Package (vsix)")]
 [assembly: ComVisible(false)]
 
+[assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.DataAI.NuGetRecommender.Contracts.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Lucene.Net.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Microsoft.Web.XmlTransform.dll")]
 [assembly: ProvideCodeBase(CodeBase = @"$PackageFolder$\Newtonsoft.Json.dll")]
