@@ -198,7 +198,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 AutoReferenced = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.IsImplicitlyDefined)),
                 GeneratePathProperty = MSBuildStringUtility.IsTrue(GetReferenceMetadataValue(reference, ProjectItemProperties.GeneratePathProperty)),
-                Aliases = GetReferenceMetadataValue(reference, ProjectItemProperties.Aliases),
+                Aliases = GetReferenceMetadataValue(reference, ProjectItemProperties.Aliases, defaultValue: null),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
                     versionRange: VersionRange.Parse(reference.Version),
@@ -221,14 +221,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return dependency;
         }
 
-        private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement)
+        private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement, string defaultValue = "")
         {
             Assumes.Present(reference);
             Assumes.NotNullOrEmpty(metadataElement);
 
             if (reference.MetadataElements == null || reference.MetadataValues == null)
             {
-                return string.Empty; // no metadata for package
+                return defaultValue; // no metadata for package
             }
 
             var index = Array.IndexOf(reference.MetadataElements, metadataElement);
@@ -237,7 +237,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return reference.MetadataValues.GetValue(index) as string;
             }
 
-            return string.Empty;
+            return defaultValue;
         }
 
         public async Task AddOrUpdatePackageReferenceAsync(LibraryDependency packageReference, CancellationToken _)

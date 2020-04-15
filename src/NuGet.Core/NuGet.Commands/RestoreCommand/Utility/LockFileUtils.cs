@@ -53,7 +53,7 @@ namespace NuGet.Commands
         /// <param name="targetFrameworkOverride">The original framework if the asset selection is happening for a fallback framework.</param>
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
-        /// <returns></returns>
+        /// <returns>The LockFileTargetLibrary</returns>
         public static LockFileTargetLibrary CreateLockFileTargetLibrary(
                 LibraryDependency libraryDependency,
                 LockFileLibrary library,
@@ -154,7 +154,7 @@ namespace NuGet.Commands
 
         private static void ApplyAliases(LibraryDependency libraryDependency, LockFileItem item)
         {
-            if (libraryDependency?.Aliases != null)
+            if (!string.IsNullOrEmpty(libraryDependency?.Aliases))
             {
                 item.Properties.Add(LockFileItem.AliasesProperty, libraryDependency.Aliases);
             }
