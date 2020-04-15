@@ -121,8 +121,8 @@ namespace NuGet.Commands.Test
             }
         }
 
-        //skip this test as the signing APIs are not yet implemented. We should enable this test when signing APIs are implemented. Tracking issue:https://github.com/NuGet/Home/issues/8807
-#if IS_DESKTOP
+        //skip this test when signing is not supported, as the signing APIs are not implemented.
+#if IS_SIGNING_SUPPORTED
         [Fact]
         public async Task ExecuteCommandAsync_WithMultiplePackagesAndInvalidCertificate_RaisesErrorsOnceAsync()
         {
