@@ -73,6 +73,7 @@
         <PackageReference Update="VSLangProj157" Version="15.7.0" />
         <PackageReference Update="VSLangProj2" Version="7.0.5000" />
         <PackageReference Update="VSSDK.TemplateWizardInterface" Version="12.0.4" />
+	      <PackageReference Update="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" />
     </ItemGroup>
 
     <!-- Test and utility packages -->
