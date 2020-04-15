@@ -42,6 +42,19 @@ namespace NuGet.Commands
                 cache: new LockFileBuilderCache());
         }
 
+        [Obsolete("Do not use this method. No replacement is being provided. Use the lock file builder directly.")]
+        public static LockFileTargetLibrary CreateLockFileTargetLibrary(
+                LockFileLibrary library,
+                LocalPackageInfo package,
+                RestoreTargetGraph targetGraph,
+                LibraryIncludeFlags dependencyType,
+                NuGetFramework targetFrameworkOverride,
+                IEnumerable<LibraryDependency> dependencies,
+                LockFileBuilderCache cache)
+        {
+            return CreateLockFileTargetLibrary(libraryDependency: null, library, package, targetGraph, dependencyType, targetFrameworkOverride, dependencies, cache);
+        }
+
         /// <summary>
         /// Create a lock file target library for the given <paramref name="library"/>
         /// </summary>
@@ -54,7 +67,7 @@ namespace NuGet.Commands
         /// <param name="dependencies">The dependencies of this package.</param>
         /// <param name="cache">The lock file build cache.</param>
         /// <returns>The LockFileTargetLibrary</returns>
-        public static LockFileTargetLibrary CreateLockFileTargetLibrary(
+        internal static LockFileTargetLibrary CreateLockFileTargetLibrary(
                 LibraryDependency libraryDependency,
                 LockFileLibrary library,
                 LocalPackageInfo package,

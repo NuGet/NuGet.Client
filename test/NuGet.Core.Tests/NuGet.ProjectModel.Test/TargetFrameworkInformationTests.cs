@@ -75,7 +75,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: true,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "Alias");
 
             var downloadDependency = new DownloadDependency("foo", VersionRange.All);
             var frameworkDependency = new FrameworkDependency("framework", FrameworkDependencyFlags.All);
