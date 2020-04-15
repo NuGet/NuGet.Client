@@ -102,7 +102,6 @@ namespace NuGet.PackageManagement.UI
                         return Resources.Status_Ready;
 
                     default:
-                    case LoadingStatus.Unknown:
                         return string.Empty;
                 }
             }
