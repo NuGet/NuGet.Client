@@ -1631,7 +1631,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Last package list loaded.
+        ///   Looks up a localized string similar to End of package list loaded.
         /// </summary>
         public static string Status_NoMoreItems {
             get {
@@ -1640,7 +1640,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Packages list loaded.
+        ///   Looks up a localized string similar to Package list loaded.
         /// </summary>
         public static string Status_Ready {
             get {
