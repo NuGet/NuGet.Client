@@ -55,7 +55,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.False(list.CheckBoxesEnabled);
         }
 
-        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/9445")]
         public void DataContext_Initialized_DefaultIsItems()
         {
             var list = new InfiniteScrollList();
