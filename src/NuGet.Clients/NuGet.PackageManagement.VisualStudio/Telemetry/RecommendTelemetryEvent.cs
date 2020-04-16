@@ -10,7 +10,7 @@ namespace NuGet.PackageManagement.Telemetry
     {
         public RecommendTelemetryEvent(int numRecommended, double duration) : base("RecommendPackages")
         {
-            base["NumRecommended"] = numRecommended;
+            base["RecommendedCount"] = numRecommended;
             base["Duration"] = duration;
         }
     }

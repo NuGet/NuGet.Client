@@ -587,7 +587,7 @@ namespace NuGet.PackageManagement.UI
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
-                actionTelemetryEvent["NumRecommended"] = numRecommended;
+                actionTelemetryEvent["RecommendedCount"] = numRecommended;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
             }
 

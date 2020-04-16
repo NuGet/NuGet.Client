@@ -17,7 +17,7 @@ namespace NuGet.PackageManagement.Telemetry
             NuGetVersion packageVersion) : base("SearchSelection")
         {
             base["ParentId"] = parentId.ToString();
-            base["NumRecommended"] = numRecommended;
+            base["RecommendedCount"] = numRecommended;
             base["ItemIndex"] = itemIndex;
             AddPiiData("PackageId", packageId.ToLowerInvariant());
             AddPiiData("PackageVersion", packageVersion.ToNormalizedString().ToLowerInvariant());
