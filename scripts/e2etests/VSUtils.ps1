@@ -216,10 +216,13 @@ function UpdateVSInstaller {
     )
 
     $vsMajorVersion = [System.Version]::Parse($VSVersion).Major
+
+    # The Preview channel is intentional since the --update command will update the installer to the latest preview version.  
+    # You will run into issues if the machine has a channel that is newer than preview, like IntPreview.
     $vsBootstrapperUrl = "https://aka.ms/vs/$vsMajorVersion/pre/vs_enterprise.exe"
 
     $tempdir = [System.IO.Path]::GetTempPath()
-    $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe "
+    $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe"
     if (Test-Path $VSBootstrapperPath) 
     {
         Remove-Item $VSBootstrapperPath
@@ -232,7 +235,7 @@ function UpdateVSInstaller {
     Write-Host "Updating the locally installed VS Installer"
     $args = "--update --quiet --wait"
     Write-Host """$VSBootstrapperPath"" $args"
-    $p = Start-Process -FilePath "$VSBootstrapperPath"  -Wait -PassThru -ArgumentList $args
+    $p = Start-Process -FilePath "$VSBootstrapperPath" -Wait -PassThru -ArgumentList $args
 
     if ($p.ExitCode -ne 0) {
         Write-Error "Error updating VS installer. Exit code $($p.ExitCode)"
