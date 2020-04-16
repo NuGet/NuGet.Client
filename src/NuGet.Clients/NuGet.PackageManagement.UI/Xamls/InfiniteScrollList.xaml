@@ -248,7 +248,6 @@
         </Trigger>
       </Style.Triggers>
     </Style>
-
     <!--
       This scrollviewer template has one change from the default - a -22 margin on the verical srollbar.
       This enables the loadingStatusBar to appear to be in the listbox.
@@ -313,7 +312,6 @@
         DismissClick="_loadingStatusBar_DismissClick"
         Style="{StaticResource FadeAnimationStyle}"
         Visibility="Hidden"/>
-
       <!--
         Special TextBlock to report loading status to assistive technologies (narrator).
         Code behind changes to the Text property will trigger a narrator event.
@@ -323,7 +321,6 @@
         Visibility="Collapsed"
         IsFrequencyLimited="True" />
     </Grid>
-
     <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
       x:Name="_list"
