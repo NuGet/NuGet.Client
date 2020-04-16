@@ -2022,21 +2022,11 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var packageContextB = new SimpleTestPackageContext(packageB.PackageId, packageB.Version);
                     packageContextB.Files.Clear();
-                    packageContextB.AddFile("build/packageB.targets");
-                    packageContextB.AddFile("build/packageB.props");
-                    packageContextB.AddFile("buildCrossTargeting/packageB.targets");
-                    packageContextB.AddFile("buildCrossTargeting/packageB.props");
-                    packageContextB.AddFile("buildTransitive/packageB.targets");
                     packageContextB.AddFile("lib/net45/b.dll");
                     await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource, packageContextB);
 
                     var packageContextA = new SimpleTestPackageContext(packageA.PackageId, packageA.Version);
                     packageContextA.Files.Clear();
-                    packageContextA.AddFile("build/packageA.targets");
-                    packageContextA.AddFile("build/packageA.props");
-                    packageContextA.AddFile("buildCrossTargeting/packageA.targets");
-                    packageContextA.AddFile("buildCrossTargeting/packageA.props");
-                    packageContextA.AddFile("buildTransitive/packageA.targets");
                     packageContextA.AddFile("lib/net45/a.dll");
                     packageContextA.Dependencies.Add(packageContextB);
 
@@ -2053,7 +2043,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         dgSpec,
                         restoreContext,
                         providersCache,
-                        (c) => { },
+                        cacheContextModifier: _ => { },
                         sourceRepositoryProvider.GetRepositories(),
                         parentId: Guid.Empty,
                         forceRestore: false,

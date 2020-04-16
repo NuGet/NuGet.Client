@@ -364,53 +364,56 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<string> GetRestorePackagesWithLockFileAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
-
-            return value;
+            return await GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
         }
 
         public async Task<string> GetNuGetLockFilePathAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            return await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
+            return await GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
         }
 
         public async Task<bool> IsRestoreLockedAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
+            var value = await GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
 
             return MSBuildStringUtility.IsTrue(value);
         }
 
-        public async Task<bool> IsCentralPackageFileManagementEnabledAsync()
+        public async Task<string> GetPropertyValueAsync(string propertyName)
         {
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally);
-
-            return MSBuildStringUtility.IsTrue(value);
+            return await BuildProperties.GetPropertyValueAsync(propertyName);
         }
 
-        public async Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync()
+        public async Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames)
         {
+            if (itemName == null)
+            {
+                throw new ArgumentNullException(nameof(itemName));
+            }
+            if (metadataNames == null)
+            {
+                throw new ArgumentNullException(nameof(itemName));
+            }
+
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var itemStorage = VsHierarchy as IVsBuildItemStorage;
-            if(itemStorage != null)
+            if (itemStorage != null)
             {
-                var metadataNames = new string[] { "Version" };
-                var callback = VisualStudioBuildItemStorageCallback.Instance;
-                itemStorage.FindItems("PackageVersion", metadataNames.Length, metadataNames, callback);
+                var callback = new VisualStudioBuildItemStorageCallback();
+                itemStorage.FindItems(itemName, metadataNames.Count, metadataNames.ToArray(), callback);
 
-                return callback.Items.Select(item => (PackageId: item.Itemid, Version: item.ItemMetadata.FirstOrDefault()));
+                return callback.Items;
             }
 
-            return Enumerable.Empty<(string PackageId, string Version)>();
+            return Enumerable.Empty<(string ItemId, List<string> ItemMetadata)>();
         }
 
         private async Task<string> GetTargetFrameworkStringAsync()

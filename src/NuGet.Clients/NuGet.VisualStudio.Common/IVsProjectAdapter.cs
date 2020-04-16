@@ -148,14 +148,16 @@ namespace NuGet.VisualStudio
         Task<bool> IsRestoreLockedAsync();
 
         /// <summary>
-        /// ManagePackageVersionsCentrally project property.
+        /// Reads a project property and return its value.
         /// </summary>
-        /// <returns></returns>
-        Task<bool> IsCentralPackageFileManagementEnabledAsync();
+        Task<string> GetPropertyValueAsync(string propertyName);
 
         /// <summary>
-        /// The information for all the PackageVersion items.
+        /// Reads a project build items and the requested metadata.
         /// </summary>
-        Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync();
+        /// <param name="itemName">The item name.</param>
+        /// <param name="metadataNames">The metadata names to read.</param>
+        /// <returns>An <see cref="IEnumerable{(string ItemId, List<string> ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
+        Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames);
     }
 }

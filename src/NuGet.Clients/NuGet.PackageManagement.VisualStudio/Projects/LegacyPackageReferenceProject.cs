@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -128,12 +127,14 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
-            return await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(nameof(ProjectBuildProperties.ManagePackageVersionsCentrally)));
         }
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
-            IEnumerable<(string PackageId, string Version)> packageVersions = await _vsProjectAdapter.GetPackageVersionInformationAsync();
+            IEnumerable<(string PackageId, string Version)> packageVersions =
+                        (await _vsProjectAdapter.GetBuildItemInformationAsync("PackageVersion", new List<string>() { "Version" }))
+                        .Select(item => (PackageId: item.ItemId, Version: item.ItemMetadata.FirstOrDefault()));
 
             return packageVersions
                 .Select(item => ToCentralPackageVersion(item.PackageId, item.Version))

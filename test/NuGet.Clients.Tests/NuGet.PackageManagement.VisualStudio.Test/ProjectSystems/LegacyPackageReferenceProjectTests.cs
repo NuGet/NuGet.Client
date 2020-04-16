@@ -806,12 +806,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         }
 
         [Fact]
-        public async Task GetPackageSpecAsync_CentralPackageVersionsValidation()
+        public async Task GetPackageSpecAsync_CentralPackageVersionsRemovedDuplicates()
         {
             // Arrange
-            var packageA = (PackageId: "packageA", Version: "1.2.3");
+            var packageAv1 = (PackageId: "packageA", Version: "1.2.3");
             var packageB = (PackageId: "packageB", Version: "3.4.5");
-            var packageAA = (PackageId: "packageA", Version: "5.0.0");
+            var packageAv5 = (PackageId: "packageA", Version: "5.0.0");
 
             var projectNames = new ProjectNames(
                         fullName: "projectName",
@@ -826,7 +826,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         restorePackagesWithLockFile: null,
                         nuGetLockFilePath: null,
                         restoreLockedMode: false,
-                        projectPackageVersions: new List<(string Id, string Version)>() { packageA, packageB, packageAA });
+                        projectPackageVersions: new List<(string Id, string Version)>() { packageAv1, packageB, packageAv5 });
 
             var legacyPRProject = new LegacyPackageReferenceProject(
                        vsProjectAdapter,
@@ -844,7 +844,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var centralPackageVersions = packageSpecs.First().TargetFrameworks.First().CentralPackageVersions;
 
             Assert.Equal(2, centralPackageVersions.Count);
-            Assert.Equal(VersionRange.Parse(packageA.Version), centralPackageVersions[packageA.PackageId].VersionRange);
+            Assert.Equal(VersionRange.Parse(packageAv1.Version), centralPackageVersions[packageAv1.PackageId].VersionRange);
             Assert.Equal(VersionRange.Parse(packageB.Version), centralPackageVersions[packageB.PackageId].VersionRange);
         }
 

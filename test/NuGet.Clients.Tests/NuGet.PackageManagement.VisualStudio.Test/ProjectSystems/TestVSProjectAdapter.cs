@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Frameworks;
@@ -226,9 +227,24 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Task.FromResult(_projectPackageVersions);
         }
 
-        public Task<bool> IsCentralPackageFileManagementEnabledAsync()
+        public async Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames)
         {
-            return Task.FromResult(_isCPVMEnabled);
+            if (itemName == "PackageVersion")
+            {
+                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new List<string>() { x.Version })));
+            }
+
+            return Enumerable.Empty<(string ItemId, List<string> ItemMetadata)>();
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
+            if (propertyName == "ManagePackageVersionsCentrally")
+            {
+                return (await Task.FromResult(_isCPVMEnabled)).ToString();
+            }
+
+            return string.Empty;
         }
     }
 }

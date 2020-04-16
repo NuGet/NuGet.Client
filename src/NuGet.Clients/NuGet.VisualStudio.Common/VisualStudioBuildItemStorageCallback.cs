@@ -20,12 +20,6 @@ namespace NuGet.VisualStudio
         /// </summary>
         public List<(string Itemid, List<string> ItemMetadata)> Items { get; } = new List<(string Itemid, List<string> ItemMetadata)>();
 
-        private VisualStudioBuildItemStorageCallback()
-        {
-        }
-
-        public static VisualStudioBuildItemStorageCallback Instance => new VisualStudioBuildItemStorageCallback();
-       
         void IVsBuildItemStorageCallback.ItemFound(string itemSpec, Array metadata)
         {
             var currentItemMetadata = new List<string>();

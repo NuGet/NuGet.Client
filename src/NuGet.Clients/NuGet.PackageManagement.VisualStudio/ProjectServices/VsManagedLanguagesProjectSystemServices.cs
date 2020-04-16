@@ -98,7 +98,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new LibraryDependency[] { };
             }
 
-            bool isCpvmEnabled = await _vsProjectAdapter.IsCentralPackageFileManagementEnabledAsync();
+            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
 
             var references = installedPackages
                 .Cast<string>()
@@ -224,22 +224,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static VersionRange ToVersionRange(string version, bool isCpvmEnabled)
         {
-            if (isCpvmEnabled)
+            if (isCpvmEnabled && string.IsNullOrEmpty(version))
             {
-                // When the projects are opted in CPVM the PackageReferences itmes should not have a version defined. 
-                if (string.IsNullOrEmpty(version))
-                {
-                    return null;
-                }
+                // Projects that have their packages managed centrally will not have Version metadata on PackageReference items.
+                return null;
+            }
 
-                return VersionRange.Parse(version);
-            }
-            else
-            {
-                // preserve the current behavior
-                // Issue https://github.com/NuGet/Home/issues/9423
-                return VersionRange.Parse(version);
-            }
+            return VersionRange.Parse(version);
         }
 
         private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement)
@@ -312,6 +303,11 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             AsVSProject4.PackageReferences.Remove(packageName);
+        }
+
+        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
+        {
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(nameof(ProjectBuildProperties.ManagePackageVersionsCentrally)));
         }
 
         private class ProjectReference
