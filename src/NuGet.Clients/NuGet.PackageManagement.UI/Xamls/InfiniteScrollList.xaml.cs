@@ -20,7 +20,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
-using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
