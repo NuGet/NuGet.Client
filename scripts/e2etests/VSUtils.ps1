@@ -220,6 +220,10 @@ function UpdateVSInstaller {
 
     $tempdir = [System.IO.Path]::GetTempPath()
     $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe "
+    if (Test-Path $VSBootstrapperPath) 
+    {
+        Remove-Item $VSBootstrapperPath
+    }
     
     Write-Host "Downloading [$VSBootstrapperUrl]`nSaving at [$VSBootstrapperPath]" 
     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -262,20 +266,16 @@ function ResumeVSInstall {
     if ($p.ExitCode -ne 0) {
         if ($p.ExitCode -eq 1)
         {
-            $current = Get-Date 
-            Write-Output "Time start : $current "
             Write-Host "VS installer appears to need updating. Updating VS installer."
             $resumeResult = UpdateVSInstaller $VSVersion $ProcessExitTimeoutInSeconds
             if ( $resumeResult -eq $true) {
                 Write-Host """$VSIXInstallerPath"" $args"
                 $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
             }
-            $end= Get-Date 
-	        Write-Output "Time end: $end"
-            $diff= New-TimeSpan -Start $current -End $end 
-            Write-Output "Time difference is: $diff"
         }
-        else {
+
+        if ($p.ExitCode -ne 0)
+        {
             Write-Error "Error resuming VS installer. Exit code $($p.ExitCode)"
             return $false
         }
