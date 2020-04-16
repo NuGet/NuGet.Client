@@ -3402,9 +3402,9 @@ namespace NuGet.PackageManagement
                 frameworks.Add(framework.ToString());
             }
 
-            if (project is BuildIntegratedNuGetProject)
+            BuildIntegratedNuGetProject biproject;
+            if ((biproject = project as BuildIntegratedNuGetProject) != null)
             {
-                var biproject = project as BuildIntegratedNuGetProject;
                 var dgcContext = new DependencyGraphCacheContext();
                 var packageSpecs = await biproject.GetPackageSpecsAsync(dgcContext);
                 foreach (var packageSpec in packageSpecs)

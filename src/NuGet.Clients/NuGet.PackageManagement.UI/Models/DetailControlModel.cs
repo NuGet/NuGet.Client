@@ -65,35 +65,21 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
-        private int _selectedIndex = 0;
-        private int _numRecommended = 0;
-        private bool _recommendPackages = false;
-
-        public int SelectedIndex
-        {
-            get { return _selectedIndex; }
-        }
-        public int NumRecommended
-        {
-            get { return _numRecommended; }
-        }
-
-        public bool RecommendPackages
-        {
-            get { return _recommendPackages; }
-        }
+        public int SelectedIndex { private set;  get; }
+        public int NumRecommended { private set;  get; }
+        public bool RecommendPackages { private set;  get; }
 
         /// <summary>
         /// Sets the current selection info
         /// </summary>
         public void SetCurrentSelectionInfo(
-            int SelectedIndex,
-            int NumRecommended,
-            bool RecommendPackages)
+            int selectedIndex,
+            int numRecommended,
+            bool recommendPackages)
         {
-            _selectedIndex = SelectedIndex;
-            _numRecommended = NumRecommended;
-            _recommendPackages = RecommendPackages;
+            SelectedIndex = selectedIndex;
+            NumRecommended = numRecommended;
+            RecommendPackages = recommendPackages;
         }
 
         /// <summary>

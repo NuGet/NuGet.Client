@@ -592,7 +592,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // log the installed package state
-            if (existingPackages != null && existingPackages.Count > 0)
+            if (existingPackages?.Count > 0)
             {
                 var packages = new List<TelemetryEvent>();
 
@@ -605,7 +605,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // other packages can be added, removed, or upgraded as part of bulk upgrade or as part of satisfying package dependencies, so log that also
-            if (addedPackages != null && addedPackages.Count > 0)
+            if (addedPackages?.Count > 0)
             {
                 var packages = new List<TelemetryEvent>();
 
@@ -617,7 +617,7 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent.ComplexData["AddedPackages"] = packages;
             }
 
-            if (removedPackages != null && removedPackages.Count > 0)
+            if (removedPackages?.Count > 0)
             {
                 var packages = new List<TelemetryPiiProperty>();
 
@@ -630,18 +630,18 @@ namespace NuGet.PackageManagement.UI
             }
 
             // two collections for updated packages: pre and post upgrade
-            if (updatedPackagesNew != null && updatedPackagesNew.Count > 0)
+            if (updatedPackagesNew?.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = ToTelemetryPackageList(updatedPackagesNew);
             }
 
-            if (updatedPackagesOld != null && updatedPackagesOld.Count > 0)
+            if (updatedPackagesOld?.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesOld"] = ToTelemetryPackageList(updatedPackagesOld);
             }
 
             // target framworks
-            if (targetFrameworks != null && targetFrameworks.Count > 0)
+            if (targetFrameworks?.Count > 0)
             {
                 actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
             }

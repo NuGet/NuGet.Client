@@ -197,14 +197,9 @@ namespace NuGet.PackageManagement.UI
         }
 
         private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
-            ContinuationToken continuationToken,
             CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (_packageFeed == null)
-            {
-                return SearchResult.Empty<IPackageSearchMetadata>();
-            }
 
             // get the browse/search results
             SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
@@ -250,7 +245,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // get the results of both the recommender package feed and the search/browse feed.
-            return await CombineSearchAsync(continuationToken, cancellationToken);
+            return await CombineSearchAsync(cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
