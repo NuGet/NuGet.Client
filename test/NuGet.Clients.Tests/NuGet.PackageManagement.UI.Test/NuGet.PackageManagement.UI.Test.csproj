@@ -23,6 +23,9 @@
     <Reference Include="PresentationCore" />
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="WindowsBase" />
+    <Reference Include="Microsoft.VisualStudio.Diagnostics.Assert, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+      <HintPath>$([MSBuild]::GetVsInstallRoot())\Common7\IDE\PrivateAssemblies\Microsoft.VisualStudio.Diagnostics.Assert.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Actions\AccessiblePackageIdentityTests.cs" />

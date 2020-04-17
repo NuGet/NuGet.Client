@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.ComponentModel;
@@ -65,11 +65,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        public void UpdateLoadingState(IItemLoaderState loaderState)
-        {
-            Status = loaderState.LoadingStatus;
-        }
-
         public void Reset(string loadingMessage)
         {
             Status = LoadingStatus.Unknown;
@@ -80,6 +75,36 @@ namespace NuGet.PackageManagement.UI
         {
             Status = LoadingStatus.ErrorOccurred;
             ErrorMessage = message;
+        }
+
+        internal string LocalizedStatus
+        {
+            get
+            {
+                switch (Status)
+                {
+                    case LoadingStatus.Loading:
+                        return LoadingMessage;
+
+                    case LoadingStatus.NoItemsFound:
+                        return Resources.Text_NoPackagesFound;
+
+                    case LoadingStatus.Cancelled:
+                        return Resources.Status_Canceled;
+
+                    case LoadingStatus.ErrorOccurred:
+                        return Resources.Status_ErrorOccurred;
+
+                    case LoadingStatus.NoMoreItems:
+                        return Resources.Status_NoMoreItems;
+
+                    case LoadingStatus.Ready:
+                        return Resources.Status_Ready;
+
+                    default:
+                        return string.Empty;
+                }
+            }
         }
     }
 }

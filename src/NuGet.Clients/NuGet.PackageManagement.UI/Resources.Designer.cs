@@ -1613,6 +1613,42 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Canceled loading packages.
+        /// </summary>
+        public static string Status_Canceled {
+            get {
+                return ResourceManager.GetString("Status_Canceled", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to An error occurred while loading packages.
+        /// </summary>
+        public static string Status_ErrorOccurred {
+            get {
+                return ResourceManager.GetString("Status_ErrorOccurred", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to End of package list loaded.
+        /// </summary>
+        public static string Status_NoMoreItems {
+            get {
+                return ResourceManager.GetString("Status_NoMoreItems", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package list loaded.
+        /// </summary>
+        public static string Status_Ready {
+            get {
+                return ResourceManager.GetString("Status_Ready", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to by {0}.
         /// </summary>
         public static string Text_ByAuthor {

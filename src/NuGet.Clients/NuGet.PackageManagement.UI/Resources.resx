@@ -900,4 +900,16 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Accessibility_Packages" xml:space="preserve">
     <value>Packages</value>
   </data>
+  <data name="Status_Canceled" xml:space="preserve">
+    <value>Canceled loading packages</value>
+  </data>
+  <data name="Status_ErrorOccurred" xml:space="preserve">
+    <value>An error occurred while loading packages</value>
+  </data>
+  <data name="Status_NoMoreItems" xml:space="preserve">
+    <value>End of package list loaded</value>
+  </data>
+  <data name="Status_Ready" xml:space="preserve">
+    <value>Package list loaded</value>
+  </data>
 </root>
