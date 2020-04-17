@@ -207,6 +207,45 @@ function Update-Configuration(
     Start-Process -FilePath $vsFilePath -ArgumentList '/updateConfiguration' -Wait
 }
 
+function UpdateVSInstaller {
+    param(
+        [ValidateSet("16.0")]
+        [string]$VSVersion,
+        [Parameter(Mandatory = $true)]
+        [int]$ProcessExitTimeoutInSeconds
+    )
+
+    $vsMajorVersion = [System.Version]::Parse($VSVersion).Major
+
+    # The Preview channel is intentional since the --update command will update the installer to the latest preview version.  
+    # You will run into issues if the machine has a channel that is newer than preview, like IntPreview.
+    $vsBootstrapperUrl = "https://aka.ms/vs/$vsMajorVersion/pre/vs_enterprise.exe"
+
+    $tempdir = [System.IO.Path]::GetTempPath()
+    $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe"
+    if (Test-Path $VSBootstrapperPath) 
+    {
+        Remove-Item $VSBootstrapperPath
+    }
+    
+    Write-Host "Downloading [$VSBootstrapperUrl]`nSaving at [$VSBootstrapperPath]" 
+    [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+    Invoke-WebRequest -Uri $VSBootstrapperUrl -OutFile $VSBootstrapperPath
+
+    Write-Host "Updating the locally installed VS Installer"
+    $args = "--update --quiet --wait"
+    Write-Host """$VSBootstrapperPath"" $args"
+    $p = Start-Process -FilePath "$VSBootstrapperPath" -Wait -PassThru -ArgumentList $args
+
+    if ($p.ExitCode -ne 0) {
+        Write-Error "Error updating VS installer. Exit code $($p.ExitCode)"
+        return $false
+    }
+    else {
+        return $true
+    }
+}
+
 function ResumeVSInstall {
     param(
         [ValidateSet("16.0")]
@@ -228,8 +267,21 @@ function ResumeVSInstall {
     $p = Start-Process "$VSInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
 
     if ($p.ExitCode -ne 0) {
-        Write-Error "Error resuming VS installer. Exit code $($p.ExitCode)"
-        return $false
+        if ($p.ExitCode -eq 1)
+        {
+            Write-Host "VS installer appears to need updating. Updating VS installer."
+            $resumeResult = UpdateVSInstaller $VSVersion $ProcessExitTimeoutInSeconds
+            if ( $resumeResult -eq $true) {
+                Write-Host """$VSIXInstallerPath"" $args"
+                $p = start-process "$VSIXInstallerPath" -Wait -PassThru -NoNewWindow -ArgumentList $args
+            }
+        }
+
+        if ($p.ExitCode -ne 0)
+        {
+            Write-Error "Error resuming VS installer. Exit code $($p.ExitCode)"
+            return $false
+        }
     }
     else {
         return $true
