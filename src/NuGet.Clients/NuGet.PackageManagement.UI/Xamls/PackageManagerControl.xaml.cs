@@ -1101,8 +1101,23 @@ namespace NuGet.PackageManagement.UI
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
 
-                //Installed and Updates tabs don't need to be refreshed.
-                if (_topPanel.Filter != ItemFilter.Installed && _topPanel.Filter != ItemFilter.UpdatesAvailable)
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
+                var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
+                    (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
+
+                //Installed and Updates tabs don't need to be refreshed when switching between the two.
+                if (switchedFromInstalledOrUpdatesTab && _topPanel.Filter == ItemFilter.Installed)
+                {
+                    _packageList.LoadCachedInstalled(_loadCts.Token);
+                }
+                else if (switchedFromInstalledOrUpdatesTab && _topPanel.Filter == ItemFilter.UpdatesAvailable)
+                {
+                    _packageList.LoadCachedUpdates(_loadCts.Token);
+                }
+                else //Browse or Consolidate tabs.
                 {
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                     _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
