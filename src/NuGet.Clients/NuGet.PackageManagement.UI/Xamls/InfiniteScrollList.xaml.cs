@@ -79,6 +79,20 @@ namespace NuGet.PackageManagement.UI
 
             DataContext = Items;
             CheckBoxesEnabled = false;
+
+            _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
+        }
+
+        private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            Mvs.ThreadHelper.ThrowIfNotOnUIThread();
+            if (e.PropertyName == nameof(LoadingStatusIndicator.Status))
+            {
+                if (LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                {
+                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                }
+            }
         }
 
         // Indicates wether check boxes are enabled on packages

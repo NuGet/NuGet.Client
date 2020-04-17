@@ -55,7 +55,6 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.False(list.CheckBoxesEnabled);
         }
 
-        [WpfFact]
         public void DataContext_Initialized_DefaultIsItems()
         {
             var list = new InfiniteScrollList();
@@ -114,7 +113,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loader", exception.ParamName);
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
         [InlineData(null)]
         [InlineData("")]
         public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
@@ -171,7 +170,7 @@ namespace NuGet.PackageManagement.UI.Test
                 });
         }
 
-        [WpfFact]
+        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/9445")]
         public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
             var loader = new Mock<IPackageItemLoader>(MockBehavior.Strict);
@@ -276,7 +275,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [WpfTheory]
+        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
             IPackageSearchMetadata[] searchItems,

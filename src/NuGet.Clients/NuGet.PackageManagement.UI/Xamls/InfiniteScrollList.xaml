@@ -5,6 +5,7 @@
   xmlns:nuget="clr-namespace:NuGet.PackageManagement.UI"
   xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
   xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+  xmlns:vs="clr-namespace:Microsoft.VisualStudio.PlatformUI;assembly=Microsoft.VisualStudio.Shell.15.0"
   mc:Ignorable="d"
   d:DesignHeight="200"
   d:DesignWidth="500">
@@ -311,6 +312,14 @@
         DismissClick="_loadingStatusBar_DismissClick"
         Style="{StaticResource FadeAnimationStyle}"
         Visibility="Hidden"/>
+      <!--
+        Special TextBlock to report loading status to assistive technologies (narrator).
+        Code behind changes to the Text property will trigger a narrator event.
+      -->
+      <vs:LiveTextBlock
+        x:Name="LtbLoading"
+        Visibility="Collapsed"
+        IsFrequencyLimited="True" />
     </Grid>
     <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
