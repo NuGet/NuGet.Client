@@ -84,7 +84,7 @@ namespace NuGet.PackageManagement.UI
         PackageIdentity SelectedPackage { get; }
 
         int SelectedIndex { get; }
-        int NumRecommended { get; }
+        int RecommendedCount { get; }
         bool RecommendPackages { get; }
 
         /// <summary>

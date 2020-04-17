@@ -101,13 +101,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
 
-        // Helper class to pass back multiple package feeds
-        private class PackageFeeds
-        {
-            public IPackageFeed mainFeed = null;
-            public IPackageFeed recommenderFeed = null;
-        }
-
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -731,8 +724,11 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsRecommenderFlightEnabled()
         {
-            // TODO: Need to use correct flight name
+#if DEBUG
+            return true;
+#else
             return ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+#endif
         }
 
         /// <summary>
@@ -755,10 +751,10 @@ namespace NuGet.PackageManagement.UI
             //   this is the Browse tab,
             //   and the search text is an empty string
             if (loadContext.SourceRepositories.Count() == 1
-                && loadContext.SourceRepositories.First().PackageSource.Source.ToLower() == "https://api.nuget.org/v3/index.json"
                 && loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
-                && searchText == "")
+                && searchText == string.Empty
+                && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
             {
                 _recommendPackages = true;
             }
@@ -768,7 +764,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
-            PackageFeeds packageFeeds;
+            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
             if (IsRecommenderFlightEnabled())
             {
                 packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
@@ -928,7 +924,7 @@ namespace NuGet.PackageManagement.UI
         {
             var selectedPackage = _packageList.SelectedItem;
             var selectedIndex = _packageList.SelectedIndex;
-            var numRecommended = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -941,7 +937,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedPackage);
 
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, numRecommended, _recommendPackages);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages);
 
                 _packageDetail.ScrollToHome();
 
@@ -955,24 +951,24 @@ namespace NuGet.PackageManagement.UI
         {
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
-            var numRecommended = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
+            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (_topPanel.Filter == ItemFilter.All
                 && operationId.HasValue
                 && selectedIndex >= 0)
             {
                 TelemetryActivity.EmitTelemetryEvent(new SearchSelectionTelemetryEvent(
                     operationId.Value,
-                    numRecommended,
+                    recommendedCount,
                     selectedIndex,
                     selectedPackage.Id,
                     selectedPackage.Version));
             }
         }
 
-        private static async Task<PackageFeeds> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
+        private static async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
         {
             var logger = new VisualStudioActivityLogger();
-            PackageFeeds packageFeeds = new PackageFeeds();
+            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
 
             if (filter == ItemFilter.All && recommendPackages == false)
             {

@@ -79,15 +79,8 @@ namespace NuGet.PackageManagement.VisualStudio
             _telemetryService = telemetryService;
             _logger = logger;
 
-            try
-            {
-                // Get NuGet package recommender service
-                NuGetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNuGetRecommenderService)) as Recommender.IVsNuGetPackageRecommender;
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
-            }
+            // Get NuGet package recommender service, or null if it is not available
+            NuGetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNuGetRecommenderService)) as Recommender.IVsNuGetPackageRecommender;
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -123,20 +116,13 @@ namespace NuGet.PackageManagement.VisualStudio
             TelemetryServiceUtility.StartOrResumeTimer();
 
             List<string> recommendIds = new List<string>();
-            try
+            if (NuGetRecommender != null)
             {
-                if (NuGetRecommender != null)
-                {
-                    // get lists of only the package ids to send to the recommender
-                    List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
-                    List<string> depPackages = _dependentPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
-                    // call the recommender to get package recommendations
-                    recommendIds = await NuGetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
-                }
-            }
-            catch (Exception ex)
-            {
-                Debug.WriteLine(ex);
+                // get lists of only the package ids to send to the recommender
+                List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                List<string> depPackages = _dependentPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                // call the recommender to get package recommendations
+                recommendIds = await NuGetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
             }
 
             // get PackageIdentity info for the top 5 recommended packages
@@ -145,21 +131,14 @@ namespace NuGet.PackageManagement.VisualStudio
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
             while (recommendIds != null && index < recommendIds.Count() && recommendPackages.Count < _maxRecommend)
             {
-                try
-                {
-                    MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
-                    PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
+                MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
+                PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
-                    Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], false, false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
-                    if (ver != null)
-                    {
-                        NuGet.Packaging.Core.PackageIdentity pid = new NuGet.Packaging.Core.PackageIdentity(recommendIds[index], ver);
-                        recommendPackages.Add(pid);
-                    }
-                }
-                catch (System.Exception ex)
+                Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], false, false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
+                if (ver != null)
                 {
-                    Debug.WriteLine(ex);
+                    NuGet.Packaging.Core.PackageIdentity pid = new NuGet.Packaging.Core.PackageIdentity(recommendIds[index], ver);
+                    recommendPackages.Add(pid);
                 }
                 index++;
             }

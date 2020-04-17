@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.UI
         public PackageIdentity SelectedPackage { get; set; }
 
         public int SelectedIndex { get; set; }
-        public int NumRecommended { get; set; }
+        public int RecommendedCount { get; set; }
         public bool RecommendPackages { get; set; }
 
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)

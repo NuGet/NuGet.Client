@@ -66,7 +66,7 @@ namespace NuGet.PackageManagement.UI
         public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
         public int SelectedIndex { private set;  get; }
-        public int NumRecommended { private set;  get; }
+        public int RecommendedCount { private set;  get; }
         public bool RecommendPackages { private set;  get; }
 
         /// <summary>
@@ -74,11 +74,11 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public void SetCurrentSelectionInfo(
             int selectedIndex,
-            int numRecommended,
+            int recommendedCount,
             bool recommendPackages)
         {
             SelectedIndex = selectedIndex;
-            NumRecommended = numRecommended;
+            RecommendedCount = recommendedCount;
             RecommendPackages = recommendPackages;
         }
 

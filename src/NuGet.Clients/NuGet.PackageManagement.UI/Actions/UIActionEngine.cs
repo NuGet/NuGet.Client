@@ -524,7 +524,7 @@ namespace NuGet.PackageManagement.UI
                         acceptedLicense,
                         userAction,
                         uiService.SelectedIndex,
-                        uiService.NumRecommended,
+                        uiService.RecommendedCount,
                         uiService.RecommendPackages,
                         existingPackages,
                         addedPackages,
@@ -546,7 +546,7 @@ namespace NuGet.PackageManagement.UI
             bool acceptedLicense,
             UserAction userAction,
             int selectedIndex,
-            int numRecommended,
+            int recommendedCount,
             bool recommendPackages,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
@@ -587,7 +587,7 @@ namespace NuGet.PackageManagement.UI
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
-                actionTelemetryEvent["RecommendedCount"] = numRecommended;
+                actionTelemetryEvent["RecommendedCount"] = recommendedCount;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
             }
 
