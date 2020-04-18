@@ -5417,4 +5417,7 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>Invalid value given for 'DependencyVersion': "{0}".</value>
     <comment>Please don't localize "DependencyVersion".</comment>
   </data>
+  <data name="Errror_UpdateSelf_Source" xml:space="preserve">
+    <value>The `update -self` command only accepts one source as an argument. If the source option is not specified, the default NuGet source will be used.</value>
+  </data>
 </root>
