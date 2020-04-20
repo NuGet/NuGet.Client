@@ -217,9 +217,9 @@ function UpdateVSInstaller {
 
     $vsMajorVersion = [System.Version]::Parse($VSVersion).Major
 
-    # The Preview channel is intentional since the --update command will update the installer to the latest preview version.  
-    # You will run into issues if the machine has a channel that is newer than preview, like IntPreview.
-    $vsBootstrapperUrl = "https://aka.ms/vs/$vsMajorVersion/pre/vs_enterprise.exe"
+    # The internal Preview channel is intentional since the --update command will update the installer to the latest internal preview version.  
+    # It matches the channel of VS installed on CI 
+    $vsBootstrapperUrl = "https://aka.ms/vs/$vsMajorVersion/IntPreview/vs_enterprise.exe"
 
     $tempdir = [System.IO.Path]::GetTempPath()
     $VSBootstrapperPath =  "$tempdir" + "vs_enterprise.exe"
