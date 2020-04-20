@@ -23,7 +23,7 @@ namespace NuGet.PackageManagement.UI
         private readonly IPackageFeed _packageFeed;
         private readonly IPackageFeed _recommenderPackageFeed;
         private PackageCollection _installedPackages;
-        private IList<string> _recommendedPackages;
+        private int _recommendedCount;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
         private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
@@ -209,11 +209,7 @@ namespace NuGet.PackageManagement.UI
             if (_recommenderPackageFeed != null)
             {
                 recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
-                _recommendedPackages = new List<string>();
-                foreach (IPackageSearchMetadata result in recommenderResult)
-                {
-                    _recommendedPackages.Add(result.Identity.Id);
-                }
+                _recommendedCount = recommenderResult.Count();
             }
 
             // update items list to include recommender results if needed
@@ -241,6 +237,7 @@ namespace NuGet.PackageManagement.UI
             if (continuationToken != null)
             {
                 // only continue search for the search package feed, not the recommender.
+                _recommendedCount = 0;
                 return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
             }
 
@@ -281,7 +278,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var listItems = _state.Results
-                .Select(metadata =>
+                .Select((metadata, index) =>
                 {
                     VersionRange allowedVersions = VersionRange.All;
 
@@ -309,7 +306,7 @@ namespace NuGet.PackageManagement.UI
                         AllowedVersions = allowedVersions,
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
-                        Recommended = metadata.IsRecommended,
+                        Recommended = index < _recommendedCount,
                         PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
                     };
 

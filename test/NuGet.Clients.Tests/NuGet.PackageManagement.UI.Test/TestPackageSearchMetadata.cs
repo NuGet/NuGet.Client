@@ -54,8 +54,6 @@ namespace NuGet.PackageManagement.UI.Test
 
         public LicenseMetadata LicenseMetadata { get; set; }
 
-        public bool IsRecommended { get; set; }
-
         public Task<PackageDeprecationMetadata> GetDeprecationMetadataAsync()
         {
             throw new NotImplementedException();

@@ -518,14 +518,15 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
+                    var nuGetUI = uiService as NuGetUI;
                     AddUiActionEngineTelemetryProperties(
                         actionTelemetryEvent,
                         continueAfterPreview,
                         acceptedLicense,
                         userAction,
-                        uiService.SelectedIndex,
-                        uiService.RecommendedCount,
-                        uiService.RecommendPackages,
+                        nuGetUI?.SelectedIndex,
+                        nuGetUI?.RecommendedCount,
+                        nuGetUI?.RecommendPackages,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -545,9 +546,9 @@ namespace NuGet.PackageManagement.UI
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
-            int selectedIndex,
-            int recommendedCount,
-            bool recommendPackages,
+            int? selectedIndex,
+            int? recommendedCount,
+            bool? recommendPackages,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,

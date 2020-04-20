@@ -83,10 +83,6 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         PackageIdentity SelectedPackage { get; }
 
-        int SelectedIndex { get; }
-        int RecommendedCount { get; }
-        bool RecommendPackages { get; }
-
         /// <summary>
         /// Reports that an error has occurred.
         /// </summary>

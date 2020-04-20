@@ -1090,7 +1090,7 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         private void Refresh()
         {
-            if (_topPanel.Filter != ItemFilter.All || _recommendPackages)
+            if (_topPanel.Filter != ItemFilter.All)
             {
                 // refresh the whole package list
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);

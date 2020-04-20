@@ -10,7 +10,6 @@ using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using Microsoft.VisualStudio.Shell;
 using Recommender = Microsoft.DataAI.NuGetRecommender.Contracts;
-using System.Diagnostics;
 using NuGet.PackageManagement.Telemetry;
 using NuGet.Common;
 
@@ -193,10 +192,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // and failing that we go to the network
                 packageMetadata = await _metadataProvider.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken);
-            }
-            if (packageMetadata != null)
-            {
-                packageMetadata.IsRecommended = true;
             }
             return packageMetadata;
         }

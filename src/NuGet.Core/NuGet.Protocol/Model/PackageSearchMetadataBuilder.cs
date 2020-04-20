@@ -46,7 +46,6 @@ namespace NuGet.Protocol.Core.Types
             public string Title { get; set; }
             public bool PrefixReserved { get; set; }
             public LicenseMetadata LicenseMetadata { get; set; }
-            public bool IsRecommended { get; set; }
 
             internal AsyncLazy<IEnumerable<VersionInfo>> LazyVersionsFactory { get; set; }
             public async Task<IEnumerable<VersionInfo>> GetVersionsAsync() => await (LazyVersionsFactory ?? LazyEmptyVersionInfo);
