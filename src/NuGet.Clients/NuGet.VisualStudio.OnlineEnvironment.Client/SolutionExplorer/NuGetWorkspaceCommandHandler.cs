@@ -96,8 +96,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                             if (IsSupportedProjectSelection(selection))
                             {
                                 var isPackageManagerUISupported = _packageManagerUICommandHandler.IsPackageManagerUISupported(selection.Single());
-                                cmdf = (uint)((isPackageManagerUISupported ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
-                                    | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
+                                cmdf = (uint)(isPackageManagerUISupported ?
+                                    (Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED) :
+                                    Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_INVISIBLE);
                                 handled = true;
                             }
                             break;
