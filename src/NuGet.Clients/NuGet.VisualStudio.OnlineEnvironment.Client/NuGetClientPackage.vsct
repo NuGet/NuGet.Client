@@ -52,7 +52,7 @@
               <CommandFlag>DefaultInvisible</CommandFlag>
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
-      <Button guid="guidNuGetClientPackageCmdSet" id="CmdidRestorePackages" priority="0x0100" type="Button">
+      <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdRestorePackages" priority="0x0100" type="Button">
         <Parent guid="guidNuGetClientPackageCmdSet" id="NuGetClientMenuGroup" />
         <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
         <CommandFlag>DefaultInvisible</CommandFlag>
@@ -62,6 +62,20 @@
           <CommandName>SolutionExplorer.Solution.RestoreNuGetPackages</CommandName>
           <CanonicalName>SolutionExplorer.Solution.RestoreNuGetPackages</CanonicalName>
           <LocCanonicalName>SolutionExplorer.Solution.RestoreNuGetPackages</LocCanonicalName>
+        </Strings>
+      </Button>
+
+      <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdManageProjectUI" priority="0x0100" type="Button">
+        <Parent guid="guidNuGetClientPackageCmdSet" id="NuGetClientMenuGroup" />
+        <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />        
+        <CommandFlag>AllowParams</CommandFlag>
+        <CommandFlag>DefaultInvisible</CommandFlag>
+        <CommandFlag>DynamicVisibility</CommandFlag>
+        <Strings>
+          <CommandName>SolutionExplorer.Project.ManageNuGetPackages</CommandName>
+          <CanonicalName>SolutionExplorer.Project.ManageNuGetPackages</CanonicalName>
+          <LocCanonicalName>SolutionExplorer.Project.ManageNuGetPackages</LocCanonicalName>
+          <ButtonText>Manage &amp;NuGet Packages...</ButtonText>
         </Strings>
       </Button>
     </Buttons>
@@ -78,7 +92,8 @@
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidNuGetClientPackageCmdSet" value="{282008cc-d0db-45e1-80d1-00fabac5de92}">
       <IDSymbol name="NuGetClientMenuGroup" value="0x1020" />
-      <IDSymbol name="CmdidRestorePackages" value="0x0100" />
+      <IDSymbol name="cmdIdRestorePackages" value="0x0100" />
+      <IDSymbol name="cmdIdManageProjectUI" value="0x0200" />
     </GuidSymbol>
 
     <GuidSymbol name="guidWorkspaceExplorerToolWindowPackageCmdSet" value="{cfb400f1-5c60-4f3c-856e-180d28def0b7}">

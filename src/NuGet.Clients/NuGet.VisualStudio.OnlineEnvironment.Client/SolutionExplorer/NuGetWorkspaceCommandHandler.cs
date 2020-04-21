@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
@@ -17,6 +18,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
     internal class NuGetWorkspaceCommandHandler : IWorkspaceCommandHandler
     {
         private readonly RestoreCommandHandler _restoreCommandHandler;
+        private readonly PackageManagerUICommandHandler _packageManagerUICommandHandler;
 
         public NuGetWorkspaceCommandHandler(JoinableTaskContext taskContext, IAsyncServiceProvider asyncServiceProvider)
         {
@@ -26,6 +28,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             }
 
             _restoreCommandHandler = new RestoreCommandHandler(taskContext.Factory, asyncServiceProvider);
+            _packageManagerUICommandHandler = new PackageManagerUICommandHandler(taskContext.Factory, asyncServiceProvider);
         }
 
         /// <summary>
@@ -45,17 +48,28 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             {
                 var nCmdIDInt = (int)nCmdID;
 
-                if (IsSolutionOnlySelection(selection))
+                switch (nCmdIDInt)
                 {
-                    switch (nCmdIDInt)
-                    {
-                        case PkgCmdIDList.CmdidRestorePackages:
+                    case PkgCmdIDList.CmdidRestorePackages:
+                        if (IsSolutionOnlySelection(selection))
+                        {
+
                             _restoreCommandHandler.RunSolutionRestore();
                             return VSConstants.S_OK;
-                    }
+                        }
+                        break;
+                    case PkgCmdIDList.CmdIdManageProjectUI:
+                        if (IsSupportedProjectSelection(selection))
+                        {
+                            _packageManagerUICommandHandler.OpenPackageManagerUI(selection.Single());
+                            return VSConstants.S_OK;
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
-            return (int) Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
+            return (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
         }
 
         public bool QueryStatus(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, ref uint cmdf, ref string customTitle)
@@ -65,22 +79,61 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             if (pguidCmdGroup == CommandGroup.NuGetOnlineEnvironmentsClientProjectCommandSetGuid)
             {
                 var nCmdIDInt = (int)nCmdID;
-
-                if (IsSolutionOnlySelection(selection))
                 {
                     switch (nCmdIDInt)
                     {
                         case PkgCmdIDList.CmdidRestorePackages:
-                            var isRestoreActionInProgress = _restoreCommandHandler.IsRestoreActionInProgress();
-                            cmdf = (uint)((isRestoreActionInProgress ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
-                                | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
-                            handled = true;
+                            if (IsSolutionOnlySelection(selection))
+                            {
+
+                                var isRestoreActionInProgress = _restoreCommandHandler.IsRestoreActionInProgress();
+                                cmdf = (uint)((isRestoreActionInProgress ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
+                                    | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
+                                handled = true;
+                            }
+                            break;
+                        case PkgCmdIDList.CmdIdManageProjectUI:
+                            if (IsSupportedProjectSelection(selection))
+                            {
+                                var isPackageManagerUISupported = _packageManagerUICommandHandler.IsPackageManagerUISupported(selection.Single());
+                                cmdf = (uint)((isPackageManagerUISupported ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
+                                    | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
+                                handled = true;
+                            }
+                            break;
+                        default:
                             break;
                     }
                 }
             }
-
             return handled;
+        }
+
+        private static bool IsSupportedProjectSelection(List<WorkspaceVisualNodeBase> selection)
+        {
+            if (selection != null &&
+                selection.Count.Equals(1))
+            {
+                // We support every item representing a project
+                // - we don't have the ability to do a capabilities check, because we don't have enough information.
+                string fileExtension;
+                try
+                {
+                    fileExtension = Path.GetExtension(selection.Single().NodeMoniker);
+                }
+                catch (ArgumentException)
+                {
+                    return false;
+                }
+
+                if (fileExtension == null)
+                {
+                    return false;
+                }
+                // We do not know if the project is supported
+                return fileExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase);
+            }
+            return false;
         }
 
         private static bool IsSolutionOnlySelection(List<WorkspaceVisualNodeBase> selection)
