@@ -3393,11 +3393,12 @@ namespace NuGet.PackageManagement
             return _restoreProviderCache;
         }
 
-        public static async Task<HashSet<string>> GetTargetFramework(NuGetProject project)
+        public static async Task<List<string>> GetTargetFramework(NuGetProject project)
         {
-            var frameworks = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var frameworks = new List<string>();
             NuGetFramework framework;
-            if (project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework))
+            if (project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework)
+                && !frameworks.Contains(framework.ToString()))
             {
                 frameworks.Add(framework.ToString());
             }
@@ -3409,10 +3410,15 @@ namespace NuGet.PackageManagement
                 var packageSpecs = await biproject.GetPackageSpecsAsync(dgcContext);
                 foreach (var packageSpec in packageSpecs)
                 {
-                    frameworks = frameworks.Concat(packageSpec.TargetFrameworks.Select(tf => tf.FrameworkName.ToString())).ToHashSet();
+                    foreach(var targetFramework in packageSpec.TargetFrameworks)
+                    {
+                        if (!frameworks.Contains(targetFramework.FrameworkName.ToString()))
+                        {
+                            frameworks.Add(targetFramework.FrameworkName.ToString());
+                        }
+                    }
                 }
             }
-
             return frameworks;
         }
 

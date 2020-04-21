@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -101,6 +102,8 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
 
+        private bool _forceRecommender = false;
+
         public PackageManagerControl(
             PackageManagerModel model,
             ISettings nugetSettings,
@@ -187,6 +190,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+
+            // check if environment variable RecommendNuGetPackages to turn on recommendations is set to 1
+            try
+            {
+                _forceRecommender = (Environment.GetEnvironmentVariable("RecommendNuGetPackages") == "1");
+            }
+            catch(SecurityException)
+            {
+                // don't make recommendations if we are not able to read the environment variable
+            }
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -764,8 +777,9 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
+            // Also check if the environment variable RecommendNuGetPackages is set to 1
             var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-            if (IsRecommenderFlightEnabled())
+            if (IsRecommenderFlightEnabled() || _forceRecommender)
             {
                 packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
             }
@@ -988,10 +1002,16 @@ namespace NuGet.PackageManagement.UI
                 // this will get the dependent packages only if a lock (assets) file is present
                 var dependentPackages = await context.GetDependentPackagesAsync();
 
-                HashSet<string> targetFrameworks = new HashSet<string>();
+                List<string> targetFrameworks = new List<string>();
                 foreach (var project in context.Projects)
                 {
-                    targetFrameworks.UnionWith(await NuGetPackageManager.GetTargetFramework(project));
+                    foreach(var tf in await NuGetPackageManager.GetTargetFramework(project))
+                    {
+                        if(!targetFrameworks.Contains(tf))
+                        {
+                            targetFrameworks.Add(tf);
+                        }
+                    }
                 }
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(

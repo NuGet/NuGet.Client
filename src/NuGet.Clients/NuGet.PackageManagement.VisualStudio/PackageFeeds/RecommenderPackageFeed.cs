@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using Microsoft.VisualStudio.Shell;
 using Recommender = Microsoft.DataAI.NuGetRecommender.Contracts;
 using NuGet.PackageManagement.Telemetry;
@@ -24,7 +25,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly IEnumerable<PackageCollectionItem> _dependentPackages;
+        private readonly Dictionary<string, VersionRange> _dependentPackages;
         private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
@@ -35,7 +36,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
             IEnumerable<PackageCollectionItem> installedPackages,
-            IEnumerable<PackageCollectionItem> dependentPackages,
+            Dictionary<string, VersionRange> dependentPackages,
             IEnumerable<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger,
@@ -119,7 +120,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // get lists of only the package ids to send to the recommender
                 List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
-                List<string> depPackages = _dependentPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                List<string> depPackages = _dependentPackages.Keys.ToList();
                 // call the recommender to get package recommendations
                 recommendIds = await NuGetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
             }

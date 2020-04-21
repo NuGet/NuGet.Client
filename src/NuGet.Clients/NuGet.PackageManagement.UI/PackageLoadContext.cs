@@ -9,10 +9,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Frameworks;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging.Core;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
+using NuGet.Versioning;
 using NuGet.VisualStudio;
 
 namespace NuGet.PackageManagement.UI
@@ -73,40 +75,26 @@ namespace NuGet.PackageManagement.UI
             return lockFiles;
         }
 
-        // get the dependent packages from the lock files for projects
-        public async Task<PackageCollection> GetDependentPackagesAsync()
+        public async Task<Dictionary<string, VersionRange>> GetDependentPackagesAsync()
         {
             // get lock files from projects. This will add all dependency packages for all projects in the list
             List<LockFile> lockFiles = await getLockFiles(Projects.ToList());
-            List<PackageCollectionItem> dependentPackages = new List<PackageCollectionItem>();
+            Dictionary<string, VersionRange> dependentPackages = new Dictionary<string, VersionRange>();
 
             foreach (LockFile lockFile in lockFiles)
             {
                 foreach (LockFileTarget target in lockFile.Targets)
                 {
-                    foreach(LockFileTargetLibrary lib in target.Libraries)
+                    foreach (LockFileTargetLibrary lib in target.Libraries)
                     {
-                        foreach (Packaging.Core.PackageDependency dep in lib.Dependencies)
+                        foreach (PackageDependency dep in lib.Dependencies)
                         {
-                            Versioning.NuGetVersion version;
-                            if(dep.VersionRange.HasUpperBound)
-                            {
-                                version = dep.VersionRange.MaxVersion;
-                            }
-                            else
-                            {
-                                version = dep.VersionRange.MinVersion;
-                            }
-                            PackageCollectionItem newItem = new PackageCollectionItem(dep.Id, dep.VersionRange.MaxVersion, null);
-                            if (!dependentPackages.Contains(newItem))
-                            {
-                                dependentPackages = dependentPackages.Append(new PackageCollectionItem(dep.Id, dep.VersionRange.MaxVersion, null)).ToList();
-                            }
+                            dependentPackages[dep.Id] = dep.VersionRange;
                         }
                     }
                 }
             }
-            return new PackageCollection(dependentPackages.ToArray());
+            return dependentPackages;
         }
 
         // Returns the list of frameworks that we need to pass to the server during search

@@ -502,7 +502,7 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    HashSet<string> frameworks = new HashSet<string>();
+                    List<string> frameworks = new List<string>();
                     foreach (var project in uiService.Projects)
                     {
                         frameworks = (await NuGetPackageManager.GetTargetFramework(project));
