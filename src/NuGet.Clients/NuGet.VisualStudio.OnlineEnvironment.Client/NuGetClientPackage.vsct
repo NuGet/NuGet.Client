@@ -36,7 +36,7 @@
          group as the part of a menu contained between two lines. The parent of a group
          must be a menu. -->
     <Groups>
-      <Group guid="guidNuGetClientPackageCmdSet" id="NuGetClientMenuGroup" priority="0x0600">
+      <Group guid="guidNuGetClientPackageCmdSet" id="nuGetClientMenuGroup" priority="0x0600">
         <Parent guid="guidWorkspaceExplorerToolWindowPackageCmdSet" id="idmWSE_ContextMenu"/>
       </Group>
     </Groups>
@@ -53,7 +53,7 @@
               <CommandFlag>DynamicVisibility</CommandFlag>
           If you do not want an image next to your command, remove the Icon node /> -->
       <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdRestorePackages" priority="0x0100" type="Button">
-        <Parent guid="guidNuGetClientPackageCmdSet" id="NuGetClientMenuGroup" />
+        <Parent guid="guidNuGetClientPackageCmdSet" id="nuGetClientMenuGroup" />
         <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
@@ -66,7 +66,7 @@
       </Button>
 
       <Button guid="guidNuGetClientPackageCmdSet" id="cmdIdManageProjectUI" priority="0x0100" type="Button">
-        <Parent guid="guidNuGetClientPackageCmdSet" id="NuGetClientMenuGroup" />
+        <Parent guid="guidNuGetClientPackageCmdSet" id="nuGetClientMenuGroup" />
         <Icon guid="guidToolbarImages" id="bmpAddNuGetPackage" />        
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
@@ -91,7 +91,7 @@
 
     <!-- This is the guid used to group the menu commands together -->
     <GuidSymbol name="guidNuGetClientPackageCmdSet" value="{282008cc-d0db-45e1-80d1-00fabac5de92}">
-      <IDSymbol name="NuGetClientMenuGroup" value="0x1020" />
+      <IDSymbol name="nuGetClientMenuGroup" value="0x1020" />
       <IDSymbol name="cmdIdRestorePackages" value="0x0100" />
       <IDSymbol name="cmdIdManageProjectUI" value="0x0200" />
     </GuidSymbol>
