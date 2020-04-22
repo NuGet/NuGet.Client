@@ -485,7 +485,7 @@ namespace Dotnet.Integration.Test
 
         private void PatchDepsJsonWithNewlyAddedDlls(string[] assemblyNames, string[] filePaths)
         {
-            string nugetBuildTasksName = "NuGet.Build.Tasks/5.3.0-rtm.6251";
+            string nugetBuildTasksName = "NuGet.Build.Tasks/5.6.0-preview.2.6508";
             foreach (string assemblyName in assemblyNames)
             {
                 foreach (string filePath in filePaths)
