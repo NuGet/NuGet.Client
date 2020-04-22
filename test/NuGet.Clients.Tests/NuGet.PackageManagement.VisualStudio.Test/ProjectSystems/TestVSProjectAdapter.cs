@@ -227,14 +227,14 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             return Task.FromResult(_projectPackageVersions);
         }
 
-        public async Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames)
+        public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
         {
             if (itemName == "PackageVersion")
             {
-                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new List<string>() { x.Version })));
+                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new string[]{ x.Version })));
             }
 
-            return Enumerable.Empty<(string ItemId, List<string> ItemMetadata)>();
+            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
         }
 
         public async Task<string> GetPropertyValueAsync(string propertyName)

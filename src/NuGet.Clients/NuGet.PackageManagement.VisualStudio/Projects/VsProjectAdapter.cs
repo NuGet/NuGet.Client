@@ -362,14 +362,14 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        public async Task<string> GetRestorePackagesWithLockFileAsync()
+        public Task<string> GetRestorePackagesWithLockFileAsync()
         {
-            return await GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
+            return GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
         }
 
-        public async Task<string> GetNuGetLockFilePathAsync()
+        public Task<string> GetNuGetLockFilePathAsync()
         {
-            return await GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
+            return GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
         }
 
         public async Task<bool> IsRestoreLockedAsync()
@@ -391,7 +391,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return await BuildProperties.GetPropertyValueAsync(propertyName);
         }
 
-        public async Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames)
+        public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
         {
             if (itemName == null)
             {
@@ -408,12 +408,12 @@ namespace NuGet.PackageManagement.VisualStudio
             if (itemStorage != null)
             {
                 var callback = new VisualStudioBuildItemStorageCallback();
-                itemStorage.FindItems(itemName, metadataNames.Count, metadataNames.ToArray(), callback);
+                itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
 
                 return callback.Items;
             }
 
-            return Enumerable.Empty<(string ItemId, List<string> ItemMetadata)>();
+            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
         }
 
         private async Task<string> GetTargetFrameworkStringAsync()

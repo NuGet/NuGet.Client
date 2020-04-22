@@ -18,15 +18,16 @@ namespace NuGet.VisualStudio
         /// <![CDATA[<PackageVersion Include="Foo" Version="1.1.1"/>]]>
         /// If the requested metadata is "Version" the returned Items will be (Foo, {"1.1.1"})
         /// </summary>
-        public List<(string Itemid, List<string> ItemMetadata)> Items { get; } = new List<(string Itemid, List<string> ItemMetadata)>();
+        public List<(string Itemid, string[] ItemMetadata)> Items { get; } = new List<(string Itemid, string[] ItemMetadata)>();
 
         void IVsBuildItemStorageCallback.ItemFound(string itemSpec, Array metadata)
         {
-            var currentItemMetadata = new List<string>();
+            var currentItemMetadata = new string[metadata.Length];
+            int index = 0;
 
             foreach (var a in metadata)
             {
-                currentItemMetadata.Add((string)a);
+                currentItemMetadata[index++] = (string)a;
             }
 
             Items.Add((itemSpec, currentItemMetadata));

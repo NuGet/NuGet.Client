@@ -157,7 +157,7 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="itemName">The item name.</param>
         /// <param name="metadataNames">The metadata names to read.</param>
-        /// <returns>An <see cref="IEnumerable{(string ItemId, List<string> ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
-        Task<IEnumerable<(string ItemId, List<string> ItemMetadata)>> GetBuildItemInformationAsync(string itemName, List<string> metadataNames);
+        /// <returns>An <see cref="IEnumerable{(string ItemId, string[] ItemMetadata)}"/> containing the itemId and the metadata values.</returns>
+        Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames);
     }
 }

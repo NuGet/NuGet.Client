@@ -127,13 +127,13 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
         {
-            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(nameof(ProjectBuildProperties.ManagePackageVersionsCentrally)));
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
             IEnumerable<(string PackageId, string Version)> packageVersions =
-                        (await _vsProjectAdapter.GetBuildItemInformationAsync("PackageVersion", new List<string>() { "Version" }))
+                        (await _vsProjectAdapter.GetBuildItemInformationAsync("PackageVersion", "Version"))
                         .Select(item => (PackageId: item.ItemId, Version: item.ItemMetadata.FirstOrDefault()));
 
             return packageVersions
@@ -390,7 +390,6 @@ namespace NuGet.PackageManagement.VisualStudio
             };
 
             bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
-
             if (isCpvmEnabled)
             {
                 projectTfi.CentralPackageVersions.AddRange(await GetCentralPackageVersionsAsync());
