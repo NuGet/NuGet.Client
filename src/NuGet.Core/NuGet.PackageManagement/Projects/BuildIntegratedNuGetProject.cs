@@ -61,6 +61,8 @@ namespace NuGet.ProjectManagement.Projects
 
         public abstract Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context);
 
+        public abstract Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context);
+
         public abstract Task<bool> InstallPackageAsync(
             string packageId,
             VersionRange range,

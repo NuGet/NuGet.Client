@@ -10,6 +10,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Frameworks;
+using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Versioning;
 
@@ -50,6 +51,7 @@ namespace NuGet.ProjectModel
         internal const string LogsProperty = "logs";
         private const string EmbedProperty = "embed";
         private const string FrameworkReferencesProperty = "frameworkReferences";
+        private const string CentralTransitiveDependencyGroupsProperty = "centralTransitiveDependencyGroups";
 
         public LockFile Parse(string lockFileContent, string path)
         {
@@ -168,7 +170,8 @@ namespace NuGet.ProjectModel
                 Targets = JsonUtility.ReadObject(cursor[TargetsProperty] as JObject, ReadTarget),
                 ProjectFileDependencyGroups = JsonUtility.ReadObject(cursor[ProjectFileDependencyGroupsProperty] as JObject, ReadProjectFileDependencyGroup),
                 PackageFolders = JsonUtility.ReadObject(cursor[PackageFoldersProperty] as JObject, ReadFileItem),
-                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject)
+                PackageSpec = ReadPackageSpec(cursor[PackageSpecProperty] as JObject),
+                CentralTransitiveDependencyGroups = ReadProjectFileTransitiveDependencyGroup(cursor[CentralTransitiveDependencyGroupsProperty] as JObject)
             };
 
             lockFile.LogMessages = ReadLogMessageArray(cursor[LogsProperty] as JArray,
@@ -216,6 +219,12 @@ namespace NuGet.ProjectModel
                     var projectPath = lockFile.PackageSpec?.RestoreMetadata?.ProjectPath;
                     json[LogsProperty] = WriteLogMessages(lockFile.LogMessages, projectPath);
                 }
+            }
+
+            if (lockFile.CentralTransitiveDependencyGroups.Any())
+            {
+                JToken token = WriteCentralTransitiveDependencyGroup(lockFile.CentralTransitiveDependencyGroups);
+                json[CentralTransitiveDependencyGroupsProperty] = (JObject)token;
             }
 
             return json;
@@ -799,6 +808,52 @@ namespace NuGet.ProjectModel
         private static string GetPathWithBackSlashes(string path)
         {
             return path.Replace('/', '\\');
+        }
+
+        private static JToken WriteCentralTransitiveDependencyGroup(IList<CentralTransitiveDependencyGroup> centralTransitiveDependencyGroups)
+        {
+            using (var jsonWriter = new JTokenWriter())
+            using (var writer = new JsonObjectWriter(jsonWriter))
+            {
+                writer.WriteObjectStart();
+
+                foreach (var centralTransitiveDepGroup in centralTransitiveDependencyGroups.OrderBy(ptdg => ptdg.FrameworkName))
+                {
+                    PackageSpecWriter.SetDependencies(writer, centralTransitiveDepGroup.FrameworkName, centralTransitiveDepGroup.TransitiveDependencies);
+                }
+
+                writer.WriteObjectEnd();
+                return jsonWriter.Token;
+            }
+        }
+
+        private static List<CentralTransitiveDependencyGroup> ReadProjectFileTransitiveDependencyGroup(JObject json)
+        {
+            var results = new List<CentralTransitiveDependencyGroup>();
+
+            if (json == null)
+            {
+                return results;
+            }
+
+            using (var stringReader = new StringReader(json.ToString()))
+            using (var jsonReader = new JsonTextReader(stringReader))
+            {
+                jsonReader.ReadObject(frameworkPropertyName =>
+                {
+                    NuGetFramework framework = NuGetFramework.Parse(frameworkPropertyName);
+                    var dependencies = new List<LibraryDependency>();
+
+                    JsonPackageSpecReader.ReadDependencies(
+                        jsonReader: jsonReader,
+                        results: dependencies,
+                        packageSpecPath: "",
+                        isGacOrFrameworkReference: false);
+                    results.Add(new CentralTransitiveDependencyGroup(framework, dependencies));
+                });
+            }
+
+            return results;
         }
     }
 }

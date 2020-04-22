@@ -2047,6 +2047,11 @@ namespace NuGet.Test
                 return Task.FromResult<IReadOnlyList<PackageSpec>>(new List<PackageSpec>() { PackageSpec });
             }
 
+            public Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
+            {
+                return Task.FromResult<(IReadOnlyList<PackageSpec>, IReadOnlyList<IAssetsLogMessage>)>((new List<PackageSpec>() { PackageSpec }, null));
+            }
+
             public Task<DependencyGraphSpec> GetDependencyGraphSpecAsync(DependencyGraphCacheContext context)
             {
                 var dgSpec = new DependencyGraphSpec();

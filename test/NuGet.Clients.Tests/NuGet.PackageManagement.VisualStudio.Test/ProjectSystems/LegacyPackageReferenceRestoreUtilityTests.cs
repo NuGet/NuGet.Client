@@ -1353,9 +1353,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             {
                 // Arrange
                 var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
-                    new List<Configuration.PackageSource>()
+                    new List<PackageSource>()
                     {
-                        new Configuration.PackageSource(packageSource.Path)
+                        new PackageSource(packageSource.Path)
                     });
 
                 using (var testSolutionManager = new TestSolutionManager())
@@ -1464,6 +1464,194 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     // remove ProjectB from the solution
                     testSolutionManager.NuGetProjects.Remove(legacyPRProjectB);
+                    dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.NoOpRestore);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// projectA -> projectB -> projectC
+        /// Unload projectB & projectC. Ensure the full restore graph is loaded
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task DependencyGraphRestoreUtility_WithMissingMultiLevelProjectClosure_Succeeds()
+        {
+            using (var packageSource = TestDirectory.Create())
+            {
+                // Arrange
+                var sourceRepositoryProvider = TestSourceRepositoryUtility.CreateSourceRepositoryProvider(
+                    new List<PackageSource>()
+                    {
+                        new PackageSource(packageSource.Path)
+                    });
+
+                using (var testSolutionManager = new TestSolutionManager())
+                {
+                    var testSettings = PopulateSettingsWithSources(sourceRepositoryProvider, testSolutionManager.TestDirectory);
+                    var nuGetPackageManager = new NuGetPackageManager(
+                        sourceRepositoryProvider,
+                        testSettings,
+                        testSolutionManager,
+                        new TestDeleteOnRestartManager());
+
+                    // set up projects
+
+                    var projectTargetFrameworkStr = "net45";
+                    var fullProjectPathC = Path.Combine(testSolutionManager.TestDirectory, "ProjectC", "project3.csproj");
+                    var projectNamesC = new ProjectNames(
+                        fullName: fullProjectPathC,
+                        uniqueName: Path.GetFileName(fullProjectPathC),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathC),
+                        customUniqueName: Path.GetFileName(fullProjectPathC));
+                    var vsProjectAdapterC = new TestVSProjectAdapter(
+                        fullProjectPathC,
+                        projectNamesC,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesC = new TestProjectSystemServices();
+                    projectServicesC.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageC",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    var legacyPRProjectC = new LegacyPackageReferenceProject(
+                        vsProjectAdapterC,
+                        Guid.NewGuid().ToString(),
+                        projectServicesC,
+                        _threadingService);
+
+                    var fullProjectPathB = Path.Combine(testSolutionManager.TestDirectory, "ProjectB", "project2.csproj");
+                    var projectNamesB = new ProjectNames(
+                        fullName: fullProjectPathB,
+                        uniqueName: Path.GetFileName(fullProjectPathB),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
+                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                    var vsProjectAdapterB = new TestVSProjectAdapter(
+                        fullProjectPathB,
+                        projectNamesB,
+                        projectTargetFrameworkStr);
+
+                    var projectServicesB = new TestProjectSystemServices();
+                    projectServicesB.SetupInstalledPackages(
+                        NuGetFramework.Parse(projectTargetFrameworkStr),
+                        new LibraryDependency
+                        {
+                            LibraryRange = new LibraryRange(
+                                "packageB",
+                                VersionRange.Parse("1.*"),
+                                LibraryDependencyTarget.Package)
+                        });
+
+                    projectServicesB.SetupProjectDependencies(
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = fullProjectPathC,
+                            ProjectPath = fullProjectPathC
+                        });
+
+                    var legacyPRProjectB = new LegacyPackageReferenceProject(
+                        vsProjectAdapterB,
+                        Guid.NewGuid().ToString(),
+                        projectServicesB,
+                        _threadingService);
+
+                    var projectPathA = Path.Combine(testSolutionManager.TestDirectory, "ProjectA");
+                    var fullProjectPathA = Path.Combine(projectPathA, "project1.csproj");
+                    var projectNamesA = new ProjectNames(
+                        fullName: fullProjectPathA,
+                        uniqueName: Path.GetFileName(fullProjectPathA),
+                        shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
+                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                    var vsProjectAdapterA = new TestVSProjectAdapter(
+                        fullProjectPathA,
+                        projectNamesA,
+                        projectTargetFrameworkStr,
+                        restorePackagesWithLockFile: "true");
+
+                    var projectServicesA = new TestProjectSystemServices();
+                    projectServicesA.SetupProjectDependencies(
+                        new ProjectRestoreReference
+                        {
+                            ProjectUniqueName = fullProjectPathB,
+                            ProjectPath = fullProjectPathB
+                        });
+
+                    var legacyPRProjectA = new LegacyPackageReferenceProject(
+                        vsProjectAdapterA,
+                        Guid.NewGuid().ToString(),
+                        projectServicesA,
+                        _threadingService);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectC);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectB);
+                    testSolutionManager.NuGetProjects.Add(legacyPRProjectA);
+
+                    var testLogger = new TestLogger();
+                    var restoreContext = new DependencyGraphCacheContext(testLogger, testSettings);
+                    var providersCache = new RestoreCommandProvidersCache();
+
+                    var packageContextB = new SimpleTestPackageContext("packageB", "1.0.0");
+                    packageContextB.AddFile("lib/net45/b.dll");
+                    var packageContextC = new SimpleTestPackageContext("packageC", "1.0.0");
+                    packageContextC.AddFile("lib/net45/c.dll");
+                    var packages = new List<SimpleTestPackageContext>() { packageContextB, packageContextC };
+                    SimpleTestPackageUtility.CreateOPCPackages(packages, packageSource);
+
+                    var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
+
+                    // Act
+                    var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                        testSolutionManager,
+                        dgSpec,
+                        restoreContext,
+                        providersCache,
+                        (c) => { },
+                        sourceRepositoryProvider.GetRepositories(),
+                        parentId: Guid.Empty,
+                        forceRestore: false,
+                        isRestoreOriginalAction: true,
+                        log: testLogger,
+                        token: CancellationToken.None);
+
+                    // Assert
+                    Assert.NotEmpty(restoreSummaries);
+
+                    foreach (var restoreSummary in restoreSummaries)
+                    {
+                        Assert.True(restoreSummary.Success);
+                        Assert.False(restoreSummary.NoOpRestore);
+                    }
+
+                    // remove ProjectB and ProjectC from the solution
+                    testSolutionManager.NuGetProjects.Remove(legacyPRProjectB);
+                    testSolutionManager.NuGetProjects.Remove(legacyPRProjectC);
                     dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(testSolutionManager, restoreContext);
 
                     // Act

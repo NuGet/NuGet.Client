@@ -9,7 +9,6 @@ using NuGet.Commands;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Test.Utility;
-using NuGet.Versioning;
 using Xunit;
 using System.Reflection;
 
@@ -20,6 +19,7 @@ namespace NuGet.Build.Tasks.Pack.Test
         [Fact]
         public void PackTaskLogic_ProducesBasicPackage()
         {
+            // This test uses the ...\NuGet.Build.Tasks.Pack.Test\compiler\resources\project.assets.json assets file. 
             // Arrange
             using (var testDir = TestDirectory.Create())
             {
@@ -48,6 +48,18 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/net45/a.dll" }, libItems[0].Items);
+
+                    var dependecyGroups = nuspecReader.GetDependencyGroups().ToList();
+                    var dependecyGroup = dependecyGroups.First();
+                    var dependecyGroupFramework = dependecyGroup.TargetFramework.Framework;
+                    var dependentPackages = dependecyGroup.Packages.ToList();
+                    var centralTransitiveDependentPackage = dependentPackages
+                        .Where(p => p.Id.Equals("Newtonsoft.Json", StringComparison.OrdinalIgnoreCase))
+                        .FirstOrDefault();
+                    Assert.Equal(1, dependecyGroups.Count);
+                    Assert.Equal(".NETStandard", dependecyGroupFramework);
+                    Assert.NotNull(centralTransitiveDependentPackage);
+                    Assert.Equal(new List<string> { "Analyzers", "Build", "Runtime" }, centralTransitiveDependentPackage.Exclude);
                 }
             }
         }
@@ -107,8 +119,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             using (var testDir = TestDirectory.Create())
             {
                 var tc = new TestContext(testDir);
-                var msbuildItem =  tc.AddContentToProject("", "abc.txt", "hello world");
-                tc.Request.ContentTargetFolders = new string[] {"folderA", "folderB"};
+                var msbuildItem = tc.AddContentToProject("", "abc.txt", "hello world");
+                tc.Request.ContentTargetFolders = new string[] { "folderA", "folderB" };
                 tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
                 // Act
                 tc.BuildPackage();
@@ -127,13 +139,13 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetOwners());
                     Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
-                    
+
                     // Validate the assets.
                     var libItems = nupkgReader.GetLibItems().ToList();
                     Assert.Equal(1, libItems.Count);
                     Assert.Equal(FrameworkConstants.CommonFrameworks.Net45, libItems[0].TargetFramework);
                     Assert.Equal(new[] { "lib/net45/a.dll" }, libItems[0].Items);
-                    
+
                     // Validate the content items
                     foreach (var contentTargetFolder in tc.Request.ContentTargetFolders)
                     {
@@ -507,7 +519,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
                 var msbuildItem = tc.AddContentToProject("", ".prefercliruntime", "hello world", metadata);
                 tc.Request.PackageFiles = new MSBuildItem[] { msbuildItem };
-                tc.Request.ContentTargetFolders = new string[] { "content"};
+                tc.Request.ContentTargetFolders = new string[] { "content" };
                 tc.Request.NoDefaultExcludes = noDefaultExcludes;
 
                 // Act
@@ -523,7 +535,7 @@ namespace NuGet.Build.Tasks.Pack.Test
 
                     // Validate the content items
                     var contentItems = nupkgReader.GetFiles("content").ToList();
-                    if(noDefaultExcludes)
+                    if (noDefaultExcludes)
                     {
                         Assert.Equal(contentItems.Count, 1);
                         Assert.Contains("content/.prefercliruntime", contentItems, StringComparer.Ordinal);
@@ -688,12 +700,12 @@ namespace NuGet.Build.Tasks.Pack.Test
                 }
             }
 
-            internal MSBuildItem AddContentToProject(string relativePathToDirectory, string fileName, string content, IDictionary<string,string> itemMetadata = null)
+            internal MSBuildItem AddContentToProject(string relativePathToDirectory, string fileName, string content, IDictionary<string, string> itemMetadata = null)
             {
                 var relativePathToFile = Path.Combine(relativePathToDirectory, fileName);
                 var fullpath = Path.Combine(TestDir, relativePathToFile);
                 var pathToDirectory = Path.Combine(TestDir, relativePathToDirectory);
-                
+
                 if (!Directory.Exists(pathToDirectory))
                 {
                     Directory.CreateDirectory(pathToDirectory);

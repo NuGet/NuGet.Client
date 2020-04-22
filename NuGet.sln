@@ -4,6 +4,10 @@ VisualStudioVersion = 16.0.28404.58
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{BD1946CE-5544-4F28-A04A-9C3D51113E1A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Clients", "NuGet.Clients", "{08F523EC-3C2A-4A00-A54C-2E54C5AC856B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Client", "src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj", "{3B96F91B-3B58-40ED-B06E-5CD133A79A63}"
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{4A4623E9-CE1F-4DF2-A4C2-513CE8377D2A}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
@@ -65,8 +69,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{96255044
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestUtilities", "TestUtilities", "{79266117-FEDD-45B3-B603-33A4B6E9F12F}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Clients", "NuGet.Clients", "{08F523EC-3C2A-4A00-A54C-2E54C5AC856B}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGet.Core", "NuGet.Core", "{506AF844-92E0-4404-BBFC-0AB073890A72}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.CommandLine.XPlat", "src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj", "{ECEA066F-F40D-4397-B2CE-8CA24AC22638}"
@@ -119,7 +121,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.PackageManagement.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test.Utility", "test\TestUtilities\Test.Utility\Test.Utility.csproj", "{CA285053-F013-45CC-A2EA-7581A37585D4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing", "src\NuGet.Core\NuGet.Indexing\NuGet.Indexing.csproj", "{A2B06FA8-BDBC-4459-A92A-161862B2AA97}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing", "src\NuGet.Clients\NuGet.Indexing\NuGet.Indexing.csproj", "{A2B06FA8-BDBC-4459-A92A-161862B2AA97}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Common.Test", "test\NuGet.Core.Tests\NuGet.Common.Test\NuGet.Common.Test.csproj", "{7FACD9D7-F70D-41C4-BE61-2753E018057D}"
 EndProject
@@ -129,7 +131,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Commands.FuncTest", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Protocol.FuncTest", "test\NuGet.Core.FuncTests\NuGet.Protocol.FuncTest\NuGet.Protocol.FuncTest.csproj", "{1A94F70B-1AB6-4638-931A-4AB0EBEF7EC1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing.Test", "test\NuGet.Core.Tests\NuGet.Indexing.Test\NuGet.Indexing.Test.csproj", "{626E0086-1375-4ABE-A0F8-412786D315FA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Indexing.Test", "test\NuGet.Clients.Tests\NuGet.Indexing.Test\NuGet.Indexing.Test.csproj", "{626E0086-1375-4ABE-A0F8-412786D315FA}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.XPlat.FuncTest", "test\NuGet.Core.FuncTests\NuGet.XPlat.FuncTest\NuGet.XPlat.FuncTest.csproj", "{2034C981-C938-4F0F-8F3B-528B83CB8F7D}"
 EndProject
@@ -156,8 +158,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.SolutionRestoreManager.Interop", "src\NuGet.Clients\NuGet.SolutionRestoreManager.Interop\NuGet.SolutionRestoreManager.Interop.csproj", "{4003E1AB-70DE-4B9C-8999-96160EE91D84}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.Tools", "src\NuGet.Clients\NuGet.Tools\NuGet.Tools.csproj", "{D0F9864B-D782-4471-81A2-29555E5DC0D7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Client", "src\NuGet.Clients\NuGet.VisualStudio.Client\NuGet.VisualStudio.Client.csproj", "{3B96F91B-3B58-40ED-B06E-5CD133A79A63}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.PackageManagement.VisualStudio", "src\NuGet.Clients\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj", "{306CDDFA-FF0B-4299-930C-9EC6C9308160}"
 EndProject
@@ -233,6 +233,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGet.Build.Tasks.Console.Test", "test\NuGet.Core.Tests\NuGet.Build.Tasks.Console.Test\NuGet.Build.Tasks.Console.Test.csproj", "{2011B5A4-2184-4F94-9897-E5BC2425DCDA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.OnlineEnvironment.Client", "src\NuGet.Clients\NuGet.VisualStudio.OnlineEnvironment.Client\NuGet.VisualStudio.OnlineEnvironment.Client.csproj", "{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.VisualStudio.Internal.Contracts", "src\NuGet.Clients\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj", "{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -564,6 +566,10 @@ Global
 		{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -660,6 +666,7 @@ Global
 		{3ED13630-90EB-420E-8083-0959B2955C6E} = {506AF844-92E0-4404-BBFC-0AB073890A72}
 		{2011B5A4-2184-4F94-9897-E5BC2425DCDA} = {7323F93B-D141-4001-BB9E-7AF14031143E}
 		{290DB64D-74BA-45C5-BAC0-6E31A8AFD5CB} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
+		{DEEBF1A1-1C21-4E9E-8CE3-1EB21381FF1E} = {08F523EC-3C2A-4A00-A54C-2E54C5AC856B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3747A66A-00D1-41B8-A9C5-ED0D7BEA9D25}

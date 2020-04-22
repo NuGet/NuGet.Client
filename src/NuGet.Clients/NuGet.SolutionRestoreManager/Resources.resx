@@ -133,6 +133,11 @@
   <data name="NothingToRestore" xml:space="preserve">
     <value>All packages are already installed and there is nothing to restore.</value>
   </data>
+  <data name="NU1105" xml:space="preserve">
+    <value>Unable to read project information for '{0}': {1}</value>
+    <comment>0 - The name of the project with the error.
+1 - Message explaining what couldn't be read. Typically an exception's message</comment>
+  </data>
   <data name="Operation_Finished" xml:space="preserve">
     <value>========== Finished ==========</value>
   </data>

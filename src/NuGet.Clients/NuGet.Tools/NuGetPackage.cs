@@ -68,7 +68,7 @@ namespace NuGetVSExtension
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
-        public const string ProductVersion = "5.6.0";
+        public const string ProductVersion = "5.7.0";
         private const string F1KeywordValuePmUI = "VS.NuGet.PackageManager.UI";
 
         private AsyncLazy<IVsMonitorSelection> _vsMonitorSelection;
@@ -508,6 +508,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally
@@ -756,6 +757,7 @@ namespace NuGetVSExtension
                 if (windowFrame != null)
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
+                    WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
                 }
             }
             finally

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -762,6 +762,94 @@ namespace NuGet.ProjectModel.Test
             // Act & Assert
             Assert.NotSame(self, other);
             Assert.NotEqual(self, other);
+        }
+
+        [Fact]
+        public void LockFile_ConsiderCentralTransitiveDependencyGroupsForEquality()
+        {
+            // Arrange
+            var dotNetFramework = FrameworkConstants.CommonFrameworks.NetCoreApp10;
+            var libraryDependency_1 = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                                        "Microsoft.NETCore.App",
+                                        new VersionRange(
+                                            minVersion: new NuGetVersion("1.0.1"),
+                                            originalString: "1.0.1"),
+                                        LibraryDependencyTarget.Package)
+            };
+            var libraryDependency_2 = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                            "Microsoft.NETCore.App",
+                            new VersionRange(
+                                minVersion: new NuGetVersion("2.0.1"),
+                                originalString: "2.0.1"),
+                            LibraryDependencyTarget.Package)
+            };
+            var libraryDependency_3 = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                            "Microsoft.NETCore.App",
+                            new VersionRange(
+                                minVersion: new NuGetVersion("3.0.1"),
+                                originalString: "3.0.1"),
+                            LibraryDependencyTarget.Package)
+            };
+            var libraryDependency_11 = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                         "Microsoft.NETCore.App",
+                         new VersionRange(
+                             minVersion: new NuGetVersion("1.0.1"),
+                             originalString: "1.0.1"),
+                         LibraryDependencyTarget.Package)
+            };
+            var libraryDependency_22 = new LibraryDependency
+            {
+                LibraryRange = new LibraryRange(
+                           "Microsoft.NETCore.App",
+                           new VersionRange(
+                               minVersion: new NuGetVersion("2.0.1"),
+                               originalString: "2.0.1"),
+                           LibraryDependencyTarget.Package)
+            };
+            var projCTDG_1_2 = new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
+            var projCTDG_11_22 = new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>() { libraryDependency_1, libraryDependency_2 });
+
+            var lockFile_1_2 = new LockFile
+            {
+                Version = 3,
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>(){ projCTDG_1_2 }
+            };
+            var lockFile_11_22 = new LockFile
+            {
+                Version = 3,
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>() { projCTDG_11_22 }
+            };
+            var lockFile_1 = new LockFile
+            {
+                Version = 3,
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>()
+                    {
+                        new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1})
+                    }
+            };
+            var lockFile_1_3 = new LockFile
+            {
+                Version = 3,
+                CentralTransitiveDependencyGroups = new List<CentralTransitiveDependencyGroup>()
+                    {
+                        new CentralTransitiveDependencyGroup(dotNetFramework, new List<LibraryDependency>(){ libraryDependency_1, libraryDependency_3})
+                    }
+            };
+
+            // Act & Assert
+            Assert.Equal(lockFile_1_2, lockFile_1_2);
+            Assert.Equal(lockFile_1_2, lockFile_11_22);
+            Assert.NotEqual(lockFile_1_2, lockFile_1);
+            Assert.NotEqual(lockFile_1_2, lockFile_1_3);
+            Assert.Equal(lockFile_1_2.GetHashCode(), lockFile_11_22.GetHashCode());
         }
     }
 }

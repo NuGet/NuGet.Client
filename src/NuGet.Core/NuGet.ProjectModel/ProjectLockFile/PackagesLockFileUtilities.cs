@@ -62,12 +62,19 @@ namespace NuGet.ProjectModel
         ///     3. The packages of the current project were updated.
         ///     4. The packages of the dependent projects were updated.
         ///     5. The framework list of the dependent projects were updated with frameworks incompatible with the main project framework.
+        ///     6. If the version of the <paramref name="nuGetLockFile"/> is larger than the current tools <see cref="PackagesLockFileFormat.PackagesLockFileVersion"/>.
         /// </summary>
         /// <param name="dgSpec">The <see cref="DependencyGraphSpec"/> for the new project defintion.</param>
         /// <param name="nuGetLockFile">The current <see cref="PackagesLockFile"/>.</param>
         /// <returns>True if the lock file is valid false otherwise. </returns>
         public static bool IsLockFileStillValid(DependencyGraphSpec dgSpec, PackagesLockFile nuGetLockFile)
         {
+            // Current tools know how to read only previous formats including the current
+            if (PackagesLockFileFormat.PackagesLockFileVersion < nuGetLockFile.Version)
+            {
+                return false;
+            }
+
             var uniqueName = dgSpec.Restore.First();
             var project = dgSpec.GetProjectSpec(uniqueName);
 
@@ -95,6 +102,15 @@ namespace NuGet.ProjectModel
                 var directDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Direct);
 
                 if (HasProjectDependencyChanged(framework.Dependencies, directDependencies))
+                {
+                    // lock file is out of sync
+                    return false;
+                }
+
+                var transitiveDependenciesEnforcedByCentralVersions = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.CentralTransitive).ToList();
+                var transitiveDependencies = target.Dependencies.Where(dep => dep.Type == PackageDependencyType.Transitive).ToList();
+
+                if (HasProjectTransitiveDependencyChanged(framework.CentralPackageVersions, transitiveDependenciesEnforcedByCentralVersions, transitiveDependencies))
                 {
                     // lock file is out of sync
                     return false;
@@ -275,7 +291,7 @@ namespace NuGet.ProjectModel
 
                 // Duplicate dependencies list so we can remove matches to validate that all dependencies were matched
                 var actualDependencies = new Dictionary<LockFileDependency, LockFileDependency>(
-                    actualTarget.Dependencies.Count, 
+                    actualTarget.Dependencies.Count,
                     dependencyComparer);
                 foreach (LockFileDependency actualDependency in actualTarget.Dependencies)
                 {
@@ -309,7 +325,7 @@ namespace NuGet.ProjectModel
             // If the count is not the same, something has changed.
             // Otherwise we N^2 walk below determines whether anything has changed.
             var newPackageDependencies = newDependencies.Where(dep => dep.LibraryRange.TypeConstraint == LibraryDependencyTarget.Package);
-            if(newPackageDependencies.Count() != lockFileDependencies.Count())
+            if (newPackageDependencies.Count() != lockFileDependencies.Count())
             {
                 return true;
             }
@@ -371,6 +387,45 @@ namespace NuGet.ProjectModel
             }
 
             // no dependency changed. Lock file is still valid.
+            return false;
+        }
+
+        /// <summary>
+        /// The method will return true if:
+        /// 1. If a transitive dependency from the lock file is now added to the central file.
+        ///     or
+        /// 1. If there is a mistmatch between the RequestedVersion of a lock file dependency marked as CentralTransitive and the the version specified in the central package management file.
+        ///     or
+        /// 2. If a central version that is a transitive dependency is removed from CPVM the lock file is invalidated.
+        /// </summary>
+        private static bool HasProjectTransitiveDependencyChanged(
+            IDictionary<string, CentralPackageVersion> centralPackageVersions,
+            IList<LockFileDependency> lockFileCentralTransitiveDependencies,
+            IList<LockFileDependency> lockTransitiveDependencies)
+        {
+            // Transitive dependencies moved to be centraly managed will invalidate the lock file
+            var transitiveDependenciesMovedToBeManagedCentrally = lockTransitiveDependencies.Where(dep => centralPackageVersions.ContainsKey(dep.Id));
+
+            if (transitiveDependenciesMovedToBeManagedCentrally.Any())
+            {
+                return true;
+            }
+
+            foreach (var lockFileDependencyEnforcedByCPV in lockFileCentralTransitiveDependencies)
+            {
+                if (centralPackageVersions.TryGetValue(lockFileDependencyEnforcedByCPV.Id, out var centralPackageVersion))
+                {
+                    if (centralPackageVersion != null && !EqualityUtility.EqualsWithNullCheck(lockFileDependencyEnforcedByCPV.RequestedVersion, centralPackageVersion.VersionRange))
+                    {
+                        return true;
+                    }
+                    continue;
+                }
+
+                // The central version was removed
+                return true;
+            }
+
             return false;
         }
 

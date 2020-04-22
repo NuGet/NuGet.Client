@@ -14,7 +14,6 @@ using NuGet.Common;
 using NuGet.DependencyResolver;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
-using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Repositories;
@@ -29,7 +28,7 @@ namespace NuGet.Commands
 
         private readonly RestoreRequest _request;
 
-        private bool _success = true;
+        private bool _success;
 
         private Guid _operationId;
 
@@ -93,6 +92,8 @@ namespace NuGet.Commands
 
             _logger = collectorLogger;
             ParentId = request.ParentId;
+
+            _success = !request.AdditionalMessages?.Any(m => m.Level == LogLevel.Error) ?? true;
         }
 
         public Task<RestoreResult> ExecuteAsync()
@@ -129,12 +130,12 @@ namespace NuGet.Commands
                     {
                         noOpTelemetry.StartIntervalMeasure();
 
-                        var cacheFileAndStatus = EvaluateCacheFile();
+                        bool noOp;
+                        (cacheFile, noOp) = EvaluateCacheFile();
 
                         noOpTelemetry.EndIntervalMeasure(CacheFileEvaluateDuration);
 
-                        cacheFile = cacheFileAndStatus.Key;
-                        if (cacheFileAndStatus.Value)
+                        if (noOp)
                         {
                             noOpTelemetry.StartIntervalMeasure();
 
@@ -199,16 +200,8 @@ namespace NuGet.Commands
                 {
                     lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
-                    var packagesLockFileResult = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
-
-                    // result of packages.lock.json file evaluation where
-                    // Item1 is the status of evaluating packages lock file if false, then bail restore
-                    // Item2 is also a tuple which has 2 parts -
-                    //      Item1 tells whether lock file is still valid to be consumed for this restore
-                    //      Item2 is the PackagesLockFile instance
-                    var result = packagesLockFileResult.Item1;
-                    isLockFileValid = packagesLockFileResult.Item2.Item1;
-                    packagesLockFile = packagesLockFileResult.Item2.Item2;
+                    bool result;
+                    (result, isLockFileValid, packagesLockFile) = await EvaluatePackagesLockFileAsync(packagesLockFilePath, contextForProject, lockFileTelemetry);
 
                     lockFileTelemetry.TelemetryEvent[IsLockFileValidForRestore] = isLockFileValid;
                     lockFileTelemetry.TelemetryEvent[LockFileEvaluationResult] = result;
@@ -245,15 +238,28 @@ namespace NuGet.Commands
                 }
 
                 IEnumerable<RestoreTargetGraph> graphs = null;
-                using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
+                if (_success)
                 {
-                    // Restore
-                    graphs = await ExecuteRestoreAsync(
-                    _request.DependencyProviders.GlobalPackages,
-                    _request.DependencyProviders.FallbackPackageFolders,
-                    contextForProject,
-                    token,
-                    restoreGraphTelemetry);
+                    using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
+                    {
+                        // Restore
+                        graphs = await ExecuteRestoreAsync(
+                        _request.DependencyProviders.GlobalPackages,
+                        _request.DependencyProviders.FallbackPackageFolders,
+                        contextForProject,
+                        token,
+                        restoreGraphTelemetry);
+                    }
+                }
+                else
+                {
+                    // Being in an unsuccessful state before ExecuteRestoreAsync means there was a problem with the
+                    // project. For example, project TFM or package versions couldn't be parsed. Although the minimal
+                    // fake package spec generated has no packages requested, it also doesn't have any project TFMs
+                    // and will generate validation errors if we tried to call ExecuteRestoreAsync. So, to avoid
+                    // incorrect validation messages, don't try to restore. It is however, the responsibility for the
+                    // caller of RestoreCommand to have provided at least one AdditionalMessage in RestoreArgs.
+                    graphs = Enumerable.Empty<RestoreTargetGraph>();
                 }
 
                 LockFile assetsFile = null;
@@ -349,8 +355,13 @@ namespace NuGet.Commands
                     }
 
                     // Write the logs into the assets file
-                    var logs = _logger.Errors
-                        .Select(l => AssetsLogMessage.Create(l))
+                    var logsEnumerable = _logger.Errors
+                        .Select(l => AssetsLogMessage.Create(l));
+                    if (_request.AdditionalMessages != null)
+                    {
+                        logsEnumerable = logsEnumerable.Concat(_request.AdditionalMessages);
+                    }
+                    var logs = logsEnumerable
                         .ToList();
 
                     _success &= !logs.Any(l => l.Level == LogLevel.Error);
@@ -500,7 +511,7 @@ namespace NuGet.Commands
         ///     Item1 tells whether lock file is still valid to be consumed for this restore
         ///     Item2 is the PackagesLockFile instance
         /// </returns>
-        private async Task<Tuple<bool, Tuple<bool, PackagesLockFile>>> EvaluatePackagesLockFileAsync(
+        private async Task<(bool success, bool isLockFileValid, PackagesLockFile packagesLockFile)> EvaluatePackagesLockFileAsync(
             string packagesLockFilePath,
             RemoteWalkContext contextForProject,
             TelemetryActivity lockFileTelemetry)
@@ -522,7 +533,7 @@ namespace NuGet.Commands
                 // be skipped for netcore projects.
                 await _request.Log.LogAsync(RestoreLogMessage.CreateError(NuGetLogCode.NU1005, message));
 
-                return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+                return (success, isLockFileValid, packagesLockFile);
             }
 
             // read packages.lock.json file if exists and RestoreForceEvaluate flag is not set to true
@@ -565,10 +576,10 @@ namespace NuGet.Commands
                 }
             }
 
-            return Tuple.Create(success, Tuple.Create(isLockFileValid, packagesLockFile));
+            return (success, isLockFileValid, packagesLockFile);
         }
 
-        private KeyValuePair<CacheFile, bool> EvaluateCacheFile()
+        private (CacheFile cacheFile, bool noOp) EvaluateCacheFile()
         {
             CacheFile cacheFile;
             var noOp = false;
@@ -585,9 +596,11 @@ namespace NuGet.Commands
 
             // if --force-evaluate flag is passed then restore noop check will also be skipped.
             // this will also help us to get rid of -force flag in near future.
+            // DgSpec doesn't contain log messages, so skip no-op if there are any, as it's not taken into account in the hash
             if (_request.AllowNoOp &&
                 !_request.RestoreForceEvaluate &&
-                File.Exists(_request.Project.RestoreMetadata.CacheFilePath))
+                File.Exists(_request.Project.RestoreMetadata.CacheFilePath) ||
+                _request.AdditionalMessages?.Count > 0)
             {
                 cacheFile = FileUtility.SafeRead(_request.Project.RestoreMetadata.CacheFilePath, (stream, path) => CacheFileFormat.Read(stream, _logger, path));
 
@@ -619,7 +632,7 @@ namespace NuGet.Commands
                     _request.Project.RestoreMetadata.CacheFilePath = null;
                 }
             }
-            return new KeyValuePair<CacheFile, bool>(cacheFile, noOp);
+            return (cacheFile, noOp);
         }
 
         private string GetAssetsFilePath(LockFile lockFile)
@@ -814,17 +827,15 @@ namespace NuGet.Commands
                                             ?? downgradedBy.GetVersionRange().MinVersion
                                             ?? new NuGetVersion(0, 0, 0);
 
-                            var isCPVMdowngradedError = downgradedBy.Item.CentralDependency != null;
-
                             var message = string.Format(
                                     CultureInfo.CurrentCulture,
-                                    isCPVMdowngradedError ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
+                                    downgradedBy.Item.IsCentralTransitive ? Strings.Log_CPVM_DowngradeError : Strings.Log_DowngradeWarning,
                                     downgraded.Key.Name,
                                     fromVersion,
                                     toVersion)
                                 + $" {Environment.NewLine} {downgraded.GetPathWithLastRange()} {Environment.NewLine} {downgradedBy.GetPathWithLastRange()}";
 
-                            if (isCPVMdowngradedError)
+                            if (downgradedBy.Item.IsCentralTransitive)
                             {
                                 messages.Add(RestoreLogMessage.CreateError(NuGetLogCode.NU1109, message, downgraded.Key.Name, graph.TargetGraphName));
                             }

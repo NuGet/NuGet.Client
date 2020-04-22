@@ -636,6 +636,12 @@ namespace NuGet.ProjectManagement
 
         public async Task<IReadOnlyList<PackageSpec>> GetPackageSpecsAsync(DependencyGraphCacheContext context)
         {
+            var (dgSpec, _) = await GetPackageSpecsAndAdditionalMessagesAsync(context);
+            return dgSpec;
+        }
+
+        public async Task<(IReadOnlyList<PackageSpec> dgSpecs, IReadOnlyList<IAssetsLogMessage> additionalMessages)> GetPackageSpecsAndAdditionalMessagesAsync(DependencyGraphCacheContext context)
+        {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
@@ -645,7 +651,7 @@ namespace NuGet.ProjectManagement
             // Return empty list for this case.
             if (string.IsNullOrEmpty(ProjectSystem.ProjectFileFullPath))
             {
-                return new List<PackageSpec>();
+                return (new List<PackageSpec>(), null);
             }
 
             PackageSpec packageSpec = null;
@@ -693,7 +699,7 @@ namespace NuGet.ProjectManagement
                 context.PackageSpecCache.Add(MSBuildProjectPath, packageSpec);
             }
 
-            return new[] { packageSpec };
+            return (new[] { packageSpec }, null);
         }
     }
 }

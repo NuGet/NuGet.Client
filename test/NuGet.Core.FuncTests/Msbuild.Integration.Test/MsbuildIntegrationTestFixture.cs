@@ -33,6 +33,7 @@ namespace Msbuild.Integration.Test
             var nugetRestoreTargetsPath = Path.Combine(_testDir, "NuGet.targets");
             // Uncomment to debug the msbuild call
             // _processEnvVars.Add("DEBUG_RESTORE_TASK", "true");
+            _processEnvVars["UNIT_TEST_RESTORE_TASK"] = bool.TrueString;
             var result = CommandRunner.Run(msBuildExe,
                 workingDirectory,
                 $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=\"true\" {args}",

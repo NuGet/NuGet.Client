@@ -1942,7 +1942,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9128")]
         public async Task RestoreNetCore_MultipleProjects_SameTool_OverlappingVersionRanges_DoesNoOpAsync()
         {
             // Arrange
@@ -9115,6 +9115,489 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_DirectDependencyCentralVersionChanged_FailsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX200 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+                packageX200.Files.Clear();
+                packageX200.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100, packageX200);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Second Restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Update the cpvm
+                cpvmFile.UpdatePackageVersion("x", "2.0.0");
+                cpvmFile.Save();
+
+                // Expect exit code 1 on this restore
+                r = Util.RestoreSolution(pathContext, 1);
+                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_TransitiveDependencyCentralVersionChanged_FailsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageY200 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "2.0.0"
+                };
+                packageY200.Files.Clear();
+                packageY200.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100, packageY200);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Update the transitive dependency in cpvm 
+                cpvmFile.UpdatePackageVersion("y", "2.0.0");
+                cpvmFile.Save();
+
+                // Expect exit code 1 on this restore
+                r = Util.RestoreSolution(pathContext, 1);
+                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_RemovedCentralDirectDependency_FailsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Update the cpvm
+                cpvmFile.RemovePackageVersion("x");
+                cpvmFile.Save();
+
+                // Expect exit code 1 on this restore
+                r = Util.RestoreSolution(pathContext, 1);
+                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_RemovedCentralTransitiveDependency_FailsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Update the cpvm
+                cpvmFile.RemovePackageVersion("y");
+                cpvmFile.Save();
+
+                // Expect exit code 1 on this restore
+                r = Util.RestoreSolution(pathContext, 1);
+                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_MoveTransitiveDependnecyToCentralFile_FailsRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Update the cpvm
+                cpvmFile.AddPackageVersion("y", "1.0.0");
+                cpvmFile.Save();
+
+                // Expect exit code 1 on this restore
+                r = Util.RestoreSolution(pathContext, 1);
+                Assert.True(r.AllOutput.Contains("NU1004: The packages lock file is inconsistent with the project dependencies so restore can't be run in locked mode. Disable the RestoreLockedMode MSBuild property or pass an explicit --force-evaluate option to run restore to update the lock file."));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreNetCore_CPVMProject_AddRemoveNotProjectRelatedEntriesToCentralFile_SuccessRestore()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net46"));
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+                projectA.Properties.Add("RestoreLockedMode", "true");
+                projectA.Properties.Add("RestorePackagesWithLockFile", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageX100NullVersion = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+                packageX100.Files.Clear();
+                packageX100.AddFile("lib/net46/x.dll");
+
+                var packageY100 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "1.0.0"
+                };
+                packageY100.Files.Clear();
+                packageY100.AddFile("lib/net46/y.dll");
+                packageX100.Dependencies.Add(packageY100);
+
+                var packageRandom = new SimpleTestPackageContext()
+                {
+                    Id = "random",
+                    Version = "1.0.0"
+                };
+                packageRandom.Files.Clear();
+                packageRandom.AddFile("lib/net46/x.dll");
+
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageY100, packageRandom);
+
+                projectA.AddPackageToAllFrameworks(packageX100NullVersion);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "1.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+
+                // Add new package version the cpvm
+                cpvmFile.AddPackageVersion("random", "1.0.0");
+                cpvmFile.Save();
+
+                // the addition should not impact this restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
+
+                // Update the cpvm
+                cpvmFile.RemovePackageVersion("random");
+                cpvmFile.Save();
+
+                // the removal should not impact this restore
+                r = Util.RestoreSolution(pathContext);
+
+                // Assert
+                r.Success.Should().BeTrue();
             }
         }
 

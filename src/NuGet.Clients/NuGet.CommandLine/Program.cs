@@ -24,7 +24,9 @@ namespace NuGet.CommandLine
     {
         private const string Utf8Option = "-utf8";
         private const string ForceEnglishOutputOption = "-forceEnglishOutput";
+#if DEBUG
         private const string DebugOption = "--debug";
+#endif
         private const string OSVersionRegistryKey = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion";
         private const string FilesystemRegistryKey = @"SYSTEM\CurrentControlSet\Control\FileSystem";
         private const string DotNetSetupRegistryKey = @"SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full\";

@@ -156,6 +156,7 @@ namespace NuGet.SolutionRestoreManager
 
             // start timer for telemetry event
             var stopWatch = Stopwatch.StartNew();
+            var intervalTracker = new IntervalTracker();
             var projects = Enumerable.Empty<NuGetProject>();
 
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
@@ -166,6 +167,7 @@ namespace NuGet.SolutionRestoreManager
             {
                 try
                 {
+                    intervalTracker.StartIntervalMeasure();
                     var solutionDirectory = _solutionManager.SolutionDirectory;
                     var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
@@ -181,6 +183,8 @@ namespace NuGet.SolutionRestoreManager
 
                         return;
                     }
+                    intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.RestoreOperationChecks);
+                    intervalTracker.StartIntervalMeasure();
 
                     // Check if there are any projects that are not INuGetIntegratedProject, that is,
                     // projects with packages.config. OR 
@@ -194,6 +198,7 @@ namespace NuGet.SolutionRestoreManager
                             restoreSource,
                             token);
                     }
+                    intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.PackagesConfigRestore);
 
                     var dependencyGraphProjects = projects
                         .OfType<IDependencyGraphProject>()
@@ -204,6 +209,7 @@ namespace NuGet.SolutionRestoreManager
                         forceRestore,
                         isSolutionAvailable,
                         restoreSource,
+                        intervalTracker,
                         token);
 
                     // TODO: To limit risk, we only publish the event when there is a cross-platform PackageReference
@@ -242,7 +248,8 @@ namespace NuGet.SolutionRestoreManager
                         restoreSource,
                         startTime,
                         duration.TotalSeconds,
-                        protocolDiagnosticsTotals);
+                        protocolDiagnosticsTotals,
+                        intervalTracker);
                 }
             }
         }
@@ -251,7 +258,8 @@ namespace NuGet.SolutionRestoreManager
             RestoreOperationSource source,
             DateTimeOffset startTime,
             double duration,
-            PackageSourceTelemetry.Totals protocolDiagnosticTotals)
+            PackageSourceTelemetry.Totals protocolDiagnosticTotals,
+            IntervalTracker intervalTimingTracker)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
@@ -267,7 +275,8 @@ namespace NuGet.SolutionRestoreManager
                 _packageCount,
                 _noOpProjectsCount,
                 DateTimeOffset.Now,
-                duration);
+                duration,
+                intervalTimingTracker);
 
             TelemetryActivity.EmitTelemetryEvent(restoreTelemetryEvent);
 
@@ -282,6 +291,7 @@ namespace NuGet.SolutionRestoreManager
             bool forceRestore,
             bool isSolutionAvailable,
             RestoreOperationSource restoreSource,
+            IntervalTracker intervalTracker,
             CancellationToken token)
         {
             // Only continue if there are some build integrated type projects.
@@ -310,13 +320,15 @@ namespace NuGet.SolutionRestoreManager
                         return;
                     }
                 }
-
+                intervalTracker.StartIntervalMeasure();
                 // Cache p2ps discovered from DTE
                 var cacheContext = new DependencyGraphCacheContext(_logger, _settings);
                 var pathContext = NuGetPathContext.Create(_settings);
 
                 // Get full dg spec
-                var dgSpec = await DependencyGraphRestoreUtility.GetSolutionRestoreSpec(_solutionManager, cacheContext);
+                var (dgSpec, additionalMessages) = await DependencyGraphRestoreUtility.GetSolutionRestoreSpecAndAdditionalMessages(_solutionManager, cacheContext);
+                intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation);
+                intervalTracker.StartIntervalMeasure();
 
                 // Avoid restoring solutions with zero potential PackageReference projects.
                 if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
@@ -348,6 +360,7 @@ namespace NuGet.SolutionRestoreManager
                                 _nuGetProjectContext.OperationId,
                                 forceRestore,
                                 isRestoreOriginalAction,
+                                additionalMessages,
                                 l,
                                 t);
 
@@ -366,6 +379,8 @@ namespace NuGet.SolutionRestoreManager
                         },
                         token);
                 }
+                intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.PackageReferenceRestoreDuration);
+
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {

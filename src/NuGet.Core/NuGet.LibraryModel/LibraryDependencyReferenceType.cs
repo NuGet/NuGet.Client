@@ -6,7 +6,7 @@ namespace NuGet.LibraryModel
     public enum LibraryDependencyReferenceType
     {
         None,
-        Transitve,
+        Transitive,
         Direct
     }
 }
