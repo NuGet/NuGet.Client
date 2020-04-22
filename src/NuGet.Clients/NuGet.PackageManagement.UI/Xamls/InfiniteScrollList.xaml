@@ -318,6 +318,7 @@
       -->
       <vs:LiveTextBlock
         x:Name="LtbLoading"
+        AutomationProperties.IsOffscreenBehavior="Offscreen"
         Visibility="Collapsed"
         IsFrequencyLimited="True" />
     </Grid>

@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loader", exception.ParamName);
         }
 
-        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfTheory]
         [InlineData(null)]
         [InlineData("")]
         public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.UI.Test
                 });
         }
 
-        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfFact]
         public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
             var loader = new Mock<IPackageItemLoader>(MockBehavior.Strict);
@@ -275,7 +275,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfTheory]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
             IPackageSearchMetadata[] searchItems,
@@ -286,53 +286,59 @@ namespace NuGet.PackageManagement.UI.Test
             var searchTask = Task.FromResult(SearchResult.FromItems( searchItems ));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
-            var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
 
-            var currentStatus = LoadingStatus.Loading;
-
-            stateMock.Setup(x => x.LoadingStatus)
-                .Returns(() => currentStatus);
-            stateMock.Setup(x => x.ItemsCount)
-                .Returns(() => searchItems.Length);
-            loaderMock.SetupGet(x => x.State)
-                .Returns(stateMock.Object);
-            loaderMock.SetupGet(x => x.IsMultiSource)
-                .Returns(false);
-            loaderMock.Setup(x => x.UpdateStateAndReportAsync(
-                    It.IsNotNull<SearchResult<IPackageSearchMetadata>>(),
-                    It.IsNotNull<IProgress<IItemLoaderState>>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(0))
-                .Callback( () => {
-                    currentStatus = searchItems.Length > 0 ? LoadingStatus.Ready : LoadingStatus.NoItemsFound;
-                });
-            loaderMock.Setup(x => x.UpdateStateAsync(
-                    It.IsNotNull<IProgress<IItemLoaderState>>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(() => Task.FromResult(0));
-            loaderMock.Setup(x => x.GetCurrent())
-                .Returns(() => searchItems.Select(x => new PackageItemListViewModel()));
-
-            list.LoadItemsCompleted += (sender, args) =>
+#pragma warning disable VSSDK005 // Avoid instantiating JoinableTaskContext
+            using (var joinableTaskContext = new JoinableTaskContext(Thread.CurrentThread, SynchronizationContext.Current))
+#pragma warning restore VSSDK005 // Avoid instantiating JoinableTaskContext
             {
-                var lst = (InfiniteScrollList)sender;
-                tcs.TrySetResult(lst.Items.Count);
-                _output.WriteLine("3. After assert");
-            };
+                var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => joinableTaskContext.Factory));
 
-            _output.WriteLine("1. Init act");
-            await list.LoadItemsAsync(
-                loader: loaderMock.Object,
-                loadingMessage: "Test loading",
-                logger: testLogger,
-                searchResultTask: searchTask,
-                token: CancellationToken.None);
-            _output.WriteLine("2. End act");
+                var currentStatus = LoadingStatus.Loading;
 
-            var finished = await tcs.Task;
+                stateMock.Setup(x => x.LoadingStatus)
+                    .Returns(() => currentStatus);
+                stateMock.Setup(x => x.ItemsCount)
+                    .Returns(() => searchItems.Length);
+                loaderMock.SetupGet(x => x.State)
+                    .Returns(stateMock.Object);
+                loaderMock.SetupGet(x => x.IsMultiSource)
+                    .Returns(false);
+                loaderMock.Setup(x => x.UpdateStateAndReportAsync(
+                        It.IsNotNull<SearchResult<IPackageSearchMetadata>>(),
+                        It.IsNotNull<IProgress<IItemLoaderState>>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(Task.FromResult(0))
+                    .Callback(() => {
+                        currentStatus = searchItems.Length > 0 ? LoadingStatus.Ready : LoadingStatus.NoItemsFound;
+                    });
+                loaderMock.Setup(x => x.UpdateStateAsync(
+                        It.IsNotNull<IProgress<IItemLoaderState>>(),
+                        It.IsAny<CancellationToken>()))
+                    .Returns(() => Task.FromResult(0));
+                loaderMock.Setup(x => x.GetCurrent())
+                    .Returns(() => searchItems.Select(x => new PackageItemListViewModel()));
 
-            Assert.Equal(expectedItems, finished);
-            _output.WriteLine("4. End of test");
+                list.LoadItemsCompleted += (sender, args) =>
+                {
+                    var lst = (InfiniteScrollList)sender;
+                    tcs.TrySetResult(lst.Items.Count);
+                    _output.WriteLine("3. After assert");
+                };
+
+                _output.WriteLine("1. Init act");
+                await list.LoadItemsAsync(
+                    loader: loaderMock.Object,
+                    loadingMessage: "Test loading",
+                    logger: testLogger,
+                    searchResultTask: searchTask,
+                    token: CancellationToken.None);
+                _output.WriteLine("2. End act");
+
+                var finished = await tcs.Task;
+
+                Assert.Equal(expectedItems, finished);
+                _output.WriteLine("4. End of test");
+            }
         }
 
         public static IEnumerable<object[]> TestSearchMetadata()

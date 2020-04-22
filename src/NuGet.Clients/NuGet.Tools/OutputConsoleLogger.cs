@@ -18,7 +18,6 @@ namespace NuGetVSExtension
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
-        private const string LogEntrySource = "NuGet Package Manager";
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
@@ -131,14 +130,24 @@ namespace NuGetVSExtension
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
-            var value = properties.Item(MSBuildVerbosityKey).Value;
-            if (value is int)
-            {
-                return (int)value;
-            }
+            int logLevel = DefaultVerbosityLevel;
 
-            return DefaultVerbosityLevel;
+            try
+            {
+                var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
+
+                var value = properties.Item(MSBuildVerbosityKey).Value;
+                if (value is int)
+                {
+                    logLevel = (int)value;
+                }
+            }
+            catch (Exception ex)
+            {
+                ReportWarning($"Error getting MSBUILD verbosity level {ex.Message}. Fallback to 2");
+            }
+            
+            return logLevel;
         }
 
         public void Start()
@@ -150,6 +159,12 @@ namespace NuGetVSExtension
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
+        }
+
+        public void ReportWarning(string message)
+        {
+            var errorListEntry = new ErrorListTableEntry(message, LogLevel.Warning);
+            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
         }
 
         public void ReportError(string message)

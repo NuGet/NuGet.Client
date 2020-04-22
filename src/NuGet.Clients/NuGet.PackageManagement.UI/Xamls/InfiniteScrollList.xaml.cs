@@ -13,13 +13,17 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
+
 
 namespace NuGet.PackageManagement.UI
 {
@@ -85,14 +89,15 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Mvs.ThreadHelper.ThrowIfNotOnUIThread();
-            if (e.PropertyName == nameof(LoadingStatusIndicator.Status))
+            _joinableTaskFactory.Value.Run(async delegate
             {
-                if (LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                if (e.PropertyName == nameof(LoadingStatusIndicator.Status)
+                    && LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
                 {
                     LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 }
-            }
+            });
         }
 
         // Indicates wether check boxes are enabled on packages
