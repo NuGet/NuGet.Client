@@ -532,7 +532,7 @@ namespace NuGet.PackageManagement.UI
                         removedPackages,
                         updatedPackagesOld,
                         updatedPackagesNew,
-                        frameworks.ToList());
+                        frameworks);
 
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 

@@ -316,7 +316,7 @@
     <value>Latest stable version is installed</value>
   </data>
   <data name="ToolTip_PackageRecommended" xml:space="preserve">
-    <value>Recommended package</value>
+    <value>IntelliCode package suggestion based on this project context</value>
   </data>
   <data name="ToolTip_UpdateAvailable" xml:space="preserve">
     <value>Update available</value>

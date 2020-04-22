@@ -65,9 +65,9 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
-        public int SelectedIndex { private set;  get; }
-        public int RecommendedCount { private set;  get; }
-        public bool RecommendPackages { private set;  get; }
+        public int SelectedIndex { get; private set; }
+        public int RecommendedCount { get; private set; }
+        public bool RecommendPackages { get; private set; }
 
         /// <summary>
         /// Sets the current selection info

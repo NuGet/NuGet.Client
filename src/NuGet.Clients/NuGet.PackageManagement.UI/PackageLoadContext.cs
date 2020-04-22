@@ -56,7 +56,7 @@ namespace NuGet.PackageManagement.UI
         public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
 
         // get lock file for projects
-        public async Task<List<LockFile>> getLockFiles(IEnumerable<NuGetProject> nuGetProjects)
+        private async Task<List<LockFile>> GetLockFiles(IEnumerable<NuGetProject> nuGetProjects)
         {
             var nuGetProjectList = nuGetProjects.ToList();
             var buildIntegratedProjects = nuGetProjectList.OfType<BuildIntegratedNuGetProject>().ToList();
@@ -78,7 +78,7 @@ namespace NuGet.PackageManagement.UI
         public async Task<Dictionary<string, VersionRange>> GetDependentPackagesAsync()
         {
             // get lock files from projects. This will add all dependency packages for all projects in the list
-            List<LockFile> lockFiles = await getLockFiles(Projects.ToList());
+            List<LockFile> lockFiles = await GetLockFiles(Projects.ToList());
             Dictionary<string, VersionRange> dependentPackages = new Dictionary<string, VersionRange>();
 
             foreach (LockFile lockFile in lockFiles)

@@ -2135,7 +2135,7 @@ namespace NuGet.PackageManagement.UI {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Recommended package.
+        ///   Looks up a localized string similar to IntelliCode package suggestion based on this project context.
         /// </summary>
         public static string ToolTip_PackageRecommended {
             get {

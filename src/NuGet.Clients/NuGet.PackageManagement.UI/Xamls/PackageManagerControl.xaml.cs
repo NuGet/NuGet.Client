@@ -763,10 +763,10 @@ namespace NuGet.PackageManagement.UI
             //   the package manager was opened for a project, not a solution,
             //   this is the Browse tab,
             //   and the search text is an empty string
-            if (loadContext.SourceRepositories.Count() == 1
-                && loadContext.IsSolution == false
+            if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
+                && loadContext.SourceRepositories.Count() == 1
                 && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
             {
                 _recommendPackages = true;

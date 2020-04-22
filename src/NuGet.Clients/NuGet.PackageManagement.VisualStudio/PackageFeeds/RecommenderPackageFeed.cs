@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.DataAI.NuGetRecommender.Contracts;
+using Microsoft.VisualStudio.Shell;
+using NuGet.Common;
+using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using Microsoft.VisualStudio.Shell;
-using Recommender = Microsoft.DataAI.NuGetRecommender.Contracts;
-using NuGet.PackageManagement.Telemetry;
-using NuGet.Common;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -31,7 +31,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly Common.ILogger _logger;
         private readonly INuGetTelemetryService _telemetryService;
 
-        Recommender.IVsNuGetPackageRecommender NuGetRecommender { get; set; }
+        IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
@@ -80,7 +80,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _logger = logger;
 
             // Get NuGet package recommender service, or null if it is not available
-            NuGetRecommender = Package.GetGlobalService(typeof(Recommender.SVsNuGetRecommenderService)) as Recommender.IVsNuGetPackageRecommender;
+            NuGetRecommender = Package.GetGlobalService(typeof(SVsNuGetRecommenderService)) as IVsNuGetPackageRecommender;
         }
 
         private class RecommendSearchToken : ContinuationToken
