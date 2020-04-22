@@ -21,7 +21,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             _asyncServiceProvider = asyncServiceProvider ?? throw new ArgumentNullException(nameof(asyncServiceProvider));
         }
 
-
         public bool IsPackageManagerUISupported(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             if (workspaceVisualNodeBase is null)
@@ -30,6 +29,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             }
             return IsPackageManagerUISupportAvailable;
         }
+
         public void OpenPackageManagerUI(WorkspaceVisualNodeBase workspaceVisualNodeBase)
         {
             _joinableTaskFactory.RunAsync(() => OpenPackageManagerUIAsync(workspaceVisualNodeBase));

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using Microsoft.VisualStudio.Workspace.VSIntegration.UI;
@@ -20,7 +21,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         private readonly RestoreCommandHandler _restoreCommandHandler;
         private readonly PackageManagerUICommandHandler _packageManagerUICommandHandler;
 
-        public NuGetWorkspaceCommandHandler(JoinableTaskContext taskContext, IAsyncServiceProvider asyncServiceProvider)
+        internal NuGetWorkspaceCommandHandler(JoinableTaskContext taskContext, IAsyncServiceProvider asyncServiceProvider)
         {
             if (taskContext == null)
             {
@@ -53,7 +54,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                     case PkgCmdIDList.CmdidRestorePackages:
                         if (IsSolutionOnlySelection(selection))
                         {
-
                             _restoreCommandHandler.RunSolutionRestore();
                             return VSConstants.S_OK;
                         }
@@ -69,7 +69,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                         break;
                 }
             }
-            return (int)Microsoft.VisualStudio.OLE.Interop.Constants.OLECMDERR_E_NOTSUPPORTED;
+            return (int)Constants.OLECMDERR_E_NOTSUPPORTED;
         }
 
         public bool QueryStatus(List<WorkspaceVisualNodeBase> selection, Guid pguidCmdGroup, uint nCmdID, ref uint cmdf, ref string customTitle)
@@ -85,10 +85,9 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                         case PkgCmdIDList.CmdidRestorePackages:
                             if (IsSolutionOnlySelection(selection))
                             {
-
                                 var isRestoreActionInProgress = _restoreCommandHandler.IsRestoreActionInProgress();
-                                cmdf = (uint)((isRestoreActionInProgress ? 0 : Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED)
-                                    | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED);
+                                cmdf = (uint)((isRestoreActionInProgress ? 0 : OLECMDF.OLECMDF_ENABLED)
+                                    | OLECMDF.OLECMDF_SUPPORTED);
                                 handled = true;
                             }
                             break;
@@ -97,8 +96,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                             {
                                 var isPackageManagerUISupported = _packageManagerUICommandHandler.IsPackageManagerUISupported(selection.Single());
                                 cmdf = (uint)(isPackageManagerUISupported ?
-                                    (Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_ENABLED | Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_SUPPORTED) :
-                                    Microsoft.VisualStudio.OLE.Interop.OLECMDF.OLECMDF_INVISIBLE);
+                                    (OLECMDF.OLECMDF_ENABLED | OLECMDF.OLECMDF_SUPPORTED) :
+                                    OLECMDF.OLECMDF_INVISIBLE);
                                 handled = true;
                             }
                             break;
