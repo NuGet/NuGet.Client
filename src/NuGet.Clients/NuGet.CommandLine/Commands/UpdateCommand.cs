@@ -141,11 +141,11 @@ namespace NuGet.CommandLine
                     break;
                 case 1:
                     // Use the package source from the load config to preload any creds that might be needed for authentication.
-                    var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
+                    var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
                     targetSource = Common.PackageSourceProviderExtensions.ResolveSource(availableSources, Source.Single());
                     break;
                 default:
-                    throw new CommandException(NuGetResources.Errror_UpdateSelf_Source);
+                    throw new CommandException(NuGetResources.Error_UpdateSelf_Source);
             }
             var selfUpdater = new SelfUpdater(Console);
             await selfUpdater.UpdateSelfAsync(Prerelease, targetSource);

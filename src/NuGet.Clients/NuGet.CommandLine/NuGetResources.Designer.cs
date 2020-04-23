@@ -3456,9 +3456,9 @@ namespace NuGet.CommandLine {
         /// <summary>
         ///   Looks up a localized string similar to The `update -self` command only accepts one source as an argument. If the source option is not specified, the default NuGet source will be used..
         /// </summary>
-        public static string Errror_UpdateSelf_Source {
+        public static string Error_UpdateSelf_Source {
             get {
-                return ResourceManager.GetString("Errror_UpdateSelf_Source", resourceCulture);
+                return ResourceManager.GetString("Error_UpdateSelf_Source", resourceCulture);
             }
         }
         
