@@ -1324,7 +1324,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
                 // Assert
-                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(r.Success , r.Output + " " + r.Errors);
             }
         }
 
