@@ -286,7 +286,6 @@ namespace NuGet.PackageManagement.UI.Test
             var searchTask = Task.FromResult(SearchResult.FromItems( searchItems ));
             var testLogger = new TestNuGetUILogger(_output);
             var tcs = new TaskCompletionSource<int>();
-
             var list = new InfiniteScrollList(new Lazy<JoinableTaskFactory>(() => _joinableTaskContext.Factory));
 
             var currentStatus = LoadingStatus.Loading;
