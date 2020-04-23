@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.DataAI.NuGetRecommender.Contracts;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
-using NuGet.PackageManagement.Telemetry;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
@@ -29,7 +28,6 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
-        private readonly INuGetTelemetryService _telemetryService;
 
         IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
@@ -39,8 +37,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Dictionary<string, VersionRange> dependentPackages,
             IEnumerable<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
-            Common.ILogger logger,
-            INuGetTelemetryService telemetryService)
+            Common.ILogger logger)
         {
             if (sourceRepository == null)
             {
@@ -76,7 +73,6 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 throw new ArgumentNullException(nameof(logger));
             }
-            _telemetryService = telemetryService;
             _logger = logger;
 
             // Get NuGet package recommender service, or null if it is not available
@@ -113,8 +109,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
 
-            TelemetryServiceUtility.StartOrResumeTimer();
-
             List<string> recommendIds = new List<string>();
             if (NuGetRecommender != null)
             {
@@ -149,17 +143,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 packages,
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
-
-            // Send telemetry
-            TelemetryServiceUtility.StopTimer();
-            var duration = TelemetryServiceUtility.GetTimerElapsedTime();
-            if (_telemetryService != null)
-            {
-                _telemetryService.EmitTelemetryEvent(new RecommendTelemetryEvent(
-                // this is the total number of package ids returned from the recommender, not the number actually recommended
-                recommendIds.Count(),
-                duration.TotalSeconds));
-            }
 
             if (items.Count() < 1)
             {

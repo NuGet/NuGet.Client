@@ -97,6 +97,37 @@ namespace NuGet.PackageManagement.UI
             return dependentPackages;
         }
 
+        public async Task<List<string>> GetTargetFrameworksAsync()
+        { 
+            var frameworks = new List<string>();
+            var buildIntegratedProjects = Projects.OfType<BuildIntegratedNuGetProject>().ToList();
+            foreach (var project in buildIntegratedProjects)
+            {
+                // get the target frameworks for PackagesConfig style projects
+                NuGetFramework framework;
+                if (project.TryGetMetadata<NuGetFramework>(NuGetProjectMetadataKeys.TargetFramework, out framework)
+                    && !frameworks.Contains(framework.ToString()))
+                {
+                    frameworks.Add(framework.ToString());
+                }
+
+                // get the target frameworks for PackageReference style projects
+                var dgcContext = new DependencyGraphCacheContext();
+                var packageSpecs = await project.GetPackageSpecsAsync(dgcContext);
+                foreach (var packageSpec in packageSpecs)
+                {
+                    foreach (var targetFramework in packageSpec.TargetFrameworks)
+                    {
+                        if (!frameworks.Contains(targetFramework.FrameworkName.ToString()))
+                        {
+                            frameworks.Add(targetFramework.FrameworkName.ToString());
+                        }
+                    }
+                }
+            }
+            return frameworks;
+        }
+
         // Returns the list of frameworks that we need to pass to the server during search
         public IEnumerable<string> GetSupportedFrameworks()
         {

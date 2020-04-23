@@ -502,11 +502,8 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
-                    List<string> frameworks = new List<string>();
-                    foreach (var project in uiService.Projects)
-                    {
-                        frameworks = (await NuGetPackageManager.GetTargetFramework(project));
-                    }
+                    PackageLoadContext plc = new PackageLoadContext(null, false, uiService.UIContext);
+                    var frameworks = await plc.GetTargetFrameworksAsync();
 
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),

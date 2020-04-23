@@ -1001,18 +1001,7 @@ namespace NuGet.PackageManagement.UI
                 // if we get here, recommendPackages == true
                 // this will get the dependent packages only if a lock (assets) file is present
                 var dependentPackages = await context.GetDependentPackagesAsync();
-
-                List<string> targetFrameworks = new List<string>();
-                foreach (var project in context.Projects)
-                {
-                    foreach(var tf in await NuGetPackageManager.GetTargetFramework(project))
-                    {
-                        if(!targetFrameworks.Contains(tf))
-                        {
-                            targetFrameworks.Add(tf);
-                        }
-                    }
-                }
+                var targetFrameworks = await context.GetTargetFrameworksAsync();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
@@ -1024,8 +1013,7 @@ namespace NuGet.PackageManagement.UI
                     dependentPackages,
                     targetFrameworks,
                     metadataProvider,
-                    logger,
-                    TelemetryActivity.NuGetTelemetryService);
+                    logger);
                 return packageFeeds;
             }
 
