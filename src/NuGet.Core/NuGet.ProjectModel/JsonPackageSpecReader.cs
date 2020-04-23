@@ -361,7 +361,7 @@ namespace NuGet.ProjectModel
                     var autoReferenced = false;
                     var generatePathProperty = false;
                     var versionCentrallyManaged = false;
-
+                    string aliases = null;
                     string dependencyVersionValue = null;
 
                     if (jsonReader.TokenType == JsonToken.String)
@@ -448,6 +448,10 @@ namespace NuGet.ProjectModel
                                 case "versionCentrallyManaged":
                                     versionCentrallyManaged = ReadNextTokenAsBoolOrFalse(jsonReader, packageSpecPath);
                                     break;
+
+                                case "aliases":
+                                    aliases = jsonReader.ReadAsString();
+                                    break;
                             }
                         });
                     }
@@ -504,6 +508,7 @@ namespace NuGet.ProjectModel
                         AutoReferenced = autoReferenced,
                         GeneratePathProperty = generatePathProperty,
                         VersionCentrallyManaged = versionCentrallyManaged,
+                        Aliases = aliases,
                         // The ReferenceType is not persisted to the assets file
                         // Default to LibraryDependencyReferenceType.Direct on Read
                         ReferenceType = LibraryDependencyReferenceType.Direct

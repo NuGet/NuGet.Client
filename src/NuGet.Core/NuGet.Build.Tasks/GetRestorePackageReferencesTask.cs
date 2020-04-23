@@ -69,6 +69,7 @@ namespace NuGet.Build.Tasks
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "NoWarn");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "IsImplicitlyDefined");
                 BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "GeneratePathProperty");
+                BuildTasksUtility.CopyPropertyIfExists(msbuildItem, properties, "Aliases");
 
                 entries.Add(new TaskItem(Guid.NewGuid().ToString(), properties));
             }

@@ -251,6 +251,7 @@ namespace NuGet.Build.Tasks.Console
                 {
                     AutoReferenced = packageReferenceItem.IsPropertyTrue("IsImplicitlyDefined"),
                     GeneratePathProperty = packageReferenceItem.IsPropertyTrue("GeneratePathProperty"),
+                    Aliases = packageReferenceItem.GetProperty("Aliases"),
                     IncludeType = GetLibraryIncludeFlags(packageReferenceItem.GetProperty("IncludeAssets"), LibraryIncludeFlags.All) & ~GetLibraryIncludeFlags(packageReferenceItem.GetProperty("ExcludeAssets"), LibraryIncludeFlags.None),
                     LibraryRange = new LibraryRange(
                         packageReferenceItem.Identity,

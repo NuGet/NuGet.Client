@@ -24,6 +24,8 @@ using Xunit;
 
 namespace NuGet.Commands.FuncTest
 {
+    using static NuGet.Frameworks.FrameworkConstants;
+
     using LocalPackageArchiveDownloader = NuGet.Protocol.LocalPackageArchiveDownloader;
 
     public class RestoreCommandTests
@@ -2683,6 +2685,218 @@ namespace NuGet.Commands.FuncTest
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "TestProject.csproj.nuget.dgspec.json")));
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "TestProject.csproj.nuget.g.props")));
                 Assert.True(File.Exists(Path.Combine(projectDirectory, "TestProject.csproj.nuget.g.targets")));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WhenPackageReferenceHasAliases_IsReflectedInTheCompileTimeAssemblies()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                    ""aliases"" : ""Core"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                };
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                var library = result.LockFile.Targets.First(e => e.TargetFramework.Equals(CommonFrameworks.Net50)).Libraries.Single();
+                library.Should().NotBeNull("The assets file is expect to have a single library");
+                library.CompileTimeAssemblies.Count.Should().Be(1, because: "The package has only 1 compatible file");
+                library.CompileTimeAssemblies.Single().Path.Should().Be("lib/net5.0/a.dll");
+                library.CompileTimeAssemblies.Single().Properties.Should().Contain(new KeyValuePair<string,string>(LockFileItem.AliasesProperty, "Core"));
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WhenPackageReferenceWithAlisesHasMultipleAssemblies_ItIsReflectedInAllCompileTimeAssemblies()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                    ""aliases"" : ""Core"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0/a.dll");
+                packageA.AddFile("lib/net5.0/a2.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                };
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                var library = result.LockFile.Targets.First(e => e.TargetFramework.Equals(CommonFrameworks.Net50)).Libraries.Single();
+                library.Should().NotBeNull("The assets file is expect to have a single library");
+                library.CompileTimeAssemblies.Count.Should().Be(2, because: "The package has 2 compatible files");
+                foreach(var assembly in library.CompileTimeAssemblies)
+                {
+                    assembly.Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "Core"));
+                }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WhenPackageReferenceWithInvalidAliasValueIsSpecified_ItIsPassedThrough()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                    ""aliases"" : ""invalid-alias:yes"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext()
+                {
+                    Id = "a",
+                    Version = "1.0.0"
+                };
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                };
+                var command = new RestoreCommand(request);
+
+                // Act
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+
+                // Assert
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                var library = result.LockFile.Targets.First(e => e.TargetFramework.Equals(CommonFrameworks.Net50)).Libraries.Single();
+                library.Should().NotBeNull("The assets file is expect to have a single library");
+                library.CompileTimeAssemblies.Count.Should().Be(1, because: "The package has 1 compatible file");
+                foreach (var assembly in library.CompileTimeAssemblies)
+                {
+                    assembly.Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "invalid-alias:yes"));
+                }
             }
         }
 

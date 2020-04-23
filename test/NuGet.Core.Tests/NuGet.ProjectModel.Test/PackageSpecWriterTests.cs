@@ -562,6 +562,69 @@ namespace NuGet.ProjectModel.Test
             VerifyJsonPackageSpecRoundTrip(json);
         }
 
+        [Fact]
+        public void RoundTripPackageReferenceVersionCentrallyManaged()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""versionCentrallyManaged"": true
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void RoundTripPackageReferenceGeneratePathProperty()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""generatePathProperty"": true
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
+        [Fact]
+        public void RoundTripPackageReferenceAliases()
+        {
+            // Arrange
+            var json = @"{
+                  ""frameworks"": {
+                    ""net46"": {
+                        ""dependencies"": {
+                            ""a"": {
+                                ""version"": ""[1.0.0, )"",
+                                ""aliases"": ""yay""
+                            }
+                        }
+                    }
+                  }
+                }";
+
+            // Act & Assert
+            VerifyJsonPackageSpecRoundTrip(json);
+        }
+
         private static string GetJsonString(PackageSpec packageSpec)
         {
             JObject jObject = packageSpec.ToJObject();

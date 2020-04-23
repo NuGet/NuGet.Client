@@ -168,7 +168,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -219,7 +222,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -267,7 +273,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -315,7 +324,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -363,7 +375,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -415,7 +430,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -477,7 +495,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;
@@ -522,7 +543,10 @@ namespace NuGet.ProjectModel.Test.ProjectLockFile
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var tfm = new TargetFrameworkInformation();
             tfm.FrameworkName = framework;

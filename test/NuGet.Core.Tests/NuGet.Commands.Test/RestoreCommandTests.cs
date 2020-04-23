@@ -29,7 +29,7 @@ namespace NuGet.Commands.Test
 {
     public class RestoreCommandTests
     {
-        private static SignedPackageVerifierSettings _defaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
+        private static SignedPackageVerifierSettings DefaultSettings = SignedPackageVerifierSettings.GetDefault(TestEnvironmentVariableReader.EmptyInstance);
 
         [Fact]
         public async Task RestoreCommand_VerifyRuntimeSpecificAssetsAreNotIncludedForCompile_RuntimeOnlyAsync()
@@ -1016,7 +1016,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, DefaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(isValid: false, isSigned: true));
@@ -1086,7 +1086,7 @@ namespace NuGet.Commands.Test
 
                 signedPackageVerifier.Setup(x => x.VerifySignaturesAsync(
                     It.IsAny<ISignedPackageReader>(),
-                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, _defaultSettings)),
+                    It.Is<SignedPackageVerifierSettings>(s => SigningTestUtility.AreVerifierSettingsEqual(s, DefaultSettings)),
                     It.IsAny<CancellationToken>(),
                     It.IsAny<Guid>())).
                     ReturnsAsync(new VerifySignaturesResult(isValid: true, isSigned: true));
@@ -1395,9 +1395,13 @@ namespace NuGet.Commands.Test
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
+               new List<NuGetLogCode>(),
                autoReferenced: false,
-               generatePathProperty: true);
+               generatePathProperty: true,
+               versionCentrallyManaged: false,
+               LibraryDependencyReferenceType.Direct,
+               aliases: null);
+
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
 
@@ -1431,9 +1435,12 @@ namespace NuGet.Commands.Test
                LibraryDependencyType.Default,
                LibraryIncludeFlags.All,
                LibraryIncludeFlags.All,
-               new List<Common.NuGetLogCode>(),
+               new List<NuGetLogCode>(),
                autoReferenced: true,
-               generatePathProperty: true);
+               generatePathProperty: true,
+               versionCentrallyManaged: false,
+               LibraryDependencyReferenceType.Direct,
+               aliases: null);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion(autoreferencedpackageId.ToLowerInvariant(), VersionRange.Parse("2.0.0"));
