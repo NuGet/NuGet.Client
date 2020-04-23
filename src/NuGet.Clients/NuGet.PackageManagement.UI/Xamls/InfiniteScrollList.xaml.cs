@@ -13,7 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -21,8 +20,6 @@ using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
-using Task = System.Threading.Tasks.Task;
-
 
 namespace NuGet.PackageManagement.UI
 {
