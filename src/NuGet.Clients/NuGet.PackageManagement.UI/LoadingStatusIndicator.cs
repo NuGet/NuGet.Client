@@ -16,11 +16,17 @@ namespace NuGet.PackageManagement.UI
 
         public LoadingStatus Status
         {
-            get { return _status; }
+            get
+            {
+                return _status;
+            }
             set
             {
-                _status = value;
-                OnPropertyChanged(nameof(Status));
+                if (_status != value)
+                {
+                    _status = value;
+                    OnPropertyChanged(nameof(Status));
+                }
             }
         }
 

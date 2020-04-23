@@ -113,7 +113,7 @@ namespace NuGet.PackageManagement.UI.Test
             Assert.Equal("loader", exception.ParamName);
         }
 
-        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfTheory]
         [InlineData(null)]
         [InlineData("")]
         public async Task LoadItems_LoadingMessageIsNullOrEmpty_Throws(string loadingMessage)
@@ -170,7 +170,7 @@ namespace NuGet.PackageManagement.UI.Test
                 });
         }
 
-        [WpfFact(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfFact]
         public async Task LoadItems_BeforeGettingCurrent_WaitsForInitialResults()
         {
             var loader = new Mock<IPackageItemLoader>(MockBehavior.Strict);
@@ -275,7 +275,7 @@ namespace NuGet.PackageManagement.UI.Test
             }
         }
 
-        [WpfTheory(Skip = "https://github.com/NuGet/Home/issues/9445")]
+        [WpfTheory]
         [MemberData(nameof(TestSearchMetadata))]
         public async Task LoadItemsAsync_LoadingStatusIndicator_InItemsCollectionIfEmptySearch(
             IPackageSearchMetadata[] searchItems,
@@ -303,7 +303,7 @@ namespace NuGet.PackageManagement.UI.Test
                     It.IsNotNull<IProgress<IItemLoaderState>>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromResult(0))
-                .Callback( () => {
+                .Callback(() => {
                     currentStatus = searchItems.Length > 0 ? LoadingStatus.Ready : LoadingStatus.NoItemsFound;
                 });
             loaderMock.Setup(x => x.UpdateStateAsync(
