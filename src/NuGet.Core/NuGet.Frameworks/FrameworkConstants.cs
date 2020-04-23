@@ -34,13 +34,6 @@ namespace NuGet.Frameworks
             public const string Windows = "Windows";
         }
 
-        /// <summary>
-        /// Allowed list of profiles in Net5.0ERA
-        /// </summary>
-        internal static HashSet<string> FrameworkProfiles
-            = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
-                { };
-
         public static class FrameworkIdentifiers
         {
             public const string NetCoreApp = ".NETCoreApp";

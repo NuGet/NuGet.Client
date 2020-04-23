@@ -43,13 +43,13 @@ namespace NuGet.Test
         }
 
         [Theory]
-        [InlineData("net5.0", ".NETCoreApp,Version=v5.0")]
+        [InlineData("net5.0", "net5.0")]
         [InlineData("net452", ".NETFramework,Version=v4.5.2")]
         [InlineData("netcoreapp3.1", ".NETCoreApp,Version=v3.1")]
         public void NuGetFramework_GetDotNetFrameworkName(string input, string expected)
         {
             var fw = NuGetFramework.Parse(input);
-            
+
             string result = fw.GetDotNetFrameworkName(DefaultFrameworkNameProvider.Instance);
 
             Assert.Equal(expected, result);
