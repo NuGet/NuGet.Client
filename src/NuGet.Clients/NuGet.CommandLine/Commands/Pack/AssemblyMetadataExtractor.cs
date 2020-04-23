@@ -15,7 +15,7 @@ namespace NuGet.CommandLine
     {
         private static T CreateInstance<T>(this AppDomain domain)
         {
-            return (T)domain.CreateInstanceAndUnwrap(typeof(T).Assembly.FullName, typeof(T).FullName);
+            return (T)domain.CreateInstanceFromAndUnwrap(Assembly.GetExecutingAssembly().Location, typeof(T).FullName);
         }
 
         public static AssemblyMetadata GetMetadata(string assemblyPath)

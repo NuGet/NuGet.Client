@@ -6362,6 +6362,243 @@ namespace Proj1
                 r.AllOutput.Should().NotContain(NuGetLogCode.NU5105.ToString());
             }
         }
+
+        [Fact]
+        public void PackCommand_WhenNuspecReplacementTokensAreUsed_AssemblyMetadataIsExtracted()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var projectDirectory = Path.Combine(workingDirectory, "proj");
+
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj.csproj",
+    @"<Project ToolsVersion='14.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include='System'/>
+    <Reference Include='System.Core'/>
+    <Reference Include='System.Xml.Linq'/>
+    <Reference Include='System.Data.DataSetExtensions'/>
+    <Reference Include='Microsoft.CSharp'/> 
+    <Reference Include='System.Data'/>
+    <Reference Include='System.Net.Http'/>
+    <Reference Include='System.Xml'/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj_file1.cs' />
+    <Compile Include='AssemblyInfo.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj_file1.cs",
+    @"using System;
+
+namespace Proj
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+
+                Util.CreateFile(
+    projectDirectory,
+    "AssemblyInfo.cs",
+@"using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyTitle(""MetadataExtractor"")]
+[assembly: AssemblyDescription(""MetadataExtractor"")]
+[assembly: AssemblyConfiguration("""")]
+[assembly: AssemblyCompany(""Company"")]
+[assembly: AssemblyProduct(""MetadataExtractor"")]
+[assembly: AssemblyCopyright(""Copyright ©  2050"")]
+[assembly: AssemblyTrademark("""")]
+[assembly: AssemblyCulture("""")]
+[assembly: AssemblyVersion(""1.0.0"")]
+[assembly: AssemblyFileVersion(""1.0.0"")]
+");
+
+                Util.CreateFile(
+                   workingDirectory,
+                   "proj.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+  </metadata>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    projectDirectory,
+                    "pack -build",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(projectDirectory, "proj.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), $"The {nupkgPath} does not exist.");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal("proj", nuspecReader.GetIdentity().Id);
+                    Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
+                    Assert.Equal("Company", nuspecReader.GetAuthors());
+                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
+                    Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
+                    Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());
+                }
+            }
+        }
+
+        [Fact]
+        public void PackCommand_WhenNuGetExeIsRenamed_AssemblyMetadataIsStillExtracted()
+        {
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                var projectDirectory = Path.Combine(workingDirectory, "proj");
+
+                // create project 1
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj.csproj",
+    @"<Project ToolsVersion='14.0' DefaultTargets='Build'
+    xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include='System'/>
+    <Reference Include='System.Core'/>
+    <Reference Include='System.Xml.Linq'/>
+    <Reference Include='System.Data.DataSetExtensions'/>
+    <Reference Include='Microsoft.CSharp'/> 
+    <Reference Include='System.Data'/>
+    <Reference Include='System.Net.Http'/>
+    <Reference Include='System.Xml'/>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include='proj_file1.cs' />
+    <Compile Include='AssemblyInfo.cs' />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include='proj_file2.txt' />
+  </ItemGroup>
+  <Import Project='$(MSBuildToolsPath)\Microsoft.CSharp.targets' />
+</Project>");
+                Util.CreateFile(
+                    projectDirectory,
+                    "proj_file1.cs",
+    @"using System;
+
+namespace Proj
+{
+    public class Class1
+    {
+        public int A { get; set; }
+    }
+}");
+
+                Util.CreateFile(
+    projectDirectory,
+    "AssemblyInfo.cs",
+@"using System.Reflection;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
+[assembly: AssemblyTitle(""MetadataExtractor"")]
+[assembly: AssemblyDescription(""MetadataExtractor"")]
+[assembly: AssemblyConfiguration("""")]
+[assembly: AssemblyCompany(""Company"")]
+[assembly: AssemblyProduct(""MetadataExtractor"")]
+[assembly: AssemblyCopyright(""Copyright ©  2050"")]
+[assembly: AssemblyTrademark("""")]
+[assembly: AssemblyCulture("""")]
+[assembly: AssemblyVersion(""1.0.0"")]
+[assembly: AssemblyFileVersion(""1.0.0"")]
+");
+
+                Util.CreateFile(
+                   workingDirectory,
+                   "proj.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>$id$</id>
+    <version>$version$</version>
+    <title>$title$</title>
+    <authors>$author$</authors>
+    <owners>$author$</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>$description$</description>
+    <copyright>$copyright$</copyright>
+  </metadata>
+</package>");
+
+                // Finally: Copy & rename NuGet.exe
+                var nuGetDir = Directory.CreateDirectory(Path.Combine(workingDirectory, "nuget"));
+                var renamedNuGetExe = Path.Combine(nuGetDir.FullName, "NuGet-A.exe");
+                File.Copy(Util.GetNuGetExePath(), renamedNuGetExe, overwrite: true);
+
+                // Act
+                var r = CommandRunner.Run(
+                    renamedNuGetExe,
+                    projectDirectory,
+                    "pack -build",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var nupkgPath = Path.Combine(projectDirectory, "proj.1.0.0.nupkg");
+
+                Assert.True(File.Exists(nupkgPath), $"The {nupkgPath} does not exist.");
+                using (var nupkgReader = new PackageArchiveReader(nupkgPath))
+                {
+                    var nuspecReader = nupkgReader.NuspecReader;
+
+                    Assert.Equal("proj", nuspecReader.GetIdentity().Id);
+                    Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
+                    Assert.Equal("Company", nuspecReader.GetAuthors());
+                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
+                    Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
+                    Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());
+                }
+            }
+        }
     }
 
     internal static class PackageArchiveReaderTestExtensions
