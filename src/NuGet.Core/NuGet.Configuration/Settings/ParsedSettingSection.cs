@@ -7,14 +7,14 @@ using System.Xml.Linq;
 
 namespace NuGet.Configuration
 {
-    internal sealed class ParsedSettingSection : SettingSection
+    public sealed class ParsedSettingSection : SettingSection
     {
-        internal ParsedSettingSection(XElement element, SettingsFile origin)
+        public ParsedSettingSection(XElement element, SettingsFile origin)
             : base(element, origin)
         {
         }
 
-        internal ParsedSettingSection(string name, params SettingItem[] children)
+        public ParsedSettingSection(string name, params SettingItem[] children)
             : base(name, attributes: null, children: new HashSet<SettingItem>(children))
         {
             foreach (var child in Children)

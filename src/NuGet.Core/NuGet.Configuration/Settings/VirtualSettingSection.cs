@@ -8,24 +8,24 @@ using System.Linq;
 
 namespace NuGet.Configuration
 {
-    public sealed class VirtualSettingSection : SettingSection
+    public class VirtualSettingSection : SettingSection
     {
-        internal VirtualSettingSection(SettingSection section)
+        public VirtualSettingSection(SettingSection section)
             : this(section.ElementName, section.Attributes, section.Items)
         {
         }
 
-        internal VirtualSettingSection(string name, params SettingItem[] children)
+        public VirtualSettingSection(string name, params SettingItem[] children)
             : this(name, attributes: null, children: new HashSet<SettingItem>(children))
         {
         }
 
-        internal VirtualSettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
+        public VirtualSettingSection(string name, IReadOnlyDictionary<string, string> attributes, IEnumerable<SettingItem> children)
             : base(name, attributes, children)
         {
         }
 
-        internal VirtualSettingSection Merge(SettingSection other)
+        public VirtualSettingSection Merge(SettingSection other)
         {
             if (!Equals(other))
             {
@@ -66,7 +66,7 @@ namespace NuGet.Configuration
             return this;
         }
 
-        internal override bool Add(SettingItem setting)
+        public override bool Add(SettingItem setting)
         {
             if (setting == null)
             {
@@ -83,7 +83,7 @@ namespace NuGet.Configuration
             return false;
         }
 
-        internal override void Remove(SettingItem setting)
+        public override void Remove(SettingItem setting)
         {
             if (setting == null)
             {
