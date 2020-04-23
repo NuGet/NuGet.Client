@@ -317,8 +317,7 @@
         Code behind changes to the Text property will trigger a narrator event.
       -->
       <vs:LiveTextBlock
-        x:Name="LtbLoading"
-        AutomationProperties.IsOffscreenBehavior="Offscreen"
+        x:Name="_ltbLoading"
         Visibility="Collapsed"
         IsFrequencyLimited="True" />
     </Grid>

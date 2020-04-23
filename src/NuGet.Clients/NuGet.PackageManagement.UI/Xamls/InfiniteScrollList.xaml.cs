@@ -92,9 +92,9 @@ namespace NuGet.PackageManagement.UI
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
                 if (e.PropertyName == nameof(LoadingStatusIndicator.Status)
-                    && LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                    && _ltbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
                 {
-                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                    _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 }
             });
         }
