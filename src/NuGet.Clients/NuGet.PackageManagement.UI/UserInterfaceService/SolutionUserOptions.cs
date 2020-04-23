@@ -16,7 +16,6 @@ namespace NuGet.PackageManagement.UI
     /// </summary>
     [Export]
     [Export(typeof(IUserSettingsManager))]
-    [Export(typeof(IVsPersistSolutionOpts))]
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class SolutionUserOptions : IUserSettingsManager, IVsPersistSolutionOpts
     {
@@ -112,7 +111,7 @@ namespace NuGet.PackageManagement.UI
             return VSConstants.S_OK;
         }
 
-        // Called by the shell if the _strSolutionUserOptionsKey section declared in LoadUserOptions() as 
+        // Called by the shell if the _strSolutionUserOptionsKey section declared in LoadUserOptions() as
         // being written by this package has been found in the suo file
         public int ReadUserOptions(IStream pOptionsStream, string _)
         {
@@ -137,7 +136,7 @@ namespace NuGet.PackageManagement.UI
             return VSConstants.S_OK;
         }
 
-        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it 
+        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {
