@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.TaskStatusCenter;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -471,81 +472,13 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private class WaitDialogProgress : RestoreOperationProgressUI
-        {
-            private readonly ThreadedWaitDialogHelper.Session _session;
-            private readonly JoinableTaskFactory _taskFactory;
-
-            private WaitDialogProgress(
-                ThreadedWaitDialogHelper.Session session,
-                JoinableTaskFactory taskFactory)
-            {
-                _session = session;
-                _taskFactory = taskFactory;
-                UserCancellationToken = _session.UserCancellationToken;
-            }
-
-            public static async Task<RestoreOperationProgressUI> StartAsync(
-                IAsyncServiceProvider asyncServiceProvider,
-                JoinableTaskFactory jtf,
-                CancellationToken token)
-            {
-                await jtf.SwitchToMainThreadAsync();
-
-                var waitDialogFactory = await asyncServiceProvider.GetServiceAsync<
-                    SVsThreadedWaitDialogFactory, IVsThreadedWaitDialogFactory>();
-
-                var session = waitDialogFactory.StartWaitDialog(
-                    waitCaption: Resources.DialogTitle,
-                    initialProgress: new ThreadedWaitDialogProgressData(
-                        Resources.RestoringPackages,
-                        progressText: string.Empty,
-                        statusBarText: string.Empty,
-                        isCancelable: true,
-                        currentStep: 0,
-                        totalSteps: 0));
-
-                return new WaitDialogProgress(session, jtf);
-            }
-
-            public override void Dispose()
-            {
-                _taskFactory.Run(async () =>
-                {
-                    await _taskFactory.SwitchToMainThreadAsync();
-                    _session.Dispose();
-                });
-            }
-
-            public override async Task ReportProgressAsync(
-                string progressMessage,
-                uint currentStep,
-                uint totalSteps)
-            {
-                await _taskFactory.SwitchToMainThreadAsync();
-
-                // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                var progressData = new ThreadedWaitDialogProgressData(
-                    progressMessage,
-                    progressText: string.Empty,
-                    statusBarText: string.Empty,
-                    isCancelable: true,
-                    currentStep: (int)currentStep,
-                    totalSteps: (int)totalSteps);
-
-                _session.Progress.Report(progressData);
-            }
-        }
-
         private class StatusBarProgress : RestoreOperationProgressUI
         {
-            private static object Icon = (short)Constants.SBAI_General;
             private readonly JoinableTaskFactory _taskFactory;
-            private readonly IVsStatusbar _statusBar;
-            private uint _cookie = 0;
+            private readonly ITaskHandler _statusBar;
 
             private StatusBarProgress(
-                IVsStatusbar statusBar,
+                ITaskHandler statusBar,
                 JoinableTaskFactory taskFactory)
             {
                 _statusBar = statusBar;
@@ -559,36 +492,27 @@ namespace NuGet.SolutionRestoreManager
             {
                 await jtf.SwitchToMainThreadAsync();
 
-                var statusBar = await asyncServiceProvider.GetServiceAsync<SVsStatusbar, IVsStatusbar>();
+                IVsTaskStatusCenterService taskStatusCenterService = await asyncServiceProvider.GetServiceAsync<SVsTaskStatusCenterService, IVsTaskStatusCenterService>();
 
-                // Make sure the status bar is not frozen
-                int frozen;
-                statusBar.IsFrozen(out frozen);
+                TaskHandlerOptions options = default;
+                options.Title = Resources.RestoringPackages;
+                options.ActionsAfterCompletion = CompletionActions.RetainOnFaulted;
+                options.DisplayTaskDetails = new Action<Task>((t) => {
+                    // do nothing
+                });
 
-                if (frozen != 0)
-                {
-                    statusBar.FreezeOutput(0);
-                }
+                options.ClientId = new Guid("100564DE-A3FF-4043-86AA-5071157F8E77");
+                options.StartTipCalloutId = new Guid("46817CE0-EF99-42B8-9E67-A5D0F721A37C");
 
-                statusBar.Animation(1, ref Icon);
+                var taskHandler = taskStatusCenterService.PreRegister(options, data: default);
 
-                RestoreOperationProgressUI progress = new StatusBarProgress(statusBar, jtf);
-                await progress.ReportProgressAsync(Resources.RestoringPackages);
-
+                RestoreOperationProgressUI progress = new StatusBarProgress(taskHandler, jtf);
                 return progress;
             }
 
             public override void Dispose()
             {
-                _taskFactory.Run(async () =>
-                {
-                    await _taskFactory.SwitchToMainThreadAsync();
-
-                    _statusBar.Animation(0, ref Icon);
-                    _statusBar.Progress(ref _cookie, 0, "", 0, 0);
-                    _statusBar.FreezeOutput(0);
-                    _statusBar.Clear();
-                });
+                // nothing to be done.
             }
 
             public override async Task ReportProgressAsync(
@@ -596,23 +520,12 @@ namespace NuGet.SolutionRestoreManager
                 uint currentStep,
                 uint totalSteps)
             {
+                // TODO NK - Should I report the step?
                 await _taskFactory.SwitchToMainThreadAsync();
-
-                // Make sure the status bar is not frozen
-                int frozen;
-                _statusBar.IsFrozen(out frozen);
-
-                if (frozen != 0)
-                {
-                    _statusBar.FreezeOutput(0);
-                }
-
-                _statusBar.SetText(progressMessage);
-
-                if (totalSteps != 0)
-                {
-                    _statusBar.Progress(ref _cookie, 1, "", currentStep, totalSteps);
-                }
+                TaskProgressData taskProgressData = default;
+                taskProgressData.ProgressText = progressMessage;
+                taskProgressData.PercentComplete = (int)((currentStep / totalSteps) * 100);
+                _statusBar.Progress.Report(taskProgressData);
             }
         }
     }
