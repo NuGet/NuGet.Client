@@ -85,14 +85,15 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadingStatusIndicator_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            Mvs.ThreadHelper.ThrowIfNotOnUIThread();
-            if (e.PropertyName == nameof(LoadingStatusIndicator.Status))
+            _joinableTaskFactory.Value.Run(async delegate
             {
-                if (LtbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                if (e.PropertyName == nameof(LoadingStatusIndicator.Status)
+                    && _ltbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
                 {
-                    LtbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                    _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
                 }
-            }
+            });
         }
 
         // Indicates wether check boxes are enabled on packages
