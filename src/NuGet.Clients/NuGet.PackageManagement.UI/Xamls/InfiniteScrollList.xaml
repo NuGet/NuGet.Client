@@ -319,7 +319,9 @@
       <vs:LiveTextBlock
         x:Name="_ltbLoading"
         Visibility="Collapsed"
-        IsFrequencyLimited="True" />
+        IsFrequencyLimited="True"
+        Focusable="False"
+        AutomationProperties.IsOffscreenBehavior="Offscreen" />
     </Grid>
     <nuget:InfiniteScrollListBox
       d:DataContext="{d:DesignData Source=/Design/PackageItemListViewSampleData.xaml,IsDesignTimeCreatable=True}"
