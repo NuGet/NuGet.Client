@@ -1674,7 +1674,7 @@ namespace NuGet.CommandLine.Test
 
                 CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, "update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
                 result.ExitCode.Equals(1);
-                result.AllOutput.Contains(NuGetResources.Errror_UpdateSelf_Source);
+                result.AllOutput.Contains(NuGetResources.Error_UpdateSelf_Source);
             }
         }
     }
