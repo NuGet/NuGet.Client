@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -111,6 +112,20 @@ namespace NuGet.Protocol
         {
             var targetProperty = jobject.GetValue(propertyName: propertyName, comparison: StringComparison.OrdinalIgnoreCase);
             return targetProperty != null ? targetProperty.FromJToken<T>() : default(T);
+        }
+
+        /// <summary>
+        /// Extract the property directly from JObject.
+        /// </summary>
+        /// <typeparam name="T">Type of property to return.</typeparam>
+        /// <param name="jobject">The JObject to be deserialized.</param>
+        /// <param name="propertyName">The property name.</param>
+        public static T GetJObjectPropertyStartsWith<T>(this JObject jobject, string propertyName)
+        {
+            var targetProperty = jobject.Properties().
+                FirstOrDefault(prop => prop.Name.StartsWith(propertyName, StringComparison.OrdinalIgnoreCase));
+                
+            return targetProperty != default(JProperty) ? targetProperty.FromJToken<T>() : default(T);
         }
 
         public static bool? GetBoolean(this JObject json, string propertyName)

@@ -485,7 +485,6 @@ namespace Dotnet.Integration.Test
 
         private void PatchDepsJsonWithNewlyAddedDlls(string[] assemblyNames, string[] filePaths)
         {
-            string nugetBuildTasksName = "NuGet.Build.Tasks/5.6.0-preview.2.6508";
             foreach (string assemblyName in assemblyNames)
             {
                 foreach (string filePath in filePaths)
@@ -496,7 +495,7 @@ namespace Dotnet.Integration.Test
 
                     JObject netcoreapp50 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v5.0");
 
-                    JObject nugetBuildTasks = netcoreapp50.GetJObjectProperty<JObject>(nugetBuildTasksName);
+                    JObject nugetBuildTasks = netcoreapp50.GetJObjectPropertyStartsWith<JObject>("NuGet.Build.Tasks/");
 
                     JObject runtime = nugetBuildTasks.GetJObjectProperty<JObject>("runtime");
 
@@ -511,8 +510,8 @@ namespace Dotnet.Integration.Test
                         }
                     );
                     runtime.Add(jproperty);
-                    nugetBuildTasks["runtime"] = runtime;
-                    netcoreapp50[nugetBuildTasksName] = nugetBuildTasks;
+                    nugetBuildTasks.Value["runtime"] = runtime;
+                    netcoreapp50.Add(nugetBuildTasks);
                     targets[".NETCoreApp,Version=v5.0"] = netcoreapp50;
                     jsonFile["targets"] = targets;
                     SaveJson(jsonFile, filePath);
