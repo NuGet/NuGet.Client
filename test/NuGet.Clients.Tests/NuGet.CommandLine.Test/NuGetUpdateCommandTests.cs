@@ -22,8 +22,6 @@ namespace NuGet.CommandLine.Test
 {
     public class NuGetUpdateCommandTests
     {
-        private const int _successCode = 0;
-
         [Fact]
         public async Task UpdateCommand_Success_Update_DeletedFile()
         {
@@ -1326,7 +1324,7 @@ namespace NuGet.CommandLine.Test
                 waitForExit: true);
 
                 // Assert
-                Assert.True(_successCode == r.Item1, r.Item2 + " " + r.Item3);
+                Assert.True(r.Success , r.Output + " " + r.Errors);
             }
         }
 
@@ -1632,6 +1630,51 @@ namespace NuGet.CommandLine.Test
                 // Assert no error
                 Assert.Equal(0, commandRunResult.Item1);
                 Assert.True(content.Contains(Util.GetHintPath(Path.Combine("packages", "dep." + expectedVersion, "lib", "net45", "file.dll"))));
+            }
+        }
+
+        [Fact]
+        public async Task UpdateCommand_Self_UpdateFromCustomSource()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                var expectedFileContent = new byte[1];
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "NuGet.CommandLine",
+                    Version = "99.99.99"
+                };
+
+                packageX.Files.Clear();
+                packageX.Files.Add(new KeyValuePair<string, byte[]>(@"NuGet.exe", expectedFileContent));
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                // Copy NuGet to a new location, and run update self.
+                var nugetExe = Path.Combine(pathContext.WorkingDirectory, "NuGet.exe");
+                File.Copy(Util.GetNuGetExePath(), nugetExe);
+
+                Util.RunCommand(pathContext, nugetExe, 0, "update", "-self", "-source", pathContext.PackageSource);
+
+                Assert.Equal(expectedFileContent, File.ReadAllBytes(nugetExe));
+            }
+        }
+
+        [Fact]
+        public void UpdateCommand_Self_FailsWithMoreThanOneSource()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Copy NuGet to a new location, and run update self.
+                var nugetExe = Path.Combine(pathContext.WorkingDirectory, "NuGet.exe");
+                File.Copy(Util.GetNuGetExePath(), nugetExe);
+
+                CommandRunnerResult result = Util.RunCommand(pathContext, nugetExe, 1, "update", "-self", "-source", pathContext.PackageSource, "-source", pathContext.HttpCacheFolder);
+                result.ExitCode.Equals(1);
+                result.AllOutput.Contains(NuGetResources.Error_UpdateSelf_Source);
             }
         }
     }

@@ -22,6 +22,7 @@ using NuGet.Packaging.Signing;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Resolver;
+using NuGet.Protocol;
 
 namespace NuGet.CommandLine
 {
@@ -73,8 +74,7 @@ namespace NuGet.CommandLine
             // update with self as parameter
             if (Self)
             {
-                var selfUpdater = new SelfUpdater(Console);
-                await selfUpdater.UpdateSelfAsync(Prerelease, NuGetConstants.V3FeedUrl);
+                await UpdateSelfAsync();
                 return;
             }
 
@@ -129,6 +129,26 @@ namespace NuGet.CommandLine
             // update with solution as parameter
             string solutionDir = Path.GetDirectoryName(inputFile);
             await UpdateAllPackages(solutionDir, context);
+        }
+
+        private async Task UpdateSelfAsync()
+        {
+            PackageSource targetSource;
+            switch (Source.Count)
+            {
+                case 0:
+                    targetSource = new PackageSource(NuGetConstants.V3FeedUrl);
+                    break;
+                case 1:
+                    // Use the package source from the load config to preload any creds that might be needed for authentication.
+                    var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled);
+                    targetSource = Common.PackageSourceProviderExtensions.ResolveSource(availableSources, Source.Single());
+                    break;
+                default:
+                    throw new CommandException(NuGetResources.Error_UpdateSelf_Source);
+            }
+            var selfUpdater = new SelfUpdater(Console);
+            await selfUpdater.UpdateSelfAsync(Prerelease, targetSource);
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
@@ -244,10 +264,10 @@ namespace NuGet.CommandLine
             return null;
         }
 
-        private IReadOnlyCollection<Configuration.PackageSource> GetPackageSources()
+        private IReadOnlyCollection<PackageSource> GetPackageSources()
         {
             var availableSources = SourceProvider.LoadPackageSources().Where(source => source.IsEnabled).ToList();
-            var packageSources = new List<Configuration.PackageSource>();
+            var packageSources = new List<PackageSource>();
             foreach (var source in Source)
             {
                 packageSources.Add(Common.PackageSourceProviderExtensions.ResolveSource(availableSources, source));
