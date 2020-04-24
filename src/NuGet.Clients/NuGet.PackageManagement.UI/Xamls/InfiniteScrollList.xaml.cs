@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     /// Interaction logic for InfiniteScrollList.xaml
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
-    public partial class InfiniteScrollList : UserControl
+    public partial class InfiniteScrollList : UserControl, INotifyPropertyChanged
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
@@ -70,6 +70,8 @@ namespace NuGet.PackageManagement.UI
 
             _joinableTaskFactory = joinableTaskFactory;
 
+            //_items = new ObservableCollection<object>();
+
             InitializeComponent();
 
             _list.ItemsLock = ReentrantSemaphore.Create(
@@ -79,7 +81,7 @@ namespace NuGet.PackageManagement.UI
 
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
-            DataContext = Items;
+            DataContext = FilteredItems;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
@@ -122,21 +124,28 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-
         private Func<PackageItemListViewModel, bool> _updatesFilter;
 
-        public IEnumerable<PackageItemListViewModel> PackageItems
+        //private ObservableCollection<object> _items;
+
+        public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
+
+        public ObservableCollection<object> FilteredItems
         {
             get
             {
                 if (_updatesFilter != null)
                 {
-                    return Items.OfType<PackageItemListViewModel>().Where(_updatesFilter).ToArray();
+                    return (ObservableCollection<object>)Items.OfType<PackageItemListViewModel>().Where(_updatesFilter).OfType<object>();
                 }
-                return Items.OfType<PackageItemListViewModel>().ToArray();
+                else
+                {
+                    return Items;
+                }
             }
-        }
+        } 
+
+        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
@@ -304,6 +313,15 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
+        public event PropertyChangedEventHandler PropertyChanged;
+        public void OnPropertyChanged(string propertyName = null)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+            }
+        }
+
         internal void FilterItems(ItemFilter itemFilter, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
@@ -341,6 +359,7 @@ namespace NuGet.PackageManagement.UI
                             _updatesFilter = null;
                         }
 
+                        
                         //if (Items.Count > 0)
                         //{
                         //    var duplicate = Items.FirstOrDefault(item => item != _loadingStatusIndicator);
@@ -351,6 +370,11 @@ namespace NuGet.PackageManagement.UI
                         //    }
                         //}
                         //**********************************************************************************
+
+                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                        OnPropertyChanged(nameof(FilteredItems));
+                        OnPropertyChanged(nameof(Items));
+
                     }
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
