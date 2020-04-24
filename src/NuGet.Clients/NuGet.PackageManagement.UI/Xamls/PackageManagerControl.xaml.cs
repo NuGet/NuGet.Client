@@ -709,6 +709,16 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void FilterPackages()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
+            });
+            //.FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
+        }
 
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
@@ -1019,15 +1029,12 @@ namespace NuGet.PackageManagement.UI
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
+                var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.Installed || _topPanel.Filter == ItemFilter.UpdatesAvailable;
 
                 //Installed and Updates tabs don't need to be refreshed when switching between the two.
-                if (switchedFromInstalledOrUpdatesTab && _topPanel.Filter == ItemFilter.Installed)
+                if (switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab)
                 {
-                    _packageList.LoadCachedInstalled(_loadCts.Token);
-                }
-                else if (switchedFromInstalledOrUpdatesTab && _topPanel.Filter == ItemFilter.UpdatesAvailable)
-                {
-                    _packageList.LoadCachedUpdates(_loadCts.Token);
+                    FilterPackages();
                 }
                 else //Browse or Consolidate tabs.
                 {
@@ -1045,6 +1052,8 @@ namespace NuGet.PackageManagement.UI
                 }), DispatcherPriority.Input);
             }
         }
+
+
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
