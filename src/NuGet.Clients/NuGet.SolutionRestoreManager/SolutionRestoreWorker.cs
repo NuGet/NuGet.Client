@@ -678,6 +678,7 @@ namespace NuGet.SolutionRestoreManager
                 }
                 else
                 {
+#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                     // completed successfully
                     JobTcs.TrySetResult(targetTask.Result);
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
