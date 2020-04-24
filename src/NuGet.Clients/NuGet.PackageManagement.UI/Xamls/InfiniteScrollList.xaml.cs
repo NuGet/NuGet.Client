@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.UI
     /// Interaction logic for InfiniteScrollList.xaml
     /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001")]
-    public partial class InfiniteScrollList : UserControl, INotifyPropertyChanged
+    public partial class InfiniteScrollList : UserControl
     {
         private readonly LoadingStatusIndicator _loadingStatusIndicator = new LoadingStatusIndicator();
         private ScrollViewer _scrollViewer;
@@ -70,8 +70,6 @@ namespace NuGet.PackageManagement.UI
 
             _joinableTaskFactory = joinableTaskFactory;
 
-            //_items = new ObservableCollection<object>();
-
             InitializeComponent();
 
             _list.ItemsLock = ReentrantSemaphore.Create(
@@ -81,7 +79,7 @@ namespace NuGet.PackageManagement.UI
 
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
-            DataContext = FilteredItems;
+            DataContext = Items;
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
@@ -124,26 +122,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsSolution { get; set; }
 
-        private Func<PackageItemListViewModel, bool> _updatesFilter;
-
-        //private ObservableCollection<object> _items;
-
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-
-        public ObservableCollection<object> FilteredItems
-        {
-            get
-            {
-                if (_updatesFilter != null)
-                {
-                    return (ObservableCollection<object>)Items.OfType<PackageItemListViewModel>().Where(_updatesFilter).OfType<object>();
-                }
-                else
-                {
-                    return Items;
-                }
-            }
-        } 
 
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
@@ -313,22 +292,11 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void OnPropertyChanged(string propertyName = null)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-            }
-        }
-
         internal void FilterItems(ItemFilter itemFilter, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
-
-            //var currentLoader = _loader;
 
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
@@ -347,41 +315,26 @@ namespace NuGet.PackageManagement.UI
                             addedLoadingIndicator = true;
                         }
 
+                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+
+                        var view = CollectionViewSource.GetDefaultView(Items);
+
                         //**********************************************************************************
                         if (itemFilter == ItemFilter.UpdatesAvailable)
                         {
-                            //Apply the Update filter.
-                            _updatesFilter = (item) => item.IsUpdateAvailable;
+                            view.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
                         }
                         else
                         {
                             //Show all the items, without an Update filter.
-                            _updatesFilter = null;
+                            view.Filter = null;
                         }
-
-                        
-                        //if (Items.Count > 0)
-                        //{
-                        //    var duplicate = Items.FirstOrDefault(item => item != _loadingStatusIndicator);
-                        //    if (duplicate != null)
-                        //    {
-                        //        Items.Insert(0, duplicate);
-                        //        Items.Insert(0, duplicate);
-                        //    }
-                        //}
-                        //**********************************************************************************
-
-                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-                        OnPropertyChanged(nameof(FilteredItems));
-                        OnPropertyChanged(nameof(Items));
-
                     }
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
                     loadCts.Cancel();
                     loadCts.Dispose();
-                    //currentLoader.Reset();
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
@@ -400,7 +353,6 @@ namespace NuGet.PackageManagement.UI
                 {
                     loadCts.Cancel();
                     loadCts.Dispose();
-                    //currentLoader.Reset();
 
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
@@ -440,111 +392,6 @@ namespace NuGet.PackageManagement.UI
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
             });
         }
-
-        internal void LoadCachedUpdates(CancellationToken token)
-        {
-            // If there is another async loading process - cancel it.
-            var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
-
-            //var currentLoader = _loader;
-
-            _joinableTaskFactory.Value.RunAsync(async () =>
-            {
-                await TaskScheduler.Default;
-
-                var addedLoadingIndicator = false;
-
-                try
-                {
-                    // add Loading... indicator if not present
-                    if (!Items.Contains(_loadingStatusIndicator))
-                    {
-                        Items.Add(_loadingStatusIndicator);
-                        addedLoadingIndicator = true;
-                    }
-
-                    var duplicate = Items.FirstOrDefault(item => item != _loadingStatusIndicator && Items.Count(dup => dup.Equals(item)) > 1);
-                    
-                    if (duplicate != null)
-                    {
-                        Items.Remove(duplicate);
-                        Items.Remove(duplicate);
-                    }
-                    
-                    //await LoadItemsCoreAsync(currentLoader, loadCts.Token);
-
-                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    //if (selectedPackageItem != null)
-                    //{
-                    //    UpdateSelectedItem(selectedPackageItem);
-                    //}
-                }
-                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    //currentLoader.Reset();
-
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    // The user cancelled the login, but treat as a load error in UI
-                    // So the retry button and message is displayed
-                    // Do not log to the activity log, since it is not a NuGet error
-                    _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
-
-                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
-
-                    _loadingStatusBar.SetCancelled();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                catch (Exception ex) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    //currentLoader.Reset();
-
-                    // Write stack to activity log
-                    Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
-
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
-
-                    _loadingStatusIndicator.SetError(errorMessage);
-
-                    _loadingStatusBar.SetError();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                finally
-                {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
-                    {
-                        // Ideally, After a serach, it should report its status and,
-                        // do not keep the LoadingStatus.Loading forever.
-                        // This is a workaround.
-                        var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                        if (Items.Count == emptyListCount)
-                        {
-                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                        }
-                        else
-                        {
-                            Items.Remove(_loadingStatusIndicator);
-                        }
-                    }
-                }
-
-                UpdateCheckBoxStatus();
-
-                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            });
-        }
-
 
         private async Task LoadItemsCoreAsync(IPackageItemLoader currentLoader, CancellationToken token)
         {
