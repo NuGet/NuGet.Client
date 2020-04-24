@@ -45,7 +45,7 @@ namespace NuGet.Tests.Apex
             }
         }
 
-        [CIOnlyNuGetWpfTheory]
+        [CIOnlyNuGetWpfTheory(Skip = "https://github.com/NuGet/Home/issues/9476")]
         [MemberData(nameof(GetPackagesConfigTemplates))]
         public async Task UninstallFromPMCForPC_SucceedAsync(ProjectTemplate projectTemplate)
         {
