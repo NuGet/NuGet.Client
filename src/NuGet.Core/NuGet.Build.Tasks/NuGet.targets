@@ -443,7 +443,16 @@ Copyright (c) .NET Foundation. All rights reserved.
   <Target Name="_GetRestoreProjectStyle"
     DependsOnTargets="_GetProjectJsonPath;CollectPackageReferences"
     Returns="$(RestoreProjectStyle);$(PackageReferenceCompatibleProjectStyle)">
-    <PropertyGroup>
+
+    <!--
+      Older versions of MSBuild do not support the Count() item function which is an optimization.  Expanding the
+      entire item list into a semicolon delimited string is slower but older versions of MSBuild don't support it so
+      use the older logic if necessary
+    -->
+    <PropertyGroup Condition="'$(MSBuildAssemblyVersion)' &lt; '15.0'">
+      <_HasPackageReferenceItems Condition="'@(PackageReference)' != ''">true</_HasPackageReferenceItems>
+    </PropertyGroup>
+    <PropertyGroup Condition="'$(MSBuildAssemblyVersion)' &gt;= '15.0'">
       <_HasPackageReferenceItems Condition="@(PackageReference->Count()) > 0">true</_HasPackageReferenceItems>
     </PropertyGroup>
 
