@@ -93,7 +93,7 @@ namespace NuGet.SolutionRestoreManager
             _externalCts.Token.Register(() => _cancelled = true);
 
 #pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
-            _progressFactory = t => StatusBarProgress.StartAsync(_asyncServiceProvider, _taskFactory, task, t);
+            _progressFactory = t => ProgressReporter.StartAsync(_asyncServiceProvider, _taskFactory, task, t);
 #pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
             await _taskFactory.RunAsync(async () =>
@@ -390,6 +390,7 @@ namespace NuGet.SolutionRestoreManager
             Func<RestoreOperationLogger, RestoreOperationProgressUI, CancellationToken, Task> asyncRunMethod,
             CancellationToken token)
         {
+            // it happens here, can this happen before the task itself runs?
             using (var progress = await _progressFactory(token))
             using (var ctr = progress.RegisterUserCancellationAction(() => _externalCts.Cancel()))
             {
@@ -399,15 +400,6 @@ namespace NuGet.SolutionRestoreManager
 
                 await asyncRunMethod(this, progress, token);
             }
-        }
-
-        public Task RunWithProgressAsync(
-            Action<RestoreOperationLogger, RestoreOperationProgressUI, CancellationToken> runAction,
-            CancellationToken token)
-        {
-            return RunWithProgressAsync(
-                (l, p, t) => { runAction(l, p, t); return Task.CompletedTask; },
-                token);
         }
 
         /// <summary>
@@ -475,16 +467,16 @@ namespace NuGet.SolutionRestoreManager
             }
         }
 
-        private class StatusBarProgress : RestoreOperationProgressUI
+        private class ProgressReporter : RestoreOperationProgressUI
         {
             private readonly JoinableTaskFactory _taskFactory;
-            private readonly ITaskHandler _statusBar;
+            private readonly IProgress<TaskProgressData> _progressReporter;
 
-            private StatusBarProgress(
-                ITaskHandler statusBar,
+            private ProgressReporter(
+                IProgress<TaskProgressData> progressReporter,
                 JoinableTaskFactory taskFactory)
             {
-                _statusBar = statusBar;
+                _progressReporter = progressReporter;
                 _taskFactory = taskFactory;
             }
 
@@ -494,6 +486,7 @@ namespace NuGet.SolutionRestoreManager
                 Task task,
                 CancellationToken token)
             {
+                // How do we ensure that we don't have a race condition!
                 await jtf.SwitchToMainThreadAsync();
 
                 IVsTaskStatusCenterService taskStatusCenterService = await asyncServiceProvider.GetServiceAsync<SVsTaskStatusCenterService, IVsTaskStatusCenterService>();
@@ -502,7 +495,7 @@ namespace NuGet.SolutionRestoreManager
                 options.Title = Resources.RestoringPackages;
                 options.ActionsAfterCompletion = CompletionActions.RetainOnFaulted;
                 options.DisplayTaskDetails = new Action<Task>((t) => {
-                    // do nothing
+                    // do nothing, focus list if necessary.
                 });
                 options.ClientId = new Guid("45b2a550-0193-431c-8b75-2977f7544cc4");
                 options.StartTipCalloutId = new Guid("6BE1BF8E-217B-46C4-B104-A200DDF700D2");
@@ -510,7 +503,7 @@ namespace NuGet.SolutionRestoreManager
 
                 var taskHandler = taskStatusCenterService.PreRegister(options, data: default);
                 taskHandler.RegisterTask(task);
-                return new StatusBarProgress(taskHandler, jtf);
+                return new ProgressReporter(taskHandler.Progress, jtf);
             }
 
             public override void Dispose()
@@ -527,8 +520,15 @@ namespace NuGet.SolutionRestoreManager
                 await _taskFactory.SwitchToMainThreadAsync();
                 TaskProgressData taskProgressData = default;
                 taskProgressData.ProgressText = progressMessage;
-                taskProgressData.PercentComplete = (int)((currentStep / totalSteps) * 100);
-                _statusBar.Progress.Report(taskProgressData);
+                if (totalSteps == 0 && currentStep == 0)
+                {
+                    taskProgressData.PercentComplete = null;
+                }
+                else
+                {
+                    taskProgressData.PercentComplete = (int)((currentStep / totalSteps) * 100);
+                }
+                _progressReporter.Report(taskProgressData);
             }
         }
     }

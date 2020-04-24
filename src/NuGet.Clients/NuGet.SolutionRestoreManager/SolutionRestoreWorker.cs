@@ -608,20 +608,35 @@ namespace NuGet.SolutionRestoreManager
                     {
                         try
                         {
-
+                            var tcs = new TaskCompletionSource<bool>();
                             var job = componentModel.GetService<ISolutionRestoreJob>();
-                            var task =  job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
 
                             // Start logging
                             await logger.StartAsync(
                                 request.RestoreSource,
                                 _errorListTableDataSource,
                                 JoinableTaskFactory,
-                                task,
+                                tcs.Task,
                                 jobCts);
 
                             // Run restore
-                            return await task;
+                            var restoreTask = job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+
+                            var continuation = restoreTask.ContinueWith(targetTask =>
+                            {
+                                Assumes.True(targetTask.IsCompleted);
+                                // propagate the restore target task status to the task passed to the task status center.
+                                if (targetTask.IsFaulted || targetTask.IsCanceled)
+                                {
+                                    tcs.TrySetResult(result: false);
+                                }
+                                else
+                                {
+                                    tcs.TrySetResult(targetTask.Result);
+                                }
+                            });
+
+                            return await restoreTask;
                         }
                         finally
                         {
@@ -664,7 +679,6 @@ namespace NuGet.SolutionRestoreManager
                 else
                 {
                     // completed successfully
-#pragma warning disable VSTHRD002 // Avoid problematic synchronous waits
                     JobTcs.TrySetResult(targetTask.Result);
 #pragma warning restore VSTHRD002 // Avoid problematic synchronous waits
                 }
