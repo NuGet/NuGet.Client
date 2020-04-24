@@ -55,48 +55,6 @@ namespace NuGet.PackageManagement.UI
 
         public Task<PackageCollection> GetInstalledPackagesAsync() =>_installedPackagesTask;
 
-        // get lock file for projects
-        private async Task<List<LockFile>> GetLockFiles(IEnumerable<NuGetProject> nuGetProjects)
-        {
-            var nuGetProjectList = nuGetProjects.ToList();
-            var buildIntegratedProjects = nuGetProjectList.OfType<BuildIntegratedNuGetProject>().ToList();
-
-            List<LockFile> lockFiles = new List<LockFile>();
-            var lockFileFormat = new LockFileFormat();
-
-            foreach (var project in buildIntegratedProjects)
-            {
-                var lockFilePath = await project.GetAssetsFilePathAsync();
-                if (File.Exists(lockFilePath))
-                {
-                    lockFiles = lockFiles.Append(lockFileFormat.Read(lockFilePath)).ToList();
-                }
-            }
-            return lockFiles;
-        }
-
-        public async Task<Dictionary<string, VersionRange>> GetDependentPackagesAsync()
-        {
-            // get lock files from projects. This will add all dependency packages for all projects in the list
-            List<LockFile> lockFiles = await GetLockFiles(Projects.ToList());
-            Dictionary<string, VersionRange> dependentPackages = new Dictionary<string, VersionRange>();
-
-            foreach (LockFile lockFile in lockFiles)
-            {
-                foreach (LockFileTarget target in lockFile.Targets)
-                {
-                    foreach (LockFileTargetLibrary lib in target.Libraries)
-                    {
-                        foreach (PackageDependency dep in lib.Dependencies)
-                        {
-                            dependentPackages[dep.Id] = dep.VersionRange;
-                        }
-                    }
-                }
-            }
-            return dependentPackages;
-        }
-
         public async Task<List<string>> GetTargetFrameworksAsync()
         { 
             var frameworks = new List<string>();

@@ -763,17 +763,23 @@ namespace NuGet.PackageManagement.UI
             //   the package manager was opened for a project, not a solution,
             //   this is the Browse tab,
             //   and the search text is an empty string
+            _recommendPackages = false;
             if (loadContext.IsSolution == false
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
                 && loadContext.SourceRepositories.Count() == 1
                 && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
             {
-                _recommendPackages = true;
-            }
-            else
-            {
-                _recommendPackages = false;
+                // also check if this is a PC-style project. We will not provide recommendations for PR-style
+                // projects until we have a way to get dependent packages without negatively impacting perf.
+                var Projects = (Model.Context.Projects ?? Enumerable.Empty<NuGetProject>()).ToArray();
+                foreach(var project in Projects)
+                {
+                    if (project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
+                    {
+                        _recommendPackages = true;
+                    }
+                }
             }
 
             // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
@@ -999,8 +1005,10 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                // this will get the dependent packages only if a lock (assets) file is present
-                var dependentPackages = await context.GetDependentPackagesAsync();
+                // set dependentPackages to an empty list. For now, we are only making recommendations
+                // for PC-style projects, and for these the dependent packages are already included in
+                // the installedPackages list. 
+                var dependentPackages = new Dictionary<string, VersionRange>();
                 var targetFrameworks = await context.GetTargetFrameworksAsync();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
