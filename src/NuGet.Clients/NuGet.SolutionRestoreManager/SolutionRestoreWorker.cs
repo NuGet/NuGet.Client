@@ -608,16 +608,20 @@ namespace NuGet.SolutionRestoreManager
                     {
                         try
                         {
+
+                            var job = componentModel.GetService<ISolutionRestoreJob>();
+                            var task =  job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+
                             // Start logging
                             await logger.StartAsync(
                                 request.RestoreSource,
                                 _errorListTableDataSource,
                                 JoinableTaskFactory,
+                                task,
                                 jobCts);
 
                             // Run restore
-                            var job = componentModel.GetService<ISolutionRestoreJob>();
-                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                            return await task;
                         }
                         finally
                         {

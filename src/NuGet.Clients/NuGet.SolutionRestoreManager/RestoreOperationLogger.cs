@@ -76,6 +76,7 @@ namespace NuGet.SolutionRestoreManager
             RestoreOperationSource operationSource,
             Lazy<ErrorListTableDataSource> errorListDataSource,
             JoinableTaskFactory jtf,
+            Task task,
             CancellationTokenSource cts)
         {
             Assumes.Present(errorListDataSource);
@@ -91,7 +92,9 @@ namespace NuGet.SolutionRestoreManager
             _externalCts = cts;
             _externalCts.Token.Register(() => _cancelled = true);
 
-            _progressFactory = t => StatusBarProgress.StartAsync(_asyncServiceProvider, _taskFactory, t);
+#pragma warning disable VSTHRD003 // Avoid awaiting foreign Tasks
+            _progressFactory = t => StatusBarProgress.StartAsync(_asyncServiceProvider, _taskFactory, task, t);
+#pragma warning restore VSTHRD003 // Avoid awaiting foreign Tasks
 
             await _taskFactory.RunAsync(async () =>
             {
@@ -488,6 +491,7 @@ namespace NuGet.SolutionRestoreManager
             public static async Task<RestoreOperationProgressUI> StartAsync(
                 IAsyncServiceProvider asyncServiceProvider,
                 JoinableTaskFactory jtf,
+                Task task,
                 CancellationToken token)
             {
                 await jtf.SwitchToMainThreadAsync();
@@ -500,14 +504,13 @@ namespace NuGet.SolutionRestoreManager
                 options.DisplayTaskDetails = new Action<Task>((t) => {
                     // do nothing
                 });
-
-                options.ClientId = new Guid("100564DE-A3FF-4043-86AA-5071157F8E77");
-                options.StartTipCalloutId = new Guid("46817CE0-EF99-42B8-9E67-A5D0F721A37C");
+                options.ClientId = new Guid("45b2a550-0193-431c-8b75-2977f7544cc4");
+                options.StartTipCalloutId = new Guid("6BE1BF8E-217B-46C4-B104-A200DDF700D2");
+                options.EndTipCalloutId = new Guid("4682BA0A-8FD1-451A-8D61-B4BA21C7F264");
 
                 var taskHandler = taskStatusCenterService.PreRegister(options, data: default);
-
-                RestoreOperationProgressUI progress = new StatusBarProgress(taskHandler, jtf);
-                return progress;
+                taskHandler.RegisterTask(task);
+                return new StatusBarProgress(taskHandler, jtf);
             }
 
             public override void Dispose()
