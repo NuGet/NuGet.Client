@@ -6,5 +6,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
     internal static class PkgCmdIDList
     {
         public const int CmdidRestorePackages = 0x0100;
+        public const int CmdIdManageProjectUI = 0x0200;
     }
 }
