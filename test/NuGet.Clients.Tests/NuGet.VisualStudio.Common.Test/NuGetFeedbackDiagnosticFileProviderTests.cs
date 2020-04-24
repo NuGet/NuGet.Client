@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using NuGet.VisualStudio.Common;
 using Xunit;
 
-namespace NuGet.Tools.Test
+namespace NuGet.VisualStudio.Common.Test
 {
     public class NuGetFeedbackDiagnosticFileProviderTests
     {
