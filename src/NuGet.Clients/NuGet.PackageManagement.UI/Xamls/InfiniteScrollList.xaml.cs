@@ -13,6 +13,7 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft;
 using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -123,7 +124,19 @@ namespace NuGet.PackageManagement.UI
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
-        public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
+        private Func<PackageItemListViewModel, bool> _updatesFilter;
+
+        public IEnumerable<PackageItemListViewModel> PackageItems
+        {
+            get
+            {
+                if (_updatesFilter != null)
+                {
+                    return Items.OfType<PackageItemListViewModel>().Where(_updatesFilter).ToArray();
+                }
+                return Items.OfType<PackageItemListViewModel>().ToArray();
+            }
+        }
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
@@ -291,7 +304,7 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        internal void LoadCachedInstalled(CancellationToken token)
+        internal void FilterItems(ItemFilter itemFilter, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -307,31 +320,38 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    // add Loading... indicator if not present
-                    if (!Items.Contains(_loadingStatusIndicator))
-                    {
-                        Items.Add(_loadingStatusIndicator);
-                        addedLoadingIndicator = true;
-                    }
-
                     if (Items.Count > 0)
                     {
-                        var duplicate = Items.FirstOrDefault(item => item != _loadingStatusIndicator);
-                        if (duplicate != null)
+                        // add Loading... indicator if not present
+                        if (!Items.Contains(_loadingStatusIndicator))
                         {
-                            Items.Insert(0, duplicate);
-                            Items.Insert(0, duplicate);
+                            Items.Add(_loadingStatusIndicator);
+                            addedLoadingIndicator = true;
                         }
+
+                        //**********************************************************************************
+                        if (itemFilter == ItemFilter.UpdatesAvailable)
+                        {
+                            //Apply the Update filter.
+                            _updatesFilter = (item) => item.IsUpdateAvailable;
+                        }
+                        else
+                        {
+                            //Show all the items, without an Update filter.
+                            _updatesFilter = null;
+                        }
+
+                        //if (Items.Count > 0)
+                        //{
+                        //    var duplicate = Items.FirstOrDefault(item => item != _loadingStatusIndicator);
+                        //    if (duplicate != null)
+                        //    {
+                        //        Items.Insert(0, duplicate);
+                        //        Items.Insert(0, duplicate);
+                        //    }
+                        //}
+                        //**********************************************************************************
                     }
-
-                    //await LoadItemsCoreAsync(currentLoader, loadCts.Token);
-
-                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    //if (selectedPackageItem != null)
-                    //{
-                    //    UpdateSelectedItem(selectedPackageItem);
-                    //}
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
@@ -376,7 +396,7 @@ namespace NuGet.PackageManagement.UI
                     if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
                         && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                     {
-                        // Ideally, After a serach, it should report its status and,
+                        // Ideally, After a search, it should report its status and,
                         // do not keep the LoadingStatus.Loading forever.
                         // This is a workaround.
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
