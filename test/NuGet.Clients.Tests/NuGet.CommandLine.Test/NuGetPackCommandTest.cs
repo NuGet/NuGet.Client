@@ -4607,16 +4607,17 @@ namespace Proj1
                     proj1Directory,
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
-                r.Success.Should().BeTrue(because: r.AllOutput);
 
                 var expectedMessage = "Error " + NuGetLogCode.NU5115.ToString();
                 if (expectToError)
                 {
                     r.AllOutput.Should().Contain(expectedMessage);
+                    r.ExitCode.Should().NotBe(0);
                 }
                 else
                 {
                     r.AllOutput.Should().NotContain(expectedMessage);
+                    r.ExitCode.Should().Be(0);
                 }
             }
         }

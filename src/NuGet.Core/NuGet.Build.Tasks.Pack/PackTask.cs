@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using Microsoft.Build.Framework;
 using NuGet.Commands;
 using NuGet.Common;
@@ -136,7 +137,10 @@ namespace NuGet.Build.Tasks.Pack
                 }
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
                 logic.BuildPackage(packRunner);
-
+                if (packArgs.Logger is PackCollectorLogger collectorLogger)
+                {
+                    return !collectorLogger.Errors.Any(e => e.Level == LogLevel.Error);
+                }
                 return true;
             }
             catch (Exception ex)
