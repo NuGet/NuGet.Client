@@ -26,7 +26,6 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
-
     /// <summary>
     /// An implementation of <see cref="NuGetProject"/> that interfaces with VS project APIs to coordinate
     /// packages in a legacy CSProj with package references.
@@ -139,7 +138,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
         {
             IEnumerable<(string PackageId, string Version)> packageVersions =
-                        (await _vsProjectAdapter.GetBuildItemInformationAsync("PackageVersion", "Version"))
+                        (await _vsProjectAdapter.GetBuildItemInformationAsync(ProjectBuildProperties.PackageVersion, ProjectBuildProperties.Version))
                         .Select(item => (PackageId: item.ItemId, Version: item.ItemMetadata.FirstOrDefault()));
 
             return packageVersions
