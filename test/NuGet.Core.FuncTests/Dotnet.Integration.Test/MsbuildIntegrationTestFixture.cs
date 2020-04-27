@@ -510,7 +510,7 @@ namespace Dotnet.Integration.Test
                         }
                     );
                     runtime.Add(jproperty);
-                    nugetBuildTasks.Value["runtime"] = runtime;
+                    nugetBuildTasks["runtime"] = runtime;
                     netcoreapp50.Add(nugetBuildTasks);
                     targets[".NETCoreApp,Version=v5.0"] = netcoreapp50;
                     jsonFile["targets"] = targets;
