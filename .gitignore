@@ -26,6 +26,9 @@ test/EndToEnd/nuget.exe
 # remove ilmerge log
 mergelog.txt
 
+# MSBuild binlog
+*.binlog
+
 # User-specific files
 *.suo
 *.user
