@@ -540,6 +540,11 @@ namespace NuGet.Test.Utility
                             props.Add("PrivateAssets", package.PrivateAssets);
                         }
 
+                        if (!string.IsNullOrEmpty(package.Aliases))
+                        {
+                            props.Add("Aliases", package.Aliases);
+                        }
+
                         if (!string.IsNullOrEmpty(package.NoWarn))
                         {
                             props.Add("NoWarn", package.NoWarn);

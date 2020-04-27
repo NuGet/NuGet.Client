@@ -63,7 +63,7 @@
       <Link>Modules\NuGet\NuGet.PackageManagement.PowerShellCmdlets.dll-Help.xml</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <Content Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
+    <Content Include="$(SolutionPackagesFolder)newtonsoft.json\11.0.1\lib\net45\Newtonsoft.Json.dll">
       <Link>Newtonsoft.Json.dll</Link>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>

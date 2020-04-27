@@ -9,6 +9,8 @@ namespace NuGet.ProjectModel
 {
     public class LockFileItem : IEquatable<LockFileItem>
     {
+        public static readonly string AliasesProperty = "aliases";
+
         public LockFileItem(string path)
         {
             Path = path;

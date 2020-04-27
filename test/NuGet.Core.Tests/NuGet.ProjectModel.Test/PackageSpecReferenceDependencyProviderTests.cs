@@ -27,7 +27,10 @@ namespace NuGet.ProjectModel.Test
                 suppressParent: LibraryIncludeFlags.None,
                 noWarn: new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: "stuff");
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("2.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));

@@ -519,7 +519,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: null);
             var dependencyBar = new LibraryDependency(
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
                 LibraryDependencyType.Default,
@@ -527,7 +530,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: true,
-                generatePathProperty: true);
+                generatePathProperty: true,
+               versionCentrallyManaged: false,
+               LibraryDependencyReferenceType.Direct,
+               aliases: null);
             var dependencyBoom = new LibraryDependency(
                 new LibraryRange("boom", versionRange: null, LibraryDependencyTarget.Package),
                 LibraryDependencyType.Default,
@@ -535,7 +541,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: true,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: null);
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));
             var centralVersionBoom = new CentralPackageVersion("boom", VersionRange.Parse("4.0.0"));
@@ -573,7 +582,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: null);
             var dependencyBar = new LibraryDependency(
                 new LibraryRange("bar", VersionRange.Parse("3.0.0"), LibraryDependencyTarget.Package),
                 LibraryDependencyType.Default,
@@ -581,7 +593,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: null);
 
             // only a central dependency for bar not for foo
             // foo will be set to VersionRange.All
@@ -730,7 +745,10 @@ namespace NuGet.ProjectModel.Test
                 LibraryIncludeFlags.All,
                 new List<Common.NuGetLogCode>(),
                 autoReferenced: false,
-                generatePathProperty: true);
+                generatePathProperty: true,
+                versionCentrallyManaged: false,
+                LibraryDependencyReferenceType.Direct,
+                aliases: null);
 
             var centralVersionFoo = new CentralPackageVersion("foo", VersionRange.Parse("1.0.0"));
             var centralVersionBar = new CentralPackageVersion("bar", VersionRange.Parse("2.0.0"));

@@ -862,11 +862,6 @@ jobs:
       artifactName: "$(VsixPublishDir)"
       downloadPath: "$(Build.Repository.LocalPath)/artifacts"
 
-  - task: NuGetToolInstaller@0
-    displayName: "Use NuGet 4.5.0"
-    inputs:
-      versionSpec: "4.5.0"
-
   - task: MSBuild@1
     displayName: "Bootstrap NuGet packages"
     inputs:

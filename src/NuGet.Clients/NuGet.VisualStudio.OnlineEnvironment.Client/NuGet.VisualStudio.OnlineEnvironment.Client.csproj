@@ -41,6 +41,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Include="SolutionExplorer\PackageManagerUICommandHandler.cs" />
     <Compile Include="SolutionExplorer\RestoreCommandHandler.cs" />
     <Compile Include="SolutionExplorer\NuGetWorkspaceCommandHandler.cs" />
     <Compile Include="SolutionExplorer\NuGetNodeExtender.cs" />

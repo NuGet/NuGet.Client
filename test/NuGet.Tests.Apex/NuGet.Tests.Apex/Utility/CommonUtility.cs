@@ -196,17 +196,18 @@ namespace NuGet.Tests.Apex
 
             return doc.Root.Descendants()
                 .Where(e => e.Name.LocalName.Equals("PackageReference", StringComparison.OrdinalIgnoreCase))
-                .Select(e => new LibraryDependency(
-                    new LibraryRange(e.Attribute(XName.Get("Include")).Value,
-                        VersionRange.Parse(e.Attribute(XName.Get("Version")).Value),
-                        LibraryDependencyTarget.Package),
-                        LibraryDependencyType.Default,
-                        LibraryIncludeFlags.All,
-                        LibraryIncludeFlags.None,
-                        new List<NuGetLogCode>(),
-                        autoReferenced: false,
-                        generatePathProperty: false))
+                .Select(e => new LibraryDependency()
+                {
+                    LibraryRange = new LibraryRange(e.Attribute(XName.Get("Include")).Value, VersionRange.Parse(e.Attribute(XName.Get("Version")).Value), LibraryDependencyTarget.Package),
+                    Type = LibraryDependencyType.Default,
+                    IncludeType = LibraryIncludeFlags.All,
+                    SuppressParent = LibraryIncludeFlags.None,
+                    NoWarn = new List<NuGetLogCode>(),
+                    AutoReferenced = false,
+                    GeneratePathProperty = false
+                })
                 .ToList();
+
         }
 
         public static void AssertPackageInAssetsFile(VisualStudioHost visualStudio, ProjectTestExtension project, string packageName, string packageVersion, ILogger logger)

@@ -386,7 +386,10 @@ namespace NuGet.ProjectModel
                     || dependency.Type != LibraryDependencyType.Default
                     || dependency.AutoReferenced
                     || (dependency.LibraryRange.TypeConstraint != LibraryDependencyTarget.Reference
-                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference));
+                        && dependency.LibraryRange.TypeConstraint != (LibraryDependencyTarget.All & ~LibraryDependencyTarget.Reference))
+                    || !string.IsNullOrEmpty(dependency.Aliases)
+                    || dependency.GeneratePathProperty
+                    || dependency.VersionCentrallyManaged;
 
                 var versionRange = dependency.LibraryRange.VersionRange ?? VersionRange.All;
                 var versionString = versionRange.ToNormalizedString();
@@ -442,7 +445,7 @@ namespace NuGet.ProjectModel
 
                     SetValueIfTrue(writer, "generatePathProperty", dependency.GeneratePathProperty);
                     SetValueIfTrue(writer, "versionCentrallyManaged", dependency.VersionCentrallyManaged);
-
+                    SetValueIfNotNull(writer, "aliases", dependency.Aliases);
                     writer.WriteObjectEnd();
                 }
                 else

@@ -617,8 +617,8 @@ namespace NuGet.Commands
                         typeConstraint: LibraryDependencyTarget.Package),
 
                     AutoReferenced = IsPropertyTrue(item, "IsImplicitlyDefined"),
-
-                    GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty")
+                    GeneratePathProperty = IsPropertyTrue(item, "GeneratePathProperty"),
+                    Aliases = item.GetProperty("Aliases"),
                 };
 
                 // Add warning suppressions

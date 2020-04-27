@@ -9114,7 +9114,49 @@ namespace NuGet.CommandLine.Test
                 result.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
+            }
+        }
 
+        [Fact]
+        public async Task RestoreNetCore_PackageReferenceWithAliases_IsReflectedInAssetsFileAsync()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var framework = "net472";
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse(framework));
+
+                // Set up the package and source
+                var package = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0",
+                    Aliases = "Core"
+                };
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                     pathContext.PackageSource,
+                     PackageSaveMode.Defaultv3,
+                     package);
+
+                projectA.AddPackageToAllFrameworks(package);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+
+                // Act
+                var result = Util.RestoreSolution(pathContext);
+
+                // Assert
+                result.Success.Should().BeTrue();
+                Assert.True(File.Exists(projectA.AssetsFileOutputPath));
+                var library = projectA.AssetsFile.Targets.First(e => e.RuntimeIdentifier == null).Libraries.Single();
+                library.Should().NotBeNull("The assets file is expect to have a single library");
+                library.CompileTimeAssemblies.Count.Should().Be(1, because: "The package has only 1 compatible file");
+                library.CompileTimeAssemblies.Single().Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "Core"));
             }
         }
 

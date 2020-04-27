@@ -1975,7 +1975,10 @@ namespace NuGet.ProjectModel.Test
                         suppressParent: LibraryIncludeFlags.All,
                         noWarn: new List<NuGetLogCode>(),
                         autoReferenced: true,
-                        generatePathProperty: false);
+                        generatePathProperty: false,
+                        versionCentrallyManaged: false,
+                        LibraryDependencyReferenceType.Direct,
+                        aliases: null);
             newtonSoftDependency.VersionCentrallyManaged = true;
 
             lockFile.CentralTransitiveDependencyGroups

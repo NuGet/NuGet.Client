@@ -17,7 +17,7 @@
         <PackageDownload Include="Microsoft.VisualStudio.Composition" version="[15.8.98]" />
         <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.0.201-pre-g7d366164d0]" />
         <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
-        <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
+        <PackageDownload Include="Newtonsoft.Json" version="[11.0.1]" />
         <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[4.9.2]" />
         <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />
         <PackageDownload Include="NuGet.Core" version="[2.14.0-rtm-832]" />

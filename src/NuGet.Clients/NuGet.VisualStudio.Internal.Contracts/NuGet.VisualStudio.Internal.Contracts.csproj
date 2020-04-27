@@ -14,7 +14,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
     <PackageReference Include="Microsoft.VisualStudio.RpcContracts" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" PrivateAssets="all" ExcludeAssets="all" />
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" PrivateAssets="all" ExcludeAssets="all" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

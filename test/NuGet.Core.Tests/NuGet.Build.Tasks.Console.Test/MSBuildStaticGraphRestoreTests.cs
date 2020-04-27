@@ -167,6 +167,7 @@ namespace NuGet.Build.Tasks.Console.Test
                             new MSBuildItem("PackageG", new Dictionary<string, string> { ["Version"] = "1.2.3", ["IncludeAssets"] = $"{LibraryIncludeFlags.Build};{LibraryIncludeFlags.Analyzers};{LibraryIncludeFlags.Compile}", ["ExcludeAssets"] = $"{LibraryIncludeFlags.Analyzers}" }),
                             new MSBuildItem("PackageH", new Dictionary<string, string> { ["Version"] = "1.2.3", ["NoWarn"] = "NU1001;\tNU1006 ; NU3017 " }),
                             new MSBuildItem("PackageI", new Dictionary<string, string> { ["Version"] = null }),
+                            new MSBuildItem("PackageJ", new Dictionary<string, string> { ["Version"] = "1.2.4", ["Aliases"] = "Core" }),
                         }
                     }
                 };
@@ -217,6 +218,11 @@ namespace NuGet.Build.Tasks.Console.Test
                     new LibraryDependency
                     {
                         LibraryRange = new LibraryRange("PackageI", VersionRange.All, LibraryDependencyTarget.Package),
+                    },
+                    new LibraryDependency
+                    {
+                        LibraryRange = new LibraryRange("PackageJ", VersionRange.Parse("1.2.4"), LibraryDependencyTarget.Package),
+                        Aliases = "Core"
                     }
                 });
             }

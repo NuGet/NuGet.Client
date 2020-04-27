@@ -55,15 +55,6 @@ namespace NuGet.CommandLine.Test
         {
             var nugetexe = GetNuGetExePath();
 
-            // Store the dg file for debugging
-            var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
-            var envVars = new Dictionary<string, string>()
-                {
-                    { "NUGET_PERSIST_DG", "true" },
-                    { "NUGET_PERSIST_DG_PATH", dgPath },
-                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
-                };
-
             var args = new string[] {
                     "restore",
                     inputPath,
@@ -73,11 +64,25 @@ namespace NuGet.CommandLine.Test
 
             args = args.Concat(additionalArgs).ToArray();
 
+            return RunCommand(pathContext, nugetexe, expectedExitCode, args);
+        }
+
+        public static CommandRunnerResult RunCommand(SimpleTestPathContext pathContext, string nugetExe, int expectedExitCode = 0, params string[] arguments)
+        {
+            // Store the dg file for debugging
+            var dgPath = Path.Combine(pathContext.WorkingDirectory, "out.dg");
+            var envVars = new Dictionary<string, string>()
+                {
+                    { "NUGET_PERSIST_DG", "true" },
+                    { "NUGET_PERSIST_DG_PATH", dgPath },
+                    { "NUGET_HTTP_CACHE_PATH", pathContext.HttpCacheFolder }
+                };
+
             // Act
             var r = CommandRunner.Run(
-                nugetexe,
+                nugetExe,
                 pathContext.WorkingDirectory.Path,
-                string.Join(" ", args),
+                string.Join(" ", arguments),
                 waitForExit: true,
                 environmentVariables: envVars);
 
