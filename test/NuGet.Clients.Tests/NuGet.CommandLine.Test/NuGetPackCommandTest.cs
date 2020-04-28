@@ -112,6 +112,70 @@ namespace NuGet.CommandLine.Test
         }
 
         [Fact]
+        public void PackCommand_AutomaticallyExcludeNuspecs()
+        {
+            var nugetexe = Util.GetNuGetExePath();
+
+            using (var workingDirectory = TestDirectory.Create())
+            {
+                // Add a few nuspecs. One at the root and one in a sub dir
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "foo.nuspec",
+                    "");
+                Util.CreateFile(
+                    workingDirectory,
+                    "bar.nuspec",
+                    "");
+                Util.CreateFile(
+                    Path.Combine(workingDirectory, "contentFiles", "any", "any"),
+                    "image.jpg",
+                    "");
+
+                Util.CreateFile(
+                    workingDirectory,
+                    "packageA.nuspec",
+@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
+  <metadata>
+    <id>packageA</id>
+    <version>1.0.0.2</version>
+    <title>packageA</title>
+    <authors>test</authors>
+    <owners>test</owners>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Description</description>
+    <copyright>Copyright ©  2013</copyright>
+  </metadata>
+  <files>
+    <file src=""contentFiles/any/any/foo.nuspec"" target=""\Content\foo.nuspec"" />
+    <file src=""bar.nuspec"" target=""\Content\other\bar.nuspec"" />
+    <file src=""contentFiles/any/any/image.jpg"" target=""\Content\image.jpg"" />
+  </files>
+</package>");
+
+                // Act
+                var r = CommandRunner.Run(
+                    nugetexe,
+                    workingDirectory,
+                    "pack packageA.nuspec",
+                    waitForExit: true);
+                Assert.True(0 == r.Item1, r.Item2 + " " + r.Item3);
+
+                // Assert
+                var path = Path.Combine(workingDirectory, "packageA.1.0.0.2.nupkg");
+                var package = new OptimizedZipPackage(path);
+                using (var zip = new ZipArchive(File.OpenRead(path)))
+                using (var manifestReader = new StreamReader(zip.Entries.Single(file => file.FullName == "packageA.nuspec").Open()))
+                {
+                    var files = package.GetFiles().Select(f => f.Path).ToArray();
+                    // All of the nuspecs should be excluded.
+                    Assert.Equal(files.Length, 1);
+                    Assert.Contains(Path.Combine("Content", "image.jpg"), files);
+                }
+            }
+        }
+
+        [Fact]
         public void PackCommand_PackageFromNuspecWithFrameworkAssemblies()
         {
             var nugetexe = Util.GetNuGetExePath();
