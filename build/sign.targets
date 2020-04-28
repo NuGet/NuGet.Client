@@ -10,7 +10,7 @@
   <PropertyGroup Condition = " $(MSBuildProjectFullPath.Contains('src\NuGet.Core')) == 'true' or $(MSBuildProjectFullPath.Contains('test/NuGet.Core')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('src/NuGet.Core')) == 'true' or $(MSBuildProjectFullPath.Contains('test\NuGet.Core')) == 'true' or
                                $(MSBuildProjectFullPath.Contains('NuGet.CommandLine.csproj')) == 'true' or
-                               (MSBuildProjectFullPath.Contains('NuGet.Indexing.csproj')) == 'true' ">
+                               $(MSBuildProjectFullPath.Contains('NuGet.Indexing.csproj')) == 'true' ">
 
     <StrongNameKey>$(MS_PFX_PATH)</StrongNameKey>
     <DefaultStrongNameCert>MsSharedLib72</DefaultStrongNameCert>
