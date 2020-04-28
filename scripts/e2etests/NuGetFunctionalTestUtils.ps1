@@ -68,7 +68,7 @@ function RealTimeLogResults
     {
         Write-Host "RealTimeLogResults threw an exception: " -ForegroundColor Red
         Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
-        Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Stop
+        Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
         exit 1
     }
 
