@@ -120,12 +120,12 @@ namespace NuGet.Protocol
         /// <typeparam name="T">Type of property to return.</typeparam>
         /// <param name="jobject">The JObject to be deserialized.</param>
         /// <param name="prefixOfPropertyName">Prefix of the property name.</param>
-        public static T GetJObjectPropertyStartsWith<T>(this JObject jobject, string prefixOfPropertyName)
+        public static string FindJObjectPropertyStartsWith(this JObject jobject, string prefixOfPropertyName)
         {
             var targetProperty = jobject.Properties().
                 FirstOrDefault(prop => prop.Name.StartsWith(prefixOfPropertyName, StringComparison.OrdinalIgnoreCase));
                 
-            return targetProperty != default(JProperty) ? targetProperty.FromJToken<T>() : default(T);
+            return targetProperty != default(JProperty) ? targetProperty.Name : default(string);
         }
 
         public static bool? GetBoolean(this JObject json, string propertyName)
