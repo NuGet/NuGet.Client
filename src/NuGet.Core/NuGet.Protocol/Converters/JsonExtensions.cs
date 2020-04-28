@@ -117,7 +117,6 @@ namespace NuGet.Protocol
         /// <summary>
         /// Extract the property directly from JObject.
         /// </summary>
-        /// <typeparam name="T">Type of property to return.</typeparam>
         /// <param name="jobject">The JObject to be deserialized.</param>
         /// <param name="prefixOfPropertyName">Prefix of the property name.</param>
         public static string FindJObjectPropertyStartsWith(this JObject jobject, string prefixOfPropertyName)
