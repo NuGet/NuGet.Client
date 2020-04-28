@@ -51,7 +51,8 @@ param (
     [switch]$Fast,
     [switch]$CI,
     [switch]$PackageEndToEnd,
-    [switch]$SkipDelaySigning
+    [switch]$SkipDelaySigning,
+    [switch]$Binlog
 )
 
 . "$PSScriptRoot\build\common.ps1"
@@ -105,10 +106,22 @@ else {
 Invoke-BuildStep 'Running Restore' {
 
     # Restore
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:EnsurePackageReferenceVersionsInSolution /p:Configuration=$Configuration"
-    & $MSBuildExe build\build.proj /t:EnsurePackageReferenceVersionsInSolution /p:Configuration=$Configuration
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /v:m /m:1
+    $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
+    if ($Binlog)
+    {
+        $args += "-bl:msbuild.ensurepr.binlog"
+    }
+
+    Trace-Log ". `"$MSBuildExe`" $args"
+    & $MSBuildExe @args
+
+    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/v:m", "/m:1"
+    if ($Binlog)
+    {
+        $args += "-bl:msbuild.restore.binlog"
+    }
+    Trace-Log ". `"$MSBuildExe`" $args"
+    & $MSBuildExe @args
 
     if (-not $?)
     {
@@ -127,6 +140,11 @@ Invoke-BuildStep $VSMessage {
     {
         $args += "/p:MS_PFX_PATH="
         $args += "/p:NUGET_PFX_PATH="
+    }
+
+    if ($Binlog)
+    {
+        $args += "-bl:msbuild.build.binlog"
     }
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
@@ -155,8 +173,15 @@ Invoke-BuildStep 'Publishing the EndToEnd test package' {
 Invoke-BuildStep 'Running Restore RTM' {
 
     # Restore for VS
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1 "
-    & $MSBuildExe build\build.proj /t:RestoreVS /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+
+    if ($Binlog)
+    {
+        $args += "-bl:msbuild.restore.binlog"
+    }
+
+    Trace-Log ". `"$MSBuildExe`" $args"
+    & $MSBuildExe @args
 
     if (-not $?)
     {
@@ -171,8 +196,14 @@ Invoke-BuildStep 'Running Restore RTM' {
 Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
-    Trace-Log ". `"$MSBuildExe`" build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1"
-    & $MSBuildExe build\build.proj /t:BuildVS`;Pack /p:Configuration=$Configuration /p:BuildRTM=true  /p:ReleaseLabel=$ReleaseLabel /p:BuildNumber=$BuildNumber /p:ExcludeTestProjects=true /v:m /m:1
+    $args = "build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+    if ($Binlog)
+    {
+        $args += "-bl:msbuild.pack.binlog"
+    }
+
+    Trace-Log ". `"$MSBuildExe`" $args"
+    & $MSBuildExe @args
 
     if (-not $?)
     {
