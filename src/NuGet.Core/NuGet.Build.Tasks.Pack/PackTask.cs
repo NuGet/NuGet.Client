@@ -136,12 +136,8 @@ namespace NuGet.Build.Tasks.Pack
                     packageBuilder = logic.GetPackageBuilder(request);
                 }
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
-                logic.BuildPackage(packRunner);
-                if (packArgs.Logger is PackCollectorLogger collectorLogger)
-                {
-                    return !collectorLogger.Errors.Any(e => e.Level == LogLevel.Error);
-                }
-                return true;
+
+                return logic.BuildPackage(packRunner);
             }
             catch (Exception ex)
             {

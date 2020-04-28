@@ -13,8 +13,6 @@ using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.Packaging;
 using NuGet.Packaging.Licenses;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
@@ -2861,13 +2859,62 @@ namespace ClassLibrary
 
                 var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
 
-                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
                 Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
                 if (expectToError)
                 {
                     result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
                     result.ExitCode.Should().NotBe(0);
+                    result.AllOutput.Should().NotContain("success");
+                    Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                 }
+                else
+                {
+                    Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                }
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_IncrementalPack_FailsWhenInvokedTwiceInARow()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var semver2Version = "1.0.0-rtm+asdassd";
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                Directory.CreateDirectory(workingDirectory);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.AddProperty(xml, "PackageProjectUrl", "http://project_url_here_or_delete_this_line/");
+                    ProjectFileUtils.AddProperty(xml, "TreatWarningsAsErrors", "true");
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0-rtm.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0-rtm.nuspec");
+
+                // Call once.
+                var result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
+                result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                result.ExitCode.Should().NotBe(0);
+                result.AllOutput.Should().NotContain("success");
+
+                // Call twice.
+                result = msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory} /p:Version={semver2Version}", validateSuccess: false);
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+                Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
+                result.AllOutput.Should().Contain(NuGetLogCode.NU5102.ToString());
+                result.ExitCode.Should().NotBe(0);
+                result.AllOutput.Should().NotContain("success");
             }
         }
 

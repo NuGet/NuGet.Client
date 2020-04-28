@@ -4608,14 +4608,19 @@ namespace Proj1
                     $"pack proj1.csproj -build -version 1.0.0-rtm+asdassd",
                     waitForExit: true);
 
+                var nupkgPath = Path.Combine(workingDirectory, "proj1", "proj1.1.0.0-rtm.nupkg");
+
                 var expectedMessage = "Error " + NuGetLogCode.NU5115.ToString();
                 if (expectToError)
                 {
+                    Assert.False(File.Exists(nupkgPath), "The output .nupkg should not exist when pack fails.");
                     r.AllOutput.Should().Contain(expectedMessage);
                     r.ExitCode.Should().NotBe(0);
+                    r.AllOutput.Should().NotContain("success");
                 }
                 else
                 {
+                    Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place..");
                     r.AllOutput.Should().NotContain(expectedMessage);
                     r.ExitCode.Should().Be(0);
                 }

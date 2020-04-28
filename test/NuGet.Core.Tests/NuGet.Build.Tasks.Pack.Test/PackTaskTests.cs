@@ -93,7 +93,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                runner.RunPackageBuild();
             }
         }
 

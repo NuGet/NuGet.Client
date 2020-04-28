@@ -186,13 +186,9 @@ namespace NuGet.CommandLine
             }
 
             var packCommandRunner = new PackCommandRunner(packArgs, ProjectFactory.ProjectCreator);
-            packCommandRunner.BuildPackage();
-            if (packArgs.Logger is PackCollectorLogger collectorLogger)
+            if (!packCommandRunner.RunPackageBuild())
             {
-                if (collectorLogger.Errors.Any(e => e.Level == LogLevel.Error))
-                {
-                    throw new ExitCodeException(exitCode: 1);
-                }
+                throw new ExitCodeException(1);
             }
         }
     }

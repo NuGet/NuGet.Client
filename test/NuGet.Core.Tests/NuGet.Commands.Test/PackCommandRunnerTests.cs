@@ -28,7 +28,7 @@ namespace NuGet.Commands.Test
                 };
                 var runner = new PackCommandRunner(args, createProjectFactory: null);
 
-                runner.BuildPackage();
+                Assert.True(runner.RunPackageBuild());
 
                 using (FileStream stream = test.NupkgFile.OpenRead())
                 using (var package = new ZipArchive(stream, ZipArchiveMode.Read))
