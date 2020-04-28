@@ -1,5 +1,6 @@
 <Project DefaultTargets="GenerateDocsOverview">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\build.proj" />
 
   <PropertyGroup>
     <MarkdownAssemblyPath>$(ArtifactsDirectory)doc.tasks\$(VisualStudioVersion)\bin\$(Configuration)\$(NetStandardVersion)\doc.tasks.dll</MarkdownAssemblyPath>
