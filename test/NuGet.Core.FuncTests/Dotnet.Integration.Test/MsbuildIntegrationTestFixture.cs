@@ -495,7 +495,7 @@ namespace Dotnet.Integration.Test
 
                     JObject netcoreapp50 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v5.0");
 
-                    JProperty nugetBuildTasksProperty = netcoreapp50.GetJObjectPropertyWithMatchingPrefix("NuGet.Build.Tasks/");
+                    JProperty nugetBuildTasksProperty = netcoreapp50.PropertyWithMatchingPrefix("NuGet.Build.Tasks/");
 
                     JObject nugetBuildTasks = nugetBuildTasksProperty.Value.FromJToken<JObject>();
 
