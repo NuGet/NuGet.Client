@@ -117,14 +117,15 @@ namespace NuGet.Protocol
         /// <summary>
         /// Extract the property directly from JObject.
         /// </summary>
-        /// <param name="jobject">The JObject to be deserialized.</param>
+        /// <param name="jobject">The JObject which is the source</param>
         /// <param name="prefixOfPropertyName">Prefix of the property name.</param>
-        public static string FindJObjectPropertyStartsWith(this JObject jobject, string prefixOfPropertyName)
+        /// <returns>Returns JProperty whose prefix of Name matches with the input.</returns>
+        public static JProperty GetJObjectPropertyWithMatchingPrefix(this JObject jobject, string prefixOfPropertyName)
         {
             var targetProperty = jobject.Properties().
                 FirstOrDefault(prop => prop.Name.StartsWith(prefixOfPropertyName, StringComparison.OrdinalIgnoreCase));
                 
-            return targetProperty != default(JProperty) ? targetProperty.Name : default(string);
+            return targetProperty != default(JProperty) ? targetProperty : default;
         }
 
         public static bool? GetBoolean(this JObject json, string propertyName)

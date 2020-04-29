@@ -495,9 +495,9 @@ namespace Dotnet.Integration.Test
 
                     JObject netcoreapp50 = targets.GetJObjectProperty<JObject>(".NETCoreApp,Version=v5.0");
 
-                    string propertyName = netcoreapp50.FindJObjectPropertyStartsWith("NuGet.Build.Tasks/");
+                    JProperty nugetBuildTasksProperty = netcoreapp50.GetJObjectPropertyWithMatchingPrefix("NuGet.Build.Tasks/");
 
-                    JObject nugetBuildTasks = netcoreapp50.GetJObjectProperty<JObject>(propertyName);
+                    JObject nugetBuildTasks = nugetBuildTasksProperty.Value.FromJToken<JObject>();
 
                     JObject runtime = nugetBuildTasks.GetJObjectProperty<JObject>("runtime");
 
@@ -513,7 +513,7 @@ namespace Dotnet.Integration.Test
                     );
                     runtime.Add(jproperty);
                     nugetBuildTasks["runtime"] = runtime;
-                    netcoreapp50[propertyName] = nugetBuildTasks;
+                    netcoreapp50[nugetBuildTasksProperty.Name] = nugetBuildTasks;
                     targets[".NETCoreApp,Version=v5.0"] = netcoreapp50;
                     jsonFile["targets"] = targets;
                     SaveJson(jsonFile, filePath);
