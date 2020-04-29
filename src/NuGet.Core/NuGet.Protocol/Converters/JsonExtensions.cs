@@ -122,6 +122,9 @@ namespace NuGet.Protocol
         /// <returns>The first property whose name starts with the prefix, if found; otherwise, the default value</returns>
         public static JProperty PropertyWithMatchingPrefix(this JObject jobject, string prefixOfPropertyName)
         {
+            if (string.IsNullOrEmpty(prefixOfPropertyName))
+                throw new ArgumentNullException(nameof(prefixOfPropertyName));
+
             var targetProperty = jobject.Properties().
                 FirstOrDefault(prop => prop.Name.StartsWith(prefixOfPropertyName, StringComparison.OrdinalIgnoreCase));
                 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Newtonsoft.Json.Linq;
 using Test.Utility;
@@ -37,6 +38,37 @@ namespace NuGet.Protocol.Tests
             Assert.Equal(new[] { "CriticalBugs", "Legacy" }, metaData.DeprecationMetadata.Reasons);
             Assert.Equal("this is a message", metaData.DeprecationMetadata.Message);
             Assert.Null(metaData.DeprecationMetadata.AlternatePackage);
+        }
+
+        [Fact]
+        public void PropertyWithMatchingPrefix_WhenEmptyStringIsPassed_Throws()
+        {
+            var jObject = JObject.Parse(JsonData.MsBuildDeps);
+
+            var exception = Assert.Throws<ArgumentNullException>(
+                    () => jObject.PropertyWithMatchingPrefix(prefixOfPropertyName: string.Empty));
+
+            Assert.Equal("prefixOfPropertyName", exception.ParamName);
+        }
+
+        [Fact]
+        public void PropertyWithMatchingPrefix_WhenPrefixOfPropertyNameMatchInput_Success()
+        {
+            var jObject = JObject.Parse(JsonData.MsBuildDeps);
+
+            var jProperty = jObject.PropertyWithMatchingPrefix("NuGet.Build.Tasks/");
+
+            Assert.Equal("NuGet.Build.Tasks/5.6.0-preview.3.6558", jProperty.Name);
+        }
+
+        [Fact]
+        public void PropertyWithMatchingPrefix_WhenPrefixOfPropertyNameDoesNotMatchInput_Success()
+        {
+            var jObject = JObject.Parse(JsonData.MsBuildDeps);
+
+            var jProperty = jObject.PropertyWithMatchingPrefix("NuGet.Build/");
+
+            Assert.Equal(default, jProperty);
         }
     }
 }
