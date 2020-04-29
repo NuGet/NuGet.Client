@@ -9,7 +9,6 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using Microsoft;
-using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
@@ -363,29 +362,58 @@ namespace NuGet.PackageManagement.VisualStudio
             return NuGetFramework.UnsupportedFramework;
         }
 
-        public async Task<string> GetRestorePackagesWithLockFileAsync()
+        public Task<string> GetRestorePackagesWithLockFileAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
-
-            return value;
+            return GetPropertyValueAsync(ProjectBuildProperties.RestorePackagesWithLockFile);
         }
 
-        public async Task<string> GetNuGetLockFilePathAsync()
+        public Task<string> GetNuGetLockFilePathAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            return await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
+            return GetPropertyValueAsync(ProjectBuildProperties.NuGetLockFilePath);
         }
 
         public async Task<bool> IsRestoreLockedAsync()
         {
-            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var value = await BuildProperties.GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
+            var value = await GetPropertyValueAsync(ProjectBuildProperties.RestoreLockedMode);
 
             return MSBuildStringUtility.IsTrue(value);
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
+            if (propertyName == null)
+            {
+                throw new ArgumentNullException(nameof(propertyName));
+            }
+
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            return await BuildProperties.GetPropertyValueAsync(propertyName);
+        }
+
+        public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
+        {
+            if (itemName == null)
+            {
+                throw new ArgumentNullException(nameof(itemName));
+            }
+            if (metadataNames == null)
+            {
+                throw new ArgumentNullException(nameof(itemName));
+            }
+
+            await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var itemStorage = VsHierarchy as IVsBuildItemStorage;
+            if (itemStorage != null)
+            {
+                var callback = new VisualStudioBuildItemStorageCallback();
+                itemStorage.FindItems(itemName, metadataNames.Length, metadataNames, callback);
+
+                return callback.Items;
+            }
+
+            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
         }
 
         private async Task<string> GetTargetFrameworkStringAsync()
