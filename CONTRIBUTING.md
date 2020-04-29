@@ -98,12 +98,13 @@ NuGet members may contribute directly to the main remote.
 
 - [Workflow](docs/workflow.md)
 - [Coding Guidelines](docs/coding-guidelines.md)
+- [Debugging](docs/debugging.md)
 
 ## Docs generation
 
 To update the auto-generated documentation, run the following in the repo root:
 
- ```
+ ```console
  dotnet msbuild .\build\docs.proj
  ```
 
