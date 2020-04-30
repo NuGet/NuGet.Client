@@ -53,7 +53,7 @@ Some of the other points are summarized below:
 
 * Restore operations - [SolutionRestoreWorker](../src/NuGet.Clients/NuGet.SolutionRestoreManager/SolutionRestoreWorker.cs) - All Visual Studio restores start here. Currently, only a solution restore is possible. Depending on the project package management style, there are different code paths to look into.
 
-* Package Manager UI operations - All menu items are defined the [NuGetTools.vsct](../src/NuGet.Clients/NuGet.Tools/NuGetTools.vsct). The main control for the Package Manager UI is [PackageManagerControl](../src/NuGet.Clients/NuGet.PackageManagement.UI/Xamls/PackageManagerControl.xaml.cs).
+* Package Manager UI operations - VS context menu integration is defined in [NuGetTools.vsct](../src/NuGet.Clients/NuGet.Tools/NuGetTools.vsct). The main control for the Package Manager UI is [PackageManagerControl](../src/NuGet.Clients/NuGet.PackageManagement.UI/Xamls/PackageManagerControl.xaml.cs).
 
 * Package Manager Console operations - The PowerShell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Cmdlets) folder.
 
