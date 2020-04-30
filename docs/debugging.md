@@ -109,7 +109,7 @@ If you want to test dotnet.exe explicitly, refer to [Patching dotnet.exe to test
 ### Debugging pack task in dotnet.exe
 
 dotnet.exe pack works the exact same way `msbuild -t:pack` works. The added benefit is that it is always available in all SDK based projects, which is what dotnet.exe supports.
-Most of tips in [Testing and debugging pack in MSBuild](testing-and-debugging-pack-in-msbuild) still apply.
+Most of the tips in [Testing and debugging pack in MSBuild](testing-and-debugging-pack-in-msbuild) still apply.
 
 The easiest way to test the pack functionality with dotnet.exe is to install the NuGet.Build.Tasks.Pack package to the project you want to test, and run `dotnet.exe pack`.
 
