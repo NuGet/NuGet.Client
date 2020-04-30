@@ -55,7 +55,7 @@ Some of the other points are summarized below:
 
 * Package Manager UI operations - All menu items are defined the [NuGetTools.vsct](../src/NuGet.Clients/NuGet.Tools/NuGetTools.vsct). The main control for the Package Manager UI is [PackageManagerControl](../src/NuGet.Clients/NuGet.PackageManagement.UI/Xamls/PackageManagerControl.xaml.cs).
 
-* Package Manager Console operations - The powershell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Cmdlets) folder.
+* Package Manager Console operations - The PowerShell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](../src/NuGet.Clients/NuGet.PackageManagement.PowerShellCmdlets/Cmdlets) folder.
 
 ## Debugging and testing the NuGet MSBuild functionality
 
