@@ -31,7 +31,7 @@ However NuGet is also considered a system component which means it cannot be man
 
 The build generates a vsix artifact in the `artifacts/VS15/` folder. From the [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) run the `VSIXInstaller.exe` with the vsix path as the first argument. Alternatively VS configures the default action for VSIX files.
 
-#### Uninstalling the NuGet extension from Visual Studio
+#### Uninstalling a custom version of the NuGet extension from Visual Studio
 
 Given that NuGet is a system component, you cannot use the extensions manager in Visual Studio to downgrade your NuGet extension to its original version. Go back to your [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) and run `VSIXInstaller.exe /d:NuGet.72c5d240-f742-48d4-a0f1-7016671e405b`.
 
