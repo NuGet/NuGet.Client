@@ -4833,19 +4833,5 @@ namespace Test.Utility
     ""version"": ""0.0.0""
 }";
         #endregion
-
-        #region MSBuildDeps
-        public const string MsBuildDeps = @"{
-  ""NuGet.Build.Tasks/5.6.0-preview.3.6558"": {
-   ""dependencies"": {
-      ""Microsoft.Build.Framework"": ""16.6.0-preview-20181-02"",
-      ""Microsoft.Build.Tasks.Core"": ""16.6.0-preview-20181-02"",
-      ""Microsoft.Build.Utilities.Core"": ""16.6.0-preview-20181-02"",
-      ""NuGet.Commands"": ""5.6.0-preview.3.6558"",
-      ""System.Threading.Tasks.Dataflow"": ""4.9.0""
-   }
- }
-}";
-        #endregion
     }
 }
