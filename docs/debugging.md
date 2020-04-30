@@ -27,7 +27,7 @@ The start-up project is [NuGet.VisualStudio.Client](../src/NuGet.Clients/NuGet.V
 NuGet functions as an extension on top of Visual Studio.
 However NuGet is also considered a system component which means it cannot be managed in the same way as other Visual Studio extensions. However, it is possible to install a locally built NuGet in a Visual Studio instance.
 
-#### Installing the NuGet extension in Visual Studio
+#### Installing a custom version of the NuGet extension in Visual Studio
 
 The build generates a vsix artifact in the `artifacts/VS15/` folder. From the [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) run the `VSIXInstaller.exe` with the vsix path as the first argument. Alternatively VS configures the default action for VSIX files.
 
