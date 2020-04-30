@@ -27,21 +27,21 @@ The start-up project is [NuGet.VisualStudio.Client](..\src\NuGet.Clients\NuGet.V
 NuGet functions as an extension on top of Visual Studio.
 However NuGet is also considered a system component which means it cannot be managed in the same way as other Visual Studio extensions. However, it is possible to install a locally built NuGet in a Visual Studio instance.
 
-#### Installing the NuGet extension in Visual Studio
+#### Installing a custom version of the NuGet extension in Visual Studio
 
 The build generates a vsix artifact in the `artifacts/VS15/` folder. From the [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) run the `VSIXInstaller.exe` with the vsix path as the first argument. Alternatively VS configures the default action for VSIX files.
 
-#### Uninstalling the NuGet extension from Visual Studio
+#### Uninstalling a custom version of the NuGet extension from Visual Studio
 
-Given that NuGet is a system component, you cannot use the extensions manager in Visual Studio. Go back to your [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) and run `VSIXInstaller.exe /d:NuGet.72c5d240-f742-48d4-a0f1-7016671e405b`.
+Given that NuGet is a system component, you cannot use the extensions manager in Visual Studio to downgrade your NuGet extension to its original version. Go back to your [Developer Command Prompt for VS](https://docs.microsoft.com/en-us/dotnet/framework/tools/developer-command-prompt-for-vs) and run `VSIXInstaller.exe /d:NuGet.72c5d240-f742-48d4-a0f1-7016671e405b`.
 
 #### NuGet in Visual Studio assembly location
 
-Each Visual Studio instance has it's own root install directory. Relative to the root directory, the NuGet assemblies can be are in `Common7/IDE/CommonExtensions/Microsoft/NuGet`.
+Each Visual Studio instance has its own root install directory. Relative to the root directory, the NuGet assemblies can be found in `Common7/IDE/CommonExtensions/Microsoft/NuGet`.
 
 ### Code pointers for NuGet in Visual Studio
 
-Visual Studio extensibility has the concept of VSPackages. This allows extensions to add capabilities to the UI and all of the flows within the IDE. The NuGet client itself ships 2 packages, which can be considered the entry points for the whole component, You wouldn’t normally debug the initialization of these packages of course, but they author the whole NuGet in VS experience in one or another.
+Visual Studio extensibility has the concept of VSPackages. This allows extensions to add capabilities to the UI and all of the flows within the IDE. The NuGet client itself ships 2 packages, which can be considered the entry points for the whole component. You wouldn’t normally debug the initialization of these packages of course, but they author the whole NuGet in VS experience in one or another.
 
 The 2 packages in question are:
 
@@ -51,11 +51,11 @@ The 2 packages in question are:
 The NuGet in Visual Studio experience is scattered across many assemblies as can be seen from the [project overview](project-overview.md).
 Some of the other points are summarized below:
 
-* Restore operations - [SolutionRestoreWorker](..\src\NuGet.Clients\NuGet.SolutionRestoreManager\SolutionRestoreWorker.cs) - All Visual Studio restores start here. Currently only a solution restore is possible. Depending on the project package management style there are different code paths to look into.
+* Restore operations - [SolutionRestoreWorker](..\src\NuGet.Clients\NuGet.SolutionRestoreManager\SolutionRestoreWorker.cs) - All Visual Studio restores start here. Currently, only a solution restore is possible. Depending on the project package management style, there are different code paths to look into.
 
-* Package Manager UI operations - All menu items are defined the [NuGetTools.vsct](..\src\NuGet.Clients\NuGet.Tools\NuGetTools.vsct). The main control for the Package Manager UI is [PackageManagerControl](..\src\NuGet.Clients\NuGet.PackageManagement.UI\Xamls\PackageManagerControl.xaml.cs).
+* Package Manager UI operations - VS context menu integration is defined in [NuGetTools.vsct](..\src\NuGet.Clients\NuGet.Tools\NuGetTools.vsct). The main control for the Package Manager UI is [PackageManagerControl](..\src\NuGet.Clients\NuGet.PackageManagement.UI\Xamls\PackageManagerControl.xaml.cs).
 
-* Package Manager Console operations - The powershell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\Cmdlets) folder.
+* Package Manager Console operations - The PowerShell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\Cmdlets) folder.
 
 ## Debugging and testing the NuGet MSBuild functionality
 
@@ -84,7 +84,7 @@ If you are testing a debug build, to debug just set the environment variable def
 
 The naive approach here is to install the package to the project and just run `msbuild -t:pack` on it.
 
-Alternatively, if you are testing on SDK based projects, the NuGet.Build.Tasks.Pack.targets are just wired into the build in a certain way and that can be replicated without a complete installation of the extension through the powershell helper functions as shown in the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1). Examples can be found in the linked scripts.
+Alternatively, if you are testing on SDK based projects, the NuGet.Build.Tasks.Pack.targets are just wired into the build in a certain way and that can be replicated without a complete installation of the extension through the PowerShell helper functions as shown in the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1). Examples can be found in the linked scripts.
 
 If you are testing a debug build, to debug just set the environment variable defined in [RestoreTask](..\src\NuGet.Core\NuGet.Build.Tasks.Pack\PackTask.cs), currently `DEBUG_PACK_TASK`.
 
@@ -108,7 +108,7 @@ If you want to test dotnet.exe explicitly, refer to [Patching dotnet.exe to test
 ### Debugging pack task in dotnet.exe
 
 dotnet.exe pack works the exact same way `msbuild -t:pack` works. The added benefit is that it is always available in all SDK based projects, which is what dotnet.exe supports.
-Most of tips in [Testing and debugging pack in MSBuild](#testing-and-debugging-pack-in-msbuild) still apply.
+Most of the tips in [Testing and debugging pack in MSBuild](#testing-and-debugging-pack-in-msbuild) still apply.
 
 The easiest way to test the pack functionality with dotnet.exe is to install the NuGet.Build.Tasks.Pack package to the project you want to test, and run `dotnet.exe pack`.
 
@@ -124,11 +124,11 @@ There are 2 ways to debug this:
 * Patch the SDK by referring to [Patching dotnet.exe to test the NuGet functionality](#patching-dotnetexe-to-test-the-nuget-functionality).
 
 After you have patched it, refer to the environment variable in the [NuGet.CommandLine.XPlat](..\src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj) entry point.
-If you are testing a debug build, to debug just set the environment variable defined in [Program.cs](..\src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj), currentl DEBUG_NUGET_XPLAT.
+If you are testing a debug build, to debug just set the environment variable defined in [Program.cs](..\src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj), currently, `DEBUG_NUGET_XPLAT`.
 
 ### Patching dotnet.exe to test the NuGet functionality
 
 There are 2 ways to patch dotnet.exe with the latest NuGet bits.
 
-* Refer to the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1) for a helper script to patch a zip of the SDK that can acquired from the [dotnet installer](https://github.com/dotnet/installer/blob/master/README.md#installers-and-binaries). Note that when running you [might](https://github.com/dotnet/runtime/blob/master/docs/project/dogfooding.md) need to disable MULTI_LEVEL_LOOKUP. dotnet.exe has a special logic for the discovering the SDK, and it's possible it's discovering a different SDK from the one you patched.
+* Refer to the [PowerShell helper scripts](..\scripts\nuget-debug-helpers.ps1) for a helper script to patch a zip of the SDK that can be acquired from the [dotnet installer](https://github.com/dotnet/installer/blob/master/README.md#installers-and-binaries). Note that when running you [might](https://github.com/dotnet/runtime/blob/master/docs/project/dogfooding.md) need to disable MULTI_LEVEL_LOOKUP. dotnet.exe has a special logic for the discovering the SDK, and it's possible it's discovering a different SDK from the one you patched.
 * Refer to [dotnet/sdk](https://github.com/dotnet/sdk) repo to build it locally and test through that. The sdk consumes NuGet through packages, use `Ctrl + F` in your trusty editor to figure out how to make those changes. Keep in mind that you might need to add a new source in their build.
