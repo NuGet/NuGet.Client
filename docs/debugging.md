@@ -125,7 +125,7 @@ There are 2 ways to debug this:
 * Patch the SDK by referring to [Patching dotnet.exe to test the NuGet functionality](patching-dotnet-exe-to-test-the-nuget-functionality).
 
 After you have patched it, refer to the environment variable in the [NuGet.CommandLine.XPlat](../src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj) entry point.
-If you are testing a debug build, to debug just set the environment variable defined in [Program.cs](../src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj), currentl DEBUG_NUGET_XPLAT.
+If you are testing a debug build, to debug just set the environment variable defined in [Program.cs](../src\NuGet.Core\NuGet.CommandLine.XPlat\NuGet.CommandLine.XPlat.csproj), currently, `DEBUG_NUGET_XPLAT`.
 
 ### Patching dotnet.exe to test the NuGet functionality
 
