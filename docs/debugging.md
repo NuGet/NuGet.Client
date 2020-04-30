@@ -37,7 +37,7 @@ Given that NuGet is a system component, you cannot use the extensions manager in
 
 #### NuGet in Visual Studio assembly location
 
-Each Visual Studio instance has it's own root install directory. Relative to the root directory, the NuGet assemblies can be are in `Common7/IDE/CommonExtensions/Microsoft/NuGet`.
+Each Visual Studio instance has its own root install directory. Relative to the root directory, the NuGet assemblies can be found in `Common7/IDE/CommonExtensions/Microsoft/NuGet`.
 
 ### Code pointers for NuGet in Visual Studio
 
