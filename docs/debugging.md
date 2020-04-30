@@ -41,7 +41,7 @@ Each Visual Studio instance has its own root install directory. Relative to the 
 
 ### Code pointers for NuGet in Visual Studio
 
-Visual Studio extensibility has the concept of VSPackages. This allows extensions to add capabilities to the UI and all of the flows within the IDE. The NuGet client itself ships 2 packages, which can be considered the entry points for the whole component, You wouldn’t normally debug the initialization of these packages of course, but they author the whole NuGet in VS experience in one or another.
+Visual Studio extensibility has the concept of VSPackages. This allows extensions to add capabilities to the UI and all of the flows within the IDE. The NuGet client itself ships 2 packages, which can be considered the entry points for the whole component. You wouldn’t normally debug the initialization of these packages of course, but they author the whole NuGet in VS experience in one or another.
 
 The 2 packages in question are:
 
