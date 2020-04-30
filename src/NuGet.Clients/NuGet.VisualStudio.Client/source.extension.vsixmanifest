@@ -8,6 +8,7 @@
         <License>eula.rtf</License>
         <Icon>Resources/nuget_96.png</Icon>
         <PreviewImage>Resources/nuget_256.png</PreviewImage>
+        <AllowClientRole>true</AllowClientRole>
     </Metadata>
     <Prerequisites>
         <Prerequisite Id="Microsoft.VisualStudio.Component.CoreEditor" Version="[16.0,17.0)" DisplayName="Visual Studio core editor" />
