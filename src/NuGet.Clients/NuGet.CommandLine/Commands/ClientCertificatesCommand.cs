@@ -51,18 +51,18 @@ namespace NuGet.CommandLine.Commands
         public override void ExecuteCommand()
         {
             var actionString = Arguments.FirstOrDefault() ?? "list";
-            switch (actionString.ToLowerInvariant())
+            switch (actionString.ToUpperInvariant())
             {
-                case "list":
+                case "LIST":
                     ExecuteListCommandRunner();
                     break;
-                case "add":
+                case "ADD":
                     ExecuteAddCommandRunner();
                     break;
-                case "remove":
+                case "REMOVE":
                     ExecuteRemoveCommandRunner();
                     break;
-                case "update":
+                case "UPDATE":
                     ExecuteUpdateCommandRunner();
                     break;
                 default:

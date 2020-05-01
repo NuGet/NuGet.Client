@@ -99,7 +99,7 @@ namespace NuGet.Configuration
             var findValue = element.Attribute(XName.Get(ConfigurationConstants.FindValueAttribute))?.Value;
             if (string.IsNullOrWhiteSpace(findValue))
             {
-                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(findValue));
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty);
             }
 
             AddAttribute(ConfigurationConstants.FindValueAttribute, findValue);

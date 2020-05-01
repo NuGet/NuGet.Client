@@ -11,7 +11,7 @@ using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
-    public class ListClientCertRunner
+    public static class ListClientCertRunner
     {
         private const int PaddingWidth = 6;
 

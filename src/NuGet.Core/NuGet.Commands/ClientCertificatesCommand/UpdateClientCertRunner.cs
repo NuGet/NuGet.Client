@@ -9,7 +9,7 @@ using NuGet.Configuration;
 
 namespace NuGet.Commands
 {
-    public class UpdateClientCertRunner
+    public static class UpdateClientCertRunner
     {
         public static void Run(UpdateClientCertArgs args, Func<ILogger> getLogger)
         {
