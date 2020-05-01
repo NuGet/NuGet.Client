@@ -1307,4 +1307,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     ============================================================
   -->
   <Import Project="NuGet.RestoreEx.targets" Condition="'$(RestoreUseStaticGraphEvaluation)' == 'true' And Exists('NuGet.RestoreEx.targets')" />
+
+  <!--
+    ============================================================
+    Displays the preview information message for the CentralPackageVersionManagement
+    ============================================================
+  -->
+  <Target Name="CentralPackageVersionManagementPreview" BeforeTargets="Restore" AfterTargets="AfterBuild" Condition="'$(_CentralPackageVersionsEnabled)'=='true'">
+    <Message Importance="high" Text="The project $(MSBuildProjectFile) is using CentralPackageVersionManagement, a NuGet preview feature. See: https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-package-versions." />
+  </Target>
+
 </Project>
