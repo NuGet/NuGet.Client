@@ -19,6 +19,18 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
+    <Noun Name="client-cert">
+      <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
+      <SingleValueOption Name="path" Help="Option_Path"/>
+      <SingleValueOption Name="password" Help="Option_Password"/>
+      <SwitchOption Name="store-password-in-clear-text" Help="Option_StorePasswordInClearText"/>
+      <SingleValueOption Name="store-location" Help="Option_StoreLocation"/>
+      <SingleValueOption Name="store-name" Help="Option_StoreName"/>
+      <SingleValueOption Name="find-by" Help="Option_FindBy"/>
+      <SingleValueOption Name="find-value" Help="Option_FindValue"/>
+      <SwitchOption Name="force" Shortcut="f" Help="Option_Force"/>
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+    </Noun>
   </Verb>
   <Verb Name="disable">
     <Noun Name="source" Version="3.1.200"
@@ -49,6 +61,9 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
+    <Noun Name="client-cert">
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
+    </Noun>
   </Verb>
   <Verb Name="remove">
     <Noun Name="source" Version="3.1.200"
@@ -58,6 +73,10 @@
       <Example Title="Remove a source with name of `mySource`:" Command="dotnet nuget remove source mySource" />
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
+    </Noun>
+    <Noun Name="client-cert">
+      <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
   <Verb Name="update">
@@ -73,6 +92,18 @@
       <Example Title="Update a source with name of `mySource`:" Command="dotnet nuget update source mySource --source c:\packages" />
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
+    </Noun>
+    <Noun Name="client-cert">
+      <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
+      <SingleValueOption Name="path" Help="Option_Path"/>
+      <SingleValueOption Name="password" Help="Option_Password"/>
+      <SwitchOption Name="store-password-in-clear-text" Help="Option_StorePasswordInClearText"/>
+      <SingleValueOption Name="store-location" Help="Option_StoreLocation"/>
+      <SingleValueOption Name="store-name" Help="Option_StoreName"/>
+      <SingleValueOption Name="find-by" Help="Option_FindBy"/>
+      <SingleValueOption Name="find-value" Help="Option_FindValue"/>
+      <SwitchOption Name="force" Shortcut="f" Help="Option_Force"/>
+      <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
 </Commands>
