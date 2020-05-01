@@ -818,53 +818,53 @@ namespace NuGet.DependencyResolver.Tests
             Assert.False(isGreater);
         }
 
-        [Fact]
-        public void TransitiveCentralPackageVersions_AddAndTake()
-        {
-            // Arrange
-            var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
-            var centralPackageVersionDependency = new LibraryDependency()
-            {
-                LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
-            };
+        //[Fact]
+        //public void TransitiveCentralPackageVersions_AddAndTake()
+        //{
+        //    // Arrange
+        //    var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
+        //    var centralPackageVersionDependency = new LibraryDependency()
+        //    {
+        //        LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+        //    };
 
-            bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
-            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
-            // nothing more to take 
-            bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
+        //    bool resultAdd = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+        //    bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
+        //    // nothing more to take 
+        //    bool resultTake2 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake2);
 
-            // Assert
-            Assert.True(resultAdd);
-            Assert.True(resultTake1);
-            Assert.False(resultTake2);
+        //    // Assert
+        //    Assert.True(resultAdd);
+        //    Assert.True(resultTake1);
+        //    Assert.False(resultTake2);
 
-            Assert.Equal(centralPackageVersionDependency, centralPackageVersionTake1);
-            Assert.Null(centralPackageVersionTake2);
-        }
+        //    Assert.Equal(centralPackageVersionDependency, centralPackageVersionTake1);
+        //    Assert.Null(centralPackageVersionTake2);
+        //}
 
-        [Fact]
-        public void TransitiveCentralPackageVersions_TryAdd_DuplicatesAreIgnored()
-        {
-            // Arrange
-            var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
-            var centralPackageVersionDependency = new LibraryDependency()
-            {
-                LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
-            };
-            bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
-            bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+        //[Fact]
+        //public void TransitiveCentralPackageVersions_TryAdd_DuplicatesAreIgnored()
+        //{
+        //    // Arrange
+        //    var transitiveCentralPackageVersions = new RemoteDependencyWalker.TransitiveCentralPackageVersions();
+        //    var centralPackageVersionDependency = new LibraryDependency()
+        //    {
+        //        LibraryRange = new LibraryRange("name1", VersionRange.Parse("1.0.0"), LibraryDependencyTarget.Package),
+        //    };
+        //    bool resultAdd1 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+        //    bool resultAdd2 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
 
-            // Assert
-            Assert.True(resultAdd1);
-            Assert.False(resultAdd2);
+        //    // Assert
+        //    Assert.True(resultAdd1);
+        //    Assert.False(resultAdd2);
 
-            // Once the data is added it cannot be re-added even if after TryTake 
-            bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
-            bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
+        //    // Once the data is added it cannot be re-added even if after TryTake 
+        //    bool resultTake1 = transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionTake1);
+        //    bool resultAdd3 = transitiveCentralPackageVersions.TryAdd(centralPackageVersionDependency);
 
-            Assert.True(resultTake1);
-            Assert.False(resultAdd3);
-        }
+        //    Assert.True(resultTake1);
+        //    Assert.False(resultAdd3);
+        //}
 
         [Theory]
         [InlineData("2.0.0", "2.0.0")]

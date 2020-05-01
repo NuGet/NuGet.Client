@@ -49,5 +49,10 @@ namespace NuGet.DependencyResolver
         /// True if this is a csproj or similar project. Xproj should be false.
         /// </summary>
         public bool IsMsBuildBased { get; set; }
+
+        /// <summary>
+        /// True if the project has its versions managed centrally.
+        /// </summary>
+        public bool IsCPVMEnabled { get; set; }
     }
 }
