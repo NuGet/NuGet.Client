@@ -745,6 +745,10 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            //If we're on the Updates tab, actually load the Installed tab's data and apply a filter.
+            ItemFilter filterToLoad = _topPanel.Filter == ItemFilter.UpdatesAvailable ? ItemFilter.Installed : _topPanel.Filter;
+            ItemFilter filterToRender = _topPanel.Filter;
+
             var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
 
             if (useCacheForUpdates)
@@ -752,7 +756,7 @@ namespace NuGet.PackageManagement.UI
                 loadContext.CachedPackages = Model.CachedUpdates;
             }
 
-            var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+            var packageFeed = await CreatePackageFeedAsync(loadContext, filterToLoad, _uiLogger);
 
             var loader = new PackageItemLoader(
                 loadContext, packageFeed, searchText, IncludePrerelease);
@@ -767,7 +771,7 @@ namespace NuGet.PackageManagement.UI
             // start SearchAsync task for initial loading of packages
             var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
             // this will wait for searchResultTask to complete instead of creating a new task
-            await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
+            await _packageList.LoadItemsAsync(loader, loadingMessage, filterToRender, _uiLogger, searchResultTask, _loadCts.Token);
 
             if (pSearchCallback != null && searchTask != null)
             {
