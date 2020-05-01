@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Security;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Test.Utility;
@@ -14,7 +13,7 @@ namespace NuGet.Configuration.Test
 {
     public class ClientCertificateProviderTests
     {
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void CertificateFromFile_Success_ParsedAndAddedToAssociatedPackageSource()
         {
             using (var testInfo = new TestInfo())
