@@ -1,18 +1,21 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.RuntimeModel;
+using NuGet.Shared;
+using NuGet.Test.Utility;
 
 namespace NuGet.Commands.Test
 {
-    public static class ProjectJsonTestHelpers
+    public static class ProjectTestHelpers
     {
         /// <summary>
         /// Create a restore request for the specs. Restore only the first one.
@@ -192,6 +195,66 @@ namespace NuGet.Commands.Test
             }
 
             return updated;
+        }
+
+        /// <summary>
+        /// Creates a restore request, with the only source being the source from the <paramref name="pathContext"/>.
+        /// </summary>
+        /// <param name="spec"></param>
+        /// <param name="pathContext"></param>
+        /// <param name="logger"></param>
+        /// <returns></returns>
+        public static TestRestoreRequest CreateRestoreRequest(PackageSpec spec, SimpleTestPathContext pathContext, ILogger logger)
+        {
+            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(spec);
+            dgSpec.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
+
+            return new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(spec.FilePath, LockFileFormat.AssetsFileName),
+                DependencyGraphSpec = dgSpec,
+            };
+        }
+
+        public static TestRestoreRequest CreateRestoreRequest(PackageSpec projectToRestore, IEnumerable<PackageSpec> packageSpecsClosure, SimpleTestPathContext pathContext, ILogger logger)
+        {
+            var sources = new List<PackageSource> { new PackageSource(pathContext.PackageSource) };
+            var dgSpec = new DependencyGraphSpec();
+            dgSpec.AddProject(projectToRestore);
+            dgSpec.AddRestore(projectToRestore.RestoreMetadata.ProjectUniqueName);
+
+            foreach (var spec in packageSpecsClosure)
+            {
+                dgSpec.AddProject(spec);
+            }
+
+            var externalClosure = DependencyGraphSpecRequestProvider.GetExternalClosure(dgSpec, projectToRestore.Name).AsList();
+
+            return new TestRestoreRequest(projectToRestore, sources, pathContext.UserPackagesFolder, logger)
+            {
+                LockFilePath = Path.Combine(projectToRestore.FilePath, LockFileFormat.AssetsFileName),
+                DependencyGraphSpec = dgSpec,
+                ExternalProjects = externalClosure,
+            };
+        }
+
+        public static RuntimeGraph GetRuntimeGraph(IEnumerable<string> runtimeIdentifiers, IEnumerable<string> runtimeSupports)
+        {
+            var runtimes = runtimeIdentifiers?
+                .Distinct(StringComparer.Ordinal)
+                .Select(rid => new RuntimeDescription(rid))
+                .ToList()
+                ?? Enumerable.Empty<RuntimeDescription>();
+
+            var supports = runtimeSupports?
+                .Distinct(StringComparer.Ordinal)
+                .Select(s => new CompatibilityProfile(s))
+                .ToList()
+                ?? Enumerable.Empty<CompatibilityProfile>();
+
+            return new RuntimeGraph(runtimes, supports);
         }
 
         public static PackageSpec WithPackagesConfigRestoreMetadata(this PackageSpec spec)

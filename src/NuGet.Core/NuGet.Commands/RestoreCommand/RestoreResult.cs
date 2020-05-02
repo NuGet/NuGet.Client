@@ -82,7 +82,7 @@ namespace NuGet.Commands
         /// <summary>
         /// NuGet lock file which is either generated or updated to lock down NuGet packages version
         /// </summary>
-        private readonly PackagesLockFile _newPackagesLockFile;
+        internal PackagesLockFile _newPackagesLockFil { get; }
 
 
         private readonly string _dependencyGraphSpecFilePath;

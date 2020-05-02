@@ -179,8 +179,7 @@ namespace NuGet.Test.Utility
         public async Task LogAsync(ILogMessage message)
         {
             LogMessages.Enqueue(message);
-
-            await LogAsync(message.Level, message.Message);
+            await LogAsync(message.Level, message.FormatWithCode());
         }
     }
 }

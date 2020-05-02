@@ -152,4 +152,37 @@
   <data name="MissingVersionOnTool" xml:space="preserve">
     <value>Tools must specify a version range.</value>
   </data>
+  <data name="PackagesLockFile_MismatchedTargetFrameworks" xml:space="preserve">
+    <value>The project target frameworks are different than the lock file's target frameworks. Lock file target frameworks: {0}. Project target frameworks {1}.</value>
+    <comment>0 - Semicolon delimited list of lock file target frameworks, 1 - semicolon delimited list of lock file target frameworks</comment>
+  </data>
+  <data name="PackagesLockFile_NewTargetFramework" xml:space="preserve">
+    <value>The project target framework {0} was not found in the lock file.</value>
+    <comment>0 - project target framework</comment>
+  </data>
+  <data name="PackagesLockFile_PackageReferenceAdded" xml:space="preserve">
+    <value>A new package reference was found {0} for the project target framework {1}.</value>
+  </data>
+  <data name="PackagesLockFile_PackageReferencesHaveChanged" xml:space="preserve">
+    <value>The package references have changed for {0}. Lock file's package references: {1}, project's package references: {2}.</value>
+    <comment>0 - tfm, 1 - lock file package references, 2 - project package references</comment>
+  </data>
+  <data name="PackagesLockFile_PackageReferenceVersionChanged" xml:space="preserve">
+    <value>The package reference {0} version has changed from {1} to {2}.</value>
+  </data>
+  <data name="PackagesLockFile_ProjectReferenceAdded" xml:space="preserve">
+    <value>A new project reference was found {0} for {1}.</value>
+  </data>
+  <data name="PackagesLockFile_ProjectReferenceDependenciesHasChanged" xml:space="preserve">
+    <value>The project references {0} project dependencies has changed.</value>
+  </data>
+  <data name="PackagesLockFile_ProjectReferenceHasNoCompatibleTargetFramework" xml:space="preserve">
+    <value>The project {0} has no compatible target framework. </value>
+  </data>
+  <data name="PackagesLockFile_ProjectReferencesHasChange" xml:space="preserve">
+    <value>The project reference {0} has changed. Current dependencies count: {1}, lock file's dependencies count: {2}.</value>
+  </data>
+  <data name="PackagesLockFile_RuntimeIdentifiersChanged" xml:space="preserve">
+    <value>The project's runtime identifiers have changed from. Project's runtime identifiers: {0}, lock file's runtime identifiers {1}.</value>
+  </data>
 </root>
