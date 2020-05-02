@@ -758,7 +758,7 @@ namespace NuGet.XPlat.FuncTest
         public void ClientCertUpdatedCommand_Fail_StoreCertificateNotExist()
         {
             var updatedStoreLocation = StoreLocation.CurrentUser;
-            var updatedStoreName = StoreName.AuthRoot;
+            var updatedStoreName = StoreName.My;
             var updatedFindBy = X509FindType.FindByIssuerName;
             var updatedFindValue = "SOMEUpdated";
 
