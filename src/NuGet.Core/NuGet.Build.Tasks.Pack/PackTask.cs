@@ -135,9 +135,8 @@ namespace NuGet.Build.Tasks.Pack
                     packageBuilder = logic.GetPackageBuilder(request);
                 }
                 var packRunner = logic.GetPackCommandRunner(request, packArgs, packageBuilder);
-                logic.BuildPackage(packRunner);
 
-                return true;
+                return logic.BuildPackage(packRunner);
             }
             catch (Exception ex)
             {

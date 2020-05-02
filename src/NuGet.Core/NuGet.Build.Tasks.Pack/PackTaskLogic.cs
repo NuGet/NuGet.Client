@@ -391,9 +391,9 @@ namespace NuGet.Build.Tasks.Pack
             return runner;
         }
 
-        public void BuildPackage(PackCommandRunner runner)
+        public bool BuildPackage(PackCommandRunner runner)
         {
-            runner.BuildPackage();
+            return runner.RunPackageBuild();
         }
 
         private IEnumerable<OutputLibFile> InitLibFiles(IMSBuildItem[] libFiles)
