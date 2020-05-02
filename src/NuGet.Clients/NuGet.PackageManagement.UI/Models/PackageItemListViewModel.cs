@@ -441,7 +441,7 @@ namespace NuGet.PackageManagement.UI
             // Get the minimum version installed in any target project/solution
             InstalledVersion = installedPackages
                 .GetPackageVersions(Id)
-                .MinOrDefault();
+                .MaxOrDefault();
 
             // Set auto referenced to true any reference for the given id contains the flag.
             AutoReferenced = installedPackages.IsAutoReferenced(Id);
