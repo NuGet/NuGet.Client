@@ -73,7 +73,7 @@
                 Background="Transparent"
                 Padding="0,8,0,0">
     <Grid
-                  Margin="16,0,7,0">
+                  Margin="0,0,7,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="Auto" />
         <ColumnDefinition Width="Auto" />
@@ -84,9 +84,9 @@
       <!-- check box -->
       <CheckBox
                     Grid.Column="0"
-                    Margin="0,12,8,0"
+                    Margin="4,12,4,0"
                     VerticalAlignment="top"
-                    Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource BooleanToVisibilityConverter}}"
+                    Visibility="{Binding CheckBoxesEnabled, RelativeSource={RelativeSource AncestorType={x:Type nuget:InfiniteScrollList}}, Converter={StaticResource HiddenWhenFalseBooleanToVisibilityConverter}}"
                     AutomationProperties.Name="{x:Static nuget:Resources.CheckBox_Selected}"
                     IsChecked="{Binding Selected}" />
 

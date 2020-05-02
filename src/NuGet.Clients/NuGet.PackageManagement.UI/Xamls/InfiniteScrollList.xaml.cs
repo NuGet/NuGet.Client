@@ -124,6 +124,24 @@ namespace NuGet.PackageManagement.UI
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
 
+        public int FilterCount
+        {
+            get
+            {
+                var view = CollectionViewSource.GetDefaultView(Items);
+
+                if (view.Filter != null)
+                {
+                    return view.Cast<object>().Count();
+                }
+                else
+                {
+                    return Items.Count;
+                }
+            }
+        }
+
+        //TODO: filter and thread check
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
@@ -286,6 +304,8 @@ namespace NuGet.PackageManagement.UI
                         // do not keep the LoadingStatus.Loading forever.
                         // This is a workaround.
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
+
+                        //TODO: I think this can stay as-is because if there's a filter, the Items load still should finish.
                         if (Items.Count == emptyListCount)
                         {
                             _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
@@ -317,6 +337,7 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
+                    //TODO: probably don't need this and/or it's wrong.
                     if (Items.Count > 0)
                     {
                         // add Loading... indicator if not present
@@ -385,7 +406,7 @@ namespace NuGet.PackageManagement.UI
                         // do not keep the LoadingStatus.Loading forever.
                         // This is a workaround.
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                        if (Items.Count == emptyListCount)
+                        if (Items.Count == emptyListCount) //TODO: probably needs to be FilterCount
                         {
                             _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                         }
@@ -627,7 +648,7 @@ namespace NuGet.PackageManagement.UI
                 package.PropertyChanged -= Package_PropertyChanged;
             }
 
-            Items.Clear();
+            Items.Clear(); //TODO: clear any filter?
             _loadingStatusBar.ItemsLoaded = 0;
         }
 
@@ -670,7 +691,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             int packageCount;
-            if (Items.Count == 0)
+            if (Items.Count == 0) //TODO: this all needs to be FilterCount
             {
                 packageCount = 0;
             }
@@ -772,7 +793,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
-                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count) //TODO: should be FilterCount?
                 {
                     LoadItems(selectedPackageItem: null, token: CancellationToken.None);
                 }

@@ -798,7 +798,8 @@ namespace NuGet.PackageManagement.UI
                         IncludePrerelease = IncludePrerelease
                     };
 
-                    _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
+                    var updateCount = _packageList.FilterCount;
+                    _topPanel.UpdateCountOnUpdatesTab(updateCount);
                 }
                 else
                 {
