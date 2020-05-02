@@ -608,6 +608,47 @@ EndGlobal";
             }
         }
 
+        [PlatformFact(Platform.Windows)]
+        public void RestoreCommand_DisplaysCPVMInPreviewMessage()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", 60000);
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.AddProperty(
+                        xml,
+                        "ManagePackageVersionsCentrally",
+                        "true");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                // The test depends on the presence of these packages and their versions.
+                // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
+                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
+                var directoryPackagesPropsContent = @"<Project>                    
+                        <PropertyGroup>
+	                        <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+                        </PropertyGroup>
+                    </Project>";
+                File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore");
+
+                // Assert
+                Assert.True(result.Output.Contains($"The project {projectName}.csproj is using CentralPackageVersionManagement, a NuGet preview feature. See: https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-package-versions"));
+            }
+        }
+
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
