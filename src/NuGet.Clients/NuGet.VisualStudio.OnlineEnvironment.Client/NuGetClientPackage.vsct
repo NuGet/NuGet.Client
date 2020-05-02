@@ -57,6 +57,7 @@
         <Icon guid="guidToolbarImages" id="bmpPackageRestore" />
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>AllowClientRole</CommandFlag>
         <Strings>
           <ButtonText>Restore NuGet Packa&amp;ges</ButtonText>
           <CommandName>SolutionExplorer.Solution.RestoreNuGetPackages</CommandName>
@@ -71,6 +72,7 @@
         <CommandFlag>AllowParams</CommandFlag>
         <CommandFlag>DefaultInvisible</CommandFlag>
         <CommandFlag>DynamicVisibility</CommandFlag>
+        <CommandFlag>AllowClientRole</CommandFlag>
         <Strings>
           <CommandName>SolutionExplorer.Project.ManageNuGetPackages</CommandName>
           <CanonicalName>SolutionExplorer.Project.ManageNuGetPackages</CanonicalName>
