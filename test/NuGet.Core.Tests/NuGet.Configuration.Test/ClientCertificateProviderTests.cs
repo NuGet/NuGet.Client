@@ -39,7 +39,7 @@ namespace NuGet.Configuration.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void CertificateFromStore_Success_ParsedAndAddedToAssociatedPackageSource()
         {
             using (var testInfo = new TestInfo())

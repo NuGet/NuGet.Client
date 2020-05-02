@@ -124,7 +124,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(1, exitCode);
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void ClientCertAddCommand_Fail_StoreCertificateNotExist()
         {
             // Arrange
@@ -269,7 +269,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void ClientCertAddCommand_Success_StoreCertificate()
         {
             // Arrange
@@ -754,7 +754,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void ClientCertUpdatedCommand_Fail_StoreCertificateNotExist()
         {
             var updatedStoreLocation = StoreLocation.CurrentUser;
@@ -910,7 +910,7 @@ namespace NuGet.XPlat.FuncTest
                         password.AppendChar(symbol);
                     }
 
-                    store.Add(new X509Certificate2(CreateCertificate(), password));
+                    store.Add(new X509Certificate2(CreateCertificate(), password, X509KeyStorageFlags.Exportable));
                 }
             }
 

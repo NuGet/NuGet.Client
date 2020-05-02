@@ -940,7 +940,7 @@ namespace NuGet.CommandLine.Test
                         password.AppendChar(symbol);
                     }
 
-                    store.Add(new X509Certificate2(CreateCertificate(), password));
+                    store.Add(new X509Certificate2(CreateCertificate(), password, X509KeyStorageFlags.Exportable));
                 }
             }
 
