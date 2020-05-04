@@ -68,6 +68,7 @@ namespace NuGet.PackageManagement.UI
         public int SelectedIndex { get; private set; }
         public int RecommendedCount { get; private set; }
         public bool RecommendPackages { get; private set; }
+        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; private set; }
 
         /// <summary>
         /// Sets the current selection info
@@ -75,11 +76,13 @@ namespace NuGet.PackageManagement.UI
         public void SetCurrentSelectionInfo(
             int selectedIndex,
             int recommendedCount,
-            bool recommendPackages)
+            bool recommendPackages,
+            (string modelVersion, string vsixVersion)? recommenderVersion)
         {
             SelectedIndex = selectedIndex;
             RecommendedCount = recommendedCount;
             RecommendPackages = recommendPackages;
+            RecommenderVersion = recommenderVersion;
         }
 
         /// <summary>

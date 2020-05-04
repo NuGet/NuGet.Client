@@ -29,6 +29,8 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
+        public (string modelVersion, string vsixVersion) VersionInfo = (modelVersion: (string)null, vsixVersion: (string)null);
+
         IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
         public RecommenderPackageFeed(
@@ -77,6 +79,12 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Get NuGet package recommender service, or null if it is not available
             NuGetRecommender = Package.GetGlobalService(typeof(SVsNuGetRecommenderService)) as IVsNuGetPackageRecommender;
+            if(NuGetRecommender != null)
+            {
+                var VersionDict = NuGetRecommender.GetVersionInfo();
+                VersionInfo.modelVersion = VersionDict.ContainsKey("Model") ? VersionDict["Model"] : null;
+                VersionInfo.vsixVersion = VersionDict.ContainsKey("Vsix") ? VersionDict["Vsix"] : null;
+            }
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -116,7 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
                 List<string> depPackages = _dependentPackages.Keys.ToList();
                 // call the recommender to get package recommendations
-                recommendIds = await NuGetRecommender.GetRecommendedPackagIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
+                recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
             }
 
             // get PackageIdentity info for the top 5 recommended packages

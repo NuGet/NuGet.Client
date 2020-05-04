@@ -134,6 +134,7 @@ namespace NuGet.PackageManagement.UI
                     nugetUi.SelectedIndex = model.SelectedIndex;
                     nugetUi.RecommendedCount = model.RecommendedCount;
                     nugetUi.RecommendPackages = model.RecommendPackages;
+                    nugetUi.RecommenderVersion = model.RecommenderVersion;
                 });
         }
 

@@ -524,6 +524,7 @@ namespace NuGet.PackageManagement.UI
                         nuGetUI?.SelectedIndex,
                         nuGetUI?.RecommendedCount,
                         nuGetUI?.RecommendPackages,
+                        nuGetUI?.RecommenderVersion,
                         existingPackages,
                         addedPackages,
                         removedPackages,
@@ -546,6 +547,7 @@ namespace NuGet.PackageManagement.UI
             int? selectedIndex,
             int? recommendedCount,
             bool? recommendPackages,
+            (string modelVersion, string vsixVersion)? recommenderVersion,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
@@ -587,6 +589,8 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent["SelectedIndex"] = selectedIndex;
                 actionTelemetryEvent["RecommendedCount"] = recommendedCount;
                 actionTelemetryEvent["RecommendPackages"] = recommendPackages;
+                actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
+                actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
 
             // log the installed package state

@@ -250,6 +250,8 @@ namespace NuGet.PackageManagement.UI
 
         public bool RecommendPackages { get; set; }
 
+        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
+
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
             UIContext.SolutionManager.OnActionsExecuted(actions);

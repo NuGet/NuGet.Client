@@ -70,6 +70,7 @@ namespace NuGet.PackageManagement.UI
         private bool _loadedAndInitialized = false;
         private bool _recommendPackages = false;
 
+        private (string modelVersion, string vsixVersion)? _recommenderVersion;
 
         public PackageManagerModel Model { get; }
 
@@ -737,11 +738,7 @@ namespace NuGet.PackageManagement.UI
 
         public bool IsRecommenderFlightEnabled()
         {
-#if DEBUG
-            return true;
-#else
             return ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
-#endif
         }
 
         /// <summary>
@@ -788,6 +785,7 @@ namespace NuGet.PackageManagement.UI
             if (IsRecommenderFlightEnabled() || _forceRecommender)
             {
                 packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
+                _recommenderVersion = ((RecommenderPackageFeed)packageFeeds.recommenderFeed)?.VersionInfo;
             }
             else
             {
@@ -957,7 +955,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedPackage);
 
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
-                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, _recommenderVersion);
 
                 _packageDetail.ScrollToHome();
 
@@ -1015,13 +1013,13 @@ namespace NuGet.PackageManagement.UI
                     context.SourceRepositories,
                     uiLogger,
                     TelemetryActivity.NuGetTelemetryService);
-                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                    context.SourceRepositories.First(),
-                    installedPackages,
-                    dependentPackages,
-                    targetFrameworks,
-                    metadataProvider,
-                    logger);
+                    packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                        context.SourceRepositories.First(),
+                        installedPackages,
+                        dependentPackages,
+                        targetFrameworks,
+                        metadataProvider,
+                        logger);
                 return packageFeeds;
             }
 
