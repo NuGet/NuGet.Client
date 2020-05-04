@@ -672,7 +672,7 @@ namespace NuGet.CommandLine.Test
         public void ClientCertUpdateCommand_Success_StoreCertificateForce()
         {
             var updatedStoreLocation = StoreLocation.CurrentUser;
-            var updatedStoreName = StoreName.AuthRoot;
+            var updatedStoreName = StoreName.My;
             var updatedFindBy = X509FindType.FindByCertificatePolicy;
             var updatedFindValue = "SOMEUpdated";
 
