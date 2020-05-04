@@ -192,9 +192,6 @@
   <data name="CredentialProviderFailed_ImportedProvider" xml:space="preserve">
     <value>Failed to load credential provider from assembly {0}.</value>
   </data>
-  <data name="Finished" xml:space="preserve">
-    <value>========== Finished ==========</value>
-  </data>
   <data name="DTE_ProjectUnsupported" xml:space="preserve">
     <value>The project '{0}' is unsupported</value>
   </data>

@@ -64,6 +64,14 @@ function RealTimeLogResults
     [Parameter(Mandatory=$true)]
     [int] $EachTestTimeoutInSecs)
 
+    trap
+    {
+        Write-Host "RealTimeLogResults threw an exception: " -ForegroundColor Red
+        Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
+        Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
+        exit 1
+    }
+
     $currentTestTime = 0
     $currentTestId = 0
     $currentTestName = [string]$null
@@ -172,7 +180,14 @@ function RealTimeLogResults
         if ($currentTestTime -gt $EachTestTimeoutInSecs)
         {
             $logLineEntries = $lastLogLine -split " "
-            $currentTestName = $logLineEntries[2].Replace("...", "")
+            if ($logLineEntries.Count -gt 1)
+            {
+                $currentTestName = $logLineEntries[2].Replace("...", "")
+            }
+            else
+            {
+                $currentTestName = "unknown test name"
+            }
 
             $result = @{
                 Type = 'test result'

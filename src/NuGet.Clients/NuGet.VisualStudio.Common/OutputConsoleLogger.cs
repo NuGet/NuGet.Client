@@ -9,10 +9,8 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio;
-using NuGet.VisualStudio.Common;
 
-namespace NuGetVSExtension
+namespace NuGet.VisualStudio.Common
 {
     [Export(typeof(INuGetUILogger))]
     [PartCreationPolicy(CreationPolicy.Shared)]
@@ -123,7 +121,7 @@ namespace NuGetVSExtension
                     message.Level == LogLevel.Warning)
                 {
                     ReportError(message);
-                }                    
+                }
             }
         }
 

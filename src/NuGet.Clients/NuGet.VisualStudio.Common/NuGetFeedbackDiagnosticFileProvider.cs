@@ -6,7 +6,7 @@ using System.ComponentModel.Composition;
 using Microsoft.Internal.VisualStudio.Shell.Embeddable.Feedback;
 using NuGet.PackageManagement;
 
-namespace NuGetVSExtension
+namespace NuGet.VisualStudio.Common
 {
     [Export(typeof(IFeedbackDiagnosticFileProvider))]
     public class NuGetFeedbackDiagnosticFileProvider : IFeedbackDiagnosticFileProvider

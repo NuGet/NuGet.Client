@@ -8,7 +8,7 @@ using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using Microsoft.VisualStudio.Shell.ServiceBroker;
+using SB = Microsoft.VisualStudio.Shell.ServiceBroker;
 using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio.Internal.Contracts;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
@@ -43,7 +43,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 await GetAndActivatePackageManagerOutputWindowAsync();
 
                 await TaskScheduler.Default;
-                IBrokeredServiceContainer serviceContainer = await _asyncServiceProvider.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+                SB.IBrokeredServiceContainer serviceContainer = await _asyncServiceProvider.GetServiceAsync<SB.SVsBrokeredServiceContainer, SB.IBrokeredServiceContainer>();
                 IServiceBroker serviceBroker = serviceContainer.GetFullAccessServiceBroker();
 
                 INuGetSolutionService nugetSolutionService = await serviceBroker.GetProxyAsync<INuGetSolutionService>(NuGetServices.NuGetSolutionService);
