@@ -161,7 +161,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void ClientCertAddCommand_Success_FileCertificateAbsolute()
         {
             // Arrange
@@ -242,7 +242,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void ClientCertAddCommand_Success_FileCertificateRelative()
         {
             // Arrange
@@ -283,7 +283,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows, Platform.Linux)]
         public void ClientCertAddCommand_Success_StoreCertificate()
         {
             // Arrange
