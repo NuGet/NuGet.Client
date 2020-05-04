@@ -30,7 +30,6 @@ NuGet.ProjectModel.dll
 NuGet.Protocol.dll
 NuGet.Resolver.dll
 NuGet.Versioning.dll
-Microsoft.DataAI.NuGetRecommender.Contracts.dll
 
 # 3rd party dlls to keep
 Lucene.Net.dll
