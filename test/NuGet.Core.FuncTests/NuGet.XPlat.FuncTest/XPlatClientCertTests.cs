@@ -124,7 +124,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(1, exitCode);
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertAddCommand_Fail_StoreCertificateNotExist()
         {
             // Arrange
@@ -154,7 +154,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateAbsolute()
         {
             // Arrange
@@ -190,7 +190,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateNotExistForce()
         {
             // Arrange
@@ -229,7 +229,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateRelative()
         {
             // Arrange
@@ -269,7 +269,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertAddCommand_Success_StoreCertificate()
         {
             // Arrange
@@ -382,7 +382,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertListCommand_Success_NotEmptyList()
         {
             // Arrange
@@ -451,7 +451,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertRemoveCommand_Success_ItemCertificate()
         {
             // Arrange
@@ -578,7 +578,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertUpdateCommand_Success_FileCertificateForce()
         {
             var updatedPath = "MyCertificateSecond.pfx";
@@ -678,7 +678,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertUpdatedCommand_Fail_FileCertificateNotExist()
         {
             var updatedPath = "MyCertificateSecond.pfx";
@@ -754,7 +754,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertUpdatedCommand_Fail_StoreCertificateNotExist()
         {
             var updatedStoreLocation = StoreLocation.CurrentUser;

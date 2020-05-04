@@ -161,7 +161,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateAbsolute()
         {
             // Arrange
@@ -242,7 +242,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateRelative()
         {
             // Arrange
@@ -283,7 +283,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [PlatformFact(Platform.Windows, Platform.Linux)]
+        [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertAddCommand_Success_StoreCertificate()
         {
             // Arrange
