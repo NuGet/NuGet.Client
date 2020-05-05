@@ -112,7 +112,7 @@ namespace Dotnet.Integration.Test
                 Path.Combine(workingDirectory, projectName + ".csproj"));
         }
 
-        internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string source, IList<PackageIdentity> packages, int timeOut = 60000)
+        internal void CreateDotnetToolProject(string solutionRoot, string projectName, string targetFramework, string rid, string packageSources = null, IList<PackageIdentity> packages = null, int timeOut = 60000)
         {
             var workingDirectory = Path.Combine(solutionRoot, projectName);
             if (!Directory.Exists(workingDirectory))
@@ -122,36 +122,46 @@ namespace Dotnet.Integration.Test
 
             var projectFileName = Path.Combine(workingDirectory, projectName + ".csproj");
 
+            packageSources ??= string.Empty;
             var restorePackagesPath = Path.Combine(workingDirectory, "tools", "packages");
             var restoreSolutionDirectory = workingDirectory;
             var msbuildProjectExtensionsPath = Path.Combine(workingDirectory);
-            var packageReference = string.Empty;
-            foreach (var package in packages)
+            var packageReferences = string.Empty;
+
+            if (packages != null)
             {
-                packageReference = string.Concat(packageReference, Environment.NewLine, $@"<PackageReference Include=""{ package.Id }"" Version=""{ package.Version.ToString()}""/>");
+                packageReferences = string.Join(Environment.NewLine, packages.Select(p => $@"        <PackageReference Include='{p.Id}' Version='{p.Version}'/>"));
             }
 
-            var projectFile = $@"<Project Sdk=""Microsoft.NET.Sdk"">
-                <PropertyGroup><RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
-                <OutputType>Exe</OutputType>
-                <TargetFramework>{targetFramework}</TargetFramework>
-                <RuntimeIdentifier>{rid}</RuntimeIdentifier>
-                <!-- Things that do change-->
-                <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
-                <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
-                <MSBuildProjectExtensionsPath>{msbuildProjectExtensionsPath}</MSBuildProjectExtensionsPath>
-                <RestoreSources>{source}</RestoreSources>
-                <!--Things that don't change -->
-                <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
-                <RestoreFallbackFolders>clear</RestoreFallbackFolders>
-                <RestoreAdditionalProjectSources></RestoreAdditionalProjectSources>
-                <RestoreAdditionalProjectFallbackFolders></RestoreAdditionalProjectFallbackFolders>
-                <RestoreAdditionalProjectFallbackFoldersExcludes></RestoreAdditionalProjectFallbackFoldersExcludes>
-              </PropertyGroup>
-                <ItemGroup>
-                    {packageReference}
-                </ItemGroup>
-            </Project>";
+            var projectFile = $@"<Project>
+    <PropertyGroup>
+        <!-- Things that do change and before common props -->
+        <MSBuildProjectExtensionsPath>{msbuildProjectExtensionsPath}</MSBuildProjectExtensionsPath>
+    </PropertyGroup>
+    <!-- Import it via Sdk attribute for local testing -->
+    <Import Sdk='Microsoft.NET.Sdk' Project='Sdk.props'/>
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <RuntimeIdentifier>{rid}</RuntimeIdentifier>
+        <TargetFramework>{targetFramework}</TargetFramework>
+        <RestoreProjectStyle>DotnetToolReference</RestoreProjectStyle>
+        <!-- Things that do change -->
+        <RestoreSources>{packageSources}</RestoreSources>
+        <RestorePackagesPath>{restorePackagesPath}</RestorePackagesPath>
+        <RestoreSolutionDirectory>{restoreSolutionDirectory}</RestoreSolutionDirectory>
+        <!--Things that don't change -->
+        <RestoreAdditionalProjectSources/>
+        <RestoreAdditionalProjectFallbackFolders/>
+        <RestoreAdditionalProjectFallbackFoldersExcludes/>
+        <RestoreFallbackFolders>clear</RestoreFallbackFolders>
+        <CheckEolTargetFramework>false</CheckEolTargetFramework>
+        <DisableImplicitFrameworkReferences>true</DisableImplicitFrameworkReferences>
+    </PropertyGroup>
+    <ItemGroup>
+{packageReferences}
+    </ItemGroup>
+    <Import Sdk='Microsoft.NET.Sdk' Project='Sdk.targets'/>
+</Project>";
 
             try
             {
