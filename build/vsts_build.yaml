@@ -744,7 +744,9 @@ jobs:
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
-    demands: DotNetFramework
+    demands:
+    - DotNetFramework
+    - Allow_NuGet_E2E_Tests -equals true
 
   steps:
   - task: PowerShell@1
@@ -841,7 +843,9 @@ jobs:
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
-    demands: DotNetFramework
+    demands:
+    - DotNetFramework
+    - Allow_NuGet_Apex_Tests -equals true
 
   steps:
   - checkout: self
