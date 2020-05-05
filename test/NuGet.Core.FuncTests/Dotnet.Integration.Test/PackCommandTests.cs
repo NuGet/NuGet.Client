@@ -180,7 +180,6 @@ namespace Dotnet.Integration.Test
                     var xml = XDocument.Load(stream);
                     ProjectFileUtils.ChangeProperty(xml, "TargetFramework", "netcoreapp2.1");
                     ProjectFileUtils.AddProperty(xml, "RuntimeIdentifier", "win7-x64");
-
                     ProjectFileUtils.WriteXmlToFile(xml, stream);
                 }
 
@@ -211,10 +210,11 @@ namespace Dotnet.Integration.Test
                     }
                     else
                     {
-                        Assert.Equal(
-                            new[]
-                            {"lib/netcoreapp2.1/ConsoleApp1.dll", "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"},
-                            libItems[0].Items);
+                        Assert.Equal(new[]
+                        {
+                            "lib/netcoreapp2.1/ConsoleApp1.dll",
+                            "lib/netcoreapp2.1/ConsoleApp1.runtimeconfig.json"
+                        }, libItems[0].Items);
                     }
                 }
 

@@ -36,7 +36,7 @@ namespace Msbuild.Integration.Test
             _processEnvVars["UNIT_TEST_RESTORE_TASK"] = bool.TrueString;
             var result = CommandRunner.Run(msBuildExe,
                 workingDirectory,
-                $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=\"true\" {args}",
+                $"/p:NuGetRestoreTargets={nugetRestoreTargetsPath} /p:RestoreTaskAssemblyFile={restoreDllPath} /p:ImportNuGetBuildTasksPackTargetsFromSdk=true {args}",
                 waitForExit: true,
                 environmentVariables: _processEnvVars);
 

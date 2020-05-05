@@ -176,7 +176,6 @@ namespace Dotnet.Integration.Test
 
         internal CommandRunnerResult RestoreToolProject(string workingDirectory, string projectName, string args = "")
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {projectName}.csproj {args}",
@@ -193,7 +192,6 @@ namespace Dotnet.Integration.Test
 
         private void RestoreProjectOrSolution(string workingDirectory, string fileName, string args, bool validateSuccess)
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"restore {fileName} {args}",
@@ -265,7 +263,6 @@ namespace Dotnet.Integration.Test
 
         private CommandRunnerResult PackProjectOrSolution(string workingDirectory, string file, string args, bool validateSuccess)
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"pack {file} {args}",
@@ -299,7 +296,6 @@ namespace Dotnet.Integration.Test
 
         private void BuildProjectOrSolution(string workingDirectory, string file, string args, bool validateSuccess)
         {
-
             var result = CommandRunner.Run(TestDotnetCli,
                 workingDirectory,
                 $"msbuild {file} {args}",
