@@ -856,6 +856,7 @@ function Test-SimpleBindingRedirectsIndirectReference {
 }
 
 function Test-SimpleBindingRedirectsNonWeb {
+    [SkipTest('https://github.com/NuGet/Home/issues/8402')]
     param(
         $context
     )
