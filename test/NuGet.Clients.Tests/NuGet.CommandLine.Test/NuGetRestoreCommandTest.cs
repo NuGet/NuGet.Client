@@ -454,7 +454,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 
         }
 
-        [CIOnlyTheory]
+        [CIOnlyTheory(Skip = "https://github.com/NuGet/Home/issues/9303")]
         [InlineData("packages.config")]
         [InlineData("packages.proj2.config")]
         public void RestoreCommand_FromSolutionFileWithMsbuild12(string configFileName)
@@ -540,7 +540,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
             }
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void RestoreCommand_FromSolutionFileWithMsbuildPathAndMsbuildVersion()
         {
             // Arrange
