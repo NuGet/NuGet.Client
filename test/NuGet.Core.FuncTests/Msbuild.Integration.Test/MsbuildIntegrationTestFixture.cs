@@ -53,7 +53,7 @@ namespace Msbuild.Integration.Test
         }
 
         /// <summary>
-        /// Depth-first recursive delete, with handling for descendant 
+        /// Depth-first recursive delete, with handling for descendant
         /// directories open in Windows Explorer or used by another process
         /// </summary>
         private static void DeleteDirectory(string path)

@@ -2325,7 +2325,7 @@ namespace ClassLibrary
       </TfmSpecificPackageFile>
       <TfmSpecificPackageFile Include=""Extensions/**/ext.cs.txt"" Condition=""'$(TargetFramework)' == 'net46'"">
         <PackagePath>net46content</PackagePath>
-      </TfmSpecificPackageFile>  
+      </TfmSpecificPackageFile>
     </ItemGroup>
   </Target>";
                     ProjectFileUtils.SetTargetFrameworkForProject(xml, tfmProperty, tfmValue);
@@ -4086,7 +4086,7 @@ namespace ClassLibrary
 
                 using (var nupkgReader = new PackageArchiveReader(nupkgPath))
                 {
-                    // Validate Compile assets 
+                    // Validate Compile assets
                     foreach (var buildTargetFolder in buildTargetFolders.Split(';'))
                     {
                         var compileItems = nupkgReader.GetFiles(buildTargetFolder).ToList();
@@ -4460,7 +4460,7 @@ namespace ClassLibrary
                 // The test depends on the presence of these packages and their versions.
                 // Change to Directory.Packages.props when new cli that supports NuGet.props will be downloaded
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
-                var directoryPackagesPropsContent = @"<Project>  
+                var directoryPackagesPropsContent = @"<Project>
                         <ItemGroup>
                             <PackageVersion Include = ""Moq"" Version = ""4.10.0""/>
                             <PackageVersion Include = ""Castle.Core"" Version = ""4.4.0""/>

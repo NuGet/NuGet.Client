@@ -799,7 +799,7 @@ namespace NuGet.CommandLine.Test
                                                         'x': '1.0.0'
                                                     },
                                                     'frameworks': {
-                                                        'net45': { }                                                            
+                                                        'net45': { }
                                                     }
                                                   }");
 
@@ -5728,7 +5728,7 @@ namespace NuGet.CommandLine.Test
                 configuration.Add(disabledPackageSources);
                 File.WriteAllText(configPath, doc.ToString());
 
-                // Act 
+                // Act
                 var r2 = Util.RestoreSolution(pathContext);
 
                 // Assert
@@ -5817,7 +5817,7 @@ namespace NuGet.CommandLine.Test
 
                 File.WriteAllText(configPath2, doc2.ToString());
 
-                // Act 
+                // Act
                 var r2 = Util.RestoreSolution(pathContext);
 
                 // Assert
@@ -6484,7 +6484,7 @@ namespace NuGet.CommandLine.Test
             // Related issue: https://github.com/NuGet/Home/issues/7807
             // First senario : Enable RestorePackagesWithLockFile by only setting property.
             //     First restore should fail the No-op, generate the package lock file. After deleting the package lock file, run the second restore.
-            //     The second restore should fail the No-op, and generate the package lock file. 
+            //     The second restore should fail the No-op, and generate the package lock file.
 
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -6521,7 +6521,7 @@ namespace NuGet.CommandLine.Test
                 var packageLockFileName = project.NuGetLockFileOutputPath;
                 var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
 
-                // Act  
+                // Act
                 var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
 
                 // Assert
@@ -6588,7 +6588,7 @@ namespace NuGet.CommandLine.Test
                 var noOpFailedMsg = "The lock file for " + project.ProjectName + " at location " + packageLockFileName + " does not exist, no-op is not possible. Continuing restore.";
                 var noOpSucceedMsg = "No-Op restore. The cache will not be updated.";
 
-                // Act  
+                // Act
                 var result1 = Util.Restore(pathContext, project.ProjectPath, additionalArgs: "-verbosity Detailed");
 
                 // Assert
@@ -6613,7 +6613,7 @@ namespace NuGet.CommandLine.Test
             // Related issue: https://github.com/NuGet/Home/issues/7807
             // Second senario : Enable RestorePackagesWithLockFile by only adding a lock file.
             //      First restore should fail the No-op, regenerate the package lock file. After deleting the package lock file, run the second restore.
-            //      The second restore: since there is no property set and no lock file exists, no lockfile will be generated. And no-op succeed. 
+            //      The second restore: since there is no property set and no lock file exists, no lockfile will be generated. And no-op succeed.
 
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
@@ -7904,7 +7904,7 @@ namespace NuGet.CommandLine.Test
         public void RestoreNetCore_PackagesLockFile_ProjectReferenceChange_UpdatesLockFile()
         {
             // Arrange
-            // A -> B -> C and 
+            // A -> B -> C and
             // A -> B, A -> C
             // should have different lock files
             using (var pathContext = new SimpleTestPathContext())
@@ -8274,7 +8274,7 @@ namespace NuGet.CommandLine.Test
                 // Act
                 var result = Util.RestoreSolution(pathContext);
 
-                // Assert 
+                // Assert
                 result.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectB.AssetsFileOutputPath));
@@ -9121,14 +9121,14 @@ namespace NuGet.CommandLine.Test
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
                 Assert.Equal(expectedVersion, projectA.AssetsFile.Libraries.Single().Version.ToString());
-                // Set-up again. 
+                // Set-up again.
                 projectA.Properties.Add("RestoreLockedMode", "true");
                 projectA.Save();
 
                 // Act
                 result = Util.RestoreSolution(pathContext);
 
-                // Assert 
+                // Assert
                 result.Success.Should().BeTrue();
                 Assert.True(File.Exists(projectA.AssetsFileOutputPath));
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
@@ -9335,7 +9335,7 @@ namespace NuGet.CommandLine.Test
 
                 Assert.True(File.Exists(projectA.NuGetLockFileOutputPath));
 
-                // Update the transitive dependency in cpvm 
+                // Update the transitive dependency in cpvm
                 cpvmFile.UpdatePackageVersion("y", "2.0.0");
                 cpvmFile.Save();
 
@@ -9665,8 +9665,8 @@ namespace NuGet.CommandLine.Test
         /// Project A -> PackageX 100
         ///           -> PackageY 200 -> PackageX 200
         ///            -> ProjectB -> ProjectC -> PackageX 100
-        ///  All projects CPVM enabled; PackageX 100 and PackageY 200 in cpvm file         
-        ///  Expected NU1605                     
+        ///  All projects CPVM enabled; PackageX 100 and PackageY 200 in cpvm file
+        ///  Expected NU1605
         /// </summary>
         [Fact]
         public async Task RestoreNetCore_CPVMProject_DowngradedByCentralDirectDependencyWithP2P_IsWarningNU1605()
@@ -9757,16 +9757,16 @@ namespace NuGet.CommandLine.Test
 
         /// <summary>
         /// A more complex graph with linked central transitive dependecies
-        /// 
+        ///
         /// A -> B 1.0.0 -> C 1.0.0 -> D 1.0.0 -> E 1.0.0
-        ///              -> P 2.0.0           
+        ///              -> P 2.0.0
         ///   -> F 1.0.0 -> C 2.0.0 -> H 2.0.0 -> M 2.0.0 -> N 2.0.0
         ///   -> G 1.0.0 -> H 1.0.0 -> D 1.0.0
         ///   -> X 1.0.0 -> Y 1.0.0 -> Z 1.0.0
         ///                         -> T 1.0.0
         ///   -> U 1.0.0 -> V 1.0.0
         ///              -> O 1.0.0 -> R 1.0.0 -> S 1.0.0 -> SS 1.0.0
-        ///   
+        ///
         ///         D has version defined centrally 2.0.0
         ///         E has version defined centrally 3.0.0
         ///         M has version defined centrally 2.0.0
@@ -9775,7 +9775,7 @@ namespace NuGet.CommandLine.Test
         ///         T has version defined centrally 3.0.0
         ///         R has version defined centrally 3.0.0
         ///         S has version defined centrally 3.0.0
-        /// 
+        ///
         ///  D 2.0.0 -> I 2.0.0 -> E 2.0.0
         ///  M 2.0.0 -> N 2.0.0
         ///  P 3.0.0 -> H 3.0.0
@@ -9785,15 +9785,15 @@ namespace NuGet.CommandLine.Test
         ///  T 3.0.0 -> W 3.0.0
         ///          -> C 1.0.0
         ///  S 3.0.0 -> SS 3.0.0
-        ///  
+        ///
         ///  D will be rejected (because its parents C 1.0.0, H 1.0.0 are rejected)
         ///  E will be rejected (because its parent D was rejected)
         ///  M will be rejected (because its parent lost the dispute with H 3.0.0)
         ///  T will be rejected (because its parent lost the dispute with Y 3.0.0)
         ///  Z will be rejected (because its parent lost the dispute with Y 3.0.0)
-        ///  
+        ///
         ///  P will be accepted (because its parent B is Accepted)
-        ///  S will be accepted (because its parent O 300 is Accepted) 
+        ///  S will be accepted (because its parent O 300 is Accepted)
         /// </summary>
         [Fact]
         public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
@@ -9829,7 +9829,7 @@ namespace NuGet.CommandLine.Test
                    NuGetFramework.Parse("netcoreapp2.0"));
                 projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
 
-                // the package references defined in the project should not have version 
+                // the package references defined in the project should not have version
                 var packageBNoVersion = createTestPackage("B", null, packagesForProject);
                 var packageFNoVersion = createTestPackage("F", null, packagesForProject);
                 var packageGNoVersion = createTestPackage("G", null, packagesForProject);

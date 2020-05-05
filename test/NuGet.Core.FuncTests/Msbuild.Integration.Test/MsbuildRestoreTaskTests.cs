@@ -162,7 +162,7 @@ namespace Msbuild.Integration.Test
    <!ENTITY sayhello ""&greeting; &name;"">
 ]>
 <packages>
-    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" /> 
+    <package id=""&sayhello;"" version=""1.1.0"" targetFramework=""net45"" />
     <package id=""x"" version=""1.0.0"" targetFramework=""net45"" />
 </packages>");
                 }
