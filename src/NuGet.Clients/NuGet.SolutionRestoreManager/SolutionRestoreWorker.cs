@@ -628,6 +628,10 @@ namespace NuGet.SolutionRestoreManager
                                 // propagate the restore target task status to the task passed to the task status center.
                                 if (targetTask.IsFaulted || targetTask.IsCanceled)
                                 {
+                                    //if (targetTask.Exception != null)
+                                    //{
+                                    //    tcs.TrySetException(targetTask.Exception);
+                                    //}
                                     tcs.TrySetResult(result: false);
                                 }
                                 else

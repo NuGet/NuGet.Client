@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
-using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TaskStatusCenter;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
@@ -495,7 +494,7 @@ namespace NuGet.SolutionRestoreManager
                 options.Title = Resources.RestoringPackages;
                 options.ActionsAfterCompletion = CompletionActions.RetainOnFaulted;
                 options.DisplayTaskDetails = new Action<Task>((t) => {
-                    // do nothing, focus list if necessary.
+                    // do nothing.
                 });
                 options.ClientId = new Guid("45b2a550-0193-431c-8b75-2977f7544cc4");
                 options.StartTipCalloutId = new Guid("6BE1BF8E-217B-46C4-B104-A200DDF700D2");
