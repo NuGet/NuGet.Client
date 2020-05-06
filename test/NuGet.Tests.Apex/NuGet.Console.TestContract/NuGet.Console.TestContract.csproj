@@ -12,6 +12,9 @@
     <ProjectReference Include="$(NuGetClientsSrcDirectory)NuGet.Console\NuGet.Console.csproj" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
+  </ItemGroup>
+  <ItemGroup>
     <Reference Include="System.ComponentModel.Composition" />
   </ItemGroup>
 

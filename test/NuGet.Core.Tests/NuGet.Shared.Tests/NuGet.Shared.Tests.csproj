@@ -10,10 +10,6 @@
     <Description>Unit tests for the utilities included using shared compilation.</Description>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" />
-  </ItemGroup>
-
   <!-- Include shared files for netcore projects -->
   <ItemGroup>
     <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />
