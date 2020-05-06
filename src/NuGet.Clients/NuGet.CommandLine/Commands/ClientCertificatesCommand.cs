@@ -21,31 +21,31 @@ namespace NuGet.CommandLine.Commands
         {
         }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindByDescription", AltName = nameof(ModifyClientCertArgs.FindBy))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindByDescription", AltName = nameof(IClientCertArgsWithStoreData.FindBy))]
         public string FindBy { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindValueDescription", AltName = nameof(ModifyClientCertArgs.FindValue))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFindValueDescription", AltName = nameof(IClientCertArgsWithStoreData.FindValue))]
         public string FindValue { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandForceDescription", AltName = nameof(ModifyClientCertArgs.Force))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandForceDescription", AltName = nameof(IClientCertArgsWithForce.Force))]
         public bool Force { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPackageSourceDescription", AltName = nameof(ModifyClientCertArgs.PackageSource))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPackageSourceDescription", AltName = nameof(IClientCertArgsWithPackageSource.PackageSource))]
         public string PackageSource { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPasswordDescription", AltName = nameof(ModifyClientCertArgs.Password))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandPasswordDescription", AltName = nameof(IClientCertArgsWithFileData.Password))]
         public string Password { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFilePathDescription", AltName = nameof(ModifyClientCertArgs.Path))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandFilePathDescription", AltName = nameof(IClientCertArgsWithFileData.Path))]
         public string Path { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreLocationDescription", AltName = nameof(ModifyClientCertArgs.StoreLocation))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreLocationDescription", AltName = nameof(IClientCertArgsWithStoreData.StoreLocation))]
         public string StoreLocation { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreNameDescription", AltName = nameof(ModifyClientCertArgs.StoreName))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStoreNameDescription", AltName = nameof(IClientCertArgsWithStoreData.StoreName))]
         public string StoreName { get; set; }
 
-        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStorePasswordInClearTextDescription", AltName = nameof(ModifyClientCertArgs.StorePasswordInClearText))]
+        [Option(typeof(NuGetCommand), "ClientCertificatesCommandStorePasswordInClearTextDescription", AltName = nameof(IClientCertArgsWithFileData.StorePasswordInClearText))]
         public bool StorePasswordInClearText { get; set; }
 
         public override void ExecuteCommand()

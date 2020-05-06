@@ -3,7 +3,7 @@
 
 namespace NuGet.Commands
 {
-    public sealed class ListClientCertArgs : BaseClientCertArgs
+    public partial class ListClientCertArgs : IClientCertArgsWithConfigFile
     {
     }
 }

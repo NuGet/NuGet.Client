@@ -17,7 +17,6 @@ namespace NuGet.Commands
 
         public static void Run(ListClientCertArgs args, Func<ILogger> getLogger)
         {
-            args.Validate();
             var settings = RunnerHelper.GetSettings(args.Configfile);
             var clientCertificateProvider = new ClientCertificateProvider(settings);
 

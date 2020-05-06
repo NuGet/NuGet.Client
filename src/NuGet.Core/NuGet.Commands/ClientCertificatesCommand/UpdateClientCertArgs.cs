@@ -3,7 +3,11 @@
 
 namespace NuGet.Commands
 {
-    public sealed class UpdateClientCertArgs : ModifyClientCertArgs
+    public partial class UpdateClientCertArgs : IClientCertArgsWithPackageSource,
+                                                IClientCertArgsWithConfigFile,
+                                                IClientCertArgsWithFileData,
+                                                IClientCertArgsWithStoreData,
+                                                IClientCertArgsWithForce
     {
     }
 }
