@@ -46,7 +46,7 @@ namespace NuGet.Options
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-   
+
             _serviceProvider = serviceProvider;
 
             SetupEventHandlers();
@@ -254,7 +254,7 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, cancellationToken);
+                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, new PackageSourceUpdateOptions(updateCredentials: false, updateEnabled: true), cancellationToken);
                 }
             }
             // Thrown during creating or saving NuGet.Config.

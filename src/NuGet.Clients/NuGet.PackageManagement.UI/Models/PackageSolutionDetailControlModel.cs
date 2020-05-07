@@ -483,10 +483,8 @@ namespace NuGet.PackageManagement.UI
                 // update the providers list async
                 foreach (var p in _projects)
                 {
-                    p.Providers = await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                        _packageManagerProviders,
-                        Id,
-                        p.NuGetProject);
+                    var uniqueName = await NuGetProject.GetUniqueNameOrNameAsync(p.NuGetProject, CancellationToken.None);
+                    p.Providers = await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_packageManagerProviders, Id, uniqueName);
                 }
             }
         }
