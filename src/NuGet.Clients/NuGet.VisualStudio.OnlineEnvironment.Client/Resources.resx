@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <root>
   <!-- 
     Microsoft ResX Schema 
@@ -117,7 +117,37 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="DTE_ProjectUnsupported" xml:space="preserve">
+    <value>The project '{0}' is unsupported</value>
+  </data>
+  <data name="ErrorDialogBoxTitle" xml:space="preserve">
+    <value>Operation failed</value>
+  </data>
+  <data name="Finished" xml:space="preserve">
+    <value>========== Finished ==========</value>
+  </data>
+  <data name="NoProjectSelected" xml:space="preserve">
+    <value>No project is selected for this operation.</value>
+  </data>
+  <data name="NuGetSearchProvider_CategoryShortcut" xml:space="preserve">
+    <value>nuget</value>
+  </data>  
+  <data name="NuGetSearchProvider_Description" xml:space="preserve">
+    <value>Search NuGet packages</value>
+  </data>
+  <data name="NuGetSearchProvider_DisplayText" xml:space="preserve">
+    <value>NuGet Packages</value>
+  </data>
+  <data name="NuGetStaticResult_DisplayText" xml:space="preserve">
+    <value>Search Online for NuGet Packages matching '{0}'</value>
+  </data>
   <data name="OutputConsolePaneName" xml:space="preserve">
     <value>Package Manager</value>
+  </data>
+  <data name="ProjectHasAnInvalidNuGetConfiguration" xml:space="preserve">
+    <value>{0} nuget configuration is invalid.</value>
+  </data>
+  <data name="SolutionIsNotSaved" xml:space="preserve">
+    <value>Solution is not saved. Please save your solution before managing NuGet packages.</value>
   </data>
 </root>
