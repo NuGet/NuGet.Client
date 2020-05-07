@@ -106,7 +106,7 @@ else {
 Invoke-BuildStep 'Running Restore' {
 
     # Restore
-    $args = "build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
+    $args = "$PSScriptRoot\build\build.proj", "/t:EnsurePackageReferenceVersionsInSolution", "/p:Configuration=$Configuration"
     if ($Binlog)
     {
         $args += "-bl:msbuild.ensurepr.binlog"
@@ -115,7 +115,7 @@ Invoke-BuildStep 'Running Restore' {
     Trace-Log ". `"$MSBuildExe`" $args"
     & $MSBuildExe @args
 
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/v:m", "/m:1"
+    $args = "$PSScriptRoot\build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/v:m", "/m:1"
     if ($Binlog)
     {
         $args += "-bl:msbuild.restore.binlog"
@@ -134,7 +134,7 @@ Invoke-BuildStep 'Running Restore' {
 
 Invoke-BuildStep $VSMessage {
 
-    $args = 'build\build.proj', "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
+    $args = "$PSScriptRoot\build\build.proj", "/t:$VSTarget", "/p:Configuration=$Configuration", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", '/v:m', '/m:1'
 
     If ($SkipDelaySigning)
     {
@@ -173,7 +173,7 @@ Invoke-BuildStep 'Publishing the EndToEnd test package' {
 Invoke-BuildStep 'Running Restore RTM' {
 
     # Restore for VS
-    $args = "build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+    $args = "$PSScriptRoot\build\build.proj", "/t:RestoreVS", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
 
     if ($Binlog)
     {
@@ -196,7 +196,7 @@ Invoke-BuildStep 'Running Restore RTM' {
 Invoke-BuildStep 'Packing RTM' {
 
     # Build and (If not $SkipUnitTest) Pack, Core unit tests, and Unit tests for VS
-    $args = "build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
+    $args = "$PSScriptRoot\build\build.proj", "/t:BuildVS`;Pack", "/p:Configuration=$Configuration", "/p:BuildRTM=true", "/p:ReleaseLabel=$ReleaseLabel", "/p:BuildNumber=$BuildNumber", "/p:ExcludeTestProjects=true", "/v:m", "/m:1"
     if ($Binlog)
     {
         $args += "-bl:msbuild.pack.binlog"
