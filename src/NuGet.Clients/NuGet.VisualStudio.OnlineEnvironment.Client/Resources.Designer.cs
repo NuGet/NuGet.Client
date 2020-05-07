@@ -61,11 +61,101 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project &apos;{0}&apos; is unsupported.
+        /// </summary>
+        internal static string DTE_ProjectUnsupported {
+            get {
+                return ResourceManager.GetString("DTE_ProjectUnsupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Operation failed.
+        /// </summary>
+        internal static string ErrorDialogBoxTitle {
+            get {
+                return ResourceManager.GetString("ErrorDialogBoxTitle", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to ========== Finished ==========.
+        /// </summary>
+        internal static string Finished {
+            get {
+                return ResourceManager.GetString("Finished", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to No project is selected for this operation..
+        /// </summary>
+        internal static string NoProjectSelected {
+            get {
+                return ResourceManager.GetString("NoProjectSelected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget.
+        /// </summary>
+        internal static string NuGetSearchProvider_CategoryShortcut {
+            get {
+                return ResourceManager.GetString("NuGetSearchProvider_CategoryShortcut", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search NuGet packages.
+        /// </summary>
+        internal static string NuGetSearchProvider_Description {
+            get {
+                return ResourceManager.GetString("NuGetSearchProvider_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to NuGet Packages.
+        /// </summary>
+        internal static string NuGetSearchProvider_DisplayText {
+            get {
+                return ResourceManager.GetString("NuGetSearchProvider_DisplayText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search Online for NuGet Packages matching &apos;{0}&apos;.
+        /// </summary>
+        internal static string NuGetStaticResult_DisplayText {
+            get {
+                return ResourceManager.GetString("NuGetStaticResult_DisplayText", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Package Manager.
         /// </summary>
         internal static string OutputConsolePaneName {
             get {
                 return ResourceManager.GetString("OutputConsolePaneName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} nuget configuration is invalid..
+        /// </summary>
+        internal static string ProjectHasAnInvalidNuGetConfiguration {
+            get {
+                return ResourceManager.GetString("ProjectHasAnInvalidNuGetConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Solution is not saved. Please save your solution before managing NuGet packages..
+        /// </summary>
+        internal static string SolutionIsNotSaved {
+            get {
+                return ResourceManager.GetString("SolutionIsNotSaved", resourceCulture);
             }
         }
     }
