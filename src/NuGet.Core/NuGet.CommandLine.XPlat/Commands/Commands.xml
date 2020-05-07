@@ -19,7 +19,8 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
-    <Noun Name="client-cert">
+    <Noun Name="client-cert" Version="3.1.200"
+       Description="adds a new client certificate to your NuGet configuration files.">
       <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
       <SingleValueOption Name="path" Help="Option_Path"/>
       <SingleValueOption Name="password" Help="Option_Password"/>
@@ -61,7 +62,8 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
-    <Noun Name="client-cert">
+    <Noun Name="client-cert" Version="3.1.200"
+       Description="lists all configured client certificates.">
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
   </Verb>
@@ -74,7 +76,8 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
-    <Noun Name="client-cert">
+    <Noun Name="client-cert" Version="3.1.200"
+       Description="removes an existing client certificate configuration from your NuGet configuration files.">
       <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
       <SingleValueOption Name="configfile" Help="Option_ConfigFile" />
     </Noun>
@@ -93,7 +96,8 @@
       <SeeAlso Title="Package source sections in NuGet.config files" Url="/nuget/reference/nuget-config-file#package-source-sections" />
       <SeeAlso Title="sources command (nuget.exe)" Url="/nuget/reference/cli-reference/cli-ref-sources" />
     </Noun>
-    <Noun Name="client-cert">
+    <Noun Name="client-cert" Version="3.1.200"
+       Description="updates an existing client certificate in your NuGet configuration files.">
       <SingleValueOption Name="package-source" Shortcut="s" Help="Option_PackageSource"/>
       <SingleValueOption Name="path" Help="Option_Path"/>
       <SingleValueOption Name="password" Help="Option_Password"/>
