@@ -190,6 +190,13 @@ namespace NuGet.Configuration
                 packageSource.Credentials = credentials;
             }
 
+            var clientCertificateProvider = new ClientCertificateProvider(settings);
+            var clientCertificateItem = clientCertificateProvider.GetClientCertificate(name);
+            if (clientCertificateItem != null)
+            {
+                packageSource.ClientCertificates = clientCertificateItem.Search().ToList();
+            }
+
             packageSource.ProtocolVersion = ReadProtocolVersion(setting);
 
             return packageSource;

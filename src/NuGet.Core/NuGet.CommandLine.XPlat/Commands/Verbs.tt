@@ -3,6 +3,7 @@
 <#@ assembly name="System.Xml.Linq" #>
 <#@ assembly name="System.Xml" #>
 <#@ assembly name="System.Core" #>
+<#@ import namespace="System.Globalization" #>
 <#@ import namespace="System.Xml.Linq" #>
 <#@ import namespace="System.Linq" #>
 <#@ output extension=".cs" #>
@@ -14,7 +15,9 @@
             return null;
         }
 
-        string output = input.Substring(0, 1).ToUpper() + input.Substring(1);
+        var textInfo = CultureInfo.InvariantCulture.TextInfo;
+        var output = textInfo.ToTitleCase(input);
+        
         return output;
     }
 
@@ -105,6 +108,7 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
     {
         string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
         string nounFormalName = InitCaps(nounName);
+        nounFormalName = nounFormalName.Replace("-", "");
         if (nounName != null)
         {
 #>
@@ -153,8 +157,8 @@ foreach (XElement verb in commands.Descendants(XName.Get("Verb","")))
             {
                 string optionName = option.Attribute(XName.Get("Name", ""))?.Value;
                 string optionFormalName = optionName?.Replace("-","");
-                string optionCapsName = InitCaps(optionFormalName);
-
+                string optionCapsName = InitCaps(optionName);
+                optionCapsName = optionCapsName.Replace("-", "");
                 if (IsArgument(GetProperty(option)))
                 {
 #>

@@ -115,6 +115,14 @@ namespace NuGet.Configuration.Test
             {
                 return CertificateItem_DeepEquals(setting1 as CertificateItem, setting2 as CertificateItem);
             }
+            else if (setting1 is StoreClientCertItem)
+            {
+                return StoreClientCertItem_DeepEquals(setting1 as StoreClientCertItem, setting2 as StoreClientCertItem);
+            }
+            else if (setting1 is FileClientCertItem)
+            {
+                return FileClientCertItem_DeepEquals(setting1 as FileClientCertItem, setting2 as FileClientCertItem);
+            }
 
             return false;
         }
@@ -270,6 +278,16 @@ namespace NuGet.Configuration.Test
         }
 
         private static bool CertificateItem_DeepEquals(CertificateItem item1, CertificateItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
+        }
+
+        private static bool StoreClientCertItem_DeepEquals(StoreClientCertItem item1, StoreClientCertItem item2)
+        {
+            return ItemBase_DeepEquals(item1, item2);
+        }
+
+        private static bool FileClientCertItem_DeepEquals(FileClientCertItem item1, FileClientCertItem item2)
         {
             return ItemBase_DeepEquals(item1, item2);
         }

@@ -108,6 +108,122 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file added to a file client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFilePathDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFilePathDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindBy added to a store client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindByDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindByDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to FindValue added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandFindValueDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandFindValueDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Bypass certificate validation..
+        /// </summary>
+        internal static string ClientCertificatesCommandForceDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandForceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Determines to which package source client certificate will be applied to..
+        /// </summary>
+        internal static string ClientCertificatesCommandPackageSourceDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPackageSourceDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed. This option can be used to specify the password for the certificate..
+        /// </summary>
+        internal static string ClientCertificatesCommandPasswordDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandPasswordDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreLocation added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreLocationDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreLocationDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to StoreName added to a storage client certificate source..
+        /// </summary>
+        internal static string ClientCertificatesCommandStoreNameDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStoreNameDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string ClientCertificatesCommandStorePasswordInClearTextDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandStorePasswordInClearTextDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to nuget client-certs Add -PackageSource Foo -Path .\MyCertificate.pfx
+        ///
+        ///nuget client-certs Add -PackageSource Contoso -Path c:\MyCertificate.pfx -Password 42
+        ///
+        ///nuget client-certs Add -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+        ///
+        ///nuget client-certs Add -PackageSource Contoso -StoreLocation LocalMachine -StoreName My -FindBy Thumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+        ///
+        ///nuget client-certs Update -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e [rest of string was truncated]&quot;;.
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageExamples {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageExamples", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;List|Add|Update|Remove|&gt; [options].
+        /// </summary>
+        internal static string ClientCertificatesCommandUsageSummary {
+            get {
+                return ResourceManager.GetString("ClientCertificatesCommandUsageSummary", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Provides the ability to manage list of client certificates located in %AppData%\NuGet\NuGet.config.
+        /// </summary>
+        internal static string ClientCertificatesDescription {
+            get {
+                return ResourceManager.GetString("ClientCertificatesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to The API key for the server..
         /// </summary>
         internal static string CommandApiKey {
@@ -11812,7 +11928,7 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
+        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in NuGet.config files..
         /// </summary>
         internal static string SourcesCommandDescription {
             get {
