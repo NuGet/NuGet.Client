@@ -197,7 +197,7 @@ namespace NuGet.PackageManagement.UI
             {
                 _forceRecommender = (Environment.GetEnvironmentVariable("RecommendNuGetPackages") == "1");
             }
-            catch(SecurityException)
+            catch (SecurityException)
             {
                 // don't make recommendations if we are not able to read the environment variable
             }
@@ -736,9 +736,10 @@ namespace NuGet.PackageManagement.UI
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
+        // Check if user is in A/B experiment. Also return true if environment variable RecommendNuGetPackages is set to 1.
         public bool IsRecommenderFlightEnabled()
         {
-            return ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
         }
 
         /// <summary>
@@ -780,9 +781,8 @@ namespace NuGet.PackageManagement.UI
             }
 
             // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
-            // Also check if the environment variable RecommendNuGetPackages is set to 1
             var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
-            if (IsRecommenderFlightEnabled() || _forceRecommender)
+            if (IsRecommenderFlightEnabled())
             {
                 packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
                 _recommenderVersion = ((RecommenderPackageFeed)packageFeeds.recommenderFeed)?.VersionInfo;
@@ -1007,13 +1007,13 @@ namespace NuGet.PackageManagement.UI
                 // for PC-style projects, and for these the dependent packages are already included in
                 // the installedPackages list. 
                 var dependentPackages = new Dictionary<string, VersionRange>();
-                var targetFrameworks = await context.GetTargetFrameworksAsync();
+                var targetFrameworks = context.GetSupportedFrameworks();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
                     uiLogger,
                     TelemetryActivity.NuGetTelemetryService);
-                    packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
                         context.SourceRepositories.First(),
                         installedPackages,
                         dependentPackages,

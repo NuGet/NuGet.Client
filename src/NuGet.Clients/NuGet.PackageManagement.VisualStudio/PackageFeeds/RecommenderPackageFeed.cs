@@ -79,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
             // Get NuGet package recommender service, or null if it is not available
             NuGetRecommender = Package.GetGlobalService(typeof(SVsNuGetRecommenderService)) as IVsNuGetPackageRecommender;
-            if(NuGetRecommender != null)
+            if (NuGetRecommender != null)
             {
                 var VersionDict = NuGetRecommender.GetVersionInfo();
                 VersionInfo.modelVersion = VersionDict.ContainsKey("Model") ? VersionDict["Model"] : null;
