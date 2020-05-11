@@ -9,6 +9,7 @@ namespace NuGet.PackageManagement.Telemetry
 {
     public class SearchSelectionTelemetryEvent : TelemetryEvent
     {
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
         public SearchSelectionTelemetryEvent(
             Guid parentId,
             int recommendedCount,

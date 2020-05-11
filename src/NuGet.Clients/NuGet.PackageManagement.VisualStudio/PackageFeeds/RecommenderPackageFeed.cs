@@ -29,7 +29,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
 
-        public (string modelVersion, string vsixVersion) VersionInfo = (modelVersion: (string)null, vsixVersion: (string)null);
+        public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
         IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
@@ -82,8 +82,8 @@ namespace NuGet.PackageManagement.VisualStudio
             if (NuGetRecommender != null)
             {
                 var VersionDict = NuGetRecommender.GetVersionInfo();
-                VersionInfo.modelVersion = VersionDict.ContainsKey("Model") ? VersionDict["Model"] : null;
-                VersionInfo.vsixVersion = VersionDict.ContainsKey("Vsix") ? VersionDict["Vsix"] : null;
+                VersionInfo = (modelVersion: VersionDict.ContainsKey("Model") ? VersionDict["Model"] : (string)null,
+                                vsixVersion: VersionDict.ContainsKey("Vsix") ? VersionDict["Vsix"] : (string)null);
             }
         }
 
@@ -121,7 +121,7 @@ namespace NuGet.PackageManagement.VisualStudio
             if (NuGetRecommender != null)
             {
                 // get lists of only the package ids to send to the recommender
-                List<string> topPackages = _installedPackages.Select(item => item.Id.ToLowerInvariant()).ToList();
+                List<string> topPackages = _installedPackages.Select(item => item.Id).ToList();
                 List<string> depPackages = _dependentPackages.Keys.ToList();
                 // call the recommender to get package recommendations
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
@@ -152,7 +152,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
-            if (items.Count() < 1)
+            if (!items.Any())
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
@@ -163,7 +163,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Set status to indicate that there are no more items to load
             result.SourceSearchStatus = new Dictionary<string, LoadingStatus>
             {
-                { _sourceRepository.ToString().ToLower(), LoadingStatus.NoMoreItems }
+                { _sourceRepository.PackageSource.Name, LoadingStatus.NoMoreItems }
             };
             result.NextToken = null;
 

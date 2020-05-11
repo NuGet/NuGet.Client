@@ -216,7 +216,10 @@ namespace NuGet.PackageManagement.UI
             SearchResult<IPackageSearchMetadata> aggregated = browseResult;
             if (recommenderResult != null)
             {
-                IEnumerable<IPackageSearchMetadata> items = recommenderResult.Items.Concat(browseResult.Items);
+                // remove duplicated recommended packages from the browse results
+                var recommendedIds = recommenderResult.Items.Select(item => item.Identity.Id);
+                IEnumerable<IPackageSearchMetadata> filteredBrowseResult = browseResult.Items.Where(item => !recommendedIds.Contains(item.Identity.Id));
+                IEnumerable<IPackageSearchMetadata> items = recommenderResult.Items.Concat(filteredBrowseResult);
                 aggregated.Items = items.ToList();
                 aggregated.RawItemsCount = aggregated.Items.Count();
             }
