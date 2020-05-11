@@ -22,8 +22,15 @@ namespace NuGet.Protocol
             RequestFactory = requestFactory;
             CompletionOption = HttpCompletionOption.ResponseHeadersRead;
             MaxTries = DefaultMaxTries;
+
+            //TODO remove this!
+#if DEBUG
+            RequestTimeout = TimeSpan.FromSeconds(300);
+            RetryDelay = TimeSpan.FromMilliseconds(800);
+#else
             RequestTimeout = TimeSpan.FromSeconds(100);
             RetryDelay = TimeSpan.FromMilliseconds(200);
+#endif
             DownloadTimeout = DefaultDownloadTimeout;
         }
 

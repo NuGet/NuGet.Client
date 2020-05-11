@@ -123,25 +123,14 @@ namespace NuGet.PackageManagement.UI
         public bool IsSolution { get; set; }
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-
-        public int FilterCount
+        private ICollectionView CollectionView
         {
             get
             {
-                var view = CollectionViewSource.GetDefaultView(Items);
-
-                if (view.Filter != null)
-                {
-                    return view.Cast<object>().Count();
-                }
-                else
-                {
-                    return Items.Count;
-                }
+                return CollectionViewSource.GetDefaultView(Items);
             }
         }
-
-        //TODO: filter and thread check
+            
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
@@ -194,7 +183,7 @@ namespace NuGet.PackageManagement.UI
             _selectedCount = 0;
 
             // triggers the package list loader
-            LoadItems(selectedPackageItem, token, tabToRender == ItemFilter.UpdatesAvailable);
+            LoadItems(selectedPackageItem, token, applyUIFilterUpdatesAvailable: tabToRender == ItemFilter.UpdatesAvailable);
         }
 
         /// <summary>
@@ -215,7 +204,7 @@ namespace NuGet.PackageManagement.UI
             _list.SelectedItem = selectedItem ?? PackageItems.FirstOrDefault();
         }
 
-        private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token, bool isUpdatesTab = false)
+        private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token, bool applyUIFilterUpdatesAvailable = false)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -242,14 +231,10 @@ namespace NuGet.PackageManagement.UI
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                    //If we're loading the Updates tab, then apply a filter.
-                    if (isUpdatesTab)
+                    //If we refreshed, then any filter should be cleared.
+                    if (!applyUIFilterUpdatesAvailable)
                     {
-                        ApplyItemsFilterForUpdatesAvailable();
-                    }
-                    else
-                    {
-                        ClearItemsFilterForUpdatesAvailable();
+                        ClearItemsFilter();
                     }
 
                     if (selectedPackageItem != null)
@@ -337,28 +322,24 @@ namespace NuGet.PackageManagement.UI
 
                 try
                 {
-                    //TODO: probably don't need this and/or it's wrong.
-                    if (Items.Count > 0)
+                    // TODO: REMOVE: add Loading... indicator if not present
+                    if (!Items.Contains(_loadingStatusIndicator))
                     {
-                        // add Loading... indicator if not present
-                        if (!Items.Contains(_loadingStatusIndicator))
-                        {
-                            Items.Add(_loadingStatusIndicator);
-                            addedLoadingIndicator = true;
-                        }
+                        Items.Add(_loadingStatusIndicator);
+                        addedLoadingIndicator = true;
+                    }
 
-                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                        //**********************************************************************************
-                        if (itemFilter == ItemFilter.UpdatesAvailable)
-                        {
-                            ApplyItemsFilterForUpdatesAvailable();
-                        }
-                        else
-                        {
-                            //Show all the items, without an Update filter.
-                            ClearItemsFilterForUpdatesAvailable();
-                        }
+                    //**********************************************************************************
+                    if (itemFilter == ItemFilter.UpdatesAvailable)
+                    {
+                        ApplyItemsFilterForUpdatesAvailable();
+                    }
+                    else
+                    {
+                        //Show all the items, without an Update filter.
+                        ClearItemsFilter();
                     }
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
@@ -425,13 +406,11 @@ namespace NuGet.PackageManagement.UI
 
         private void ApplyItemsFilterForUpdatesAvailable()
         {
-            var view = CollectionViewSource.GetDefaultView(Items);
-            view.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
+            CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
-        private void ClearItemsFilterForUpdatesAvailable()
+        private void ClearItemsFilter()
         {
-            var view = CollectionViewSource.GetDefaultView(Items);
-            view.Filter = null;
+            CollectionView.Filter = null;
         }
 
         private async Task LoadItemsCoreAsync(IPackageItemLoader currentLoader, CancellationToken token)
