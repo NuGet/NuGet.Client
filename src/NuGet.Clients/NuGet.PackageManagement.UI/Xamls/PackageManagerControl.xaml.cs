@@ -105,6 +105,8 @@ namespace NuGet.PackageManagement.UI
         private readonly Stopwatch _sinceLastRefresh;
         private readonly Stopwatch _sinceUserAction;
         private PerformanceMetrics _performanceMetrics;
+        private bool _installedTabIsLoaded;
+        private bool _updatesTabIsLoaded;
 
         private bool _forceRecommender;
 
@@ -747,7 +749,7 @@ namespace NuGet.PackageManagement.UI
 
                 await SearchPackagesAndRefreshUpdateCountAsync(
                     searchText: _windowSearchHost.SearchQuery.SearchString,
-                    useCacheForUpdates: useCacheForUpdates,
+                    useCachedPackages: useCacheForUpdates,
                     pSearchCallback: null,
                     searchTask: null);
             })
@@ -798,7 +800,7 @@ namespace NuGet.PackageManagement.UI
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
+        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackages, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -808,9 +810,13 @@ namespace NuGet.PackageManagement.UI
 
             var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
 
-            if (useCacheForUpdates)
+            if (useCachedPackages)
             {
                 loadContext.CachedPackages = Model.CachedUpdates;
+            }
+            else //Invalidate cache
+            {
+                FlagTabAsLoaded(filterToRender, isLoaded: false);
             }
 
             var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
@@ -836,36 +842,61 @@ namespace NuGet.PackageManagement.UI
                 pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
             }
 
-            // We only refresh update count, when we don't use cache so check if it's false
-            if (!useCacheForUpdates)
+            // When not using Cache, refresh all Counts on the Updates an
+            if (!useCachedPackages)
             {
-                // clear existing caches
-                Model.CachedUpdates = null;
+                RefreshInstalledAndUpdatesTabs();
+            }
 
-                if (_topPanel.Filter.Equals(ItemFilter.UpdatesAvailable))
-                {
-                    // it means selected tab is update itself, so just wait for searchAsyncTask to complete
-                    // without making another call to loader to get all packages.
-                    _topPanel.UpdateCountOnUpdatesTab(count: 0);
+            FlagTabAsLoaded(filterToRender);
+        }
 
-                    var searchResult = await searchResultTask;
-                    Model.CachedUpdates = new PackageSearchMetadataCache
+        /// <summary>
+        /// Set a flag indicating this tab has been loaded for the first time since the control was loaded.
+        /// Purpose is to identify cache availability and improve performance.
+        /// When clearing this flag by <paramref name="isLoaded"/> to false, Installed and Updates will both be cleared
+        /// since they are treated as one logical load.
+        /// </summary>
+        /// <param name="filterToCheck">Tab to mark as initially loaded. Currently supports Installed and Updates.</param>
+        /// <param name="isLoaded">Set to false to reset the tab to its original state of not loaded.</param>
+        private void FlagTabAsLoaded(ItemFilter filterToCheck, bool isLoaded = true)
+        {
+            switch (filterToCheck)
+            {
+                case ItemFilter.Installed:
+                    _installedTabIsLoaded = isLoaded;
+                    if (!isLoaded)
                     {
-                        Packages = searchResult.Items,
-                        IncludePrerelease = IncludePrerelease
-                    };
-
-                    _topPanel.UpdateCountOnUpdatesTab(Model.CachedUpdates.Packages.Count);
-                }
-                else
-                {
-                    RefreshInstalledAndUpdatesTabs();
-                }
+                        _updatesTabIsLoaded = false;
+                    }
+                    break;
+                case ItemFilter.UpdatesAvailable:
+                    _updatesTabIsLoaded = isLoaded;
+                    if (!isLoaded)
+                    {
+                        _installedTabIsLoaded = false;
+                    }
+                    break;
+                default:
+                    break;
             }
         }
 
+        //private bool IsTabLoaded(ItemFilter filterToCheck)
+        //{
+        //    switch (filterToCheck)
+        //    {
+        //        case ItemFilter.Installed: return _installedTabIsLoaded;
+        //        case ItemFilter.UpdatesAvailable: return _updatesTabIsLoaded;
+        //        default: return false;
+        //    }
+        //}
+
         private void RefreshInstalledAndUpdatesTabs()
         {
+            // clear existing caches
+            Model.CachedUpdates = null;
+
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
@@ -1121,14 +1152,16 @@ namespace NuGet.PackageManagement.UI
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
-                var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.Installed || _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                var switchedToInitializedInstalledOrUpdatesTab = (_topPanel.Filter == ItemFilter.Installed && _installedTabIsLoaded)
+                    || (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabIsLoaded);
 
-                //Installed and Updates tabs don't need to be refreshed when switching between the two.
-                if (switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab)
+                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they've loaded once before.
+                if (switchedFromInstalledOrUpdatesTab && switchedToInitializedInstalledOrUpdatesTab)
                 {
+                    //UI can apply filtering.
                     FilterPackages();
                 }
-                else //Browse or Consolidate tabs.
+                else //Refresh tab from Cache.
                 {
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                     _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
