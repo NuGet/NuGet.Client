@@ -766,18 +766,13 @@ namespace NuGet.PackageManagement.UI
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
                 && loadContext.SourceRepositories.Count() == 1
-                && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
-            {
+                && Model.Context.Projects.Count() == 1
                 // also check if this is a PC-style project. We will not provide recommendations for PR-style
                 // projects until we have a way to get dependent packages without negatively impacting perf.
-                var Projects = (Model.Context.Projects ?? Enumerable.Empty<NuGetProject>()).ToArray();
-                foreach(var project in Projects)
-                {
-                    if (project.ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig)
-                    {
-                        _recommendPackages = true;
-                    }
-                }
+                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
+                && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
+            {
+                _recommendPackages = true;
             }
 
             // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages

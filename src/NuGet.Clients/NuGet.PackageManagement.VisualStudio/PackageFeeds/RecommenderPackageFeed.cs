@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DataAI.NuGetRecommender.Contracts;
@@ -32,6 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
         IVsNuGetPackageRecommender NuGetRecommender { get; set; }
+
+        private const int MaxRecommended = 5;
 
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
@@ -112,7 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new InvalidOperationException("Invalid token");
             }
             // don't make recommendations if the user entered a search string
-            if (searchToken.SearchString != "")
+            if (!string.IsNullOrEmpty(searchToken.SearchString))
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
             }
@@ -127,11 +130,15 @@ namespace NuGet.PackageManagement.VisualStudio
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
             }
 
+            if (recommendIds == null || !recommendIds.Any())
+            {
+                return SearchResult.Empty<IPackageSearchMetadata>();
+            }
+
             // get PackageIdentity info for the top 5 recommended packages
-            int _maxRecommend = 5;
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
-            while (recommendIds != null && index < recommendIds.Count() && recommendPackages.Count < _maxRecommend)
+            while (index < recommendIds.Count() && recommendPackages.Count < MaxRecommended)
             {
                 MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
                 PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
@@ -152,10 +159,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 (p, t) => GetPackageMetadataAsync(p, searchToken.SearchFilter.IncludePrerelease, t),
                 cancellationToken);
 
-            if (!items.Any())
-            {
-                return SearchResult.Empty<IPackageSearchMetadata>();
-            }
             // The asynchronous execution has randomly returned the packages, so we need to resort
             // based on the original recommendation order.
             var result = SearchResult.FromItems(items.OrderBy(p => Array.IndexOf(packages, p.Identity)).ToArray());
