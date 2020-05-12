@@ -36,7 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.6.78-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
