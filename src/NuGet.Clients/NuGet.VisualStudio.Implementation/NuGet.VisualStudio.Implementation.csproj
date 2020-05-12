@@ -44,10 +44,19 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>CommonResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\VsResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>VsResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <Compile Update="CommonResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>CommonResources.resx</DependentUpon>
+    </Compile>
+    <Compile Update="Resources\VsResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VsResources.resx</DependentUpon>
     </Compile>
   </ItemGroup>
 
