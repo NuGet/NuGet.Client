@@ -47,10 +47,7 @@ namespace NuGet.Packaging.Signing
         {
             foreach (var cert in certificates)
             {
-                using (var certificate = new X509Certificate2(cert))
-                {
-                    _signedCms.AddCertificate(certificate);
-                }
+                    _signedCms.AddCertificate(cert);
             }
         }
 
