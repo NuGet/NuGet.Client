@@ -212,7 +212,7 @@ namespace NuGet.PackageManagement.UI
                 _recommendedCount = recommenderResult.Count();
             }
 
-            // update items list to include recommender results if needed
+            // if there are recommendations, add them to the top of the browse results list
             SearchResult<IPackageSearchMetadata> aggregated = browseResult;
             if (recommenderResult != null)
             {

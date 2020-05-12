@@ -742,20 +742,8 @@ namespace NuGet.PackageManagement.UI
             return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
         }
 
-        /// <summary>
-        /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
-        /// </summary>
-        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
+        private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-
-            if (useCacheForUpdates)
-            {
-                loadContext.CachedPackages = Model.CachedUpdates;
-            }
-
             // only make recommendations when
             //   the single source repository is nuget.org,
             //   the package manager was opened for a project, not a solution,
@@ -786,6 +774,25 @@ namespace NuGet.PackageManagement.UI
             {
                 packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, false);
             }
+
+            return packageFeeds;
+        }
+
+        /// <summary>
+        /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
+        /// </summary>
+        internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCacheForUpdates, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+
+            if (useCacheForUpdates)
+            {
+                loadContext.CachedPackages = Model.CachedUpdates;
+            }
+
+            var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
 
             var loader = new PackageItemLoader(
                 loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
