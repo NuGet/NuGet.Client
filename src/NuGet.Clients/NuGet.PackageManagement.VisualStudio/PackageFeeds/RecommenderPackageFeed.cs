@@ -4,15 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.DataAI.NuGetRecommender.Contracts;
 using Microsoft.VisualStudio.Shell;
-using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
+using NuGet.VisualStudio;
+using Microsoft.VisualStudio.Threading;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -31,7 +30,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public (string modelVersion, string vsixVersion) VersionInfo { get; set; } = (modelVersion: (string)null, vsixVersion: (string)null);
 
-        IVsNuGetPackageRecommender NuGetRecommender { get; set; }
+        private readonly AsyncLazy<IVsNuGetPackageRecommender> _nuGetRecommender;
+
+        private IVsNuGetPackageRecommender NuGetRecommender { get; set; }
 
         private const int MaxRecommended = 5;
 
@@ -72,14 +73,12 @@ namespace NuGet.PackageManagement.VisualStudio
             }
             _logger = logger;
 
-            // Get NuGet package recommender service, or null if it is not available
-            NuGetRecommender = Package.GetGlobalService(typeof(SVsNuGetRecommenderService)) as IVsNuGetPackageRecommender;
-            if (NuGetRecommender != null)
-            {
-                var VersionDict = NuGetRecommender.GetVersionInfo();
-                VersionInfo = (modelVersion: VersionDict.ContainsKey("Model") ? VersionDict["Model"] : (string)null,
-                                vsixVersion: VersionDict.ContainsKey("Vsix") ? VersionDict["Vsix"] : (string)null);
-            }
+            _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
+                async () =>
+                {
+                    return await AsyncServiceProvider.GlobalProvider.GetServiceAsync<SVsNuGetRecommenderService, IVsNuGetPackageRecommender>();
+                },
+                NuGetUIThreadHelper.JoinableTaskFactory);
         }
 
         private class RecommendSearchToken : ContinuationToken
@@ -110,6 +109,18 @@ namespace NuGet.PackageManagement.VisualStudio
             if (!string.IsNullOrEmpty(searchToken.SearchString))
             {
                 return SearchResult.Empty<IPackageSearchMetadata>();
+            }
+
+            // get recommender service and version info
+            if (NuGetRecommender == null)
+            {
+                NuGetRecommender = await _nuGetRecommender.GetValueAsync();
+                if (NuGetRecommender != null)
+                {
+                    var VersionDict = NuGetRecommender.GetVersionInfo();
+                    VersionInfo = (modelVersion: VersionDict.ContainsKey("Model") ? VersionDict["Model"] : (string)null,
+                                    vsixVersion: VersionDict.ContainsKey("Vsix") ? VersionDict["Vsix"] : (string)null);
+                }
             }
 
             List<string> recommendIds = new List<string>();
