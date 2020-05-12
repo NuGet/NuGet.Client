@@ -1005,10 +1005,9 @@ namespace NuGet.PackageManagement.UI
             if (filter == ItemFilter.All)
             {
                 // if we get here, recommendPackages == true
-                // set dependentPackages to an empty list. For now, we are only making recommendations
-                // for PC-style projects, and for these the dependent packages are already included in
-                // the installedPackages list. 
-                var dependentPackages = new Dictionary<string, VersionRange>();
+                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
+                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
+                // the dependent packages to RecommenderPackageFeed.
                 var targetFrameworks = context.GetSupportedFrameworks();
 
                 packageFeeds.mainFeed = new MultiSourcePackageFeed(
@@ -1016,12 +1015,11 @@ namespace NuGet.PackageManagement.UI
                     uiLogger,
                     TelemetryActivity.NuGetTelemetryService);
                 packageFeeds.recommenderFeed = new RecommenderPackageFeed(
-                        context.SourceRepositories.First(),
-                        installedPackages,
-                        dependentPackages,
-                        targetFrameworks,
-                        metadataProvider,
-                        logger);
+                    context.SourceRepositories.First(),
+                    installedPackages,
+                    targetFrameworks,
+                    metadataProvider,
+                    logger);
                 return packageFeeds;
             }
 

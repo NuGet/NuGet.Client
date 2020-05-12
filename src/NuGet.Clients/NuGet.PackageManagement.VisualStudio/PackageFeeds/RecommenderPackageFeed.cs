@@ -25,7 +25,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private readonly SourceRepository _sourceRepository;
         private readonly IEnumerable<PackageCollectionItem> _installedPackages;
-        private readonly Dictionary<string, VersionRange> _dependentPackages;
         private readonly IEnumerable<string> _targetFrameworks;
         private readonly IPackageMetadataProvider _metadataProvider;
         private readonly Common.ILogger _logger;
@@ -39,7 +38,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public RecommenderPackageFeed(
             SourceRepository sourceRepository,
             IEnumerable<PackageCollectionItem> installedPackages,
-            Dictionary<string, VersionRange> dependentPackages,
             IEnumerable<string> targetFrameworks,
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
@@ -55,12 +53,6 @@ namespace NuGet.PackageManagement.VisualStudio
                 throw new ArgumentNullException(nameof(installedPackages));
             }
             _installedPackages = installedPackages;
-
-            if (dependentPackages == null)
-            {
-                throw new ArgumentNullException(nameof(dependentPackages));
-            }
-            _dependentPackages = dependentPackages;
 
             if (targetFrameworks == null)
             {
@@ -125,7 +117,9 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 // get lists of only the package ids to send to the recommender
                 List<string> topPackages = _installedPackages.Select(item => item.Id).ToList();
-                List<string> depPackages = _dependentPackages.Keys.ToList();
+                // set the dependent packages to an empty list for now. We'll need to update this to the actual dependent packages
+                // when we implement PR-style projects.
+                List<string> depPackages = new List<string>();
                 // call the recommender to get package recommendations
                 recommendIds = await NuGetRecommender.GetRecommendedPackageIdsAsync(_targetFrameworks, topPackages, depPackages, cancellationToken);
             }
