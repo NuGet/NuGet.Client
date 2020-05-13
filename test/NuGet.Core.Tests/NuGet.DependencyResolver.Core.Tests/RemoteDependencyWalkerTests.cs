@@ -1027,6 +1027,49 @@ namespace NuGet.DependencyResolver.Tests
             }
         }
 
+        [Fact]
+        public async Task WalkAsyncCentralDependencyDoesNotHaveDuplicates()
+        {
+            var framework = NuGetFramework.Parse("net45");
+            var context = new TestRemoteWalkContext();
+            var provider = new DependencyProvider();
+
+            // A -> centralPackage1
+            //   -> centralPackage2 -> centralPackage1
+            provider.Package("A", "1.0.0")
+                    .DependsOn("centralPackage1", "1.0.0", target: LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+            provider.Package("A", "1.0.0")
+                    .DependsOn("centralPackage2", "1.0.0", target: LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+            provider.Package("centralPackage2", "1.0.0")
+                   .DependsOn("centralPackage1", "1.0.0");
+
+            // A -> projectB -> projectC -> centralPackage1
+            provider.Package("A", "1.0.0")
+                   .DependsOn("B", "1.0.0");
+
+            provider.Package("B", "1.0.0")
+                   .DependsOn("C", "1.0.0");
+
+            provider.Package("C", "1.0.0")
+                  .DependsOn("centralPackage1", "1.0.0", target: LibraryDependencyTarget.Package, versionCentrallyManaged: true);
+
+            // B ~> centralPackage1
+            provider.Package("B", "1.0.0")
+                   .DependsOn("centralPackage1", "1.0.0", target: LibraryDependencyTarget.Package, versionCentrallyManaged: true, libraryDependencyReferenceType: LibraryDependencyReferenceType.None);
+          
+            provider.Package("centralPackage1", "1.0.0");
+            provider.Package("centralPackage2", "1.0.0");
+
+            context.LocalLibraryProviders.Add(provider);
+            var walker = new RemoteDependencyWalker(context);
+
+            // Act
+            var rootNode = await DoWalkAsync(walker, "A", framework);
+
+            // Assert
+            Assert.Equal(3, rootNode.InnerNodes.Count);       
+        }
+
         private void AssertPath<TItem>(GraphNode<TItem> node, params string[] items)
         {
             var matches = new List<string>();

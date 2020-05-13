@@ -9643,6 +9643,100 @@ namespace NuGet.CommandLine.Test
             }
         }
 
+        /// <summary>
+        /// Project A -> PackageX 100
+        ///           -> PackageY 200 -> PackageX 200
+        ///            -> ProjectB -> ProjectC -> PackageX 100
+        ///  All projects CPVM enabled; PackageX 100 and PackageY 200 in cpvm file         
+        ///  Expected NU1605                     
+        /// </summary>
+        [Fact]
+        public async Task RestoreCommand_DowngradeIsNotErrorWhen_DowngradedByCentralDirectDependency_P2P()
+        {
+            // Arrange
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, project, and packages
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+                var netcoreapp2 = NuGetFramework.Parse("netcoreapp2.0");
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                    "a",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+                projectA.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                var projectB = SimpleTestProjectContext.CreateNETCore(
+                    "b",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+                projectB.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                var projectC = SimpleTestProjectContext.CreateNETCore(
+                    "c",
+                    pathContext.SolutionRoot,
+                    netcoreapp2);
+                projectC.Properties.Add("ManagePackageVersionsCentrally", "true");
+
+                var packageX100 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+
+                var packageX200 = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "2.0.0"
+                };
+
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = null
+                };
+
+                var packageY200 = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = "2.0.0"
+                };
+
+                var packageY = new SimpleTestPackageContext()
+                {
+                    Id = "y",
+                    Version = null
+                };
+                packageY200.Dependencies.Add(packageX200);
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                   pathContext.PackageSource,
+                   packageX100, packageX200, packageY200);
+
+                projectA.AddPackageToAllFrameworks(packageX);
+                projectA.AddPackageToAllFrameworks(packageY);
+                projectA.AddProjectToAllFrameworks(projectB);
+
+                projectB.AddProjectToAllFrameworks(projectC);
+
+                projectC.AddPackageToAllFrameworks(packageX);
+
+                var cpvmFile = CentralPackageVersionsManagementFile.Create(pathContext.SolutionRoot)
+                    .AddPackageVersion("x", "1.0.0")
+                    .AddPackageVersion("y", "2.0.0");
+
+                solution.Projects.Add(projectA);
+                solution.Projects.Add(projectB);
+                solution.Projects.Add(projectC);
+                solution.CentralPackageVersionsManagementFile = cpvmFile;
+                solution.Create(pathContext.SolutionRoot);
+
+                var restoreResult = Util.RestoreSolution(pathContext);
+                
+                Assert.True(restoreResult.AllOutput.Contains("NU1605"));
+            }
+        }
+
         private static byte[] GetTestUtilityResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
