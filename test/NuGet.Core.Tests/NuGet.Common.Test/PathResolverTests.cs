@@ -150,6 +150,28 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
+        public void GetMatches_WithGlobstarDotFileName_ReturnsFileNameMatches()
+        {
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "a{0}bc", "bc", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c", "a{0}b{0}c" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "**.c" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c" });
+
+            Assert.Equal(expectedResults, actualResults);
+        }
+
+        [Fact]
+        public void GetMatches_WithGlobstarSlashDotFileName_ReturnsFileNameMatches()
+        {
+            IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "a{0}bc", "bc", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c", "a{0}b{0}c" });
+            IEnumerable<string> wildcards = GetPlatformSpecificPaths(new[] { "**.c" });
+            IEnumerable<string> actualResults = PathResolver.GetMatches(sources, source => source, wildcards);
+            IEnumerable<string> expectedResults = GetPlatformSpecificPaths(new[] { ".{0}.c", "a{0}.c", "a{0}{0}.c", "b.c", "a{0}b{0}bc.c", "a{0}b{0}.c" });
+
+            Assert.Equal(expectedResults, actualResults);
+        }
+
+        [Fact]
         public void GetMatches_WithGlobstarSlashFileName_ReturnsFileNameMatches()
         {
             IEnumerable<string> sources = GetPlatformSpecificPaths(new[] { ".{0}c", "a{0}c", "a{0}bc", "bc" });

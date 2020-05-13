@@ -83,7 +83,10 @@ namespace NuGet.Protocol
                 // store the auth state before sending the request
                 var beforeLockVersion = _credentials.Version;
 
-                response = await base.SendAsync(request, cancellationToken);
+                using (var req = request.Clone())
+                {
+                    response = await base.SendAsync(req, cancellationToken);
+                }
 
                 if (_credentialService == null)
                 {
@@ -140,11 +143,11 @@ namespace NuGet.Protocol
 
         private async Task<ICredentials> AcquireCredentialsAsync(HttpStatusCode statusCode, Guid credentialsVersion, ILogger log, CancellationToken cancellationToken)
         {
+            // Only one request may prompt and attempt to auth at a time
+            await _httpClientLock.WaitAsync();
+
             try
             {
-                // Only one request may prompt and attempt to auth at a time
-                await _httpClientLock.WaitAsync();
-
                 cancellationToken.ThrowIfCancellationRequested();
 
                 // Auth may have happened on another thread, if so just continue
@@ -227,11 +230,11 @@ namespace NuGet.Protocol
         {
             ICredentials promptCredentials;
 
+            // Only one prompt may display at a time.
+            await _credentialPromptLock.WaitAsync();
+
             try
             {
-                // Only one prompt may display at a time.
-                await _credentialPromptLock.WaitAsync();
-
                 // Get the proxy for this URI so we can pass it to the credentialService methods
                 // this lets them use the proxy if they have to hit the network.
                 var proxyCache = ProxyCache.Instance;

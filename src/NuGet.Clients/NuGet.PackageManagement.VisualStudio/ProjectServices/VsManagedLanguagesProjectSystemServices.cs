@@ -99,6 +99,8 @@ namespace NuGet.PackageManagement.VisualStudio
                 return new LibraryDependency[] { };
             }
 
+            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+
             var references = installedPackages
                 .Cast<string>()
                 .Where(r => !string.IsNullOrEmpty(r))
@@ -122,7 +124,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     return null;
                 })
                 .Where(p => p != null)
-                .Select(ToPackageLibraryDependency);
+                .Select(p => ToPackageLibraryDependency(p, isCpvmEnabled));
 
             return references.ToList();
         }
@@ -192,7 +194,7 @@ namespace NuGet.PackageManagement.VisualStudio
             return string.Empty;
         }
 
-        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference)
+        private static LibraryDependency ToPackageLibraryDependency(PackageReference reference, bool isCpvmEnabled)
         {
             var dependency = new LibraryDependency
             {
@@ -201,7 +203,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 Aliases = GetReferenceMetadataValue(reference, ProjectItemProperties.Aliases, defaultValue: null),
                 LibraryRange = new LibraryRange(
                     name: reference.Name,
-                    versionRange: VersionRange.Parse(reference.Version),
+                    versionRange: ToVersionRange(reference.Version, isCpvmEnabled),
                     typeConstraint: LibraryDependencyTarget.Package)
             };
 
@@ -221,6 +223,17 @@ namespace NuGet.PackageManagement.VisualStudio
             return dependency;
         }
 
+        private static VersionRange ToVersionRange(string version, bool isCpvmEnabled)
+        {
+            if (isCpvmEnabled && string.IsNullOrEmpty(version))
+            {
+                // Projects that have their packages managed centrally will not have Version metadata on PackageReference items.
+                return null;
+            }
+
+            return VersionRange.Parse(version);
+        }
+     
         private static string GetReferenceMetadataValue(PackageReference reference, string metadataElement, string defaultValue = "")
         {
             Assumes.Present(reference);
@@ -291,6 +304,11 @@ namespace NuGet.PackageManagement.VisualStudio
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             AsVSProject4.PackageReferences.Remove(packageName);
+        }
+
+        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
+        {
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
         }
 
         private class ProjectReference

@@ -117,9 +117,14 @@
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="UserInterfaceService\DataStreamFromComStream.cs" />
     <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
     <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
     <Compile Include="Constants.cs" />
+    <Compile Include="UserInterfaceService\NuGetSettings.cs" />
+    <Compile Include="UserInterfaceService\NuGetSettingsSerializer.cs" />
+    <Compile Include="UserInterfaceService\NuGetUIFactory.cs" />
+    <Compile Include="UserInterfaceService\SolutionUserOptions.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgress.cs" />
     <Compile Include="UserInterfaceService\VisualStudioProgressDialogSession.cs" />
     <Compile Include="Utility\VsUtility.cs" />

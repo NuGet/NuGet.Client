@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.Versioning;
 using System.Threading.Tasks;
 using EnvDTE;
+using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Shell.Interop;
 using Moq;
 using NuGet.Frameworks;
@@ -23,6 +24,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         private readonly string _restorePackagesWithLockFile;
         private readonly string _nuGetLockFilePath;
         private readonly bool _restoreLockedMode;
+        private readonly bool _isCPVMEnabled;
+        private readonly IEnumerable<(string PackageId, string Version)> _projectPackageVersions;
 
         public TestVSProjectAdapter(
             string fullProjectPath,
@@ -30,7 +33,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             string targetFrameworkString,
             string restorePackagesWithLockFile = null,
             string nuGetLockFilePath = null,
-            bool restoreLockedMode = false)
+            bool restoreLockedMode = false,
+            IEnumerable<(string PackageId, string Version)> projectPackageVersions = null)
         {
             FullProjectPath = fullProjectPath;
             ProjectNames = projectNames;
@@ -38,6 +42,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             _restorePackagesWithLockFile = restorePackagesWithLockFile;
             _nuGetLockFilePath = nuGetLockFilePath;
             _restoreLockedMode = restoreLockedMode;
+            _isCPVMEnabled = projectPackageVersions?.Any() == true;
+            _projectPackageVersions = projectPackageVersions;
         }
 
         public string AssetTargetFallback
@@ -214,6 +220,31 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         public Task<bool> IsRestoreLockedAsync()
         {
             return Task.FromResult(_restoreLockedMode);
+        }
+
+        public Task<IEnumerable<(string PackageId, string Version)>> GetPackageVersionInformationAsync()
+        {
+            return Task.FromResult(_projectPackageVersions);
+        }
+
+        public async Task<IEnumerable<(string ItemId, string[] ItemMetadata)>> GetBuildItemInformationAsync(string itemName, params string[] metadataNames)
+        {
+            if (itemName == "PackageVersion")
+            {
+                return await Task.FromResult(_projectPackageVersions.Select(x => (ItemId: x.PackageId, ItemMetadata: new string[]{ x.Version })));
+            }
+
+            return Enumerable.Empty<(string ItemId, string[] ItemMetadata)>();
+        }
+
+        public async Task<string> GetPropertyValueAsync(string propertyName)
+        {
+            if (propertyName == "ManagePackageVersionsCentrally")
+            {
+                return (await Task.FromResult(_isCPVMEnabled)).ToString();
+            }
+
+            return string.Empty;
         }
     }
 }

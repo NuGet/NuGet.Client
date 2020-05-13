@@ -4,8 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Moq;
@@ -437,6 +440,95 @@ namespace NuGet.Protocol.Tests
                         It.IsAny<string>(),
                         It.IsAny<CancellationToken>()),
                     Times.Once());
+        }
+
+        [Fact]
+        public async Task SendAsync_RetryWithClonedGetRequest()
+        {
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Unauthorized,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var requests = 0;
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = new LambdaMessageHandler(
+                    request =>
+                    {
+                        Assert.Null(request.Headers.Authorization);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "TEST");
+                        requests++;
+                        return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                    })
+            };
+
+            var response = await SendAsync(handler);
+
+            Assert.True(requests > 1, "No retries");
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        public static IEnumerable<object[]> GetHttpContent()
+        {
+            yield return new object[] { new StringContent("abc") };
+            yield return new object[] { new ByteArrayContent(Encoding.UTF8.GetBytes("abc")) };
+            yield return new object[] { new StreamContent(new MemoryStream()) };
+            yield return new object[] { new FormUrlEncodedContent(new[] { new KeyValuePair<string, string>("test", "abc") }) };
+
+            var multipartFormDataContent = new MultipartFormDataContent();
+            multipartFormDataContent.Add(new StringContent("abc"), "test");
+            multipartFormDataContent.Add(new StreamContent(new MemoryStream()), "test", "file");
+            yield return new object[] { multipartFormDataContent };
+        }
+
+        [Theory]
+        [MemberData(nameof(GetHttpContent))]
+        public async Task SendAsync_RetryWithClonedPostRequest(HttpContent httpContent)
+        {
+            var packageSource = new PackageSource("http://package.source.test");
+            var clientHandler = new HttpClientHandler();
+
+            var credentialService = Mock.Of<ICredentialService>();
+            Mock.Get(credentialService)
+                .Setup(
+                    x => x.GetCredentialsAsync(
+                        packageSource.SourceUri,
+                        It.IsAny<IWebProxy>(),
+                        CredentialRequestType.Unauthorized,
+                        It.IsAny<string>(),
+                        It.IsAny<CancellationToken>()))
+                .Returns(() => Task.FromResult<ICredentials>(new NetworkCredential()));
+
+            var requests = 0;
+            var handler = new HttpSourceAuthenticationHandler(packageSource, clientHandler, credentialService)
+            {
+                InnerHandler = new LambdaMessageHandler(
+                    async request =>
+                    {
+                        Assert.Null(request.Headers.Authorization);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "TEST");
+                        await request.Content.ReadAsStringAsync();
+                        requests++;
+                        return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                    })
+            };
+
+            var response = await SendAsync(handler, new HttpRequestMessage(HttpMethod.Post, "http://package.source.test") { Content = httpContent });
+
+            Assert.True(requests > 1, "No retries");
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }
 
         private static LambdaMessageHandler GetLambdaMessageHandler(HttpStatusCode statusCode)

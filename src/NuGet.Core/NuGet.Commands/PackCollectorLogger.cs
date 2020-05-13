@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.ProjectModel;
@@ -9,12 +11,18 @@ namespace NuGet.Commands
 {
     public class PackCollectorLogger : LoggerBase
     {
-        public WarningProperties WarningProperties { get; set; }
+        private readonly ConcurrentQueue<ILogMessage> _errors;
         private ILogger _innerLogger;
+
+        public WarningProperties WarningProperties { get; set; }
+
+        public IEnumerable<ILogMessage> Errors => _errors.ToArray();
+
         public PackCollectorLogger(ILogger innerLogger, WarningProperties warningProperties)
         {
             _innerLogger = innerLogger;
             WarningProperties = warningProperties;
+            _errors = new ConcurrentQueue<ILogMessage>();
         }
 
         public override void Log(ILogMessage message)
@@ -24,6 +32,11 @@ namespace NuGet.Commands
             {
                 // if the message is not suppressed then check if it needs to be upgraded to an error
                 UpgradeWarningToErrorIfNeeded(message);
+
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
 
                 if (DisplayMessage(message))
                 {
@@ -39,6 +52,11 @@ namespace NuGet.Commands
             {
                 // if the message is not suppressed then check if it needs to be upgraded to an error
                 UpgradeWarningToErrorIfNeeded(message);
+
+                if (CollectMessage(message.Level))
+                {
+                    _errors.Enqueue(message);
+                }
 
                 if (DisplayMessage(message))
                 {

@@ -6,7 +6,7 @@ using System.IO;
 using Microsoft.VisualStudio.OLE.Interop;
 using Microsoft.VisualStudio.Shell;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.UI
 {
     internal class DataStreamFromComStream : Stream, IDisposable
     {

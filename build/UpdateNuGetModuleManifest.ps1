@@ -6,6 +6,13 @@ param (
     [Parameter(Mandatory = $True)]
     [string] $ManifestModuleDestinationFilePath)
 
+trap
+{
+    Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
+    Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
+    exit 1
+}
+
 $assembly = [System.Reflection.Assembly]::LoadFile($NuGetPackageManagementPowerShellCmdletsFilePath)
 
 [string] $manifestModuleFileContents = [System.IO.File]::ReadAllText($ManifestModuleSourceFilePath)

@@ -56,7 +56,7 @@ urlMetadata +
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                Assert.True(runner.RunPackageBuild());
 
                 var ruleSet = RuleSet.PackageCreationRuleSet;
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");
@@ -114,7 +114,7 @@ urlMetadata +
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                Assert.True(runner.RunPackageBuild());
 
                 var ruleSet = RuleSet.PackageCreationRuleSet;
                 var nupkgPath = Path.Combine(testDirectory, "test.1.0.0.nupkg");

@@ -2356,6 +2356,15 @@ namespace NuGet.CommandLine {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument &apos;{0}&apos; is not expected..
+        /// </summary>
+        public static string Error_ArgumentNotExpected {
+            get {
+                return ResourceManager.GetString("Error_ArgumentNotExpected", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid AssemblyInformationalVersion {0} on assembly {1}..
         /// </summary>
         public static string Error_AssemblyInformationalVersion {

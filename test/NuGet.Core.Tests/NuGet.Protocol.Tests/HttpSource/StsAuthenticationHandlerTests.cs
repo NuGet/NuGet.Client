@@ -7,8 +7,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using Moq;
 using NuGet.Configuration;
 using Xunit;
 
@@ -22,7 +22,6 @@ namespace NuGet.Protocol.Tests
             var packageSource = new PackageSource("http://package.source.net");
             var tokenStore = new TokenStore();
 
-            var credentialService = new Mock<ICredentialService>(MockBehavior.Strict);
             var handler = new StsAuthenticationHandler(packageSource, tokenStore)
             {
                 InnerHandler = GetLambdaMessageHandler(HttpStatusCode.OK)
@@ -147,6 +146,40 @@ namespace NuGet.Protocol.Tests
 
             var response = await SendAsync(handler);
 
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SendAsync_RetryWithClonedRequest()
+        {
+            var packageSource = new PackageSource("http://package.source.net");
+            var tokenStore = new TokenStore();
+            tokenStore.AddToken(packageSource.SourceUri, "TEST-TOKEN");
+            Func<string, string, string> tokenFactory = (endpoint, realm) =>
+            {
+                throw new InvalidOperationException("Should NOT mint new token.");
+            };
+
+            var requests = 0;
+            var handler = new StsAuthenticationHandler(packageSource, tokenStore, tokenFactory)
+            {
+                InnerHandler = new LambdaMessageHandler(
+                    request =>
+                    {
+                        Assert.Null(request.Headers.Authorization);
+                        request.Headers.Authorization = new AuthenticationHeaderValue("Basic", "TEST");
+                        requests++;
+
+                        tokenStore.AddToken(packageSource.SourceUri, "TEST-TOKEN"); // update version for retry
+
+                        return new HttpResponseMessage(HttpStatusCode.Unauthorized);
+                    })
+            };
+
+            var response = await SendAsync(handler);
+
+            Assert.True(requests > 1, "No retries");
             Assert.NotNull(response);
             Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
         }

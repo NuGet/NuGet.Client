@@ -130,6 +130,39 @@ namespace NuGet.PackageManagement.VisualStudio
             return (new[] { packageSpec }, null);
         }
 
+        private async Task<bool> IsCentralPackageManagementVersionsEnabledAsync()
+        {
+            return MSBuildStringUtility.IsTrue(await _vsProjectAdapter.GetPropertyValueAsync(ProjectBuildProperties.ManagePackageVersionsCentrally));
+        }
+
+        private async Task<Dictionary<string, CentralPackageVersion>> GetCentralPackageVersionsAsync()
+        {
+            IEnumerable<(string PackageId, string Version)> packageVersions =
+                        (await _vsProjectAdapter.GetBuildItemInformationAsync(ProjectBuildProperties.PackageVersion, ProjectBuildProperties.Version))
+                        .Select(item => (PackageId: item.ItemId, Version: item.ItemMetadata.FirstOrDefault()));
+
+            return packageVersions
+                .Select(item => ToCentralPackageVersion(item.PackageId, item.Version))
+                .Distinct(CentralPackageVersionNameComparer.Default)
+                .ToDictionary(cpv => cpv.Name);
+        }
+
+
+        private CentralPackageVersion ToCentralPackageVersion(string packageId, string version)
+        {
+            if (string.IsNullOrEmpty(packageId))
+            {
+                throw new ArgumentNullException(nameof(packageId));
+            }
+
+            if (string.IsNullOrEmpty(version))
+            {
+                return new CentralPackageVersion(packageId, VersionRange.All);
+            }
+
+            return new CentralPackageVersion(packageId, VersionRange.Parse(version));
+        }
+
         #endregion
 
         #region NuGetProject
@@ -197,7 +230,7 @@ namespace NuGet.PackageManagement.VisualStudio
                 fullPath = FileSystemUtility.GetFullPath(_vsProjectAdapter.ProjectDirectory, filePath);
             }
 
-            var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists:true);
+            var container = await EnvDTEProjectUtility.GetProjectItemsAsync(_vsProjectAdapter.Project, folderPath, createIfNotExists: true);
 
             container.AddFromFileCopy(fullPath);
         }
@@ -321,9 +354,10 @@ namespace NuGet.PackageManagement.VisualStudio
 
         private static PackageReference ToPackageReference(LibraryDependency library, NuGetFramework targetFramework)
         {
+            // The VersionRange can be null when the PackageReference items are for a project opted in the central package version management.
             var identity = new PackageIdentity(
                 library.LibraryRange.Name,
-                library.LibraryRange.VersionRange.MinVersion);
+                library.LibraryRange.VersionRange?.MinVersion);
 
             return new PackageReference(identity, targetFramework);
         }
@@ -359,6 +393,12 @@ namespace NuGet.PackageManagement.VisualStudio
                 FrameworkName = targetFramework,
                 Dependencies = packageReferences,
             };
+
+            bool isCpvmEnabled = await IsCentralPackageManagementVersionsEnabledAsync();
+            if (isCpvmEnabled)
+            {
+                projectTfi.CentralPackageVersions.AddRange(await GetCentralPackageVersionsAsync());
+            }
 
             // Apply fallback settings
             AssetTargetFallbackUtility.ApplyFramework(projectTfi, packageTargetFallback, assetTargetFallback);
@@ -407,13 +447,14 @@ namespace NuGet.PackageManagement.VisualStudio
                     FallbackFolders = GetFallbackFolders(settings),
                     ConfigFilePaths = GetConfigFilePaths(settings),
                     ProjectWideWarningProperties = WarningProperties.GetWarningProperties(
-                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors, 
+                        treatWarningsAsErrors: _vsProjectAdapter.TreatWarningsAsErrors,
                         noWarn: _vsProjectAdapter.NoWarn,
                         warningsAsErrors: _vsProjectAdapter.WarningsAsErrors),
                     RestoreLockProperties = new RestoreLockProperties(
                         await _vsProjectAdapter.GetRestorePackagesWithLockFileAsync(),
                         await _vsProjectAdapter.GetNuGetLockFilePathAsync(),
-                        await _vsProjectAdapter.IsRestoreLockedAsync())
+                        await _vsProjectAdapter.IsRestoreLockedAsync()),
+                    CentralPackageVersionsEnabled = isCpvmEnabled
                 }
             };
         }

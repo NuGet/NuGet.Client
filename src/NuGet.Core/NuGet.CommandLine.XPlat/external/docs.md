@@ -93,6 +93,75 @@ The `dotnet nuget add source` command adds a new package source to your NuGet co
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
+---file:docs\core\tools\dotnet-nuget-add-client-cert.md
+---
+title: dotnet nuget add client-cert command
+description: The dotnet nuget add client-cert command adds a new client certificate to your NuGet configuration files. 
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
+---
+# dotnet nuget add client-cert
+
+**This article applies to:** ✔️ .NET Core 3.1.200 SDK and later versions
+
+## Name
+
+`dotnet nuget add client-cert` - Adds a client certificate configuration that matches the given package source name.
+
+## Synopsis
+
+```dotnetcli
+dotnet nuget add client-cert [--package-source] [--path]
+    [--password] [--store-password-in-clear-text] [--store-location]
+    [--store-name] [--find-by] [--find-value] [--force] [--configfile]
+dotnet nuget add client-cert [-h|--help]
+```
+
+## Description
+
+The `dotnet nuget add client-cert` command adds a new client certificate to your NuGet configuration files.
+
+## Options
+
+- **`--configfile`**
+
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
+- **`--find-by`**
+
+  Search method to find certificate in certificate store (see docs).
+
+- **`--find-value`**
+
+  Search the certificate store for the supplied value. Used with FindValue (see docs).
+
+- **`-f|--force`**
+
+  Skip certificate validation.
+
+- **`-s|--package-source`**
+
+  Package source name.
+
+- **`--password`**
+
+  Password for the certificate, if needed.
+
+- **`--path`**
+
+  Path to certificate file.
+
+- **`--store-location`**
+
+  Certificate store location (see docs).
+
+- **`--store-name`**
+
+  Certificate store name (see docs).
+
+- **`--store-password-in-clear-text`**
+
+  Enables storing password for the certificate by disabling password encryption.
+
 ---file:docs\core\tools\dotnet-nuget-disable-source.md
 ---
 title: dotnet nuget disable source command
@@ -241,6 +310,37 @@ The `dotnet nuget list source` command lists all existing sources from your NuGe
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
+---file:docs\core\tools\dotnet-nuget-list-client-cert.md
+---
+title: dotnet nuget list client-cert command
+description: The dotnet nuget list client-cert command lists all configured client certificates. 
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
+---
+# dotnet nuget list client-cert
+
+**This article applies to:** ✔️ .NET Core 3.1.200 SDK and later versions
+
+## Name
+
+`dotnet nuget list client-cert` - Lists all the client certificates in the configuration.
+
+## Synopsis
+
+```dotnetcli
+dotnet nuget list client-cert [--configfile]
+dotnet nuget list client-cert [-h|--help]
+```
+
+## Description
+
+The `dotnet nuget list client-cert` command lists all configured client certificates.
+
+## Options
+
+- **`--configfile`**
+
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
 ---file:docs\core\tools\dotnet-nuget-remove-source.md
 ---
 title: dotnet nuget remove source command
@@ -291,6 +391,41 @@ The `dotnet nuget remove source` command removes an existing source from your Nu
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
+---file:docs\core\tools\dotnet-nuget-remove-client-cert.md
+---
+title: dotnet nuget remove client-cert command
+description: The dotnet nuget remove client-cert command removes an existing client certificate configuration from your NuGet configuration files. 
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
+---
+# dotnet nuget remove client-cert
+
+**This article applies to:** ✔️ .NET Core 3.1.200 SDK and later versions
+
+## Name
+
+`dotnet nuget remove client-cert` - Removes the client certificate configuration that matches the given package source name.
+
+## Synopsis
+
+```dotnetcli
+dotnet nuget remove client-cert [--package-source] [--configfile]
+dotnet nuget remove client-cert [-h|--help]
+```
+
+## Description
+
+The `dotnet nuget remove client-cert` command removes an existing client certificate configuration from your NuGet configuration files.
+
+## Options
+
+- **`--configfile`**
+
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
+- **`-s|--package-source`**
+
+  Package source name.
+
 ---file:docs\core\tools\dotnet-nuget-update-source.md
 ---
 title: dotnet nuget update source command
@@ -363,3 +498,72 @@ The `dotnet nuget update source` command updates an existing source in your NuGe
 - [Package source sections in NuGet.config files](/nuget/reference/nuget-config-file#package-source-sections)
 
 - [sources command (nuget.exe)](/nuget/reference/cli-reference/cli-ref-sources)
+---file:docs\core\tools\dotnet-nuget-update-client-cert.md
+---
+title: dotnet nuget update client-cert command
+description: The dotnet nuget update client-cert command updates an existing client certificate in your NuGet configuration files. 
+ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
+---
+# dotnet nuget update client-cert
+
+**This article applies to:** ✔️ .NET Core 3.1.200 SDK and later versions
+
+## Name
+
+`dotnet nuget update client-cert` - Updates the client certificate configuration that matches the given package source name.
+
+## Synopsis
+
+```dotnetcli
+dotnet nuget update client-cert [--package-source] [--path]
+    [--password] [--store-password-in-clear-text] [--store-location]
+    [--store-name] [--find-by] [--find-value] [--force] [--configfile]
+dotnet nuget update client-cert [-h|--help]
+```
+
+## Description
+
+The `dotnet nuget update client-cert` command updates an existing client certificate in your NuGet configuration files.
+
+## Options
+
+- **`--configfile`**
+
+  The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).
+
+- **`--find-by`**
+
+  Search method to find certificate in certificate store (see docs).
+
+- **`--find-value`**
+
+  Search the certificate store for the supplied value. Used with FindValue (see docs).
+
+- **`-f|--force`**
+
+  Skip certificate validation.
+
+- **`-s|--package-source`**
+
+  Package source name.
+
+- **`--password`**
+
+  Password for the certificate, if needed.
+
+- **`--path`**
+
+  Path to certificate file.
+
+- **`--store-location`**
+
+  Certificate store location (see docs).
+
+- **`--store-name`**
+
+  Certificate store name (see docs).
+
+- **`--store-password-in-clear-text`**
+
+  Enables storing password for the certificate by disabling password encryption.
+
