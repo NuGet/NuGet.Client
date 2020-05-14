@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using FluentAssertions;
 using Moq;
@@ -14,12 +15,12 @@ namespace NuGet.Common.Test
     public class TelemetryActivityTests
     {
         private readonly Mock<INuGetTelemetryService> _telemetryService = new Mock<INuGetTelemetryService>();
-        private TelemetryEvent _telemetryEvent;
+        private List<TelemetryEvent> _telemetryEvents = new List<TelemetryEvent>();
 
         public TelemetryActivityTests()
         {
             _telemetryService.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
-                .Callback<TelemetryEvent>(x => _telemetryEvent = x);
+                .Callback<TelemetryEvent>(x => _telemetryEvents.Add(x));
 
             TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
         }
@@ -34,8 +35,8 @@ namespace NuGet.Common.Test
                 operationId = telemetry.OperationId;
             }
 
-            Assert.Null(_telemetryEvent["ParentId"]);
-            Assert.Equal(operationId.ToString(), _telemetryEvent["OperationId"]);
+            Assert.Null(_telemetryEvents.First()["ParentId"]);
+            Assert.Equal(operationId.ToString(), _telemetryEvents.First()["OperationId"]);
         }
 
         [Fact]
@@ -49,8 +50,8 @@ namespace NuGet.Common.Test
                 operationId = telemetry.OperationId;
             }
 
-            Assert.Equal(parentId.ToString(), _telemetryEvent["ParentId"]);
-            Assert.Equal(operationId.ToString(), _telemetryEvent["OperationId"]);
+            Assert.Equal(parentId.ToString(), _telemetryEvents.First()["ParentId"]);
+            Assert.Equal(operationId.ToString(), _telemetryEvents.First()["OperationId"]);
         }
 
         [Fact]
@@ -66,7 +67,7 @@ namespace NuGet.Common.Test
                 telemetry.EndIntervalMeasure(measureName);
             }
 
-            var value = _telemetryEvent[measureName];
+            var value = _telemetryEvents.First()[measureName];
             value.Should().NotBeNull();
             var actualCount = Convert.ToInt32(value);
             Assert.True(actualCount >= secondsToWait, $"The telemetry duration count should at least be {secondsToWait} seconds.");
@@ -81,7 +82,7 @@ namespace NuGet.Common.Test
             {
             }
 
-            Assert.Null(_telemetryEvent["ParentId"]);
+            Assert.Null(_telemetryEvents.First()["ParentId"]);
         }
 
         [Fact]
@@ -91,7 +92,7 @@ namespace NuGet.Common.Test
             {
             }
 
-            var startTime = _telemetryEvent["StartTime"] as string;
+            var startTime = _telemetryEvents.First()["StartTime"] as string;
 
             Assert.NotNull(startTime);
 
@@ -105,7 +106,7 @@ namespace NuGet.Common.Test
             {
             }
 
-            var endTime = _telemetryEvent["EndTime"] as string;
+            var endTime = _telemetryEvents.First()["EndTime"] as string;
 
             Assert.NotNull(endTime);
 
@@ -120,9 +121,26 @@ namespace NuGet.Common.Test
                 Thread.Sleep(10);
             }
 
-            var duration = (double)_telemetryEvent["Duration"];
+            var duration = (double)_telemetryEvents.First()["Duration"];
 
             Assert.InRange(duration, 0d, 10d);
+        }
+
+        [Fact]
+        public void CreateTelemetryActivityWithNewOperationIdAndEvent_Logs_start_event()
+        {
+            using (var telemetry = TelemetryActivity.Create("FooBar"))
+            {
+                Thread.Sleep(10);
+            }
+
+            Assert.Equal(2, _telemetryEvents.Count);
+
+            var firstEvent = _telemetryEvents.ElementAt(0);
+            var secondEvent = _telemetryEvents.ElementAt(1);
+
+            Assert.Equal("FooBar/Start", firstEvent.Name);
+            Assert.Equal("FooBar", secondEvent.Name);
         }
 
         private static TelemetryEvent CreateNewTelemetryEvent()
