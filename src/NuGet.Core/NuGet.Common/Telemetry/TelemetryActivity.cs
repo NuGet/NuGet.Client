@@ -43,6 +43,12 @@ namespace NuGet.Common
         private TelemetryActivity(Guid parentId, TelemetryEvent telemetryEvent, Guid operationId)
         {
             TelemetryEvent = telemetryEvent;
+            if (telemetryEvent != null)
+            {
+                var startTelemetryEvent = new TelemetryEvent(telemetryEvent.Name + "/Start");
+                NuGetTelemetryService.EmitTelemetryEvent(startTelemetryEvent);
+            }
+
             ParentId = parentId;
             OperationId = operationId;
 
