@@ -111,6 +111,7 @@
       <DependentUpon>PackageSourcesOptionsControl.cs</DependentUpon>
     </Compile>
     <Compile Include="PackageLicenseUtilities.cs" />
+    <Compile Include="PackageManagerToolWindowPane.cs" />
     <Compile Include="PackageManagerWindowPane.cs" />
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>

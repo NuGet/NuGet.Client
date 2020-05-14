@@ -652,9 +652,10 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                var project = Model.Context.Projects.First();
-                string projectName = null;
-                if (!project.TryGetMetadata(NuGetProjectMetadataKeys.Name, out projectName))
+                var project = Model.Context.Projects.FirstOrDefault();
+
+                if (project == null ||
+                    !project.TryGetMetadata<string>(NuGetProjectMetadataKeys.Name, out var projectName))
                 {
                     projectName = "unknown";
                 }

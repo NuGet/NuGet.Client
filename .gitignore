@@ -34,6 +34,9 @@ mergelog.txt
 *.user
 *.sln.docstates
 
+# NT.cmd
+nt.cmd
+
 # Build results
 
 # Roslyn cache directories
