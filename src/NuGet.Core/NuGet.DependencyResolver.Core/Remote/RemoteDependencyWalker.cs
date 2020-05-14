@@ -38,12 +38,19 @@ namespace NuGet.DependencyResolver
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
-            var indexedDirectDependenciesKeyNames = new HashSet<string>();
-            indexedDirectDependenciesKeyNames.AddRange(rootNode.InnerNodes.Select(n => n.Key.Name));
+            // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
+            var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
+                () =>
+                {
+                    var result = new HashSet<string>();
+                    result.AddRange(rootNode.InnerNodes.Select(n => n.Key.Name));
+                    return result;
+                });
+
             while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageversionDependecy))
             {
                 // do not add a transitive dependency node if it is direct already
-                if (!indexedDirectDependenciesKeyNames.Contains(centralPackageversionDependecy.Name))
+                if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageversionDependecy.Name))
                 {
                     await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageversionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions);
                 }
