@@ -50,7 +50,7 @@
       "test\\NuGet.Clients.Tests\\NuGet.VisualStudio.Common.Test\\NuGet.VisualStudio.Common.Test.csproj",
       "test\\NuGet.Clients.Tests\\NuGet.VisualStudio.Implementation.Test\\NuGet.VisualStudio.Implementation.Test.csproj",
       "test\\NuGet.Clients.Tests\\NuGetConsole.Host.PowerShell.Test\\NuGetConsole.Host.PowerShell.Test.csproj",
-      "test\\NuGet.Core.Tests\\Microsoft.Build.NuGetSdkResolver.Tests\\Microsoft.Build.NuGetSdkResolver.Test.csproj",
+      "test\\NuGet.Core.Tests\\Microsoft.Build.NuGetSdkResolver.Test\\Microsoft.Build.NuGetSdkResolver.Test.csproj",
       "test\\NuGet.Core.Tests\\NuGet.Build.Tasks.Console.Test\\NuGet.Build.Tasks.Console.Test.csproj",
       "test\\NuGet.Core.Tests\\NuGet.Build.Tasks.Pack.Test\\NuGet.Build.Tasks.Pack.Test.csproj",
       "test\\NuGet.Core.Tests\\NuGet.Build.Tasks.Test\\NuGet.Build.Tasks.Test.csproj",

@@ -65,12 +65,9 @@ Unit tests for libraries and some clients. Located in `test/` folder.
 
 Projects in section: 18
 
-### test\NuGet.Core.Tests\Microsoft.Build.NuGetSdkResolver.Tests
-
-- [`Microsoft.Build.NuGetSdkResolver.Test.csproj`](../test/NuGet.Core.Tests/Microsoft.Build.NuGetSdkResolver.Tests/Microsoft.Build.NuGetSdkResolver.Test.csproj): Unit tests for Microsoft.Build.NuGetSdkResolver.
-
 ### test\NuGet.Core.Tests
 
+- [`Microsoft.Build.NuGetSdkResolver.Test.csproj`](../test/NuGet.Core.Tests/Microsoft.Build.NuGetSdkResolver.Test/Microsoft.Build.NuGetSdkResolver.Test.csproj): Unit tests for Microsoft.Build.NuGetSdkResolver.
 - [`NuGet.Build.Tasks.Console.Test.csproj`](../test/NuGet.Core.Tests/NuGet.Build.Tasks.Console.Test/NuGet.Build.Tasks.Console.Test.csproj): Unit tests for NuGet.Build.Tasks.Console.
 - [`NuGet.Build.Tasks.Pack.Test.csproj`](../test/NuGet.Core.Tests/NuGet.Build.Tasks.Pack.Test/NuGet.Build.Tasks.Pack.Test.csproj): Unit tests for NuGet.Build.Tasks.Pack.
 - [`NuGet.Build.Tasks.Test.csproj`](../test/NuGet.Core.Tests/NuGet.Build.Tasks.Test/NuGet.Build.Tasks.Test.csproj): Unit tests for NuGet.Build.Tasks.
