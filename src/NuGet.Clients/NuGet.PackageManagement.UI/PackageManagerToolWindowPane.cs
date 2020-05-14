@@ -8,6 +8,7 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
+    [ProvideToolWindow(typeof(PackageManagerToolWindowPane), Style = VsDockStyle.Tabbed, DocumentLikeTool = true, Window = EnvDTE.Constants.vsCATIDDocument)]
     public class PackageManagerToolWindowPane : ToolWindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
@@ -54,7 +55,12 @@ namespace NuGet.PackageManagement.UI
                     CleanUp();
 
                     // Because Dispose() will do our cleanup, we can tell the GC not to call the finalizer.
+
+                    // TODO: Mirko - Not sure why this is necessary here but not in PpackageManagerWindowPane. Investigate.
+
+#pragma warning disable CA1816 // Dispose methods should call SuppressFinalize
                     GC.SuppressFinalize(this);
+#pragma warning restore CA1816 // Dispose methods should call SuppressFinalize
                 }
             }
             finally
