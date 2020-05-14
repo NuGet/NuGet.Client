@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -21,17 +22,41 @@ namespace NuGet.Protocol
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
-            var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+            try
+            {
+                var searchResultJsonObjects = (await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken)).ToList();
 
-            var metadataCache = new MetadataReferenceCache();
+                // Some nuget server not honoring our skip parameter nor take parameter, just returning everything they have.
+                // Then it's more than we asked, it bogs down whole processing with thousands of items. Still we need to let user see things in paginated way.
+                if (searchResultJsonObjects?.Count > take)
+                {
+                    if (searchResultJsonObjects?.Count >= skip + take)
+                    {
+                        searchResultJsonObjects = searchResultJsonObjects.Skip(skip).Take(take).ToList();
+                    }
+                    else
+                    {
+                        searchResultJsonObjects = searchResultJsonObjects.Take(take).ToList();
+                    }                    
+                }
 
-            var searchResults = searchResultJsonObjects
-                .Select(s => s.FromJToken<PackageSearchMetadata>())
-                .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) m))
-                .ToArray();
+                var metadataCache = new MetadataReferenceCache();
 
-            return searchResults;
+                var searchResults = searchResultJsonObjects
+                    .Select(s => s.FromJToken<PackageSearchMetadata>())
+                    .Select(m => m.WithVersions(() => GetVersions(m, filter)))
+                    .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m))
+                    .ToArray();
+                return searchResults;
+            }
+            catch(Exception ex)
+            {
+                System.Console.WriteLine(ex);
+                throw;
+            }
+
+           // return Enumerable.Empty<IPackageSearchMetadata>();
+            
         }
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
