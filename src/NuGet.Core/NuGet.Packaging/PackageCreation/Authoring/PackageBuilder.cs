@@ -780,7 +780,11 @@ namespace NuGet.Packaging
                         }
                         else
                         {
+#if NET5_0
+                            filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/", StringComparison.Ordinal)}");
+#else
                             filesWithoutExtensions.Add($"/{file.Path.Replace("\\", "/")}");
+#endif
                         }
                     }
                     catch
