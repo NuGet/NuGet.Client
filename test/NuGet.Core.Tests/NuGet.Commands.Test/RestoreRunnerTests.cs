@@ -64,7 +64,7 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgSpec = new DependencyGraphSpec();
                 dgSpec.AddProject(spec1);
-                dgSpec.AddRestore(projectName);
+                dgSpec.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
                 var lockPath = Path.Combine(project1.FullName, "project.assets.json");
@@ -144,7 +144,7 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(spec1);
-                dgFile.AddRestore("project1");
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
                 var lockPath = Path.Combine(project1.FullName, "project.assets.json");
@@ -345,7 +345,7 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
 
                 dgFile.AddProject(spec1);
-                dgFile.AddRestore("project1");
+                dgFile.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
                 var lockPath = Path.Combine(project1.FullName, "project.assets.json");
@@ -485,7 +485,7 @@ namespace NuGet.Commands.Test
 
                 foreach (var spec in specs)
                 {
-                    dgFile.AddRestore(spec.RestoreMetadata.ProjectName);
+                    dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
                     dgFile.AddProject(spec);
                 }
 
@@ -634,7 +634,7 @@ namespace NuGet.Commands.Test
 
                 foreach (var spec in specs)
                 {
-                    dgFile.AddRestore(spec.RestoreMetadata.ProjectName);
+                    dgFile.AddRestore(spec.RestoreMetadata.ProjectUniqueName);
                     dgFile.AddProject(spec);
                 }
 
@@ -719,7 +719,7 @@ namespace NuGet.Commands.Test
                 spec1.RestoreMetadata.PackagesPath = packagesDir.FullName;
                 var dgSpec = new DependencyGraphSpec();
                 dgSpec.AddProject(spec1);
-                dgSpec.AddRestore("project1");
+                dgSpec.AddRestore(spec1.RestoreMetadata.ProjectUniqueName);
 
                 var logger = new TestLogger();
                 var lockPath1 = Path.Combine(project1.FullName, "project.assets.json");
@@ -795,7 +795,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -884,7 +884,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -983,7 +983,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1075,7 +1075,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1181,7 +1181,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1286,7 +1286,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1394,7 +1394,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
 
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
@@ -1504,7 +1504,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 await SimpleTestPackageUtility.CreateFullPackageAsync(packageSource.FullName, new SimpleTestPackageContext()
                 {
@@ -1595,7 +1595,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1673,7 +1673,7 @@ namespace NuGet.Commands.Test
                 // set up the dg spec.
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec);
-                dgFile.AddRestore(projectSpec.Name);
+                dgFile.AddRestore(projectSpec.RestoreMetadata.ProjectUniqueName);
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
                 {
@@ -1806,7 +1806,7 @@ namespace NuGet.Commands.Test
                     .Add(new ProjectRestoreReference()
                     {
                         ProjectPath = projectSpec2.FilePath,
-                        ProjectUniqueName = projectSpec2.Name
+                        ProjectUniqueName = projectSpec2.RestoreMetadata.ProjectUniqueName
                     }
                     );
 
@@ -1814,8 +1814,8 @@ namespace NuGet.Commands.Test
                 var dgFile = new DependencyGraphSpec();
                 dgFile.AddProject(projectSpec1);
                 dgFile.AddProject(projectSpec2);
-                dgFile.AddRestore(projectSpec1.Name);
-                dgFile.AddRestore(projectSpec2.Name);
+                dgFile.AddRestore(projectSpec1.RestoreMetadata.ProjectUniqueName);
+                dgFile.AddRestore(projectSpec2.RestoreMetadata.ProjectUniqueName);
 
                 // set up the packages
                 var packageX = new SimpleTestPackageContext()
