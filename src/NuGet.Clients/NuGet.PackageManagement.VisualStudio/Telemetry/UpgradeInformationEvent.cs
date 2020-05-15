@@ -8,14 +8,14 @@ using NuGet.ProjectManagement;
 
 namespace NuGet.PackageManagement.Telemetry
 {
-    public class UpgradeInformationTelemetryEvent : TelemetryEvent
+    internal class UpgradeInformationTelemetryEvent : TelemetryEvent
     {
-        public UpgradeInformationTelemetryEvent()
+        internal UpgradeInformationTelemetryEvent()
             : base("UpgradeInformation")
         {
         }
 
-        public void SetResult(IEnumerable<NuGetProject> projects, NuGetOperationStatus status, int packageCount)
+        internal void SetResult(IEnumerable<NuGetProject> projects, NuGetOperationStatus status, int packageCount)
         {
             var sortedProjects = projects.OrderBy(
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
