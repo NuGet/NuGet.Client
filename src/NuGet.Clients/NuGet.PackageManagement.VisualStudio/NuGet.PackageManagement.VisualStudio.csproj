@@ -84,9 +84,6 @@
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
     <Compile Include="CommonResources.cs" />
-    <Compile Include="Common\AsyncLockAwaiter.cs" />
-    <Compile Include="Common\AsyncLockReleaser.cs" />
-    <Compile Include="Common\IAsyncLockAwaitable.cs" />
     <Compile Include="Common\PackageCollection.cs" />
     <Compile Include="Common\PackageCollectionExtensions.cs" />
     <Compile Include="Common\PackageCollectionItem.cs" />
