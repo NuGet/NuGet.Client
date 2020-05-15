@@ -6,9 +6,7 @@ using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Controls;
 using EnvDTE;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -84,8 +82,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         [Import]
         private Lazy<INuGetUIFactory> UIFactory { get; set; }
 
-
-        //TODO: need GetService or to convert to use GetServiceAsync
         private IDisposable ProjectRetargetingHandler { get; set; }
 
         private IDisposable ProjectUpgradeHandler { get; set; }
@@ -152,8 +148,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            //    SolutionManager.Value.AfterNuGetProjectRenamed += SolutionManager_NuGetProjectRenamed;
-
             Brushes.LoadVsBrushes();
 
             _dte = (DTE)await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SDTE));
@@ -181,7 +175,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             SolutionUserOptions.Value.LoadSettings();
         }
 
- private async Task ShowPackageManagerUI(string projectPath)
+        private async Task ShowPackageManagerUI(string projectPath)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -279,12 +273,10 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 }
             }
 
-            // Create the doc window using the hiearchy & item id.
-            return await CreateDocWindowAsync(projectPath, documentName, hier, itemId);
+            return await CreateToolWindowAsync(projectPath, documentName, hier, itemId);
         }
 
-        // private async Task<System.Windows.Window> CreateDocWindowAsync(
-        private async Task<vsShellInterop.IVsWindowFrame> CreateDocWindowAsync(
+        private async Task<vsShellInterop.IVsWindowFrame> CreateToolWindowAsync(
             string projectPath,
             string documentName,
             vsShellInterop.IVsHierarchy hier,
@@ -304,9 +296,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             var control = new PackageManagerControl(model, Settings.Value, vsWindowSearchHostfactory, vsShell, OutputConsoleLogger.Value);
             var windowPane = new PackageManagerToolWindowPane(control);
-            var guidEditorType = GuidList.NuGetEditorType;
-            var guidCommandUI = Guid.Empty;
-            var ppunkDocData = IntPtr.Zero;
 
             var caption = string.Format(
                 CultureInfo.CurrentCulture,
@@ -321,9 +310,8 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
 
             try
             {
-                uint createFlag = (uint)__VSCREATETOOLWIN.CTW_fInitNew;
                 hr = uiShell.CreateToolWindow(
-                    createFlag,
+                    (uint)__VSCREATETOOLWIN.CTW_fInitNew,
                     0,              // dwToolWindowId - singleInstance = 0
                     windowPane,     // ToolWindowPane
                     Guid.Empty,     // rclsidTool = GUID_NULL
@@ -338,6 +326,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 {
                     WindowFrameHelper.AddF1HelpKeyword(windowFrame, keywordValue: F1KeywordValuePmUI);
                     WindowFrameHelper.DisableWindowAutoReopen(windowFrame);
+                    WindowFrameHelper.DockToolWindow(windowFrame);
                 }
             }
             finally
