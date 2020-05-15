@@ -26,7 +26,6 @@ namespace NuGet.Packaging
 {
     public class PackageBuilder : IPackageMetadata
     {
-        private const string DefaultContentType = "application/octet";
         private static readonly Uri DefaultUri = new Uri("http://defaultcontainer/");
         internal const string ManifestRelationType = "manifest";
         private readonly bool _includeEmptyDirectories;
