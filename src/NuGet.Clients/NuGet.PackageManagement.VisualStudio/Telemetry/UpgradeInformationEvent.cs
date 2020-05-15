@@ -21,7 +21,7 @@ namespace NuGet.PackageManagement.Telemetry
                 project => project.GetMetadata<string>(NuGetProjectMetadataKeys.UniqueName));
 
             var projectIds = sortedProjects.Select(
-                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId)).ToArray();
+                project => project.GetMetadata<string>(NuGetProjectMetadataKeys.ProjectId));
 
             base["ProjectIds"] = string.Join(",", projectIds);
             base["Status"] = status;
