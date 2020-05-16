@@ -29,9 +29,8 @@ namespace NuGet.Common.Test
         {
             Guid operationId;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
                 operationId = telemetry.OperationId;
             }
 
@@ -40,28 +39,13 @@ namespace NuGet.Common.Test
         }
 
         [Fact]
-        public void Dispose_WithoutOperationIdAndWithParentId_EmitsParentIdAndNotOperationId()
-        {
-            var parentId = Guid.NewGuid();
-
-            using (var telemetry = new TelemetryActivity(parentId))
-            {
-                telemetry.TelemetryEvent = new TelemetryEvent("testEvent", new Dictionary<string, object>());
-            }
-
-            Assert.Null(_telemetryEvent["OperationId"]);
-            Assert.Equal(parentId.ToString(), _telemetryEvent["ParentId"]);
-        }
-
-        [Fact]
         public void Dispose_WithOperationIdAndParentId_EmitsOperationIdAndParentId()
         {
             var parentId = Guid.NewGuid();
             Guid operationId;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            using (var telemetry = TelemetryActivity.Create(parentId, CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
                 operationId = telemetry.OperationId;
             }
 
@@ -75,9 +59,8 @@ namespace NuGet.Common.Test
             const string measureName = "testInterval";
             var secondsToWait = 1;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
                 telemetry.StartIntervalMeasure();
                 Thread.Sleep(secondsToWait * 1000);
                 telemetry.EndIntervalMeasure(measureName);
@@ -94,9 +77,8 @@ namespace NuGet.Common.Test
         {
             var parentId = Guid.Empty;
 
-            using (var telemetry = new TelemetryActivity(parentId))
+            using (var telemetry = TelemetryActivity.Create(parentId, CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
             }
 
             Assert.Null(_telemetryEvent["ParentId"]);
@@ -105,9 +87,8 @@ namespace NuGet.Common.Test
         [Fact]
         public void Dispose_Always_EmitsStartTime()
         {
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
             }
 
             var startTime = _telemetryEvent["StartTime"] as string;
@@ -120,9 +101,8 @@ namespace NuGet.Common.Test
         [Fact]
         public void Dispose_Always_EmitsEndTime()
         {
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
             }
 
             var endTime = _telemetryEvent["EndTime"] as string;
@@ -135,10 +115,8 @@ namespace NuGet.Common.Test
         [Fact]
         public void Dispose_Always_EmitsDuration()
         {
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId())
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
             {
-                telemetry.TelemetryEvent = CreateNewTelemetryEvent();
-
                 Thread.Sleep(10);
             }
 

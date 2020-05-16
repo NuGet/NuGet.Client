@@ -138,7 +138,8 @@ namespace NuGet.PackageManagement.UI
                 // raise upgrade telemetry event with Cancelled status
                 var packagesCount = upgradeInformationWindowModel.UpgradeDependencyItems.Count;
 
-                var upgradeTelemetryEvent = VSTelemetryServiceUtility.GetUpgradeTelemetryEvent(
+                var upgradeTelemetryEvent = new UpgradeInformationTelemetryEvent();
+                upgradeTelemetryEvent.SetResult(
                     uiService.Projects,
                     NuGetOperationStatus.Cancelled,
                     packagesCount);
