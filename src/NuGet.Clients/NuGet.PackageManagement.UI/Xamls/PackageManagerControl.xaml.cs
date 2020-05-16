@@ -103,7 +103,7 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
 
-        private bool _forceRecommender = false;
+        private bool _forceRecommender;
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -195,7 +195,7 @@ namespace NuGet.PackageManagement.UI
             // check if environment variable RecommendNuGetPackages to turn on recommendations is set to 1
             try
             {
-                _forceRecommender = (Environment.GetEnvironmentVariable("RecommendNuGetPackages") == "1");
+                _forceRecommender = (Environment.GetEnvironmentVariable("NUGET_RECOMMEND_PACKAGES") == "1");
             }
             catch (SecurityException)
             {
@@ -754,7 +754,6 @@ namespace NuGet.PackageManagement.UI
                 && _topPanel.Filter == ItemFilter.All
                 && searchText == string.Empty
                 && loadContext.SourceRepositories.Count() == 1
-                && Model.Context.Projects.Count() == 1
                 // also check if this is a PC-style project. We will not provide recommendations for PR-style
                 // projects until we have a way to get dependent packages without negatively impacting perf.
                 && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
@@ -772,7 +771,7 @@ namespace NuGet.PackageManagement.UI
             }
             else
             {
-                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, false);
+                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, recommendPackages: false);
             }
 
             return packageFeeds;
@@ -852,7 +851,7 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, false);
+                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, recommendPackages: false);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
@@ -915,7 +914,7 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     _topPanel.UpdateCountOnConsolidateTab(count: 0);
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, false);
+                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, recommendPackages: false);
                     var loader = new PackageItemLoader(
                         loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
 

@@ -43,35 +43,11 @@ namespace NuGet.PackageManagement.VisualStudio
             IPackageMetadataProvider metadataProvider,
             Common.ILogger logger)
         {
-            if (sourceRepository == null)
-            {
-                throw new ArgumentNullException(nameof(sourceRepository));
-            }
-            _sourceRepository = sourceRepository;
-
-            if (installedPackages == null)
-            {
-                throw new ArgumentNullException(nameof(installedPackages));
-            }
-            _installedPackages = installedPackages;
-
-            if (targetFrameworks == null)
-            {
-                throw new ArgumentNullException(nameof(targetFrameworks));
-            }
-            _targetFrameworks = targetFrameworks;
-
-            if (metadataProvider == null)
-            {
-                throw new ArgumentNullException(nameof(metadataProvider));
-            }
-            _metadataProvider = metadataProvider;
-
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-            _logger = logger;
+            _sourceRepository = sourceRepository ?? throw new ArgumentNullException(nameof(sourceRepository));
+            _installedPackages = installedPackages ?? throw new ArgumentNullException(nameof(installedPackages));
+            _targetFrameworks = targetFrameworks ?? throw new ArgumentNullException(nameof(targetFrameworks));
+            _metadataProvider = metadataProvider ?? throw new ArgumentNullException(nameof(metadataProvider));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
             _nuGetRecommender = new AsyncLazy<IVsNuGetPackageRecommender>(
                 async () =>
@@ -103,7 +79,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var searchToken = continuationToken as RecommendSearchToken;
             if (searchToken == null)
             {
-                throw new InvalidOperationException("Invalid token");
+                throw new ArgumentException("Invalid continuation token", nameof(continuationToken));
             }
             // don't make recommendations if the user entered a search string
             if (!string.IsNullOrEmpty(searchToken.SearchString))
@@ -143,12 +119,12 @@ namespace NuGet.PackageManagement.VisualStudio
             // get PackageIdentity info for the top 5 recommended packages
             int index = 0;
             List<PackageIdentity> recommendPackages = new List<PackageIdentity>();
-            while (index < recommendIds.Count() && recommendPackages.Count < MaxRecommended)
+            while (index < recommendIds.Count && recommendPackages.Count < MaxRecommended)
             {
                 MetadataResource _metadataResource = await _sourceRepository.GetResourceAsync<MetadataResource>(cancellationToken);
                 PackageMetadataResource _packageMetadataResource = await _sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
-                Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], false, false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
+                Versioning.NuGetVersion ver = await _metadataResource.GetLatestVersion(recommendIds[index], includePrerelease: false, includeUnlisted: false, NullSourceCacheContext.Instance, Common.NullLogger.Instance, cancellationToken);
                 if (ver != null)
                 {
                     NuGet.Packaging.Core.PackageIdentity pid = new NuGet.Packaging.Core.PackageIdentity(recommendIds[index], ver);
