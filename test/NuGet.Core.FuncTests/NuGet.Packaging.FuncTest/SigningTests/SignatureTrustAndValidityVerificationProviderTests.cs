@@ -1208,8 +1208,7 @@ namespace NuGet.Packaging.FuncTest
                 result.IsValid.Should().BeFalse();
                 resultsWithErrors.Count().Should().Be(1);
                 totalErrorIssues.Count().Should().Be(1);
-                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3028);
-                totalErrorIssues.First().Message.Should().Contain("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider");
+                SigningTestUtility.AssertUntrustedRoot(totalErrorIssues, NuGetLogCode.NU3028, LogLevel.Error);
             }
         }
 

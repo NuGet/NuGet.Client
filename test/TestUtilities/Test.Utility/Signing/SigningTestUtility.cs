@@ -731,7 +731,7 @@ namespace Test.Utility.Signing
                 issue.Message.Contains(revocationStatusUnknown));
         }
 
-        public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
         {
             string untrustedRoot;
 
@@ -749,9 +749,14 @@ namespace Test.Utility.Signing
             }
 
             Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Code == code &&
                 issue.Level == logLevel &&
                 issue.Message.Contains(untrustedRoot));
+        }
+
+        public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
+        {
+            AssertUntrustedRoot(issues, NuGetLogCode.NU3018, logLevel);
         }
 
         public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
