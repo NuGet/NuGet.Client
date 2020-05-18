@@ -27,7 +27,7 @@ namespace NuGet.VisualStudio.SolutionExplorer
             UnconfiguredProject unconfiguredProject,
             IActiveConfiguredProjectSubscriptionService activeConfiguredProjectSubscriptionService,
             IActiveConfiguredProjectSnapshotService activeConfiguredProjectSnapshotService)
-            : base(unconfiguredProject.Services, synchronousDisposal: false, registerDataSource: false)
+            : base(unconfiguredProject, synchronousDisposal: false, registerDataSource: false)
         {
             _activeConfiguredProjectSubscriptionService = activeConfiguredProjectSubscriptionService;
             _activeConfiguredProjectSnapshotService = activeConfiguredProjectSnapshotService;

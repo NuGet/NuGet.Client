@@ -34,10 +34,10 @@
       <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.composition\16.4.11\lib\net472\Microsoft.VisualStudio.Composition.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.6.78-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem.Interop">
-      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.6.78-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
+      <HintPath>$(SolutionPackagesFolder)microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.Interop.dll</HintPath>
       <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="VSLangProj140">

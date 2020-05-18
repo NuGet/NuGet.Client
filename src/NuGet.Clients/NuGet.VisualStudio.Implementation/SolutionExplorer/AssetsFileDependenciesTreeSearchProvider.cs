@@ -51,7 +51,10 @@ namespace NuGet.VisualStudio.SolutionExplorer
                 return;
             }
 
-            AssetsFileDependenciesSnapshot snapshot = (await dataSource.Value.GetLatestVersionAsync(context.UnconfiguredProject.Services.DataSourceRegistry, cancellationToken: context.CancellationToken)).Value;
+            IProjectDataSourceRegistry? dataSourceRegistry = context.UnconfiguredProject.Services.DataSourceRegistry;
+            Assumes.Present(dataSourceRegistry);
+
+            AssetsFileDependenciesSnapshot snapshot = (await dataSource.Value.GetLatestVersionAsync<AssetsFileDependenciesSnapshot>(dataSourceRegistry, cancellationToken: context.CancellationToken)).Value;
 
             if (!(context.UnconfiguredProject.Services.ExportProvider.GetExportedValue<IActiveConfigurationGroupService>() is IActiveConfigurationGroupService3 activeConfigurationGroupService))
             {
