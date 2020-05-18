@@ -37,7 +37,7 @@ namespace NuGet.Packaging.Signing
             out IRfc3161TimestampTokenInfo tstInfo)
         {
             tstInfo = null;
-            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType))
+            if (timestampCms.ContentInfo.ContentType.Value.Equals(Oids.TSTInfoContentType, StringComparison.Ordinal))
             {
                 tstInfo = Rfc3161TimestampTokenInfoFactory.Create(timestampCms.ContentInfo.Content);
                 return true;
