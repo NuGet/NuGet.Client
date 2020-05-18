@@ -503,6 +503,9 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
 
+                    PackageLoadContext plc = new PackageLoadContext(sourceRepositories: null, isSolution: false, uiService.UIContext);
+                    var frameworks = plc.GetSupportedFrameworks().ToList();
+
                     var actionTelemetryEvent = VSTelemetryServiceUtility.GetActionTelemetryEvent(
                         uiService.ProjectContext.OperationId.ToString(),
                         uiService.Projects,
@@ -513,7 +516,22 @@ namespace NuGet.PackageManagement.UI
                         packageCount,
                         duration.TotalSeconds);
 
-                    AddUiActionEngineTelemetryProperties(actionTelemetryEvent, continueAfterPreview, acceptedLicense, userAction, existingPackages, addedPackages, removedPackages, updatedPackagesOld, updatedPackagesNew);
+                    var nuGetUI = uiService as NuGetUI;
+                    AddUiActionEngineTelemetryProperties(
+                        actionTelemetryEvent,
+                        continueAfterPreview,
+                        acceptedLicense,
+                        userAction,
+                        nuGetUI?.SelectedIndex,
+                        nuGetUI?.RecommendedCount,
+                        nuGetUI?.RecommendPackages,
+                        nuGetUI?.RecommenderVersion,
+                        existingPackages,
+                        addedPackages,
+                        removedPackages,
+                        updatedPackagesOld,
+                        updatedPackagesNew,
+                        frameworks);
 
                     actionTelemetryEvent["InstalledPackageEnumerationTimeInMilliseconds"] = packageEnumerationTime.ElapsedMilliseconds;
 
@@ -522,16 +540,22 @@ namespace NuGet.PackageManagement.UI
             }, token);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "We require lowercase package names in telemetry so that the hashes are consistent")]
         private static void AddUiActionEngineTelemetryProperties(
             VSActionsTelemetryEvent actionTelemetryEvent,
             bool continueAfterPreview,
             bool acceptedLicense,
             UserAction userAction,
+            int? selectedIndex,
+            int? recommendedCount,
+            bool? recommendPackages,
+            (string modelVersion, string vsixVersion)? recommenderVersion,
             HashSet<Tuple<string, string>> existingPackages,
             List<Tuple<string, string>> addedPackages,
             List<string> removedPackages,
             List<Tuple<string, string>> updatedPackagesOld,
-            List<Tuple<string, string>> updatedPackagesNew)
+            List<Tuple<string, string>> updatedPackagesNew,
+            List<string> targetFrameworks)
         {
             TelemetryEvent ToTelemetryPackage(Tuple<string, string> package)
             {
@@ -564,10 +588,15 @@ namespace NuGet.PackageManagement.UI
             {
                 // userAction.Version can be null for deleted packages.
                 actionTelemetryEvent.ComplexData["SelectedPackage"] = ToTelemetryPackage(new Tuple<string, string>(userAction.PackageId, userAction.Version?.ToNormalizedString() ?? string.Empty));
+                actionTelemetryEvent["SelectedIndex"] = selectedIndex;
+                actionTelemetryEvent["RecommendedCount"] = recommendedCount;
+                actionTelemetryEvent["RecommendPackages"] = recommendPackages;
+                actionTelemetryEvent["Recommender.ModelVersion"] = recommenderVersion?.modelVersion;
+                actionTelemetryEvent["Recommender.VsixVersion"] = recommenderVersion?.vsixVersion;
             }
 
             // log the installed package state
-            if (existingPackages != null && existingPackages.Count > 0)
+            if (existingPackages?.Count > 0)
             {
                 var packages = new List<TelemetryEvent>();
 
@@ -580,7 +609,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             // other packages can be added, removed, or upgraded as part of bulk upgrade or as part of satisfying package dependencies, so log that also
-            if (addedPackages != null && addedPackages.Count > 0)
+            if (addedPackages?.Count > 0)
             {
                 var packages = new List<TelemetryEvent>();
 
@@ -592,7 +621,7 @@ namespace NuGet.PackageManagement.UI
                 actionTelemetryEvent.ComplexData["AddedPackages"] = packages;
             }
 
-            if (removedPackages != null && removedPackages.Count > 0)
+            if (removedPackages?.Count > 0)
             {
                 var packages = new List<TelemetryPiiProperty>();
 
@@ -605,14 +634,20 @@ namespace NuGet.PackageManagement.UI
             }
 
             // two collections for updated packages: pre and post upgrade
-            if (updatedPackagesNew != null && updatedPackagesNew.Count > 0)
+            if (updatedPackagesNew?.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesNew"] = ToTelemetryPackageList(updatedPackagesNew);
             }
 
-            if (updatedPackagesOld != null && updatedPackagesOld.Count > 0)
+            if (updatedPackagesOld?.Count > 0)
             {
                 actionTelemetryEvent.ComplexData["UpdatedPackagesOld"] = ToTelemetryPackageList(updatedPackagesOld);
+            }
+
+            // target framworks
+            if (targetFrameworks?.Count > 0)
+            {
+                actionTelemetryEvent["TargetFrameworks"] = string.Join(";", targetFrameworks);
             }
         }
 

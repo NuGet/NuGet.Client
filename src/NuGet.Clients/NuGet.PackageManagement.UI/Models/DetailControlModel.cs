@@ -65,6 +65,26 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         public abstract IEnumerable<NuGetProject> GetSelectedProjects(UserAction action);
 
+        public int SelectedIndex { get; private set; }
+        public int RecommendedCount { get; private set; }
+        public bool RecommendPackages { get; private set; }
+        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; private set; }
+
+        /// <summary>
+        /// Sets the current selection info
+        /// </summary>
+        public void SetCurrentSelectionInfo(
+            int selectedIndex,
+            int recommendedCount,
+            bool recommendPackages,
+            (string modelVersion, string vsixVersion)? recommenderVersion)
+        {
+            SelectedIndex = selectedIndex;
+            RecommendedCount = recommendedCount;
+            RecommendPackages = recommendPackages;
+            RecommenderVersion = recommenderVersion;
+        }
+
         /// <summary>
         /// Sets the package to be displayed in the detail control.
         /// </summary>

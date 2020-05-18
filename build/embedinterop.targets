@@ -50,6 +50,7 @@
            or '%(FileName)' == 'Microsoft.VisualStudio.LicenseManagement.Interop.12.0.DesignTime'
            or '%(FileName)' == 'Microsoft.VisualStudio.LicenseManagement.Interop.12.1.DesignTime'
            or '%(FileName)' == 'Microsoft.VisualStudio.LicenseManagement.Interop.14.0.DesignTime'
+           or '%(FileName)' == 'Microsoft.DataAI.NuGetRecommender.Contracts'
               ">
         <EmbedInteropTypes>true</EmbedInteropTypes>
       </ReferencePath>
