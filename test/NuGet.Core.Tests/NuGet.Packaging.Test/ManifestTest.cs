@@ -308,7 +308,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
 
@@ -341,7 +340,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>true</developmentDependency>
     <description>Descriptions</description>
@@ -375,7 +373,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <developmentDependency>true</developmentDependency>
     <description>Descriptions</description>
@@ -522,7 +519,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -546,7 +542,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
@@ -586,7 +581,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0</version>
     <authors>Luan</authors>
-    <owners>Luan</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
