@@ -103,7 +103,11 @@ namespace NuGet.Packaging.Rules
 
             public ConventionViolator(string filePath, string extension, string expectedFile)
             {
+#if NETCOREAPP
+                Path = filePath.Replace(filePath.Split('/')[filePath.Count(p => p == '/')], string.Empty, StringComparison.OrdinalIgnoreCase);
+#else
                 Path = filePath.Replace(filePath.Split('/')[filePath.Count(p => p == '/')], string.Empty);
+#endif
                 Extension = extension;
                 ExpectedPath = expectedFile;
             }
