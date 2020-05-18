@@ -295,7 +295,7 @@ namespace Dotnet.Integration.Test
             {
                 var projectArtifactsFolder = new DirectoryInfo(Path.Combine(artifactsDirectory, projectName, toolsetVersion, "bin", configuration));
 
-                IEnumerable<DirectoryInfo> frameworkArtifactFolders = projectArtifactsFolder.EnumerateDirectories().Where(folder => folder.FullName.Contains("netstandard2.1") || folder.FullName.Contains("netcoreapp5.0"));
+                IEnumerable<DirectoryInfo> frameworkArtifactFolders = projectArtifactsFolder.EnumerateDirectories().Where(folder => folder.FullName.Contains("netcoreapp5.0"));
 
                 if (!frameworkArtifactFolders.Any())
                 {
@@ -328,8 +328,8 @@ namespace Dotnet.Integration.Test
             const string packProjectName = "NuGet.Build.Tasks.Pack";
             const string packTargetsName = "NuGet.Build.Tasks.Pack.targets";
             // Copy the pack SDK.
-            //Order by fullname so that we can get the latest nestandard version. E.g. if we have both netstandard2.0 and netstandard2.1, netstandard2.1 will be selected.
-            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").OrderBy(x => x.FullName).Last();
+            // Pick the netstandard2.0 NuGet.Build.Tasks.Pack dll
+            var packProjectCoreArtifactsDirectory = new DirectoryInfo(Path.Combine(artifactsDirectory, packProjectName, toolsetVersion, "bin", configuration)).EnumerateDirectories("netstandard*").Single();
             var packAssemblyDestinationDirectory = Path.Combine(pathToPackSdk, "CoreCLR");
             // Be smart here so we don't have to call ILMerge in the VS build. It takes ~15s total.
             // In VisualStudio, simply use the non il merged version.
@@ -505,7 +505,7 @@ namespace Dotnet.Integration.Test
                     var assemblyPath = Path.Combine(Directory.GetCurrentDirectory(), assemblyName);
                     var assemblyVersion = Assembly.LoadFile(assemblyPath).GetName().Version.ToString();
                     var assemblyFileVersion = FileVersionInfo.GetVersionInfo(assemblyPath).FileVersion;
-                    var jproperty = new JProperty("lib/netstandard2.1/" + assemblyName,
+                    var jproperty = new JProperty("lib/netcoreapp5.0/" + assemblyName,
                         new JObject
                         {
                             new JProperty("assemblyVersion", assemblyVersion),
