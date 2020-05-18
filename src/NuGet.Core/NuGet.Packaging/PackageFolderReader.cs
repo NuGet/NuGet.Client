@@ -150,7 +150,11 @@ namespace NuGet.Packaging
         /// </summary>
         private static bool IsFileInRoot(string path)
         {
+#if NETCOREAPP
+            return path.IndexOf('/', StringComparison.Ordinal) == -1;
+#else
             return path.IndexOf('/') == -1;
+#endif
         }
 
         /// <summary>
