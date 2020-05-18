@@ -33,5 +33,15 @@ namespace NuGet.VisualStudio
 
             _telemetrySession.PostEvent(telemetryData);
         }
+
+        public virtual void EmitTelemetryMarker(string telemetryMarkerName)
+        {
+            if (telemetryMarkerName == null)
+            {
+                throw new ArgumentNullException(nameof(telemetryMarkerName));
+            }
+
+            throw new NotImplementedException();
+        }
     }
 }
