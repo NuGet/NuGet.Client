@@ -24,11 +24,6 @@
     <DefineConstants>$(DefineConstants);IS_SIGNING_SUPPORTED</DefineConstants>
   </PropertyGroup>
 
-  <!-- TODO: remove the definition of NET5_0 https://github.com/NuGet/Home/issues/9573 -->
-  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND '[MSBuild]::VersionGreaterThanOrEquals($(TargetFrameworkVersion),5.0)' ">
-    <DefineConstants>$(DefineConstants);NET5_0</DefineConstants>
-  </PropertyGroup>
-
   <!-- Include shared files for netcore projects -->
   <ItemGroup Condition=" ('$(IsNetCoreProject)' == 'true' AND '$(SkipShared)' != 'true' AND '$(TestProject)' != 'true') OR '$(IncludeNuGetSharedFiles)' == 'true'">
     <Compile Include="$(SharedDirectory)\*.cs" Exclude="bin\**;obj\**;**\*.xproj;packages\**" />

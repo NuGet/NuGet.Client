@@ -35,7 +35,7 @@ namespace NuGet.Packaging
         private static string UnescapePath(string path)
         {
             if (path != null
-#if NET5_0
+#if NETCOREAPP
                 && path.IndexOf('%', StringComparison.Ordinal) > -1)
 #else
                 && path.IndexOf('%') > -1)

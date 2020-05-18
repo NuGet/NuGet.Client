@@ -73,7 +73,7 @@ namespace NuGet.Packaging.Signing
 
         private static KeyValuePair<string, string> GetProperty(string line)
         {
-#if NET5_0
+#if NETCOREAPP
             var pos = line.IndexOf(':', StringComparison.Ordinal);
 #else
             var pos = line.IndexOf(':');
