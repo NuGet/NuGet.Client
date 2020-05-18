@@ -10,7 +10,7 @@ function Start-VsDevShell {
     Enter-VsDevShell -DevCmdArguments "-no_logo" -StartInPath "$pwd" $chosenVisualStudioVersion.InstanceId
 }
 
-function Get-VsComnToolsPath {
+function Get-VsCommonToolsPath {
     if([string]::IsNullOrEmpty($env:VSINSTALLDIR)) {
         $chosenVisualStudioVersion = ChooseVisualStudioInstallation @(Get-VSInstalls)
         $installDir = $chosenVisualStudioVersion.InstallationPath
@@ -116,4 +116,4 @@ function ChooseVisualStudioInstallation {
     return $match
 }
 
-Export-ModuleMember -Function Start-VsDevShell,Get-VsComnToolsPath
+Export-ModuleMember -Function Start-VsDevShell,Get-VsCommonToolsPath

@@ -1,9 +1,8 @@
+# Check if running in a non-interactive shell and do not import/prompt if we are
 if(![bool]([Environment]::GetCommandLineArgs() -like '-noni*')) {
     import-module $PSScriptRoot/VSUtilities.psm1
 
     if([string]::IsNullOrEmpty($env:VSINSTALLDIR)) {
-        # We could use Trace-Log here but then we would have to move those functions above this or into a seperate module, if we import as a seperate module
-        # powershell will complain about undiscoverable function names using improper verbs
         Write-Host "Not running from a Developer Command Prompt, choose an install or none for legacy behavior"
         Start-VsDevShell
     }
