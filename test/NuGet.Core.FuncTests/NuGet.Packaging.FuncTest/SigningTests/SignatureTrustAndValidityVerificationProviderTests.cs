@@ -1378,7 +1378,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -1423,7 +1423,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
@@ -1653,7 +1653,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -1698,7 +1698,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
@@ -2010,7 +2010,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task VerifyAsync_WithRevokedCountersignatureCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -2057,7 +2057,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task VerifyAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
