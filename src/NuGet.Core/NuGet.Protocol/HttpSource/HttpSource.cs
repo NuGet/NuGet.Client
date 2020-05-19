@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -198,6 +199,15 @@ namespace NuGet.Protocol
             return ProcessStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
         }
 
+        public Task<IEnumerable<JToken>> ProcessHttpStreamAsync(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
+            return ProcessHttpStreamAsync(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
         public async Task<T> ProcessStreamAsync<T>(
             HttpSourceRequest request,
             Func<Stream, Task<T>> processAsync,
@@ -225,9 +235,53 @@ namespace NuGet.Protocol
                 token);
         }
 
+        public async Task<IEnumerable<JToken>> ProcessHttpStreamAsync(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
+            SourceCacheContext cacheContext,
+            ILogger log,
+            CancellationToken token)
+        {
+            return await ProcessResponseAsync(
+                request,
+                async response =>
+                {
+                    if ((request.IgnoreNotFounds && response.StatusCode == HttpStatusCode.NotFound) ||
+                         response.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        return await processAsync(null);
+                    }
+
+                    response.EnsureSuccessStatusCode();
+
+                    return await processAsync(response);
+                },
+                cacheContext,
+                log,
+                token);
+        }
+
         public Task<T> ProcessResponseAsync<T>(
             HttpSourceRequest request,
             Func<HttpResponseMessage, Task<T>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
+            return ProcessResponseAsync(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
+        public Task<IEnumerable<JToken>> ProcessHttpResponseAsync(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
+            ILogger log,
+            CancellationToken token)
+        {
+            return ProcessResponseAsync(request, processAsync, cacheContext: null, log: log, token: token);
+        }
+
+        public Task<HttpResponseMessage> ProcessHttpResponseAsync(
+            HttpSourceRequest request,
+            Func<HttpResponseMessage, Task<HttpResponseMessage>> processAsync,
             ILogger log,
             CancellationToken token)
         {
@@ -273,6 +327,23 @@ namespace NuGet.Protocol
                     }
 
                     return stream.AsJObjectAsync(token);
+                },
+                log: log,
+                token: token);
+        }
+
+        public async Task<IEnumerable<JToken>> GetJObjectAsyncBetter(HttpSourceRequest request, ILogger log, CancellationToken token)
+        {
+            return await ProcessHttpStreamAsync(
+                request,
+                processAsync: async httpResponseMessage =>
+                {
+                    if (httpResponseMessage == null)
+                    {
+                        return await Task.FromResult<IEnumerable<JToken>>(null);
+                    }
+
+                    return await httpResponseMessage.AsJObjectTakeLimitedAsync<JToken>(token);
                 },
                 log: log,
                 token: token);

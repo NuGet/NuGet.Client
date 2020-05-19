@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,10 +25,11 @@ namespace NuGet.Protocol
         {
             try
             {
-                var searchResultJsonObjects = (await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken)).ToList();
+                take = 1000;
+                var searchResultJsonObjects = (await _rawSearchResource.SearchPageBetter(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken)).ToList();
 
                 // Some nuget server not honoring our skip parameter nor take parameter, just returning everything they have.
-                // Then it's more than we asked, it bogs down whole processing with thousands of items. Still we need to let user see things in paginated way.
+                // Then it's more than we asked, it bogs down whole processing with thousands of items. Still we need to let user see result in paginated way.
                 if (searchResultJsonObjects?.Count > take)
                 {
                     if (searchResultJsonObjects?.Count >= skip + take)
@@ -51,7 +53,7 @@ namespace NuGet.Protocol
             }
             catch(Exception ex)
             {
-                System.Console.WriteLine(ex);
+                Debug.Write(ex);
                 throw;
             }
 

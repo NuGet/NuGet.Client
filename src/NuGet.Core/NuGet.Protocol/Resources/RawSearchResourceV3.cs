@@ -120,5 +120,88 @@ namespace NuGet.Protocol
             var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
             return data.OfType<JObject>();
         }
+
+        public virtual async Task<IEnumerable<JToken>> SearchPageBetter(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
+        {
+            for (var i = 0; i < _searchEndpoints.Length; i++)
+            {
+                var endpoint = _searchEndpoints[i];
+
+                // The search term comes in already encoded from VS
+                var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
+                var queryString =
+                    "q=" + searchTerm +
+                    "&skip=" + skip.ToString() +
+                    "&take=" + take.ToString() +
+#pragma warning disable CA1062 // Validate arguments of public methods
+#pragma warning disable CA1305 // Specify IFormatProvider
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+#pragma warning restore CA1305 // Specify IFormatProvider
+#pragma warning restore CA1062 // Validate arguments of public methods
+
+                if (filters.IncludeDelisted)
+                {
+                    queryString += "&includeDelisted=true";
+                }
+
+                if (filters.SupportedFrameworks != null
+                    && filters.SupportedFrameworks.Any())
+                {
+                    var frameworks =
+                        string.Join("&",
+                            filters.SupportedFrameworks.Select(
+                                fx => "supportedFramework=" + fx.ToString()));
+                    queryString += "&" + frameworks;
+                }
+
+                if (filters.PackageTypes != null
+                    && filters.PackageTypes.Any())
+                {
+                    var types = string.Join("&",
+                        filters.PackageTypes.Select(
+                            s => "packageTypeFilter=" + s));
+                    queryString += "&" + types;
+                }
+
+                queryString += "&semVerLevel=2.0.0";
+
+                queryUrl.Query = queryString;
+
+                IEnumerable<JToken> searchJson = null;
+                try
+                {
+                    searchJson = await _client.GetJObjectAsyncBetter(
+                        new HttpSourceRequest(queryUrl.Uri, log),
+                        log,
+                        cancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch when (i < _searchEndpoints.Length - 1)
+                {
+                    // Ignore all failures until the last endpoint
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MalformedMetadataError, queryUrl.Uri), ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_BadSource, queryUrl.Uri), ex);
+                }
+
+                if (searchJson != null)
+                {
+                    return searchJson;
+                }
+            }
+
+            // TODO: get a better message for this
+            throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+        }
     }
 }
