@@ -49,6 +49,11 @@ namespace NuGet.Common
             _startTime = DateTime.UtcNow;
             _stopwatch = Stopwatch.StartNew();
             _intervalList = new List<Tuple<string, TimeSpan>>();
+
+            if (telemetryEvent != null)
+            {
+                NuGetTelemetryService?.EmitTelemetryMarker(telemetryEvent.Name + "_Start");
+            }
         }
 
         public void StartIntervalMeasure()
