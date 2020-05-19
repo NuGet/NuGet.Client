@@ -13,7 +13,7 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class NuGetVSTelemetryService : INuGetTelemetryService
     {
-        private const string VSCodeMarkerPrefix = "VS_Nuget_";
+        private const string VSCodeMarkerPrefix = "vs_nuget_";
 
         private ITelemetrySession _telemetrySession;
 
@@ -37,16 +37,31 @@ namespace NuGet.VisualStudio
             _telemetrySession.PostEvent(telemetryData);
         }
 
-        public virtual void EmitTelemetryMarker(string telemetryMarkerName)
+        public virtual IDisposable StartActivity(string activityName)
         {
-            if (telemetryMarkerName == null)
+            if (activityName == null)
             {
-                throw new ArgumentNullException(nameof(telemetryMarkerName));
+                throw new ArgumentNullException(nameof(activityName));
             }
 
-            if (VsEtwLogging.IsProviderEnabled(VsEtwKeywords.Ide, VsEtwLevel.Information))
+            return new EtwLogActivity(VSCodeMarkerPrefix + activityName.ToLowerInvariant().Replace('/', '_'));
+        }
+
+        private class EtwLogActivity : IDisposable
+        {
+            private readonly VsEtwActivity _activity;
+
+            public EtwLogActivity(string activityName)
             {
-                VsEtwLogging.WriteEvent(VSCodeMarkerPrefix + telemetryMarkerName, VsEtwKeywords.Ide, VsEtwLevel.Information, new { startupType = 2, instanceSuffix = "None" });
+                if (VsEtwLogging.IsProviderEnabled(VsEtwKeywords.Ide, VsEtwLevel.Information))
+                {
+                    _activity = VsEtwLogging.CreateActivity(activityName, VsEtwKeywords.Ide, VsEtwLevel.Information);
+                }
+            }
+
+            void IDisposable.Dispose()
+            {
+                _activity?.Dispose();
             }
         }
     }

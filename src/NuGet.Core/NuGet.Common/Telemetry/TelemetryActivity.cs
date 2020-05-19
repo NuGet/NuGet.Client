@@ -13,6 +13,7 @@ namespace NuGet.Common
         private readonly Stopwatch _stopwatch;
         private readonly Stopwatch _intervalWatch = new Stopwatch();
         private readonly List<Tuple<string, TimeSpan>> _intervalList;
+        private readonly IDisposable _telemetryActivity;
 
         public TelemetryEvent TelemetryEvent { get; set; }
 
@@ -52,7 +53,7 @@ namespace NuGet.Common
 
             if (telemetryEvent != null)
             {
-                NuGetTelemetryService?.EmitTelemetryMarker(telemetryEvent.Name + "_Start");
+                _telemetryActivity = NuGetTelemetryService?.StartActivity(telemetryEvent.Name);
             }
         }
 
@@ -69,6 +70,7 @@ namespace NuGet.Common
 
         public void Dispose()
         {
+            _telemetryActivity?.Dispose();
             _stopwatch.Stop();
 
             if (NuGetTelemetryService != null && TelemetryEvent != null)
