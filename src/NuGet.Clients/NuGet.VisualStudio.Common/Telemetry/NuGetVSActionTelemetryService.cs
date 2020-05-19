@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.Internal.VisualStudio.Diagnostics;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry;
 
@@ -12,6 +13,8 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class NuGetVSTelemetryService : INuGetTelemetryService
     {
+        private const string VSCodeMarkerPrefix = "VS_Nuget_";
+
         private ITelemetrySession _telemetrySession;
 
         public NuGetVSTelemetryService(ITelemetrySession telemetrySession)
@@ -41,7 +44,10 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(telemetryMarkerName));
             }
 
-            throw new NotImplementedException();
+            if (VsEtwLogging.IsProviderEnabled(VsEtwKeywords.Ide, VsEtwLevel.Information))
+            {
+                VsEtwLogging.WriteEvent(VSCodeMarkerPrefix + telemetryMarkerName, VsEtwKeywords.Ide, VsEtwLevel.Information, new { startupType = 2, instanceSuffix = "None" });
+            }
         }
     }
 }
