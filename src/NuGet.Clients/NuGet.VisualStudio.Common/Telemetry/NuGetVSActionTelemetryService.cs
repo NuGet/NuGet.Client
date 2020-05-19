@@ -13,8 +13,6 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class NuGetVSTelemetryService : INuGetTelemetryService
     {
-        private const string VSCodeMarkerPrefix = "vs_nuget_";
-
         private ITelemetrySession _telemetrySession;
 
         public NuGetVSTelemetryService(ITelemetrySession telemetrySession)
@@ -44,7 +42,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(activityName));
             }
 
-            return new EtwLogActivity(VSCodeMarkerPrefix + activityName.ToLowerInvariant().Replace('/', '_'));
+            return new EtwLogActivity((VSTelemetrySession.VSEventNamePrefix + activityName).ToLowerInvariant().Replace('/', '_'));
         }
 
         private class EtwLogActivity : IDisposable
