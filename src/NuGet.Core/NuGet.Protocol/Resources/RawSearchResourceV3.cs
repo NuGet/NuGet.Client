@@ -113,6 +113,93 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
+        private async Task<T> SearchPage<T>(
+            Func<Uri, Task<T>> getResultAsync,
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            for (var i = 0; i < _searchEndpoints.Length; i++)
+            {
+                var endpoint = _searchEndpoints[i];
+
+                // The search term comes in already encoded from VS
+                var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
+                var queryString =
+                    "q=" + searchTerm +
+                    "&skip=" + skip.ToString() +
+                    "&take=" + take.ToString() +
+#pragma warning disable CA1062 // Validate arguments of public methods
+#pragma warning disable CA1305 // Specify IFormatProvider
+#pragma warning disable CA1308 // Normalize strings to uppercase
+                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
+#pragma warning restore CA1308 // Normalize strings to uppercase
+#pragma warning restore CA1305 // Specify IFormatProvider
+#pragma warning restore CA1062 // Validate arguments of public methods
+
+                if (filters.IncludeDelisted)
+                {
+                    queryString += "&includeDelisted=true";
+                }
+
+                if (filters.SupportedFrameworks != null
+                    && filters.SupportedFrameworks.Any())
+                {
+                    var frameworks =
+                        string.Join("&",
+                            filters.SupportedFrameworks.Select(
+                                fx => "supportedFramework=" + fx.ToString()));
+                    queryString += "&" + frameworks;
+                }
+
+                if (filters.PackageTypes != null
+                    && filters.PackageTypes.Any())
+                {
+                    var types = string.Join("&",
+                        filters.PackageTypes.Select(
+                            s => "packageTypeFilter=" + s));
+                    queryString += "&" + types;
+                }
+
+                queryString += "&semVerLevel=2.0.0";
+
+                queryUrl.Query = queryString;
+
+                var searchResult = default(T);
+                try
+                {
+                    searchResult = await getResultAsync(queryUrl.Uri);
+                }
+                catch (OperationCanceledException)
+                {
+                    throw;
+                }
+                catch when (i < _searchEndpoints.Length - 1)
+                {
+                    // Ignore all failures until the last endpoint
+                }
+                catch (JsonReaderException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MalformedMetadataError, queryUrl.Uri), ex);
+                }
+                catch (HttpRequestException ex)
+                {
+                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_BadSource, queryUrl.Uri), ex);
+                }
+
+                if (searchResult != null)
+                {
+                    return searchResult;
+                }
+            }
+
+            // TODO: get a better message for this
+            throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+        }
+
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
@@ -202,6 +289,26 @@ namespace NuGet.Protocol
 
             // TODO: get a better message for this
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+        }
+
+
+        internal async Task<T> Search<T>(
+            Func<HttpSource, Uri, Task<T>> getResultAsync,
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return await SearchPage(
+                uri => getResultAsync(_client, uri),
+                searchTerm,
+                filters,
+                skip,
+                take,
+                log,
+                cancellationToken);
         }
     }
 }

@@ -199,13 +199,13 @@ namespace NuGet.Protocol
             return ProcessStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
         }
 
-        public Task<IEnumerable<JToken>> ProcessHttpStreamAsync(
+        public Task<T> ProcessHttpStreamAsync<T>(
             HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
+            Func<HttpResponseMessage, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
-            return ProcessHttpStreamAsync(request, processAsync, cacheContext: null, log: log, token: token);
+            return ProcessHttpStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -235,9 +235,9 @@ namespace NuGet.Protocol
                 token);
         }
 
-        public async Task<IEnumerable<JToken>> ProcessHttpStreamAsync(
+        public async Task<T> ProcessHttpStreamAsync<T>(
             HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
+            Func<HttpResponseMessage, Task<T>> processAsync,
             SourceCacheContext cacheContext,
             ILogger log,
             CancellationToken token)
