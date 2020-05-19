@@ -964,7 +964,11 @@ namespace NuGet.Protocol
 
         private static string EnsurePackageExtension(string packagePath, bool isSnupkg)
         {
+#if NETCOREAPP
+            if (packagePath.IndexOf('*', StringComparison.Ordinal) == -1)
+#else
             if (packagePath.IndexOf('*') == -1)
+#endif
             {
                 // If there's no wildcard in the path to begin with, assume that it's an absolute path.
                 return packagePath;
