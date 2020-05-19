@@ -130,7 +130,7 @@ namespace NuGet.PackageManagement.UI
                 return CollectionViewSource.GetDefaultView(Items);
             }
         }
-            
+
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
@@ -143,10 +143,10 @@ namespace NuGet.PackageManagement.UI
         internal async Task LoadItemsAsync(
             IPackageItemLoader loader,
             string loadingMessage,
-            ItemFilter tabToRender,
             INuGetUILogger logger,
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
-            CancellationToken token)
+            CancellationToken token,
+            ItemFilter? tabToRender = null)
         {
             if (loader == null)
             {
