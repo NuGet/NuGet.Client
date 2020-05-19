@@ -332,23 +332,6 @@ namespace NuGet.Protocol
                 token: token);
         }
 
-        public async Task<IEnumerable<JToken>> GetJObjectAsyncBetter(HttpSourceRequest request, ILogger log, CancellationToken token)
-        {
-            return await ProcessHttpStreamAsync(
-                request,
-                processAsync: async httpResponseMessage =>
-                {
-                    if (httpResponseMessage == null)
-                    {
-                        return await Task.FromResult<IEnumerable<JToken>>(null);
-                    }
-
-                    return await httpResponseMessage.AsJObjectTakeLimitedAsync<JToken>(token);
-                },
-                log: log,
-                token: token);
-        }
-
         private async Task<ThrottledResponse> GetThrottledResponse(
             Func<HttpRequestMessage> requestFactory,
             TimeSpan requestTimeout,
