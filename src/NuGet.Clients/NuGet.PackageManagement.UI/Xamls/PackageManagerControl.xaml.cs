@@ -834,7 +834,7 @@ namespace NuGet.PackageManagement.UI
             // start SearchAsync task for initial loading of packages
             var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
             // this will wait for searchResultTask to complete instead of creating a new task
-            await _packageList.LoadItemsAsync(loader, loadingMessage, filterToRender, _uiLogger, searchResultTask, _loadCts.Token);
+            await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
 
             if (pSearchCallback != null && searchTask != null)
             {
