@@ -128,23 +128,15 @@ namespace NuGet.VisualStudio.Common
         private async Task<int> GetMSBuildVerbosityLevelAsync()
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-            int verbosity = DefaultVerbosityLevel;
 
-            try 
+            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
+            var value = properties.Item(MSBuildVerbosityKey).Value;
+            if (value is int)
             {
-                var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
-                var val = properties.Item(MSBuildVerbosityKey).Value;
-                if (val is int val_int)
-                {
-                    verbosity = val_int;
-                }
-            }
-            catch
-            {
-                verbosity = DefaultVerbosityLevel;
+                return (int)value;
             }
 
-            return verbosity;
+            return DefaultVerbosityLevel;
         }
 
         public void Start()
