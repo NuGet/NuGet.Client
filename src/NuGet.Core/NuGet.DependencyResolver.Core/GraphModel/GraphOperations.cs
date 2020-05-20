@@ -441,7 +441,6 @@ namespace NuGet.DependencyResolver
             }
 
             context.Track(node.Item);
-
             return true;
         }
 
@@ -467,34 +466,6 @@ namespace NuGet.DependencyResolver
                 {
                     node.Disposition = Disposition.Accepted;
                     acceptedLibraries[node.Key.Name] = node;
-                }
-                else
-                {
-                    node.Disposition = Disposition.Rejected;
-                }
-            }
-
-            return node.Disposition == Disposition.Accepted;
-        }
-
-        private static bool WalkTreeAcceptOrRejectNodes<TItem>(Tracker<TItem> tracker, bool state, GraphNode<TItem> node)
-        {
-            if (!state
-                || node.Disposition == Disposition.Rejected)
-            {
-                return false;
-            }
-
-            if (tracker.IsAmbiguous(node.Item))
-            {
-                return false;
-            }
-
-            if (node.Disposition == Disposition.Acceptable)
-            {
-                if (tracker.IsBestVersion(node.Item))
-                {
-                    node.Disposition = Disposition.Accepted;
                 }
                 else
                 {
@@ -907,8 +878,7 @@ namespace NuGet.DependencyResolver
                            return true;
                        }
                        return false;
-                   })
-                   .ToList();
+                   });
 
                 nodesWithDispositionChangedToRejected.ForEach(node => node.ForEach(n => n.Disposition = Disposition.Rejected));
                 continueToReject = nodesWithDispositionChangedToRejected.Any();

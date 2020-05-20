@@ -9684,7 +9684,6 @@ namespace NuGet.CommandLine.Test
         ///  P will be accepted (because its parent B is Accepted)
         ///  S will be accepted (because its parent O 300 is Accepted) 
         /// </summary>
-        /// <returns></returns>
         [Fact]
         public async Task RestoreNetCore_CPVMProject_MultipleLinkedCentralTransitiveDepenencies()
         {

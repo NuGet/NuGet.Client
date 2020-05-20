@@ -22,7 +22,7 @@ namespace NuGet.DependencyResolver
         public GraphItem<TItem> Item { get; set; }
         public GraphNode<TItem> OuterNode { get; set; }
         public IList<GraphNode<TItem>> InnerNodes { get; set; }
-        public virtual Disposition Disposition { get; set; }
+        public Disposition Disposition { get; set; }
 
         /// <summary>
         /// Used in case that a node is removed from its outernode and needs to keep reference of its parents.
