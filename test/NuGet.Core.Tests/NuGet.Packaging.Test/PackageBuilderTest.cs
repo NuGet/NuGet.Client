@@ -122,7 +122,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <dependencies>
@@ -181,7 +180,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <dependencies>
@@ -276,7 +274,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <contentFiles>
@@ -312,7 +309,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>JohnDoe</authors>
-    <owners>JohnDoe</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
   </metadata>
@@ -344,7 +340,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>JohnDoe</authors>
-    <owners>JohnDoe</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <releaseNotes>Release Notes</releaseNotes>
@@ -377,7 +372,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>JohnDoe</authors>
-    <owners>JohnDoe</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <frameworkAssemblies>
@@ -412,7 +406,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>JohnDoe</authors>
-    <owners>JohnDoe</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
@@ -452,7 +445,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <dependencies>
@@ -493,7 +485,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <dependencies>
@@ -533,7 +524,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -573,7 +563,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <serviceable>true</serviceable>
@@ -618,7 +607,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <packageTypes>
@@ -658,7 +646,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -694,7 +681,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -730,7 +716,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -769,7 +754,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -809,7 +793,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -846,7 +829,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -886,7 +868,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -927,7 +908,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -967,7 +947,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
@@ -1013,7 +992,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <developmentDependency>true</developmentDependency>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
@@ -1059,7 +1037,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <references>
@@ -1099,7 +1076,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>testAuthor</authors>
-    <owners>testAuthor</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
   </metadata>
@@ -1208,7 +1184,6 @@ namespace NuGet.Packaging.Test
     <id>A</id>
     <version>1.0.0</version>
     <authors>JohnDoe</authors>
-    <owners>JohnDoe</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Descriptions</description>
     <summary>Summary</summary>
@@ -1692,7 +1667,6 @@ Description is required.");
             Assert.Equal("Some awesome package", builder.Title);
             Assert.Equal(1, builder.Authors.Count);
             Assert.Equal("These are the authors", authors[0]);
-            Assert.Equal("These are the authors", owners[0]);
             Assert.Equal(3, builder.Tags.Count);
             Assert.Equal("t1", tags[0]);
             Assert.Equal("t2", tags[1]);
@@ -2323,7 +2297,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
         <id>SourceDepotClient</id>
         <version>2.8.0.0</version>
            <authors>pranjalg</authors>
-           <owners>pranjalg</owners>
            <licenseUrl>http://cbt-userguide/NugetCanUseInLabs.html</licenseUrl>
         <requireLicenseAcceptance>true</requireLicenseAcceptance>
         <description>Source Depot Client assembly with SDApi.</description>
@@ -2355,7 +2328,6 @@ Enabling license acceptance requires a license or a licenseUrl to be specified. 
     <id>SourceDepotClient</id>
     <version>2.8.0</version>
     <authors>pranjalg</authors>
-    <owners>pranjalg</owners>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <licenseUrl>http://cbt-userguide/NugetCanUseInLabs.html</licenseUrl>
     <description>Source Depot Client assembly with SDApi.</description>

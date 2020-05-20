@@ -5552,4 +5552,55 @@ nuget trusted-signers Remove -Name TrustedRepo</value>
   <data name="PackageCommandDeterministic" xml:space="preserve">
     <value>Specify if the command should create a deterministic package. Multiple invocations of the pack command will create the exact same package.</value>
   </data>
+  <data name="ClientCertificatesCommandFilePathDescription" xml:space="preserve">
+    <value>Path to certificate file.</value>
+  </data>
+  <data name="ClientCertificatesCommandFindByDescription" xml:space="preserve">
+    <value>Search method to find certificate in certificate store (see docs).</value>
+  </data>
+  <data name="ClientCertificatesCommandFindValueDescription" xml:space="preserve">
+    <value>Search the certificate store for the supplied value. Used with FindValue (see docs).</value>
+    <comment>Don't translate FindValue</comment>
+  </data>
+  <data name="ClientCertificatesCommandForceDescription" xml:space="preserve">
+    <value>Skip certificate validation.</value>
+  </data>
+  <data name="ClientCertificatesCommandPackageSourceDescription" xml:space="preserve">
+    <value>Package source name.</value>
+  </data>
+  <data name="ClientCertificatesCommandPasswordDescription" xml:space="preserve">
+    <value>Password for the certificate, if needed.</value>
+  </data>
+  <data name="ClientCertificatesCommandStoreLocationDescription" xml:space="preserve">
+    <value>Certificate store location (see docs).</value>
+  </data>
+  <data name="ClientCertificatesCommandStoreNameDescription" xml:space="preserve">
+    <value>Certificate store name (see docs).</value>
+  </data>
+  <data name="ClientCertificatesCommandStorePasswordInClearTextDescription" xml:space="preserve">
+    <value>Enables storing portable certificate password by disabling password encryption.</value>
+  </data>
+  <data name="ClientCertificatesDescription" xml:space="preserve">
+    <value>Provides the ability to manage list of client certificates located in NuGet.config files</value>
+  </data>
+  <data name="ClientCertificatesCommandUsageSummary" xml:space="preserve">
+<value>&lt;List|Add|Update|Remove&gt; [options]</value>
+</data>
+  <data name="ClientCertificatesCommandUsageExamples" xml:space="preserve">
+    <value>nuget client-certs Add -PackageSource Foo -Path .\MyCertificate.pfx
+
+nuget client-certs Add -PackageSource Contoso -Path c:\MyCertificate.pfx -Password 42
+
+nuget client-certs Add -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certs Add -PackageSource Contoso -StoreLocation LocalMachine -StoreName My -FindBy Thumbprint -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certs Update -PackageSource Foo -FindValue ca4e7b265780fc87f3cb90b6b89c54bf4341e755
+
+nuget client-certs Remove -PackageSource certificateName
+
+nuget client-certs
+
+nuget client-certs List</value>
+  </data>
 </root>

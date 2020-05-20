@@ -36,19 +36,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Commands\ShowErrorsCommand.cs" />
-    <Compile Include="DataStreamFromComStream.cs" />
     <Compile Include="FontAndColorsRegistrationAttribute.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
-    <Compile Include="NuGetFeedbackDiagnosticFileProvider.cs" />
     <Compile Include="NuGetPackage.cs" />
     <Compile Include="NuGetSearchProvider.cs" />
     <Compile Include="NuGetSearchTask.cs" />
-    <Compile Include="NuGetSettings.cs" />
-    <Compile Include="NuGetSettingsSerializer.cs" />
     <Compile Include="NuGetStaticSearchResult.cs" />
-    <Compile Include="NuGetUIFactory.cs" />
-    <Compile Include="OutputConsoleLogger.cs" />
     <Compile Include="PkgCmdID.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProvideExpressLoadKeyAttribute.cs" />
@@ -58,7 +52,6 @@
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
     </Compile>
-    <Compile Include="SolutionUserOptions.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="$(NuGetCoreSrcDirectory)NuGet.Common\NuGet.Common.csproj">
@@ -128,9 +121,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" ExcludeAssets="build" />
     <PackageReference Include="Microsoft.VSSDK.BuildTools" GeneratePathProperty="true" PrivateAssets="all" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Embeddable" ExcludeAssets="build" />

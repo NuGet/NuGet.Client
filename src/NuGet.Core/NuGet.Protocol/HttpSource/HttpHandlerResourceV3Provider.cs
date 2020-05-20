@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -46,6 +47,12 @@ namespace NuGet.Protocol
                 Proxy = proxy,
                 AutomaticDecompression = (DecompressionMethods.GZip | DecompressionMethods.Deflate)
             };
+
+            // Setup http client handler client certificates
+            if (packageSource.ClientCertificates != null)
+            {
+                clientHandler.ClientCertificates.AddRange(packageSource.ClientCertificates.ToArray());
+            }
 
             // HTTP handler pipeline can be injected here, around the client handler
             HttpMessageHandler messageHandler = new ServerWarningLogHandler(clientHandler);

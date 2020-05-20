@@ -55,7 +55,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -1055,7 +1055,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -1697,7 +1697,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -1765,7 +1765,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -1830,7 +1830,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("ClassLibrary1", nuspecReader.GetId());
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -2128,7 +2128,7 @@ namespace Dotnet.Integration.Test
                     Assert.Equal("1.0.0", nuspecReader.GetVersion().ToFullString());
                     Assert.Equal("MyPackageTitle", nuspecReader.GetTitle());
                     Assert.Equal("ClassLibrary1", nuspecReader.GetAuthors());
-                    Assert.Equal("ClassLibrary1", nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal("Package Description", nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -4424,6 +4424,43 @@ namespace ClassLibrary
                 var nuspecReader = nupkgReader.NuspecReader;
 
                 Assert.Equal(projectBuilder.PackageIcon, nuspecReader.GetIcon());
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void PackCommand_DoesNotGenerateOwnersElement()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFramework", "netstandard1.4");
+
+                    ProjectFileUtils.AddProperty(xml, "Authors", "Some authors");
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
+                msbuildFixture.PackProject(workingDirectory, projectName, $"/p:PackageOutputPath={workingDirectory}");
+
+                var nupkgPath = Path.Combine(workingDirectory, $"{projectName}.1.0.0.nupkg");
+                var nuspecPath = Path.Combine(workingDirectory, "obj", $"{projectName}.1.0.0.nuspec");
+
+                Assert.True(File.Exists(nupkgPath), "The output .nupkg is not in the expected place");
+                Assert.True(File.Exists(nuspecPath), "The intermediate nuspec file is not in the expected place");
+
+                var document = XDocument.Load(nuspecPath);
+                var ns = document.Root.GetDefaultNamespace();
+
+                Assert.Null(document.Root.Element(ns + "metadata").Element(ns + "owners"));
             }
         }
     }

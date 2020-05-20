@@ -55,7 +55,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -192,7 +191,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -264,7 +262,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright © 2013</copyright>
@@ -314,7 +311,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright © 2013</copyright>
@@ -380,7 +376,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -436,7 +431,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -505,7 +499,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -586,7 +579,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -672,7 +664,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -751,7 +742,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1444,7 +1434,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1462,7 +1451,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1629,7 +1617,7 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithNuspecFile, but with -MSBuidVersion
         // set to 14
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_ReferencedProjectWithNuspecFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -1672,7 +1660,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1690,7 +1677,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1784,7 +1770,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1802,7 +1787,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1851,7 +1835,7 @@ public class B
 
         // Same test as PackCommand_ReferencedProjectWithJsonFile, but with -MSBuidVersion
         // set to 14
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_ReferencedProjectWithJsonFileWithMsbuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -2129,7 +2113,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2147,7 +2130,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2207,7 +2189,6 @@ public class B
     <version>$version$</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2349,7 +2330,7 @@ public class B
 
                 // Act
 
-                // Execute the pack command and feed in some properties for token replacements and 
+                // Execute the pack command and feed in some properties for token replacements and
                 // set the flag to save the resolved nuspec to output directory.\
                 var arguments = string.Format(
                     "pack {0} -ConfigFile {1} -properties tagVar=CustomTag;author=test1@microsoft.com -InstallPackageToOutputPath -OutputFileNamesWithoutVersion",
@@ -2399,7 +2380,7 @@ public class B
                 var resolveNuSpecPath = Path.Combine(workingDirectory, nuspecName);
                 Assert.True(File.Exists(resolveNuSpecPath));
 
-                // Verify the nuspec contents in the zip file and the resolved nuspec side by 
+                // Verify the nuspec contents in the zip file and the resolved nuspec side by
                 // side with the package are the same
                 var resolvedNuSpecContents = File.ReadAllText(resolveNuSpecPath);
                 var packageOutputDirectoryNuSpecXml = XDocument.Parse(resolvedNuSpecContents);
@@ -2456,7 +2437,7 @@ public class B
 
                 // Act
 
-                // Execute the pack command and feed in some properties for token replacements and 
+                // Execute the pack command and feed in some properties for token replacements and
                 // set the flag to save the resolved nuspec to output directory.\
                 var commandRunner = CommandRunner.Run(
                     Util.GetNuGetExePath(),
@@ -3114,8 +3095,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -3134,7 +3115,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -3153,7 +3134,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -3221,7 +3202,7 @@ namespace Proj1
                 Assert.Equal(1, package.DependencySets.Count());
                 var dependencySet = package.DependencySets.First();
 
-                // Verify that testPackage2 is added as dependency in addition to testPackage1. 
+                // Verify that testPackage2 is added as dependency in addition to testPackage1.
                 // testPackage3 and testPackage4 are not added because they are already referenced by testPackage1 with the correct version range.
                 Assert.Equal(4, dependencySet.Dependencies.Count);
                 var dependency1 = dependencySet.Dependencies.Single(d => d.Id == "testPackage1");
@@ -3235,8 +3216,8 @@ namespace Proj1
             }
         }
 
-        // Test that NuGet packages of the project are added as dependencies 
-        // even if there is already an indirect depenency, provided that the 
+        // Test that NuGet packages of the project are added as dependencies
+        // even if there is already an indirect depenency, provided that the
         // project requires a higher version number than the indirect dependency.
         [Theory]
         [InlineData("packages.config")]
@@ -3255,7 +3236,7 @@ namespace Proj1
                 Util.CreateFile(
                     proj1Directory,
                     "proj1.csproj",
-@"<Project ToolsVersion='4.0' DefaultTargets='Build' 
+@"<Project ToolsVersion='4.0' DefaultTargets='Build'
     xmlns='http://schemas.microsoft.com/developer/msbuild/2003'>
   <PropertyGroup>
     <OutputType>Library</OutputType>
@@ -3274,7 +3255,7 @@ namespace Proj1
                     proj1Directory,
                     "proj1_file1.cs",
 @"using System;
- 
+
 namespace Proj1
 {
     public class Class1
@@ -3413,7 +3394,6 @@ namespace Proj1
     <id>Package</id>
     <version>1.0.0</version>
     <authors>author</authors>
-    <owners>author</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>description</description>
     <releaseNotes>release notes</releaseNotes>
@@ -3447,7 +3427,7 @@ namespace Proj1
 
         // Tests that with -MSBuildVersion set to 14, a projec using C# 6.0 features (nameof in this test)
         // can be built successfully.
-        [WindowsNTFact]
+        [WindowsNTFact(Skip = "https://github.com/NuGet/Home/issues/9303")]
         public void PackCommand_WithMsBuild14()
         {
             var nugetexe = Util.GetNuGetExePath();
@@ -4299,7 +4279,6 @@ namespace " + projectName + @"
     <version>1.0.0</version>
     <title>packageA&lt;T&gt;</title>
     <authors>test &lt;test@microsoft.com&gt;</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description &lt;with&gt; &lt;&lt;bad
 stuff \n &lt;&lt;
@@ -4436,7 +4415,6 @@ stuff \n <<".Replace("\r\n", "\n");
     <version>1.0.0-beta.1.build.234+git.hash.6f3ae2d59140f5ea97eb7573535de1c286d6d336</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4712,7 +4690,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4777,7 +4754,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4843,7 +4819,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4892,7 +4867,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4941,7 +4915,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4996,7 +4969,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5062,7 +5034,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5117,7 +5088,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5170,7 +5140,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5220,7 +5189,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5267,7 +5235,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5334,7 +5301,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5537,7 +5503,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5601,7 +5566,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5661,7 +5625,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
                 }
             }
         }
-        
+
         [Fact]
         public void PackCommand_PackIcon_HappyPath_Succeeds()
         {
@@ -5696,7 +5660,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
             TestPackIconSuccess(testDir);
         }
-                
+
         [Fact]
         public void PackCommand_PackIcon_Folder_Succeeds()
         {
@@ -5885,7 +5849,7 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
 
                 // Verify
                 Util.VerifyResultSuccess(r);
-                
+
                 Assert.True(File.Exists(nupkgPath));
                 Assert.True(File.Exists(snupkgPath));
 
@@ -6080,7 +6044,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0-beta.1</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -6542,7 +6505,7 @@ using System.Runtime.InteropServices;
                     Assert.Equal("proj", nuspecReader.GetIdentity().Id);
                     Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
                     Assert.Equal("Company", nuspecReader.GetAuthors());
-                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal(string.Empty, nuspecReader.GetOwners());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
                     Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());
@@ -6662,7 +6625,7 @@ using System.Runtime.InteropServices;
                     Assert.Equal("proj", nuspecReader.GetIdentity().Id);
                     Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
                     Assert.Equal("Company", nuspecReader.GetAuthors());
-                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal(string.Empty, nuspecReader.GetOwners());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
                     Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());

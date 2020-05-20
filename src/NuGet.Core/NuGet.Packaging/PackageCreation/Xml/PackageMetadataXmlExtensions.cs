@@ -43,7 +43,7 @@ namespace NuGet.Packaging.Xml
             if (!metadata.PackageTypes.Contains(PackageType.SymbolsPackage))
             {
                 AddElementIfNotNull(elem, ns, "authors", metadata.Authors, authors => string.Join(",", authors));
-                AddElementIfNotNull(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
+                AddElementIfNotEmpty(elem, ns, "owners", metadata.Owners, owners => string.Join(",", owners));
             }
             if (metadata.DevelopmentDependency)
             {
@@ -366,6 +366,18 @@ namespace NuGet.Packaging.Xml
             where T : class
         {
             if (value != null)
+            {
+                var processed = process(value);
+                if (processed != null)
+                {
+                    parent.Add(new XElement(ns + name, processed));
+                }
+            }
+        }
+
+        private static void AddElementIfNotEmpty<T>(XElement parent, XNamespace ns, string name, IEnumerable<T> value, Func<IEnumerable<T>, object> process)
+        {
+            if (value.Any())
             {
                 var processed = process(value);
                 if (processed != null)

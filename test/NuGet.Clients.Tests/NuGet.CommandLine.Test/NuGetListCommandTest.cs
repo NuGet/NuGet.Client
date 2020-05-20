@@ -940,6 +940,7 @@ namespace NuGet.CommandLine.Test
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
             var listEndpoint = Guid.NewGuid().ToString() + "/api/v2";
+            bool serverReceiveProperAuthorizationHeader = false;
 
             using (var randomTestFolder = TestDirectory.Create())
             {
@@ -999,6 +1000,7 @@ namespace NuGet.CommandLine.Test
                             });
                         }
 
+                        serverReceiveProperAuthorizationHeader = true;
                         return "OK";
                     });
 
@@ -1025,11 +1027,10 @@ namespace NuGet.CommandLine.Test
                         Directory.GetCurrentDirectory(),
                         $"list test -source {serverV3.Uri}index.json -configfile {configFileName} -verbosity detailed -noninteractive",
                         waitForExit: true);
-
                     serverV3.Stop();
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("Using credentials from config. UserName: user", result.Item2);
+                    Assert.True(serverReceiveProperAuthorizationHeader);
                     Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
                     // verify that only package id & version is displayed
                     Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);
@@ -1043,7 +1044,7 @@ namespace NuGet.CommandLine.Test
             Util.ClearWebCache();
             var expectedAuthHeader = "Basic " + Convert.ToBase64String(Encoding.UTF8.GetBytes("user:password"));
             var listEndpoint = "api/v2";
-
+            bool serverReceiveProperAuthorizationHeader = false;
             using (var randomTestFolder = TestDirectory.Create())
             {
                 // Arrange
@@ -1102,6 +1103,7 @@ namespace NuGet.CommandLine.Test
                             });
                         }
 
+                        serverReceiveProperAuthorizationHeader = true;
                         return "OK";
                     });
 
@@ -1128,12 +1130,11 @@ namespace NuGet.CommandLine.Test
                         Directory.GetCurrentDirectory(),
                         $"list test -source {serverV3.Uri}api/v2 -configfile {configFileName} -verbosity detailed -noninteractive",
                         waitForExit: true);
-
                     serverV3.Stop();
 
                     // Assert
                     Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                    Assert.Contains("Using credentials from config. UserName: user", result.Item2);
+                    Assert.True(serverReceiveProperAuthorizationHeader);
                     Assert.Contains($"GET {serverV3.Uri}{listEndpoint}/Search()", result.Item2);
                     // verify that only package id & version is displayed
                     Assert.Matches(@"(?m)testPackage1\s+1\.1\.0", result.Item2);

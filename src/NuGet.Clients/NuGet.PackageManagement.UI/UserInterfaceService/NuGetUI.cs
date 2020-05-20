@@ -244,6 +244,14 @@ namespace NuGet.PackageManagement.UI
 
         public PackageIdentity SelectedPackage { get; set; }
 
+        public int SelectedIndex { get; set; }
+
+        public int RecommendedCount { get; set; }
+
+        public bool RecommendPackages { get; set; }
+
+        public (string modelVersion, string vsixVersion)? RecommenderVersion { get; set; }
+
         public void OnActionsExecuted(IEnumerable<ResolvedAction> actions)
         {
             UIContext.SolutionManager.OnActionsExecuted(actions);
