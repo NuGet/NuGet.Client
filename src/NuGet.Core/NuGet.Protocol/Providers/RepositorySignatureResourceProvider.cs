@@ -104,7 +104,11 @@ namespace NuGet.Protocol
 
         private static string GenerateCacheKey(ServiceIndexEntry serviceEntry)
         {
+#if NETCOREAPP
+            var index = serviceEntry.Type.IndexOf('/', StringComparison.Ordinal);
+#else
             var index = serviceEntry.Type.IndexOf('/');
+#endif
             var version = serviceEntry.Type.Substring(index + 1).Trim();
 
             return $"repository_signatures_{version}";
