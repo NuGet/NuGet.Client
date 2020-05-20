@@ -86,10 +86,17 @@ namespace NuGet.Protocol
         {
             var invalid = Path.GetInvalidFileNameChars();
             return new string(
+#if NETCOREAPP
+                value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray()
+                )
+                .Replace("__", "_", StringComparison.Ordinal)
+                .Replace("__", "_", StringComparison.Ordinal);
+#else
                 value.Select(ch => invalid.Contains(ch) ? '_' : ch).ToArray()
                 )
                 .Replace("__", "_")
                 .Replace("__", "_");
+#endif
         }
     }
 }
