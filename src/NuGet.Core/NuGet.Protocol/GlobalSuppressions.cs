@@ -1,4 +1,4 @@
-﻿// This file is used by Code Analysis to maintain SuppressMessage
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
@@ -297,3 +297,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA1001:Type 'RemoteV3FindPackageByIdResource' owns disposable field(s) '_dependencyInfoSemaphore, _httpSource' but is not disposable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Protocol.RemoteV3FindPackageByIdResource")]
 [assembly: SuppressMessage("Build", "CA1001:Type 'ServiceIndexResourceV3Provider' owns disposable field(s) '_semaphore' but is not disposable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Protocol.ServiceIndexResourceV3Provider")]
 [assembly: SuppressMessage("Build", "CA1052:Type 'V2FeedUtilities' is a static holder type but is neither static nor NotInheritable", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.Protocol.V2FeedUtilities")]
+[assembly: SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.Protocol.RawSearchResourceV3.SearchPage``1(System.Func{System.Uri,System.Threading.Tasks.Task{``0}},System.String,NuGet.Protocol.Core.Types.SearchFilter,System.Int32,System.Int32,NuGet.Common.ILogger,System.Threading.CancellationToken)~System.Threading.Tasks.Task{``0}")]

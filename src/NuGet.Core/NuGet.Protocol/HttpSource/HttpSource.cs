@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -264,24 +263,6 @@ namespace NuGet.Protocol
         public Task<T> ProcessResponseAsync<T>(
             HttpSourceRequest request,
             Func<HttpResponseMessage, Task<T>> processAsync,
-            ILogger log,
-            CancellationToken token)
-        {
-            return ProcessResponseAsync(request, processAsync, cacheContext: null, log: log, token: token);
-        }
-
-        public Task<IEnumerable<JToken>> ProcessHttpResponseAsync(
-            HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<IEnumerable<JToken>>> processAsync,
-            ILogger log,
-            CancellationToken token)
-        {
-            return ProcessResponseAsync(request, processAsync, cacheContext: null, log: log, token: token);
-        }
-
-        public Task<HttpResponseMessage> ProcessHttpResponseAsync(
-            HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<HttpResponseMessage>> processAsync,
             ILogger log,
             CancellationToken token)
         {

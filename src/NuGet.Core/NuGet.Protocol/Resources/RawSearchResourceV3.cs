@@ -132,13 +132,7 @@ namespace NuGet.Protocol
                     "q=" + searchTerm +
                     "&skip=" + skip.ToString() +
                     "&take=" + take.ToString() +
-#pragma warning disable CA1062 // Validate arguments of public methods
-#pragma warning disable CA1305 // Specify IFormatProvider
-#pragma warning disable CA1308 // Normalize strings to uppercase
                     "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
-#pragma warning restore CA1308 // Normalize strings to uppercase
-#pragma warning restore CA1305 // Specify IFormatProvider
-#pragma warning restore CA1062 // Validate arguments of public methods
 
                 if (filters.IncludeDelisted)
                 {

@@ -30,81 +30,69 @@ namespace NuGet.Protocol
 
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
-            try
+            var metadataCache = new MetadataReferenceCache();
+            IEnumerable<PackageSearchMetadata> searchResultMetadata = new List<PackageSearchMetadata>();
+
+            if (UseNew == 0)
             {
-                
+                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
 
-                var metadataCache = new MetadataReferenceCache();
-                IEnumerable<PackageSearchMetadata> searchResultMetadata = new List<PackageSearchMetadata>();
-
-                if (UseNew == 0)
-                {
-                    var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
-
-                    searchResultMetadata = searchResultJsonObjects
-                        .Select(s => s.FromJToken<PackageSearchMetadata>());
-                }
-                else if (UseNew == 1)
-                {
-                    searchResultMetadata = await _rawSearchResource.Search(
-                        (httpSource, uri) => httpSource.ProcessStreamAsync(
-                            new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                            s => ProgressStreamAsync(s, cancellationToken),
-                            log,
-                            cancellationToken),
+                searchResultMetadata = searchResultJsonObjects
+                    .Select(s => s.FromJToken<PackageSearchMetadata>());
+            }
+            else if (UseNew == 1)
+            {
+                searchResultMetadata = await _rawSearchResource.Search(
+                    (httpSource, uri) => httpSource.ProcessStreamAsync(
+                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
+                        s => ProgressStreamAsync(s, cancellationToken),
+                        log,
+                        cancellationToken),
+                    searchTerm,
+                    filter,
+                    skip,
+                    take,
+                    Common.NullLogger.Instance,
+                    cancellationToken);
+            }
+            else if (UseNew == 2)
+            {
+                searchResultMetadata = (await _rawSearchResource.Search(
+                        (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
+                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
+                        s => ProcessPartialHttpAsync(s, cancellationToken),
+                        log,
+                        cancellationToken),
                         searchTerm,
                         filter,
                         skip,
                         take,
                         Common.NullLogger.Instance,
-                        cancellationToken);
-                }
-                else if (UseNew == 2)
-                {
-                    searchResultMetadata = (await _rawSearchResource.Search(
-                            (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
-                            new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                            s => ProcessPartialHttpAsync(s, cancellationToken),
-                            log,
-                            cancellationToken),
-                            searchTerm,
-                            filter,
-                            skip,
-                            take,
-                            Common.NullLogger.Instance,
-                            cancellationToken))
-                        .ToList();
-                }
-
-                // Some nuget server not honoring our skip parameter nor take parameter, just returning everything they have.
-                // Then it's more than we asked, it bogs down whole processing with thousands of items. Still we need to let user see result in paginated way.
-                if (searchResultMetadata.Count() > take)
-                {
-                    if (searchResultMetadata.Count() >= skip + take)
-                    {
-                        searchResultMetadata = searchResultMetadata.Skip(skip).Take(take).ToList();
-                    }
-                    else
-                    {
-                        searchResultMetadata = searchResultMetadata.Take(take).ToList();
-                    }
-                }
-
-                var searchResults = searchResultMetadata
-                    .Select(m => m.WithVersions(() => GetVersions(m, filter)))
-                    .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m))
-                    .ToArray();
-
-                return searchResults;
+                        cancellationToken))
+                    .ToList();
             }
-            catch(Exception ex)
+
+            // Some nuget server not honoring our skip parameter nor take parameter, just returning everything they have.
+            // Then it's more than we asked, it bogs down whole processing with thousands of items. Still we need to let user see result in paginated way.
+            if (searchResultMetadata.Count() > take)
             {
-                Debug.Write(ex);
-                throw;
+                if (searchResultMetadata.Count() >= skip + take)
+                {
+                    searchResultMetadata = searchResultMetadata.Skip(skip).Take(take).ToList();
+                }
+                else
+                {
+                    searchResultMetadata = searchResultMetadata.Take(take).ToList();
+                }
             }
 
-           // return Enumerable.Empty<IPackageSearchMetadata>();
-            
+            var searchResults = searchResultMetadata
+                .Select(m => m.WithVersions(() => GetVersions(m, filter)))
+                .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)m))
+                .ToArray();
+
+            return searchResults;
+
         }
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
