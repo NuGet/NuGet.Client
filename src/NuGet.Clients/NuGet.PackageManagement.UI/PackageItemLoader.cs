@@ -21,7 +21,9 @@ namespace NuGet.PackageManagement.UI
         private readonly bool _includePrerelease;
 
         private readonly IPackageFeed _packageFeed;
+        private readonly IPackageFeed _recommenderPackageFeed;
         private PackageCollection _installedPackages;
+        private int _recommendedCount;
         private IEnumerable<Packaging.PackageReference> _packageReferences;
 
         private SearchFilter SearchFilter => new SearchFilter(includePrerelease: _includePrerelease)
@@ -82,7 +84,8 @@ namespace NuGet.PackageManagement.UI
             PackageLoadContext context,
             IPackageFeed packageFeed,
             string searchText = null,
-            bool includePrerelease = true)
+            bool includePrerelease = true,
+            IPackageFeed recommenderPackageFeed = null)
         {
             if (context == null)
             {
@@ -95,6 +98,7 @@ namespace NuGet.PackageManagement.UI
                 throw new ArgumentNullException(nameof(packageFeed));
             }
             _packageFeed = packageFeed;
+            _recommenderPackageFeed = recommenderPackageFeed;
 
             _searchText = searchText ?? string.Empty;
             _includePrerelease = includePrerelease;
@@ -192,6 +196,36 @@ namespace NuGet.PackageManagement.UI
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageLoadEnd);
         }
 
+        private async Task<SearchResult<IPackageSearchMetadata>> CombineSearchAsync(
+            CancellationToken cancellationToken)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            // get the browse/search results
+            SearchResult<IPackageSearchMetadata> browseResult = await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+
+            // get the recommender results
+            SearchResult<IPackageSearchMetadata> recommenderResult = null;
+            if (_recommenderPackageFeed != null)
+            {
+                recommenderResult = await _recommenderPackageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+                _recommendedCount = recommenderResult.Count();
+            }
+
+            // if there are recommendations, add them to the top of the browse results list
+            SearchResult<IPackageSearchMetadata> aggregated = browseResult;
+            if (recommenderResult != null)
+            {
+                // remove duplicated recommended packages from the browse results
+                var recommendedIds = recommenderResult.Items.Select(item => item.Identity.Id);
+                IEnumerable<IPackageSearchMetadata> filteredBrowseResult = browseResult.Items.Where(item => !recommendedIds.Contains(item.Identity.Id));
+                IEnumerable<IPackageSearchMetadata> items = recommenderResult.Items.Concat(filteredBrowseResult);
+                aggregated.Items = items.ToList();
+                aggregated.RawItemsCount = aggregated.Items.Count();
+            }
+            return aggregated;
+        }
+
         public async Task<SearchResult<IPackageSearchMetadata>> SearchAsync(ContinuationToken continuationToken, CancellationToken cancellationToken)
         {
             await TaskScheduler.Default;
@@ -205,10 +239,13 @@ namespace NuGet.PackageManagement.UI
 
             if (continuationToken != null)
             {
+                // only continue search for the search package feed, not the recommender.
+                _recommendedCount = 0;
                 return await _packageFeed.ContinueSearchAsync(continuationToken, cancellationToken);
             }
 
-            return await _packageFeed.SearchAsync(_searchText, SearchFilter, cancellationToken);
+            // get the results of both the recommender package feed and the search/browse feed.
+            return await CombineSearchAsync(cancellationToken);
         }
 
         public async Task UpdateStateAndReportAsync(SearchResult<IPackageSearchMetadata> searchResult, IProgress<IItemLoaderState> progress, CancellationToken cancellationToken)
@@ -244,7 +281,7 @@ namespace NuGet.PackageManagement.UI
             }
 
             var listItems = _state.Results
-                .Select(metadata =>
+                .Select((metadata, index) =>
                 {
                     VersionRange allowedVersions = VersionRange.All;
 
@@ -272,6 +309,7 @@ namespace NuGet.PackageManagement.UI
                         AllowedVersions = allowedVersions,
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
+                        Recommended = index < _recommendedCount,
                         PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
                     };
 

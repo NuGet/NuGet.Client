@@ -35,7 +35,8 @@ namespace NuGet.Packaging.Signing
             var valid = false;
             var trustResults = new List<PackageVerificationResult>();
 
-            using (var telemetry = new TelemetryActivity(parentId))
+            var packageSigningTelemetryEvent = new PackageSigningTelemetryEvent();
+            using (var telemetry = TelemetryActivity.Create(parentId, packageSigningTelemetryEvent))
             {
                 var isSigned = await package.IsSignedAsync(token);
                 if (isSigned)
@@ -96,7 +97,7 @@ namespace NuGet.Packaging.Signing
                 }
 
                 var status = valid ? NuGetOperationStatus.Succeeded : NuGetOperationStatus.Failed;
-                telemetry.TelemetryEvent = new PackageSigningTelemetryEvent(isSigned ? PackageSignType.Signed : PackageSignType.Unsigned, status);
+                packageSigningTelemetryEvent.SetResult(isSigned ? PackageSignType.Signed : PackageSignType.Unsigned, status);
 
                 return new VerifySignaturesResult(valid, isSigned, trustResults);
             }
