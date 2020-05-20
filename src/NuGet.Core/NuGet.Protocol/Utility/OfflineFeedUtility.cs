@@ -87,7 +87,11 @@ namespace NuGet.Protocol.Core.Types
             }
 
             var invalidPathChars = Path.GetInvalidPathChars();
+#if NETCOREAPP
+            if (invalidPathChars.Any(p => path.Contains(p, StringComparison.Ordinal)))
+#else
             if (invalidPathChars.Any(p => path.Contains(p)))
+#endif
             {
                 throw new ArgumentException(string.Format(CultureInfo.CurrentCulture,
                     Strings.Path_Invalid,
