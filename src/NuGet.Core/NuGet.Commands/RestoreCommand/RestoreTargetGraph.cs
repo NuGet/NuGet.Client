@@ -108,7 +108,7 @@ namespace NuGet.Commands
 
             foreach (var graph in graphs)
             {
-                var result = context.IsCPVMEnabled ? graph.AnalyzeForCPVMEnabledGraph() : graph.Analyze();
+                var result = context.IsCPVMEnabled ? graph.AnalyzeForCPVM() : graph.Analyze();
 
                 analyzeResult.Combine(result);
             }

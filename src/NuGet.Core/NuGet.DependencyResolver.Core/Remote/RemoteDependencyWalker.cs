@@ -13,7 +13,6 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
-using NuGet.Packaging;
 
 namespace NuGet.DependencyResolver
 {
@@ -38,7 +37,7 @@ namespace NuGet.DependencyResolver
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
-            var transitiveCentralPackageVersionNodes = new List<UpliftedTransitiveGraphNode<RemoteResolveResult>>();
+            var transitiveCentralPackageVersionNodes = new List<GraphNode<RemoteResolveResult>>();
             while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionDependecy))
             {
                 // as the nodes are created more parents can be added for a single central transitive node
@@ -46,7 +45,7 @@ namespace NuGet.DependencyResolver
                 // the parent references are needed to keep track of possible rejected parents
                 transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
             }
-            transitiveCentralPackageVersionNodes.ForEach(node => transitiveCentralPackageVersions.AddNodeParents(node));
+            transitiveCentralPackageVersionNodes.ForEach(node => transitiveCentralPackageVersions.AddParentsToNode(node));
 
             return rootNode;
         }
@@ -393,7 +392,7 @@ namespace NuGet.DependencyResolver
         /// New <see cref="GraphNode{RemoteResolveResult}"/> will be created for each of the items in the <paramref name="transitiveCentralPackageVersions"/> 
         /// and added as nodes of the <paramref name="rootNode"/>.
         /// </summary>
-        private async Task<UpliftedTransitiveGraphNode<RemoteResolveResult>> AddTransitiveCentralPackageVersionNodesAsync(
+        private async Task<GraphNode<RemoteResolveResult>> AddTransitiveCentralPackageVersionNodesAsync(
             GraphNode<RemoteResolveResult> rootNode,
             LibraryDependency centralPackageVersionDependecy,
             NuGetFramework framework,
@@ -410,13 +409,11 @@ namespace NuGet.DependencyResolver
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
-            var centralTransitiveNode = UpliftedTransitiveGraphNode<RemoteResolveResult>.Create(node);
+            node.OuterNode = rootNode;
+            node.Item.IsCentralTransitive = true;
+            rootNode.InnerNodes.Add(node);
 
-            centralTransitiveNode.OuterNode = rootNode;
-            centralTransitiveNode.Item.IsCentralTransitive = true;
-            rootNode.InnerNodes.Add(centralTransitiveNode);
-
-            return centralTransitiveNode;
+            return node;
         }
 
         /// <summary>
@@ -441,17 +438,17 @@ namespace NuGet.DependencyResolver
                 _transitiveCentralPackageVersions = new ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>>();
             }
 
-            internal void Add(LibraryDependency centralPackageVersionDependecy, GraphNode<RemoteResolveResult> fosterParentNode)
+            internal void Add(LibraryDependency centralPackageVersionDependecy, GraphNode<RemoteResolveResult> parentNode)
             {
                 _transitiveCentralPackageVersions.AddOrUpdate(centralPackageVersionDependecy.Name,
                     (key) =>
                     {
                         _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersionDependecy);
-                        return new List<GraphNode<RemoteResolveResult>>() { fosterParentNode };
+                        return new List<GraphNode<RemoteResolveResult>>() { parentNode };
                     },
                     (key, value) =>
                     {
-                        value.Add(fosterParentNode);
+                        value.Add(parentNode);
                         return value;
                     });
             }
@@ -462,10 +459,13 @@ namespace NuGet.DependencyResolver
 
             }
 
-            internal void AddNodeParents(UpliftedTransitiveGraphNode<RemoteResolveResult> node)
+            internal void AddParentsToNode(GraphNode<RemoteResolveResult> node)
             {
-                node.ParentNodes.AddRange(_transitiveCentralPackageVersions[node.Item.Key.Name]);
-
+                foreach(var parent in _transitiveCentralPackageVersions[node.Item.Key.Name])
+                {
+                    node.ParentNodes.Add(parent);
+                }
+                node.ParentNodes.CompleteAdding();
             }
         }
     }
