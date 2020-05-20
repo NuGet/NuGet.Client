@@ -1152,7 +1152,7 @@ namespace NuGet.Commands
                 context.RemoteLibraryProviders.Add(provider);
             }
 
-            context.IsCPVMEnabled = request.Project.RestoreMetadata.CentralPackageVersionsEnabled;
+            context.IsCPVMEnabled = request.Project.RestoreMetadata?.CentralPackageVersionsEnabled == true;
             return context;
         }
 
