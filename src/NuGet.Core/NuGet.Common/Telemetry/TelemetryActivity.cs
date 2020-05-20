@@ -13,6 +13,7 @@ namespace NuGet.Common
         private readonly Stopwatch _stopwatch;
         private readonly Stopwatch _intervalWatch = new Stopwatch();
         private readonly List<Tuple<string, TimeSpan>> _intervalList;
+        private readonly IDisposable _telemetryActivity;
 
         public TelemetryEvent TelemetryEvent { get; set; }
 
@@ -42,6 +43,11 @@ namespace NuGet.Common
 
         private TelemetryActivity(Guid parentId, TelemetryEvent telemetryEvent, Guid operationId)
         {
+            if (telemetryEvent != null)
+            {
+                _telemetryActivity = NuGetTelemetryService?.StartActivity(telemetryEvent.Name);
+            }
+
             TelemetryEvent = telemetryEvent;
             ParentId = parentId;
             OperationId = operationId;
@@ -90,6 +96,8 @@ namespace NuGet.Common
 
                 NuGetTelemetryService.EmitTelemetryEvent(TelemetryEvent);
             }
+
+            _telemetryActivity?.Dispose();
         }
 
         public static void EmitTelemetryEvent(TelemetryEvent TelemetryEvent)

@@ -13,13 +13,24 @@ namespace NuGet.Common.Test
 {
     public class TelemetryActivityTests
     {
-        private readonly Mock<INuGetTelemetryService> _telemetryService = new Mock<INuGetTelemetryService>();
+        private readonly Mock<INuGetTelemetryService> _telemetryService = new Mock<INuGetTelemetryService>(MockBehavior.Strict);
         private TelemetryEvent _telemetryEvent;
+
+        private readonly Mock<IDisposable> _activity = new Mock<IDisposable>(MockBehavior.Strict);
+        private bool _activityDisposed;
+        private string _activityName;
 
         public TelemetryActivityTests()
         {
             _telemetryService.Setup(x => x.EmitTelemetryEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => _telemetryEvent = x);
+
+            _telemetryService.Setup(x => x.StartActivity(It.IsAny<string>()))
+                .Callback<string>(x => _activityName = x)
+                .Returns(_activity.Object);
+
+            _activity.Setup(x => x.Dispose())
+                     .Callback(() => _activityDisposed = true);
 
             TelemetryActivity.NuGetTelemetryService = _telemetryService.Object;
         }
@@ -123,6 +134,26 @@ namespace NuGet.Common.Test
             var duration = (double)_telemetryEvent["Duration"];
 
             Assert.InRange(duration, 0d, 10d);
+        }
+
+        [Fact]
+        public void Create_will_start_activity()
+        {
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+            }
+
+            Assert.Equal("testEvent", _activityName);
+        }
+
+        [Fact]
+        public void Dispose_will_dispose_activity()
+        {
+            using (var telemetry = TelemetryActivity.Create(CreateNewTelemetryEvent()))
+            {
+            }
+
+            Assert.True(_activityDisposed);
         }
 
         private static TelemetryEvent CreateNewTelemetryEvent()
