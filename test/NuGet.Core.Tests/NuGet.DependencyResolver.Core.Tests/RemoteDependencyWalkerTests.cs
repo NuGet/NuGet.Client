@@ -1028,7 +1028,7 @@ namespace NuGet.DependencyResolver.Tests
         }
 
         [Fact]
-        public async Task WalkAsyncCentralDependencyDoesNotHaveDuplicates()
+        public async Task WalkAsync_CentralTransitiveDependencyList_DoesNotHaveDuplicates()
         {
             var framework = NuGetFramework.Parse("net45");
             var context = new TestRemoteWalkContext();

@@ -9651,7 +9651,7 @@ namespace NuGet.CommandLine.Test
         ///  Expected NU1605                     
         /// </summary>
         [Fact]
-        public async Task RestoreCommand_DowngradeIsNotErrorWhen_DowngradedByCentralDirectDependency_P2P()
+        public async Task RestoreNetCore_CPVMProject_DowngradedByCentralDirectDependencyWithP2P_IsWarningNU1605()
         {
             // Arrange
             using (var pathContext = new SimpleTestPathContext())
