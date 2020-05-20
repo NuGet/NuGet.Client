@@ -826,7 +826,11 @@ namespace NuGet.Commands
                 var fileName = Path.GetFileName(firstItem.Path);
 
                 Debug.Assert(!string.IsNullOrEmpty(fileName));
+#if NETCOREAPP
+                Debug.Assert(firstItem.Path.IndexOf('/', StringComparison.Ordinal) > 0);
+#else
                 Debug.Assert(firstItem.Path.IndexOf('/') > 0);
+#endif
 
                 var emptyDir = firstItem.Path.Substring(0, firstItem.Path.Length - fileName.Length)
                     + PackagingCoreConstants.EmptyFolder;
