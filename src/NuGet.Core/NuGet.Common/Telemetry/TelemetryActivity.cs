@@ -43,6 +43,11 @@ namespace NuGet.Common
 
         private TelemetryActivity(Guid parentId, TelemetryEvent telemetryEvent, Guid operationId)
         {
+            if (telemetryEvent != null)
+            {
+                _telemetryActivity = NuGetTelemetryService?.StartActivity(telemetryEvent.Name);
+            }
+
             TelemetryEvent = telemetryEvent;
             ParentId = parentId;
             OperationId = operationId;
@@ -50,11 +55,6 @@ namespace NuGet.Common
             _startTime = DateTime.UtcNow;
             _stopwatch = Stopwatch.StartNew();
             _intervalList = new List<Tuple<string, TimeSpan>>();
-
-            if (telemetryEvent != null)
-            {
-                _telemetryActivity = NuGetTelemetryService?.StartActivity(telemetryEvent.Name);
-            }
         }
 
         public void StartIntervalMeasure()
@@ -70,7 +70,6 @@ namespace NuGet.Common
 
         public void Dispose()
         {
-            _telemetryActivity?.Dispose();
             _stopwatch.Stop();
 
             if (NuGetTelemetryService != null && TelemetryEvent != null)
@@ -97,6 +96,8 @@ namespace NuGet.Common
 
                 NuGetTelemetryService.EmitTelemetryEvent(TelemetryEvent);
             }
+
+            _telemetryActivity?.Dispose();
         }
 
         public static void EmitTelemetryEvent(TelemetryEvent TelemetryEvent)
