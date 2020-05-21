@@ -13,6 +13,7 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
+using NuGet.Packaging;
 
 namespace NuGet.DependencyResolver
 {
@@ -37,9 +38,22 @@ namespace NuGet.DependencyResolver
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
+            // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
+            var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
+                () =>
+                {
+                    var result = new HashSet<string>();
+                    result.AddRange(rootNode.InnerNodes.Select(n => n.Key.Name));
+                    return result;
+                });
+
             while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageversionDependecy))
             {
-                await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageversionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions);
+                // do not add a transitive dependency node if it is direct already
+                if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageversionDependecy.Name))
+                {
+                    await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageversionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions);
+                }
             }
 
             return rootNode;
