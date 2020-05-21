@@ -200,14 +200,20 @@ namespace NuGet.PackageManagement.UI
 
         private void PackageList_LoadItemsCanceled(object sender, EventArgs e)
         {
-            //Invalidate cache.
-            Model.CachedUpdates = null;
-            ResetTabLoadFlags();
             if (!_loadCts.IsCancellationRequested)
             {
-                //Load was cancelled, so trigger a load of the current tab.
-                //private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
-                Filter_SelectionChanged(sender, new FilterChangedEventArgs(previousFilter: null));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
+                    _loadCts.Token.ThrowIfCancellationRequested();
+                    //Invalidate cache.
+                    Model.CachedUpdates = null;
+                    ResetTabLoadFlags();
+                    _loadCts.Cancel();
+                    //Load was cancelled, so trigger a reload of the current tab.
+                    PackageManagerLoaded(sender, new RoutedEventArgs());
+                })
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(PackageList_LoadItemsCanceled)));
             }
         }
 
@@ -793,7 +799,10 @@ namespace NuGet.PackageManagement.UI
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
+                // cancel previous refresh tabs task, if any
+                // and start a new one.
+                var refreshToken = new CancellationTokenSource();
+                Interlocked.Exchange(ref _loadCts, refreshToken)?.Cancel();
 
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
@@ -1109,6 +1118,7 @@ namespace NuGet.PackageManagement.UI
                 // and start a new one.
                 var tabSwitchCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _loadCts, tabSwitchCts)?.Cancel();
+                //todo: this should be a linked source? //CancellationTokenSource.CreateLinkedTokenSource(_loadCts);
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
@@ -1137,8 +1147,6 @@ namespace NuGet.PackageManagement.UI
                 }), DispatcherPriority.Input);
             }
         }
-
-
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
