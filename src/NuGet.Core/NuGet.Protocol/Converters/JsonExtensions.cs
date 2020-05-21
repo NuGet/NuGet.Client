@@ -30,7 +30,7 @@ namespace NuGet.Protocol
             },
         };
 
-        internal static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
+        public static readonly JsonSerializer JsonObjectSerializer = JsonSerializer.Create(ObjectSerializationSettings);
 
         /// <summary>
         /// Serialize object to the JSON.

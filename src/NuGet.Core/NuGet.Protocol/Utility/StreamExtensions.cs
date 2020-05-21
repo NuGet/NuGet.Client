@@ -18,7 +18,7 @@ namespace NuGet.Protocol
             await stream.CopyToAsync(destination, BufferSize, token);
         }
 
-        internal static async Task<JObject> AsJObjectAsync(this Stream stream, CancellationToken token)
+        public static async Task<JObject> AsJObjectAsync(this Stream stream, CancellationToken token)
         {
             if (stream == null)
             {
