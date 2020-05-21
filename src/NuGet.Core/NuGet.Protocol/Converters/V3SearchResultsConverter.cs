@@ -54,11 +54,16 @@ namespace NuGet.Protocol.Converters
 
                             case "data":
                                 reader.Read();
-                                if (reader.TokenType != JsonToken.StartArray) throw new JsonException("data should be an array");
+
+                                if (reader.TokenType != JsonToken.StartArray)
+                                {
+                                    throw new JsonException("data should be an array");
+                                }
+
                                 reader.Read();
+
                                 while (reader.TokenType != JsonToken.EndArray)
                                 {
-                                    //var searchResult = serializer.Deserialize<PackageSearchMetadata>(reader);
                                     var searchResult = JsonExtensions.JsonObjectSerializer.Deserialize<PackageSearchMetadata>(reader);
 
                                     searchResults.Data.Add(searchResult);
