@@ -1,6 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -8,9 +11,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
@@ -113,6 +113,14 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
+        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
+        {
+            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
+
+            var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
+            return data.OfType<JObject>();
+        }
+
         private async Task<T> SearchPage<T>(
             Func<Uri, Task<T>> getResultAsync,
             string searchTerm,
@@ -192,14 +200,6 @@ namespace NuGet.Protocol
 
             // TODO: get a better message for this
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
-        }
-
-        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
-        {
-            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
-
-            var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
-            return data.OfType<JObject>();
         }
 
         internal async Task<T> Search<T>(

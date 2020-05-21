@@ -1,6 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Newtonsoft.Json.Linq;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -9,10 +13,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
-using NuGet.Configuration;
-using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
