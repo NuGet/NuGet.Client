@@ -4,6 +4,7 @@
 using System;
 using System.ComponentModel.Composition;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -237,8 +238,6 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var documentName = projectPath;
-
             // Find existing hierarchy and item id of the document window if it's already registered.
             var rdt = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.IVsRunningDocumentTable)) as vsShellInterop.IVsRunningDocumentTable;
             Assumes.Present(rdt);
@@ -252,7 +251,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 uint cookie;
                 hr = rdt.FindAndLockDocument(
                     (uint)vsShellInterop._VSRDTFLAGS.RDT_NoLock,
-                    documentName,
+                    projectPath,
                     out hier,
                     out itemId,
                     out docData,
@@ -273,12 +272,11 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
                 }
             }
 
-            return await CreateToolWindowAsync(projectPath, documentName, hier, itemId);
+            return await CreateToolWindowAsync(projectPath, hier, itemId);
         }
 
         private async Task<vsShellInterop.IVsWindowFrame> CreateToolWindowAsync(
             string projectPath,
-            string documentName,
             vsShellInterop.IVsHierarchy hier,
             uint itemId)
         {
@@ -300,7 +298,7 @@ namespace NuGet.VisualStudio.OnlineEnvironment.Client
             var caption = string.Format(
                 CultureInfo.CurrentCulture,
                 Resx.Label_NuGetWindowCaption,
-                projectPath);
+                Path.GetFileNameWithoutExtension(projectPath));
 
             vsShellInterop.IVsWindowFrame windowFrame;
             var uiShell = await _asyncServiceProvider.GetServiceAsync(typeof(vsShellInterop.SVsUIShell)) as vsShellInterop.IVsUIShell;
