@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Protocol.Core.Types;
+using NuGet.Protocol.Model;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading;
@@ -16,7 +17,7 @@ namespace NuGet.Protocol
 {
     public class RawSearchResourceV3 : INuGetResource
     {
-        private readonly HttpSource _client;
+        internal readonly HttpSource _client;
         private readonly Uri[] _searchEndpoints;
 
         public RawSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
@@ -34,91 +35,6 @@ namespace NuGet.Protocol
 
             _client = client;
             _searchEndpoints = searchEndpoints.ToArray();
-        }
-
-        public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
-        {
-            for (var i = 0; i < _searchEndpoints.Length; i++)
-            {
-                var endpoint = _searchEndpoints[i];
-
-                // The search term comes in already encoded from VS
-                var queryUrl = new UriBuilder(endpoint.AbsoluteUri);
-                var queryString =
-                    "q=" + searchTerm +
-                    "&skip=" + skip.ToString() +
-                    "&take=" + take.ToString() +
-                    "&prerelease=" + filters.IncludePrerelease.ToString().ToLowerInvariant();
-
-                if (filters.IncludeDelisted)
-                {
-                    queryString += "&includeDelisted=true";
-                }
-
-                if (filters.SupportedFrameworks != null
-                    && filters.SupportedFrameworks.Any())
-                {
-                    var frameworks =
-                        string.Join("&",
-                            filters.SupportedFrameworks.Select(
-                                fx => "supportedFramework=" + fx.ToString()));
-                    queryString += "&" + frameworks;
-                }
-
-                if (filters.PackageTypes != null
-                    && filters.PackageTypes.Any())
-                {
-                    var types = string.Join("&",
-                        filters.PackageTypes.Select(
-                            s => "packageTypeFilter=" + s));
-                    queryString += "&" + types;
-                }
-
-                queryString += "&semVerLevel=2.0.0";
-
-                queryUrl.Query = queryString;
-
-                JObject searchJson = null;
-                try
-                {
-                    searchJson = await _client.GetJObjectAsync(
-                        new HttpSourceRequest(queryUrl.Uri, log),
-                        log,
-                        cancellationToken);
-                }
-                catch (OperationCanceledException)
-                {
-                    throw;
-                }
-                catch when (i < _searchEndpoints.Length - 1)
-                {
-                    // Ignore all failures until the last endpoint
-                }
-                catch (JsonReaderException ex)
-                {
-                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_MalformedMetadataError, queryUrl.Uri), ex);
-                }
-                catch (HttpRequestException ex)
-                {
-                    throw new FatalProtocolException(string.Format(CultureInfo.CurrentCulture, Strings.Protocol_BadSource, queryUrl.Uri), ex);
-                }
-
-                if (searchJson != null)
-                {
-                    return searchJson;
-                }
-            }
-
-            // TODO: get a better message for this
-            throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
-        }
-
-        public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
-        {
-            var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);
-
-            var data = results[JsonProperties.Data] as JArray ?? Enumerable.Empty<JToken>();
-            return data.OfType<JObject>();
         }
 
         private async Task<T> SearchPage<T>(
@@ -219,6 +135,29 @@ namespace NuGet.Protocol
                 take,
                 log,
                 cancellationToken);
+        }
+
+        public async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
+        {
+            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, take, token)).Data;
+        }
+
+        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
+        {
+            if (httpInitialResponse == null)
+            {
+                return null;
+            }
+
+            var _newtonsoftConvertersSerializer = new JsonSerializer();
+            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
+
+            using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
+            using (var streamReader = new StreamReader(stream))
+            using (var jsonReader = new JsonTextReader(streamReader))
+            {
+                return _newtonsoftConvertersSerializer.Deserialize<V3SearchResults>(jsonReader);
+            }
         }
     }
 }
