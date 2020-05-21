@@ -6,11 +6,9 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
-using NuGet.PackageManagement.UI;
-using NuGetVSExtension;
 using Xunit;
 
-namespace NuGet.Tools.Test
+namespace NuGet.PackageManagement.UI.Test
 {
     public class NuGetSettingsSerializerTests
     {

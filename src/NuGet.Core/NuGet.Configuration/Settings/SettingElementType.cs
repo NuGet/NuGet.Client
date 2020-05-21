@@ -37,6 +37,10 @@ namespace NuGet.Configuration
 
         Owners,
 
-        Repository
+        Repository,
+
+        FileCert,
+
+        StoreCert
     }
 }

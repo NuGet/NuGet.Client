@@ -6,8 +6,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
-using NuGet.PackageManagement;
-using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
@@ -16,7 +14,7 @@ using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.UI
 {
     [Export(typeof(INuGetUIFactory))]
     internal sealed class NuGetUIFactory : INuGetUIFactory

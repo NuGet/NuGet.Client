@@ -49,7 +49,8 @@ namespace NuGet.Build.Tasks.Pack.Test
             var result = target.Execute();
 
             // Assert
-            Assert.True(result);
+            // We cannot mock the PackCommandRunner because it's not overridable.
+            Assert.False(result);
             Assert.NotNull(request);
             logic.Verify(x => x.GetPackArgs(request));
             logic.Verify(x => x.GetPackageBuilder(request));
@@ -93,7 +94,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     MSBuildProjectFactory.ProjectCreator,
                     builder);
 
-                runner.BuildPackage();
+                runner.RunPackageBuild();
             }
         }
 

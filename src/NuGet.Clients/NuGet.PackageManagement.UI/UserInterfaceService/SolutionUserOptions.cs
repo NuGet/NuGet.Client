@@ -6,11 +6,10 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
-using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using IStream = Microsoft.VisualStudio.OLE.Interop.IStream;
 
-namespace NuGetVSExtension
+namespace NuGet.PackageManagement.UI
 {
     /// <summary>
     /// Persists user settings in a solution user options file (*.suo).
@@ -18,7 +17,7 @@ namespace NuGetVSExtension
     [Export]
     [Export(typeof(IUserSettingsManager))]
     [PartCreationPolicy(CreationPolicy.Shared)]
-    internal sealed class SolutionUserOptions : IUserSettingsManager, IVsPersistSolutionOpts
+    public sealed class SolutionUserOptions : IUserSettingsManager, IVsPersistSolutionOpts
     {
         private const string NuGetOptionsStreamKey = "nuget";
 
@@ -112,7 +111,7 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        // Called by the shell if the _strSolutionUserOptionsKey section declared in LoadUserOptions() as 
+        // Called by the shell if the _strSolutionUserOptionsKey section declared in LoadUserOptions() as
         // being written by this package has been found in the suo file
         public int ReadUserOptions(IStream pOptionsStream, string _)
         {
@@ -137,7 +136,7 @@ namespace NuGetVSExtension
             return VSConstants.S_OK;
         }
 
-        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it 
+        // Called by the shell when the SUO file is saved. The provider calls the shell back to let it
         // know which options keys it will use in the suo file.
         public int SaveUserOptions(IVsSolutionPersistence pPersistence)
         {

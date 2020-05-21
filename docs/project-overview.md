@@ -29,9 +29,9 @@ Projects in section: 38
 - [`NuGet.VisualStudio.Client.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Client/NuGet.VisualStudio.Client.csproj): NuGet Visual Studio extension package project.
 - [`NuGet.VisualStudio.Common.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Common/NuGet.VisualStudio.Common.csproj): NuGet's Visual Studio common types and interfaces used for both Package Manager UI, Package Manager Console, restore and install functionalities.
 - [`NuGet.VisualStudio.Implementation.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Implementation/NuGet.VisualStudio.Implementation.csproj): Implementation of the NuGet.VisualStudio extensibility APIs.
-- [`NuGet.VisualStudio.Internal.Contracts.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Internal.Contracts/NuGet.VisualStudio.Internal.Contracts.csproj): 
+- [`NuGet.VisualStudio.Internal.Contracts.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Internal.Contracts/NuGet.VisualStudio.Internal.Contracts.csproj):
 - [`NuGet.VisualStudio.Interop.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.Interop/NuGet.VisualStudio.Interop.csproj): NuGet's Visual Studio client Template Wizard interop implementation.
-- [`NuGet.VisualStudio.OnlineEnvironment.Client.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.OnlineEnvironment.Client/NuGet.VisualStudio.OnlineEnvironment.Client.csproj): 
+- [`NuGet.VisualStudio.OnlineEnvironment.Client.csproj`](../src/NuGet.Clients/NuGet.VisualStudio.OnlineEnvironment.Client/NuGet.VisualStudio.OnlineEnvironment.Client.csproj):
 - [`NuGet.VisualStudio.csproj`](../src/NuGet.Clients/NuGet.VisualStudio/NuGet.VisualStudio.csproj): APIs for invoking NuGet services in Visual Studio.
 - [`NuGetConsole.Host.PowerShell.csproj`](../src/NuGet.Clients/NuGetConsole.Host.PowerShell/NuGetConsole.Host.PowerShell.csproj): Package Manager Console PowerShell host implementation.
 
@@ -101,7 +101,6 @@ Projects in section: 10
 - [`NuGet.PackageManagement.UI.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.PackageManagement.UI.Test/NuGet.PackageManagement.UI.Test.csproj): Unit and integration tests for NuGet.PackageManagement.UI.
 - [`NuGet.PackageManagement.VisualStudio.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.PackageManagement.VisualStudio.Test/NuGet.PackageManagement.VisualStudio.Test.csproj): Unit and integration tests for NuGet.PackageManagement.VisualStudio.
 - [`NuGet.SolutionRestoreManager.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.SolutionRestoreManager.Test/NuGet.SolutionRestoreManager.Test.csproj): Unit and integration tests for NuGet.SolutionRestoreManager.
-- [`NuGet.Tools.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.Tools.Test/NuGet.Tools.Test.csproj): Unit and integration tests for NuGet.Tools.
 - [`NuGet.VisualStudio.Common.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.VisualStudio.Common.Test/NuGet.VisualStudio.Common.Test.csproj): Unit and integration tests for NuGet.VisualStudio.Common.
 - [`NuGet.VisualStudio.Implementation.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.VisualStudio.Implementation.Test/NuGet.VisualStudio.Implementation.Test.csproj): Unit and integration tests for NuGet.VisualStudio.Implementation.
 - [`NuGet.VisualStudio.Test.csproj`](../test/NuGet.Clients.Tests/NuGet.VisualStudio.Test/NuGet.VisualStudio.Test.csproj): Unit and integration tests for NuGet.VisualStudio.

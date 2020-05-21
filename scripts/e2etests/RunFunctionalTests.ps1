@@ -17,7 +17,9 @@ param (
 
 trap
 {
-    Write-Host "RunFunctionalTests.ps1 threw an exception: " $_.Exception -ForegroundColor Red
+    Write-Host "RunFunctionalTests.ps1 threw an exception: " -ForegroundColor Red
+    Write-Error ($_.Exception | Format-List -Force | Out-String) -ErrorAction Continue
+    Write-Error ($_.InvocationInfo | Format-List -Force | Out-String) -ErrorAction Continue
     KillRunningInstancesOfVS
     exit 1
 }
