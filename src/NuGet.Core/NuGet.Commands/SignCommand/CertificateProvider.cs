@@ -32,11 +32,8 @@ namespace NuGet.Commands
 
         private const int MACOS_INVALID_CERT = -25257;
 
-        // OpenSSL:  error:0D07803A:asn1 encoding routines:ASN1_ITEM_EX_D2I:nested asn1 error
-        private const int OPENSSL_ERR_R_NESTED_ASN1_ERROR = 0x0D07803A;
-
-        //Generic exception ASN1 corrupted data
-        private const int OPENSSL_ASN1_CORRUPTED_DATA_ERROR = unchecked((int)0x80131501);
+        // error:0x80131501 generic exception raised by dotnet before using OpenSSL
+        private const int OPENSSL_READER_ASN1_ERROR = unchecked((int)0x80131501);
 
         /// <summary>
         /// Looks for X509Certificates using the CertificateSourceOptions.
@@ -80,8 +77,7 @@ namespace NuGet.Commands
                                     options.CertificatePath)));
 
                         case CRYPT_E_NO_MATCH_HRESULT:
-                        case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
-                        case OPENSSL_ASN1_CORRUPTED_DATA_ERROR:
+                        case OPENSSL_READER_ASN1_ERROR:
                         case MACOS_INVALID_CERT:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
