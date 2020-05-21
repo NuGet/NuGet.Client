@@ -45,6 +45,8 @@ namespace NuGet.PackageManagement.UI
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
+        public event EventHandler LoadItemsCanceled;
+
         private CancellationTokenSource _loadCts;
         private IPackageItemLoader _loader;
         private INuGetUILogger _logger;
@@ -206,85 +208,95 @@ namespace NuGet.PackageManagement.UI
 
         private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token, bool applyUIFilterUpdatesAvailable = false)
         {
+            System.Diagnostics.Debug.WriteLine("LoadItems started (" + Items.Count + ")"); //TODO remove
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
             var currentLoader = _loader;
 
-            _joinableTaskFactory.Value.RunAsync(async () =>
+            try
             {
-                await TaskScheduler.Default;
-
-                var addedLoadingIndicator = false;
-
-                try
+                var jtf = _joinableTaskFactory.Value.RunAsync(async () =>
                 {
+                    await TaskScheduler.Default;
+
+                    var addedLoadingIndicator = false;
+
+                    try
+                    {
                     // add Loading... indicator if not present
                     if (!Items.Contains(_loadingStatusIndicator))
-                    {
-                        Items.Add(_loadingStatusIndicator);
+                        {
+                            Items.Add(_loadingStatusIndicator);
+                            System.Diagnostics.Debug.WriteLine("LoadItems LoadingStatus added (" + Items.Count + ")"); //TODO remove
                         addedLoadingIndicator = true;
-                    }
+                        }
 
-                    await LoadItemsCoreAsync(currentLoader, loadCts.Token);
+                        await LoadItemsCoreAsync(currentLoader, loadCts.Token);
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     //If we refreshed, then any filter should be cleared.
                     if (!applyUIFilterUpdatesAvailable)
-                    {
-                        ClearItemsFilter();
-                    }
+                        {
+                            ClearItemsFilter();
+                        }
 
-                    if (selectedPackageItem != null)
-                    {
-                        UpdateSelectedItem(selectedPackageItem);
+                        if (selectedPackageItem != null)
+                        {
+                            UpdateSelectedItem(selectedPackageItem);
+                        }
                     }
-                }
-                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    currentLoader.Reset();
+                    catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
+                    {
+                        loadCts.Cancel();
+                        loadCts.Dispose();
+                        currentLoader.Reset();
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
                     // Do not log to the activity log, since it is not a NuGet error
                     _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
-                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
+                        _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
 
 
-                    _loadingStatusBar.SetCancelled();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                catch (Exception ex) when (!loadCts.IsCancellationRequested)
-                {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-                    currentLoader.Reset();
+                        _loadingStatusBar.SetCancelled();
+                        _loadingStatusBar.Visibility = Visibility.Visible;
+                    }
+                    catch (Exception ex) when (!loadCts.IsCancellationRequested)
+                    {
+                        loadCts.Cancel();
+                        loadCts.Dispose();
+                        currentLoader.Reset();
 
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
+                        var errorMessage = ExceptionUtilities.DisplayMessage(ex);
+                        _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
 
-                    _loadingStatusIndicator.SetError(errorMessage);
+                        _loadingStatusIndicator.SetError(errorMessage);
 
-                    _loadingStatusBar.SetError();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
-                }
-                finally
-                {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                        _loadingStatusBar.SetError();
+                        _loadingStatusBar.Visibility = Visibility.Visible;
+                    }
+                    catch (Exception ex)
                     {
+                        var message = ex.ToString();
+                        LoadItemsCanceled?.Invoke(this, EventArgs.Empty);
+                        //throw;
+                    }
+                    finally
+                    {
+                        if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
+                            && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                        {
                         // Ideally, After a serach, it should report its status and,
                         // do not keep the LoadingStatus.Loading forever.
                         // This is a workaround.
@@ -292,27 +304,42 @@ namespace NuGet.PackageManagement.UI
 
                         //TODO: I think this can stay as-is because if there's a filter, the Items load still should finish.
                         if (Items.Count == emptyListCount)
-                        {
-                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                            {
+                                _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                            }
+                            else
+                            {
+                                Items.Remove(_loadingStatusIndicator);
+                            }
                         }
-                        else
-                        {
-                            Items.Remove(_loadingStatusIndicator);
-                        }
+
+                        UpdateCheckBoxStatus();
                     }
-                }
 
-                UpdateCheckBoxStatus();
 
-                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            });
+
+                    LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
+                });
+                var exc = jtf.Task.Exception;
+            }
+            catch (AggregateException ex)
+            {
+                ex.Handle(inner => (inner is OperationCanceledException));
+            }
+            catch (Exception ex)
+            {
+                var str = ex.Message;
+            }
+            
+
         }
 
         internal void FilterItems(ItemFilter itemFilter, CancellationToken token)
         {
+            System.Diagnostics.Debug.WriteLine("FilterItems started (" + Items.Count + ")"); //TODO remove
             // If there is another async loading process - cancel it.
-            var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
-            Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
+            //var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
+            //Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
@@ -325,6 +352,7 @@ namespace NuGet.PackageManagement.UI
                     // TODO: REMOVE: add Loading... indicator if not present
                     if (!Items.Contains(_loadingStatusIndicator))
                     {
+                        System.Diagnostics.Debug.WriteLine("FilterItems LoadingStatus added (" + Items.Count + ")"); //TODO remove
                         Items.Add(_loadingStatusIndicator);
                         addedLoadingIndicator = true;
                     }
@@ -342,10 +370,10 @@ namespace NuGet.PackageManagement.UI
                         ClearItemsFilter();
                     }
                 }
-                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
+                catch (OperationCanceledException) when (!_loadCts.IsCancellationRequested)
                 {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
+                    _loadCts.Cancel();
+                    _loadCts.Dispose();
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
@@ -360,10 +388,10 @@ namespace NuGet.PackageManagement.UI
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
                 }
-                catch (Exception ex) when (!loadCts.IsCancellationRequested)
+                catch (Exception ex) when (!_loadCts.IsCancellationRequested)
                 {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
+                    _loadCts.Cancel();
+                    _loadCts.Dispose();
 
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
@@ -394,6 +422,7 @@ namespace NuGet.PackageManagement.UI
                         else
                         {
                             Items.Remove(_loadingStatusIndicator);
+                            System.Diagnostics.Debug.WriteLine("FilterItems LoadingStatus removed (" + Items.Count + ")"); //TODO remove
                         }
                     }
                 }
@@ -521,6 +550,7 @@ namespace NuGet.PackageManagement.UI
         /// <param name="state">Progress reported by the <c>Progress</c> callback</param>
         private void HandleItemLoaderStateChange(IItemLoader<PackageItemListViewModel> loader, IItemLoaderState state)
         {
+            System.Diagnostics.Debug.WriteLine("HandleItemLoaderStateChange started (" + Items.Count + ")"); //TODO remove
             _joinableTaskFactory.Value.Run(async () =>
             {
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
@@ -544,6 +574,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         await _list.ItemsLock.ExecuteAsync(() =>
                         {
+                            System.Diagnostics.Debug.WriteLine("HandleItemLoaderStateChange add loadingstatus (" + Items.Count + ")"); //TODO remove
                             Items.Add(_loadingStatusIndicator);
                             return Task.CompletedTask;
                         });
@@ -593,11 +624,12 @@ namespace NuGet.PackageManagement.UI
                 {
                     // remove the loading status indicator if it's in the list
                     bool removed = Items.Remove(_loadingStatusIndicator);
-
+                    System.Diagnostics.Debug.WriteLine("UpdatePackageList001 was (" + Items.Count + ")"); //TODO remove
                     if (refresh)
                     {
                         ClearPackageList();
                     }
+                    System.Diagnostics.Debug.WriteLine("UpdatePackageList002 Cleared (" + Items.Count + ")"); //TODO remove
 
                     // add newly loaded items
                     foreach (var package in packages)
@@ -605,11 +637,13 @@ namespace NuGet.PackageManagement.UI
                         package.PropertyChanged += Package_PropertyChanged;
                         Items.Add(package);
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
+                        System.Diagnostics.Debug.WriteLine("UpdatePackageList003 Add (" + Items.Count + ")"); //TODO remove
                     }
 
                     if (removed)
                     {
                         Items.Add(_loadingStatusIndicator);
+                        System.Diagnostics.Debug.WriteLine("UpdatePackageList004 LoadingStatus added (" + Items.Count + ")"); //TODO remove
                     }
 
                     return Task.CompletedTask;
@@ -627,6 +661,7 @@ namespace NuGet.PackageManagement.UI
                 package.PropertyChanged -= Package_PropertyChanged;
             }
 
+            System.Diagnostics.Debug.WriteLine("ClearPackageList was (" + Items.Count + ")"); //TODO remove
             Items.Clear(); //TODO: clear any filter?
             _loadingStatusBar.ItemsLoaded = 0;
         }

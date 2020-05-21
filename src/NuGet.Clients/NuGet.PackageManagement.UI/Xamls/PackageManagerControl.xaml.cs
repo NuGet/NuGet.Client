@@ -160,6 +160,8 @@ namespace NuGet.PackageManagement.UI
             ApplySettings(settings, nugetSettings);
             _initialized = true;
 
+            _packageList.LoadItemsCanceled += PackageList_LoadItemsCanceled;
+
             // UI is initialized. Start the first search
             _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
             _packageList.IsSolution = Model.IsSolution;
@@ -194,6 +196,19 @@ namespace NuGet.PackageManagement.UI
 
             var gen = PackageList._list.ItemContainerGenerator;
             gen.StatusChanged += Gen_StatusChanged;
+        }
+
+        private void PackageList_LoadItemsCanceled(object sender, EventArgs e)
+        {
+            //Invalidate cache.
+            Model.CachedUpdates = null;
+            ResetTabLoadFlags();
+            if (!_loadCts.IsCancellationRequested)
+            {
+                //Load was cancelled, so trigger a load of the current tab.
+                //private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
+                Filter_SelectionChanged(sender, new FilterChangedEventArgs(previousFilter: null));
+            }
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -739,14 +754,17 @@ namespace NuGet.PackageManagement.UI
             })
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
-
+        bool _crazy = false;
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
         internal async Task SearchPackagesAndRefreshUpdateCountAsync(string searchText, bool useCachedPackages, IVsSearchCallback pSearchCallback, IVsSearchTask searchTask)
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
+            if (_crazy)
+            {
+                Thread.Sleep(1500);
+            }
             //If we're on the Updates tab, actually load the Installed tab's data and apply a filter.
             //ItemFilter filterToLoad = _topPanel.Filter == ItemFilter.UpdatesAvailable ? ItemFilter.Installed : _topPanel.Filter;
             ItemFilter filterToRender = _topPanel.Filter;
@@ -759,39 +777,58 @@ namespace NuGet.PackageManagement.UI
             }
             else //Invalidate cache
             {
+                Model.CachedUpdates = null;
                 FlagTabAsLoaded(filterToRender, isLoaded: false);
             }
 
             var packageFeed = await CreatePackageFeedAsync(loadContext, filterToRender, _uiLogger);
 
-            var loader = new PackageItemLoader(
-                loadContext, packageFeed, searchText, IncludePrerelease);
-            var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                ? Resx.Resources.Text_Loading
-                : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-            // Set a new cancellation token source which will be used to cancel this task in case
-            // new loading task starts or manager ui is closed while loading packages.
-            _loadCts = new CancellationTokenSource();
-
-            // start SearchAsync task for initial loading of packages
-            var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
-            // this will wait for searchResultTask to complete instead of creating a new task
-            await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
-
-            if (pSearchCallback != null && searchTask != null)
+            try
             {
-                var searchResult = await searchResultTask;
-                pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
-            }
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeed, searchText, IncludePrerelease);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
 
-            // When not using Cache, refresh all Counts on the Updates an
-            if (!useCachedPackages)
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
+                // start SearchAsync task for initial loading of packages
+                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+                // this will wait for searchResultTask to complete instead of creating a new task
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
+
+                if (pSearchCallback != null && searchTask != null)
+                {
+                    var searchResult = await searchResultTask;
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                }
+
+                // When not using Cache, refresh all Counts on the Updates an
+                if (!useCachedPackages)
+                {
+                    RefreshInstalledAndUpdatesTabs();
+                }
+
+                FlagTabAsLoaded(filterToRender);
+                //Loading Installed tab should also consider the Updates tab as loaded to indicate UI filtering is ready.
+                if (filterToRender == ItemFilter.Installed)
+                {
+                    FlagTabAsLoaded(ItemFilter.UpdatesAvailable);
+                }
+            }
+            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
             {
-                RefreshInstalledAndUpdatesTabs();
+                //Invalidate cache.
+                Model.CachedUpdates = null;
+                FlagTabAsLoaded(filterToRender, isLoaded: false);
             }
+            catch (Exception)
+            {
 
-            FlagTabAsLoaded(filterToRender);
+            }
         }
 
         /// <summary>
@@ -825,6 +862,12 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private void ResetTabLoadFlags()
+        {
+            _installedTabIsLoaded = false;
+            _updatesTabIsLoaded = false;
+        }
+
         //private bool IsTabLoaded(ItemFilter filterToCheck)
         //{
         //    switch (filterToCheck)
@@ -846,7 +889,9 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
+                //TODO: dupe
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                //TODO: dupe
                 var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeed, includePrerelease: IncludePrerelease);
@@ -1060,7 +1105,10 @@ namespace NuGet.PackageManagement.UI
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
+                // cancel previous refresh tabs task, if any
+                // and start a new one.
+                var tabSwitchCts = new CancellationTokenSource();
+                Interlocked.Exchange(ref _loadCts, tabSwitchCts)?.Cancel();
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
@@ -1386,8 +1434,18 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-            RefreshConsolidatablePackagesCount();
+            try
+            {                
+                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                RefreshConsolidatablePackagesCount();
+            }
+            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
+            {
+                //Invalidate cache.
+                Model.CachedUpdates = null;
+                ResetTabLoadFlags();
+                throw;
+            }
         }
 
         internal void InstallPackage(string packageId, NuGetVersion version)
