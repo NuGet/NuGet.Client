@@ -20,7 +20,7 @@ namespace NuGet.Protocol
         private readonly RawSearchResourceV3 _rawSearchResource;
         // Maximum limit we try to read from http stream, 20MB. Maybe we can read this value from NugGet.Config file to override it.
         internal const int MaxBytesToRead = 21 * 1048576;
-        
+        public int UseNew { get; set; } = 3;
 
         public PackageSearchResourceV3(RawSearchResourceV3 searchResource)
             : base()
