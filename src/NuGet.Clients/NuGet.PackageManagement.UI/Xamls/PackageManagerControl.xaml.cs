@@ -1163,6 +1163,12 @@ namespace NuGet.PackageManagement.UI
                 }
                 else //Refresh tab from Cache.
                 {
+                    //If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
+                    if (!switchedFromInstalledOrUpdatesTab)
+                    {
+                        ResetTabLoadFlags();
+                    }
+
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                     _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
                 }
