@@ -80,8 +80,11 @@ namespace NuGet.Commands
                                     options.CertificatePath)));
 
                         case CRYPT_E_NO_MATCH_HRESULT:
-                        case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
+#if IS_SIGNING_SUPPORTED && IS_CORECLR
                         case OPENSSL_ASN1_CORRUPTED_DATA_ERROR:
+#else
+                        case OPENSSL_ERR_R_NESTED_ASN1_ERROR:
+#endif
                         case MACOS_INVALID_CERT:
                             throw new SignCommandException(
                                 LogMessage.CreateError(NuGetLogCode.NU3001,
