@@ -152,6 +152,15 @@
           <TextBlock
                         FontWeight="Bold"
                         FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
+                        TextWrapping="NoWrap"
+                        VerticalAlignment="Top"
+                        ToolTip="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                        AutomationProperties.Name="{x:Static nuget:Resources.ToolTip_PackageRecommended}"
+                        Visibility="{Binding Recommended, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Text="&#x2605; " />
+          <TextBlock
+                        FontWeight="Bold"
+                        FontSize="{Binding ElementName=_self,Path=FontSize,Converter={StaticResource Font122PercentSizeConverter}}"
                         TextTrimming="CharacterEllipsis"
                         TextWrapping="NoWrap"
                         AutomationProperties.AutomationId="id"

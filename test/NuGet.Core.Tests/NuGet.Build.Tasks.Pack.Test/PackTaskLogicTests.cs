@@ -39,7 +39,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(tc.Request.PackageId, nuspecReader.GetId());
                     Assert.Equal(tc.Request.PackageVersion, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetAuthors());
-                    Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 
@@ -136,7 +136,7 @@ namespace NuGet.Build.Tasks.Pack.Test
                     Assert.Equal(tc.Request.PackageId, nuspecReader.GetId());
                     Assert.Equal(tc.Request.PackageVersion, nuspecReader.GetVersion().ToFullString());
                     Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetAuthors());
-                    Assert.Equal(string.Join(",", tc.Request.Authors), nuspecReader.GetOwners());
+                    Assert.Equal("", nuspecReader.GetOwners());
                     Assert.Equal(tc.Request.Description, nuspecReader.GetDescription());
                     Assert.False(nuspecReader.GetRequireLicenseAcceptance());
 

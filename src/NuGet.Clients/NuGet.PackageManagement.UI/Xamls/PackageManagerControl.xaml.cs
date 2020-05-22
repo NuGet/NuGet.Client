@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -29,6 +30,7 @@ using Task = System.Threading.Tasks.Task;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
+using Microsoft.VisualStudio.Experimentation;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -66,6 +68,9 @@ namespace NuGet.PackageManagement.UI
         private bool _missingPackageStatus;
         private readonly INuGetUILogger _uiLogger;
         private bool _loadedAndInitialized = false;
+        private bool _recommendPackages = false;
+
+        private (string modelVersion, string vsixVersion)? _recommenderVersion;
 
         public PackageManagerModel Model { get; }
 
@@ -97,6 +102,8 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
+
+        private bool _forceRecommender;
 
         public PackageManagerControl(
             PackageManagerModel model,
@@ -184,6 +191,16 @@ namespace NuGet.PackageManagement.UI
             }
 
             _missingPackageStatus = false;
+
+            // check if environment variable RecommendNuGetPackages to turn on recommendations is set to 1
+            try
+            {
+                _forceRecommender = (Environment.GetEnvironmentVariable("NUGET_RECOMMEND_PACKAGES") == "1");
+            }
+            catch (SecurityException)
+            {
+                // don't make recommendations if we are not able to read the environment variable
+            }
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -719,6 +736,47 @@ namespace NuGet.PackageManagement.UI
             .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
+        // Check if user is in A/B experiment. Also return true if environment variable RecommendNuGetPackages is set to 1.
+        public bool IsRecommenderFlightEnabled()
+        {
+            return _forceRecommender || ExperimentationService.Default.IsCachedFlightEnabled("nugetrecommendpkgs");
+        }
+
+        private async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> GetPackageFeedsAsync(string searchText, PackageLoadContext loadContext)
+        {
+            // only make recommendations when
+            //   the single source repository is nuget.org,
+            //   the package manager was opened for a project, not a solution,
+            //   this is the Browse tab,
+            //   and the search text is an empty string
+            _recommendPackages = false;
+            if (loadContext.IsSolution == false
+                && _topPanel.Filter == ItemFilter.All
+                && searchText == string.Empty
+                && loadContext.SourceRepositories.Count() == 1
+                // also check if this is a PC-style project. We will not provide recommendations for PR-style
+                // projects until we have a way to get dependent packages without negatively impacting perf.
+                && Model.Context.Projects.First().ProjectStyle == ProjectModel.ProjectStyle.PackagesConfig
+                && TelemetryUtility.IsNuGetOrg(loadContext.SourceRepositories.First().PackageSource))
+            {
+                _recommendPackages = true;
+            }
+
+            // Check for A/B experiment here. For control group, call CreatePackageFeedAsync with false instead of _recommendPackages
+            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
+            if (IsRecommenderFlightEnabled())
+            {
+                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, _recommendPackages);
+                _recommenderVersion = ((RecommenderPackageFeed)packageFeeds.recommenderFeed)?.VersionInfo;
+            }
+            else
+            {
+                packageFeeds = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger, recommendPackages: false);
+            }
+
+            return packageFeeds;
+        }
+
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
@@ -733,10 +791,10 @@ namespace NuGet.PackageManagement.UI
                 loadContext.CachedPackages = Model.CachedUpdates;
             }
 
-            var packageFeed = await CreatePackageFeedAsync(loadContext, _topPanel.Filter, _uiLogger);
+            var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
 
             var loader = new PackageItemLoader(
-                loadContext, packageFeed, searchText, IncludePrerelease);
+                loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
             var loadingMessage = string.IsNullOrWhiteSpace(searchText)
                 ? Resx.Resources.Text_Loading
                 : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
@@ -793,9 +851,9 @@ namespace NuGet.PackageManagement.UI
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger);
+                var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, recommendPackages: false);
                 var loader = new PackageItemLoader(
-                    loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                    loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
                 var metadataProvider = CreatePackageMetadataProvider(loadContext);
 
                 // cancel previous refresh tabs task, if any
@@ -856,9 +914,9 @@ namespace NuGet.PackageManagement.UI
                     await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                     _topPanel.UpdateCountOnConsolidateTab(count: 0);
                     var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                    var packageFeed = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger);
+                    var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.Consolidate, _uiLogger, recommendPackages: false);
                     var loader = new PackageItemLoader(
-                        loadContext, packageFeed, includePrerelease: IncludePrerelease);
+                        loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
 
                     _topPanel.UpdateCountOnConsolidateTab(await loader.GetTotalCountAsync(maxCount: 100, CancellationToken.None));
                 })
@@ -884,6 +942,8 @@ namespace NuGet.PackageManagement.UI
         internal async Task UpdateDetailPaneAsync()
         {
             var selectedPackage = _packageList.SelectedItem;
+            var selectedIndex = _packageList.SelectedIndex;
+            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (selectedPackage == null)
             {
                 _packageDetail.Visibility = Visibility.Hidden;
@@ -896,6 +956,7 @@ namespace NuGet.PackageManagement.UI
                 EmitSearchSelectionTelemetry(selectedPackage);
 
                 await _detailModel.SetCurrentPackage(selectedPackage, _topPanel.Filter, () => _packageList.SelectedItem);
+                _detailModel.SetCurrentSelectionInfo(selectedIndex, recommendedCount, _recommendPackages, _recommenderVersion);
 
                 _packageDetail.ScrollToHome();
 
@@ -909,57 +970,85 @@ namespace NuGet.PackageManagement.UI
         {
             var operationId = _packageList.OperationId;
             var selectedIndex = _packageList.SelectedIndex;
+            var recommendedCount = _packageList.PackageItems.Where(item => item.Recommended == true).Count();
             if (_topPanel.Filter == ItemFilter.All
                 && operationId.HasValue
                 && selectedIndex >= 0)
             {
                 TelemetryActivity.EmitTelemetryEvent(new SearchSelectionTelemetryEvent(
                     operationId.Value,
+                    recommendedCount,
                     selectedIndex,
                     selectedPackage.Id,
                     selectedPackage.Version));
             }
         }
 
-        private static async Task<IPackageFeed> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger)
+        private static async Task<(IPackageFeed mainFeed, IPackageFeed recommenderFeed)> CreatePackageFeedAsync(PackageLoadContext context, ItemFilter filter, INuGetUILogger uiLogger, bool recommendPackages)
         {
             var logger = new VisualStudioActivityLogger();
+            var packageFeeds = (mainFeed: (IPackageFeed)null, recommenderFeed: (IPackageFeed)null);
 
-            if (filter == ItemFilter.All)
+            if (filter == ItemFilter.All && recommendPackages == false)
             {
-                return new MultiSourcePackageFeed(
+                packageFeeds.mainFeed = new MultiSourcePackageFeed(
                     context.SourceRepositories,
                     uiLogger,
                     TelemetryActivity.NuGetTelemetryService);
+                return packageFeeds;
             }
 
             var metadataProvider = CreatePackageMetadataProvider(context);
             var installedPackages = await context.GetInstalledPackagesAsync();
 
+            if (filter == ItemFilter.All)
+            {
+                // if we get here, recommendPackages == true
+                // for now, we are only making recommendations for PC-style projects, and for these the dependent packages are
+                // already included in the installedPackages list. When we implement PR-style projects, we'll need to also pass
+                // the dependent packages to RecommenderPackageFeed.
+                var targetFrameworks = context.GetSupportedFrameworks();
+
+                packageFeeds.mainFeed = new MultiSourcePackageFeed(
+                    context.SourceRepositories,
+                    uiLogger,
+                    TelemetryActivity.NuGetTelemetryService);
+                packageFeeds.recommenderFeed = new RecommenderPackageFeed(
+                    context.SourceRepositories.First(),
+                    installedPackages,
+                    targetFrameworks,
+                    metadataProvider,
+                    logger);
+                return packageFeeds;
+            }
+
             if (filter == ItemFilter.Installed)
             {
-                return new InstalledPackageFeed(installedPackages, metadataProvider, logger);
+                packageFeeds.mainFeed = new InstalledPackageFeed(installedPackages, metadataProvider, logger);
+                return packageFeeds;
             }
 
             if (filter == ItemFilter.Consolidate)
             {
-                return new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
+                packageFeeds.mainFeed = new ConsolidatePackageFeed(installedPackages, metadataProvider, logger);
+                return packageFeeds;
             }
 
             // Search all / updates available cannot work without a source repo
             if (context.SourceRepositories == null)
             {
-                return null;
+                return packageFeeds;
             }
 
             if (filter == ItemFilter.UpdatesAvailable)
             {
-                return new UpdatePackageFeed(
+                packageFeeds.mainFeed = new UpdatePackageFeed(
                     installedPackages,
                     metadataProvider,
                     context.Projects,
                     context.CachedPackages,
                     logger);
+                return packageFeeds;
             }
 
             throw new InvalidOperationException("Unsupported feed type");

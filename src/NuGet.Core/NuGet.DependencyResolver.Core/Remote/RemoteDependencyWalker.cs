@@ -13,6 +13,7 @@ using NuGet.LibraryModel;
 using NuGet.RuntimeModel;
 using NuGet.Shared;
 using NuGet.Versioning;
+using NuGet.Packaging;
 
 namespace NuGet.DependencyResolver
 {
@@ -37,13 +38,26 @@ namespace NuGet.DependencyResolver
                 outerEdge: null,
                 transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
+            // do not calculate the hashset of the direct dependencies for cases when there are not any elements in the transitiveCentralPackageVersions queue
+            var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
+                () =>
+                {
+                    var result = new HashSet<string>();
+                    result.AddRange(rootNode.InnerNodes.Select(n => n.Key.Name));
+                    return result;
+                });
+
             var transitiveCentralPackageVersionNodes = new List<GraphNode<RemoteResolveResult>>();
             while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionDependecy))
             {
-                // as the nodes are created more parents can be added for a single central transitive node
-                // keep the list of the nodes created and add the parents's references at the end
-                // the parent references are needed to keep track of possible rejected parents
-                transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
+                // do not add a transitive dependency node if it is direct already
+                if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageVersionDependecy.Name))
+                {
+                    // as the nodes are created more parents can be added for a single central transitive node
+                    // keep the list of the nodes created and add the parents's references at the end
+                    // the parent references are needed to keep track of possible rejected parents
+                    transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
+                }
             }
             transitiveCentralPackageVersionNodes.ForEach(node => transitiveCentralPackageVersions.AddParentsToNode(node));
 
