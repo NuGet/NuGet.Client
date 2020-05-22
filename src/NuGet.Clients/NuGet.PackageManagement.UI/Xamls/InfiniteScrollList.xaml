@@ -285,7 +285,7 @@
         <CheckBox
           x:Name="_selectAllPackages"
           Grid.Column="0"
-          Margin="16, 8"
+          Margin="4, 8"
           VerticalAlignment="Center"
           Checked="SelectAllPackagesCheckBox_Checked"
           Unchecked="SelectAllPackagesCheckBox_Unchecked"
