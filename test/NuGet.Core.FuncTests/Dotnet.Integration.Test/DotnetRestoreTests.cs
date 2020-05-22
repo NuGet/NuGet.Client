@@ -645,7 +645,7 @@ EndGlobal";
                 var result = _msbuildFixture.RunDotnet(workingDirectory, "restore");
 
                 // Assert
-                Assert.True(result.Output.Contains($"The project {projectName}.csproj is using CentralPackageVersionManagement, a NuGet preview feature. See: https://github.com/NuGet/Home/wiki/Centrally-managing-NuGet-package-versions"));
+                Assert.True(result.Output.Contains($"The project {projectFile} is using CentralPackageVersionManagement, a NuGet preview feature."));
             }
         }
 

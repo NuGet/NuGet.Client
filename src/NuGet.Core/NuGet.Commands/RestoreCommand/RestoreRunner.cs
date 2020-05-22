@@ -248,6 +248,11 @@ namespace NuGet.Commands
             var command = new RestoreCommand(request);
             var result = await command.ExecuteAsync(token);
 
+            log.LogInformation(string.Format(
+                    CultureInfo.CurrentCulture,
+                    Strings.CentralPackageVersionManagementInPreview,
+                    summaryRequest.InputPath));
+
             return new RestoreResultPair(summaryRequest, result);
         }
 
