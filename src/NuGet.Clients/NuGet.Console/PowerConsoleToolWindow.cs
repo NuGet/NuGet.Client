@@ -35,42 +35,20 @@ namespace NuGetConsole.Implementation
         private JoinableTask _loadTask;
         private const string F1KeywordValuePmc = "VS.NuGet.PackageManager.Console";
 
+        private AsyncLazy<IComponentModel> _componentModelAsyncLazy = new AsyncLazy<IComponentModel>(
+            async delegate { return await AsyncServiceProvider.GlobalProvider.GetComponentModelAsync(); }, ThreadHelper.JoinableTaskFactory);
+
         /// <summary>
         /// Get VS IComponentModel service.
         /// </summary>
         private IComponentModel ComponentModel
         {
-            get { return this.GetService<IComponentModel>(typeof(SComponentModel)); }
-        }
-
-        private IProductUpdateService ProductUpdateService
-        {
-            get { return ComponentModel.GetService<IProductUpdateService>(); }
-        }
-
-        private IPackageRestoreManager PackageRestoreManager
-        {
-            get { return ComponentModel.GetService<IPackageRestoreManager>(); }
-        }
-
-        private IDeleteOnRestartManager DeleteOnRestartManager
-        {
-            get { return ComponentModel.GetService<IDeleteOnRestartManager>(); }
-        }
-
-        private ISolutionManager SolutionManager
-        {
-            get { return ComponentModel.GetService<ISolutionManager>(); }
+            get { return ComponentModelAsyncLazy.GetValue(); }
         }
 
         private PowerConsoleWindow PowerConsoleWindow
         {
             get { return ComponentModel.GetService<IPowerConsoleWindow>() as PowerConsoleWindow; }
-        }
-
-        private IVsUIShell VsUIShell
-        {
-            get { return this.GetService<IVsUIShell>(typeof(SVsUIShell)); }
         }
 
         private bool IsToolbarEnabled
@@ -95,39 +73,6 @@ namespace NuGetConsole.Implementation
             BitmapResourceID = 301;
             BitmapIndex = 0;
             ToolBar = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.idToolbar);
-        }
-
-        protected override void Initialize()
-        {
-            base.Initialize();
-
-            var mcs = GetService(typeof(IMenuCommandService)) as OleMenuCommandService;
-            if (mcs != null)
-            {
-                // Get list command for the Feed combo
-                var sourcesListCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidSourcesList);
-                mcs.AddCommand(new OleMenuCommand(SourcesList_Exec, sourcesListCommandID));
-
-                // invoke command for the Feed combo
-                var sourcesCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidSources);
-                mcs.AddCommand(new OleMenuCommand(Sources_Exec, sourcesCommandID));
-
-                // get default project command
-                var projectsListCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidProjectsList);
-                mcs.AddCommand(new OleMenuCommand(ProjectsList_Exec, projectsListCommandID));
-
-                // invoke command for the Default project combo
-                var projectsCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidProjects);
-                mcs.AddCommand(new OleMenuCommand(Projects_Exec, projectsCommandID));
-
-                // clear console command
-                var clearHostCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidClearHost);
-                mcs.AddCommand(new OleMenuCommand(ClearHost_Exec, clearHostCommandID));
-
-                // terminate command execution command
-                var stopHostCommandID = new CommandID(GuidList.guidNuGetCmdSet, PkgCmdIDList.cmdidStopHost);
-                mcs.AddCommand(new OleMenuCommand(StopHost_Exec, stopHostCommandID));
-            }
         }
 
         /// <summary>
@@ -252,15 +197,30 @@ namespace NuGetConsole.Implementation
                 ||
                 hr == OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP)
             {
-                var target = GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
-                if (target != null)
+                Guid copyPguildCmdGroup = pguidCmdGroup;
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    hr = target.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
-                }
+                    hr = await QueryStatusInServiceAsync(copyPguildCmdGroup, cCmds, prgCmds, pCmdText);
+                });
             }
 
             return hr;
         }
+
+        private async System.Threading.Tasks.Task<int> QueryStatusInServiceAsync(Guid pguidCmdGroup, uint cCmds, OLECMD[] prgCmds, IntPtr pCmdText)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            int hr = OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP;
+            var target = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IOleCommandTarget>();
+            if (target != null)
+            {
+                hr = target.QueryStatus(ref pguidCmdGroup, cCmds, prgCmds, pCmdText);
+            }
+
+            return hr;
+        }
+
 
         /// <summary>
         /// Override to forward to editor or handle accordingly if supported by this tool window.
@@ -279,116 +239,28 @@ namespace NuGetConsole.Implementation
                 ||
                 hr == OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP)
             {
-                var target = GetService(typeof(IOleCommandTarget)) as IOleCommandTarget;
-                if (target != null)
+                Guid copyPguildCmdGroup = pguidCmdGroup;
+                ThreadHelper.JoinableTaskFactory.Run(async delegate
                 {
-                    hr = target.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
-                }
+                    hr = await ExecInServiceAsync(copyPguildCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
+                });
             }
 
             return hr;
         }
 
-        private void SourcesList_Exec(object sender, EventArgs e)
+        private async System.Threading.Tasks.Task<int> ExecInServiceAsync(Guid pguidCmdGroup, uint nCmdID, uint nCmdexecopt, IntPtr pvaIn, IntPtr pvaOut)
         {
-            var args = e as OleMenuCmdEventArgs;
-            if (args != null)
-            {
-                if (args.InValue != null
-                    || args.OutValue == IntPtr.Zero)
-                {
-                    throw new ArgumentException("Invalid argument", "e");
-                }
-                Marshal.GetNativeVariantForObject(PowerConsoleWindow.PackageSources, args.OutValue);
-            }
-        }
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        /// <summary>
-        /// Called to retrieve current combo item name or to select a new item.
-        /// </summary>
-        private void Sources_Exec(object sender, EventArgs e)
-        {
-            var args = e as OleMenuCmdEventArgs;
-            if (args != null)
+            int hr = OleCommandFilter.OLECMDERR_E_UNKNOWNGROUP;
+            var target = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IOleCommandTarget>();
+            if (target != null)
             {
-                if (args.InValue != null
-                    && args.InValue is int) // Selected a feed
-                {
-                    var index = (int)args.InValue;
-                    if (index >= 0
-                        && index < PowerConsoleWindow.PackageSources.Length)
-                    {
-                        PowerConsoleWindow.ActivePackageSource = PowerConsoleWindow.PackageSources[index];
-                    }
-                }
-                else if (args.OutValue != IntPtr.Zero) // Query selected feed name
-                {
-                    var displayName = PowerConsoleWindow.ActivePackageSource ?? string.Empty;
-                    Marshal.GetNativeVariantForObject(displayName, args.OutValue);
-                }
+                hr = target.Exec(ref pguidCmdGroup, nCmdID, nCmdexecopt, pvaIn, pvaOut);
             }
-        }
 
-        private void ProjectsList_Exec(object sender, EventArgs e)
-        {
-            var args = e as OleMenuCmdEventArgs;
-            if (args != null)
-            {
-                if (args.InValue != null
-                    || args.OutValue == IntPtr.Zero)
-                {
-                    throw new ArgumentException("Invalid argument", "e");
-                }
-
-                // get project list here
-                Marshal.GetNativeVariantForObject(PowerConsoleWindow.AvailableProjects, args.OutValue);
-            }
-        }
-
-        /// <summary>
-        /// Called to retrieve current combo item name or to select a new item.
-        /// </summary>
-        private void Projects_Exec(object sender, EventArgs e)
-        {
-            var args = e as OleMenuCmdEventArgs;
-            if (args != null)
-            {
-                if (args.InValue != null
-                    && args.InValue is int)
-                {
-                    // Selected a default projects
-                    var index = (int)args.InValue;
-                    if (index >= 0
-                        && index < PowerConsoleWindow.AvailableProjects.Length)
-                    {
-                        PowerConsoleWindow.SetDefaultProjectIndex(index);
-                    }
-                }
-                else if (args.OutValue != IntPtr.Zero)
-                {
-                    var displayName = PowerConsoleWindow.DefaultProject ?? string.Empty;
-                    Marshal.GetNativeVariantForObject(displayName, args.OutValue);
-                }
-            }
-        }
-
-        /// <summary>
-        /// ClearHost command handler.
-        /// </summary>
-        private void ClearHost_Exec(object sender, EventArgs e)
-        {
-            if (WpfConsole != null)
-            {
-                WpfConsole.Dispatcher.ClearConsole();
-            }
-        }
-
-        private void StopHost_Exec(object sender, EventArgs e)
-        {
-            if (WpfConsole != null)
-            {
-                WpfConsole.Host.Abort();
-            }
+            return hr;
         }
 
         private HostInfo ActiveHostInfo
@@ -540,8 +412,9 @@ namespace NuGetConsole.Implementation
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+                var shellSvc = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell>();
                 // force the UI to update the toolbar
-                VsUIShell.UpdateCommandUI(0 /* false = update UI asynchronously */);
+                shellSvc.UpdateCommandUI(fImmediateUpdate: 0 /* false = update UI asynchronously */);
             });
 
             NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageManagerConsoleLoaded);
@@ -732,6 +605,8 @@ namespace NuGetConsole.Implementation
                 return _consoleStatus;
             }
         }
+
+        public AsyncLazy<IComponentModel> ComponentModelAsyncLazy { get => _componentModelAsyncLazy; set => _componentModelAsyncLazy = value; }
 
         #endregion
     }
