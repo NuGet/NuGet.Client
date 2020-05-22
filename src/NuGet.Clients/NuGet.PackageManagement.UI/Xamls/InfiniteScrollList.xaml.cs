@@ -637,7 +637,7 @@ namespace NuGet.PackageManagement.UI
                         package.PropertyChanged += Package_PropertyChanged;
                         Items.Add(package);
                         _selectedCount = package.Selected ? _selectedCount + 1 : _selectedCount;
-                        System.Diagnostics.Debug.WriteLine("UpdatePackageList003 Add (" + Items.Count + ")"); //TODO remove
+                        System.Diagnostics.Debug.WriteLine("UpdatePackageList003 Add (" + Items.Count + ") + (UpdateAvailable: " + package.IsUpdateAvailable + ")"); //TODO remove
                     }
 
                     if (removed)
