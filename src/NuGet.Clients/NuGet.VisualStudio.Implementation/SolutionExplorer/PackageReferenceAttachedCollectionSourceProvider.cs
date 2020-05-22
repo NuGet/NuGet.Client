@@ -29,7 +29,9 @@ namespace NuGet.VisualStudio.SolutionExplorer
         protected override bool TryGetIdentity(Properties properties, out (string Name, string Version) identity)
         {
             if (properties.Item("Name")?.Value is string name &&
-                properties.Item("Version")?.Value is string version)
+                properties.Item("Version")?.Value is string version &&
+                !string.IsNullOrEmpty(name) &&
+                !string.IsNullOrEmpty(version))
             {
                 identity = (name, version);
                 return true;
