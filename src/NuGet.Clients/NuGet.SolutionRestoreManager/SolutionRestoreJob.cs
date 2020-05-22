@@ -24,6 +24,7 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.Packaging.Signing;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
+using NuGet.ProjectModel;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
@@ -156,7 +157,7 @@ namespace NuGet.SolutionRestoreManager
 
             // start timer for telemetry event
             var stopWatch = Stopwatch.StartNew();
-            var intervalTracker = new IntervalTracker();
+            var intervalTracker = new IntervalTracker(RestoreTelemetryEvent.RestoreActionEventName);
             var projects = Enumerable.Empty<NuGetProject>();
 
             _packageRestoreManager.PackageRestoredEvent += PackageRestoreManager_PackageRestored;
@@ -167,38 +168,43 @@ namespace NuGet.SolutionRestoreManager
             {
                 try
                 {
-                    intervalTracker.StartIntervalMeasure();
-                    var solutionDirectory = _solutionManager.SolutionDirectory;
-                    var isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
+                    string solutionDirectory;
+                    bool isSolutionAvailable;
 
-                    // Get the projects from the SolutionManager
-                    // Note that projects that are not supported by NuGet, will not show up in this list
-                    projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
-
-                    if (projects.Any() && solutionDirectory == null)
+                    using (intervalTracker.Start(RestoreTelemetryEvent.RestoreOperationChecks))
                     {
-                        _status = NuGetOperationStatus.Failed;
-                        _logger.ShowError(Resources.SolutionIsNotSaved);
-                        await _logger.WriteLineAsync(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+                        solutionDirectory = _solutionManager.SolutionDirectory;
+                        isSolutionAvailable = await _solutionManager.IsSolutionAvailableAsync();
 
-                        return;
+                        // Get the projects from the SolutionManager
+                        // Note that projects that are not supported by NuGet, will not show up in this list
+                        projects = (await _solutionManager.GetNuGetProjectsAsync()).ToList();
+
+                        if (projects.Any() && solutionDirectory == null)
+                        {
+                            _status = NuGetOperationStatus.Failed;
+                            _logger.ShowError(Resources.SolutionIsNotSaved);
+                            await _logger.WriteLineAsync(VerbosityLevel.Minimal, Resources.SolutionIsNotSaved);
+
+                            return;
+                        }
                     }
-                    intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.RestoreOperationChecks);
-                    intervalTracker.StartIntervalMeasure();
 
-                    // Check if there are any projects that are not INuGetIntegratedProject, that is,
-                    // projects with packages.config. OR 
-                    // any of the deferred project is type of packages.config, If so, perform package restore on them
-                    if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                    using (intervalTracker.Start(RestoreTelemetryEvent.PackagesConfigRestore))
                     {
-                        await RestorePackagesOrCheckForMissingPackagesAsync(
-                            projects,
-                            solutionDirectory,
-                            isSolutionAvailable,
-                            restoreSource,
-                            token);
+                        // Check if there are any projects that are not INuGetIntegratedProject, that is,
+                        // projects with packages.config. OR 
+                        // any of the deferred project is type of packages.config, If so, perform package restore on them
+                        if (projects.Any(project => !(project is INuGetIntegratedProject)))
+                        {
+                            await RestorePackagesOrCheckForMissingPackagesAsync(
+                                projects,
+                                solutionDirectory,
+                                isSolutionAvailable,
+                                restoreSource,
+                                token);
+                        }
                     }
-                    intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.PackagesConfigRestore);
 
                     var dependencyGraphProjects = projects
                         .OfType<IDependencyGraphProject>()
@@ -320,67 +326,73 @@ namespace NuGet.SolutionRestoreManager
                         return;
                     }
                 }
-                intervalTracker.StartIntervalMeasure();
-                // Cache p2ps discovered from DTE
-                var cacheContext = new DependencyGraphCacheContext(_logger, _settings);
-                var pathContext = NuGetPathContext.Create(_settings);
 
-                // Get full dg spec
-                var (dgSpec, additionalMessages) = await DependencyGraphRestoreUtility.GetSolutionRestoreSpecAndAdditionalMessages(_solutionManager, cacheContext);
-                intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation);
-                intervalTracker.StartIntervalMeasure();
+                DependencyGraphCacheContext cacheContext;
+                DependencyGraphSpec dgSpec;
+                IReadOnlyList<IAssetsLogMessage> additionalMessages;
 
-                // Avoid restoring solutions with zero potential PackageReference projects.
-                if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
+                using (intervalTracker.Start(RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation))
                 {
-                    // NOTE: During restore for build integrated projects,
-                    //       We might show the dialog even if there are no packages to restore
-                    // When both currentStep and totalSteps are 0, we get a marquee on the dialog
-                    await _logger.RunWithProgressAsync(
-                        async (l, _, t) =>
-                        {
+                    // Cache p2ps discovered from DTE
+                    cacheContext = new DependencyGraphCacheContext(_logger, _settings);
+                    var pathContext = NuGetPathContext.Create(_settings);
+
+                    // Get full dg spec
+                    (dgSpec, additionalMessages) = await DependencyGraphRestoreUtility.GetSolutionRestoreSpecAndAdditionalMessages(_solutionManager, cacheContext);
+                }
+
+                using (intervalTracker.Start(RestoreTelemetryEvent.PackageReferenceRestoreDuration))
+                {
+                    // Avoid restoring solutions with zero potential PackageReference projects.
+                    if (DependencyGraphRestoreUtility.IsRestoreRequired(dgSpec))
+                    {
+                        // NOTE: During restore for build integrated projects,
+                        //       We might show the dialog even if there are no packages to restore
+                        // When both currentStep and totalSteps are 0, we get a marquee on the dialog
+                        await _logger.RunWithProgressAsync(
+                            async (l, _, t) =>
+                            {
                             // Display the restore opt out message if it has not been shown yet
                             await l.WriteHeaderAsync();
 
-                            var sources = _sourceRepositoryProvider
-                                .GetRepositories()
-                                .ToList();
+                                var sources = _sourceRepositoryProvider
+                                    .GetRepositories()
+                                    .ToList();
 
-                            var providerCache = new RestoreCommandProvidersCache();
-                            Action<SourceCacheContext> cacheModifier = (cache) => { };
+                                var providerCache = new RestoreCommandProvidersCache();
+                                Action<SourceCacheContext> cacheModifier = (cache) => { };
 
-                            var isRestoreOriginalAction = true;
-                            var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
-                                _solutionManager,
-                                dgSpec,
-                                cacheContext,
-                                providerCache,
-                                cacheModifier,
-                                sources,
-                                _nuGetProjectContext.OperationId,
-                                forceRestore,
-                                isRestoreOriginalAction,
-                                additionalMessages,
-                                l,
-                                t);
+                                var isRestoreOriginalAction = true;
+                                var restoreSummaries = await DependencyGraphRestoreUtility.RestoreAsync(
+                                    _solutionManager,
+                                    dgSpec,
+                                    cacheContext,
+                                    providerCache,
+                                    cacheModifier,
+                                    sources,
+                                    _nuGetProjectContext.OperationId,
+                                    forceRestore,
+                                    isRestoreOriginalAction,
+                                    additionalMessages,
+                                    l,
+                                    t);
 
-                            _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
-                            var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
-                            _noOpProjectsCount = restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
+                                _packageCount += restoreSummaries.Select(summary => summary.InstallCount).Sum();
+                                var isRestoreFailed = restoreSummaries.Any(summary => summary.Success == false);
+                                _noOpProjectsCount = restoreSummaries.Where(summary => summary.NoOpRestore == true).Count();
 
-                            if (isRestoreFailed)
-                            {
-                                _status = NuGetOperationStatus.Failed;
-                            }
-                            else if (_noOpProjectsCount < restoreSummaries.Count)
-                            {
-                                _status = NuGetOperationStatus.Succeeded;
-                            }
-                        },
-                        token);
+                                if (isRestoreFailed)
+                                {
+                                    _status = NuGetOperationStatus.Failed;
+                                }
+                                else if (_noOpProjectsCount < restoreSummaries.Count)
+                                {
+                                    _status = NuGetOperationStatus.Succeeded;
+                                }
+                            },
+                            token);
+                    }
                 }
-                intervalTracker.EndIntervalMeasure(RestoreTelemetryEvent.PackageReferenceRestoreDuration);
-
             }
             else if (restoreSource == RestoreOperationSource.Explicit)
             {
