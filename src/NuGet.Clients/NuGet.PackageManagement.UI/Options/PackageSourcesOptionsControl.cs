@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
+using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
 using NuGet.VisualStudio.Internal.Contracts;
@@ -37,18 +38,15 @@ namespace NuGet.Options
     {
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
-        private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
         private IReadOnlyList<PackageSource> _originalPackageSources;
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
         private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
-        public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
+        public PackageSourcesOptionsControl()
         {
             InitializeComponent();
-
-            _serviceProvider = serviceProvider;
 
             SetupEventHandlers();
 
@@ -618,7 +616,13 @@ namespace NuGet.Options
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
-            var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
+            IVsUIShell2 uiShell = null;
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                uiShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell2>();
+            });
+
             Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 
