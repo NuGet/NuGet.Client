@@ -33,24 +33,22 @@ namespace NuGet.Options
         private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
-        private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
 
-        public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
+        public PackageSourcesOptionsControl()
+            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>())
         {
         }
 
-        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
+        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider)
         {
             InitializeComponent();
 
             if (sourceRepositoryProvider == null)
             {
-                throw new ArgumentNullException("sourceRepositoryProvider");
+                throw new ArgumentNullException(nameof(sourceRepositoryProvider));
             }
 
-            _serviceProvider = serviceProvider;
             _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
             SetupEventHandlers();
 
@@ -607,7 +605,13 @@ namespace NuGet.Options
             //const int BIF_RETURNONLYFSDIRS = 0x00000001;   // For finding a folder to start document searching.
             const int BIF_BROWSEINCLUDEURLS = 0x00000080; // Allow URLs to be displayed or entered.
 
-            var uiShell = (IVsUIShell2)_serviceProvider.GetService(typeof(SVsUIShell));
+            IVsUIShell2 uiShell = null;
+            ThreadHelper.JoinableTaskFactory.Run(async delegate
+            {
+                await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                uiShell = await AsyncServiceProvider.GlobalProvider.GetServiceAsync<IVsUIShell2>();
+            });
+
             Assumes.Present(uiShell);
             var rgch = new char[MaxDirectoryLength + 1];
 

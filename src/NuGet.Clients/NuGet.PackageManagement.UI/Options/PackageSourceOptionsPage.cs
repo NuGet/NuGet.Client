@@ -24,7 +24,7 @@ namespace NuGet.Options
         protected override void OnActivate(CancelEventArgs e)
         {
             base.OnActivate(e);
-            PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(this);
+            PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(ServiceProvider.GlobalProvider);
             PackageSourcesControl.InitializeOnActivated();
         }
 
@@ -50,7 +50,7 @@ namespace NuGet.Options
             {
                 if (_optionsWindow == null)
                 {
-                    _optionsWindow = new PackageSourcesOptionsControl(this);
+                    _optionsWindow = new PackageSourcesOptionsControl();
                     _optionsWindow.Location = new Point(0, 0);
                 }
 

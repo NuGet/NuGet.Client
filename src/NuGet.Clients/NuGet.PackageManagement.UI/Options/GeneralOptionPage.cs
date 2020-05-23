@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -37,7 +37,8 @@ namespace NuGet.Options
         protected override void OnActivate(CancelEventArgs e)
         {
             base.OnActivate(e);
-            GeneralControl.Font = VsShellUtilities.GetEnvironmentFont(this);
+
+            GeneralControl.Font = VsShellUtilities.GetEnvironmentFont(ServiceProvider.GlobalProvider);
             GeneralControl.OnActivated();
         }
 
@@ -53,8 +54,10 @@ namespace NuGet.Options
             {
                 if (_optionsWindow == null)
                 {
-                    _optionsWindow = new GeneralOptionControl(this);
-                    _optionsWindow.Location = new Point(0, 0);
+                    _optionsWindow = new GeneralOptionControl
+                    {
+                        Location = new Point(0, 0)
+                    };
                 }
 
                 return _optionsWindow;
