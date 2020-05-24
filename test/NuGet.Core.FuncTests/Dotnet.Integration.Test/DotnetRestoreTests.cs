@@ -122,6 +122,69 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Windows)]
+        public async Task WithUnSignedPackageAndSignatureValidationModeAsRequired_Fails()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            {
+                // Set up solution, and project
+                var solution = new SimpleTestSolutionContext(pathContext.SolutionRoot);
+
+                var projectA = SimpleTestProjectContext.CreateNETCore(
+                   "a",
+                   pathContext.SolutionRoot,
+                   NuGetFramework.Parse("net472"));
+
+                //Setup packages and feed
+                var packageX = new SimpleTestPackageContext()
+                {
+                    Id = "x",
+                    Version = "1.0.0"
+                };
+                packageX.Files.Clear();
+                packageX.AddFile("lib/netcoreapp2.0/x.dll");
+                packageX.AddFile("ref/netcoreapp2.0/x.dll");
+                packageX.AddFile("lib/net472/x.dll");
+                packageX.AddFile("ref/net472/x.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageX);
+
+                //add the packe to the project
+                projectA.AddPackageToAllFrameworks(packageX);
+                solution.Projects.Add(projectA);
+                solution.Create(pathContext.SolutionRoot);
+                solution.Save();
+                projectA.Save();
+
+                //set nuget.config properties
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var signatureValidationMode = new XElement(XName.Get("add"));
+                signatureValidationMode.Add(new XAttribute(XName.Get("key"), "signatureValidationMode"));
+                signatureValidationMode.Add(new XAttribute(XName.Get("value"), "require"));
+                config.Add(signatureValidationMode);
+
+                File.WriteAllText(pathContext.NuGetConfig, doc.ToString());
+
+                var args = $"restore --source \"{pathContext.PackageSource}\" ";
+
+                // Act                
+                var result = _msbuildFixture.RunDotnet(pathContext.SolutionRoot, args, ignoreExitCode: true);
+
+                result.Success.Should().BeFalse();
+                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
+                result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
         public async Task DotnetRestore_OneLinePerRestore()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
