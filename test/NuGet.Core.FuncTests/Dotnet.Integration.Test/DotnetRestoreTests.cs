@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.ConstrainedExecution;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentAssertions;
@@ -181,6 +182,81 @@ EndGlobal";
                 result.Success.Should().BeFalse();
                 result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void WithAuthorSignedPackageAndSignatureValidationModeAsRequired_Succeeds()
+        {
+            using (var packageSourceDirectory = TestDirectory.Create())
+            using (var testDirectory = TestDirectory.Create())
+            {
+                var packageFile = new FileInfo(Path.Combine(packageSourceDirectory.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var package = GetResource(packageFile.Name);
+
+                File.WriteAllBytes(packageFile.FullName, package);
+
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+
+                using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
+                {
+                    var xml = XDocument.Load(stream);
+
+                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
+
+                    var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
+
+                    ProjectFileUtils.AddItem(
+                        xml,
+                        "PackageReference",
+                        "TestPackage.AuthorSigned",
+                        "net472",
+                        new Dictionary<string, string>(),
+                        attributes);
+
+                    ProjectFileUtils.WriteXmlToFile(xml, stream);
+                }
+
+                var projectDir = Path.GetDirectoryName(workingDirectory);
+                //Directory.CreateDirectory(projectDir);
+                var configPath = Path.Combine(projectDir, "NuGet.Config");
+
+                //set nuget.config properties
+                var doc = new XDocument();
+                var configuration = new XElement(XName.Get("configuration"));
+                doc.Add(configuration);
+
+                var config = new XElement(XName.Get("config"));
+                configuration.Add(config);
+
+                var trustedSigners = new XElement(XName.Get("trustedSigners"));
+                configuration.Add(trustedSigners);
+
+                var signatureValidationMode = new XElement(XName.Get("add"));
+                signatureValidationMode.Add(new XAttribute(XName.Get("key"), "signatureValidationMode"));
+                signatureValidationMode.Add(new XAttribute(XName.Get("value"), "require"));
+                config.Add(signatureValidationMode);
+
+                //add trusted signers
+                var author = new XElement(XName.Get("author"));
+                author.Add(new XAttribute(XName.Get("name"), "microsoft"));
+                trustedSigners.Add(author);
+
+                var certificate = new XElement(XName.Get("certificate"));
+                certificate.Add(new XAttribute(XName.Get("fingerprint"), "3F9001EA83C560D712C24CF213C3D312CB3BFF51EE89435D3430BD06B5D0EECE"));
+                certificate.Add(new XAttribute(XName.Get("hashAlgorithm"), "SHA256"));
+                certificate.Add(new XAttribute(XName.Get("allowUntrustedRoot"), "false"));
+                author.Add(certificate);
+
+                File.WriteAllText(configPath, doc.ToString());
+
+                var args = $"--source \"{packageSourceDirectory.Path}\" ";
+
+                _msbuildFixture.RestoreProject(workingDirectory, projectName, args);
             }
         }
 
