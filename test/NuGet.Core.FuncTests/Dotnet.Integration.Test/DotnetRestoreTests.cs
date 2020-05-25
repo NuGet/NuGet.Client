@@ -83,7 +83,7 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void DotnetRestore_WithAuthorSignedPackage_Succeeds()
         {
             using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
@@ -185,7 +185,7 @@ EndGlobal";
             }
         }
 
-        [PlatformFact(Platform.Windows)]
+        [Fact]
         public void WithAuthorSignedPackageAndSignatureValidationModeAsRequired_Succeeds()
         {
             using (var packageSourceDirectory = TestDirectory.Create())
