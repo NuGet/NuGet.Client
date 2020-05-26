@@ -23,11 +23,6 @@ namespace NuGet.Protocol
         {
             var metadataCache = new MetadataReferenceCache();
             var searchResultMetadata = await _rawSearchResource.Search(
-                    (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
-                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                        s => _rawSearchResource.ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
-                        log,
-                        cancellationToken),
                     searchTerm,
                     filter,
                     skip,

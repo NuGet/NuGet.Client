@@ -43,11 +43,6 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var packages = await searchResource.Search(
-                    (_client, uri) => httpSource.ProcessHttpStreamAsync(
-                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                        s => searchResource.ProcessHttpStreamTakeCountedItemAsync(s, take, CancellationToken.None),
-                        NullLogger.Instance,
-                        CancellationToken.None),
                         "azure b",
                         searchFilter,
                         skip,
@@ -91,11 +86,6 @@ namespace NuGet.Protocol.Tests
 
             // Act
             var packages = await searchResource.Search(
-                    (_client, uri) => httpSource.ProcessHttpStreamAsync(
-                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                        s => searchResource.ProcessHttpStreamTakeCountedItemAsync(s, take, CancellationToken.None),
-                        NullLogger.Instance,
-                        CancellationToken.None),
                         "azure b",
                         searchFilter,
                         skip,
@@ -142,11 +132,6 @@ namespace NuGet.Protocol.Tests
             // Act/Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() =>
                searchResource.Search(
-                    (_client, uri) => httpSource.ProcessHttpStreamAsync(
-                        new HttpSourceRequest(uri, Common.NullLogger.Instance),
-                        s => searchResource.ProcessHttpStreamTakeCountedItemAsync(s, take, tokenSource.Token),
-                        NullLogger.Instance,
-                        tokenSource.Token),
                         "Sentry",
                         searchFilter,
                         skip,

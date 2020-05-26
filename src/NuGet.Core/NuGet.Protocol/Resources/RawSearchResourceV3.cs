@@ -118,7 +118,7 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
-        internal async Task<T> Search<T>(
+        private async Task<T> Search<T>(
             Func<HttpSource, Uri, Task<T>> getResultAsync,
             string searchTerm,
             SearchFilter filters,
@@ -136,6 +136,29 @@ namespace NuGet.Protocol
                 log,
                 cancellationToken);
         }
+
+        internal async Task<IEnumerable<PackageSearchMetadata>> Search(
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            Common.ILogger log,
+            CancellationToken cancellationToken)
+        {
+            return await Search(
+                (httpSource, uri) => httpSource.ProcessHttpStreamAsync(
+                    new HttpSourceRequest(uri, Common.NullLogger.Instance),
+                    s => ProcessHttpStreamTakeCountedItemAsync(s, take, cancellationToken),
+                    log,
+                    cancellationToken),
+                searchTerm,
+                filters,
+                skip,
+                take,
+                log,
+                cancellationToken);
+        }
+
 
         internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
         {

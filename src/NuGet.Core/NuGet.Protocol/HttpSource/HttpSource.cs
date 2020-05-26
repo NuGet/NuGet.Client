@@ -198,13 +198,29 @@ namespace NuGet.Protocol
             return ProcessStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
         }
 
-        public Task<T> ProcessHttpStreamAsync<T>(
+        internal async Task<T> ProcessHttpStreamAsync<T>(
             HttpSourceRequest request,
             Func<HttpResponseMessage, Task<T>> processAsync,
             ILogger log,
             CancellationToken token)
         {
-            return ProcessHttpStreamAsync<T>(request, processAsync, cacheContext: null, log: log, token: token);
+            return await ProcessResponseAsync(
+                request,
+                async response =>
+                {
+                    if ((request.IgnoreNotFounds && response.StatusCode == HttpStatusCode.NotFound) ||
+                         response.StatusCode == HttpStatusCode.NoContent)
+                    {
+                        return await processAsync(null);
+                    }
+
+                    response.EnsureSuccessStatusCode();
+
+                    return await processAsync(response);
+                },
+                cacheContext : null,
+                log,
+                token);
         }
 
         public async Task<T> ProcessStreamAsync<T>(
@@ -228,32 +244,6 @@ namespace NuGet.Protocol
 
                     var networkStream = await response.Content.ReadAsStreamAsync();
                     return await processAsync(networkStream);
-                },
-                cacheContext,
-                log,
-                token);
-        }
-
-        public async Task<T> ProcessHttpStreamAsync<T>(
-            HttpSourceRequest request,
-            Func<HttpResponseMessage, Task<T>> processAsync,
-            SourceCacheContext cacheContext,
-            ILogger log,
-            CancellationToken token)
-        {
-            return await ProcessResponseAsync(
-                request,
-                async response =>
-                {
-                    if ((request.IgnoreNotFounds && response.StatusCode == HttpStatusCode.NotFound) ||
-                         response.StatusCode == HttpStatusCode.NoContent)
-                    {
-                        return await processAsync(null);
-                    }
-
-                    response.EnsureSuccessStatusCode();
-
-                    return await processAsync(response);
                 },
                 cacheContext,
                 log,
