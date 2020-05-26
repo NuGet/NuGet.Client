@@ -17,7 +17,7 @@ namespace NuGet.Protocol
 {
     public class RawSearchResourceV3 : INuGetResource
     {
-        internal readonly HttpSource _client;
+        private readonly HttpSource _client;
         private readonly Uri[] _searchEndpoints;
 
         public RawSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
@@ -137,12 +137,17 @@ namespace NuGet.Protocol
                 cancellationToken);
         }
 
-        public async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
+        internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
         {
-            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, take, token)).Data;
+            if (take <= 0)
+            {
+                return Enumerable.Empty<PackageSearchMetadata>();
+            }
+
+            return (await ProcessHttpStreamWithoutBufferingAsync(httpInitialResponse, (uint)take, token)).Data;
         }
 
-        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
+        private async Task<V3SearchResults> ProcessHttpStreamWithoutBufferingAsync(HttpResponseMessage httpInitialResponse, uint take, CancellationToken token)
         {
             if (httpInitialResponse == null)
             {

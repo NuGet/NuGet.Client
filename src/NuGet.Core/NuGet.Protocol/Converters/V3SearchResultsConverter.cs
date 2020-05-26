@@ -1,16 +1,19 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using Newtonsoft.Json;
 using NuGet.Protocol.Model;
 using System;
 
 namespace NuGet.Protocol.Converters
 {
-    public class V3SearchResultsConverter : JsonConverter
+    internal class V3SearchResultsConverter : JsonConverter
     {
-        public int Take { get; set; }
+        private uint _take;
 
-        public V3SearchResultsConverter(int take)
+        public V3SearchResultsConverter(uint take)
         {
-            Take = take;
+            _take = take;
         }
 
         public override bool CanWrite => false;
@@ -30,11 +33,6 @@ namespace NuGet.Protocol.Converters
             }
 
             var searchResults = new V3SearchResults();
-
-            if (Take <= 0)
-            {
-                return searchResults;
-            }
 
             var finished = false;
 
@@ -67,9 +65,8 @@ namespace NuGet.Protocol.Converters
                                     var searchResult = JsonExtensions.JsonObjectSerializer.Deserialize<PackageSearchMetadata>(reader);
 
                                     searchResults.Data.Add(searchResult);
-                                    Take--;
 
-                                    if (Take <= 0)
+                                    if (searchResults.Data.Count >= _take)
                                     {
                                         finished = true;
                                         break;

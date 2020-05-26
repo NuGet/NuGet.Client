@@ -40,6 +40,7 @@ namespace NuGet.Protocol.Tests
 
             var skip = 0;
             var take = 1;
+
             // Act
             var packages = await searchResource.Search(
                     (_client, uri) => httpSource.ProcessHttpStreamAsync(
@@ -87,6 +88,7 @@ namespace NuGet.Protocol.Tests
             };
             var skip = 0;
             var take = 1;
+
             // Act
             var packages = await searchResource.Search(
                     (_client, uri) => httpSource.ProcessHttpStreamAsync(
@@ -136,6 +138,7 @@ namespace NuGet.Protocol.Tests
             tokenSource.Cancel();
             var skip = 0;
             var take = 1;
+
             // Act/Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() =>
                searchResource.Search(
