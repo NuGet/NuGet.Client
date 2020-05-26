@@ -103,8 +103,6 @@ EndGlobal";
                 {
                     var xml = XDocument.Load(stream);
 
-                    ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
-
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
                     ProjectFileUtils.AddItem(
@@ -156,8 +154,6 @@ EndGlobal";
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-
-                    //ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
@@ -218,8 +214,6 @@ EndGlobal";
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
                     var xml = XDocument.Load(stream);
-
-                    //ProjectFileUtils.SetTargetFrameworkForProject(xml, "TargetFrameworks", "net472");
 
                     var attributes = new Dictionary<string, string>() { { "Version", "1.0.0" } };
 
