@@ -18,7 +18,7 @@ namespace NuGet.Protocol.Core.Types
         public PackageIdentity PackageIdentity { get; }
 
         /// <summary>
-        /// Gets the package dependecy groups.
+        /// Gets the package dependency groups.
         /// </summary>
         public IReadOnlyList<PackageDependencyGroup> DependencyGroups { get; }
 

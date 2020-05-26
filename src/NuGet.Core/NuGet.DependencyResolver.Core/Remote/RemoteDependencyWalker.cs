@@ -48,15 +48,15 @@ namespace NuGet.DependencyResolver
                 });
 
             var transitiveCentralPackageVersionNodes = new List<GraphNode<RemoteResolveResult>>();
-            while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionDependecy))
+            while (transitiveCentralPackageVersions.TryTake(out LibraryDependency centralPackageVersionDependency))
             {
                 // do not add a transitive dependency node if it is direct already
-                if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageVersionDependecy.Name))
+                if (!indexedDirectDependenciesKeyNames.Value.Contains(centralPackageVersionDependency.Name))
                 {
                     // as the nodes are created more parents can be added for a single central transitive node
                     // keep the list of the nodes created and add the parents's references at the end
                     // the parent references are needed to keep track of possible rejected parents
-                    transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependecy, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
+                    transitiveCentralPackageVersionNodes.Add(await AddTransitiveCentralPackageVersionNodesAsync(rootNode, centralPackageVersionDependency, framework, runtimeIdentifier, runtimeGraph, transitiveCentralPackageVersions));
                 }
             }
             transitiveCentralPackageVersionNodes.ForEach(node => transitiveCentralPackageVersions.AddParentsToNode(node));
@@ -403,23 +403,23 @@ namespace NuGet.DependencyResolver
         }
 
         /// <summary>
-        /// New <see cref="GraphNode{RemoteResolveResult}"/> will be created for each of the items in the <paramref name="transitiveCentralPackageVersions"/> 
+        /// New <see cref="GraphNode{RemoteResolveResult}"/> will be created for each of the items in the <paramref name="transitiveCentralPackageVersions"/>
         /// and added as nodes of the <paramref name="rootNode"/>.
         /// </summary>
         private async Task<GraphNode<RemoteResolveResult>> AddTransitiveCentralPackageVersionNodesAsync(
             GraphNode<RemoteResolveResult> rootNode,
-            LibraryDependency centralPackageVersionDependecy,
+            LibraryDependency centralPackageVersionDependency,
             NuGetFramework framework,
             string runtimeIdentifier,
             RuntimeGraph runtimeGraph,
             TransitiveCentralPackageVersions transitiveCentralPackageVersions)
         {
             GraphNode<RemoteResolveResult> node = await CreateGraphNode(
-                    libraryRange: centralPackageVersionDependecy.LibraryRange,
+                    libraryRange: centralPackageVersionDependency.LibraryRange,
                     framework: framework,
                     runtimeName: runtimeIdentifier,
                     runtimeGraph: runtimeGraph,
-                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependecy),
+                    predicate: ChainPredicate(_ => (DependencyResult.Acceptable, null), rootNode, centralPackageVersionDependency),
                     outerEdge: null,
                     transitiveCentralPackageVersions: transitiveCentralPackageVersions);
 
@@ -452,12 +452,12 @@ namespace NuGet.DependencyResolver
                 _transitiveCentralPackageVersions = new ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>>(StringComparer.OrdinalIgnoreCase);
             }
 
-            internal void Add(LibraryDependency centralPackageVersionDependecy, GraphNode<RemoteResolveResult> parentNode)
+            internal void Add(LibraryDependency centralPackageVersionDependency, GraphNode<RemoteResolveResult> parentNode)
             {
-                _transitiveCentralPackageVersions.AddOrUpdate(centralPackageVersionDependecy.Name,
+                _transitiveCentralPackageVersions.AddOrUpdate(centralPackageVersionDependency.Name,
                     (key) =>
                     {
-                        _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersionDependecy);
+                        _toBeProcessedTransitiveCentralPackageVersions.Enqueue(centralPackageVersionDependency);
                         return new List<GraphNode<RemoteResolveResult>>() { parentNode };
                     },
                     (key, value) =>
@@ -467,9 +467,9 @@ namespace NuGet.DependencyResolver
                     });
             }
 
-            internal bool TryTake(out LibraryDependency centralPackageVersionDependecy)
+            internal bool TryTake(out LibraryDependency centralPackageVersionDependency)
             {
-                return _toBeProcessedTransitiveCentralPackageVersions.TryDequeue(out centralPackageVersionDependecy);
+                return _toBeProcessedTransitiveCentralPackageVersions.TryDequeue(out centralPackageVersionDependency);
 
             }
 

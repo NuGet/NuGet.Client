@@ -154,11 +154,11 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         protected override void WarnIfParametersAreNotSupported()
-        {            
+        {
             if (Source != null)
             {
                 var projectNames = string.Join(",", Projects.Where(e => e is BuildIntegratedNuGetProject).Select(p => NuGetProject.GetUniqueNameOrName(p)));
-                if (!string.IsNullOrEmpty(projectNames)) { 
+                if (!string.IsNullOrEmpty(projectNames)) {
                     var warning = string.Format(CultureInfo.CurrentUICulture, Resources.Warning_SourceNotRespectedForProjectType, nameof(Source), projectNames);
                     Log(MessageLevel.Warning, warning);
                 }
@@ -417,7 +417,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
         }
 
         /// <summary>
-        /// Return dependecy behavior for Update-Package command.
+        /// Return dependency behavior for Update-Package command.
         /// </summary>
         /// <returns></returns>
         protected override DependencyBehavior GetDependencyBehavior()
@@ -457,7 +457,7 @@ namespace NuGet.PackageManagement.PowerShellCmdlets
 
         /// <summary>
         /// Determine if the update action should allow use of delisted packages
-        /// </summary>        
+        /// </summary>
         private bool ShouldAllowDelistedPackages()
         {
             // If a delisted package is already installed, it should be reinstallable too.
