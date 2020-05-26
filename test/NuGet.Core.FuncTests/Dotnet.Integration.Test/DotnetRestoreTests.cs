@@ -609,7 +609,7 @@ EndGlobal";
         }
 
         [PlatformFact(Platform.Windows)]
-        public void RestoreCommand_DisplaysCPVMInPreviewMessage()
+        public void RestoreCommand_DisplaysCPVMInPreviewMessageIfCPVMEnabled()
         {
             using (var testDirectory = TestDirectory.Create())
             {
@@ -636,16 +636,45 @@ EndGlobal";
                 var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
                 var directoryPackagesPropsContent = @"<Project>                    
                         <PropertyGroup>
-	                        <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+                            <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
                         </PropertyGroup>
                     </Project>";
                 File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
 
                 // Act
-                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore");
+                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore /v:n");
 
                 // Assert
                 Assert.True(result.Output.Contains($"The project {projectFile} is using CentralPackageVersionManagement, a NuGet preview feature."));
+            }
+        }
+
+        [PlatformFact(Platform.Windows)]
+        public void RestoreCommand_DoesNotDisplayCPVMInPreviewMessageIfCPVMNotEnabled()
+        {
+            using (var testDirectory = TestDirectory.Create())
+            {
+                // Arrange
+                var projectName = "ClassLibrary1";
+                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
+
+                _msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", 60000);
+
+                // As long as the project does not have ManagePackageVersionsCentrally == true the project is not opted in
+                var directoryPackagesPropsName = Path.Combine(workingDirectory, $"Directory.Build.props");
+                var directoryPackagesPropsContent = @"<Project>                    
+                        <PropertyGroup>
+                            <CentralPackageVersionsFileImported>true</CentralPackageVersionsFileImported>
+                        </PropertyGroup>
+                    </Project>";
+                File.WriteAllText(directoryPackagesPropsName, directoryPackagesPropsContent);
+
+                // Act
+                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore /v:n");
+
+                // Assert
+                Assert.True(!result.Output.Contains($"The project {projectFile} is using CentralPackageVersionManagement, a NuGet preview feature."));
             }
         }
 
