@@ -486,9 +486,9 @@ namespace NuGet.Configuration
             if (loadUserWideSettings)
             {
                 var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext);
-                if (userSpecific != null)
+                if (userSpecific?.Any() == true)
                 {
-                    validSettingFiles.Add(userSpecific);
+                    validSettingFiles.AddRange(userSpecific);
                 }
             }
 
@@ -517,7 +517,15 @@ namespace NuGet.Configuration
             return new Settings(settingsFiles: validSettingFiles);
         }
 
-        private static SettingsFile LoadUserSpecificSettings(
+        /// <summary>
+        /// Load the user specific settings
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="configFileName"></param>
+        /// <param name="useTestingGlobalPath"></param>
+        /// <param name="settingsLoadingContext"></param>
+        /// <returns></returns>
+        internal static IEnumerable<SettingsFile> LoadUserSpecificSettings(
             string root,
             string configFileName,
             bool useTestingGlobalPath,
@@ -529,28 +537,27 @@ namespace NuGet.Configuration
 
             // for the default location, allow case where file does not exist, in which case it'll end
             // up being created if needed
-            SettingsFile userSpecificSettings = null;
+            SettingsFile userSpecificSettings;
             if (configFileName == null)
             {
-                var defaultSettingsFilePath = string.Empty;
-                if (useTestingGlobalPath)
+                string userSettingsDir = GetUserSettingsDirectory(rootDirectory, useTestingGlobalPath);
+                // For backwards compatibility, we first return all the non-default configs in the user directory.
+                // load setting files in directory
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly))
                 {
-                    defaultSettingsFilePath = Path.Combine(rootDirectory, "TestingGlobalPath", DefaultSettingsFileName);
-                }
-                else
-                {
-                    var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-
-                    // If there is no user settings directory, return no settings
-                    if (userSettingsDir == null)
+                    if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
                     {
-                        return null;
+                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false);
+                        if (settings != null)
+                        {
+                            yield return settings;
+                        }
                     }
-                    defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 }
 
+                // for backwards compatibility, create a default config file even if one already exists.
+                var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
                 userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
-
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
@@ -578,7 +585,14 @@ namespace NuGet.Configuration
                 userSpecificSettings = ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
             }
 
-            return userSpecificSettings;
+            yield return userSpecificSettings;
+        }
+
+        private static string GetUserSettingsDirectory(string rootDirectory, bool useTestingGlobalPath)
+        {
+            return useTestingGlobalPath
+                ? Path.Combine(rootDirectory, "TestingGlobalPath")
+                : NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
         }
 
         /// <summary>
