@@ -147,9 +147,7 @@ EndGlobal";
 
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
-                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
-
-                _msbuildFixture.RunDotnet(workingDirectory, "nuget locals all --clear");
+                var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");                
 
                 _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
 
@@ -187,7 +185,8 @@ EndGlobal";
 
                 var args = $"restore --source \"{pathContext.PackageSource}\" -v d";
 
-                // Act                
+                // Act
+                _msbuildFixture.RunDotnet(workingDirectory, "nuget locals all --clear");
                 var result = _msbuildFixture.RunDotnet(workingDirectory, args, ignoreExitCode: true);
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
