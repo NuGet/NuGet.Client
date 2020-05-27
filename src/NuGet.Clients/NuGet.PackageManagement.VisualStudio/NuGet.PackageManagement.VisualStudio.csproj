@@ -111,6 +111,10 @@
     <Compile Include="PackageFeeds\SearchResult.cs" />
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
+    <Compile Include="RemoteTypes\RemotePackageSourceProvider.cs" />
+    <Compile Include="RemoteTypes\IRemoteSourceRepositoryProvider.cs" />
+    <Compile Include="RemoteTypes\RemoteSourceRepositoryProvider.cs" />
+    <Compile Include="Services\BrokeredServicesUtilities.cs" />
     <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
     <Compile Include="IInteractiveLoginProvider.cs" />
@@ -126,6 +130,7 @@
     <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
     <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />
     <Compile Include="Prompts\DotnetDeprecatedPrompt.cs" />
+    <Compile Include="Services\NuGetBrokeredServices.cs" />
     <Compile Include="Services\NuGetLockService.cs" />
     <Compile Include="Projects\VsMSBuildNuGetProject.cs" />
     <Compile Include="ICredentialServiceProvider.cs" />

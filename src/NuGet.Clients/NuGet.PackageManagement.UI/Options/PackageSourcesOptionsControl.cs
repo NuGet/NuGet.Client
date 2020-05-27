@@ -8,6 +8,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -15,8 +17,9 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
-using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Options
 {
@@ -30,28 +33,17 @@ namespace NuGet.Options
     /// </remarks>
     public partial class PackageSourcesOptionsControl : UserControl
     {
-        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
         private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
-        {
-        }
-
-        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
         {
             InitializeComponent();
 
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException("sourceRepositoryProvider");
-            }
-
             _serviceProvider = serviceProvider;
-            _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
+
             SetupEventHandlers();
 
             UpdateDPI();
@@ -157,7 +149,7 @@ namespace NuGet.Options
                 _initialized = true;
 
                 // get packages sources
-                var allPackageSources = _packageSourceProvider.LoadPackageSources().ToList();
+                var allPackageSources = GetAllPackageSources();
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
                 //_activeSource = _packageSourceProvider.ActivePackageSource;
@@ -233,25 +225,23 @@ namespace NuGet.Options
             // the options will be closed without adding the source, try adding before closing
             // Only apply if nothing was updated or the update was successfull
             var result = TryUpdateSource();
-            if (result != TryUpdateSourceResults.NotUpdated
-                &&
-                result != TryUpdateSourceResults.Unchanged
-                &&
+            if (result != TryUpdateSourceResults.NotUpdated &&
+                result != TryUpdateSourceResults.Unchanged &&
                 result != TryUpdateSourceResults.Successful)
             {
                 return false;
             }
 
             // get package sources as ordered list
-            var packageSources = PackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList();
-            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList());
+            var packageSources = PackageSourcesListBox.Items.Cast<PackageSource>().ToList();
+            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSource>().ToList());
 
             try
             {
-                var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
+                var existingSources = GetAllPackageSources();
                 if (SourcesChanged(existingSources, packageSources))
                 {
-                    _packageSourceProvider.SavePackageSources(packageSources);
+                    SaveAllPackageSources(packageSources);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -284,7 +274,7 @@ namespace NuGet.Options
         }
 
         // Returns true if there are no changes between existingSources and packageSources.
-        private static bool SourcesChanged(List<Configuration.PackageSource> existingSources, List<Configuration.PackageSource> packageSources)
+        private static bool SourcesChanged(IReadOnlyList<PackageSource> existingSources, IReadOnlyList<PackageSource> packageSources)
         {
             if (existingSources.Count != packageSources.Count)
             {
@@ -293,9 +283,8 @@ namespace NuGet.Options
 
             for (int i = 0; i < existingSources.Count; ++i)
             {
-                if (!existingSources[i].Equals(packageSources[i])
-                    ||
-                    existingSources[i].IsEnabled != packageSources[i].IsEnabled)
+                if (!existingSources[i].Equals(packageSources[i]) ||
+                     existingSources[i].IsEnabled != packageSources[i].IsEnabled)
                 {
                     return true;
                 }
@@ -370,14 +359,14 @@ namespace NuGet.Options
         {
             var name = NewPackageName.Text.Trim();
             var source = NewPackageSource.Text.Trim();
-            if (String.IsNullOrWhiteSpace(name)
-                && String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(name)
+                && string.IsNullOrWhiteSpace(source))
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
 
             // validate name
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_NameRequired, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageName);
@@ -385,7 +374,7 @@ namespace NuGet.Options
             }
 
             // validate source
-            if (String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(source))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_SourceRequried, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageSource);
@@ -416,7 +405,7 @@ namespace NuGet.Options
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
             bool hasName = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                 String.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
+                                                 string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);
@@ -426,7 +415,7 @@ namespace NuGet.Options
 
             // check to see if source has already been added
             bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                   String.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
+                                                   string.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
                                                                  PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(ps.Source),
                                                                  StringComparison.OrdinalIgnoreCase));
             if (hasSource)
@@ -449,8 +438,8 @@ namespace NuGet.Options
 
         private void ClearNameSource()
         {
-            NewPackageName.Text = String.Empty;
-            NewPackageSource.Text = String.Empty;
+            NewPackageName.Text = string.Empty;
+            NewPackageSource.Text = string.Empty;
             NewPackageName.Focus();
         }
 
@@ -552,7 +541,7 @@ namespace NuGet.Options
                 && e.Y <= currentListBox.PreferredHeight)
             {
                 var source = (Configuration.PackageSource)currentListBox.Items[index];
-                string newToolTip = !String.IsNullOrEmpty(source.Description) ?
+                string newToolTip = !string.IsNullOrEmpty(source.Description) ?
                     source.Description :
                     source.Source;
                 string currentToolTip = packageListToolTip.GetToolTip(currentListBox);
@@ -593,8 +582,8 @@ namespace NuGet.Options
             }
             else
             {
-                NewPackageName.Text = String.Empty;
-                NewPackageSource.Text = String.Empty;
+                NewPackageName.Text = string.Empty;
+                NewPackageSource.Text = string.Empty;
             }
         }
 
@@ -675,6 +664,36 @@ namespace NuGet.Options
             // Check to make sure path does not contain any invalid chars.
             // Otherwise, Path.IsPathRooted() will throw an ArgumentException.
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
+        }
+
+        private IReadOnlyList<PackageSource> GetAllPackageSources()
+        {
+            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => { return await GetAllPackageSourcesAsync(); });
+        }
+
+        private async Task<IReadOnlyList<PackageSource>> GetAllPackageSourcesAsync()
+        {
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBroker();
+            var nuGetSettingsService = await remoteBroker.GetProxyAsync<INuGetSourceRepositoryService>(NuGetBrokeredServices.SourceRepositoryProviderService);
+            using (nuGetSettingsService as IDisposable)
+            {
+                return await nuGetSettingsService.GetAllPackageSourcesAsync(CancellationToken.None);
+            }
+        }
+
+        private void SaveAllPackageSources(IReadOnlyList<PackageSource> packageSources)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await SaveAllPackageSourcesAsync(packageSources));
+        }
+
+        private async Task SaveAllPackageSourcesAsync(IReadOnlyList<PackageSource> packageSources)
+        {
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBroker();
+            var nuGetSettingsService = await remoteBroker.GetProxyAsync<INuGetSourceRepositoryService>(NuGetBrokeredServices.SourceRepositoryProviderService);
+            using (nuGetSettingsService as IDisposable)
+            {
+                await nuGetSettingsService.SaveAllPackageSourcesAsync(packageSources, CancellationToken.None);
+            }
         }
     }
 

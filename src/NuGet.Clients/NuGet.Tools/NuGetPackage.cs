@@ -26,8 +26,12 @@ using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
+using IBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.IBrokeredServiceContainer;
 using ISettings = NuGet.Configuration.ISettings;
+using ProvideBrokeredServiceAttribute = Microsoft.VisualStudio.Shell.ServiceBroker.ProvideBrokeredServiceAttribute;
 using Resx = NuGet.PackageManagement.UI.Resources;
+using ServiceAudience = Microsoft.VisualStudio.Shell.ServiceBroker.ServiceAudience;
+using SVsBrokeredServiceContainer = Microsoft.VisualStudio.Shell.ServiceBroker.SVsBrokeredServiceContainer;
 using Task = System.Threading.Tasks.Task;
 using UI = NuGet.PackageManagement.UI;
 
@@ -65,6 +69,10 @@ namespace NuGetVSExtension
         NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
         "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
+
+    [ProvideBrokeredService(NuGetBrokeredServices.SourceRepositoryProviderServiceName,
+                            NuGetBrokeredServices.SourceRepositoryProviderServiceVersion,
+                            Audience = ServiceAudience.RemoteExclusiveClient | ServiceAudience.Local)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
@@ -163,6 +171,10 @@ namespace NuGetVSExtension
                     return vsMonitorSelection;
                 },
                 ThreadHelper.JoinableTaskFactory);
+
+
+            var brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
+            brokeredServiceContainer.Proffer(NuGetBrokeredServices.SourceRepositoryProviderService, NuGetBrokeredServices.GetSourceRepositoryProviderServiceFactory());
         }
 
         /// <summary>
@@ -861,13 +873,13 @@ namespace NuGetVSExtension
             {
                 if (ShouldMEFBeInitialized())
                 {
-                  await InitializeMEFAsync();
+                    await InitializeMEFAsync();
                 }
 
                 await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                 var command = (OleMenuCommand)sender;
-                
+
                 var isConsoleBusy = false;
                 if (ConsoleStatus != null)
                 {
