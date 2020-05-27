@@ -188,9 +188,9 @@ EndGlobal";
                 // Act                
                 var result = _msbuildFixture.RunDotnet(workingDirectory, args, ignoreExitCode: true);
 
-                result.Success.Should().BeFalse();
-                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
+                result.Success.Should().BeFalse();
+                result.ExitCode.Should().Be(1, because: "error text should be displayed as restore failed");                
             }
         }
 
