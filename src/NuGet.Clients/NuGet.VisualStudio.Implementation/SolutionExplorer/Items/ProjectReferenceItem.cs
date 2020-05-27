@@ -5,6 +5,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 
+using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.VS;
@@ -47,6 +48,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
         public override int Priority => AttachedItemPriority.Project;
 
         public override ImageMoniker IconMoniker => ManagedImageMonikers.Application;
+
+        protected override IContextMenuController? ContextMenuController => MenuController.TransitiveProject;
 
         protected override bool TryGetProjectNode(IProjectTree targetRootNode, IRelatableItem item, [NotNullWhen(returnValue: true)] out IProjectTree? projectTree)
         {

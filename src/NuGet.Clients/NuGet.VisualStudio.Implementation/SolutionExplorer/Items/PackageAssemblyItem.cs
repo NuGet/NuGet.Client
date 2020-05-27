@@ -4,6 +4,7 @@
 #nullable enable
 
 using System;
+using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
@@ -41,6 +42,8 @@ namespace NuGet.VisualStudio.SolutionExplorer
         public override int Priority => 0;
 
         public override ImageMoniker IconMoniker => KnownMonikers.Reference;
+
+        protected override IContextMenuController? ContextMenuController => MenuController.TransitiveAssembly;
 
         public override object? GetBrowseObject() => new BrowseObject(this);
 
