@@ -149,6 +149,8 @@ EndGlobal";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
+                _msbuildFixture.RunDotnet(workingDirectory, "nuget locals all --clear");
+
                 _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
 
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -183,7 +185,7 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                var args = $"restore --source \"{pathContext.PackageSource}\" ";
+                var args = $"restore --source \"{pathContext.PackageSource}\" -v d";
 
                 // Act                
                 var result = _msbuildFixture.RunDotnet(workingDirectory, args, ignoreExitCode: true);
