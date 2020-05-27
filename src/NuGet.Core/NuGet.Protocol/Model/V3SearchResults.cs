@@ -6,7 +6,7 @@ using Newtonsoft.Json;
 
 namespace NuGet.Protocol.Model
 {
-    public class V3SearchResults
+    internal class V3SearchResults
     {
         [JsonProperty("totalHits")]
         public long TotalHits { get; set; }

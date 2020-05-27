@@ -177,8 +177,8 @@ namespace NuGet.Protocol
                 return null;
             }
 
-            var _newtonsoftConvertersSerializer = new JsonSerializer();
-            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
+            var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
+            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take, _newtonsoftConvertersSerializer));
 
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
             using (var streamReader = new StreamReader(stream))
