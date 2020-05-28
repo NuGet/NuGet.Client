@@ -449,7 +449,7 @@ namespace NuGet.DependencyResolver
             internal TransitiveCentralPackageVersions()
             {
                 _toBeProcessedTransitiveCentralPackageVersions = new ConcurrentQueue<LibraryDependency>();
-                _transitiveCentralPackageVersions = new ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>>();
+                _transitiveCentralPackageVersions = new ConcurrentDictionary<string, List<GraphNode<RemoteResolveResult>>>(StringComparer.OrdinalIgnoreCase);
             }
 
             internal void Add(LibraryDependency centralPackageVersionDependecy, GraphNode<RemoteResolveResult> parentNode)
@@ -475,7 +475,7 @@ namespace NuGet.DependencyResolver
 
             internal void AddParentsToNode(GraphNode<RemoteResolveResult> node)
             {
-                foreach(var parent in _transitiveCentralPackageVersions[node.Item.Key.Name])
+                foreach (var parent in _transitiveCentralPackageVersions[node.Item.Key.Name])
                 {
                     node.ParentNodes.Add(parent);
                 }
