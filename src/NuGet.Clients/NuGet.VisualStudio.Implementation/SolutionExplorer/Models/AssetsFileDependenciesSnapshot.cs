@@ -207,6 +207,6 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             }
         }
 
-        public override string ToString() => $"{DataByTarget.Count} target{(DataByTarget.Count == 1 ? "" : "s")}";
+        public override string ToString() => $"{DataByTarget.Count} target{(DataByTarget.Count == 1 ? string.Empty : "s")}";
     }
 }
