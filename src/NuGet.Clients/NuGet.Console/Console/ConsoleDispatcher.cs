@@ -47,7 +47,8 @@ namespace NuGetConsole.Implementation.Console
         /// </summary>
         private Dispatcher _dispatcher;
 
-        private readonly object _lockObj = new object();
+        private bool _initialized;
+        private object _lockObj = new object();
 
         public event EventHandler StartCompleted;
 
@@ -158,10 +159,12 @@ namespace NuGetConsole.Implementation.Console
         public void Start()
         {
             // Only Start once
-            lock (_lockObj)
-            {
-                if (_dispatcher == null)
+            LazyInitializer.EnsureInitialized(ref _dispatcher,
+                ref _initialized,
+                ref _lockObj,
+                () =>
                 {
+                    Dispatcher dispatcher;
                     IHost host = WpfConsole.Host;
 
                     if (host == null)
@@ -171,11 +174,11 @@ namespace NuGetConsole.Implementation.Console
 
                     if (host is IAsyncHost)
                     {
-                        _dispatcher = new AsyncHostConsoleDispatcher(this);
+                        dispatcher = new AsyncHostConsoleDispatcher(this);
                     }
                     else
                     {
-                        _dispatcher = new SyncHostConsoleDispatcher(this);
+                        dispatcher = new SyncHostConsoleDispatcher(this);
                     }
 
                     // capture the cultures to assign to the worker thread below
@@ -187,43 +190,44 @@ namespace NuGetConsole.Implementation.Console
                     Task.Run(
                         // gives the host a chance to do initialization works before the console starts accepting user inputs
                         () =>
-                            {
+                        {
                                 // apply the culture of the main thread to this thread so that the PowerShell engine
                                 // will have the same culture as Visual Studio.
                                 Thread.CurrentThread.CurrentCulture = currentCulture;
-                                Thread.CurrentThread.CurrentUICulture = currentUICulture;
+                            Thread.CurrentThread.CurrentUICulture = currentUICulture;
 
-                                host.Initialize(WpfConsole);
-                            }
+                            host.Initialize(WpfConsole);
+                        }
                         ).ContinueWith(
                             task =>
+                            {
+                                NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
                                 {
-                                    NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+                                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                                    if (task.IsFaulted)
+                                    {
+                                        var exception = ExceptionUtilities.Unwrap(task.Exception);
+                                        if (WpfConsole != null)
                                         {
-                                            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                                            if (task.IsFaulted)
-                                            {
-                                                var exception = ExceptionUtilities.Unwrap(task.Exception);
-                                                if (WpfConsole != null)
-                                                {
-                                                    await WpfConsole.WriteAsync(exception.Message + Environment.NewLine, Colors.Red, null);
-                                                }
-                                            }
+                                            await WpfConsole.WriteAsync(exception.Message + Environment.NewLine, Colors.Red, null);
+                                        }
+                                    }
 
-                                            if (host.IsCommandEnabled
-                                                && _dispatcher != null)
-                                            {
-                                                _dispatcher.Start();
-                                            }
+                                    if (host.IsCommandEnabled
+                                    && dispatcher != null)
+                                    {
+                                        dispatcher.Start();
+                                    }
 
-                                            RaiseEventSafe(StartCompleted);
-                                            IsStartCompleted = true;
-                                        });
-                                },
+                                    RaiseEventSafe(StartCompleted);
+                                    IsStartCompleted = true;
+                                });
+                            },
                             TaskContinuationOptions.NotOnCanceled
                         );
-                }
-            }
+
+                    return dispatcher;
+                });
         }
 
         public void ClearConsole()
