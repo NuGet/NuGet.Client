@@ -40,7 +40,12 @@ namespace NuGet.Common
 
             try
             {
-                await lockState.Semaphore.WaitAsync(token);
+                using (CancellationTokenSource source = new CancellationTokenSource())
+                {
+                    token = source.Token;
+                    source.Cancel();
+                    await lockState.Semaphore.WaitAsync(token);
+                }
             }
             catch
             {

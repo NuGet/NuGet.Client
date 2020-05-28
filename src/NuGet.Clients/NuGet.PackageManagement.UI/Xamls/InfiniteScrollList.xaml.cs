@@ -82,6 +82,12 @@ namespace NuGet.PackageManagement.UI
             BindingOperations.EnableCollectionSynchronization(Items, _list.ItemsLock);
 
             DataContext = Items;
+
+            //Enables UI filtering to automatically refresh on property changes.
+            CollectionView.IsLiveFiltering = true;
+            //Bindable properties that are loaded async need to trigger a UI refresh once loaded.
+            CollectionView.LiveFilteringProperties.Add("IsUpdateAvailable");
+
             CheckBoxesEnabled = false;
 
             _loadingStatusIndicator.PropertyChanged += LoadingStatusIndicator_PropertyChanged;
@@ -125,11 +131,11 @@ namespace NuGet.PackageManagement.UI
         public bool IsSolution { get; set; }
 
         public ObservableCollection<object> Items { get; } = new ObservableCollection<object>();
-        private ICollectionView CollectionView
+        private ListCollectionView CollectionView
         {
             get
             {
-                return CollectionViewSource.GetDefaultView(Items);
+                return CollectionViewSource.GetDefaultView(Items) as ListCollectionView;
             }
         }
 
@@ -290,7 +296,6 @@ namespace NuGet.PackageManagement.UI
                     {
                         var message = ex.ToString();
                         LoadItemsCanceled?.Invoke(this, EventArgs.Empty);
-                        //throw;
                     }
                     finally
                     {
@@ -340,11 +345,11 @@ namespace NuGet.PackageManagement.UI
             // If there is another async loading process - cancel it.
             //var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             //Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
-
+            token.ThrowIfCancellationRequested();
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
                 await TaskScheduler.Default;
-
+                token.ThrowIfCancellationRequested();
                 var addedLoadingIndicator = false;
 
                 try
@@ -357,15 +362,18 @@ namespace NuGet.PackageManagement.UI
                         addedLoadingIndicator = true;
                     }
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    token.ThrowIfCancellationRequested();
+                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync(token);
 
                     //**********************************************************************************
                     if (itemFilter == ItemFilter.UpdatesAvailable)
                     {
+                        token.ThrowIfCancellationRequested();
                         ApplyItemsFilterForUpdatesAvailable();
                     }
                     else
                     {
+                        token.ThrowIfCancellationRequested();
                         //Show all the items, without an Update filter.
                         ClearItemsFilter();
                     }
@@ -426,15 +434,17 @@ namespace NuGet.PackageManagement.UI
                         }
                     }
                 }
-
+                token.ThrowIfCancellationRequested();
                 UpdateCheckBoxStatus();
-
+                token.ThrowIfCancellationRequested();
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
             });
         }
 
         private void ApplyItemsFilterForUpdatesAvailable()
         {
+            //Binded properties used here which are loaded async should be set as LiveFilteringProperties on the CollectionView (see ctor).
+            //Otherwise, the list in the UI may have a stale state of packages that were loaded just after rendering. 
             CollectionView.Filter = (item) => item == _loadingStatusIndicator || (item as PackageItemListViewModel).IsUpdateAvailable;
         }
         private void ClearItemsFilter()

@@ -13,6 +13,7 @@ namespace NuGet.PackageManagement.UI
         private LoadingStatus _status = LoadingStatus.Unknown;
         private string _errorMessage;
         private string _loadingMessage;
+        public bool IsUpdateAvailable => true;
 
         public LoadingStatus Status
         {

@@ -736,7 +736,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
 
                 _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
             });
@@ -1118,39 +1118,51 @@ namespace NuGet.PackageManagement.UI
                 // and start a new one.
                 var tabSwitchCts = new CancellationTokenSource();
                 Interlocked.Exchange(ref _loadCts, tabSwitchCts)?.Cancel();
-                //todo: this should be a linked source? //CancellationTokenSource.CreateLinkedTokenSource(_loadCts);
+                //todo: this should be a linked source? CancellationTokenSource.CreateLinkedTokenSource(_loadCts);
 
-                var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
-                    (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
-                var switchedToInitializedInstalledOrUpdatesTab = (_topPanel.Filter == ItemFilter.Installed && _installedTabIsLoaded)
-                    || (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabIsLoaded);
+                try
+                {
+                    var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
+                        (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
+                    var switchedToInitializedInstalledOrUpdatesTab = (_topPanel.Filter == ItemFilter.Installed && _installedTabIsLoaded)
+                        || (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabIsLoaded);
 
-                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they've loaded once before.
-                if (switchedFromInstalledOrUpdatesTab && switchedToInitializedInstalledOrUpdatesTab)
-                {
-                    //UI can apply filtering.
-                    FilterPackages();
-                }
-                else //Refresh tab from Cache.
-                {
-                    //If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
-                    if (!switchedFromInstalledOrUpdatesTab)
+                    //Installed and Updates tabs don't need to be refreshed when switching between the two, if they've loaded once before.
+                    if (switchedFromInstalledOrUpdatesTab && switchedToInitializedInstalledOrUpdatesTab)
                     {
-                        ResetTabLoadFlags();
+                        _loadCts.Token.ThrowIfCancellationRequested();
+                        //UI can apply filtering.
+                        FilterPackages();
+                    }
+                    else //Refresh tab from Cache.
+                    {
+                        _loadCts.Token.ThrowIfCancellationRequested();
+                        //If we came from a tab outside Installed/Updates, then they need to be Refreshed before UI filtering can take place.
+                        if (!switchedFromInstalledOrUpdatesTab)
+                        {
+                            ResetTabLoadFlags();
+                        }
+                        _loadCts.Token.ThrowIfCancellationRequested();
+                        SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
+                        _loadCts.Token.ThrowIfCancellationRequested();
+
+                        _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
                     }
 
-                    SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                    _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
+                    EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
+                    _loadCts.Token.ThrowIfCancellationRequested();
+                    _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
+                    _loadCts.Token.ThrowIfCancellationRequested();
+
+                    Dispatcher.BeginInvoke(new Action(() =>
+                    {
+                        _performanceMetrics.TimeSinceDispatcher = GetTimeSinceLastUserAction();
+                    }), DispatcherPriority.Input);
                 }
-
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
-
-                _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
-
-                Dispatcher.BeginInvoke(new Action(() =>
+                catch (OperationCanceledException)
                 {
-                    _performanceMetrics.TimeSinceDispatcher = GetTimeSinceLastUserAction();
-                }), DispatcherPriority.Input);
+                    throw;
+                }
             }
         }
 
