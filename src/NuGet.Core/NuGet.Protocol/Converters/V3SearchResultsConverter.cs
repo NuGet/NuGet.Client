@@ -46,8 +46,15 @@ namespace NuGet.Protocol.Converters
                         switch ((string)reader.Value)
                         {
                             case "totalHits":
-                                long totalHits = long.TryParse(reader.ReadAsString(), out totalHits) ? totalHits : 0;
-                                searchResults.TotalHits = totalHits;
+                                if(long.TryParse(reader.ReadAsString(), out var totalHits))
+                                {
+                                    searchResults.TotalHits = totalHits;
+                                }
+                                else
+                                {
+                                    throw new JsonException("totalHits should be a long integer");
+                                }
+
                                 break;
 
                             case "data":
