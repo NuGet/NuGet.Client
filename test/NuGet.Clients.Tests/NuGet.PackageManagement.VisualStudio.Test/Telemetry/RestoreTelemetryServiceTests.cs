@@ -48,7 +48,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 noOpProjectsCount: noopProjectsCount,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                new IntervalTracker());
+                new IntervalTracker("Activity"));
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -69,12 +69,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
-            var tracker = new IntervalTracker();
+            var tracker = new IntervalTracker("Activity");
 
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(first);
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(second);
+            using (tracker.Start(first))
+            {
+            }
+
+            using (tracker.Start(second))
+            {
+            }
 
             var operationId = Guid.NewGuid().ToString();
 
