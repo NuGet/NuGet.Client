@@ -178,7 +178,7 @@ namespace NuGet.Protocol
             }
 
             var _newtonsoftConvertersSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
-            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take, _newtonsoftConvertersSerializer));
+            _newtonsoftConvertersSerializer.Converters.Add(new Converters.V3SearchResultsConverter(take));
 
             using (var stream = await httpInitialResponse.Content.ReadAsStreamAsync())
             using (var streamReader = new StreamReader(stream))

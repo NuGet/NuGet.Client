@@ -10,12 +10,10 @@ namespace NuGet.Protocol.Converters
     internal class V3SearchResultsConverter : JsonConverter
     {
         private uint _take;
-        private JsonSerializer _newtonsoftConvertersSerializer;
 
-        public V3SearchResultsConverter(uint take, JsonSerializer newtonsoftConvertersSerializer)
+        public V3SearchResultsConverter(uint take)
         {
             _take = take;
-            _newtonsoftConvertersSerializer = newtonsoftConvertersSerializer;
         }
 
         public override bool CanWrite => false;
@@ -64,7 +62,7 @@ namespace NuGet.Protocol.Converters
 
                                 while (reader.TokenType != JsonToken.EndArray)
                                 {
-                                    var searchResult = _newtonsoftConvertersSerializer.Deserialize<PackageSearchMetadata>(reader);
+                                    var searchResult = serializer.Deserialize<PackageSearchMetadata>(reader);
 
                                     searchResults.Data.Add(searchResult);
 
