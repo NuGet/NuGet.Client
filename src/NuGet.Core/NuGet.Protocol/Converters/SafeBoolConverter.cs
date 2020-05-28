@@ -22,7 +22,7 @@ namespace NuGet.Protocol
                     return serializer.Deserialize<bool>(reader);
                 case JsonToken.String:
                     bool flag;
-                    if (bool.TryParse(reader.Value.ToString().Trim(), out flag))
+                    if (Boolean.TryParse(reader.Value.ToString().Trim(), out flag))
                     {
                         return flag;
                     }
