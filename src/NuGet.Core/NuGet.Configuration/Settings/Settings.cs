@@ -560,7 +560,9 @@ namespace NuGet.Configuration
                 yield return userSpecificSettings;
 
                 // For backwards compatibility, we first return default user specific the non-default configs and then the additional files from the directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly))
+                foreach (var file in FileSystemUtility
+                    .GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly)
+                    .OrderBy(e => e, PathUtility.GetStringComparerBasedOnOS()))
                 {
                     if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
                     {
