@@ -6,7 +6,6 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
-
 using NuGet.VisualStudio.Implementation.Resources;
 
 namespace NuGet.VisualStudio.SolutionExplorer

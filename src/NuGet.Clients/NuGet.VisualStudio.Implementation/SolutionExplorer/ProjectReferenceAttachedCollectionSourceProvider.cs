@@ -5,9 +5,7 @@
 
 using System.ComponentModel.Composition;
 using System.Diagnostics.CodeAnalysis;
-
 using EnvDTE;
-
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Utilities;

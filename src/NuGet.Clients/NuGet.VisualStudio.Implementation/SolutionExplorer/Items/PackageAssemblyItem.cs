@@ -8,7 +8,6 @@ using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
-
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 

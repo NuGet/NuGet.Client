@@ -4,13 +4,11 @@
 #nullable enable
 
 using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Internal.VisualStudio.PlatformUI;
 using Microsoft.VisualStudio.Imaging.Interop;
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.VS;
 using Microsoft.VisualStudio.ProjectSystem.VS.Tree.Dependencies.AttachedCollections;
-
 using NuGet.VisualStudio.Implementation.Resources;
 using NuGet.VisualStudio.SolutionExplorer.Models;
 

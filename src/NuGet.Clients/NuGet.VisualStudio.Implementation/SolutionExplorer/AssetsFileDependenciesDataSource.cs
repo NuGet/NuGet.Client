@@ -7,10 +7,8 @@ using System;
 using System.ComponentModel.Composition;
 using System.IO;
 using System.Threading.Tasks.Dataflow;
-
 using Microsoft.VisualStudio.ProjectSystem;
 using Microsoft.VisualStudio.ProjectSystem.Properties;
-
 using NuGet.VisualStudio.SolutionExplorer.Models;
 
 namespace NuGet.VisualStudio.SolutionExplorer
