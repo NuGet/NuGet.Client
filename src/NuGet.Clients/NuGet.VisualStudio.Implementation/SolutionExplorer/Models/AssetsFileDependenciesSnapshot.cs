@@ -80,7 +80,7 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
 
             _packageFolders = lockFile.PackageFolders.Select(pf => pf.Path).ToImmutableArray();
 
-            ImmutableDictionary<string, AssetsFileTarget>.Builder dataByTarget = ImmutableDictionary.CreateBuilder<string, AssetsFileTarget>(StringComparer.OrdinalIgnoreCase); // TODO review comparer here -- should it be ignore case?
+            ImmutableDictionary<string, AssetsFileTarget>.Builder dataByTarget = ImmutableDictionary.CreateBuilder<string, AssetsFileTarget>(StringComparer.OrdinalIgnoreCase);
 
             foreach (LockFileTarget lockFileTarget in lockFile.Targets)
             {

@@ -43,19 +43,16 @@ namespace NuGet.VisualStudio.SolutionExplorer.Models
             Version = library.Version.ToNormalizedString();
             Type = type;
 
-            // TODO use each dependency's version range in caption (won't have parity with top-level item unless we update caption or change SDK to return this information)
-            // TODO use each dependency's include/exclude in browse object (won't have parity with top-level item until we rethink browse objects for them)
             Dependencies = library.Dependencies.Select(dep => dep.Id).ToImmutableArray();
 
             CompileTimeAssemblies = library.CompileTimeAssemblies
                 .Select(a => a.Path)
                 .Where(path => path != null)
                 .Where(path => !IsPlaceholderFile(path))
-                .ToImmutableArray(); // TODO do we want to use the 'properties' here? maybe for browse object
+                .ToImmutableArray();
 
             FrameworkAssemblies = library.FrameworkAssemblies.ToImmutableArray();
 
-            // TODO filter by code language as well (requires knowing project language): https://github.com/dotnet/NuGet.BuildTasks/blob/5244c490a425353ac12445567d87d674ae118836/src/Microsoft.NuGet.Build.Tasks/ResolveNuGetPackageAssets.cs#L572-L575
             ContentFiles = library.ContentFiles
                 .Where(file => !IsPlaceholderFile(file.Path))
                 .Select(file => new AssetsFileTargetLibraryContentFile(file))
