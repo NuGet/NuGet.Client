@@ -55,7 +55,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -192,7 +191,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -264,7 +262,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright © 2013</copyright>
@@ -314,7 +311,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright © 2013</copyright>
@@ -380,7 +376,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -436,7 +431,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -505,7 +499,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -586,7 +579,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -672,7 +664,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -751,7 +742,6 @@ namespace NuGet.CommandLine.Test
     <version>1.0.0</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1444,7 +1434,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1462,7 +1451,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1672,7 +1660,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1690,7 +1677,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1784,7 +1770,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -1802,7 +1787,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2129,7 +2113,6 @@ public class B
     <version>1.0.0.0</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2147,7 +2130,6 @@ public class B
     <version>2.0.0.0</version>
     <title>Proj6</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -2207,7 +2189,6 @@ public class B
     <version>$version$</version>
     <title>Proj2</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -3413,7 +3394,6 @@ namespace Proj1
     <id>Package</id>
     <version>1.0.0</version>
     <authors>author</authors>
-    <owners>author</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>description</description>
     <releaseNotes>release notes</releaseNotes>
@@ -4299,7 +4279,6 @@ namespace " + projectName + @"
     <version>1.0.0</version>
     <title>packageA&lt;T&gt;</title>
     <authors>test &lt;test@microsoft.com&gt;</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description &lt;with&gt; &lt;&lt;bad
 stuff \n &lt;&lt;
@@ -4436,7 +4415,6 @@ stuff \n <<".Replace("\r\n", "\n");
     <version>1.0.0-beta.1.build.234+git.hash.6f3ae2d59140f5ea97eb7573535de1c286d6d336</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4712,7 +4690,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4777,7 +4754,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4843,7 +4819,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4892,7 +4867,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4941,7 +4915,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -4996,7 +4969,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5062,7 +5034,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5117,7 +5088,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5170,7 +5140,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5220,7 +5189,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5267,7 +5235,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5334,7 +5301,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>{version}</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>{requireLicenseAcceptance.ToString().ToLowerInvariant()}</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5537,7 +5503,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -5601,7 +5566,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0.2</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -6080,7 +6044,6 @@ $@"<package xmlns='http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd'>
     <version>1.0.0-beta.1</version>
     <title>packageA</title>
     <authors>test</authors>
-    <owners>test</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Description</description>
     <copyright>Copyright ©  2013</copyright>
@@ -6542,7 +6505,7 @@ using System.Runtime.InteropServices;
                     Assert.Equal("proj", nuspecReader.GetIdentity().Id);
                     Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
                     Assert.Equal("Company", nuspecReader.GetAuthors());
-                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal(string.Empty, nuspecReader.GetOwners());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
                     Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());
@@ -6662,7 +6625,7 @@ using System.Runtime.InteropServices;
                     Assert.Equal("proj", nuspecReader.GetIdentity().Id);
                     Assert.Equal("1.0.0.0", nuspecReader.GetVersion().Version.ToString());
                     Assert.Equal("Company", nuspecReader.GetAuthors());
-                    Assert.Equal("Company", nuspecReader.GetOwners());
+                    Assert.Equal(string.Empty, nuspecReader.GetOwners());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetDescription());
                     Assert.Equal("MetadataExtractor", nuspecReader.GetTitle());
                     Assert.Equal("Copyright ©  2050", nuspecReader.GetCopyright());

@@ -124,6 +124,15 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to There are several client certificate configurations associated to same package source(s): {0}.
+        /// </summary>
+        internal static string ClientCertificateDuplicateConfiguration {
+            get {
+                return ResourceManager.GetString("ClientCertificateDuplicateConfiguration", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Credentials item must have username and password..
         /// </summary>
         internal static string CredentialsItemMustHaveUsernamePassword {
@@ -192,6 +201,51 @@ namespace NuGet.Configuration {
         internal static string Error_NoWritableConfig {
             get {
                 return ResourceManager.GetString("Error_NoWritableConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate for &apos;{0}&apos; package source was not found in &apos;{1}.{2}&apos; storage by &apos;{3}&apos; criteria with &apos;{4}&apos; value..
+        /// </summary>
+        internal static string Error_StoreCertCertificateNotFound {
+            get {
+                return ResourceManager.GetString("Error_StoreCertCertificateNotFound", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to It is denied to use password and clearTextPassword at the same time..
+        /// </summary>
+        internal static string FileCertItemPasswordAndClearTextPasswordAtSameTime {
+            get {
+                return ResourceManager.GetString("FileCertItemPasswordAndClearTextPasswordAtSameTime", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to From file client certificate configuration password for &apos;{0}&apos; package source cannot be decrypted.
+        /// </summary>
+        internal static string FileCertItemPasswordCannotBeDecrypted {
+            get {
+                return ResourceManager.GetString("FileCertItemPasswordCannotBeDecrypted", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fileCert path attribute points on non existing file..
+        /// </summary>
+        internal static string FileCertItemPathFileNotExist {
+            get {
+                return ResourceManager.GetString("FileCertItemPathFileNotExist", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to A fileCert item path not set..
+        /// </summary>
+        internal static string FileCertItemPathFileNotSet {
+            get {
+                return ResourceManager.GetString("FileCertItemPathFileNotSet", resourceCulture);
             }
         }
         

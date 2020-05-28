@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 
@@ -25,7 +26,7 @@ namespace NuGet.Packaging
             PackageSaveMode packageSaveMode,
             NuGetOperationStatus status,
             ExtractionSource extractionSource,
-            PackageIdentity packageId) :
+            PackageIdentity packageId = null) :
             base(EventName, new Dictionary<string, object>
                 {
                     { nameof(Status), status },
@@ -33,8 +34,22 @@ namespace NuGet.Packaging
                     { nameof(PackageSaveMode), packageSaveMode }
                 })
         {
+            if (packageId != null)
+            {
+                LogPackageIdentity(packageId);
+            }
+        }
+
+        [SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Matching existing code and existing logged telemetry.")]
+        public void LogPackageIdentity(PackageIdentity packageId)
+        {
             AddPiiData(nameof(PackageId), packageId.Id.ToLowerInvariant());
             AddPiiData(nameof(PackageVersion), packageId.Version.ToNormalizedString().ToLowerInvariant());
+        }
+
+        public void SetResult(NuGetOperationStatus status)
+        {
+            base[nameof(Status)] = status;
         }
     }
 }

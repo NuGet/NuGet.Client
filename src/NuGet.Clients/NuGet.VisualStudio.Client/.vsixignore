@@ -107,3 +107,4 @@ System.Security.Principal.Windows.dll
 System.Threading.Tasks.Extensions.dll
 System.Web.Http.dll
 VSLangProj157.dll
+Microsoft.DataAI.NuGetRecommender.Contracts.dll

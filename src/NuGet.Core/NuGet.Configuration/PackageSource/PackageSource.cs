@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
 
 namespace NuGet.Configuration
@@ -49,6 +52,8 @@ namespace NuGet.Configuration
         public bool IsPersistable { get; private set; }
 
         public int MaxHttpRequestsPerSource { get; set; }
+
+        public IReadOnlyList<X509Certificate> ClientCertificates { get; set; }
 
         /// <summary>
         /// Gets or sets the protocol version of the source. Defaults to 2.
@@ -170,6 +175,7 @@ namespace NuGet.Configuration
             {
                 Description = Description,
                 Credentials = Credentials?.Clone(),
+                ClientCertificates = ClientCertificates?.ToList(),
                 IsMachineWide = IsMachineWide,
                 ProtocolVersion = ProtocolVersion,
             };

@@ -979,6 +979,121 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
     <value>invalid value for --format: {0}. Allowed values: 'detailed' or 'short'</value>
     <comment>don't localize 'format', 'detailed' or 'short'</comment>
   </data>
+  <data name="Error_CouldNotUpdateClientCertificate" xml:space="preserve">
+    <value>Could not update the client certificate: {0}</value>
+    <comment>0 - reason</comment>
+  </data>
+  <data name="Error_CouldNotRemoveClientCertificate" xml:space="preserve">
+    <value>Could not remove the client certificate: {0}</value>
+    <comment>0 - reason</comment>
+  </data>
+  <data name="Error_CouldNotListClientCertificates" xml:space="preserve">
+    <value>Could not list the client certificates: {0}</value>
+    <comment>0 - reason</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesStoreName" xml:space="preserve">
+    <value>The source name '{0}' is not recognized.</value>
+    <comment>0 - source name</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesStoreLocation" xml:space="preserve">
+    <value>The store location '{0}' is not recognized.</value>
+    <comment>0 - store location</comment>
+  </data>
+  <data name="Error_UnknownClientCertificatesFindBy" xml:space="preserve">
+    <value>The find by search type '{0}' is not recognized.</value>
+    <comment>0 - find type</comment>
+  </data>
+  <data name="NoClientCertificatesMatching" xml:space="preserve">
+    <value>There are no client certificates configured for the package source '{0}'.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="ClientCertificateSuccessfullyRemoved" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' was successfully removed.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="ClientCertificateSuccessfullyUpdated" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' was successfully updated.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="Error_UnknownClientCertificateStoreType" xml:space="preserve">
+    <value>Cannot determine client certificate store type</value>
+  </data>
+  <data name="Error_ClientCertificatesNotFound" xml:space="preserve">
+    <value>Client certificates were not found.</value>
+  </data>
+  <data name="ClientCertificateSuccessfullyAdded" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' was successfully added.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="Error_ClientCertificateAlreadyExist" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' already exists.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="Error_ClientCertificateTypeMismatch" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' cannot be modified due to a type mismatch.</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="Error_ClientCertificateNotExist" xml:space="preserve">
+    <value>Client certificate configured for the package source '{0}' does not exist</value>
+    <comment>0 - package source name</comment>
+  </data>
+  <data name="NoClientCertificates" xml:space="preserve">
+    <value>There are no client certificates.</value>
+  </data>
+  <data name="RegsiteredClientCertificates" xml:space="preserve">
+    <value>Registered client certificates:</value>
+  </data>
+  <data name="ClientCertificatesLogTitle" xml:space="preserve">
+    <value>{0}{1} [{2}]</value>
+    <comment>0 - default indentation
+    1 - package source name
+    2 - client certificate source type</comment>
+  </data>
+  <data name="ClientCertificatesFileCertFilePath" xml:space="preserve">
+    <value>{0}File path: {1}</value>
+    <comment>0 - default indentation
+    1 - file path</comment>
+  </data>
+  <data name="ClientCertificatesStoreCertStoreLocation" xml:space="preserve">
+    <value>{0}Store location: {1}</value>
+    <comment>0 - default indentation
+    1 - store location</comment>
+  </data>
+  <data name="ClientCertificatesStoreCertStoreName" xml:space="preserve">
+    <value>{0}Store name: {1}</value>
+    <comment>0 - default indentation
+    1 - store name
+</comment>
+  </data>
+  <data name="ClientCertificatesStoreCertFindBy" xml:space="preserve">
+    <value>{0}Find by: {1}</value>
+    <comment>0 - default indentation
+    1 - find type</comment>
+  </data>
+  <data name="ClientCertificatesStoreCertFindValue" xml:space="preserve">
+    <value>{0}Find value: {1}</value>
+    <comment>0 - default indentation
+    1 - find value</comment>
+  </data>
+  <data name="ClientCertificatesItemCertificateMessage" xml:space="preserve">
+    <value>{0}Certificate: {1}</value>
+    <comment>0 - default indentation
+    1 - certificate hash string
+</comment>
+  </data>
+  <data name="ClientCertificatesItemCertificateError" xml:space="preserve">
+    <value>{0}Certificates status: {1}</value>
+    <comment>0 - default indentation
+    1 - error message</comment>
+  </data>
+  <data name="ClientCertificatesFileCertNoPassword" xml:space="preserve">
+    <value>{0}Password: -</value>
+    <comment>0 - default indentation</comment>
+  </data>
+  <data name="ClientCertificatesFileCertWithPassword" xml:space="preserve">
+    <value>{0}Password: ****</value>
+    <comment>0 - default indentation</comment>
+  </data>
   <data name="Log_CPVM_DowngradeError" xml:space="preserve">
     <value>Detected package downgrade: {0} from {1} to centrally defined {2}. Update the centrally managed package version to a higher version.</value>
     <comment>{0} is package id, {1} is the package version, {2} is the downgraded package version.</comment>

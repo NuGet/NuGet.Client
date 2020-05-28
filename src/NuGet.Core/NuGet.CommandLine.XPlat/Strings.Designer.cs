@@ -70,6 +70,15 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Adds a client certificate configuration that matches the given package source name..
+        /// </summary>
+        internal static string AddClientCertCommandDescription {
+            get {
+                return ResourceManager.GetString("AddClientCertCommandDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to all.
         /// </summary>
         internal static string AddPkg_All {
@@ -543,6 +552,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string List_Description {
             get {
                 return ResourceManager.GetString("List_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Lists all the client certificates in the configuration..
+        /// </summary>
+        internal static string ListClientCertCommandDescription {
+            get {
+                return ResourceManager.GetString("ListClientCertCommandDescription", resourceCulture);
             }
         }
         
@@ -1104,7 +1122,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior..
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior..
         /// </summary>
         internal static string Option_ConfigFile {
             get {
@@ -1113,11 +1131,92 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. To learn more about NuGet configuration go to https://docs.microsoft.com/en-us/nuget/consume-packages/configuring-nuget-behavior..
+        ///   Looks up a localized string similar to The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior)..
         /// </summary>
         internal static string Option_ConfigFile_Docs {
             get {
                 return ResourceManager.GetString("Option_ConfigFile_Docs", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search method to find certificate in certificate store (see docs)..
+        /// </summary>
+        internal static string Option_FindBy {
+            get {
+                return ResourceManager.GetString("Option_FindBy", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Search the certificate store for the supplied value. Used with FindValue (see docs)..
+        /// </summary>
+        internal static string Option_FindValue {
+            get {
+                return ResourceManager.GetString("Option_FindValue", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Skip certificate validation..
+        /// </summary>
+        internal static string Option_Force {
+            get {
+                return ResourceManager.GetString("Option_Force", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Package source name..
+        /// </summary>
+        internal static string Option_PackageSource {
+            get {
+                return ResourceManager.GetString("Option_PackageSource", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Password for the certificate, if needed..
+        /// </summary>
+        internal static string Option_Password {
+            get {
+                return ResourceManager.GetString("Option_Password", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Path to certificate file..
+        /// </summary>
+        internal static string Option_Path {
+            get {
+                return ResourceManager.GetString("Option_Path", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate store location (see docs)..
+        /// </summary>
+        internal static string Option_StoreLocation {
+            get {
+                return ResourceManager.GetString("Option_StoreLocation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Certificate store name (see docs)..
+        /// </summary>
+        internal static string Option_StoreName {
+            get {
+                return ResourceManager.GetString("Option_StoreName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Enables storing password for the certificate by disabling password encryption..
+        /// </summary>
+        internal static string Option_StorePasswordInClearText {
+            get {
+                return ResourceManager.GetString("Option_StorePasswordInClearText", resourceCulture);
             }
         }
         
@@ -1244,6 +1343,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Remove_Description {
             get {
                 return ResourceManager.GetString("Remove_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Removes the client certificate configuration that matches the given package source name..
+        /// </summary>
+        internal static string RemoveClientCertCommandDescription {
+            get {
+                return ResourceManager.GetString("RemoveClientCertCommandDescription", resourceCulture);
             }
         }
         
@@ -1401,7 +1509,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in %AppData%\NuGet\NuGet.config.
+        ///   Looks up a localized string similar to Provides the ability to manage list of sources located in NuGet.config files..
         /// </summary>
         internal static string SourcesCommandDescription {
             get {
@@ -1410,7 +1518,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Applies to the list action. Accepts two values: Detailed (the default) and Short..
+        ///   Looks up a localized string similar to The format of the list command output: `Detailed` (the default) and `Short`..
         /// </summary>
         internal static string SourcesCommandFormatDescription {
             get {
@@ -1437,7 +1545,7 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Path to the package(s) source..
+        ///   Looks up a localized string similar to Path to the package source..
         /// </summary>
         internal static string SourcesCommandSourceDescription {
             get {
@@ -1473,11 +1581,20 @@ namespace NuGet.CommandLine.XPlat {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. By default, all authentication types are valid. Example: basic,negotiate.
+        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. Set this to basic if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include negotiate, kerberos, ntlm, and digest, but these values are unlikely to be useful..
         /// </summary>
         internal static string SourcesCommandValidAuthenticationTypesDescription {
             get {
                 return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Comma-separated list of valid authentication types for this source. Set this to `basic` if the server advertises NTLM or Negotiate and your credentials must be sent using the Basic mechanism, for instance when using a PAT with on-premises Azure DevOps Server. Other valid values include `negotiate`, `kerberos`, `ntlm`, and `digest`, but these values are unlikely to be useful..
+        /// </summary>
+        internal static string SourcesCommandValidAuthenticationTypesDescription_Docs {
+            get {
+                return ResourceManager.GetString("SourcesCommandValidAuthenticationTypesDescription_Docs", resourceCulture);
             }
         }
         
@@ -1541,6 +1658,15 @@ namespace NuGet.CommandLine.XPlat {
         internal static string Update_Description {
             get {
                 return ResourceManager.GetString("Update_Description", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Updates the client certificate configuration that matches the given package source name..
+        /// </summary>
+        internal static string UpdateClientCertCommandDescription {
+            get {
+                return ResourceManager.GetString("UpdateClientCertCommandDescription", resourceCulture);
             }
         }
         

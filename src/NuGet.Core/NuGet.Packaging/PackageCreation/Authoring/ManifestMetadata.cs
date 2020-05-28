@@ -97,7 +97,7 @@ namespace NuGet.Packaging
 
         public IEnumerable<string> Owners
         {
-            get { return (_owners == null || !_owners.Any()) ? _authors : _owners; }
+            get { return _owners; }
             set { _owners = value ?? Enumerable.Empty<string>(); }
         }
 

@@ -144,11 +144,28 @@
         string verbFormalName = verbName;
         foreach (XElement noun in verb.Descendants(XName.Get("Noun")))
         {
-            string description = noun.Attribute(XName.Get("Description", ""))?.Value;
             string nounName = noun.Attribute(XName.Get("Name", ""))?.Value;
             string nounFormalName = nounName;
+            string nounFormalNameCleaned = nounName.Replace("-", "");
+            
+            string description = noun.Attribute(XName.Get("Description", ""))?.Value;
+            if(description == null) 
+            {
+                throw new InvalidOperationException($"Command declaration missed required attribute. Attribute: Description, Verb: {verbName}, Noun: {nounName}, File: {commandFile}.");
+            }
+            
             string version = noun.Attribute(XName.Get("Version", ""))?.Value;
-
+            if(version == null) 
+            {
+                throw new InvalidOperationException($"Command declaration missed required attribute. Attribute: Version, Verb: {verbName}, Noun: {nounName}, File: {commandFile}.");
+            }
+            
+            string stringDictionaryCommandDescriptionKey = (verbFormalName+nounFormalNameCleaned+"CommandDescription").ToLower();
+            if(!stringDictionary.ContainsKey(stringDictionaryCommandDescriptionKey))
+            {
+                throw new InvalidOperationException($"String resource with key is missed. Key: {stringDictionaryCommandDescriptionKey}, File: {stringsResXPath}.");
+            }
+            
             // calculate commandSyntax
             var commandSyntaxBuilder = new StringBuilder();
             commandSyntaxBuilder.AppendFormat("dotnet nuget {0} {1}", verbFormalName, nounFormalName);
@@ -199,7 +216,7 @@ ms.date: REPLACE_WITH_CURRENT_DATE_IN_PR_CREATION_TOOL
 
 ## Name
 
-`dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` - <#= stringDictionary[(verbFormalName+nounFormalName+"CommandDescription").ToLower()] #>
+`dotnet nuget <#= verbFormalName #> <#= nounFormalName #>` - <#= stringDictionary[stringDictionaryCommandDescriptionKey] #>
 
 ## Synopsis
 
