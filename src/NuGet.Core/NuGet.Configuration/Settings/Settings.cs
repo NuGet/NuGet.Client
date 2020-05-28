@@ -485,11 +485,7 @@ namespace NuGet.Configuration
         {
             if (loadUserWideSettings)
             {
-                var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext);
-                if (userSpecific?.Any() == true)
-                {
-                    validSettingFiles.AddRange(userSpecific);
-                }
+                validSettingFiles.AddRange(LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext));
             }
 
             if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
@@ -535,29 +531,18 @@ namespace NuGet.Configuration
             // However, it is legal for it be empty in this method
             var rootDirectory = root ?? string.Empty;
 
-            // for the default location, allow case where file does not exist, in which case it'll end
-            // up being created if needed
-            SettingsFile userSpecificSettings;
             if (configFileName == null)
             {
                 string userSettingsDir = GetUserSettingsDirectory(rootDirectory, useTestingGlobalPath);
-                // For backwards compatibility, we first return all the non-default configs in the user directory.
-                // load setting files in directory
-                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly))
+                if(userSettingsDir == null)
                 {
-                    if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
-                    {
-                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false);
-                        if (settings != null)
-                        {
-                            yield return settings;
-                        }
-                    }
+                    yield break;
                 }
 
-                // for backwards compatibility, create a default config file even if one already exists.
+                // If the default user config NuGet.Config does not exist, we need to create it.
                 var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
-                userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
+
+                SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
@@ -571,6 +556,21 @@ namespace NuGet.Configuration
                         userSpecificSettings.SaveToDisk();
                     }
                 }
+
+                yield return userSpecificSettings;
+
+                // For backwards compatibility, we first return default user specific the non-default configs and then the additional files from the directory
+                foreach (var file in FileSystemUtility.GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly))
+                {
+                    if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
+                    {
+                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false);
+                        if (settings != null)
+                        {
+                            yield return settings;
+                        }
+                    }
+                }
             }
             else
             {
@@ -582,10 +582,8 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(message);
                 }
 
-                userSpecificSettings = ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
+                yield return ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
             }
-
-            yield return userSpecificSettings;
         }
 
         private static string GetUserSettingsDirectory(string rootDirectory, bool useTestingGlobalPath)
