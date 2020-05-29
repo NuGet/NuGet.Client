@@ -4429,7 +4429,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_DoesNotGenerateOwnersElement()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);

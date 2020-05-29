@@ -42,7 +42,7 @@ namespace Dotnet.Integration.Test
             var sdkPath = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
 
 #if NETCOREAPP5_0
-            // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8508
+            // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8952
             PatchSDKWithCryptographyDlls(sdkPath);
 #endif
 
@@ -50,6 +50,12 @@ namespace Dotnet.Integration.Test
 
             _templateDirectory = new SimpleTestPathContext();
             WriteGlobalJson(_templateDirectory.WorkingDirectory);
+
+            // some project templates use implicit packages. For example, class libraries targeting netstandard2.0
+            // will have an implicit package reference for NETStandard.Library, and its dependencies.
+            // .NET Core SDK 3.0 and later no longer ship these packages in a NuGetFallbackFolder. Therefore, we need
+            // to be able to download these packages. We'll download it once into the template cache's global packages
+            // folder, and then use that as a local source for individual tests, to minimise network access.
             var addSourceArgs = new AddSourceArgs()
             {
                 Configfile = _templateDirectory.NuGetConfig,
@@ -260,6 +266,9 @@ namespace Dotnet.Integration.Test
 
             WriteGlobalJson(simpleTestPathContext.WorkingDirectory);
 
+            // Some template and TFM combinations need packages, for example NETStandard.Library.
+            // The template cache should have downloaded it already, so use the template cache's
+            // global packages folder as a local source.
             var addSourceArgs = new AddSourceArgs()
             {
                 Configfile = simpleTestPathContext.NuGetConfig,
