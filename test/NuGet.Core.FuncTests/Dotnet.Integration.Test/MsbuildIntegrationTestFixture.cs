@@ -39,7 +39,7 @@ namespace Dotnet.Integration.Test
             var dotnetExecutableName = RuntimeEnvironmentHelper.IsWindows ? "dotnet.exe" : "dotnet";
             TestDotnetCli = Path.Combine(_cliDirectory, dotnetExecutableName);
 
-            var sdkPath = Directory.GetDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
+            var sdkPath = Directory.EnumerateDirectories(Path.Combine(_cliDirectory, "sdk")).Single();
 
 #if NETCOREAPP5_0
             // TODO - remove when shipping. See https://github.com/NuGet/Home/issues/8952
@@ -105,9 +105,9 @@ namespace Dotnet.Integration.Test
 
         private static void CopyFromTemplate(string projectName, string args, string workingDirectory, DirectoryInfo templateDirectoryInfo)
         {
-            foreach (var file in templateDirectoryInfo.GetFiles())
+            foreach (var file in Directory.EnumerateFiles(templateDirectoryInfo.FullName))
             {
-                File.Copy(file.FullName, Path.Combine(workingDirectory, file.Name));
+                File.Copy(file, Path.Combine(workingDirectory, Path.GetFileName(file)));
             }
             File.Move(
                 Path.Combine(workingDirectory, args + ".csproj"),
@@ -328,7 +328,7 @@ namespace Dotnet.Integration.Test
             };
 
             //Create sub-directory structure in destination, ignoring any SDK version not selected.
-            foreach (var directory in Directory.GetDirectories(cliDir, "*", SearchOption.AllDirectories).Where(predicate))
+            foreach (var directory in Directory.EnumerateDirectories(cliDir, "*", SearchOption.AllDirectories).Where(predicate))
             {
                 var destDir = destinationDir + directory.Substring(cliDir.Length);
                 if (!Directory.Exists(destDir))
@@ -340,7 +340,7 @@ namespace Dotnet.Integration.Test
             var lastWriteTime = DateTime.Now.AddDays(-2);
 
             //Copy files recursively to destination directories, ignoring any SDK version not selected.
-            foreach (var fileName in Directory.GetFiles(cliDir, "*", SearchOption.AllDirectories).Where(predicate))
+            foreach (var fileName in Directory.EnumerateFiles(cliDir, "*", SearchOption.AllDirectories).Where(predicate))
             {
                 var destFileName = destinationDir + fileName.Substring(cliDir.Length);
                 File.Copy(fileName, destFileName);
@@ -354,7 +354,7 @@ namespace Dotnet.Integration.Test
             var testTfm = AssemblyReader.GetTargetFramework(typeof(MsbuildIntegrationTestFixture).Assembly.Location);
 
             var selectedVersion =
-                Directory.GetDirectories(sdkDir) // get all directories in sdk folder
+                Directory.EnumerateDirectories(sdkDir) // get all directories in sdk folder
                 .Where(path =>
                 { // SDK is for TFM to test
                     if (string.Equals(Path.GetFileName(path), "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase))
@@ -375,7 +375,7 @@ namespace Dotnet.Integration.Test
             {
                 var message = $@"Could not find suitable SDK to test in {sdkDir}
 TFM being tested: {testTfm.DotNetFrameworkName}
-SDKs found: {string.Join(", ", Directory.GetDirectories(sdkDir).Select(Path.GetFileName).Where(d => !string.Equals(d, "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase)))}";
+SDKs found: {string.Join(", ", Directory.EnumerateDirectories(sdkDir).Select(Path.GetFileName).Where(d => !string.Equals(d, "NuGetFallbackFolder", StringComparison.OrdinalIgnoreCase)))}";
 
                 throw new Exception(message);
             }
@@ -387,7 +387,7 @@ SDKs found: {string.Join(", ", Directory.GetDirectories(sdkDir).Select(Path.GetF
         {
             var artifactsDirectory = DotnetCliUtil.GetArtifactsDirectoryInRepo();
             var pathToSdkInCli = Path.Combine(
-                    Directory.GetDirectories(Path.Combine(cliDirectory, "sdk"))
+                    Directory.EnumerateDirectories(Path.Combine(cliDirectory, "sdk"))
                         .First());
             const string configuration =
 #if DEBUG
@@ -435,7 +435,7 @@ SDKs found: {string.Join(", ", Directory.GetDirectories(sdkDir).Select(Path.GetF
         private string GetTfmToCopy(NuGetFramework sdkTfm, string projectArtifactsBinFolder)
         {
             var compiledTfms =
-                Directory.GetDirectories(projectArtifactsBinFolder) // get all directories in bin folder
+                Directory.EnumerateDirectories(projectArtifactsBinFolder) // get all directories in bin folder
                 .Select(Path.GetFileName) // just the folder name (tfm)
                 .ToDictionary(folder => NuGetFramework.Parse(folder));
 
@@ -549,7 +549,7 @@ project TFMs found: {string.Join(", ", compiledTfms.Keys.Select(k => k.ToString(
         /// </summary>
         private static void DeleteDirectory(string path)
         {
-            foreach (string directory in Directory.GetDirectories(path))
+            foreach (string directory in Directory.EnumerateDirectories(path))
             {
                 DeleteDirectory(directory);
             }
