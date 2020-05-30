@@ -31,7 +31,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_Succeed()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
@@ -61,7 +61,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_NoRestore_Fail()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
@@ -88,7 +88,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_Transitive()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
@@ -134,7 +134,7 @@ namespace Dotnet.Integration.Test
         [InlineData("--framework net46", "net46", "net451")]
         public async Task DotnetListPackage_FrameworkSpecific_Success(string args, string shouldInclude, string shouldntInclude)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46;net451");
 
@@ -171,7 +171,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_InvalidFramework_Fail()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
@@ -204,7 +204,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void DotnetListPackage_DeprecatedAndOutdated_Fail()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 
@@ -222,7 +222,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_ShowFrameworksOnly_SDK()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
 
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net461");
@@ -273,7 +273,7 @@ namespace Dotnet.Integration.Test
         [InlineData("1.0.0", "--highest-minor --include-prerelease", "1.10.0-beta")]
         public async Task DotnetListPackage_Outdated_Succeed(string currentVersion, string args, string expectedVersion)
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net472");
                 var versions = new List<string> { "1.0.0-beta", "1.0.0", "1.0.9", "1.0.10-beta", "1.9.0", "1.10.0-beta", "2.1.0", "2.2.0-beta" };
@@ -312,7 +312,7 @@ namespace Dotnet.Integration.Test
         public void DotnetListPackage_ProjectReference_Succeeds(bool includeTransitive, bool outdated)
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
                 var projectB = XPlatTestUtils.CreateProject("ProjectB", pathContext, "net46");
@@ -359,7 +359,7 @@ namespace Dotnet.Integration.Test
         public async Task DotnetListPackage_OutdatedWithNoVersionsFound_Succeeds()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject("ProjectA", pathContext, "net46");
                 var packageX = XPlatTestUtils.CreatePackage(packageId: "packageX", packageVersion: "1.0.0");
@@ -397,7 +397,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public async Task DotnetListPackage_ProjectWithInitialTargets_Succeeds()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _fixture.CreateSimpleTestPathContext())
             {
                 var projectA = XPlatTestUtils.CreateProject(ProjectName, pathContext, "net46");
 

@@ -572,7 +572,7 @@ jobs:
 
 - job: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
-  timeoutInMinutes: 90
+  timeoutInMinutes: 120
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
@@ -689,7 +689,7 @@ jobs:
       disableAutoCwd: "true"
       cwd: "$(Build.Repository.LocalPath)"
       args: '$(SDKVersionForBuild)'
- 
+
   - task: PowerShell@2
     displayName: "Define variables"
     inputs:
@@ -746,7 +746,7 @@ jobs:
   pool:
     vmImage: macos-latest
 
-  steps:  
+  steps:
   - task: ShellScript@2
     displayName: "Install .NET 5.0 for build"
     continueOnError: "true"
@@ -971,7 +971,7 @@ jobs:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
-    
+
   - task: MSBuild@1
     displayName: "Bootstrap NuGet packages"
     inputs:
