@@ -42,7 +42,7 @@ namespace NuGet.DependencyResolver
             var indexedDirectDependenciesKeyNames = new Lazy<HashSet<string>>(
                 () =>
                 {
-                    var result = new HashSet<string>();
+                    var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
                     result.AddRange(rootNode.InnerNodes.Select(n => n.Key.Name));
                     return result;
                 });
