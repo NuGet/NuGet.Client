@@ -33,7 +33,7 @@ namespace NuGet.Protocol
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             var metadataCache = new MetadataReferenceCache();
-            var searchResultMetadata = await _rawSearchResource.Search(
+            var searchResultMetadata = await _rawSearchResource.SearchNew(
                     searchTerm,
                     filter,
                     skip,

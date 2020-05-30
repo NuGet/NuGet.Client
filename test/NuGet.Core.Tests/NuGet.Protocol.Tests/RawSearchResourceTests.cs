@@ -42,7 +42,7 @@ namespace NuGet.Protocol.Tests
             var take = 1;
 
             // Act
-            var packages = await searchResource.Search(
+            var packages = await searchResource.SearchNew(
                         "azure b",
                         searchFilter,
                         skip,
@@ -85,7 +85,7 @@ namespace NuGet.Protocol.Tests
             var take = 1;
 
             // Act
-            var packages = await searchResource.Search(
+            var packages = await searchResource.SearchNew(
                         "azure b",
                         searchFilter,
                         skip,
@@ -131,7 +131,7 @@ namespace NuGet.Protocol.Tests
 
             // Act/Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() =>
-               searchResource.Search(
+               searchResource.SearchNew(
                         "Sentry",
                         searchFilter,
                         skip,
