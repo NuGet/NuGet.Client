@@ -59,7 +59,8 @@ namespace NuGet.Packaging.Rules
         {
             var violations = new List<ConventionViolator>();
 
-            var msbuildFiles = files.Where(EndsWithMsbuildFileExtension);
+            var normalizedFiles = files.Select(PathUtility.GetPathWithForwardSlashes);
+            var msbuildFiles = normalizedFiles.Where(EndsWithMsbuildFileExtension);
             var msbuildFilesInBuildFolder = msbuildFiles.Where(InsideBuildFolder);
             var msbuildFilesGroupedByBuildFolder = msbuildFilesInBuildFolder.GroupBy(GetBuildFolder);
 
@@ -96,7 +97,7 @@ namespace NuGet.Packaging.Rules
             }
 
             var folderName = file.Substring(index1 + 1, index2 - index1 - 1);
-            var framework = NuGetFramework.Parse(folderName);
+            var framework = NuGetFramework.ParseFolder(folderName);
 
             return framework.IsUnsupported ? string.Empty : folderName;
         }
@@ -111,7 +112,7 @@ namespace NuGet.Packaging.Rules
         {
             foreach (var extension in ManagedCodeConventions.Properties["msbuild"].FileExtensions)
             {
-                if (file.EndsWith(extension))
+                if (file.EndsWith(extension, StringComparison.Ordinal))
                 {
                     return true;
                 }
@@ -124,7 +125,7 @@ namespace NuGet.Packaging.Rules
         {
             foreach (var buildFolder in BuildFolders)
             {
-                if (file.StartsWith(buildFolder))
+                if (file.StartsWith(buildFolder, StringComparison.Ordinal) && file[buildFolder.Length] == '/')
                 {
                     return true;
                 }
@@ -144,7 +145,7 @@ namespace NuGet.Packaging.Rules
             public ConventionViolator(string filePath, string extension, string expectedFile)
             {
 #if DEBUG
-                if (filePath[filePath.Length - 1] != System.IO.Path.DirectorySeparatorChar)
+                if (filePath[filePath.Length - 1] != '/' && filePath[filePath.Length - 1] != '\\')
                 {
                     throw new ArgumentException("Path must end with directory separator", nameof(filePath));
                 }
@@ -167,19 +168,19 @@ namespace NuGet.Packaging.Rules
 
             public int Compare(ConventionViolator x, ConventionViolator y)
             {
-                var result = x.Path.CompareTo(y.Path);
+                var result = string.Compare(x.Path, y.Path, StringComparison.Ordinal);
                 if (result != 0)
                 {
                     return result;
                 }
 
-                result = x.Extension.CompareTo(y.Extension);
+                result = string.Compare(x.Extension, y.Extension, StringComparison.Ordinal);
                 if (result != 0)
                 {
                     return result;
                 }
 
-                return x.ExpectedPath.CompareTo(y.ExpectedPath);
+                return string.Compare(x.ExpectedPath, y.ExpectedPath, StringComparison.Ordinal);
             }
         }
     }
