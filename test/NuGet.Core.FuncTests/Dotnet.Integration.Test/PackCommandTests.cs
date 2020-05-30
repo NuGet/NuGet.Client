@@ -1,4 +1,3 @@
-
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -16,9 +15,6 @@ using NuGet.Packaging.Licenses;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
 using Xunit;
-using NuGet.XPlat.FuncTest;
-
-
 
 namespace Dotnet.Integration.Test
 {
@@ -35,12 +31,12 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_NupkgExists()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory}");
 
@@ -80,12 +76,12 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeSymbolsWithSnupkg()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"--include-symbols /p:SymbolPackageFormat=snupkg -o {workingDirectory}");
 
@@ -119,12 +115,12 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProjectWithPackageType_SnupkgContainsOnlyOnePackageType()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
@@ -171,7 +167,7 @@ namespace Dotnet.Integration.Test
         [InlineData(false)]
         public void PackCommand_PackConsoleAppWithRID_NupkgValid(bool includeSymbols)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ConsoleApp1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -230,7 +226,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_PackageReferenceFloatingVersionRange()
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -295,7 +291,7 @@ namespace Dotnet.Integration.Test
         public async Task PackCommand_PackProject_PackageReferenceAllStableFloatingVersionRange_UsesRestoredVersionInNuspecAsync()
         {
             // Arrange
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = msbuildFixture.CreateSimpleTestPathContext())
             {
                 var projectName = "ClassLibrary1";
                 var availableVersions = "1.0.0;2.0.0";
@@ -379,7 +375,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_SupportMultipleFrameworks()
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -485,7 +481,7 @@ namespace Dotnet.Integration.Test
             string expectedExclude)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -563,7 +559,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_AddsProjectRefsAsPackageRefs()
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var referencedProject = "ClassLibrary2";
@@ -571,8 +567,8 @@ namespace Dotnet.Integration.Test
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var framework = FrameworkConstants.CommonFrameworks.NetCoreApp31;
 
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "console -f netcoreapp3.1");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, referencedProject, "classlib -f netstandard2.0");
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -646,7 +642,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_ExactVersionOverrideProjectRefVersionInMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var referencedProject = "ClassLibrary2";
@@ -734,7 +730,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_GetsProjectRefVersionFromMsbuild(string tfmProperty, string tfmValue)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var referencedProject = "ClassLibrary2";
@@ -809,7 +805,7 @@ namespace Dotnet.Integration.Test
         public void PackCommand_PackProject_GetPackageVersionDependsOnWorks(string tfmProperty, string tfmValue)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var referencedProject = "ClassLibrary2";
@@ -902,7 +898,7 @@ namespace Dotnet.Integration.Test
     <file src=""abc.txt"" target=""CoreCLR/"" />
   </files>
 </package>";
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -941,7 +937,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProject_EmptyNuspecFilePropertyWithNuspecProperties()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -987,7 +983,7 @@ namespace Dotnet.Integration.Test
     <file src=""abc.txt"" target=""CoreCLR/"" />
   </files>
 </package>";
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1034,12 +1030,12 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_InstallPackageToOutputPath()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName, $"-o {workingDirectory} /p:OutputFileNamesWithoutVersion=true /p:InstallPackageToOutputPath=true");
 
@@ -1091,7 +1087,7 @@ namespace Dotnet.Integration.Test
     <description>This was packed from nuspec</description>
   </metadata>
 </package>";
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1162,7 +1158,7 @@ namespace Dotnet.Integration.Test
     <file src=""abc.txt"" target=""CoreCLR/"" />
   </files>
 </package>";
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1215,8 +1211,8 @@ namespace Dotnet.Integration.Test
     <file src=""abc.txt"" target=""CoreCLR/"" />
   </files>
 </package>";
-            using (var basePathDirectory = TestDirectory.Create())
-            using (var testDirectory = TestDirectory.Create())
+            using (var basePathDirectory = msbuildFixture.CreateTestDirectory())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1299,7 +1295,7 @@ namespace Dotnet.Integration.Test
             string expectedTargetPaths)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
 
                 var projectName = "ClassLibrary1";
@@ -1392,7 +1388,7 @@ namespace Dotnet.Integration.Test
             string packageVersion, string expectedVersion)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1485,7 +1481,7 @@ namespace Dotnet.Integration.Test
             string packagePath, string expectedIncludeString)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
 
                 var projectName = "ClassLibrary1";
@@ -1581,7 +1577,7 @@ namespace Dotnet.Integration.Test
             string expectedIncludeString)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
 
                 var projectName = "ClassLibrary1";
@@ -1665,7 +1661,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_SingleFramework_GeneratesPackageOnBuild()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1730,7 +1726,7 @@ namespace Dotnet.Integration.Test
         [InlineData("netstandard1.4;net451;netcoreapp1.0")]
         public void PackCommand_MultipleFrameworks_GeneratesPackageOnBuild(string frameworks)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1791,12 +1787,12 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_IncludeBuildOutputDoesNotCreateLibFolder()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
 
                 using (var stream = new FileStream(Path.Combine(workingDirectory, $"{projectName}.csproj"), FileMode.Open, FileAccess.ReadWrite))
@@ -1856,13 +1852,13 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewDefaultProject_BuildOutputTargetFolderOutputsLibsToRightFolder()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var buildOutputTargetFolder = "build";
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 msbuildFixture.RestoreProject(workingDirectory, projectName, string.Empty);
                 msbuildFixture.PackProject(workingDirectory, projectName,
                     $"-o {workingDirectory} /p:BuildOutputTargetFolder={buildOutputTargetFolder}");
@@ -1891,7 +1887,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewProject_CleanDeletesNupkgAndNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -1930,7 +1926,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackNewProject_CleanDeletesOnlyGeneratedNupkgAndNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2016,7 +2012,7 @@ namespace Dotnet.Integration.Test
             string contentTargetFolders, string expectedTargetPaths)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
 
                 var projectName = "ClassLibrary1";
@@ -2095,7 +2091,7 @@ namespace Dotnet.Integration.Test
         [PlatformFact(Platform.Windows)]
         public void PackCommand_NewProject_AddsTitleToNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2157,7 +2153,7 @@ namespace Dotnet.Integration.Test
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_IncludeSource_AddsSourceFiles(string tfmProperty, string tfmValue)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var utilitySrcFileContent = @"using System;
 namespace ClassLibrary
@@ -2224,7 +2220,7 @@ namespace ClassLibrary
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_ContentInnerTargetExtension_AddsTfmSpecificContent(string tfmProperty, string tfmValue)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2298,7 +2294,7 @@ namespace ClassLibrary
         public void PackCommand_BuildOutputInnerTargetExtension_AddsTfmSpecificBuildOuput(string tfmProperty,
     string tfmValue)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2389,7 +2385,7 @@ namespace ClassLibrary
             string expectedTargetPaths)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2460,7 +2456,7 @@ namespace ClassLibrary
             string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2540,7 +2536,7 @@ namespace ClassLibrary
         public void PackCommand_PackProject_OutputsBuildActionForContentFiles(string itemType, string buildAction, string expectedBuildAction )
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2598,7 +2594,7 @@ namespace ClassLibrary
         public void PackCommand_PackSolution_AddsProjectRefsAsPackageRefs()
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var solutionName = "Solution1";
                 var projectName = "ClassLibrary1";
@@ -2614,9 +2610,9 @@ namespace ClassLibrary
                 var referencedProject1RelativDir = Path.Combine(projectAndReference1Folder, referencedProject1, $"{referencedProject1}.csproj");
                 var referencedProject2RelativDir = Path.Combine(rederence2Folder, referencedProject2, $"{referencedProject2}.csproj");
 
-                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib");
-                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib");
-                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), projectName, "classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, projectAndReference1Folder), referencedProject1, "classlib -f netstandard2.0");
+                msbuildFixture.CreateDotnetNewProject(Path.Combine(testDirectory.Path, rederence2Folder), referencedProject2, "classlib -f netstandard2.0");
 
                 msbuildFixture.RunDotnet(testDirectory.Path, $"new solution -n {solutionName}");
                 msbuildFixture.RunDotnet(testDirectory.Path, $"sln {solutionName}.sln add {projectFileRelativ}");
@@ -2708,7 +2704,7 @@ namespace ClassLibrary
         public void PackCommand_PackTargetHook_ExecutesBeforePack(string tfmProperty,
     string tfmValue)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2748,7 +2744,7 @@ namespace ClassLibrary
         [InlineData("TargetFrameworks", "netstandard1.4;net46")]
         public void PackCommand_PackTarget_IsIncremental(string tfmProperty, string tfmValue)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2792,7 +2788,7 @@ namespace ClassLibrary
         [InlineData("NoWarn", "NU5106", true)]
         public void PackCommand_NoWarn_SuppressesWarnings(string property, string value, bool expectToWarn)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2837,7 +2833,7 @@ namespace ClassLibrary
         [InlineData("TreatWarningsAsErrors", "true", true)]
         public void PackCommand_WarnAsError_PrintsWarningsAsErrors(string property, string value, bool expectToError)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var semver2Version = "1.0.0-rtm+asdassd";
                 var projectName = "ClassLibrary1";
@@ -2880,7 +2876,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_IncrementalPack_FailsWhenInvokedTwiceInARow()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var semver2Version = "1.0.0-rtm+asdassd";
                 var projectName = "ClassLibrary1";
@@ -2924,7 +2920,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithRepositoryVerifyNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -2967,7 +2963,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithSourceControlInformation_Unsupported_VerifyNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3023,7 +3019,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithSourceControlInformation_PrivateUrl_VerifyNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3084,7 +3080,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithSourceControlInformation_PublishedUrl_VerifyNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3145,7 +3141,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackWithSourceControlInformation_ProjectOverride_VerifyNuspec()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3205,7 +3201,7 @@ namespace ClassLibrary
         public void PackCommand_ManualAddPackage_DevelopmentDependency()
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3268,7 +3264,7 @@ namespace ClassLibrary
         public void PackCommand_SuppressDependencies_DoesNotContainAnyDependency(string frameworkToSuppress, string expectedInFramework)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -3339,7 +3335,7 @@ namespace ClassLibrary
         [InlineData("MIT OR Apache-2.0 WITH 389-exception")]
         public void PackCommand_PackLicense_SimpleExpression_StandardLicense(string licenseExpr)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3388,7 +3384,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_ComplexExpression_WithNonStandardLicense()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var customLicense = "LicenseRef-Nikolche";
                 var licenseExpr = $"MIT OR {customLicense} WITH 389-exception";
@@ -3444,7 +3440,7 @@ namespace ClassLibrary
         [InlineData("Tanana AND nana nana")]
         public void PackCommand_PackLicense_NonParsableExpressionFailsErrorWithCode(string licenseExpr)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3476,7 +3472,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_NonParsableVersionFailsErrorWithCode()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var licenseExpr = "MIT OR Apache-2.0";
                 var version = "1.0.0-babanana";
@@ -3511,7 +3507,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_ExpressionVersionHigherFailsWithErrorCode()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var licenseExpr = "MIT OR Apache-2.0";
                 var version = "2.0.0";
@@ -3550,7 +3546,7 @@ namespace ClassLibrary
         [InlineData("LICENSE.txt", "LICENSE.txt")]
         public void PackCommand_PackLicense_PackBasicLicenseFile(string licenseFileName, string packagesPath)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3618,7 +3614,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_PackBasicLicenseFile_FileNotInPackage()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var licenseFileName = "LICENSE.txt";
@@ -3655,7 +3651,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_PackBasicLicenseFile_FileExtensionNotValid()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var licenseFileName = "LICENSE.badextension";
                 // Set up
@@ -3692,7 +3688,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_BothLicenseExpressionAndFile_FailsWithErrorCode()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3727,7 +3723,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_LicenseUrlIsBeingDeprecated()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3772,13 +3768,13 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_IncludeLicenseFileWithSnupkg()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
                 var licenseFileName = "LICENSE.txt";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
                 File.WriteAllText(licenseFile, "Random licenseFile");
@@ -3858,13 +3854,13 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackLicense_IncludeLicenseFileWithSymbolsNupkg()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
                 var licenseFileName = "LICENSE.txt";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
                 var licenseFile = Path.Combine(workingDirectory, licenseFileName);
                 File.WriteAllText(licenseFile, "Random licenseFile");
@@ -3943,7 +3939,7 @@ namespace ClassLibrary
         [InlineData("PackageLicenseFile")]
         public void PackCommand_PackLicense_LicenseExpressionAndLicenseUrlInConjunction(string licenseType)
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 // Set up
                 var projectName = "ClassLibrary1";
@@ -3977,11 +3973,11 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackEmbedInteropPackage()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib");
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0");
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Setup BuildOutputTargetFolder
@@ -4022,7 +4018,7 @@ namespace ClassLibrary
         public void PackCommand_PackProject_PacksFrameworkReferences(string frameworkReferences, string packForFrameworkRefs, string targetFrameworks, string conditionalFramework, string expectedTargetFramework)
         {
             // Arrange
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -4111,7 +4107,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_WithGeneratePackageOnBuildSet_CanPublish()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -4136,7 +4132,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows, Skip = "https://github.com/NuGet/Home/issues/8601")]
         public void PackCommand_Deterministic_MultiplePackInvocations_CreateIdenticalPackages()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -4211,7 +4207,7 @@ namespace ClassLibrary
                 .WithItem("None", "folder\\**", "media")
                 .WithItem("None", "utils\\*", "utils");
 
-            using (var srcDir = testDirBuilder.Build())
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
@@ -4240,7 +4236,7 @@ namespace ClassLibrary
                 .WithProjectName("test")
                 .WithPackageIcon("icon.jpg");
 
-            using (var srcDir = testDirBuilder.Build())
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty, validateSuccess: false);
@@ -4266,7 +4262,7 @@ namespace ClassLibrary
                 .WithPackageIcon("icon.jpg")
                 .WithItem("None", "icon.jpg", "icon.jpg");
 
-            using (var srcDir = testDirBuilder.Build())
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(
@@ -4298,7 +4294,7 @@ namespace ClassLibrary
                 .WithNuspec(nuspecBuilder, "test\\test.nuspec")
                 .WithFile("test\\dummy.txt", 10);
 
-            using (var srcDir = testDirBuilder.Build())
+            using (var srcDir = msbuildFixture.Build(testDirBuilder))
             {
                 projectBuilder.Build(msbuildFixture, srcDir.Path);
                 var result = msbuildFixture.PackProject(projectBuilder.ProjectFolder, projectBuilder.ProjectName, string.Empty);
@@ -4312,7 +4308,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_WhenUsingSemver2Version_NU5105_IsNotRaised()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
@@ -4344,14 +4340,14 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_PackProjectWithCentralTransitiveDependencies()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
                 // Act
-                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib", 60000);
+                msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, " classlib -f netstandard2.0", 60000);
 
                 using (var stream = new FileStream(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -4433,7 +4429,7 @@ namespace ClassLibrary
         [PlatformFact(Platform.Windows)]
         public void PackCommand_DoesNotGenerateOwnersElement()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = msbuildFixture.CreateTestDirectory())
             {
                 var projectName = "ClassLibrary1";
                 var workingDirectory = Path.Combine(testDirectory, projectName);
