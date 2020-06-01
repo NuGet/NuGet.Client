@@ -38,8 +38,18 @@ namespace NuGet.Protocol.Tests
                 SupportedFrameworks = new string[] { ".NETFramework,Version=v4.5" }
             };
 
+            var skip = 0;
+            var take = 1;
+
             // Act
-            var packages = await searchResource.Search("azure b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+            var packages = await searchResource.SearchNew(
+                        "azure b",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
             var packagesArray = packages.ToArray();
 
             // Assert
@@ -71,9 +81,17 @@ namespace NuGet.Protocol.Tests
             {
                 SupportedFrameworks = new string[] { ".NETFramework,Version=v4.5" }
             };
+            var skip = 0;
+            var take = 1;
 
             // Act
-            var packages = await searchResource.Search("azure b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+            var packages = await searchResource.SearchNew(
+                        "azure b",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        CancellationToken.None);
             var packagesArray = packages.ToArray();
 
             // Assert
@@ -108,10 +126,19 @@ namespace NuGet.Protocol.Tests
 
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
+            var skip = 0;
+            var take = 1;
 
             // Act/Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() =>
-               searchResource.Search("Sentry", searchFilter, 0, 1, NullLogger.Instance, tokenSource.Token));
+               searchResource.SearchNew(
+                        "Sentry",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        tokenSource.Token));
+
         }
     }
 }

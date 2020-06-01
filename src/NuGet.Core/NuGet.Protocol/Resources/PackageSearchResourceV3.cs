@@ -19,14 +19,29 @@ namespace NuGet.Protocol
             _rawSearchResource = searchResource;
         }
 
+        /// <summary>
+        /// Query nuget package list from nuget server. This implementation optimized for performance so doesn't iterate whole result 
+        /// returned nuget server, so as soon as find "take" number of result packages then stop processing and return the result. 
+        /// </summary>
+        /// <param name="searchTerm">The term we're searching for.</param>
+        /// <param name="filter">Filter for whether to include prerelease, delisted, supportedframework flags in query.</param>
+        /// <param name="skip">Skip how many items from beginning of list.</param>
+        /// <param name="take">Return how many items.</param>
+        /// <param name="log">Logger instance.</param>
+        /// <param name="cancellationToken">Cancellation token.</param>
+        /// <returns>List of package meta data.</returns>
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
-            var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
-
             var metadataCache = new MetadataReferenceCache();
+            var searchResultMetadata = await _rawSearchResource.SearchNew(
+                    searchTerm,
+                    filter,
+                    skip,
+                    take,
+                    Common.NullLogger.Instance,
+                    cancellationToken);
 
-            var searchResults = searchResultJsonObjects
-                .Select(s => s.FromJToken<PackageSearchMetadata>())
+            var searchResults = searchResultMetadata
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
                 .Select(m => metadataCache.GetObject((PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) m))
                 .ToArray();

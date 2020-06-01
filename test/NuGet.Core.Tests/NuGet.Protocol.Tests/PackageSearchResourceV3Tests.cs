@@ -53,7 +53,7 @@ namespace NuGet.Protocol.Tests
         {
             // Arrange
             var responses = new Dictionary<string, string>();
-            responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
+            responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=2&prerelease=false&semVerLevel=2.0.0",
                 ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.SearchV3WithDuplicateBesidesVersion.json", GetType()));
             responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
 
@@ -66,7 +66,7 @@ namespace NuGet.Protocol.Tests
                 "entityframework",
                 new SearchFilter(false),
                 skip: 0,
-                take: 1,
+                take: 2,
                 log: NullLogger.Instance,
                 cancellationToken: CancellationToken.None);
 
