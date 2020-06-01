@@ -1,0 +1,521 @@
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior.BindingRedirectBehavior(NuGet.Configuration.ISettings settings) -> void
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior.FailOperations.get -> bool
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior.FailOperations.set -> void
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior.IsSkipped.get -> bool
+NuGet.PackageManagement.VisualStudio.BindingRedirectBehavior.IsSkipped.set -> void
+NuGet.PackageManagement.VisualStudio.ExceptionHelper
+NuGet.PackageManagement.VisualStudio.INuGetUILogger
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.End() -> void
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.ReportError(string message) -> void
+NuGet.PackageManagement.VisualStudio.INuGetUILogger.Start() -> void
+NuGet.PackageManagement.VisualStudio.IOptionsPageActivator
+NuGet.PackageManagement.VisualStudio.IOptionsPageActivator.ActivatePage(NuGet.PackageManagement.VisualStudio.OptionsPage page, System.Action closeCallback) -> void
+NuGet.PackageManagement.VisualStudio.IOptionsPageActivator.NotifyOptionsDialogClosed() -> void
+NuGet.PackageManagement.VisualStudio.IPackageAssemblyReference
+NuGet.PackageManagement.VisualStudio.IPackageAssemblyReference.Name.get -> string
+NuGet.PackageManagement.VisualStudio.IScriptExecutor
+NuGet.PackageManagement.VisualStudio.IScriptExecutor.ExecuteAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity, string packageInstallPath, string scriptRelativePath, EnvDTE.Project envDTEProject, NuGet.ProjectManagement.INuGetProjectContext nuGetProjectContext, bool throwOnFailure) -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.VisualStudio.IScriptExecutor.ExecuteInitScriptAsync(NuGet.Packaging.Core.PackageIdentity packageIdentity) -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.VisualStudio.IScriptExecutor.Reset() -> void
+NuGet.PackageManagement.VisualStudio.IScriptExecutor.TryMarkVisited(NuGet.Packaging.Core.PackageIdentity packageIdentity, NuGet.PackageManagement.VisualStudio.PackageInitPS1State initPS1State) -> bool
+NuGet.PackageManagement.VisualStudio.IScriptPackage
+NuGet.PackageManagement.VisualStudio.IScriptPackage.AssemblyReferences.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.IPackageAssemblyReference>
+NuGet.PackageManagement.VisualStudio.IScriptPackage.GetFiles() -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.IScriptPackageFile>
+NuGet.PackageManagement.VisualStudio.IScriptPackage.Id.get -> string
+NuGet.PackageManagement.VisualStudio.IScriptPackage.Version.get -> string
+NuGet.PackageManagement.VisualStudio.IScriptPackageFile
+NuGet.PackageManagement.VisualStudio.IScriptPackageFile.Path.get -> string
+NuGet.PackageManagement.VisualStudio.IScriptPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.DefaultNuGetProjectName.get -> string
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.DefaultNuGetProjectName.set -> void
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetAllVsProjectAdaptersAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsProjectAdapter>>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetDefaultNuGetProjectAsync() -> System.Threading.Tasks.Task<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetOrCreateProjectAsync(EnvDTE.Project project, NuGet.ProjectManagement.INuGetProjectContext projectContext) -> System.Threading.Tasks.Task<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetSolutionFilePathAsync() -> System.Threading.Tasks.Task<string>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetVsProjectAdapterAsync(NuGet.ProjectManagement.NuGetProject project) -> System.Threading.Tasks.Task<NuGet.VisualStudio.IVsProjectAdapter>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.GetVsProjectAdapterAsync(string name) -> System.Threading.Tasks.Task<NuGet.VisualStudio.IVsProjectAdapter>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.InitializationTask.get -> System.Threading.Tasks.Task
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.InitializationTask.set -> void
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.IsAllProjectsNominatedAsync() -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.IsInitialized.get -> bool
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.IsSolutionFullyLoadedAsync() -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.IsSolutionOpenAsync() -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.VisualStudio.IVsSolutionManager.UpgradeProjectToPackageReferenceAsync(NuGet.ProjectManagement.NuGetProject project) -> System.Threading.Tasks.Task<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.VisualStudio.OptionsPage
+NuGet.PackageManagement.VisualStudio.OptionsPage.General = 0 -> NuGet.PackageManagement.VisualStudio.OptionsPage
+NuGet.PackageManagement.VisualStudio.OptionsPage.PackageSources = 1 -> NuGet.PackageManagement.VisualStudio.OptionsPage
+NuGet.PackageManagement.VisualStudio.PackageInitPS1State
+NuGet.PackageManagement.VisualStudio.PackageInitPS1State.FoundAndExecuted = 1 -> NuGet.PackageManagement.VisualStudio.PackageInitPS1State
+NuGet.PackageManagement.VisualStudio.PackageInitPS1State.NotFound = 0 -> NuGet.PackageManagement.VisualStudio.PackageInitPS1State
+NuGet.PackageManagement.VisualStudio.PathValidator
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.BuildCommand() -> string
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.BuildInput() -> object[]
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.Identity.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.InstallPath.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.Project.get -> EnvDTE.Project
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.ScriptExecutionRequest(string scriptPath, string installPath, NuGet.Packaging.Core.PackageIdentity identity, EnvDTE.Project project) -> void
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.ScriptPackage.get -> NuGet.PackageManagement.VisualStudio.ScriptPackage
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.ScriptPath.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptExecutionRequest.ToolsPath.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptPackage
+NuGet.PackageManagement.VisualStudio.ScriptPackage.AssemblyReferences.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.IPackageAssemblyReference>
+NuGet.PackageManagement.VisualStudio.ScriptPackage.GetFiles() -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.IScriptPackageFile>
+NuGet.PackageManagement.VisualStudio.ScriptPackage.Id.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptPackage.ScriptPackage(string id, string version, string installPath) -> void
+NuGet.PackageManagement.VisualStudio.ScriptPackage.Version.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptPackageFile
+NuGet.PackageManagement.VisualStudio.ScriptPackageFile.Path.get -> string
+NuGet.PackageManagement.VisualStudio.ScriptPackageFile.Path.set -> void
+NuGet.PackageManagement.VisualStudio.ScriptPackageFile.ScriptPackageFile(string path, NuGet.Frameworks.NuGetFramework targetFramework) -> void
+NuGet.PackageManagement.VisualStudio.ScriptPackageFile.TargetFramework.get -> System.Runtime.Versioning.FrameworkName
+NuGet.VisualStudio.AssemblyBinding
+NuGet.VisualStudio.AssemblyBinding.AssemblyBinding(NuGet.VisualStudio.IAssembly assembly) -> void
+NuGet.VisualStudio.AssemblyBinding.AssemblyNewVersion.get -> System.Version
+NuGet.VisualStudio.AssemblyBinding.CodeBaseHref.get -> string
+NuGet.VisualStudio.AssemblyBinding.CodeBaseVersion.get -> string
+NuGet.VisualStudio.AssemblyBinding.Culture.get -> string
+NuGet.VisualStudio.AssemblyBinding.Culture.set -> void
+NuGet.VisualStudio.AssemblyBinding.Equals(NuGet.VisualStudio.AssemblyBinding other) -> bool
+NuGet.VisualStudio.AssemblyBinding.Name.get -> string
+NuGet.VisualStudio.AssemblyBinding.NewVersion.get -> string
+NuGet.VisualStudio.AssemblyBinding.OldVersion.get -> string
+NuGet.VisualStudio.AssemblyBinding.OldVersion.set -> void
+NuGet.VisualStudio.AssemblyBinding.ProcessorArchitecture.get -> string
+NuGet.VisualStudio.AssemblyBinding.PublicKeyToken.get -> string
+NuGet.VisualStudio.AssemblyBinding.PublisherPolicy.get -> string
+NuGet.VisualStudio.AssemblyBinding.ToXElement() -> System.Xml.Linq.XElement
+NuGet.VisualStudio.Common.ErrorListTableDataSource
+NuGet.VisualStudio.Common.ErrorListTableDataSource.AddNuGetEntries(params NuGet.VisualStudio.Common.ErrorListTableEntry[] entries) -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.BringToFrontIfSettingsPermit() -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.ClearNuGetEntries() -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.DisplayName.get -> string
+NuGet.VisualStudio.Common.ErrorListTableDataSource.Dispose() -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.ErrorListTableDataSource() -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.ErrorListTableDataSource(Microsoft.VisualStudio.Shell.IErrorList errorList, Microsoft.VisualStudio.Shell.TableManager.ITableManager tableManager) -> void
+NuGet.VisualStudio.Common.ErrorListTableDataSource.GetEntries() -> NuGet.VisualStudio.Common.ErrorListTableEntry[]
+NuGet.VisualStudio.Common.ErrorListTableDataSource.Identifier.get -> string
+NuGet.VisualStudio.Common.ErrorListTableDataSource.SourceTypeIdentifier.get -> string
+NuGet.VisualStudio.Common.ErrorListTableDataSource.Subscribe(Microsoft.VisualStudio.Shell.TableManager.ITableDataSink sink) -> System.IDisposable
+NuGet.VisualStudio.Common.ErrorListTableEntry
+NuGet.VisualStudio.Common.ErrorListTableEntry.CanSetValue(string keyName) -> bool
+NuGet.VisualStudio.Common.ErrorListTableEntry.ErrorListTableEntry(NuGet.Common.ILogMessage message) -> void
+NuGet.VisualStudio.Common.ErrorListTableEntry.ErrorListTableEntry(string message, NuGet.Common.LogLevel level) -> void
+NuGet.VisualStudio.Common.ErrorListTableEntry.Identity.get -> object
+NuGet.VisualStudio.Common.ErrorListTableEntry.Message.get -> NuGet.Common.ILogMessage
+NuGet.VisualStudio.Common.ErrorListTableEntry.TryGetValue(string keyName, out object content) -> bool
+NuGet.VisualStudio.Common.ErrorListTableEntry.TrySetValue(string keyName, object content) -> bool
+NuGet.VisualStudio.Common.NuGetFeedbackDiagnosticFileProvider
+NuGet.VisualStudio.Common.NuGetFeedbackDiagnosticFileProvider.GetFiles() -> System.Collections.Generic.IReadOnlyCollection<string>
+NuGet.VisualStudio.Common.NuGetFeedbackDiagnosticFileProvider.NuGetFeedbackDiagnosticFileProvider() -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger
+NuGet.VisualStudio.Common.OutputConsoleLogger.Dispose() -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.End() -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.ErrorListTableDataSource.get -> System.Lazy<NuGet.VisualStudio.Common.ErrorListTableDataSource>
+NuGet.VisualStudio.Common.OutputConsoleLogger.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.OutputConsole.get -> NuGet.VisualStudio.IOutputConsole
+NuGet.VisualStudio.Common.OutputConsoleLogger.OutputConsoleLogger(Microsoft.VisualStudio.Shell.IAsyncServiceProvider asyncServiceProvider, NuGet.VisualStudio.IOutputConsoleProvider consoleProvider, System.Lazy<NuGet.VisualStudio.Common.ErrorListTableDataSource> errorListDataSource) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.OutputConsoleLogger(NuGet.VisualStudio.IOutputConsoleProvider consoleProvider, System.Lazy<NuGet.VisualStudio.Common.ErrorListTableDataSource> errorListDataSource) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.ReportError(string message) -> void
+NuGet.VisualStudio.Common.OutputConsoleLogger.Start() -> void
+NuGet.VisualStudio.EnvDTEExtensions
+NuGet.VisualStudio.EnvDTEProjectInfoUtility
+NuGet.VisualStudio.IAssembly
+NuGet.VisualStudio.IAssembly.Culture.get -> string
+NuGet.VisualStudio.IAssembly.Name.get -> string
+NuGet.VisualStudio.IAssembly.PublicKeyToken.get -> string
+NuGet.VisualStudio.IAssembly.ReferencedAssemblies.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IAssembly>
+NuGet.VisualStudio.IAssembly.Version.get -> System.Version
+NuGet.VisualStudio.IAsyncHost
+NuGet.VisualStudio.IAsyncHost.ExecuteEnd -> System.EventHandler
+NuGet.VisualStudio.IConsole
+NuGet.VisualStudio.IConsole.Dispatcher.get -> NuGet.VisualStudio.IConsoleDispatcher
+NuGet.VisualStudio.IConsole.Host.get -> NuGet.VisualStudio.IHost
+NuGet.VisualStudio.IConsole.Host.set -> void
+NuGet.VisualStudio.IConsole.ShowDisclaimerHeader.get -> bool
+NuGet.VisualStudio.IConsoleDispatcher
+NuGet.VisualStudio.IConsoleDispatcher.AcceptKeyInput() -> void
+NuGet.VisualStudio.IConsoleDispatcher.ClearConsole() -> void
+NuGet.VisualStudio.IConsoleDispatcher.IsExecutingCommand.get -> bool
+NuGet.VisualStudio.IConsoleDispatcher.IsExecutingReadKey.get -> bool
+NuGet.VisualStudio.IConsoleDispatcher.IsKeyAvailable.get -> bool
+NuGet.VisualStudio.IConsoleDispatcher.IsStartCompleted.get -> bool
+NuGet.VisualStudio.IConsoleDispatcher.Start() -> void
+NuGet.VisualStudio.IConsoleDispatcher.StartCompleted -> System.EventHandler
+NuGet.VisualStudio.IConsoleDispatcher.StartWaitingKey -> System.EventHandler
+NuGet.VisualStudio.IConsoleDispatcher.WaitKey() -> NuGet.VisualStudio.VsKeyInfo
+NuGet.VisualStudio.IConsoleStatus
+NuGet.VisualStudio.IConsoleStatus.IsBusy.get -> bool
+NuGet.VisualStudio.IDeferredProjectWorkspaceService
+NuGet.VisualStudio.IDeferredProjectWorkspaceService.EntityExistsAsync(string filePath) -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.IDeferredProjectWorkspaceService.GetMSBuildProjectDataServiceAsync(string projectFilePath, string targetFramework = null) -> System.Threading.Tasks.Task<Microsoft.VisualStudio.Workspace.Extensions.MSBuild.IMSBuildProjectDataService>
+NuGet.VisualStudio.IDeferredProjectWorkspaceService.GetProjectReferencesAsync(string projectFilePath) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+NuGet.VisualStudio.IDeferredProjectWorkspaceService.GetProjectTypeGuidAsync(string projectFilePath) -> System.Threading.Tasks.Task<string>
+NuGet.VisualStudio.IHost
+NuGet.VisualStudio.IHost.Abort() -> void
+NuGet.VisualStudio.IHost.ActivePackageSource.get -> string
+NuGet.VisualStudio.IHost.ActivePackageSource.set -> void
+NuGet.VisualStudio.IHost.DefaultProject.get -> string
+NuGet.VisualStudio.IHost.Execute(NuGet.VisualStudio.IConsole console, string command, object[] inputs) -> bool
+NuGet.VisualStudio.IHost.GetAvailableProjects() -> string[]
+NuGet.VisualStudio.IHost.GetPackageSources() -> string[]
+NuGet.VisualStudio.IHost.Initialize(NuGet.VisualStudio.IConsole console) -> void
+NuGet.VisualStudio.IHost.IsCommandEnabled.get -> bool
+NuGet.VisualStudio.IHost.IsInitializedSuccessfully.get -> bool
+NuGet.VisualStudio.IHost.PackageManagementContext.get -> NuGet.PackageManagement.PackageManagementContext
+NuGet.VisualStudio.IHost.Prompt.get -> string
+NuGet.VisualStudio.IHost.SetDefaultProjectIndex(int index) -> void
+NuGet.VisualStudio.IHost.SetDefaultRunspace() -> void
+NuGet.VisualStudio.INuGetLockService
+NuGet.VisualStudio.INuGetLockService.ExecuteNuGetOperationAsync(System.Func<System.Threading.Tasks.Task> action, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.INuGetLockService.ExecuteNuGetOperationAsync<T>(System.Func<System.Threading.Tasks.Task<T>> action, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<T>
+NuGet.VisualStudio.INuGetLockService.IsLockHeld.get -> bool
+NuGet.VisualStudio.INuGetLockService.LockCount.get -> int
+NuGet.VisualStudio.IOutputConsole
+NuGet.VisualStudio.IOutputConsole.ActivateAsync() -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.ClearAsync() -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.ConsoleWidth.get -> int
+NuGet.VisualStudio.IOutputConsole.WriteAsync(string text) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.WriteAsync(string text, System.Windows.Media.Color? foreground, System.Windows.Media.Color? background) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.WriteBackspaceAsync() -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.WriteLineAsync(string format, params object[] args) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.WriteLineAsync(string text) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsole.WriteProgressAsync(string currentOperation, int percentComplete) -> System.Threading.Tasks.Task
+NuGet.VisualStudio.IOutputConsoleProvider
+NuGet.VisualStudio.IOutputConsoleProvider.CreateBuildOutputConsoleAsync() -> System.Threading.Tasks.Task<NuGet.VisualStudio.IOutputConsole>
+NuGet.VisualStudio.IOutputConsoleProvider.CreatePackageManagerConsoleAsync() -> System.Threading.Tasks.Task<NuGet.VisualStudio.IOutputConsole>
+NuGet.VisualStudio.IOutputConsoleProvider.CreatePowerShellConsoleAsync() -> System.Threading.Tasks.Task<NuGet.VisualStudio.IConsole>
+NuGet.VisualStudio.IProjectSystemCache
+NuGet.VisualStudio.IProjectSystemCache.AddProject(NuGet.VisualStudio.ProjectNames projectNames, NuGet.VisualStudio.IVsProjectAdapter vsProjectAdapter, NuGet.ProjectManagement.NuGetProject nuGetProject) -> bool
+NuGet.VisualStudio.IProjectSystemCache.AddProjectRestoreInfo(NuGet.VisualStudio.ProjectNames projectNames, NuGet.ProjectModel.DependencyGraphSpec projectRestoreInfo, System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.IAssetsLogMessage> additionalMessages) -> bool
+NuGet.VisualStudio.IProjectSystemCache.CacheUpdated -> System.EventHandler<NuGet.PackageManagement.NuGetEventArgs<string>>
+NuGet.VisualStudio.IProjectSystemCache.Clear() -> void
+NuGet.VisualStudio.IProjectSystemCache.ContainsKey(string name) -> bool
+NuGet.VisualStudio.IProjectSystemCache.GetNuGetProjects() -> System.Collections.Generic.IReadOnlyList<NuGet.ProjectManagement.NuGetProject>
+NuGet.VisualStudio.IProjectSystemCache.GetVsProjectAdapters() -> System.Collections.Generic.IReadOnlyList<NuGet.VisualStudio.IVsProjectAdapter>
+NuGet.VisualStudio.IProjectSystemCache.IsAmbiguous(string shortName) -> bool
+NuGet.VisualStudio.IProjectSystemCache.IsCacheDirty.get -> int
+NuGet.VisualStudio.IProjectSystemCache.RemoveProject(string name) -> void
+NuGet.VisualStudio.IProjectSystemCache.TestResetDirtyFlag() -> bool
+NuGet.VisualStudio.IProjectSystemCache.TryGetNuGetProject(string name, out NuGet.ProjectManagement.NuGetProject nuGetProject) -> bool
+NuGet.VisualStudio.IProjectSystemCache.TryGetProjectNameByShortName(string name, out NuGet.VisualStudio.ProjectNames projectNames) -> bool
+NuGet.VisualStudio.IProjectSystemCache.TryGetProjectNames(string name, out NuGet.VisualStudio.ProjectNames projectNames) -> bool
+NuGet.VisualStudio.IProjectSystemCache.TryGetProjectRestoreInfo(string name, out NuGet.ProjectModel.DependencyGraphSpec projectRestoreInfo, out System.Collections.Generic.IReadOnlyList<NuGet.ProjectModel.IAssetsLogMessage> nominationMessages) -> bool
+NuGet.VisualStudio.IProjectSystemCache.TryGetVsProjectAdapter(string name, out NuGet.VisualStudio.IVsProjectAdapter vsProjectAdapter) -> bool
+NuGet.VisualStudio.IRestoreEvents
+NuGet.VisualStudio.IRestoreEvents.SolutionRestoreCompleted -> NuGet.VisualStudio.SolutionRestoreCompletedEventHandler
+NuGet.VisualStudio.IRestoreEventsPublisher
+NuGet.VisualStudio.IRestoreEventsPublisher.OnSolutionRestoreCompleted(NuGet.VisualStudio.SolutionRestoredEventArgs args) -> void
+NuGet.VisualStudio.ISolutionRestoreWorker
+NuGet.VisualStudio.ISolutionRestoreWorker.CleanCacheAsync() -> System.Threading.Tasks.Task
+NuGet.VisualStudio.ISolutionRestoreWorker.CurrentRestoreOperation.get -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.ISolutionRestoreWorker.IsBusy.get -> bool
+NuGet.VisualStudio.ISolutionRestoreWorker.IsRunning.get -> bool
+NuGet.VisualStudio.ISolutionRestoreWorker.JoinableTaskFactory.get -> Microsoft.VisualStudio.Threading.JoinableTaskFactory
+NuGet.VisualStudio.ISolutionRestoreWorker.RestoreAsync(NuGet.VisualStudio.SolutionRestoreRequest request, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.ISolutionRestoreWorker.ScheduleRestoreAsync(NuGet.VisualStudio.SolutionRestoreRequest request, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.IVsProjectAdapter
+NuGet.VisualStudio.IVsProjectAdapter.AssetTargetFallback.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.BuildProperties.get -> NuGet.ProjectManagement.IProjectBuildProperties
+NuGet.VisualStudio.IVsProjectAdapter.CustomUniqueName.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.FullName.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.FullProjectPath.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.GetBuildItemInformationAsync(string itemName, params string[] metadataNames) -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<(string ItemId, string[] ItemMetadata)>>
+NuGet.VisualStudio.IVsProjectAdapter.GetDotNetFrameworkNameAsync() -> System.Threading.Tasks.Task<System.Runtime.Versioning.FrameworkName>
+NuGet.VisualStudio.IVsProjectAdapter.GetNuGetLockFilePathAsync() -> System.Threading.Tasks.Task<string>
+NuGet.VisualStudio.IVsProjectAdapter.GetProjectTypeGuidsAsync() -> System.Threading.Tasks.Task<string[]>
+NuGet.VisualStudio.IVsProjectAdapter.GetPropertyValueAsync(string propertyName) -> System.Threading.Tasks.Task<string>
+NuGet.VisualStudio.IVsProjectAdapter.GetReferencedProjectsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<string>>
+NuGet.VisualStudio.IVsProjectAdapter.GetRestorePackagesWithLockFileAsync() -> System.Threading.Tasks.Task<string>
+NuGet.VisualStudio.IVsProjectAdapter.GetRuntimeIdentifiersAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.RuntimeModel.RuntimeDescription>>
+NuGet.VisualStudio.IVsProjectAdapter.GetRuntimeSupportsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.RuntimeModel.CompatibilityProfile>>
+NuGet.VisualStudio.IVsProjectAdapter.GetTargetFrameworkAsync() -> System.Threading.Tasks.Task<NuGet.Frameworks.NuGetFramework>
+NuGet.VisualStudio.IVsProjectAdapter.IsDeferred.get -> bool
+NuGet.VisualStudio.IVsProjectAdapter.IsRestoreLockedAsync() -> System.Threading.Tasks.Task<bool>
+NuGet.VisualStudio.IVsProjectAdapter.IsSupported.get -> bool
+NuGet.VisualStudio.IVsProjectAdapter.MSBuildProjectExtensionsPath.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.NoWarn.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.PackageTargetFallback.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.Project.get -> EnvDTE.Project
+NuGet.VisualStudio.IVsProjectAdapter.ProjectDirectory.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.ProjectId.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.ProjectName.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.ProjectNames.get -> NuGet.VisualStudio.ProjectNames
+NuGet.VisualStudio.IVsProjectAdapter.RestoreAdditionalProjectFallbackFolders.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.RestoreAdditionalProjectSources.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.RestoreFallbackFolders.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.RestorePackagesPath.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.RestoreSources.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.TreatWarningsAsErrors.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.UniqueName.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.Version.get -> string
+NuGet.VisualStudio.IVsProjectAdapter.VsHierarchy.get -> Microsoft.VisualStudio.Shell.Interop.IVsHierarchy
+NuGet.VisualStudio.IVsProjectAdapter.WarningsAsErrors.get -> string
+NuGet.VisualStudio.IVsSourceControlTracker
+NuGet.VisualStudio.IVsSourceControlTracker.SolutionBoundToSourceControl -> System.EventHandler
+NuGet.VisualStudio.IntervalTracker
+NuGet.VisualStudio.IntervalTracker.GetIntervals() -> System.Collections.Generic.IEnumerable<(string, double)>
+NuGet.VisualStudio.IntervalTracker.IntervalTracker(string activityName) -> void
+NuGet.VisualStudio.IntervalTracker.Start(string intervalName) -> System.IDisposable
+NuGet.VisualStudio.MessageHelper
+NuGet.VisualStudio.NuGetUIThreadHelper
+NuGet.VisualStudio.NuGetVSTelemetryService
+NuGet.VisualStudio.NuGetVSTelemetryService.NuGetVSTelemetryService() -> void
+NuGet.VisualStudio.NuGetVSTelemetryService.NuGetVSTelemetryService(NuGet.Common.ITelemetrySession telemetrySession) -> void
+NuGet.VisualStudio.OperationSource
+NuGet.VisualStudio.OperationSource.API = 2 -> NuGet.VisualStudio.OperationSource
+NuGet.VisualStudio.OperationSource.PMC = 0 -> NuGet.VisualStudio.OperationSource
+NuGet.VisualStudio.OperationSource.UI = 1 -> NuGet.VisualStudio.OperationSource
+NuGet.VisualStudio.PackageManagementFormat
+NuGet.VisualStudio.PackageManagementFormat.ApplyChanges() -> void
+NuGet.VisualStudio.PackageManagementFormat.Enabled.get -> bool
+NuGet.VisualStudio.PackageManagementFormat.Enabled.set -> void
+NuGet.VisualStudio.PackageManagementFormat.IsSolution.get -> bool
+NuGet.VisualStudio.PackageManagementFormat.PackageFormatSelectorLabel.get -> string
+NuGet.VisualStudio.PackageManagementFormat.PackageManagementFormat(NuGet.Configuration.ISettings settings) -> void
+NuGet.VisualStudio.PackageManagementFormat.PackageRefUri.get -> System.Uri
+NuGet.VisualStudio.PackageManagementFormat.ProjectNames.get -> System.Collections.Generic.List<string>
+NuGet.VisualStudio.PackageManagementFormat.ProjectNames.set -> void
+NuGet.VisualStudio.PackageManagementFormat.SelectedPackageManagementFormat.get -> int
+NuGet.VisualStudio.PackageManagementFormat.SelectedPackageManagementFormat.set -> void
+NuGet.VisualStudio.PathHelper
+NuGet.VisualStudio.ProjectHelper
+NuGet.VisualStudio.ProjectNames
+NuGet.VisualStudio.ProjectNames.CustomUniqueName.get -> string
+NuGet.VisualStudio.ProjectNames.Equals(NuGet.VisualStudio.ProjectNames other) -> bool
+NuGet.VisualStudio.ProjectNames.FullName.get -> string
+NuGet.VisualStudio.ProjectNames.ProjectNames(string fullName, string uniqueName, string shortName, string customUniqueName) -> void
+NuGet.VisualStudio.ProjectNames.ShortName.get -> string
+NuGet.VisualStudio.ProjectNames.UniqueName.get -> string
+NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.RestoreOperationSource.Explicit = 1 -> NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.RestoreOperationSource.Implicit = 2 -> NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.RestoreOperationSource.OnBuild = 0 -> NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.RestoreTelemetryEvent
+NuGet.VisualStudio.RestoreTelemetryEvent.NoOpProjectsCount.get -> int
+NuGet.VisualStudio.RestoreTelemetryEvent.OperationSource.get -> NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.RestoreTelemetryEvent.RestoreTelemetryEvent(string operationId, string[] projectIds, NuGet.VisualStudio.RestoreOperationSource source, System.DateTimeOffset startTime, NuGet.Common.NuGetOperationStatus status, int packageCount, int noOpProjectsCount, System.DateTimeOffset endTime, double duration, NuGet.VisualStudio.IntervalTracker intervalTimingTracker) -> void
+NuGet.VisualStudio.ServiceLocator
+NuGet.VisualStudio.ServiceProviderExtensions
+NuGet.VisualStudio.SolutionEventsListener
+NuGet.VisualStudio.SolutionEventsListener.Advise(Microsoft.VisualStudio.Shell.Interop.IVsSolution vsSolution) -> void
+NuGet.VisualStudio.SolutionEventsListener.OnAfterCloseSolution(object pUnkReserved) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnAfterLoadProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pStubHierarchy, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pRealHierarchy) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnAfterOpenProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierarchy, int fAdded) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnAfterOpenSolution(object pUnkReserved, int fNewSolution) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnBeforeCloseProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierarchy, int fRemoved) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnBeforeCloseSolution(object pUnkReserved) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnBeforeUnloadProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pRealHierarchy, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pStubHierarchy) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnQueryCloseProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierarchy, int fRemoving, ref int pfCancel) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnQueryCloseSolution(object pUnkReserved, ref int pfCancel) -> int
+NuGet.VisualStudio.SolutionEventsListener.OnQueryUnloadProject(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pRealHierarchy, ref int pfCancel) -> int
+NuGet.VisualStudio.SolutionEventsListener.SolutionEventsListener() -> void
+NuGet.VisualStudio.SolutionEventsListener.Unadvise() -> void
+NuGet.VisualStudio.SolutionRestoreCompletedEventHandler
+NuGet.VisualStudio.SolutionRestoreRequest
+NuGet.VisualStudio.SolutionRestoreRequest.ForceRestore.get -> bool
+NuGet.VisualStudio.SolutionRestoreRequest.OperationId.get -> System.Guid
+NuGet.VisualStudio.SolutionRestoreRequest.RestoreSource.get -> NuGet.VisualStudio.RestoreOperationSource
+NuGet.VisualStudio.SolutionRestoreRequest.SolutionRestoreRequest(bool forceRestore, NuGet.VisualStudio.RestoreOperationSource restoreSource) -> void
+NuGet.VisualStudio.SolutionRestoredEventArgs
+NuGet.VisualStudio.SolutionRestoredEventArgs.RestoreStatus.get -> NuGet.Common.NuGetOperationStatus
+NuGet.VisualStudio.SolutionRestoredEventArgs.SolutionDirectory.get -> string
+NuGet.VisualStudio.SolutionRestoredEventArgs.SolutionRestoredEventArgs(NuGet.Common.NuGetOperationStatus restoreStatus, string solutionDirectory) -> void
+NuGet.VisualStudio.SupportedProjectTypes
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Dispose() -> void
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.GetTotals() -> NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.PackageSourceTelemetry(System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository> sources, System.Guid parentId, NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction action) -> void
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.SendTelemetryAsync() -> System.Threading.Tasks.Task
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction.Restore = 1 -> NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction.Search = 2 -> NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction.Unknown = 0 -> NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.TelemetryAction
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals.Bytes.get -> long
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals.Duration.get -> System.TimeSpan
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals.Requests.get -> int
+NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.Totals.Totals(int requests, long bytes, System.TimeSpan duration) -> void
+NuGet.VisualStudio.Telemetry.TelemetryUtility
+NuGet.VisualStudio.Telemetry.VSTelemetrySession
+NuGet.VisualStudio.Telemetry.VSTelemetrySession.PostEvent(NuGet.Common.TelemetryEvent telemetryEvent) -> void
+NuGet.VisualStudio.VSActionsTelemetryEvent
+NuGet.VisualStudio.VSActionsTelemetryEvent.Source.get -> NuGet.VisualStudio.OperationSource
+NuGet.VisualStudio.VSActionsTelemetryEvent.VSActionsTelemetryEvent(string operationId, string[] projectIds, NuGet.PackageManagement.NuGetOperationType operationType, NuGet.VisualStudio.OperationSource source, System.DateTimeOffset startTime, NuGet.Common.NuGetOperationStatus status, int packageCount, System.DateTimeOffset endTime, double duration) -> void
+NuGet.VisualStudio.VisualStudioBuildItemStorageCallback
+NuGet.VisualStudio.VisualStudioBuildItemStorageCallback.Items.get -> System.Collections.Generic.List<(string Itemid, string[] ItemMetadata)>
+NuGet.VisualStudio.VisualStudioBuildItemStorageCallback.VisualStudioBuildItemStorageCallback() -> void
+NuGet.VisualStudio.VsHierarchyItem
+NuGet.VisualStudio.VsHierarchyItem.Equals(NuGet.VisualStudio.VsHierarchyItem other) -> bool
+NuGet.VisualStudio.VsHierarchyItem.TryGetProjectId(out System.Guid projectId) -> bool
+NuGet.VisualStudio.VsHierarchyItem.VsHierarchy.get -> Microsoft.VisualStudio.Shell.Interop.IVsHierarchy
+NuGet.VisualStudio.VsHierarchyUtility
+NuGet.VisualStudio.VsKeyInfo
+NuGet.VisualStudio.VsKeyInfo.AltPressed.get -> bool
+NuGet.VisualStudio.VsKeyInfo.CapsLockToggled.get -> bool
+NuGet.VisualStudio.VsKeyInfo.ControlPressed.get -> bool
+NuGet.VisualStudio.VsKeyInfo.Key.get -> System.Windows.Input.Key
+NuGet.VisualStudio.VsKeyInfo.KeyChar.get -> char
+NuGet.VisualStudio.VsKeyInfo.KeyStates.get -> System.Windows.Input.KeyStates
+NuGet.VisualStudio.VsKeyInfo.NumLockToggled.get -> bool
+NuGet.VisualStudio.VsKeyInfo.ShiftPressed.get -> bool
+NuGet.VisualStudio.VsKeyInfo.VirtualKey.get -> byte
+NuGet.VisualStudio.VsProjectTypes
+NuGet.VisualStudio.WindowFrameHelper
+const NuGet.PackageManagement.VisualStudio.ExceptionHelper.LogEntrySource = "NuGet Package Manager" -> string
+const NuGet.VisualStudio.EnvDTEProjectInfoUtility.AppConfig = "app.config" -> string
+const NuGet.VisualStudio.EnvDTEProjectInfoUtility.FullPath = "FullPath" -> string
+const NuGet.VisualStudio.EnvDTEProjectInfoUtility.ProjectDirectory = "ProjectDirectory" -> string
+const NuGet.VisualStudio.EnvDTEProjectInfoUtility.WebConfig = "web.config" -> string
+const NuGet.VisualStudio.RestoreTelemetryEvent.RestoreActionEventName = "RestoreInformation" -> string
+const NuGet.VisualStudio.Telemetry.VSTelemetrySession.VSEventNamePrefix = "VS/NuGet/" -> string
+const NuGet.VisualStudio.Telemetry.VSTelemetrySession.VSPropertyNamePrefix = "VS.NuGet." -> string
+const NuGet.VisualStudio.VsProjectTypes.CosmosProjectTypeGuid = "{471EC4BB-E47E-4229-A789-D1F5F83B52D4}" -> string
+const NuGet.VisualStudio.VsProjectTypes.CppProjectTypeGuid = "{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}" -> string
+const NuGet.VisualStudio.VsProjectTypes.CsharpProjectTypeGuid = "{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}" -> string
+const NuGet.VisualStudio.VsProjectTypes.DeploymentProjectTypeGuid = "{151d2e53-a2c4-4d7d-83fe-d05416ebd58e}" -> string
+const NuGet.VisualStudio.VsProjectTypes.DxJsProjectTypeGuid = "{1B19158F-E398-40A6-8E3B-350508E125F1}" -> string
+const NuGet.VisualStudio.VsProjectTypes.FsharpProjectTypeGuid = "{F2A71F9B-5D33-465A-A702-920D77279786}" -> string
+const NuGet.VisualStudio.VsProjectTypes.InstallShieldLimitedEditionTypeGuid = "{FBB4BD86-BF63-432a-A6FB-6CF3A1288F83}" -> string
+const NuGet.VisualStudio.VsProjectTypes.JsProjectTypeGuid = "{262852C6-CD72-467D-83FE-5EEB1973A190}" -> string
+const NuGet.VisualStudio.VsProjectTypes.LightSwitchCsharpProjectTypeGuid = "{8BB0C5E8-0616-4F60-8E55-A43933E57E9C}" -> string
+const NuGet.VisualStudio.VsProjectTypes.LightSwitchLsxtProjectTypeGuid = "{581633EB-B896-402F-8E60-36F3DA191C85}" -> string
+const NuGet.VisualStudio.VsProjectTypes.LightSwitchProjectTypeGuid = "{ECD6D718-D1CF-4119-97F3-97C25A0DFBF9}" -> string
+const NuGet.VisualStudio.VsProjectTypes.ManagementPackProjectTypeGuid = "{d4b43eb3-688b-4eee-86bd-088f0b28abb3}" -> string
+const NuGet.VisualStudio.VsProjectTypes.NemerleProjectTypeGuid = "{edcc3b85-0bad-11db-bc1a-00112fde8b61}" -> string
+const NuGet.VisualStudio.VsProjectTypes.NomadForVisualStudioProjectTypeGuid = "{4B160523-D178-4405-B438-79FB67C8D499}" -> string
+const NuGet.VisualStudio.VsProjectTypes.SilverlightProjectTypeGuid = "{A1591282-1198-4647-A2B1-27E5FF5F6F3B}" -> string
+const NuGet.VisualStudio.VsProjectTypes.SynergexProjectTypeGuid = "{BBD0F5D1-1CC4-42fd-BA4C-A96779C64378}" -> string
+const NuGet.VisualStudio.VsProjectTypes.TDSItemTypeGuid = "{6877B9B0-CDF7-4ff2-BC09-9608387B37F2}" -> string
+const NuGet.VisualStudio.VsProjectTypes.TDSProjectTypeGuid = "{CAA73BB0-EF22-4d79-A57E-DF67B3BA9C80}" -> string
+const NuGet.VisualStudio.VsProjectTypes.UnloadedProjectTypeGuid = "{67294A52-A4F0-11D2-AA88-00C04F688DDE}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VbProjectTypeGuid = "{F184B08F-C81C-45F6-A57F-5ABD9991F28F}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsProjectItemKindPhysicalFile = "{6BB5F8EE-4483-11D3-8BCF-00C04F8EC28C}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsProjectItemKindPhysicalFolder = "{6BB5F8EF-4483-11D3-8BCF-00C04F8EC28C}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsProjectItemKindSolutionFolder = "{66A26720-8FB5-11D2-AA7E-00C04F688DDE}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsProjectItemKindSolutionItem = "{66A26722-8FB5-11D2-AA7E-00C04F688DDE}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsProjectKindMisc = "{66A2671D-8FB5-11D2-AA7E-00C04F688DDE}" -> string
+const NuGet.VisualStudio.VsProjectTypes.VsWindowKindSolutionExplorer = "{3AE79031-E1BC-11D0-8F78-00A0C9110057}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WebApplicationProjectTypeGuid = "{349C5851-65DF-11DA-9384-00065B846F21}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WebSiteProjectTypeGuid = "{E24C65DC-7377-472B-9ABA-BC803B73C61A}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WindowsPhone81ProjectTypeGuid = "{76F1466A-8B6D-4E39-A767-685A06062A39}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WindowsPhoneSilverlightProjectTypeGuid = "{C089C8C0-30E0-4E22-80C0-CE093F111A43}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WindowsStoreProjectTypeGuid = "{BC8A1FFA-BEE3-4634-8014-F334798102B3}" -> string
+const NuGet.VisualStudio.VsProjectTypes.WixProjectTypeGuid = "{930C7802-8A8C-48F9-8165-68863BCCD9DD}" -> string
+override NuGet.VisualStudio.AssemblyBinding.Equals(object obj) -> bool
+override NuGet.VisualStudio.AssemblyBinding.GetHashCode() -> int
+override NuGet.VisualStudio.AssemblyBinding.ToString() -> string
+override NuGet.VisualStudio.ProjectNames.Equals(object obj) -> bool
+override NuGet.VisualStudio.ProjectNames.GetHashCode() -> int
+override NuGet.VisualStudio.ProjectNames.ToString() -> string
+override NuGet.VisualStudio.VsHierarchyItem.Equals(object obj) -> bool
+override NuGet.VisualStudio.VsHierarchyItem.GetHashCode() -> int
+static NuGet.PackageManagement.VisualStudio.ExceptionHelper.WriteErrorToActivityLog(System.Exception exception) -> void
+static NuGet.PackageManagement.VisualStudio.ExceptionHelper.WriteWarningToActivityLog(System.Exception exception) -> void
+static NuGet.PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(string path) -> string
+static NuGet.PackageManagement.VisualStudio.PathValidator.IsValidLocalPath(string path) -> bool
+static NuGet.PackageManagement.VisualStudio.PathValidator.IsValidSource(string source) -> bool
+static NuGet.PackageManagement.VisualStudio.PathValidator.IsValidUncPath(string path) -> bool
+static NuGet.PackageManagement.VisualStudio.PathValidator.SafeTrim(string value) -> string
+static NuGet.VisualStudio.AssemblyBinding.GetQualifiedName(string name) -> System.Xml.Linq.XName
+static NuGet.VisualStudio.AssemblyBinding.Parse(System.Xml.Linq.XContainer dependentAssembly) -> NuGet.VisualStudio.AssemblyBinding
+static NuGet.VisualStudio.EnvDTEExtensions.GetFullVsVersionString(this EnvDTE.DTE dte) -> string
+static NuGet.VisualStudio.EnvDTEExtensions.GetSKU(this EnvDTE.DTE dte) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetActiveProject(Microsoft.VisualStudio.Shell.Interop.IVsMonitorSelection vsMonitorSelection) -> EnvDTE.Project
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetConfigurationFile(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(EnvDTE.Project envDTEProject) -> System.Threading.Tasks.Task<string>
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetFullPath(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetFullProjectPath(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetName(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetPackagesConfigFullPath(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetTargetFrameworkString(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.GetUniqueName(EnvDTE.Project envDTEProject) -> string
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.IsJavaScriptProject(EnvDTE.Project envDTEProject) -> bool
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.IsUnloaded(EnvDTE.Project envDTEProject) -> bool
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.IsWebSite(EnvDTE.Project envDTEProject) -> bool
+static NuGet.VisualStudio.EnvDTEProjectInfoUtility.IsWindowsStoreApp(EnvDTE.Project envDTEProject) -> bool
+static NuGet.VisualStudio.MessageHelper.ShowError(Microsoft.VisualStudio.Shell.ErrorListProvider errorListProvider, Microsoft.VisualStudio.Shell.TaskErrorCategory errorCategory, Microsoft.VisualStudio.Shell.TaskPriority priority, string errorText, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchyItem) -> void
+static NuGet.VisualStudio.MessageHelper.ShowErrorMessage(System.Exception exception, string title) -> void
+static NuGet.VisualStudio.MessageHelper.ShowErrorMessage(string message, string title) -> void
+static NuGet.VisualStudio.MessageHelper.ShowInfoMessage(string message, string title) -> void
+static NuGet.VisualStudio.MessageHelper.ShowQueryMessage(string message, string title, bool showCancelButton) -> bool?
+static NuGet.VisualStudio.MessageHelper.ShowWarningMessage(string message, string title) -> void
+static NuGet.VisualStudio.NuGetUIThreadHelper.JoinableTaskFactory.get -> Microsoft.VisualStudio.Threading.JoinableTaskFactory
+static NuGet.VisualStudio.NuGetUIThreadHelper.SetCustomJoinableTaskFactory(Microsoft.VisualStudio.Threading.JoinableTaskFactory joinableTaskFactory) -> void
+static NuGet.VisualStudio.NuGetUIThreadHelper.SetJoinableTaskFactoryFromService(Microsoft.VisualStudio.ProjectSystem.IProjectServiceAccessor projectServiceAccessor) -> void
+static NuGet.VisualStudio.PathHelper.EscapePSPath(string path) -> string
+static NuGet.VisualStudio.PathHelper.SmartTruncate(string path, int maxWidth) -> string
+static NuGet.VisualStudio.ProjectHelper.DoWorkInWriterLockAsync(EnvDTE.Project project, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy, System.Action<Microsoft.Build.Evaluation.Project> action) -> System.Threading.Tasks.Task
+static NuGet.VisualStudio.ProjectNames.FromDTEProjectAsync(EnvDTE.Project dteProject) -> System.Threading.Tasks.Task<NuGet.VisualStudio.ProjectNames>
+static NuGet.VisualStudio.ProjectNames.FromFullProjectPath(string name) -> NuGet.VisualStudio.ProjectNames
+static NuGet.VisualStudio.ProjectNames.operator !=(NuGet.VisualStudio.ProjectNames left, NuGet.VisualStudio.ProjectNames right) -> bool
+static NuGet.VisualStudio.ProjectNames.operator ==(NuGet.VisualStudio.ProjectNames left, NuGet.VisualStudio.ProjectNames right) -> bool
+static NuGet.VisualStudio.RestoreTelemetryEvent.PackageReferenceRestoreDuration -> string
+static NuGet.VisualStudio.RestoreTelemetryEvent.PackagesConfigRestore -> string
+static NuGet.VisualStudio.RestoreTelemetryEvent.RestoreOperationChecks -> string
+static NuGet.VisualStudio.RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation -> string
+static NuGet.VisualStudio.ServiceLocator.GetGlobalService<TService, TInterface>() -> TInterface
+static NuGet.VisualStudio.ServiceLocator.GetGlobalServiceAsync<TService, TInterface>() -> System.Threading.Tasks.Task<TInterface>
+static NuGet.VisualStudio.ServiceLocator.GetGlobalServiceFreeThreadedAsync<TService, TInterface>() -> System.Threading.Tasks.Task<TInterface>
+static NuGet.VisualStudio.ServiceLocator.GetInstance<TService>() -> TService
+static NuGet.VisualStudio.ServiceLocator.GetInstanceAsync<TService>() -> System.Threading.Tasks.Task<TService>
+static NuGet.VisualStudio.ServiceLocator.GetInstanceSafe<TService>() -> TService
+static NuGet.VisualStudio.ServiceLocator.InitializePackageServiceProvider(Microsoft.VisualStudio.Shell.IAsyncServiceProvider provider) -> void
+static NuGet.VisualStudio.ServiceLocator.PackageServiceProvider.get -> Microsoft.VisualStudio.Shell.IAsyncServiceProvider
+static NuGet.VisualStudio.ServiceProviderExtensions.GetComponentModel(this System.IServiceProvider serviceProvider) -> Microsoft.VisualStudio.ComponentModelHost.IComponentModel
+static NuGet.VisualStudio.ServiceProviderExtensions.GetComponentModelAsync(this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site) -> System.Threading.Tasks.Task<Microsoft.VisualStudio.ComponentModelHost.IComponentModel>
+static NuGet.VisualStudio.ServiceProviderExtensions.GetDTE(this System.IServiceProvider serviceProvider) -> EnvDTE.DTE
+static NuGet.VisualStudio.ServiceProviderExtensions.GetDTEAsync(this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site) -> System.Threading.Tasks.Task<EnvDTE.DTE>
+static NuGet.VisualStudio.ServiceProviderExtensions.GetService<TService, TInterface>(this System.IServiceProvider serviceProvider) -> TInterface
+static NuGet.VisualStudio.ServiceProviderExtensions.GetService<TService>(this System.IServiceProvider serviceProvider) -> TService
+static NuGet.VisualStudio.ServiceProviderExtensions.GetServiceAsync<TService, TInterface>(this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site) -> System.Threading.Tasks.Task<TInterface>
+static NuGet.VisualStudio.ServiceProviderExtensions.GetServiceAsync<TService>(this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site) -> System.Threading.Tasks.Task<TService>
+static NuGet.VisualStudio.SolutionRestoreRequest.ByMenu() -> NuGet.VisualStudio.SolutionRestoreRequest
+static NuGet.VisualStudio.SolutionRestoreRequest.OnBuild(bool forceRestore) -> NuGet.VisualStudio.SolutionRestoreRequest
+static NuGet.VisualStudio.SolutionRestoreRequest.OnUpdate() -> NuGet.VisualStudio.SolutionRestoreRequest
+static NuGet.VisualStudio.SupportedProjectTypes.IsSupported(string projectKind) -> bool
+static NuGet.VisualStudio.SupportedProjectTypes.IsSupportedForAddingReferences(string projectKind) -> bool
+static NuGet.VisualStudio.SupportedProjectTypes.IsSupportedForBindingRedirects(string projectKind) -> bool
+static NuGet.VisualStudio.SupportedProjectTypes.IsSupportedProjectExtension(string projectPath) -> bool
+static NuGet.VisualStudio.SupportedProjectTypes.IsUnsupported(string projectKind) -> bool
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.CreateFileAndForgetEventName(string typeName, string memberName) -> string
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.EmitException(string className, string methodName, System.Exception exception) -> void
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.IsAzureArtifacts(NuGet.Configuration.PackageSource source) -> bool
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.IsGitHub(NuGet.Configuration.PackageSource source) -> bool
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.IsHttpV3(NuGet.Configuration.PackageSource source) -> bool
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.IsNuGetOrg(NuGet.Configuration.PackageSource source) -> bool
+static NuGet.VisualStudio.Telemetry.TelemetryUtility.IsVsOfflineFeed(NuGet.Configuration.PackageSource source) -> bool
+static NuGet.VisualStudio.Telemetry.VSTelemetrySession.ToVsTelemetryEvent(NuGet.Common.TelemetryEvent telemetryEvent) -> Microsoft.VisualStudio.Telemetry.TelemetryEvent
+static NuGet.VisualStudio.VsHierarchyItem.FromDteProject(EnvDTE.Project project) -> NuGet.VisualStudio.VsHierarchyItem
+static NuGet.VisualStudio.VsHierarchyItem.FromVsHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project) -> NuGet.VisualStudio.VsHierarchyItem
+static NuGet.VisualStudio.VsHierarchyUtility.CollapseAllNodesAsync(NuGet.PackageManagement.ISolutionManager solutionManager, System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.VisualStudio.VsHierarchyItem>> ignoreNodes) -> System.Threading.Tasks.Task
+static NuGet.VisualStudio.VsHierarchyUtility.GetAllExpandedNodesAsync(NuGet.PackageManagement.ISolutionManager solutionManager) -> System.Threading.Tasks.Task<System.Collections.Generic.IDictionary<string, System.Collections.Generic.ISet<NuGet.VisualStudio.VsHierarchyItem>>>
+static NuGet.VisualStudio.VsHierarchyUtility.GetProjectFromHierarchy(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierarchy) -> EnvDTE.Project
+static NuGet.VisualStudio.VsHierarchyUtility.GetProjectPath(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy project) -> string
+static NuGet.VisualStudio.VsHierarchyUtility.GetProjectTypeGuids(EnvDTE.Project project) -> string[]
+static NuGet.VisualStudio.VsHierarchyUtility.GetProjectTypeGuids(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy, string defaultType = "") -> string[]
+static NuGet.VisualStudio.VsHierarchyUtility.HasUnsupportedProjectCapability(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) -> bool
+static NuGet.VisualStudio.VsHierarchyUtility.IsCPSCapabilityComplaint(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) -> bool
+static NuGet.VisualStudio.VsHierarchyUtility.IsProjectCapabilityCompliant(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy) -> bool
+static NuGet.VisualStudio.VsHierarchyUtility.IsSupported(Microsoft.VisualStudio.Shell.Interop.IVsHierarchy hierarchy, string projectTypeGuid) -> bool
+static NuGet.VisualStudio.VsHierarchyUtility.ToVsHierarchy(EnvDTE.Project project) -> Microsoft.VisualStudio.Shell.Interop.IVsHierarchy
+static NuGet.VisualStudio.VsKeyInfo.Create(System.Windows.Input.Key key, char keyChar, byte virtualKey, System.Windows.Input.KeyStates keyStates = System.Windows.Input.KeyStates.None, bool shiftPressed = false, bool controlPressed = false, bool altPressed = false, bool capsLockToggled = false, bool numLockToggled = false) -> NuGet.VisualStudio.VsKeyInfo
+static NuGet.VisualStudio.VsKeyInfo.Enter.get -> NuGet.VisualStudio.VsKeyInfo
+static NuGet.VisualStudio.WindowFrameHelper.AddF1HelpKeyword(Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame windowFrame, string keywordValue) -> void
+static NuGet.VisualStudio.WindowFrameHelper.DisableWindowAutoReopen(Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame windowFrame) -> void
+static readonly NuGet.VisualStudio.Telemetry.VSTelemetrySession.Instance -> NuGet.VisualStudio.Telemetry.VSTelemetrySession
+virtual NuGet.VisualStudio.NuGetVSTelemetryService.EmitTelemetryEvent(NuGet.Common.TelemetryEvent telemetryData) -> void
+virtual NuGet.VisualStudio.NuGetVSTelemetryService.StartActivity(string activityName) -> System.IDisposable
+virtual NuGet.VisualStudio.SolutionEventsListener.OnAfterBackgroundSolutionLoadComplete() -> int
+virtual NuGet.VisualStudio.SolutionEventsListener.OnAfterLoadProjectBatch(bool fIsBackgroundIdleBatch) -> int
+virtual NuGet.VisualStudio.SolutionEventsListener.OnBeforeBackgroundSolutionLoadBegins() -> int
+virtual NuGet.VisualStudio.SolutionEventsListener.OnBeforeLoadProjectBatch(bool fIsBackgroundIdleBatch) -> int
+virtual NuGet.VisualStudio.SolutionEventsListener.OnBeforeOpenSolution(string pszSolutionFilename) -> int
+virtual NuGet.VisualStudio.SolutionEventsListener.OnQueryBackgroundLoadProjectBatch(out bool pfShouldDelayLoadToNextIdle) -> int

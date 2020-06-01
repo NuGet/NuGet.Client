@@ -27,6 +27,7 @@
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
     <DevelopmentDependency>true</DevelopmentDependency>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <NoPublicAPIs>true</NoPublicAPIs>
   </PropertyGroup>
 
   <Target Name="CreateCommandlineNupkg">

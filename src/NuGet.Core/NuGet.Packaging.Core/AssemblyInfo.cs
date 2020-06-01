@@ -3,7 +3,7 @@
 
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using System;	
+using System;
 using System.Runtime.CompilerServices;
 
 [assembly: CLSCompliant(true)]

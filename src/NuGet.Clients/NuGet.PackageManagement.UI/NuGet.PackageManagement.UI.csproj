@@ -537,6 +537,8 @@
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
+    <Content Include="PublicAPI.Shipped.txt" />
+    <Content Include="PublicAPI.Unshipped.txt" />
     <Content Include="Resources\PackageIconMonikers.imagemanifest">
       <SubType>Designer</SubType>
     </Content>

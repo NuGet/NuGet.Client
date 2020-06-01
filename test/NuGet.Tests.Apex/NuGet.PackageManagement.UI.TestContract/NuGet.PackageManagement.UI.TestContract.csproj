@@ -5,6 +5,7 @@
     <Shipping>true</Shipping>
     <PackProject>true</PackProject>
     <SkipAnalyzers>true</SkipAnalyzers>
+    <NoPublicAPIs>true</NoPublicAPIs>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

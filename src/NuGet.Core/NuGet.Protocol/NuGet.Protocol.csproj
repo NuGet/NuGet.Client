@@ -30,7 +30,7 @@
       <DependentUpon>Strings.resx</DependentUpon>
     </Compile>
   </ItemGroup>
-  
+
   <ItemGroup>
     <EmbeddedResource Update="Strings.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -48,6 +48,18 @@
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NetStandardVersion)' ">
     <PackageReference Include="System.Dynamic.Runtime" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <!-- there are public APIs, but we need per-TFM config in this project -->
+    <NoPublicAPIs>true</NoPublicAPIs>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.PublicApiAnalyzers" PrivateAssets="all" />
+
+    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Shipped.txt" />
+    <AdditionalFiles Include="PublicAPI\$(TargetFramework)\PublicAPI.Unshipped.txt" />
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets" />

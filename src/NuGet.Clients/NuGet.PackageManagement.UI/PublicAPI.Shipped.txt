@@ -1,0 +1,1297 @@
+NuGet.Options.GeneralOptionControl
+NuGet.Options.GeneralOptionControl.GeneralOptionControl(System.IServiceProvider serviceProvider) -> void
+NuGet.Options.GeneralOptionPage
+NuGet.Options.GeneralOptionPage.GeneralOptionPage() -> void
+NuGet.Options.OptionsPageBase
+NuGet.Options.OptionsPageBase.OptionsPageBase() -> void
+NuGet.Options.PackageSourceOptionsPage
+NuGet.Options.PackageSourceOptionsPage.PackageSourceOptionsPage() -> void
+NuGet.Options.PackageSourcesOptionsControl
+NuGet.Options.PackageSourcesOptionsControl.PackageSourcesOptionsControl(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceRepositoryProvider, System.IServiceProvider serviceProvider) -> void
+NuGet.Options.PackageSourcesOptionsControl.PackageSourcesOptionsControl(System.IServiceProvider serviceProvider) -> void
+NuGet.PackageManagement.ProjectVersionConstraint
+NuGet.PackageManagement.ProjectVersionConstraint.IsAutoReferenced.get -> bool
+NuGet.PackageManagement.ProjectVersionConstraint.IsAutoReferenced.set -> void
+NuGet.PackageManagement.ProjectVersionConstraint.IsPackagesConfig.get -> bool
+NuGet.PackageManagement.ProjectVersionConstraint.IsPackagesConfig.set -> void
+NuGet.PackageManagement.ProjectVersionConstraint.ProjectName.get -> string
+NuGet.PackageManagement.ProjectVersionConstraint.ProjectName.set -> void
+NuGet.PackageManagement.ProjectVersionConstraint.ProjectVersionConstraint() -> void
+NuGet.PackageManagement.ProjectVersionConstraint.VersionRange.get -> NuGet.Versioning.VersionRange
+NuGet.PackageManagement.ProjectVersionConstraint.VersionRange.set -> void
+NuGet.PackageManagement.UI.AccessibleConverter
+NuGet.PackageManagement.UI.AccessibleConverter.AccessibleConverter() -> void
+NuGet.PackageManagement.UI.AccessibleConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.AccessibleConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.AccessiblePackageIdentity
+NuGet.PackageManagement.UI.AccessiblePackageIdentity.AccessiblePackageIdentity(NuGet.Packaging.Core.PackageIdentity id) -> void
+NuGet.PackageManagement.UI.AccessiblePackageIdentity.AutomationName.get -> string
+NuGet.PackageManagement.UI.ActionsAndVersions
+NuGet.PackageManagement.UI.ActionsAndVersions.ActionsAndVersions() -> void
+NuGet.PackageManagement.UI.ActionsAndVersions.InitializeComponent() -> void
+NuGet.PackageManagement.UI.AdditionConverter
+NuGet.PackageManagement.UI.AdditionConverter.AdditionConverter() -> void
+NuGet.PackageManagement.UI.AdditionConverter.Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.AdditionConverter.ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) -> object[]
+NuGet.PackageManagement.UI.AlternativePackageManagerProviders
+NuGet.PackageManagement.UI.AlternativePackageManagerProviders.AlternativePackageManagerProviders(System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider> packageManagerProviders, string packageId, string projectName) -> void
+NuGet.PackageManagement.UI.AlternativePackageManagerProviders.PackageId.get -> string
+NuGet.PackageManagement.UI.AlternativePackageManagerProviders.PackageManagerProviders.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider>
+NuGet.PackageManagement.UI.AlternativePackageManagerProviders.ProjectName.get -> string
+NuGet.PackageManagement.UI.AuthorAndDownloadCount
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.Author.get -> string
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.Author.set -> void
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.AuthorAndDownloadCount() -> void
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.DownloadCount.get -> long?
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.DownloadCount.set -> void
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.InitializeComponent() -> void
+NuGet.PackageManagement.UI.AuthorAndDownloadCount.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.BooleanToFontWeightConverter
+NuGet.PackageManagement.UI.BooleanToFontWeightConverter.BooleanToFontWeightConverter() -> void
+NuGet.PackageManagement.UI.BooleanToFontWeightConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToFontWeightConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter.BooleanToGridRowHeightConverter() -> void
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter.Inverted.get -> bool
+NuGet.PackageManagement.UI.BooleanToGridRowHeightConverter.Inverted.set -> void
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter.BooleanToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter.Inverted.get -> bool
+NuGet.PackageManagement.UI.BooleanToVisibilityConverter.Inverted.set -> void
+NuGet.PackageManagement.UI.Brushes
+NuGet.PackageManagement.UI.Commands
+NuGet.PackageManagement.UI.DateTimeConverter
+NuGet.PackageManagement.UI.DateTimeConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.DateTimeConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.DateTimeConverter.DateTimeConverter() -> void
+NuGet.PackageManagement.UI.DependencyBehaviorItem
+NuGet.PackageManagement.UI.DependencyBehaviorItem.Behavior.get -> NuGet.Resolver.DependencyBehavior
+NuGet.PackageManagement.UI.DependencyBehaviorItem.DependencyBehaviorItem(string text, NuGet.Resolver.DependencyBehavior dependencyBehavior) -> void
+NuGet.PackageManagement.UI.DependencyBehaviorItem.Text.get -> string
+NuGet.PackageManagement.UI.DeprecatedFrameworkWindow
+NuGet.PackageManagement.UI.DeprecatedFrameworkWindow.DeprecatedFrameworkWindow(NuGet.PackageManagement.UI.INuGetUIContext uiContext) -> void
+NuGet.PackageManagement.UI.DeprecatedFrameworkWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.DeprecationControl
+NuGet.PackageManagement.UI.DeprecationControl.DeprecationControl() -> void
+NuGet.PackageManagement.UI.DeprecationControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.DetailControl
+NuGet.PackageManagement.UI.DetailControl.Control.get -> NuGet.PackageManagement.UI.PackageManagerControl
+NuGet.PackageManagement.UI.DetailControl.Control.set -> void
+NuGet.PackageManagement.UI.DetailControl.DetailControl() -> void
+NuGet.PackageManagement.UI.DetailControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.DetailControl.Refresh() -> void
+NuGet.PackageManagement.UI.DetailControl.ScrollToHome() -> void
+NuGet.PackageManagement.UI.DetailControlModel
+NuGet.PackageManagement.UI.DetailControlModel.AddBlockedVersions(NuGet.Versioning.NuGetVersion[] blockedVersions) -> void
+NuGet.PackageManagement.UI.DetailControlModel.DetailControlModel(System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> nugetProjects) -> void
+NuGet.PackageManagement.UI.DetailControlModel.ExplainPackageDeprecationReasons(System.Collections.Generic.IReadOnlyCollection<string> reasons) -> string
+NuGet.PackageManagement.UI.DetailControlModel.IconUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailControlModel.Id.get -> string
+NuGet.PackageManagement.UI.DetailControlModel.IsPackageDeprecated.get -> bool
+NuGet.PackageManagement.UI.DetailControlModel.NuGetProjects.get -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.DetailControlModel.OnPropertyChanged(string propertyName) -> void
+NuGet.PackageManagement.UI.DetailControlModel.Options.get -> NuGet.PackageManagement.UI.Options
+NuGet.PackageManagement.UI.DetailControlModel.Options.set -> void
+NuGet.PackageManagement.UI.DetailControlModel.PackageDeprecationAlternatePackageText.get -> string
+NuGet.PackageManagement.UI.DetailControlModel.PackageDeprecationAlternatePackageText.set -> void
+NuGet.PackageManagement.UI.DetailControlModel.PackageDeprecationReasons.get -> string
+NuGet.PackageManagement.UI.DetailControlModel.PackageDeprecationReasons.set -> void
+NuGet.PackageManagement.UI.DetailControlModel.PackageMetadata.get -> NuGet.PackageManagement.UI.DetailedPackageMetadata
+NuGet.PackageManagement.UI.DetailControlModel.PackageMetadata.set -> void
+NuGet.PackageManagement.UI.DetailControlModel.PackageReader.get -> System.Func<NuGet.Packaging.PackageReaderBase>
+NuGet.PackageManagement.UI.DetailControlModel.PrefixReserved.get -> bool
+NuGet.PackageManagement.UI.DetailControlModel.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.DetailControlModel.RecommendPackages.get -> bool
+NuGet.PackageManagement.UI.DetailControlModel.RecommendedCount.get -> int
+NuGet.PackageManagement.UI.DetailControlModel.RecommenderVersion.get -> (string modelVersion, string vsixVersion)?
+NuGet.PackageManagement.UI.DetailControlModel.SelectVersion() -> void
+NuGet.PackageManagement.UI.DetailControlModel.SelectedIndex.get -> int
+NuGet.PackageManagement.UI.DetailControlModel.SelectedVersion.get -> NuGet.PackageManagement.UI.DisplayVersion
+NuGet.PackageManagement.UI.DetailControlModel.SelectedVersion.set -> void
+NuGet.PackageManagement.UI.DetailControlModel.SetAutoReferencedCheck(NuGet.Versioning.NuGetVersion installedVersion) -> void
+NuGet.PackageManagement.UI.DetailControlModel.SetAutoReferencedCheck(bool autoReferenced) -> void
+NuGet.PackageManagement.UI.DetailControlModel.SetCurrentSelectionInfo(int selectedIndex, int recommendedCount, bool recommendPackages, (string modelVersion, string vsixVersion)? recommenderVersion) -> void
+NuGet.PackageManagement.UI.DetailControlModel.Versions.get -> System.Collections.Generic.List<NuGet.PackageManagement.UI.DisplayVersion>
+NuGet.PackageManagement.UI.DetailControlModel._allPackageVersions -> System.Collections.Generic.List<(NuGet.Versioning.NuGetVersion version, bool isDeprecated)>
+NuGet.PackageManagement.UI.DetailControlModel._filter -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.DetailControlModel._nugetProjects -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.DetailControlModel._projectVersionConstraints -> System.Collections.Generic.List<NuGet.PackageManagement.ProjectVersionConstraint>
+NuGet.PackageManagement.UI.DetailControlModel._searchResultPackage -> NuGet.PackageManagement.UI.PackageItemListViewModel
+NuGet.PackageManagement.UI.DetailControlModel._versions -> System.Collections.Generic.List<NuGet.PackageManagement.UI.DisplayVersion>
+NuGet.PackageManagement.UI.DetailedPackageMetadata
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Authors.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Authors.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DependencySets.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PackageDependencySetMetadata>
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DependencySets.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DeprecationMetadata.get -> NuGet.Protocol.PackageDeprecationMetadata
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DeprecationMetadata.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Description.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Description.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DetailedPackageMetadata() -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DetailedPackageMetadata(NuGet.Protocol.Core.Types.IPackageSearchMetadata serverData, NuGet.Protocol.PackageDeprecationMetadata deprecationMetadata, long? downloadCount) -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DownloadCount.get -> long?
+NuGet.PackageManagement.UI.DetailedPackageMetadata.DownloadCount.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.IconUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailedPackageMetadata.IconUrl.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Id.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Id.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LicenseLinks.get -> System.Collections.Generic.IReadOnlyList<NuGet.PackageManagement.UI.IText>
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LicenseMetadata.get -> NuGet.Packaging.LicenseMetadata
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LicenseMetadata.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LicenseUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LicenseUrl.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.LoadFileAsText(string path) -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Owners.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Owners.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PackageDetailsText.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PackageDetailsText.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PackageDetailsUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PackageDetailsUrl.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PrefixReserved.get -> bool
+NuGet.PackageManagement.UI.DetailedPackageMetadata.PrefixReserved.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.ProjectUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailedPackageMetadata.ProjectUrl.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Published.get -> System.DateTimeOffset?
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Published.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.ReportAbuseUrl.get -> System.Uri
+NuGet.PackageManagement.UI.DetailedPackageMetadata.ReportAbuseUrl.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Summary.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Summary.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Tags.get -> string
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Tags.set -> void
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.DetailedPackageMetadata.Version.set -> void
+NuGet.PackageManagement.UI.DisplayVersion
+NuGet.PackageManagement.UI.DisplayVersion.AutoReferenced.get -> bool
+NuGet.PackageManagement.UI.DisplayVersion.AutoReferenced.set -> void
+NuGet.PackageManagement.UI.DisplayVersion.DisplayVersion(NuGet.Versioning.NuGetVersion version, string additionalInfo, bool isValidVersion = true, bool isCurrentInstalled = false, bool autoReferenced = false, bool isDeprecated = false, string versionFormat = "N") -> void
+NuGet.PackageManagement.UI.DisplayVersion.DisplayVersion(NuGet.Versioning.VersionRange range, string additionalInfo, bool isValidVersion = true, bool isCurrentInstalled = false, bool autoReferenced = false, bool isDeprecated = false, string versionFormat = "N") -> void
+NuGet.PackageManagement.UI.DisplayVersion.IsCurrentInstalled.get -> bool
+NuGet.PackageManagement.UI.DisplayVersion.IsCurrentInstalled.set -> void
+NuGet.PackageManagement.UI.DisplayVersion.IsDeprecated.get -> bool
+NuGet.PackageManagement.UI.DisplayVersion.IsDeprecated.set -> void
+NuGet.PackageManagement.UI.DisplayVersion.IsValidVersion.get -> bool
+NuGet.PackageManagement.UI.DisplayVersion.IsValidVersion.set -> void
+NuGet.PackageManagement.UI.DisplayVersion.Range.get -> NuGet.Versioning.VersionRange
+NuGet.PackageManagement.UI.DisplayVersion.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.DownloadCountToVisibilityConverter
+NuGet.PackageManagement.UI.DownloadCountToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.DownloadCountToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.DownloadCountToVisibilityConverter.DownloadCountToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter.EnumerableToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter.Inverted.get -> bool
+NuGet.PackageManagement.UI.EnumerableToVisibilityConverter.Inverted.set -> void
+NuGet.PackageManagement.UI.FileConflictActionOptionItem
+NuGet.PackageManagement.UI.FileConflictActionOptionItem.Action.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.FileConflictActionOptionItem.FileConflictActionOptionItem(string text, NuGet.ProjectManagement.FileConflictAction action) -> void
+NuGet.PackageManagement.UI.FileConflictActionOptionItem.Text.get -> string
+NuGet.PackageManagement.UI.FileConflictDialog
+NuGet.PackageManagement.UI.FileConflictDialog.FileConflictDialog() -> void
+NuGet.PackageManagement.UI.FileConflictDialog.InitializeComponent() -> void
+NuGet.PackageManagement.UI.FileConflictDialog.Question.get -> string
+NuGet.PackageManagement.UI.FileConflictDialog.Question.set -> void
+NuGet.PackageManagement.UI.FileConflictDialog.UserSelection.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.FilterChangedEventArgs
+NuGet.PackageManagement.UI.FilterChangedEventArgs.FilterChangedEventArgs(NuGet.PackageManagement.UI.ItemFilter? previousFilter) -> void
+NuGet.PackageManagement.UI.FilterChangedEventArgs.PreviousFilter.get -> NuGet.PackageManagement.UI.ItemFilter?
+NuGet.PackageManagement.UI.FilterItem
+NuGet.PackageManagement.UI.FilterItem.Filter.get -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.FilterItem.FilterItem(NuGet.PackageManagement.UI.ItemFilter filter, string text) -> void
+NuGet.PackageManagement.UI.FilterItem.Text.get -> string
+NuGet.PackageManagement.UI.FontSizeConverter
+NuGet.PackageManagement.UI.FontSizeConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.FontSizeConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.FontSizeConverter.FontSizeConverter() -> void
+NuGet.PackageManagement.UI.FontSizeConverter.Scale.get -> int
+NuGet.PackageManagement.UI.FontSizeConverter.Scale.set -> void
+NuGet.PackageManagement.UI.IModalProgressDialogSession
+NuGet.PackageManagement.UI.IModalProgressDialogSession.Progress.get -> System.IProgress<NuGet.PackageManagement.UI.ProgressDialogData>
+NuGet.PackageManagement.UI.IModalProgressDialogSession.UserCancellationToken.get -> System.Threading.CancellationToken
+NuGet.PackageManagement.UI.INuGetUI
+NuGet.PackageManagement.UI.INuGetUI.ActiveSources.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository>
+NuGet.PackageManagement.UI.INuGetUI.BeginOperation() -> void
+NuGet.PackageManagement.UI.INuGetUI.CommonOperations.get -> NuGet.PackageManagement.ICommonOperations
+NuGet.PackageManagement.UI.INuGetUI.DependencyBehavior.get -> NuGet.Resolver.DependencyBehavior
+NuGet.PackageManagement.UI.INuGetUI.DisplayDeprecatedFrameworkWindow.get -> bool
+NuGet.PackageManagement.UI.INuGetUI.DisplayPreviewWindow.get -> bool
+NuGet.PackageManagement.UI.INuGetUI.EndOperation() -> void
+NuGet.PackageManagement.UI.INuGetUI.FileConflictAction.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.INuGetUI.ForceRemove.get -> bool
+NuGet.PackageManagement.UI.INuGetUI.LaunchExternalLink(System.Uri url) -> void
+NuGet.PackageManagement.UI.INuGetUI.LaunchNuGetOptionsDialog(NuGet.PackageManagement.VisualStudio.OptionsPage optionsPageToOpen) -> void
+NuGet.PackageManagement.UI.INuGetUI.OnActionsExecuted(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.ResolvedAction> actions) -> void
+NuGet.PackageManagement.UI.INuGetUI.ProjectContext.get -> NuGet.ProjectManagement.INuGetProjectContext
+NuGet.PackageManagement.UI.INuGetUI.Projects.get -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.INuGetUI.PromptForLicenseAcceptance(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PackageLicenseInfo> packages) -> bool
+NuGet.PackageManagement.UI.INuGetUI.PromptForPackageManagementFormat(NuGet.VisualStudio.PackageManagementFormat selectedFormat) -> bool
+NuGet.PackageManagement.UI.INuGetUI.PromptForPreviewAcceptance(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PreviewResult> actions) -> bool
+NuGet.PackageManagement.UI.INuGetUI.RemoveDependencies.get -> bool
+NuGet.PackageManagement.UI.INuGetUI.SelectedPackage.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.UI.INuGetUI.Settings.get -> NuGet.Configuration.ISettings
+NuGet.PackageManagement.UI.INuGetUI.ShowError(System.Exception ex) -> void
+NuGet.PackageManagement.UI.INuGetUI.ShowNuGetUpgradeWindow(NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel) -> bool
+NuGet.PackageManagement.UI.INuGetUI.UIContext.get -> NuGet.PackageManagement.UI.INuGetUIContext
+NuGet.PackageManagement.UI.INuGetUI.UpdateNuGetProjectToPackageRef(System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> msBuildProjects) -> System.Threading.Tasks.Task
+NuGet.PackageManagement.UI.INuGetUI.WarnAboutDotnetDeprecation(System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> projects) -> bool
+NuGet.PackageManagement.UI.INuGetUIContext
+NuGet.PackageManagement.UI.INuGetUIContext.IsNuGetProjectUpgradeable(NuGet.ProjectManagement.NuGetProject project) -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.UI.INuGetUIContext.OptionsPageActivator.get -> NuGet.PackageManagement.VisualStudio.IOptionsPageActivator
+NuGet.PackageManagement.UI.INuGetUIContext.PackageManager.get -> NuGet.PackageManagement.NuGetPackageManager
+NuGet.PackageManagement.UI.INuGetUIContext.PackageManagerProviders.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider>
+NuGet.PackageManagement.UI.INuGetUIContext.PackageRestoreManager.get -> NuGet.PackageManagement.IPackageRestoreManager
+NuGet.PackageManagement.UI.INuGetUIContext.Projects.get -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.INuGetUIContext.Projects.set -> void
+NuGet.PackageManagement.UI.INuGetUIContext.SolutionManager.get -> NuGet.PackageManagement.VisualStudio.IVsSolutionManager
+NuGet.PackageManagement.UI.INuGetUIContext.SourceProvider.get -> NuGet.Protocol.Core.Types.ISourceRepositoryProvider
+NuGet.PackageManagement.UI.INuGetUIContext.StartModalProgressDialogAsync(string caption, NuGet.PackageManagement.UI.ProgressDialogData initialData, NuGet.PackageManagement.UI.INuGetUI uiService) -> System.Threading.Tasks.Task<NuGet.PackageManagement.UI.IModalProgressDialogSession>
+NuGet.PackageManagement.UI.INuGetUIContext.UIActionEngine.get -> NuGet.PackageManagement.UI.UIActionEngine
+NuGet.PackageManagement.UI.INuGetUIContext.UserSettingsManager.get -> NuGet.PackageManagement.UI.IUserSettingsManager
+NuGet.PackageManagement.UI.INuGetUIFactory
+NuGet.PackageManagement.UI.INuGetUIFactory.Create(params NuGet.ProjectManagement.NuGetProject[] projects) -> NuGet.PackageManagement.UI.INuGetUI
+NuGet.PackageManagement.UI.IProgressDialogData
+NuGet.PackageManagement.UI.IProgressDialogData.CurrentStep.get -> int
+NuGet.PackageManagement.UI.IProgressDialogData.IsCancelable.get -> bool
+NuGet.PackageManagement.UI.IProgressDialogData.ProgressText.get -> string
+NuGet.PackageManagement.UI.IProgressDialogData.TotalSteps.get -> int
+NuGet.PackageManagement.UI.IProgressDialogData.WaitMessage.get -> string
+NuGet.PackageManagement.UI.IText
+NuGet.PackageManagement.UI.IText.Text.get -> string
+NuGet.PackageManagement.UI.IUserSettingsManager
+NuGet.PackageManagement.UI.IUserSettingsManager.AddSettings(string key, NuGet.PackageManagement.UI.UserSettings obj) -> void
+NuGet.PackageManagement.UI.IUserSettingsManager.ApplyShowDeprecatedFrameworkSetting(bool show) -> void
+NuGet.PackageManagement.UI.IUserSettingsManager.ApplyShowPreviewSetting(bool show) -> void
+NuGet.PackageManagement.UI.IUserSettingsManager.GetSettings(string key) -> NuGet.PackageManagement.UI.UserSettings
+NuGet.PackageManagement.UI.IUserSettingsManager.LoadSettings() -> bool
+NuGet.PackageManagement.UI.IUserSettingsManager.PersistSettings() -> bool
+NuGet.PackageManagement.UI.IconUrlToVisibilityConverter
+NuGet.PackageManagement.UI.IconUrlToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.IconUrlToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.IconUrlToVisibilityConverter.IconUrlToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.InfiniteScrollList
+NuGet.PackageManagement.UI.InfiniteScrollList.CheckBoxesEnabled.get -> bool
+NuGet.PackageManagement.UI.InfiniteScrollList.CheckBoxesEnabled.set -> void
+NuGet.PackageManagement.UI.InfiniteScrollList.InfiniteScrollList() -> void
+NuGet.PackageManagement.UI.InfiniteScrollList.InitializeComponent() -> void
+NuGet.PackageManagement.UI.InfiniteScrollList.IsSolution.get -> bool
+NuGet.PackageManagement.UI.InfiniteScrollList.IsSolution.set -> void
+NuGet.PackageManagement.UI.InfiniteScrollList.Items.get -> System.Collections.ObjectModel.ObservableCollection<object>
+NuGet.PackageManagement.UI.InfiniteScrollList.OperationId.get -> System.Guid?
+NuGet.PackageManagement.UI.InfiniteScrollList.PackageItems.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PackageItemListViewModel>
+NuGet.PackageManagement.UI.InfiniteScrollList.SelectedIndex.get -> int
+NuGet.PackageManagement.UI.InfiniteScrollList.SelectedItem.get -> NuGet.PackageManagement.UI.PackageItemListViewModel
+NuGet.PackageManagement.UI.InfiniteScrollList.SelectedPackageItem.get -> NuGet.PackageManagement.UI.PackageItemListViewModel
+NuGet.PackageManagement.UI.InfiniteScrollList.SelectionChanged -> System.Windows.Controls.SelectionChangedEventHandler
+NuGet.PackageManagement.UI.InfiniteScrollList.UpdateButtonClickEventHandler
+NuGet.PackageManagement.UI.InfiniteScrollList.UpdateButtonClicked -> NuGet.PackageManagement.UI.InfiniteScrollList.UpdateButtonClickEventHandler
+NuGet.PackageManagement.UI.InfiniteScrollList.UpdatePackageStatus(NuGet.PackageManagement.VisualStudio.PackageCollectionItem[] installedPackages) -> void
+NuGet.PackageManagement.UI.InfiniteScrollListItemStyleSelector
+NuGet.PackageManagement.UI.InfiniteScrollListItemStyleSelector.InfiniteScrollListItemStyleSelector() -> void
+NuGet.PackageManagement.UI.InstalledVersionsCountConverter
+NuGet.PackageManagement.UI.InstalledVersionsCountConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InstalledVersionsCountConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InstalledVersionsCountConverter.InstalledVersionsCountConverter() -> void
+NuGet.PackageManagement.UI.InverseBooleanConverter
+NuGet.PackageManagement.UI.InverseBooleanConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InverseBooleanConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InverseBooleanConverter.InverseBooleanConverter() -> void
+NuGet.PackageManagement.UI.InverseNullToVisibilityConverter
+NuGet.PackageManagement.UI.InverseNullToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InverseNullToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.InverseNullToVisibilityConverter.InverseNullToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.ItemFilter.All = 0 -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.ItemFilter.Consolidate = 3 -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.ItemFilter.Installed = 1 -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.ItemFilter.UpdatesAvailable = 2 -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.LicenseAcceptanceWindow
+NuGet.PackageManagement.UI.LicenseAcceptanceWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.LicenseAcceptanceWindow.LicenseAcceptanceWindow() -> void
+NuGet.PackageManagement.UI.LicenseFileData
+NuGet.PackageManagement.UI.LicenseFileData.LicenseFileData() -> void
+NuGet.PackageManagement.UI.LicenseFileData.LicenseHeader.get -> string
+NuGet.PackageManagement.UI.LicenseFileData.LicenseHeader.set -> void
+NuGet.PackageManagement.UI.LicenseFileData.LicenseText.get -> System.Windows.Documents.FlowDocument
+NuGet.PackageManagement.UI.LicenseFileData.LicenseText.set -> void
+NuGet.PackageManagement.UI.LicenseFileData.OnPropertyChanged(string name) -> void
+NuGet.PackageManagement.UI.LicenseFileData.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.LicenseFileWindow
+NuGet.PackageManagement.UI.LicenseFileWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.LicenseFileWindow.LicenseFileWindow() -> void
+NuGet.PackageManagement.UI.NuGetEvent
+NuGet.PackageManagement.UI.NuGetEventTrigger
+NuGet.PackageManagement.UI.NuGetEventTrigger.TriggerEvent(int id) -> void
+NuGet.PackageManagement.UI.NuGetFrameworkToStringConverter
+NuGet.PackageManagement.UI.NuGetFrameworkToStringConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NuGetFrameworkToStringConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NuGetFrameworkToStringConverter.NuGetFrameworkToStringConverter() -> void
+NuGet.PackageManagement.UI.NuGetFrameworkToVisibilityConverter
+NuGet.PackageManagement.UI.NuGetFrameworkToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NuGetFrameworkToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NuGetFrameworkToVisibilityConverter.NuGetFrameworkToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.DependantPackages.get -> System.Collections.Generic.IReadOnlyList<NuGet.Packaging.Core.PackageIdentity>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.Id.get -> string
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.Identity.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.InstallAsTopLevel.get -> bool
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.InstallAsTopLevel.set -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.IsTopLevel.get -> bool
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.Issues.get -> System.Collections.Generic.IList<NuGet.Common.PackagingLogMessage>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.NuGetProjectUpgradeDependencyItem(NuGet.Packaging.Core.PackageIdentity package, NuGet.PackageManagement.PackageWithDependants packageWithDependants) -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.OnPropertyChanged(string propertyName = null) -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.Version.get -> string
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindow
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindow.NuGetProjectUpgradeWindow(NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel model) -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.DirectDependencies.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.HasIssues.get -> bool
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.HasNotFoundPackages.get -> bool
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.HasNotFoundPackages.set -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.NotFoundPackages.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageIdentity>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.NuGetProjectUpgradeWindowModel(NuGet.ProjectManagement.MSBuildNuGetProject project, System.Collections.Generic.IList<NuGet.Packaging.Core.PackageDependencyInfo> packageDependencyInfos) -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.OnPropertyChanged(string propertyName = null) -> void
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.PackageDependencyInfos.get -> System.Collections.Generic.IList<NuGet.Packaging.Core.PackageDependencyInfo>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.Project.get -> NuGet.ProjectManagement.MSBuildNuGetProject
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.Title.get -> string
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.TransitiveDependencies.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem>
+NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel.UpgradeDependencyItems.get -> System.Collections.ObjectModel.ObservableCollection<NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem>
+NuGet.PackageManagement.UI.NuGetUI
+NuGet.PackageManagement.UI.NuGetUI.ActiveSources.get -> System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.SourceRepository>
+NuGet.PackageManagement.UI.NuGetUI.BeginOperation() -> void
+NuGet.PackageManagement.UI.NuGetUI.CommonOperations.get -> NuGet.PackageManagement.ICommonOperations
+NuGet.PackageManagement.UI.NuGetUI.DependencyBehavior.get -> NuGet.Resolver.DependencyBehavior
+NuGet.PackageManagement.UI.NuGetUI.DependencyBehavior.set -> void
+NuGet.PackageManagement.UI.NuGetUI.DisplayDeprecatedFrameworkWindow.get -> bool
+NuGet.PackageManagement.UI.NuGetUI.DisplayDeprecatedFrameworkWindow.set -> void
+NuGet.PackageManagement.UI.NuGetUI.DisplayPreviewWindow.get -> bool
+NuGet.PackageManagement.UI.NuGetUI.DisplayPreviewWindow.set -> void
+NuGet.PackageManagement.UI.NuGetUI.EndOperation() -> void
+NuGet.PackageManagement.UI.NuGetUI.FileConflictAction.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.NuGetUI.FileConflictAction.set -> void
+NuGet.PackageManagement.UI.NuGetUI.ForceRemove.get -> bool
+NuGet.PackageManagement.UI.NuGetUI.ForceRemove.set -> void
+NuGet.PackageManagement.UI.NuGetUI.LaunchExternalLink(System.Uri url) -> void
+NuGet.PackageManagement.UI.NuGetUI.LaunchNuGetOptionsDialog(NuGet.PackageManagement.VisualStudio.OptionsPage optionsPageToOpen) -> void
+NuGet.PackageManagement.UI.NuGetUI.NuGetUI(NuGet.PackageManagement.ICommonOperations commonOperations, NuGet.PackageManagement.UI.NuGetUIProjectContext projectContext, NuGet.PackageManagement.UI.INuGetUIContext context, NuGet.PackageManagement.VisualStudio.INuGetUILogger logger) -> void
+NuGet.PackageManagement.UI.NuGetUI.OnActionsExecuted(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.ResolvedAction> actions) -> void
+NuGet.PackageManagement.UI.NuGetUI.ProjectContext.get -> NuGet.ProjectManagement.INuGetProjectContext
+NuGet.PackageManagement.UI.NuGetUI.Projects.get -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.NuGetUI.Projects.set -> void
+NuGet.PackageManagement.UI.NuGetUI.PromptForLicenseAcceptance(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PackageLicenseInfo> packages) -> bool
+NuGet.PackageManagement.UI.NuGetUI.PromptForPackageManagementFormat(NuGet.VisualStudio.PackageManagementFormat selectedFormat) -> bool
+NuGet.PackageManagement.UI.NuGetUI.PromptForPreviewAcceptance(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PreviewResult> actions) -> bool
+NuGet.PackageManagement.UI.NuGetUI.RecommendPackages.get -> bool
+NuGet.PackageManagement.UI.NuGetUI.RecommendPackages.set -> void
+NuGet.PackageManagement.UI.NuGetUI.RecommendedCount.get -> int
+NuGet.PackageManagement.UI.NuGetUI.RecommendedCount.set -> void
+NuGet.PackageManagement.UI.NuGetUI.RecommenderVersion.get -> (string modelVersion, string vsixVersion)?
+NuGet.PackageManagement.UI.NuGetUI.RecommenderVersion.set -> void
+NuGet.PackageManagement.UI.NuGetUI.RemoveDependencies.get -> bool
+NuGet.PackageManagement.UI.NuGetUI.RemoveDependencies.set -> void
+NuGet.PackageManagement.UI.NuGetUI.SelectedIndex.get -> int
+NuGet.PackageManagement.UI.NuGetUI.SelectedIndex.set -> void
+NuGet.PackageManagement.UI.NuGetUI.SelectedPackage.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.UI.NuGetUI.SelectedPackage.set -> void
+NuGet.PackageManagement.UI.NuGetUI.Settings.get -> NuGet.Configuration.ISettings
+NuGet.PackageManagement.UI.NuGetUI.ShowError(System.Exception ex) -> void
+NuGet.PackageManagement.UI.NuGetUI.ShowNuGetUpgradeWindow(NuGet.PackageManagement.UI.NuGetProjectUpgradeWindowModel nuGetProjectUpgradeWindowModel) -> bool
+NuGet.PackageManagement.UI.NuGetUI.UIContext.get -> NuGet.PackageManagement.UI.INuGetUIContext
+NuGet.PackageManagement.UI.NuGetUI.UILogger.get -> NuGet.PackageManagement.VisualStudio.INuGetUILogger
+NuGet.PackageManagement.UI.NuGetUI.UpdateNuGetProjectToPackageRef(System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> msBuildProjects) -> System.Threading.Tasks.Task
+NuGet.PackageManagement.UI.NuGetUI.WarnAboutDotnetDeprecation(System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> projects) -> bool
+NuGet.PackageManagement.UI.NuGetUIContext
+NuGet.PackageManagement.UI.NuGetUIContext.IsNuGetProjectUpgradeable(NuGet.ProjectManagement.NuGetProject project) -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.UI.NuGetUIContext.NuGetUIContext(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceProvider, NuGet.PackageManagement.VisualStudio.IVsSolutionManager solutionManager, NuGet.PackageManagement.NuGetPackageManager packageManager, NuGet.PackageManagement.UI.UIActionEngine uiActionEngine, NuGet.PackageManagement.IPackageRestoreManager packageRestoreManager, NuGet.PackageManagement.VisualStudio.IOptionsPageActivator optionsPageActivator, NuGet.PackageManagement.UI.IUserSettingsManager userSettingsManager, System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider> packageManagerProviders) -> void
+NuGet.PackageManagement.UI.NuGetUIContext.OptionsPageActivator.get -> NuGet.PackageManagement.VisualStudio.IOptionsPageActivator
+NuGet.PackageManagement.UI.NuGetUIContext.PackageManager.get -> NuGet.PackageManagement.NuGetPackageManager
+NuGet.PackageManagement.UI.NuGetUIContext.PackageManagerProviders.get -> System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider>
+NuGet.PackageManagement.UI.NuGetUIContext.PackageRestoreManager.get -> NuGet.PackageManagement.IPackageRestoreManager
+NuGet.PackageManagement.UI.NuGetUIContext.Projects.get -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+NuGet.PackageManagement.UI.NuGetUIContext.Projects.set -> void
+NuGet.PackageManagement.UI.NuGetUIContext.SolutionManager.get -> NuGet.PackageManagement.VisualStudio.IVsSolutionManager
+NuGet.PackageManagement.UI.NuGetUIContext.SourceProvider.get -> NuGet.Protocol.Core.Types.ISourceRepositoryProvider
+NuGet.PackageManagement.UI.NuGetUIContext.StartModalProgressDialogAsync(string caption, NuGet.PackageManagement.UI.ProgressDialogData initialData, NuGet.PackageManagement.UI.INuGetUI uiService) -> System.Threading.Tasks.Task<NuGet.PackageManagement.UI.IModalProgressDialogSession>
+NuGet.PackageManagement.UI.NuGetUIContext.UIActionEngine.get -> NuGet.PackageManagement.UI.UIActionEngine
+NuGet.PackageManagement.UI.NuGetUIContext.UserSettingsManager.get -> NuGet.PackageManagement.UI.IUserSettingsManager
+NuGet.PackageManagement.UI.NuGetUIProjectContext
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ActionType.get -> NuGet.ProjectManagement.NuGetActionType
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ActionType.set -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ExecutionContext.get -> NuGet.ProjectManagement.ExecutionContext
+NuGet.PackageManagement.UI.NuGetUIProjectContext.FileConflictAction.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.NuGetUIProjectContext.FileConflictAction.set -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.NuGetUIProjectContext(NuGet.PackageManagement.ICommonOperations commonOperations, NuGet.PackageManagement.VisualStudio.INuGetUILogger logger, NuGet.ProjectManagement.ISourceControlManagerProvider sourceControlManagerProvider) -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.OperationId.get -> System.Guid
+NuGet.PackageManagement.UI.NuGetUIProjectContext.OperationId.set -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.OriginalPackagesConfig.get -> System.Xml.Linq.XDocument
+NuGet.PackageManagement.UI.NuGetUIProjectContext.OriginalPackagesConfig.set -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.PackageExtractionContext.get -> NuGet.Packaging.PackageExtractionContext
+NuGet.PackageManagement.UI.NuGetUIProjectContext.PackageExtractionContext.set -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ReportError(string message) -> void
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ResolveFileConflict(string message) -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.NuGetUIProjectContext.ShowFileConflictResolution(string message) -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.NuGetUIProjectContext.SourceControlManagerProvider.get -> NuGet.ProjectManagement.ISourceControlManagerProvider
+NuGet.PackageManagement.UI.NullToBooleanConverter
+NuGet.PackageManagement.UI.NullToBooleanConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NullToBooleanConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NullToBooleanConverter.NullToBooleanConverter() -> void
+NuGet.PackageManagement.UI.NullToVisibilityConverter
+NuGet.PackageManagement.UI.NullToVisibilityConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NullToVisibilityConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.NullToVisibilityConverter.NullToVisibilityConverter() -> void
+NuGet.PackageManagement.UI.Options
+NuGet.PackageManagement.UI.Options.DependencyBehaviors.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.DependencyBehaviorItem>
+NuGet.PackageManagement.UI.Options.FileConflictActions.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.FileConflictActionOptionItem>
+NuGet.PackageManagement.UI.Options.ForceRemove.get -> bool
+NuGet.PackageManagement.UI.Options.ForceRemove.set -> void
+NuGet.PackageManagement.UI.Options.OnPropertyChanged(string propertyName) -> void
+NuGet.PackageManagement.UI.Options.Options() -> void
+NuGet.PackageManagement.UI.Options.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.Options.RemoveDependencies.get -> bool
+NuGet.PackageManagement.UI.Options.RemoveDependencies.set -> void
+NuGet.PackageManagement.UI.Options.SelectedChanged -> System.EventHandler
+NuGet.PackageManagement.UI.Options.SelectedDependencyBehavior.get -> NuGet.PackageManagement.UI.DependencyBehaviorItem
+NuGet.PackageManagement.UI.Options.SelectedDependencyBehavior.set -> void
+NuGet.PackageManagement.UI.Options.SelectedFileConflictAction.get -> NuGet.PackageManagement.UI.FileConflictActionOptionItem
+NuGet.PackageManagement.UI.Options.SelectedFileConflictAction.set -> void
+NuGet.PackageManagement.UI.Options.ShowClassicOptions.get -> bool
+NuGet.PackageManagement.UI.Options.ShowClassicOptions.set -> void
+NuGet.PackageManagement.UI.Options.ShowDeprecatedFrameworkWindow.get -> bool
+NuGet.PackageManagement.UI.Options.ShowDeprecatedFrameworkWindow.set -> void
+NuGet.PackageManagement.UI.Options.ShowPreviewWindow.get -> bool
+NuGet.PackageManagement.UI.Options.ShowPreviewWindow.set -> void
+NuGet.PackageManagement.UI.OptionsControl
+NuGet.PackageManagement.UI.OptionsControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.OptionsControl.IsExpanded.get -> bool
+NuGet.PackageManagement.UI.OptionsControl.IsExpanded.set -> void
+NuGet.PackageManagement.UI.OptionsControl.OptionsControl() -> void
+NuGet.PackageManagement.UI.PRMigratorBar
+NuGet.PackageManagement.UI.PRMigratorBar.ActionType.get -> NuGet.ProjectManagement.NuGetActionType
+NuGet.PackageManagement.UI.PRMigratorBar.ActionType.set -> void
+NuGet.PackageManagement.UI.PRMigratorBar.ExecutionContext.get -> NuGet.ProjectManagement.ExecutionContext
+NuGet.PackageManagement.UI.PRMigratorBar.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PRMigratorBar.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.PRMigratorBar.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.PackageManagement.UI.PRMigratorBar.OperationId.get -> System.Guid
+NuGet.PackageManagement.UI.PRMigratorBar.OperationId.set -> void
+NuGet.PackageManagement.UI.PRMigratorBar.OriginalPackagesConfig.get -> System.Xml.Linq.XDocument
+NuGet.PackageManagement.UI.PRMigratorBar.OriginalPackagesConfig.set -> void
+NuGet.PackageManagement.UI.PRMigratorBar.PRMigratorBar(NuGet.PackageManagement.UI.PackageManagerModel model) -> void
+NuGet.PackageManagement.UI.PRMigratorBar.PackageExtractionContext.get -> NuGet.Packaging.PackageExtractionContext
+NuGet.PackageManagement.UI.PRMigratorBar.PackageExtractionContext.set -> void
+NuGet.PackageManagement.UI.PRMigratorBar.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.PRMigratorBar.ReportError(string message) -> void
+NuGet.PackageManagement.UI.PRMigratorBar.ResolveFileConflict(string message) -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.PRMigratorBar.SourceControlManagerProvider.get -> NuGet.ProjectManagement.ISourceControlManagerProvider
+NuGet.PackageManagement.UI.PackageDependencyMetadata
+NuGet.PackageManagement.UI.PackageDependencyMetadata.Id.get -> string
+NuGet.PackageManagement.UI.PackageDependencyMetadata.IsNoDependencyPlaceHolder.get -> bool
+NuGet.PackageManagement.UI.PackageDependencyMetadata.PackageDependencyMetadata() -> void
+NuGet.PackageManagement.UI.PackageDependencyMetadata.PackageDependencyMetadata(NuGet.Packaging.Core.PackageDependency serverData) -> void
+NuGet.PackageManagement.UI.PackageDependencyMetadata.PackageDependencyMetadata(string id, NuGet.Versioning.VersionRange range) -> void
+NuGet.PackageManagement.UI.PackageDependencyMetadata.Range.get -> NuGet.Versioning.VersionRange
+NuGet.PackageManagement.UI.PackageDependencySetMetadata
+NuGet.PackageManagement.UI.PackageDependencySetMetadata.Dependencies.get -> System.Collections.Generic.IReadOnlyCollection<NuGet.PackageManagement.UI.PackageDependencyMetadata>
+NuGet.PackageManagement.UI.PackageDependencySetMetadata.PackageDependencySetMetadata(NuGet.Packaging.PackageDependencyGroup dependencyGroup) -> void
+NuGet.PackageManagement.UI.PackageDependencySetMetadata.TargetFramework.get -> NuGet.Frameworks.NuGetFramework
+NuGet.PackageManagement.UI.PackageDependencySetMetadata.TargetFrameworkDisplay.get -> string
+NuGet.PackageManagement.UI.PackageDetailControlModel
+NuGet.PackageManagement.UI.PackageDetailControlModel.InstalledVersion.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.PackageDetailControlModel.PackageDetailControlModel(NuGet.PackageManagement.ISolutionManager solutionManager, System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject> nugetProjects) -> void
+NuGet.PackageManagement.UI.PackageIconMonikers
+NuGet.PackageManagement.UI.PackageInstallationInfo
+NuGet.PackageManagement.UI.PackageInstallationInfo.AutoReferenced.get -> bool
+NuGet.PackageManagement.UI.PackageInstallationInfo.AutoReferenced.set -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.CompareTo(NuGet.PackageManagement.UI.PackageInstallationInfo other) -> int
+NuGet.PackageManagement.UI.PackageInstallationInfo.InstalledVersion.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.PackageInstallationInfo.InstalledVersion.set -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.IsSelected.get -> bool
+NuGet.PackageManagement.UI.PackageInstallationInfo.IsSelected.set -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.NuGetProject.get -> NuGet.ProjectManagement.NuGetProject
+NuGet.PackageManagement.UI.PackageInstallationInfo.OnPropertyChanged(string propertyName) -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.PackageInstallationInfo(NuGet.ProjectManagement.NuGetProject project) -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.ProjectName.get -> string
+NuGet.PackageManagement.UI.PackageInstallationInfo.ProjectName.set -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.PackageInstallationInfo.Providers.get -> NuGet.PackageManagement.UI.AlternativePackageManagerProviders
+NuGet.PackageManagement.UI.PackageInstallationInfo.Providers.set -> void
+NuGet.PackageManagement.UI.PackageInstallationInfo.SelectedChanged -> System.EventHandler
+NuGet.PackageManagement.UI.PackageItemControl
+NuGet.PackageManagement.UI.PackageItemControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageItemControl.PackageItemControl() -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel
+NuGet.PackageManagement.UI.PackageItemListViewModel.AllowedVersions.get -> NuGet.Versioning.VersionRange
+NuGet.PackageManagement.UI.PackageItemListViewModel.AllowedVersions.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Author.get -> string
+NuGet.PackageManagement.UI.PackageItemListViewModel.Author.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.AutoReferenced.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.AutoReferenced.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.DeprecationMetadata.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.DownloadCount.get -> long?
+NuGet.PackageManagement.UI.PackageItemListViewModel.DownloadCount.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.GetPackageDeprecationMetadataAsync() -> System.Threading.Tasks.Task<NuGet.Protocol.PackageDeprecationMetadata>
+NuGet.PackageManagement.UI.PackageItemListViewModel.GetVersionsAsync() -> System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<NuGet.Protocol.Core.Types.VersionInfo>>
+NuGet.PackageManagement.UI.PackageItemListViewModel.IconUrl.get -> System.Uri
+NuGet.PackageManagement.UI.PackageItemListViewModel.IconUrl.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Id.get -> string
+NuGet.PackageManagement.UI.PackageItemListViewModel.Id.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.InstalledVersion.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.PackageItemListViewModel.InstalledVersion.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.InstalledVersionToolTip.get -> string
+NuGet.PackageManagement.UI.PackageItemListViewModel.InstalledVersionToolTip.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsLatestInstalled.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsNotInstalled.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsPackageDeprecated.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsPackageDeprecated.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsUninstallable.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.IsUpdateAvailable.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.LatestVersion.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.PackageItemListViewModel.LatestVersion.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.LatestVersionToolTip.get -> string
+NuGet.PackageManagement.UI.PackageItemListViewModel.LatestVersionToolTip.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.OnPropertyChanged(string propertyName) -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.PackageItemListViewModel() -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.PackageReader.get -> System.Func<NuGet.Packaging.PackageReaderBase>
+NuGet.PackageManagement.UI.PackageItemListViewModel.PackageReader.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.PrefixReserved.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.PrefixReserved.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.PackageItemListViewModel.Providers.get -> NuGet.PackageManagement.UI.AlternativePackageManagerProviders
+NuGet.PackageManagement.UI.PackageItemListViewModel.Recommended.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.Recommended.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Selected.get -> bool
+NuGet.PackageManagement.UI.PackageItemListViewModel.Selected.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Status.get -> NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PackageItemListViewModel.Summary.get -> string
+NuGet.PackageManagement.UI.PackageItemListViewModel.Summary.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.UpdatePackageStatus(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.VisualStudio.PackageCollectionItem> installedPackages) -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.PackageItemListViewModel.Version.set -> void
+NuGet.PackageManagement.UI.PackageItemListViewModel.Versions.set -> void
+NuGet.PackageManagement.UI.PackageLicenseInfo
+NuGet.PackageManagement.UI.PackageLicenseInfo.Authors.get -> string
+NuGet.PackageManagement.UI.PackageLicenseInfo.Id.get -> string
+NuGet.PackageManagement.UI.PackageLicenseInfo.License.get -> System.Collections.Generic.IReadOnlyList<NuGet.PackageManagement.UI.IText>
+NuGet.PackageManagement.UI.PackageLicenseInfo.PackageLicenseInfo(string id, System.Collections.Generic.IReadOnlyList<NuGet.PackageManagement.UI.IText> license, string authors) -> void
+NuGet.PackageManagement.UI.PackageManagementFormatWindow
+NuGet.PackageManagement.UI.PackageManagementFormatWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageManagementFormatWindow.PackageManagementFormatWindow(NuGet.PackageManagement.UI.INuGetUIContext uiContext) -> void
+NuGet.PackageManagement.UI.PackageManagerControl
+NuGet.PackageManagement.UI.PackageManagerControl.ApplyShowDeprecatedFrameworkSetting(bool show) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.ApplyShowPreviewSetting(bool show) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.Category.get -> System.Guid
+NuGet.PackageManagement.UI.PackageManagerControl.CleanUp() -> void
+NuGet.PackageManagement.UI.PackageManagerControl.ClearSearch() -> void
+NuGet.PackageManagement.UI.PackageManagerControl.CreateSearch(uint dwCookie, Microsoft.VisualStudio.Shell.Interop.IVsSearchQuery pSearchQuery, Microsoft.VisualStudio.Shell.Interop.IVsSearchCallback pSearchCallback) -> Microsoft.VisualStudio.Shell.Interop.IVsSearchTask
+NuGet.PackageManagement.UI.PackageManagerControl.ExecuteAction(System.Func<System.Threading.Tasks.Task> performAction, System.Action<NuGet.PackageManagement.UI.NuGetUI> setOptions) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.IncludePrerelease.get -> bool
+NuGet.PackageManagement.UI.PackageManagerControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageManagerControl.IsRecommenderFlightEnabled() -> bool
+NuGet.PackageManagement.UI.PackageManagerControl.Model.get -> NuGet.PackageManagement.UI.PackageManagerModel
+NuGet.PackageManagement.UI.PackageManagerControl.OnNavigationKeyDown(uint dwNavigationKey, uint dwModifiers) -> bool
+NuGet.PackageManagement.UI.PackageManagerControl.PackageManagerControl(NuGet.PackageManagement.UI.PackageManagerModel model, NuGet.Configuration.ISettings nugetSettings, Microsoft.VisualStudio.Shell.Interop.IVsWindowSearchHostFactory searchFactory, Microsoft.VisualStudio.Shell.Interop.IVsShell4 vsShell, NuGet.PackageManagement.VisualStudio.INuGetUILogger uiLogger = null) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.ProvideSearchSettings(Microsoft.VisualStudio.Shell.Interop.IVsUIDataSource pSearchSettings) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.RestoreBar.get -> NuGet.PackageManagement.UI.PackageRestoreBar
+NuGet.PackageManagement.UI.PackageManagerControl.SaveSettings() -> void
+NuGet.PackageManagement.UI.PackageManagerControl.Search(string searchText) -> void
+NuGet.PackageManagement.UI.PackageManagerControl.SearchEnabled.get -> bool
+NuGet.PackageManagement.UI.PackageManagerControl.SearchFiltersEnum.get -> Microsoft.VisualStudio.Shell.Interop.IVsEnumWindowSearchFilters
+NuGet.PackageManagement.UI.PackageManagerControl.SearchOptionsEnum.get -> Microsoft.VisualStudio.Shell.Interop.IVsEnumWindowSearchOptions
+NuGet.PackageManagement.UI.PackageManagerControl.Settings.get -> NuGet.Configuration.ISettings
+NuGet.PackageManagement.UI.PackageManagerControlCommands
+NuGet.PackageManagement.UI.PackageManagerModel
+NuGet.PackageManagement.UI.PackageManagerModel.CachedUpdates.get -> NuGet.PackageManagement.VisualStudio.PackageSearchMetadataCache
+NuGet.PackageManagement.UI.PackageManagerModel.CachedUpdates.set -> void
+NuGet.PackageManagement.UI.PackageManagerModel.Close() -> int
+NuGet.PackageManagement.UI.PackageManagerModel.Context.get -> NuGet.PackageManagement.UI.INuGetUIContext
+NuGet.PackageManagement.UI.PackageManagerModel.GetGuidEditorType(out System.Guid pClassID) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.IsDocDataDirty(out int pfDirty) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.IsDocDataReloadable(out int pfReloadable) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.IsSolution.get -> bool
+NuGet.PackageManagement.UI.PackageManagerModel.LoadDocData(string pszMkDocument) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.OnPropertyChanged(string propertyName) -> void
+NuGet.PackageManagement.UI.PackageManagerModel.OnRegisterDocData(uint docCookie, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierNew, uint itemidNew) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.PackageManagerModel(NuGet.PackageManagement.UI.INuGetUI uiController, bool isSolution, System.Guid editorFactoryGuid) -> void
+NuGet.PackageManagement.UI.PackageManagerModel.PropertyChanged -> System.ComponentModel.PropertyChangedEventHandler
+NuGet.PackageManagement.UI.PackageManagerModel.ReloadDocData(uint grfFlags) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.RenameDocData(uint grfAttribs, Microsoft.VisualStudio.Shell.Interop.IVsHierarchy pHierNew, uint itemidNew, string pszMkDocumentNew) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.SaveDocData(Microsoft.VisualStudio.Shell.Interop.VSSAVEFLAGS dwSave, out string pbstrMkDocumentNew, out int pfSaveCanceled) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.SetUntitledDocPath(string pszDocDataPath) -> int
+NuGet.PackageManagement.UI.PackageManagerModel.SolutionName.get -> string
+NuGet.PackageManagement.UI.PackageManagerModel.SolutionName.set -> void
+NuGet.PackageManagement.UI.PackageManagerModel.UIController.get -> NuGet.PackageManagement.UI.INuGetUI
+NuGet.PackageManagement.UI.PackageManagerProviderUtility
+NuGet.PackageManagement.UI.PackageManagerProvidersLabel
+NuGet.PackageManagement.UI.PackageManagerProvidersLabel.FormatString.get -> string
+NuGet.PackageManagement.UI.PackageManagerProvidersLabel.FormatString.set -> void
+NuGet.PackageManagement.UI.PackageManagerProvidersLabel.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageManagerProvidersLabel.PackageManagerProvidersLabel() -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel
+NuGet.PackageManagement.UI.PackageManagerTopPanel.CheckboxPrerelease.get -> System.Windows.Controls.CheckBox
+NuGet.PackageManagement.UI.PackageManagerTopPanel.CountConsolidate.get -> System.Windows.Controls.TextBlock
+NuGet.PackageManagement.UI.PackageManagerTopPanel.CountConsolidateContainer.get -> System.Windows.Controls.Border
+NuGet.PackageManagement.UI.PackageManagerTopPanel.CreateAndAddConsolidateTab() -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.Filter.get -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.PackageManagerTopPanel.FilterChanged -> System.EventHandler<NuGet.PackageManagement.UI.FilterChangedEventArgs>
+NuGet.PackageManagement.UI.PackageManagerTopPanel.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.IsSolution.get -> bool
+NuGet.PackageManagement.UI.PackageManagerTopPanel.IsSolution.set -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.PackageManagerTopPanel() -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.PrereleaseCheckChanged -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SearchControlParent.get -> System.Windows.Controls.Border
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SelectFilter(NuGet.PackageManagement.UI.ItemFilter selectedFilter) -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SettingsButtonClicked -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SourceRepoList.get -> System.Windows.Controls.ComboBox
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SourceRepoListSelectionChanged -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.PackageManagerTopPanel.SourceToolTip.get -> System.Windows.Controls.ToolTip
+NuGet.PackageManagement.UI.PackageManagerTopPanel.TabConsolidate.get -> System.Windows.Controls.TabItem
+NuGet.PackageManagement.UI.PackageManagerTopPanel.Title.get -> string
+NuGet.PackageManagement.UI.PackageManagerTopPanel.Title.set -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.UpdateCountOnConsolidateTab(int count) -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.UpdateCountOnUpdatesTab(int count) -> void
+NuGet.PackageManagement.UI.PackageManagerTopPanel.UpdateDeprecationStatusOnInstalledTab(int installedDeprecatedPackagesCount) -> void
+NuGet.PackageManagement.UI.PackageManagerWindowPane
+NuGet.PackageManagement.UI.PackageManagerWindowPane.Model.get -> NuGet.PackageManagement.UI.PackageManagerModel
+NuGet.PackageManagement.UI.PackageManagerWindowPane.OnClose(ref uint pgrfSaveOptions) -> int
+NuGet.PackageManagement.UI.PackageManagerWindowPane.OnDockableChange(int fDockable, int x, int y, int w, int h) -> int
+NuGet.PackageManagement.UI.PackageManagerWindowPane.OnMove(int x, int y, int w, int h) -> int
+NuGet.PackageManagement.UI.PackageManagerWindowPane.OnShow(int fShow) -> int
+NuGet.PackageManagement.UI.PackageManagerWindowPane.OnSize(int x, int y, int w, int h) -> int
+NuGet.PackageManagement.UI.PackageManagerWindowPane.PackageManagerWindowPane(NuGet.PackageManagement.UI.PackageManagerControl control) -> void
+NuGet.PackageManagement.UI.PackageMetadataControl
+NuGet.PackageManagement.UI.PackageMetadataControl.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageMetadataControl.PackageMetadataControl() -> void
+NuGet.PackageManagement.UI.PackageRestoreBar
+NuGet.PackageManagement.UI.PackageRestoreBar.ActionType.get -> NuGet.ProjectManagement.NuGetActionType
+NuGet.PackageManagement.UI.PackageRestoreBar.ActionType.set -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.CleanUp() -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.ExecutionContext.get -> NuGet.ProjectManagement.ExecutionContext
+NuGet.PackageManagement.UI.PackageRestoreBar.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.OperationId.get -> System.Guid
+NuGet.PackageManagement.UI.PackageRestoreBar.OperationId.set -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.OriginalPackagesConfig.get -> System.Xml.Linq.XDocument
+NuGet.PackageManagement.UI.PackageRestoreBar.OriginalPackagesConfig.set -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.PackageExtractionContext.get -> NuGet.Packaging.PackageExtractionContext
+NuGet.PackageManagement.UI.PackageRestoreBar.PackageExtractionContext.set -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.PackageRestoreBar(NuGet.PackageManagement.ISolutionManager solutionManager, NuGet.PackageManagement.IPackageRestoreManager packageRestoreManager) -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.ReportError(string message) -> void
+NuGet.PackageManagement.UI.PackageRestoreBar.ResolveFileConflict(string message) -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.PackageRestoreBar.SourceControlManagerProvider.get -> NuGet.ProjectManagement.ISourceControlManagerProvider
+NuGet.PackageManagement.UI.PackageRestoreBar.UIRestorePackagesAsync(System.Threading.CancellationToken token) -> System.Threading.Tasks.Task<bool>
+NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PackageStatus.AutoReferenced = 3 -> NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PackageStatus.Installed = 1 -> NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PackageStatus.NotInstalled = 0 -> NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PackageStatus.UpdateAvailable = 2 -> NuGet.PackageManagement.UI.PackageStatus
+NuGet.PackageManagement.UI.PreviewResult
+NuGet.PackageManagement.UI.PreviewResult.Added.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.AccessiblePackageIdentity>
+NuGet.PackageManagement.UI.PreviewResult.Deleted.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.AccessiblePackageIdentity>
+NuGet.PackageManagement.UI.PreviewResult.Name.get -> string
+NuGet.PackageManagement.UI.PreviewResult.PreviewResult(NuGet.ProjectManagement.NuGetProject target, System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.AccessiblePackageIdentity> added, System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.AccessiblePackageIdentity> deleted, System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.UpdatePreviewResult> updated) -> void
+NuGet.PackageManagement.UI.PreviewResult.Target.get -> NuGet.ProjectManagement.NuGetProject
+NuGet.PackageManagement.UI.PreviewResult.Updated.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.UpdatePreviewResult>
+NuGet.PackageManagement.UI.PreviewWindow
+NuGet.PackageManagement.UI.PreviewWindow.InitializeComponent() -> void
+NuGet.PackageManagement.UI.PreviewWindow.PreviewWindow(NuGet.PackageManagement.UI.INuGetUIContext uiContext) -> void
+NuGet.PackageManagement.UI.PreviewWindowModel
+NuGet.PackageManagement.UI.PreviewWindowModel.ButtonMinWidth.get -> int
+NuGet.PackageManagement.UI.PreviewWindowModel.CopyGestures -> System.Windows.Input.InputGestureCollection
+NuGet.PackageManagement.UI.PreviewWindowModel.DoNotShowAgainMinWidth.get -> int
+NuGet.PackageManagement.UI.PreviewWindowModel.PreviewResults.get -> System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PreviewResult>
+NuGet.PackageManagement.UI.PreviewWindowModel.PreviewWindowModel(System.Collections.Generic.IEnumerable<NuGet.PackageManagement.UI.PreviewResult> results) -> void
+NuGet.PackageManagement.UI.PreviewWindowModel.Title.get -> string
+NuGet.PackageManagement.UI.PreviewWindowModel.WindowMinwidth.get -> int
+NuGet.PackageManagement.UI.ProductUpdateBar
+NuGet.PackageManagement.UI.ProductUpdateBar.CleanUp() -> void
+NuGet.PackageManagement.UI.ProductUpdateBar.InitializeComponent() -> void
+NuGet.PackageManagement.UI.ProductUpdateBar.ProductUpdateBar(NuGet.PackageManagement.IProductUpdateService productUpdateService) -> void
+NuGet.PackageManagement.UI.ProductUpdateBar.ShowUpdateBar(System.Version currentVersion, System.Version newVersion) -> void
+NuGet.PackageManagement.UI.ProductUpdateBar.UpdateStarting -> System.EventHandler
+NuGet.PackageManagement.UI.ProgressDialogData
+NuGet.PackageManagement.UI.ProgressDialogData.CurrentStep -> int
+NuGet.PackageManagement.UI.ProgressDialogData.IsCancelable -> bool
+NuGet.PackageManagement.UI.ProgressDialogData.ProgressDialogData(string waitMessage, string progressText = null, bool isCancelable = false) -> void
+NuGet.PackageManagement.UI.ProgressDialogData.ProgressDialogData(string waitMessage, string progressText, bool isCancelable, int currentStep, int totalSteps) -> void
+NuGet.PackageManagement.UI.ProgressDialogData.ProgressText -> string
+NuGet.PackageManagement.UI.ProgressDialogData.TotalSteps -> int
+NuGet.PackageManagement.UI.ProgressDialogData.WaitMessage -> string
+NuGet.PackageManagement.UI.ProjectAndSolutionViewHeightConverter
+NuGet.PackageManagement.UI.ProjectAndSolutionViewHeightConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.ProjectAndSolutionViewHeightConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.ProjectAndSolutionViewHeightConverter.ProjectAndSolutionViewHeightConverter() -> void
+NuGet.PackageManagement.UI.ProjectView
+NuGet.PackageManagement.UI.ProjectView.InitializeComponent() -> void
+NuGet.PackageManagement.UI.ProjectView.InstallButtonClicked -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.ProjectView.ProjectView() -> void
+NuGet.PackageManagement.UI.ProjectView.UninstallButtonClicked -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.RadioBoolToIntConverter
+NuGet.PackageManagement.UI.RadioBoolToIntConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.RadioBoolToIntConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.RadioBoolToIntConverter.RadioBoolToIntConverter() -> void
+NuGet.PackageManagement.UI.Resources
+NuGet.PackageManagement.UI.RestartRequestBar
+NuGet.PackageManagement.UI.RestartRequestBar.ActionType.get -> NuGet.ProjectManagement.NuGetActionType
+NuGet.PackageManagement.UI.RestartRequestBar.ActionType.set -> void
+NuGet.PackageManagement.UI.RestartRequestBar.CleanUp() -> void
+NuGet.PackageManagement.UI.RestartRequestBar.ExecutionContext.get -> NuGet.ProjectManagement.ExecutionContext
+NuGet.PackageManagement.UI.RestartRequestBar.InitializeComponent() -> void
+NuGet.PackageManagement.UI.RestartRequestBar.Log(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.RestartRequestBar.Log(NuGet.ProjectManagement.MessageLevel level, string message, params object[] args) -> void
+NuGet.PackageManagement.UI.RestartRequestBar.OperationId.get -> System.Guid
+NuGet.PackageManagement.UI.RestartRequestBar.OperationId.set -> void
+NuGet.PackageManagement.UI.RestartRequestBar.OriginalPackagesConfig.get -> System.Xml.Linq.XDocument
+NuGet.PackageManagement.UI.RestartRequestBar.OriginalPackagesConfig.set -> void
+NuGet.PackageManagement.UI.RestartRequestBar.PackageExtractionContext.get -> NuGet.Packaging.PackageExtractionContext
+NuGet.PackageManagement.UI.RestartRequestBar.PackageExtractionContext.set -> void
+NuGet.PackageManagement.UI.RestartRequestBar.ReportError(NuGet.Common.ILogMessage message) -> void
+NuGet.PackageManagement.UI.RestartRequestBar.ReportError(string message) -> void
+NuGet.PackageManagement.UI.RestartRequestBar.ResolveFileConflict(string message) -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.RestartRequestBar.RestartRequestBar(NuGet.PackageManagement.IDeleteOnRestartManager deleteOnRestartManager, Microsoft.VisualStudio.Shell.Interop.IVsShell4 vsRestarter) -> void
+NuGet.PackageManagement.UI.RestartRequestBar.SourceControlManagerProvider.get -> NuGet.ProjectManagement.ISourceControlManagerProvider
+NuGet.PackageManagement.UI.SolutionUserOptions
+NuGet.PackageManagement.UI.SolutionUserOptions.AddSettings(string key, NuGet.PackageManagement.UI.UserSettings obj) -> void
+NuGet.PackageManagement.UI.SolutionUserOptions.ApplyShowDeprecatedFrameworkSetting(bool show) -> void
+NuGet.PackageManagement.UI.SolutionUserOptions.ApplyShowPreviewSetting(bool show) -> void
+NuGet.PackageManagement.UI.SolutionUserOptions.GetSettings(string key) -> NuGet.PackageManagement.UI.UserSettings
+NuGet.PackageManagement.UI.SolutionUserOptions.LoadSettings() -> bool
+NuGet.PackageManagement.UI.SolutionUserOptions.LoadUserOptions(Microsoft.VisualStudio.Shell.Interop.IVsSolutionPersistence pPersistence, uint grfLoadOpts) -> int
+NuGet.PackageManagement.UI.SolutionUserOptions.PersistSettings() -> bool
+NuGet.PackageManagement.UI.SolutionUserOptions.ReadUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string _) -> int
+NuGet.PackageManagement.UI.SolutionUserOptions.SaveUserOptions(Microsoft.VisualStudio.Shell.Interop.IVsSolutionPersistence pPersistence) -> int
+NuGet.PackageManagement.UI.SolutionUserOptions.SolutionUserOptions(System.IServiceProvider serviceProvider) -> void
+NuGet.PackageManagement.UI.SolutionUserOptions.WriteUserOptions(Microsoft.VisualStudio.OLE.Interop.IStream pOptionsStream, string _) -> int
+NuGet.PackageManagement.UI.SolutionView
+NuGet.PackageManagement.UI.SolutionView.InitializeComponent() -> void
+NuGet.PackageManagement.UI.SolutionView.InstallButtonClicked -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.SolutionView.RestoreUserSettings(NuGet.PackageManagement.UI.UserSettings userSettings) -> void
+NuGet.PackageManagement.UI.SolutionView.SaveSettings(NuGet.PackageManagement.UI.UserSettings settings) -> void
+NuGet.PackageManagement.UI.SolutionView.SolutionView() -> void
+NuGet.PackageManagement.UI.SolutionView.UninstallButtonClicked -> System.EventHandler<System.EventArgs>
+NuGet.PackageManagement.UI.StringFormatConverter
+NuGet.PackageManagement.UI.StringFormatConverter.Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.StringFormatConverter.ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) -> object[]
+NuGet.PackageManagement.UI.StringFormatConverter.StringFormatConverter() -> void
+NuGet.PackageManagement.UI.StyleKeyConverter
+NuGet.PackageManagement.UI.StyleKeyConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.StyleKeyConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.StyleKeyConverter.StyleKeyConverter() -> void
+NuGet.PackageManagement.UI.Styles
+NuGet.PackageManagement.UI.SubstractionConverter
+NuGet.PackageManagement.UI.SubstractionConverter.Convert(object[] values, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.SubstractionConverter.ConvertBack(object value, System.Type[] targetTypes, object parameter, System.Globalization.CultureInfo culture) -> object[]
+NuGet.PackageManagement.UI.SubstractionConverter.SubstractionConverter() -> void
+NuGet.PackageManagement.UI.SummaryToFontStyleConverter
+NuGet.PackageManagement.UI.SummaryToFontStyleConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.SummaryToFontStyleConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.SummaryToFontStyleConverter.SummaryToFontStyleConverter() -> void
+NuGet.PackageManagement.UI.SummaryToStringConverter
+NuGet.PackageManagement.UI.SummaryToStringConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.SummaryToStringConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.SummaryToStringConverter.SummaryToStringConverter() -> void
+NuGet.PackageManagement.UI.TooltipConverter
+NuGet.PackageManagement.UI.TooltipConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.TooltipConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.TooltipConverter.TooltipConverter() -> void
+NuGet.PackageManagement.UI.TriggerEventMethod
+NuGet.PackageManagement.UI.UIActionEngine
+NuGet.PackageManagement.UI.UIActionEngine.PerformActionAsync(NuGet.PackageManagement.UI.INuGetUI uiService, NuGet.PackageManagement.UI.UserAction userAction, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+NuGet.PackageManagement.UI.UIActionEngine.PerformUpdateAsync(NuGet.PackageManagement.UI.INuGetUI uiService, System.Collections.Generic.List<NuGet.Packaging.Core.PackageIdentity> packagesToUpdate, System.Threading.CancellationToken token) -> System.Threading.Tasks.Task
+NuGet.PackageManagement.UI.UIActionEngine.UIActionEngine(NuGet.Protocol.Core.Types.ISourceRepositoryProvider sourceProvider, NuGet.PackageManagement.NuGetPackageManager packageManager, NuGet.VisualStudio.INuGetLockService lockService) -> void
+NuGet.PackageManagement.UI.UIActionEngine.UpgradeNuGetProjectAsync(NuGet.PackageManagement.UI.INuGetUI uiService, NuGet.ProjectManagement.NuGetProject nuGetProject) -> System.Threading.Tasks.Task
+NuGet.PackageManagement.UI.UIUtility
+NuGet.PackageManagement.UI.UpdatePreviewResult
+NuGet.PackageManagement.UI.UpdatePreviewResult.AutomationName.get -> string
+NuGet.PackageManagement.UI.UpdatePreviewResult.New.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.UI.UpdatePreviewResult.Old.get -> NuGet.Packaging.Core.PackageIdentity
+NuGet.PackageManagement.UI.UpdatePreviewResult.UpdatePreviewResult(NuGet.Packaging.Core.PackageIdentity oldPackage, NuGet.Packaging.Core.PackageIdentity newPackage) -> void
+NuGet.PackageManagement.UI.UserAction
+NuGet.PackageManagement.UI.UserAction.Action.get -> NuGet.PackageManagement.NuGetProjectActionType
+NuGet.PackageManagement.UI.UserAction.PackageId.get -> string
+NuGet.PackageManagement.UI.UserAction.Version.get -> NuGet.Versioning.NuGetVersion
+NuGet.PackageManagement.UI.UserSettings
+NuGet.PackageManagement.UI.UserSettings.DependencyBehavior.get -> NuGet.Resolver.DependencyBehavior
+NuGet.PackageManagement.UI.UserSettings.DependencyBehavior.set -> void
+NuGet.PackageManagement.UI.UserSettings.FileConflictAction.get -> NuGet.ProjectManagement.FileConflictAction
+NuGet.PackageManagement.UI.UserSettings.FileConflictAction.set -> void
+NuGet.PackageManagement.UI.UserSettings.ForceRemove.get -> bool
+NuGet.PackageManagement.UI.UserSettings.ForceRemove.set -> void
+NuGet.PackageManagement.UI.UserSettings.IncludePrerelease.get -> bool
+NuGet.PackageManagement.UI.UserSettings.IncludePrerelease.set -> void
+NuGet.PackageManagement.UI.UserSettings.OptionsExpanded.get -> bool
+NuGet.PackageManagement.UI.UserSettings.OptionsExpanded.set -> void
+NuGet.PackageManagement.UI.UserSettings.RemoveDependencies.get -> bool
+NuGet.PackageManagement.UI.UserSettings.RemoveDependencies.set -> void
+NuGet.PackageManagement.UI.UserSettings.SelectedFilter.get -> NuGet.PackageManagement.UI.ItemFilter
+NuGet.PackageManagement.UI.UserSettings.SelectedFilter.set -> void
+NuGet.PackageManagement.UI.UserSettings.ShowDeprecatedFrameworkWindow.get -> bool
+NuGet.PackageManagement.UI.UserSettings.ShowDeprecatedFrameworkWindow.set -> void
+NuGet.PackageManagement.UI.UserSettings.ShowPreviewWindow.get -> bool
+NuGet.PackageManagement.UI.UserSettings.ShowPreviewWindow.set -> void
+NuGet.PackageManagement.UI.UserSettings.SortDirection.get -> System.ComponentModel.ListSortDirection
+NuGet.PackageManagement.UI.UserSettings.SortDirection.set -> void
+NuGet.PackageManagement.UI.UserSettings.SortPropertyName.get -> string
+NuGet.PackageManagement.UI.UserSettings.SortPropertyName.set -> void
+NuGet.PackageManagement.UI.UserSettings.SourceRepository.get -> string
+NuGet.PackageManagement.UI.UserSettings.SourceRepository.set -> void
+NuGet.PackageManagement.UI.UserSettings.UserSettings() -> void
+NuGet.PackageManagement.UI.VersionToStringConverter
+NuGet.PackageManagement.UI.VersionToStringConverter.Convert(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.VersionToStringConverter.ConvertBack(object value, System.Type targetType, object parameter, System.Globalization.CultureInfo culture) -> object
+NuGet.PackageManagement.UI.VersionToStringConverter.VersionToStringConverter() -> void
+NuGet.PackageManagement.UI.VsDialogWindow
+NuGet.PackageManagement.UI.VsDialogWindow.VsDialogWindow() -> void
+NuGet.PackageManagement.UI.VsUtility
+abstract NuGet.PackageManagement.UI.DetailControlModel.CreateVersions() -> void
+abstract NuGet.PackageManagement.UI.DetailControlModel.GetSelectedProjects(NuGet.PackageManagement.UI.UserAction action) -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+abstract NuGet.PackageManagement.UI.DetailControlModel.IsSolution.get -> bool
+abstract NuGet.PackageManagement.UI.DetailControlModel.Refresh() -> void
+const NuGet.PackageManagement.UI.NuGetUI.LogEntrySource = "NuGet Package Manager" -> string
+override NuGet.Options.GeneralOptionControl.Dispose(bool disposing) -> void
+override NuGet.Options.GeneralOptionPage.OnActivate(System.ComponentModel.CancelEventArgs e) -> void
+override NuGet.Options.GeneralOptionPage.OnApply(Microsoft.VisualStudio.Shell.DialogPage.PageApplyEventArgs e) -> void
+override NuGet.Options.GeneralOptionPage.OnClosed(System.EventArgs e) -> void
+override NuGet.Options.GeneralOptionPage.Window.get -> System.Windows.Forms.IWin32Window
+override NuGet.Options.OptionsPageBase.LoadSettingsFromStorage() -> void
+override NuGet.Options.OptionsPageBase.OnClosed(System.EventArgs e) -> void
+override NuGet.Options.OptionsPageBase.SaveSettingsToStorage() -> void
+override NuGet.Options.PackageSourceOptionsPage.OnActivate(System.ComponentModel.CancelEventArgs e) -> void
+override NuGet.Options.PackageSourceOptionsPage.OnApply(Microsoft.VisualStudio.Shell.DialogPage.PageApplyEventArgs e) -> void
+override NuGet.Options.PackageSourceOptionsPage.OnClosed(System.EventArgs e) -> void
+override NuGet.Options.PackageSourceOptionsPage.Window.get -> System.Windows.Forms.IWin32Window
+override NuGet.Options.PackageSourcesOptionsControl.Dispose(bool disposing) -> void
+override NuGet.PackageManagement.ProjectVersionConstraint.ToString() -> string
+override NuGet.PackageManagement.UI.DependencyBehaviorItem.ToString() -> string
+override NuGet.PackageManagement.UI.DisplayVersion.Equals(object obj) -> bool
+override NuGet.PackageManagement.UI.DisplayVersion.GetHashCode() -> int
+override NuGet.PackageManagement.UI.DisplayVersion.ToString() -> string
+override NuGet.PackageManagement.UI.FileConflictActionOptionItem.ToString() -> string
+override NuGet.PackageManagement.UI.FilterItem.ToString() -> string
+override NuGet.PackageManagement.UI.InfiniteScrollListItemStyleSelector.SelectStyle(object item, System.Windows.DependencyObject container) -> System.Windows.Style
+override NuGet.PackageManagement.UI.NuGetProjectUpgradeDependencyItem.ToString() -> string
+override NuGet.PackageManagement.UI.PackageDependencyMetadata.ToString() -> string
+override NuGet.PackageManagement.UI.PackageDetailControlModel.CleanUp() -> void
+override NuGet.PackageManagement.UI.PackageDetailControlModel.CreateVersions() -> void
+override NuGet.PackageManagement.UI.PackageDetailControlModel.GetSelectedProjects(NuGet.PackageManagement.UI.UserAction action) -> System.Collections.Generic.IEnumerable<NuGet.ProjectManagement.NuGetProject>
+override NuGet.PackageManagement.UI.PackageDetailControlModel.IsSolution.get -> bool
+override NuGet.PackageManagement.UI.PackageDetailControlModel.Refresh() -> void
+override NuGet.PackageManagement.UI.PackageDetailControlModel.SetCurrentPackage(NuGet.PackageManagement.UI.PackageItemListViewModel searchResultPackage, NuGet.PackageManagement.UI.ItemFilter filter, System.Func<NuGet.PackageManagement.UI.PackageItemListViewModel> getPackageItemListViewModel) -> System.Threading.Tasks.Task
+override NuGet.PackageManagement.UI.PackageInstallationInfo.Equals(object obj) -> bool
+override NuGet.PackageManagement.UI.PackageInstallationInfo.GetHashCode() -> int
+override NuGet.PackageManagement.UI.PackageInstallationInfo.ToString() -> string
+override NuGet.PackageManagement.UI.PackageItemListViewModel.ToString() -> string
+override NuGet.PackageManagement.UI.PackageManagerWindowPane.Content.get -> object
+override NuGet.PackageManagement.UI.PackageManagerWindowPane.Dispose(bool disposing) -> void
+override NuGet.PackageManagement.UI.PreviewWindowModel.ToString() -> string
+override NuGet.PackageManagement.UI.UpdatePreviewResult.ToString() -> string
+readonly NuGet.PackageManagement.UI.DisplayVersion.AdditionalInfo -> string
+static NuGet.PackageManagement.UI.AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(System.Collections.Generic.IEnumerable<NuGet.VisualStudio.IVsPackageManagerProvider> packageManagerProviders, string packageId, NuGet.ProjectManagement.NuGetProject project) -> System.Threading.Tasks.Task<NuGet.PackageManagement.UI.AlternativePackageManagerProviders>
+static NuGet.PackageManagement.UI.Brushes.ActiveBorderKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.BackgroundBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.BorderBrush.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonBackgroundStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonBorderBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonBorderFocusedStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDefaultBorderStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDefaultStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDefaultTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDisabledBorderStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDisabledStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonDisabledTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonFocusedStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonFocusedTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonHoverBorderStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonHoverStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonHoverTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonPressedBorderStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonPressedStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonPressedTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ButtonTextStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBackgroundBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBackgroundDisabledBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBackgroundHoverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBackgroundPressedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBorderBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBorderDisabledBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBorderHoverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxBorderPressedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxGlyphBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxGlyphDisabledBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxGlyphHoverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxGlyphPressedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxTextDisabledBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxTextHoverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.CheckBoxTextPressedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ComboBoxBorderKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentInactiveSelectedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentInactiveSelectedTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentMouseOverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentMouseOverTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentSelectedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ContentSelectedTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ControlLinkTextHoverKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ControlLinkTextKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.DetailPaneBackground.get -> object
+static NuGet.PackageManagement.UI.Brushes.FocusVisualStyleBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderBackground.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsDefaultBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsDefaultTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsMouseDownBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsMouseDownTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsMouseOverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsMouseOverTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.HeaderColorsSeparatorLineBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.IndicatorFillBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.InfoBackgroundKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.InfoTextKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.LegalMessageBackground.get -> object
+static NuGet.PackageManagement.UI.Brushes.ListPaneBackground.get -> object
+static NuGet.PackageManagement.UI.Brushes.LoadVsBrushes() -> void
+static NuGet.PackageManagement.UI.Brushes.SplitterBackgroundKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.TabHoverBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.TabPopupBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.TabPopupTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.TabSelectedBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.TabSelectedTextBrushKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ToolWindowBorderKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ToolWindowButtonDownBorderKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ToolWindowButtonDownKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ToolWindowButtonHoverActiveBorderKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.ToolWindowButtonHoverActiveKey.get -> object
+static NuGet.PackageManagement.UI.Brushes.UIText.get -> object
+static NuGet.PackageManagement.UI.Brushes.WindowTextKey.get -> object
+static NuGet.PackageManagement.UI.Commands.FocusOnSearchBox.get -> System.Windows.Input.ICommand
+static NuGet.PackageManagement.UI.Commands.InstallPackageCommand.get -> System.Windows.Input.ICommand
+static NuGet.PackageManagement.UI.Commands.RestartSearchCommand.get -> System.Windows.Input.ICommand
+static NuGet.PackageManagement.UI.Commands.ShowErrorsCommand.get -> System.Windows.Input.ICommand
+static NuGet.PackageManagement.UI.Commands.ShowErrorsCommand.set -> void
+static NuGet.PackageManagement.UI.Commands.UninstallPackageCommand.get -> System.Windows.Input.ICommand
+static NuGet.PackageManagement.UI.NuGetEventTrigger.TriggerEventBeginEnd(int beginId, int endId) -> System.IDisposable
+static NuGet.PackageManagement.UI.PackageIconMonikers.DownloadIndicator.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageIconMonikers.InstalledIndicator.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageIconMonikers.MigratorHelpIcon.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageIconMonikers.PrefixReservedIndicator.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageIconMonikers.UninstallIndicator.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageIconMonikers.UpdateAvailableIndicator.get -> Microsoft.VisualStudio.Imaging.Interop.ImageMoniker
+static NuGet.PackageManagement.UI.PackageManagerControl.GetDependencyBehaviorFromConfig(NuGet.Configuration.ISettings nugetSettings) -> NuGet.Resolver.DependencyBehavior?
+static NuGet.PackageManagement.UI.PackageManagerProviderUtility.Sort(System.Collections.Generic.IEnumerable<System.Lazy<NuGet.VisualStudio.IVsPackageManagerProvider, Microsoft.VisualStudio.Utilities.IOrderable>> packageManagerProviders, int max) -> System.Collections.Generic.List<NuGet.VisualStudio.IVsPackageManagerProvider>
+static NuGet.PackageManagement.UI.PreviewWindow.IsDoNotShowPreviewWindowEnabled() -> bool
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageChanges.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageDeprecation.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageDetailsUrlIcon.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageIcon.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageIdentity.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageManager.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackageMetadata.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_Packages.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackagesDetails.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PackagesList.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PrefixReserved.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PromoteAllToTopLevel.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_PromoteToTopLevel.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_ThumbHelp.get -> string
+static NuGet.PackageManagement.UI.Resources.Accessibility_ThumbName.get -> string
+static NuGet.PackageManagement.UI.Resources.Action_Consolidate.get -> string
+static NuGet.PackageManagement.UI.Resources.Action_Downgrade.get -> string
+static NuGet.PackageManagement.UI.Resources.Action_Install.get -> string
+static NuGet.PackageManagement.UI.Resources.Action_Update.get -> string
+static NuGet.PackageManagement.UI.Resources.AggregateSourceName.get -> string
+static NuGet.PackageManagement.UI.Resources.AskForPRMigrator.get -> string
+static NuGet.PackageManagement.UI.Resources.AskForRestoreMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.AskForUpdateMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.AutoReferenced.get -> string
+static NuGet.PackageManagement.UI.Resources.BrowseFolderDialogDescription.get -> string
+static NuGet.PackageManagement.UI.Resources.BrowseFolderDialogSelectButton.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Cancel.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Copy.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Dismiss.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_IAccept.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_IDecline.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Install.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_No.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_NoToAll.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_OK.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Preview.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_RestartSearch.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_ShowErrors.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_ShowMoreResults.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Uninstall.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Update.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Upgrade.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_Yes.get -> string
+static NuGet.PackageManagement.UI.Resources.Button_YesToAll.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_DefaultAction_Check.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_DefaultAction_Uncheck.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_DefaultPackageFormat.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_SelectAllProjects.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_SelectAllProjects_HelpText.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_SelectProject_HelpText.get -> string
+static NuGet.PackageManagement.UI.Resources.CheckBox_Selected.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_ForceRemove.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_IncludePrerelease.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_ProjectSelection.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_RemoveDependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_SelectAllPackages.get -> string
+static NuGet.PackageManagement.UI.Resources.Checkbox_ShowPreviewWindow.get -> string
+static NuGet.PackageManagement.UI.Resources.ColumnHeader_Project.get -> string
+static NuGet.PackageManagement.UI.Resources.ColumnHeader_Selected.get -> string
+static NuGet.PackageManagement.UI.Resources.ColumnHeader_Version.get -> string
+static NuGet.PackageManagement.UI.Resources.Culture.get -> System.Globalization.CultureInfo
+static NuGet.PackageManagement.UI.Resources.Culture.set -> void
+static NuGet.PackageManagement.UI.Resources.DependencyBehavior_Highest.get -> string
+static NuGet.PackageManagement.UI.Resources.DependencyBehavior_HighestMinor.get -> string
+static NuGet.PackageManagement.UI.Resources.DependencyBehavior_HighestPatch.get -> string
+static NuGet.PackageManagement.UI.Resources.DependencyBehavior_IgnoreDependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.DependencyBehavior_Lowest.get -> string
+static NuGet.PackageManagement.UI.Resources.Description_LearnMore.get -> string
+static NuGet.PackageManagement.UI.Resources.DoNotShowThisAgain.get -> string
+static NuGet.PackageManagement.UI.Resources.ErrorDialogBoxTitle.get -> string
+static NuGet.PackageManagement.UI.Resources.Error_NoActiveRepository.get -> string
+static NuGet.PackageManagement.UI.Resources.Error_ProjectNotInCache.get -> string
+static NuGet.PackageManagement.UI.Resources.FileConflictAction_IgnoreAll.get -> string
+static NuGet.PackageManagement.UI.Resources.FileConflictAction_OverwriteAll.get -> string
+static NuGet.PackageManagement.UI.Resources.FileConflictAction_Prompt.get -> string
+static NuGet.PackageManagement.UI.Resources.GroupBoxHeader_InstallOptions.get -> string
+static NuGet.PackageManagement.UI.Resources.GroupBoxHeader_UninstallOptions.get -> string
+static NuGet.PackageManagement.UI.Resources.Hyperlink_License.get -> string
+static NuGet.PackageManagement.UI.Resources.Hyperlink_ProjectUrl.get -> string
+static NuGet.PackageManagement.UI.Resources.Hyperlink_ReportAbuse.get -> string
+static NuGet.PackageManagement.UI.Resources.IgnoreUpgrade.get -> string
+static NuGet.PackageManagement.UI.Resources.ImageCaption_HelpIcon.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Action.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Authors.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Browse.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DatePublished.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Dependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DependencyBehavior.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Deprecated.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationAlternatePackage.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationReasons.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationReasons_CriticalBugs.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationReasons_Legacy.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationReasons_LegacyAndCriticalBugs.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_DeprecationReasons_Unknown.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Description.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Downloads.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_FileConflictAction.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Filter.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Installed.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_InstalledColon.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_InstalledPackages.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_InstalledVersionsCount.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Installed_DeprecatedWarning.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_LegalDisclaimer.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_License.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_NuGetWindowCaption.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Options.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Owners.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_PackageManager.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_PackagePrerelease.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_ProjectUrl.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Projects.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Publishers.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_ReportAbuse.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Repository.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Solution.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_SolutionNuGetWindowCaption.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_SolutionPackageManager.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Tags.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_UninstalledPackages.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_UpdatedPackages.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Updates.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_UseInstead.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_UseInsteadInSolutionPackageManager.get -> string
+static NuGet.PackageManagement.UI.Resources.Label_Version.get -> string
+static NuGet.PackageManagement.UI.Resources.LicenseFile_Loading.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_DoNotShowAgain.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_LearnAboutInstallOptions.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_LearnAboutUninstallOptions.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_MigratorHelp.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_RevertNuGetProjectUpgrade.get -> string
+static NuGet.PackageManagement.UI.Resources.Link_UpgradeOption.get -> string
+static NuGet.PackageManagement.UI.Resources.Migrator_PackageIdColumnHeader.get -> string
+static NuGet.PackageManagement.UI.Resources.Migrator_PackageNotFound.get -> string
+static NuGet.PackageManagement.UI.Resources.Migrator_TopLevelColumnHeader.get -> string
+static NuGet.PackageManagement.UI.Resources.Migrator_VersionColumnHeader.get -> string
+static NuGet.PackageManagement.UI.Resources.NuGetUpgrade_PackageDependencyOf.get -> string
+static NuGet.PackageManagement.UI.Resources.NuGetUpgrade_Progress_Installing.get -> string
+static NuGet.PackageManagement.UI.Resources.NuGetUpgrade_Progress_Uninstalling.get -> string
+static NuGet.PackageManagement.UI.Resources.NuGetUpgrade_WaitMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.Operation_TotalTime.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreCompleted.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreConfirmation.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreDownloadPackageFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreErrorMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreErrorTryAgain.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreProgressMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.PackageRestoreWaitMessage.get -> string
+static NuGet.PackageManagement.UI.Resources.Preview_PackageUpdate.get -> string
+static NuGet.PackageManagement.UI.Resources.Preview_UnknownProject.get -> string
+static NuGet.PackageManagement.UI.Resources.RadioBtn_PackageRef.get -> string
+static NuGet.PackageManagement.UI.Resources.RadioBtn_PackagesConfig.get -> string
+static NuGet.PackageManagement.UI.Resources.RefreshButtonLabel.get -> string
+static NuGet.PackageManagement.UI.Resources.RequestRestartToCompleteUninstallMultiplePackages.get -> string
+static NuGet.PackageManagement.UI.Resources.RequestRestartToCompleteUninstallSinglePackage.get -> string
+static NuGet.PackageManagement.UI.Resources.ResourceManager.get -> System.Resources.ResourceManager
+static NuGet.PackageManagement.UI.Resources.RestartButtonLabel.get -> string
+static NuGet.PackageManagement.UI.Resources.RestoreButtonLabel.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowDetails.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowError_ApplySettingFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowError_ConfigUnauthorizedAccess.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowError_SettingActivatedFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowInfo_ClearPackageCache.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowMessage_LocalsCommandFailure.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowMessage_LocalsCommandSuccess.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowMessage_LocalsCommandWorking.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_InvalidSource.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_NameAndSourceRequired.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_NameRequired.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_OfficialSourceName.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_SourceRequried.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_Title.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_UniqueName.get -> string
+static NuGet.PackageManagement.UI.Resources.ShowWarning_UniqueSource.get -> string
+static NuGet.PackageManagement.UI.Resources.Status_Canceled.get -> string
+static NuGet.PackageManagement.UI.Resources.Status_ErrorOccurred.get -> string
+static NuGet.PackageManagement.UI.Resources.Status_NoMoreItems.get -> string
+static NuGet.PackageManagement.UI.Resources.Status_Ready.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ByAuthor.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Changes.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ChangesForProject.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_DirectDependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Downloads.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ErrorDetails.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ErrorOccurred.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_HelpMeMigrate.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_InstalledVersion.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_LegalDisclaimer.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_LicenseAcceptance.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_LicenseHeaderText.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_LicenseText.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Loading.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ManageSettings.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_MultipleVersionsInstalled.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NoDependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NoMorePackages.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NoPackagesFound.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NotAvailableInSource.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NotInstalled.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NuGetSettings.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NuGetUpgradeIssues.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NuGetUpgradeNoIssuesFound.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_NuGetUpgradeResolveErrorsBeforeUpgrading.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_PackageFormatApply.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_PackageRefSupport.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_PackageRefSupport_DocumentLink.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_PackageSources.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_PackagesFound.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Progress.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ProjectAnalysisResults.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Ready.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_SearchBoxText.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_SearchCompleted.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_SearchIncomplete.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_SearchStopped.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Searching.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ShowAll.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_TransitiveDependencies.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgradeComplete.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgradeCompletePleaseBuild.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgradeCompleteResolveProblemsBackup.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgradeCompleteResolveProblemsDirections.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgradeNuGetProjectDescription.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UpgraderHeader.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_UserCanceled.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_ViewLicense.get -> string
+static NuGet.PackageManagement.UI.Resources.Text_Working.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_BlockedVersion.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_InstallButton.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_InstalledVersion.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_LatestVersion.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_PackageInstalled.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_PackageRecommended.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_Refresh.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_Settings.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_UninstallButton.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_UpdateAvailable.get -> string
+static NuGet.PackageManagement.UI.Resources.ToolTip_UpdateButton.get -> string
+static NuGet.PackageManagement.UI.Resources.Tooltip_PrefixReserved.get -> string
+static NuGet.PackageManagement.UI.Resources.UpgradeLogger_BackupPathMustBeValid.get -> string
+static NuGet.PackageManagement.UI.Resources.Upgrade_InstallFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.Upgrade_RevertSteps.get -> string
+static NuGet.PackageManagement.UI.Resources.Upgrade_UninstallFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.Upgrader_BackupFailed.get -> string
+static NuGet.PackageManagement.UI.Resources.Upgrader_PackageNotFound.get -> string
+static NuGet.PackageManagement.UI.Resources.Version_Blocked.get -> string
+static NuGet.PackageManagement.UI.Resources.Version_Blocked_Generic.get -> string
+static NuGet.PackageManagement.UI.Resources.Version_Installed.get -> string
+static NuGet.PackageManagement.UI.Resources.Version_LatestPrerelease.get -> string
+static NuGet.PackageManagement.UI.Resources.Version_LatestStable.get -> string
+static NuGet.PackageManagement.UI.Resources.Warning_ProjectJson.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_ConvertPackagesConfigIntro.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_DeprecatedFramework.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_Error.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_FileConflict.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_LicenseAcceptance.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_LicenseFileWindow.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_NuGetMigrator.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_PackageFormatSelector.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_PreviewChanges.get -> string
+static NuGet.PackageManagement.UI.Resources.WindowTitle_Progress.get -> string
+static NuGet.PackageManagement.UI.Styles.ScrollBarStyleKey.get -> object
+static NuGet.PackageManagement.UI.Styles.ScrollViewerStyleKey.get -> object
+static NuGet.PackageManagement.UI.Styles.ThemedComboStyleKey.get -> object
+static NuGet.PackageManagement.UI.UIUtility.LaunchExternalLink(System.Uri url) -> void
+static NuGet.PackageManagement.UI.UIUtility.NumberToString(long number, System.IFormatProvider culture) -> string
+static NuGet.PackageManagement.UI.UserAction.CreateInstallAction(string packageId, NuGet.Versioning.NuGetVersion packageVersion) -> NuGet.PackageManagement.UI.UserAction
+static NuGet.PackageManagement.UI.UserAction.CreateUnInstallAction(string packageId) -> NuGet.PackageManagement.UI.UserAction
+static NuGet.PackageManagement.UI.VsUtility.GetDocumentWindows(Microsoft.VisualStudio.Shell.Interop.IVsUIShell uiShell) -> System.Collections.Generic.IEnumerable<Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame>
+static NuGet.PackageManagement.UI.VsUtility.GetPackageManagerControl(Microsoft.VisualStudio.Shell.Interop.IVsWindowFrame windowFrame) -> NuGet.PackageManagement.UI.PackageManagerControl
+static readonly NuGet.PackageManagement.UI.AuthorAndDownloadCount.AuthorProperty -> System.Windows.DependencyProperty
+static readonly NuGet.PackageManagement.UI.AuthorAndDownloadCount.DownloadCountProperty -> System.Windows.DependencyProperty
+static readonly NuGet.PackageManagement.UI.NuGetEvent.EmbeddedLicenseWindowBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.EmbeddedLicenseWindowEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.LicenseWindowBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.LicenseWindowEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.LinkOpened -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageLoadBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageLoadEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageManagerConsoleCommandExecutionBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageManagerConsoleCommandExecutionEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageManagerConsoleLoaded -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageOperationBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageOperationEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.PackageRestoreCompleted -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.ProgressDialogBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.ProgressDialogEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.SelectProjectDialogBegin -> int
+static readonly NuGet.PackageManagement.UI.NuGetEvent.SelectProjectDialogEnd -> int
+static readonly NuGet.PackageManagement.UI.NuGetEventTrigger.Instance -> NuGet.PackageManagement.UI.NuGetEventTrigger
+static readonly NuGet.PackageManagement.UI.PackageManagerControlCommands.OpenExternalLink -> System.Windows.Input.RoutedCommand
+virtual NuGet.PackageManagement.UI.DetailControlModel.CleanUp() -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.DependencyBehavior_SelectedChanged(object sender, System.EventArgs e) -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.InstalledPackageDependencies.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageDependency>
+virtual NuGet.PackageManagement.UI.DetailControlModel.InstalledPackages.get -> System.Collections.Generic.IEnumerable<NuGet.Packaging.Core.PackageIdentity>
+virtual NuGet.PackageManagement.UI.DetailControlModel.OnCurrentPackageChanged() -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.OnFilterChanged(NuGet.PackageManagement.UI.ItemFilter? previousFilter, NuGet.PackageManagement.UI.ItemFilter currentFilter) -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedMessage.get -> string
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedMessage.set -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedUrl.get -> System.Uri
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedUrl.set -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedUrlText.get -> string
+virtual NuGet.PackageManagement.UI.DetailControlModel.OptionsBlockedUrlText.set -> void
+virtual NuGet.PackageManagement.UI.DetailControlModel.SetCurrentPackage(NuGet.PackageManagement.UI.PackageItemListViewModel searchResultPackage, NuGet.PackageManagement.UI.ItemFilter filter, System.Func<NuGet.PackageManagement.UI.PackageItemListViewModel> getPackageItemListViewModel) -> System.Threading.Tasks.Task
