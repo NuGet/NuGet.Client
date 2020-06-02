@@ -577,7 +577,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "failed() "
+  condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
     name: VSEng-MicroBuildVS2019
     demands:
@@ -669,7 +669,7 @@ jobs:
 
 - job: Tests_On_Linux
   dependsOn: Initialize_Build
-  timeoutInMinutes: 180
+  timeoutInMinutes: 45
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
@@ -738,7 +738,7 @@ jobs:
   dependsOn:
   - Build_and_UnitTest
   - Initialize_Build
-  timeoutInMinutes: 180
+  timeoutInMinutes: 75
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
@@ -815,7 +815,7 @@ jobs:
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "failed() "
+  condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
     demands:
@@ -928,7 +928,7 @@ jobs:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
-  condition: "failed() "
+  condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
     demands:
