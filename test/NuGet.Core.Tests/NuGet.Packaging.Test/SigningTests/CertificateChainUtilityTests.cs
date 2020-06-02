@@ -98,7 +98,7 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
 
-                if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux)
+                //if (RuntimeEnvironmentHelper.IsWindows || RuntimeEnvironmentHelper.IsLinux)
                 {
 #if NETCORE5_0
                     Assert.Equal(2, logger.Warnings);
