@@ -85,6 +85,12 @@ namespace NuGet.Packaging.Signing
                 }
             }
         }
+
+        public byte[] GetNonce()
+        {
+            ReadOnlyMemory<byte>? normalizedNonce = _rfc3161TimestampRequest.GetNonce();
+            return normalizedNonce.HasValue ? normalizedNonce.Value.ToArray() : null;
+        }
     }
 #endif
 }
