@@ -96,7 +96,7 @@ EndGlobal";
                 var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, " classlib");
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.0");
 
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -123,7 +123,7 @@ EndGlobal";
         [Fact]
         public async Task WithUnSignedPackageAndSignatureValidationModeAsRequired_Fails()
         {
-            using (var pathContext = new SimpleTestPathContext())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
                 //Setup packages and feed
                 var packageX = new SimpleTestPackageContext()
@@ -150,7 +150,6 @@ EndGlobal";
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");                
 
                 _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib");
-                _msbuildFixture.RunDotnet(workingDirectory, "nuget locals all --clear");
 
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -184,10 +183,8 @@ EndGlobal";
 
                 File.WriteAllText(Path.Combine(workingDirectory, "NuGet.Config"), doc.ToString());
 
-                var args = $"restore --source \"{pathContext.PackageSource}\" -v d";
-
                 // Act                
-                var result = _msbuildFixture.RunDotnet(workingDirectory, args, ignoreExitCode: true);
+                var result = _msbuildFixture.RunDotnet(workingDirectory, "restore", ignoreExitCode: true);
 
                 result.AllOutput.Should().Contain($"error NU3004: Package '{packageX.Id} {packageX.Version}' from source '{pathContext.PackageSource}': signatureValidationMode is set to require, so packages are allowed only if signed by trusted signers; however, this package is unsigned.");
                 result.Success.Should().BeFalse();
@@ -198,19 +195,18 @@ EndGlobal";
         [Fact]
         public void WithAuthorSignedPackageAndSignatureValidationModeAsRequired_Succeeds()
         {
-            using (var packageSourceDirectory = TestDirectory.Create())
-            using (var testDirectory = TestDirectory.Create())
+            using (var pathContext = _msbuildFixture.CreateSimpleTestPathContext())
             {
-                var packageFile = new FileInfo(Path.Combine(packageSourceDirectory.Path, "TestPackage.AuthorSigned.1.0.0.nupkg"));
+                var packageFile = new FileInfo(Path.Combine(pathContext.PackageSource, "TestPackage.AuthorSigned.1.0.0.nupkg"));
                 var package = GetResource(packageFile.Name);
 
                 File.WriteAllBytes(packageFile.FullName, package);
 
                 var projectName = "ClassLibrary1";
-                var workingDirectory = Path.Combine(testDirectory, projectName);
+                var workingDirectory = Path.Combine(pathContext.SolutionRoot, projectName);
                 var projectFile = Path.Combine(workingDirectory, $"{projectName}.csproj");
 
-                _msbuildFixture.CreateDotnetNewProject(testDirectory.Path, projectName, "classlib");
+                _msbuildFixture.CreateDotnetNewProject(pathContext.SolutionRoot, projectName, "classlib -f netstandard2.0");
 
                 using (var stream = File.Open(projectFile, FileMode.Open, FileAccess.ReadWrite))
                 {
@@ -260,11 +256,24 @@ EndGlobal";
                 certificate.Add(new XAttribute(XName.Get("allowUntrustedRoot"), "false"));
                 author.Add(certificate);
 
+                var repository = new XElement(XName.Get("repository"));
+                repository.Add(new XAttribute(XName.Get("name"), "nuget.org"));
+                repository.Add(new XAttribute(XName.Get("serviceIndex"), "https://api.nuget.org/v3/index.json"));
+                trustedSigners.Add(repository);
+
+                var rcertificate = new XElement(XName.Get("certificate"));
+                rcertificate.Add(new XAttribute(XName.Get("fingerprint"), "0E5F38F57DC1BCC806D8494F4F90FBCEDD988B46760709CBEEC6F4219AA6157D"));
+                rcertificate.Add(new XAttribute(XName.Get("hashAlgorithm"), "SHA256"));
+                rcertificate.Add(new XAttribute(XName.Get("allowUntrustedRoot"), "false"));
+                repository.Add(rcertificate);
+
+                var owners = new XElement(XName.Get("owners"));
+                owners.Add("dotnetframework;microsoft");
+                repository.Add(owners);
+
                 File.WriteAllText(configPath, doc.ToString());
 
-                var args = $"--source \"{packageSourceDirectory.Path}\" ";
-
-                _msbuildFixture.RestoreProject(workingDirectory, projectName, args);
+                _msbuildFixture.RestoreProject(workingDirectory, projectName, args: string.Empty);
             }
         }
 #endif //IS_SIGNING_SUPPORTED
