@@ -77,7 +77,9 @@ namespace NuGet.Protocol
             }
             else
             {
+#pragma warning disable 618
                 var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+#pragma warning restore 618
                 searchResultMetadata = searchResultJsonObjects
                     .Select(s => s.FromJToken<PackageSearchMetadata>());
             }
