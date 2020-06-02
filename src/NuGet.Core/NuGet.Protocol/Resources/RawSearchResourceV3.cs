@@ -14,6 +14,7 @@ using NuGet.Protocol.Core.Types;
 
 namespace NuGet.Protocol
 {
+    [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
     public class RawSearchResourceV3 : INuGetResource
     {
         private readonly HttpSource _client;
@@ -36,7 +37,6 @@ namespace NuGet.Protocol
             _searchEndpoints = searchEndpoints.ToArray();
         }
 
-        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public virtual async Task<JObject> SearchPage(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             for (var i = 0; i < _searchEndpoints.Length; i++)
@@ -114,7 +114,6 @@ namespace NuGet.Protocol
             throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
         }
 
-        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public virtual async Task<IEnumerable<JObject>> Search(string searchTerm, SearchFilter filters, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
             var results = await SearchPage(searchTerm, filters, skip, take, log, cancellationToken);

@@ -20,6 +20,18 @@ namespace NuGet.Protocol
         private readonly HttpSource _client;
         private readonly Uri[] _searchEndpoints;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+        private readonly RawSearchResourceV3 _rawSearchResource;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        public PackageSearchResourceV3(RawSearchResourceV3 searchResource)
+#pragma warning restore CS0618 // Type or member is obsolete
+            : base()
+        {
+            _rawSearchResource = searchResource;
+        }
+
         public PackageSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : base()
         {
@@ -50,14 +62,25 @@ namespace NuGet.Protocol
         /// <returns>List of package meta data.</returns>
         public override async Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(string searchTerm, SearchFilter filter, int skip, int take, Common.ILogger log, CancellationToken cancellationToken)
         {
+            IEnumerable<PackageSearchMetadata> searchResultMetadata;
             var metadataCache = new MetadataReferenceCache();
-            var searchResultMetadata = await Search(
+
+            if (_client != null && _searchEndpoints != null)
+            {
+                searchResultMetadata = await Search(
                     searchTerm,
                     filter,
                     skip,
                     take,
                     Common.NullLogger.Instance,
                     cancellationToken);
+            }
+            else
+            {
+                var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
+                searchResultMetadata = searchResultJsonObjects
+                    .Select(s => s.FromJToken<PackageSearchMetadata>());
+            }
 
             var searchResults = searchResultMetadata
                 .Select(m => m.WithVersions(() => GetVersions(m, filter)))
