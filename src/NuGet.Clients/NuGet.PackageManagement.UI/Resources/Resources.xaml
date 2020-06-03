@@ -34,6 +34,9 @@
   <nuget:BooleanToVisibilityConverter
     Inverted="True"
     x:Key="InvertedBooleanToVisibilityConverter" />
+  <nuget:BooleanToVisibilityConverter
+    NonVisualState="Hidden"
+    x:Key="NonVisualStateHiddenBooleanToVisibilityConverter" />
   <nuget:DownloadCountToVisibilityConverter
     x:Key="DownloadCountToVisibilityConverter" />
   <nuget:FontSizeConverter

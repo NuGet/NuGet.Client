@@ -57,7 +57,7 @@
     <nuget:PackageManagerTopPanel
       DockPanel.Dock="Top"
       x:Name="_topPanel"
-      Margin="24,0,24,17"
+      Margin="0,0,24,17"
       SettingsButtonClicked="SettingsButtonClicked"
       FilterChanged="Filter_SelectionChanged"
       PrereleaseCheckChanged="CheckboxPrerelease_CheckChanged"
