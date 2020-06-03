@@ -547,7 +547,7 @@ namespace NuGet.DependencyResolver
             Cache<TItem>.ReleaseQueue(queue);
         }
 
-        public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor, Func<GraphNode<TItem>, bool> skipNode)
+        private static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor, Func<GraphNode<TItem>, bool> skipNode)
         {
             var queue = Cache<TItem>.RentQueue();
 
@@ -572,7 +572,7 @@ namespace NuGet.DependencyResolver
             ForEach(root, visitor, skipNode: null);
         }
 
-        public static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context, Func<GraphNode<TItem>, bool> skipNode)
+        private static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context, Func<GraphNode<TItem>, bool> skipNode)
         {
             var queue = Cache<TItem>.RentQueue();
 
@@ -890,7 +890,7 @@ namespace NuGet.DependencyResolver
 
         private static bool HasCentralTransitiveDepenencies<TItem>(this GraphNode<TItem> root)
         {
-            return root.InnerNodes.Where(n => n.Item.IsCentralTransitive).Any();
+            return root.InnerNodes.Any(n => n.Item.IsCentralTransitive);
         }
 
         // Box Drawing Unicode characters:

@@ -1148,7 +1148,7 @@ namespace NuGet.DependencyResolver.Tests
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);
             Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
-            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); }, _ => false);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
 
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
@@ -1166,7 +1166,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             Assert.Equal(0, result.Downgrades.Count);
@@ -1260,7 +1260,7 @@ namespace NuGet.DependencyResolver.Tests
             foreach( var node in centralTransitiveNodes)
             {
                 Assert.Equal(Disposition.Rejected, node.Disposition);
-                node.ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); }, _ => false);
+                node.ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
             }
                       
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
@@ -1279,7 +1279,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             Assert.Equal(0, result.Downgrades.Count);
@@ -1353,7 +1353,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, centralTransitiveNodes.Count);
             Assert.Equal(Disposition.Accepted, centralTransitiveNodes.First().Disposition);
             Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
-            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); }, _ => false);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); });
 
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
@@ -1370,7 +1370,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             Assert.Equal(0, result.Downgrades.Count);
@@ -1444,7 +1444,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, centralTransitiveNodes.Count);
             Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
             Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
-            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); }, _ => false);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
 
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
@@ -1466,7 +1466,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             Assert.Equal(0, result.Downgrades.Count);
@@ -1540,7 +1540,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, centralTransitiveNodes.Count);
             Assert.Equal(Disposition.Rejected, centralTransitiveNodes.First().Disposition);
             Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
-            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); }, _ => false);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Rejected, n.Disposition); });
 
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
@@ -1562,7 +1562,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             Assert.Equal(0, result.Downgrades.Count);
@@ -1635,7 +1635,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(1, centralTransitiveNodes.Count);
             Assert.Equal(Disposition.Accepted, centralTransitiveNodes.First().Disposition);
             Assert.Equal(1, centralTransitiveNodes.First().InnerNodes.Count);
-            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); }, _ => false);
+            centralTransitiveNodes.First().ForEach((n) => { Assert.Equal(Disposition.Accepted, n.Disposition); });
 
             var notCentralTransitiveNodes = rootNode.InnerNodes.Where(n => !n.Item.IsCentralTransitive).ToList();
             Assert.Equal(3, notCentralTransitiveNodes.Count);
@@ -1656,7 +1656,7 @@ namespace NuGet.DependencyResolver.Tests
                     {
                         Assert.Equal(Disposition.Accepted, n.Disposition);
                     }
-                }, _ => false);
+                });
             }
 
             var downgrades = result.Downgrades;
