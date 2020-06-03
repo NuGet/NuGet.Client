@@ -1143,7 +1143,7 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(4, rootNode.InnerNodes.Count);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);
@@ -1253,7 +1253,7 @@ namespace NuGet.DependencyResolver.Tests
             Assert.Equal(version100, innerNodes[3].Key.VersionRange.OriginalString);
             Assert.Equal(version100, innerNodes[4].Key.VersionRange.OriginalString);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(2, centralTransitiveNodes.Count);
@@ -1347,7 +1347,7 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(4, rootNode.InnerNodes.Count);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);
@@ -1438,7 +1438,7 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(4, rootNode.InnerNodes.Count);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);
@@ -1534,7 +1534,7 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(4, rootNode.InnerNodes.Count);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);
@@ -1629,7 +1629,7 @@ namespace NuGet.DependencyResolver.Tests
             // Assert
             Assert.Equal(4, rootNode.InnerNodes.Count);
 
-            AnalyzeResult<RemoteResolveResult> result = rootNode.AnalyzeForCPVM();
+            AnalyzeResult<RemoteResolveResult> result = rootNode.Analyze();
 
             var centralTransitiveNodes = rootNode.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             Assert.Equal(1, centralTransitiveNodes.Count);

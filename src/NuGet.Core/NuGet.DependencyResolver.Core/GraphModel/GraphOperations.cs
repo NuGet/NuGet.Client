@@ -28,7 +28,15 @@ namespace NuGet.DependencyResolver
             var result = new AnalyzeResult<RemoteResolveResult>();
 
             root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
-            root.TryResolveConflicts(result.VersionConflicts);
+
+            if (root.HasCentralTransitiveDepenencies())
+            {
+                root.TryResolveConflictsForCPVM(result.VersionConflicts);
+            }
+            else
+            {
+                root.TryResolveConflicts(result.VersionConflicts);
+            }
 
             // Remove all downgrades that didn't result in selecting the node we actually downgraded to
             result.Downgrades.RemoveAll(d => d.DowngradedTo.Disposition != Disposition.Accepted);
@@ -539,7 +547,7 @@ namespace NuGet.DependencyResolver
             Cache<TItem>.ReleaseQueue(queue);
         }
 
-        public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor, Func<GraphNode<TItem>, bool> skipNode = null)
+        public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor, Func<GraphNode<TItem>, bool> skipNode)
         {
             var queue = Cache<TItem>.RentQueue();
 
@@ -559,7 +567,12 @@ namespace NuGet.DependencyResolver
             Cache<TItem>.ReleaseQueue(queue);
         }
 
-        public static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context, Func<GraphNode<TItem>, bool> skipNode = null)
+        public static void ForEach<TItem>(this GraphNode<TItem> root, Action<GraphNode<TItem>> visitor)
+        {
+            ForEach(root, visitor, skipNode: null);
+        }
+
+        public static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context, Func<GraphNode<TItem>, bool> skipNode)
         {
             var queue = Cache<TItem>.RentQueue();
 
@@ -577,6 +590,11 @@ namespace NuGet.DependencyResolver
             }
 
             Cache<TItem>.ReleaseQueue(queue);
+        }
+
+        public static void ForEach<TItem, TContext>(this GraphNode<TItem> root, Action<GraphNode<TItem>, TContext> visitor, TContext context)
+        {
+            ForEach(root, visitor, context, skipNode: null);
         }
 
         private static void AddInnerNodesToQueue<TItem, TState>(IList<GraphNode<TItem>> innerNodes, Queue<NodeWithState<TItem, TState>> queue, TState innerState)
@@ -787,21 +805,6 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        public static AnalyzeResult<RemoteResolveResult> AnalyzeForCPVM(this GraphNode<RemoteResolveResult> root)
-        {
-            var result = new AnalyzeResult<RemoteResolveResult>();
-
-            root.CheckCycleAndNearestWins(result.Downgrades, result.Cycles);
-
-            // Accept. reject nodes and identify conflicts
-            root.TryResolveConflictsForCPVM(result.VersionConflicts);
-
-            // Remove all downgrades that didn't result in selecting the node we actually downgraded to
-            result.Downgrades.RemoveAll(d => d.DowngradedTo.Disposition != Disposition.Accepted);
-
-            return result;
-        }
-
         private static bool TryResolveConflictsForCPVM<TItem>(this GraphNode<TItem> root, List<VersionConflictResult<TItem>> versionConflicts)
         {
             // now we walk the tree as often as it takes to determine 
@@ -823,7 +826,7 @@ namespace NuGet.DependencyResolver
                 // Inform tracker of ambiguity beneath nodes that are not resolved yet
                 root.ForEach(WalkState.Walking, (node, state, context) => WalkTreeMarkAmbiguousNodes(node, state, context), tracker, skipNode);
 
-                root.DetectAndMarkAmbiguousCentralTransitiveDepenencies(tracker);
+                root.DetectAndMarkAmbiguousCentralTransitiveDependencies(tracker);
 
                 // Now mark unambiguous nodes as accepted or rejected 
                 root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), CreateState(tracker, acceptedLibraries), skipNode);
@@ -846,7 +849,7 @@ namespace NuGet.DependencyResolver
             return !incomplete;
         }
 
-        private static void DetectAndMarkAmbiguousCentralTransitiveDepenencies<TItem>(this GraphNode<TItem> root, Tracker<TItem> tracker)
+        private static void DetectAndMarkAmbiguousCentralTransitiveDependencies<TItem>(this GraphNode<TItem> root, Tracker<TItem> tracker)
         {
             // if a central transitive node has all parents disputed or ambiguous mark it and its children ambiguous
             root.InnerNodes
@@ -883,6 +886,11 @@ namespace NuGet.DependencyResolver
                 nodesWithDispositionChangedToRejected.ForEach(node => node.ForEach(n => n.Disposition = Disposition.Rejected));
                 continueToReject = nodesWithDispositionChangedToRejected.Any();
             }
+        }
+
+        private static bool HasCentralTransitiveDepenencies<TItem>(this GraphNode<TItem> root)
+        {
+            return root.InnerNodes.Where(n => n.Item.IsCentralTransitive).Any();
         }
 
         // Box Drawing Unicode characters:

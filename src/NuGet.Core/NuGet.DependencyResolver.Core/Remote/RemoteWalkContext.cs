@@ -50,9 +50,5 @@ namespace NuGet.DependencyResolver
         /// </summary>
         public bool IsMsBuildBased { get; set; }
 
-        /// <summary>
-        /// True if the project has its versions managed centrally.
-        /// </summary>
-        public bool IsCPVMEnabled { get; set; }
     }
 }
