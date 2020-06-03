@@ -57,6 +57,32 @@ namespace NuGet.Commands.Test
         }
 
         [Fact]
+        public void AddNuGetProperty_WithPackageFolders_AddsSourceRootItem()
+        {
+            // Arrange
+            var packageFolders = @"/tmp/gpf;/tmp/fallbackFolder";
+
+            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+
+            // Act
+            BuildAssetsUtils.AddNuGetProperties(
+                doc,
+                packageFolders: packageFolders.Split(';'),
+                string.Empty,
+                ProjectStyle.PackageReference,
+                "/tmp/test/project.assets.json",
+                success: true);
+
+            var props = TargetsUtility.GetMSBuildProperties(doc);
+            var items = TargetsUtility.GetMSBuildItems(doc);
+
+            // Assert
+            Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
+            Assert.Equal(1, items.Count);
+            Assert.Equal("$(NuGetPackageFolders)", items["SourceRoot"]["Include"]);
+        }
+
+        [Fact]
         public void BuildAssetsUtils_GenerateContentFilesItem_CompileAsset()
         {
             // Arrange
