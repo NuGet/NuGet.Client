@@ -49,6 +49,5 @@ namespace NuGet.DependencyResolver
         /// True if this is a csproj or similar project. Xproj should be false.
         /// </summary>
         public bool IsMsBuildBased { get; set; }
-
     }
 }
