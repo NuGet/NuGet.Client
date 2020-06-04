@@ -31,7 +31,7 @@ namespace NuGet.Protocol
             _rawSearchResource = searchResource;
         }
 
-        public PackageSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
+        internal PackageSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : base()
         {
             _client = client ?? throw new ArgumentNullException(nameof(client));
