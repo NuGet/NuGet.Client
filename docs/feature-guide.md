@@ -1,7 +1,7 @@
 
 # NuGet.Client engineering feature guide
 
-# Overview
+## Overview
 
 Most NuGet contributors at some point will work on a feature. Given NuGet's standing in the .NET eco-system, the features are frequently far reaching. In many cases, a feature would involve cooperation with other tooling, thus interacting with other teams, etc.
 
