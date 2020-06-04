@@ -8,10 +8,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
-
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -20,7 +18,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-
 using Xunit;
 using Xunit.Abstractions;
 
