@@ -7,6 +7,8 @@ using System.Diagnostics;
 
 namespace NuGet.Common
 {
+    /// <summary> Represents telemetry activity which spans a time interval. </summary>
+    /// <remarks> Always dispose the activity at the end of interval covered. </remarks>
     public class TelemetryActivity : IDisposable
     {
         private readonly DateTime _startTime;
@@ -15,26 +17,33 @@ namespace NuGet.Common
         private readonly List<Tuple<string, TimeSpan>> _intervalList;
         private readonly IDisposable _telemetryActivity;
 
+        /// <summary> Telemetry event which represents end of telemetry activity. </summary>
         public TelemetryEvent TelemetryEvent { get; set; }
 
+        /// <summary> Parent activity ID. </summary>
         public Guid ParentId { get; }
 
+        /// <summary> Operation ID. </summary>
         public Guid OperationId { get; }
 
+        /// <summary> Singleton of NuGet telemetry service instance. </summary>
         public static INuGetTelemetryService NuGetTelemetryService { get; set; }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public TelemetryActivity(Guid parentId) :
             this(parentId, Guid.Empty, telemetryEvent: null)
         {
         }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public TelemetryActivity(Guid parentId, Guid operationId) :
             this(parentId, operationId, telemetryEvent: null)
         {
         }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public TelemetryActivity(Guid parentId, Guid operationId, TelemetryEvent telemetryEvent) :
             this(parentId, telemetryEvent, operationId)
@@ -57,17 +66,21 @@ namespace NuGet.Common
             _intervalList = new List<Tuple<string, TimeSpan>>();
         }
 
+        /// <summary> Start interval measure. </summary>
         public void StartIntervalMeasure()
         {
             _intervalWatch.Restart();
         }
 
+        /// <summary> End interval measure. </summary>
+        /// <param name="propertyName"> Property name to represents the interval. </param>
         public void EndIntervalMeasure(string propertyName)
         {
             _intervalWatch.Stop();
             _intervalList.Add(new Tuple<string, TimeSpan>(propertyName, _intervalWatch.Elapsed));
         }
 
+        /// <summary> Stops tracking the activity and emits a telemetry event. </summary>
         public void Dispose()
         {
             _stopwatch.Stop();
@@ -100,6 +113,8 @@ namespace NuGet.Common
             _telemetryActivity?.Dispose();
         }
 
+        /// <summary> Emit a singular telemetry event. </summary>
+        /// <param name="TelemetryEvent"> Telemetry event. </param>
         public static void EmitTelemetryEvent(TelemetryEvent TelemetryEvent)
         {
             NuGetTelemetryService?.EmitTelemetryEvent(TelemetryEvent);
@@ -139,18 +154,21 @@ namespace NuGet.Common
             return new TelemetryActivity(parentId, telemetryEvent, Guid.NewGuid());
         }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public static TelemetryActivity CreateTelemetryActivityWithNewOperationIdAndEvent(Guid parentId, string eventName)
         {
             return Create(parentId, new TelemetryEvent(eventName));
         }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public static TelemetryActivity CreateTelemetryActivityWithNewOperationId(Guid parentId)
         {
             return Create(parentId, default(TelemetryEvent));
         }
 
+        /// <summary> Obsolete. Use one of static Create members. </summary>
         [Obsolete]
         public static TelemetryActivity CreateTelemetryActivityWithNewOperationId()
         {

@@ -8,7 +8,7 @@ namespace NuGet.Common
     /// <summary> Abstraction of NuGet telemetry service. </summary>
     public interface INuGetTelemetryService
     {
-        /// <summary> Send a <see cref="TelemetryEvent"/> to VS telemetry. </summary>
+        /// <summary> Send a <see cref="TelemetryEvent"/> to telemetry. </summary>
         /// <param name="telemetryData"> Telemetry event to send. </param>
         void EmitTelemetryEvent(TelemetryEvent telemetryData);
 
