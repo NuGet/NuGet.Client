@@ -23,18 +23,10 @@ namespace NuGet.Protocol
             if (serviceIndex != null)
             {
                 var endpoints = serviceIndex.GetServiceEntryUris(ServiceTypes.SearchQueryService);
+                var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
 
-                if (endpoints.Count > 0)
-                {
-                    var httpSourceResource = await source.GetResourceAsync<HttpSourceResource>(token);
-
-                    // construct a new resource
-                    curResource = new PackageSearchResourceV3(httpSourceResource.HttpSource, endpoints);
-                }
-                else
-                {
-                    throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
-                }
+                // construct a new resource
+                curResource = new PackageSearchResourceV3(httpSourceResource.HttpSource, endpoints);
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);

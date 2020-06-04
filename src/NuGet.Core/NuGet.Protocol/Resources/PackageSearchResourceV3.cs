@@ -66,9 +66,9 @@ namespace NuGet.Protocol
             }
             else
             {
-#pragma warning disable 618
+#pragma warning disable CS0618
                 var searchResultJsonObjects = await _rawSearchResource.Search(searchTerm, filter, skip, take, Common.NullLogger.Instance, cancellationToken);
-#pragma warning restore 618
+#pragma warning restore CS0618
                 searchResultMetadata = searchResultJsonObjects
                     .Select(s => s.FromJToken<PackageSearchMetadata>());
             }
@@ -231,7 +231,6 @@ namespace NuGet.Protocol
                 log,
                 cancellationToken);
         }
-
 
         internal async Task<IEnumerable<PackageSearchMetadata>> ProcessHttpStreamTakeCountedItemAsync(HttpResponseMessage httpInitialResponse, int take, CancellationToken token)
         {
