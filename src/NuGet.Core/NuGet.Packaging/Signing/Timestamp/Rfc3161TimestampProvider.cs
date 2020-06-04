@@ -103,7 +103,8 @@ namespace NuGet.Packaging.Signing
                 RequestTimeout);
 
             // quick check for response validity
-            ValidateTimestampResponse(nonce, request.HashedMessage, timestampToken);
+            var normalizedNonce = rfc3161TimestampRequest.GetNonce();
+            ValidateTimestampResponse(normalizedNonce, request.HashedMessage, timestampToken);
 
             var timestampCms = timestampToken.AsSignedCms();
             ValidateTimestampCms(request.SigningSpecifications, timestampCms, timestampToken);
