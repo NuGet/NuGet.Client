@@ -5,11 +5,10 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Protocol.Core.Types;
-#pragma warning disable 618
 
 namespace NuGet.Protocol
 {
-    [Obsolete]
+    [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
     public class RawSearchResourceV3Provider : ResourceProvider
     {
         public RawSearchResourceV3Provider()

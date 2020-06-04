@@ -24,9 +24,8 @@ namespace NuGet.Protocol
         private readonly RawSearchResourceV3 _rawSearchResource;
 #pragma warning restore CS0618 // Type or member is obsolete
 
-#pragma warning disable CS0618 // Type or member is obsolete
+        [Obsolete("Use PackageSearchResource instead (via SourceRepository.GetResourceAsync<PackageSearchResource>")]
         public PackageSearchResourceV3(RawSearchResourceV3 searchResource)
-#pragma warning restore CS0618 // Type or member is obsolete
             : base()
         {
             _rawSearchResource = searchResource;
@@ -35,18 +34,8 @@ namespace NuGet.Protocol
         public PackageSearchResourceV3(HttpSource client, IEnumerable<Uri> searchEndpoints)
             : base()
         {
-            if (client == null)
-            {
-                throw new ArgumentNullException(nameof(client));
-            }
-
-            if (searchEndpoints == null)
-            {
-                throw new ArgumentNullException("searchEndpoints");
-            }
-
-            _client = client;
-            _searchEndpoints = searchEndpoints.ToArray();
+            _client = client ?? throw new ArgumentNullException(nameof(client));
+            _searchEndpoints = searchEndpoints?.ToArray() ?? throw new ArgumentNullException(nameof(searchEndpoints));
         }
 
         /// <summary>

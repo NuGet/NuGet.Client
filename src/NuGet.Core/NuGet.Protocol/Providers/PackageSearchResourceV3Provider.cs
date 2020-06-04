@@ -31,6 +31,10 @@ namespace NuGet.Protocol
                     // construct a new resource
                     curResource = new PackageSearchResourceV3(httpSourceResource.HttpSource, endpoints);
                 }
+                else
+                {
+                    throw new FatalProtocolException(Strings.Protocol_MissingSearchService);
+                }
             }
 
             return new Tuple<bool, INuGetResource>(curResource != null, curResource);
