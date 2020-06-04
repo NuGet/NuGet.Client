@@ -34,6 +34,11 @@ namespace NuGet.Packaging.Signing
         {
             return Task.FromResult(_rfc3161TimestampRequest.SubmitRequest(timestampUri, timeout));
         }
+
+        public byte[] GetNonce()
+        {
+            return _rfc3161TimestampRequest.GetNonce();
+        }
     }
 #endif
 }
