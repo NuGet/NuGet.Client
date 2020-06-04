@@ -355,8 +355,8 @@ namespace NuGet.SolutionRestoreManager
                     var projectsNeedingRestore = _solutionUpToDateChecker.PerformUpToDateCheck(originalDgSpec).AsList();
 
                     dgSpec = originalDgSpec;
-                    // Only use the optimization results if the restore is not force.
-                    // Still run the optimization check anyways to prep the cache for a potential future non-force optimization
+                    // Only use the optimization results if the restore is not `force`.
+                    // Still run the optimization check anyways to prep the cache.
                     if (!forceRestore)
                     {
                         // Update the dg spec.
@@ -365,7 +365,7 @@ namespace NuGet.SolutionRestoreManager
                         {
                             dgSpec.AddRestore(uniqueProjectId);
                         }
-                        // loop through all legacy PackageReference projects. We don't know how to replay their warnings & errors yet.
+                        // loop through all legacy PackageReference projects. We don't know how to replay their warnings & errors yet. TODO: https://github.com/NuGet/Home/issues/9565
                         foreach(var project in (await _solutionManager.GetNuGetProjectsAsync()).Where(e => e is LegacyPackageReferenceProject).Select(e => e as LegacyPackageReferenceProject))
                         {
                             dgSpec.AddRestore(project.MSBuildProjectPath);
