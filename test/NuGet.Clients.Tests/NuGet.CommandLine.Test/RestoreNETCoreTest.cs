@@ -1617,8 +1617,8 @@ namespace NuGet.CommandLine.Test
 
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
-                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 
