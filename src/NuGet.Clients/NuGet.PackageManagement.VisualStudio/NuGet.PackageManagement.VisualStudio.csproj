@@ -3,6 +3,7 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
+    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -16,6 +17,7 @@
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
     <Reference Include="Microsoft.VisualStudio.VCProjectEngine, Version=16.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -111,9 +113,6 @@
     <Compile Include="PackageFeeds\SearchResult.cs" />
     <Compile Include="PackageFeeds\SourceRepositoryExtensions.cs" />
     <Compile Include="PackageFeeds\UpdatePackageFeed.cs" />
-    <Compile Include="RemoteTypes\RemotePackageSourceProvider.cs" />
-    <Compile Include="RemoteTypes\IRemoteSourceRepositoryProvider.cs" />
-    <Compile Include="RemoteTypes\RemoteSourceRepositoryProvider.cs" />
     <Compile Include="Services\BrokeredServicesUtilities.cs" />
     <Compile Include="Services\DeferredProjectWorkspaceService.cs" />
     <Compile Include="IDE\ExtensibleSourceRepositoryProvider.cs" />
@@ -302,6 +301,7 @@
     <PackageReference Include="VSLangProj2" />
     <PackageReference Include="VSLangProj157" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

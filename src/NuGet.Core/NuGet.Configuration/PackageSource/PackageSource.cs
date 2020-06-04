@@ -7,9 +7,6 @@ using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using NuGet.Common;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Serialization;
 
 namespace NuGet.Configuration
 {
@@ -24,10 +21,8 @@ namespace NuGet.Configuration
         private bool? _isHttp;
         private bool? _isLocal;
 
-        [JsonProperty]
-        public string Name { get; set; }
+        public string Name { get; private set; }
 
-        [JsonProperty]
         public string Source { get; set; }
 
         /// <summary>
@@ -46,18 +41,14 @@ namespace NuGet.Configuration
         /// </summary>
         public bool IsOfficial { get; set; }
 
-        [JsonProperty]
         public bool IsMachineWide { get; set; }
 
-        [JsonProperty]
         public bool IsEnabled { get; set; }
 
         public PackageSourceCredential Credentials { get; set; }
 
-        [JsonProperty]
         public string Description { get; set; }
 
-        [JsonProperty]
         public bool IsPersistable { get; private set; }
 
         public int MaxHttpRequestsPerSource { get; set; }
@@ -122,7 +113,6 @@ namespace NuGet.Configuration
         {
         }
 
-        [JsonConstructor]
         public PackageSource(
             string source,
             string name,

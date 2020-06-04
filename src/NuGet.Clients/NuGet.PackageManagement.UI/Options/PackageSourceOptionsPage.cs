@@ -8,12 +8,12 @@ using System.Drawing;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using NuGet.VisualStudio;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Options
 {
-    [SuppressMessage(
-        "Microsoft.Interoperability",
-        "CA1408:DoNotUseAutoDualClassInterfaceType")]
+    [SuppressMessage("Microsoft.Interoperability", "CA1408:DoNotUseAutoDualClassInterfaceType")]
     [Guid("2819C3B6-FC75-4CD5-8C77-877903DE864C")]
     [ComVisible(true)]
     [ClassInterface(ClassInterfaceType.AutoDual)]
@@ -25,13 +25,27 @@ namespace NuGet.Options
         {
             base.OnActivate(e);
             PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(this);
-            PackageSourcesControl.InitializeOnActivated();
+
+            // TODO: Do not wrap JTF.Run around brokered calls
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnActivateAsync(e));
+        }
+
+        private async Task OnActivateAsync(CancelEventArgs e)
+        {
+            await PackageSourcesControl.InitializeOnActivatedAsync();
         }
 
         protected override void OnApply(PageApplyEventArgs e)
         {
             // Do not need to call base.OnApply() here.
-            bool wasApplied = PackageSourcesControl.ApplyChangedSettings();
+            // TODO: Do not wrap JTF.Run around brokered calls
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnApplyAsync(e));
+        }
+
+        private async Task OnApplyAsync(PageApplyEventArgs e)
+        {
+            bool wasApplied = await PackageSourcesControl.ApplyChangedSettingsAsync();
+
             if (!wasApplied)
             {
                 e.ApplyBehavior = ApplyKind.CancelNoNavigate;

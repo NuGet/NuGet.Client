@@ -7,7 +7,6 @@ using System.ComponentModel.Composition;
 using Microsoft.VisualStudio.Utilities;
 using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
-using NuGet.PackageManagement.VisualStudio.RemoteTypes;
 using NuGet.Packaging;
 using NuGet.Packaging.PackageExtraction;
 using NuGet.Packaging.Signing;
@@ -54,7 +53,7 @@ namespace NuGet.PackageManagement.UI
         private SolutionUserOptions SolutionUserOptions { get; set; }
 
         [Import]
-        private Lazy<IRemoteSourceRepositoryProvider> SourceRepositoryProvider { get; set; }
+        private Lazy<ISourceRepositoryProvider> SourceRepositoryProvider { get; set; }
 
         [ImportingConstructor]
         public NuGetUIFactory(

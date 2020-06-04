@@ -70,9 +70,9 @@ namespace NuGetVSExtension
         "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
 
-    [ProvideBrokeredService(NuGetBrokeredServices.SourceRepositoryProviderServiceName,
-                            NuGetBrokeredServices.SourceRepositoryProviderServiceVersion,
-                            Audience = ServiceAudience.RemoteExclusiveClient | ServiceAudience.Local)]
+    [ProvideBrokeredService(NuGetBrokeredServices.SourceProviderServiceName,
+                            NuGetBrokeredServices.SourceProviderServiceVersion,
+                            Audience = ServiceAudience.AllClientsIncludingGuests)]
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
@@ -174,7 +174,8 @@ namespace NuGetVSExtension
 
 
             var brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            brokeredServiceContainer.Proffer(NuGetBrokeredServices.SourceRepositoryProviderService, NuGetBrokeredServices.GetSourceRepositoryProviderServiceFactory());
+            brokeredServiceContainer.Proffer(NuGetBrokeredServices.SourceProviderService,
+                                             (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, ct)));
         }
 
         /// <summary>

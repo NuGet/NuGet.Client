@@ -37,6 +37,7 @@ namespace NuGet.Options
         private BindingSource _machineWidepackageSources;
         private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
+        private IReadOnlyList<PackageSource> _originalPackageSources;
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
         {
@@ -137,7 +138,7 @@ namespace NuGet.Options
             UpdateUI();
         }
 
-        internal void InitializeOnActivated()
+        internal async Task InitializeOnActivatedAsync()
         {
             try
             {
@@ -149,7 +150,9 @@ namespace NuGet.Options
                 _initialized = true;
 
                 // get packages sources
-                var allPackageSources = GetAllPackageSources();
+                _originalPackageSources = await GetAllPackageSourcesAsync();
+                // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
+                var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
                 //_activeSource = _packageSourceProvider.ActivePackageSource;
@@ -219,7 +222,7 @@ namespace NuGet.Options
         /// Persist the package sources, which was add/removed via the Options page, to the VS Settings store.
         /// This gets called when users click OK button.
         /// </summary>
-        internal bool ApplyChangedSettings()
+        internal async Task<bool> ApplyChangedSettingsAsync()
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
@@ -238,10 +241,9 @@ namespace NuGet.Options
 
             try
             {
-                var existingSources = GetAllPackageSources();
-                if (SourcesChanged(existingSources, packageSources))
+                if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    SaveAllPackageSources(packageSources);
+                    await SaveAllPackageSourcesAsync(packageSources);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -666,35 +668,41 @@ namespace NuGet.Options
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
         }
 
-        private IReadOnlyList<PackageSource> GetAllPackageSources()
-        {
-            return NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => { return await GetAllPackageSourcesAsync(); });
-        }
-
+#nullable enable
         private async Task<IReadOnlyList<PackageSource>> GetAllPackageSourcesAsync()
         {
-            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBroker();
-            var nuGetSettingsService = await remoteBroker.GetProxyAsync<INuGetSourceRepositoryService>(NuGetBrokeredServices.SourceRepositoryProviderService);
-            using (nuGetSettingsService as IDisposable)
-            {
-                return await nuGetSettingsService.GetAllPackageSourcesAsync(CancellationToken.None);
-            }
-        }
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-        private void SaveAllPackageSources(IReadOnlyList<PackageSource> packageSources)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await SaveAllPackageSourcesAsync(packageSources));
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService);
+
+            if (nugetSourcesService != null)
+            {
+                using (nugetSourcesService)
+                {
+                    return await nugetSourcesService.GetPackageSourcesAsync(CancellationToken.None);
+                }
+            }
+
+            return (IReadOnlyList<PackageSource>)Enumerable.Empty<PackageSource>();
         }
 
         private async Task SaveAllPackageSourcesAsync(IReadOnlyList<PackageSource> packageSources)
         {
-            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBroker();
-            var nuGetSettingsService = await remoteBroker.GetProxyAsync<INuGetSourceRepositoryService>(NuGetBrokeredServices.SourceRepositoryProviderService);
-            using (nuGetSettingsService as IDisposable)
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+            var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService);
+
+            if (nugetSourcesService != null)
             {
-                await nuGetSettingsService.SaveAllPackageSourcesAsync(packageSources, CancellationToken.None);
+                using (nugetSourcesService)
+                {
+                    await nugetSourcesService.SavePackageSourcesAsync(packageSources, CancellationToken.None);
+                }
             }
         }
+#nullable disable
     }
 
     internal enum TryUpdateSourceResults
