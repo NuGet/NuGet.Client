@@ -363,6 +363,7 @@ namespace NuGet.Commands
             return result;
         }
 
+        [Obsolete("This method looks at the RestoreRequest. It is expected that the PackageSpec contains all the relevant information the RestoreRequest would. Use GetMSBuildFilePath(PackageSpec project, string extension) instead.")]
         public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
         {
             string path;
@@ -382,6 +383,26 @@ namespace NuGet.Commands
             return path;
         }
 
+        public static string GetMSBuildFilePath(PackageSpec project, string extension)
+        {
+            string path;
+
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference || project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
+            {
+                // PackageReference style projects
+                var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
+                path = Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
+            }
+            else
+            {
+                // Project.json style projects
+                var dir = Path.GetDirectoryName(project.FilePath);
+                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
+            }
+            return path;
+
+        }
+
         public static string GetMSBuildFilePathForPackageReferenceStyleProject(PackageSpec project, string extension)
         {
             var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
@@ -399,8 +420,8 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSBuildFilePath(project, request, TargetsExtension);
-            var propsPath = GetMSBuildFilePath(project, request, PropsExtension);
+            var targetsPath = GetMSBuildFilePath(project, TargetsExtension);
+            var propsPath = GetMSBuildFilePath(project, PropsExtension);
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.

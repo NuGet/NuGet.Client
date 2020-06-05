@@ -103,12 +103,19 @@ namespace NuGet.Commands
 
         public async Task<RestoreResult> ExecuteAsync(CancellationToken token)
         {
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: ParentId, eventName: ProjectRestoreInformation))
+            using (var telemetry = TelemetryActivity.Create(parentId: ParentId, eventName: ProjectRestoreInformation))
             {
                 _operationId = telemetry.OperationId;
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
                 telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
+                if (isCpvmEnabled)
+                {
+                    _logger.LogInformation(string.Format(
+                          CultureInfo.CurrentCulture,
+                          Strings.CentralPackageVersionManagementInPreview,
+                          _request.Project.FilePath));
+                }
 
                 var restoreTime = Stopwatch.StartNew();
 
@@ -124,7 +131,7 @@ namespace NuGet.Commands
 
                 CacheFile cacheFile = null;
 
-                using (var noOpTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreNoOpInformation))
+                using (var noOpTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreNoOpInformation))
                 {
                     if (NoOpRestoreUtilities.IsNoOpSupported(_request))
                     {
@@ -196,7 +203,7 @@ namespace NuGet.Commands
                 var isLockFileValid = false;
                 PackagesLockFile packagesLockFile = null;
 
-                using (var lockFileTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: RestoreLockFileInformation))
+                using (var lockFileTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: RestoreLockFileInformation))
                 {
                     lockFileTelemetry.TelemetryEvent[IsLockFileEnabled] = PackagesLockFileUtilities.IsNuGetLockFileEnabled(_request.Project);
 
@@ -240,7 +247,7 @@ namespace NuGet.Commands
                 IEnumerable<RestoreTargetGraph> graphs = null;
                 if (_success)
                 {
-                    using (var restoreGraphTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateRestoreGraph))
+                    using (var restoreGraphTelemetry = TelemetryActivity.Create(parentId: _operationId, eventName: GenerateRestoreGraph))
                     {
                         // Restore
                         graphs = await ExecuteRestoreAsync(
@@ -263,7 +270,7 @@ namespace NuGet.Commands
                 }
 
                 LockFile assetsFile = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: GenerateAssetsFile))
+                using (TelemetryActivity.Create(parentId: _operationId, eventName: GenerateAssetsFile))
                 {
                     // Create assets file
                     assetsFile = BuildAssetsFile(
@@ -275,7 +282,7 @@ namespace NuGet.Commands
                 }
 
                 IList<CompatibilityCheckResult> checkResults = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidateRestoreGraphs))
+                using (TelemetryActivity.Create(parentId: _operationId, eventName: ValidateRestoreGraphs))
                 {
                     _success &= await ValidateRestoreGraphsAsync(graphs, _logger);
 
@@ -300,7 +307,7 @@ namespace NuGet.Commands
                 var msbuildOutputFiles = Enumerable.Empty<MSBuildOutputFile>();
                 string assetsFilePath = null;
                 string cacheFilePath = null;
-                using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: CreateRestoreResult))
+                using (TelemetryActivity.Create(parentId: _operationId, eventName: CreateRestoreResult))
                 {
                     // Determine the lock file output path
                     assetsFilePath = GetAssetsFilePath(assetsFile);
@@ -338,7 +345,7 @@ namespace NuGet.Commands
                     // the file if enabled.
                     if (isLockFileValid)
                     {
-                        using (TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(parentId: _operationId, eventName: ValidatePackagesSha))
+                        using (TelemetryActivity.Create(parentId: _operationId, eventName: ValidatePackagesSha))
                         {
                             // validate package's SHA512
                             _success &= ValidatePackagesSha512(packagesLockFile, assetsFile);
@@ -968,7 +975,7 @@ namespace NuGet.Commands
             var projectRestoreCommand = new ProjectRestoreCommand(projectRestoreRequest);
 
             Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> result = null;
-            using (var tryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, CreateRestoreTargetGraph))
+            using (var tryRestoreTelemetry = TelemetryActivity.Create(telemetryActivity.OperationId, CreateRestoreTargetGraph))
             {
                 result = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,
@@ -1017,7 +1024,7 @@ namespace NuGet.Commands
             if (_success && _request.CompatibilityProfiles.Any())
             {
                 Tuple<bool, List<RestoreTargetGraph>, RuntimeGraph> compatibilityResult = null;
-                using (var runtimeTryRestoreTelemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationIdAndEvent(telemetryActivity.OperationId, RestoreAdditionalCompatCheck))
+                using (var runtimeTryRestoreTelemetry = TelemetryActivity.Create(telemetryActivity.OperationId, RestoreAdditionalCompatCheck))
                 {
                     compatibilityResult = await projectRestoreCommand.TryRestoreAsync(
                     projectRange,

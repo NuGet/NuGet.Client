@@ -34,13 +34,13 @@ namespace NuGet.PackageManagement.UI
             var packagesCount = 0;
             var status = NuGetOperationStatus.Succeeded;
 
-
-            using (var telemetry = new TelemetryActivity(Guid.Empty))
+            var upgradeInformationTelemetryEvent = new UpgradeInformationTelemetryEvent();
+            using (var telemetry = TelemetryActivity.Create(upgradeInformationTelemetryEvent))
             {
                 try
                 {
                     // 0. Fail if any package was not found
-                    if(notFoundPackages.Any())
+                    if (notFoundPackages.Any())
                     {
                         status = NuGetOperationStatus.Failed;
                         var notFoundPackageIds = string.Join(",", notFoundPackages.Select(t => t.Id));
@@ -57,7 +57,7 @@ namespace NuGet.PackageManagement.UI
                     {
                         backupPath = CreateBackup(msBuildNuGetProject, solutionManager.SolutionDirectory);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         status = NuGetOperationStatus.Failed;
                         // log error message
@@ -67,7 +67,7 @@ namespace NuGet.PackageManagement.UI
 
                         return null;
                     }
-                    
+
 
                     // 2. Uninstall all packages currently in packages.config
                     var progressData = new ProgressDialogData(Resources.NuGetUpgrade_WaitMessage, Resources.NuGetUpgrade_Progress_Uninstalling);
@@ -158,7 +158,7 @@ namespace NuGet.PackageManagement.UI
                         return null;
                     }
 
-                   
+
                 }
                 catch (Exception ex)
                 {
@@ -168,10 +168,7 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    telemetry.TelemetryEvent = VSTelemetryServiceUtility.GetUpgradeTelemetryEvent(
-                            uiService.Projects,
-                            status,
-                            packagesCount);
+                    upgradeInformationTelemetryEvent.SetResult(uiService.Projects, status, packagesCount);
                 }
             }
         }

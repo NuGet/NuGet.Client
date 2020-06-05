@@ -46,9 +46,10 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: status,
                 packageCount: 2,
                 noOpProjectsCount: noopProjectsCount,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                new IntervalTracker());
+                new IntervalTracker("Activity"));
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -69,12 +70,15 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
-            var tracker = new IntervalTracker();
+            var tracker = new IntervalTracker("Activity");
 
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(first);
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(second);
+            using (tracker.Start(first))
+            {
+            }
+
+            using (tracker.Start(second))
+            {
+            }
 
             var operationId = Guid.NewGuid().ToString();
 
@@ -86,6 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 noOpProjectsCount: 0,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 tracker
@@ -99,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(12, lastTelemetryEvent.Count);
+            Assert.Equal(13, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -112,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(10, actual.Count);
+            Assert.Equal(11, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

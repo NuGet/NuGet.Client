@@ -282,6 +282,20 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private bool _recommended;
+        public bool Recommended
+        {
+            get { return _recommended; }
+            set
+            {
+                if (_recommended != value)
+                {
+                    _recommended = value;
+                    OnPropertyChanged(nameof(Recommended));
+                }
+            }
+        }
+
         private bool _providersLoaderStarted;
 
         private AlternativePackageManagerProviders _providers;

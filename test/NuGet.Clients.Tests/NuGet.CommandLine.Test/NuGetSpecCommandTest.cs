@@ -42,7 +42,6 @@ namespace NuGet.CommandLine.Test
     <id>Package</id>
     <version>1.0.0</version>
     <authors>{Environment.UserName}</authors>
-    <owners>{Environment.UserName}</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
@@ -85,7 +84,6 @@ namespace NuGet.CommandLine.Test
     <id>Whatnot</id>
     <version>1.0.0</version>
     <authors>{Environment.UserName}</authors>
-    <owners>{Environment.UserName}</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>
@@ -141,7 +139,6 @@ namespace NuGet.CommandLine.Test
     <version>$version$</version>
     <title>$title$</title>
     <authors>$author$</authors>
-    <owners>$author$</owners>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <license type=""expression"">MIT</license>
     <projectUrl>http://project_url_here_or_delete_this_line/</projectUrl>

@@ -700,6 +700,9 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("config"));
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+            settings.Setup(s => s.GetSection("clientCertificates"))
+                    .Returns(new VirtualSettingSection("clientCertificates"));
+
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 
@@ -735,7 +738,10 @@ namespace NuGet.Configuration.Test
             settings.Setup(s => s.GetSection("config"))
                 .Returns(new VirtualSettingSection("config"));
             settings.Setup(s => s.GetConfigFilePaths())
-                .Returns(new List<string>());
+                    .Returns(new List<string>());
+
+            settings.Setup(s => s.GetSection("clientCertificates"))
+                .Returns(new VirtualSettingSection("clientCertificates"));
 
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
@@ -1240,6 +1246,8 @@ namespace NuGet.Configuration.Test
                 .Returns(new VirtualSettingSection("config"));
             settings.Setup(s => s.GetConfigFilePaths())
                 .Returns(new List<string>());
+            settings.Setup(s => s.GetSection("clientCertificates"))
+                .Returns(new VirtualSettingSection("clientCertificates"));
             // Act
             List<PackageSource> values = LoadPackageSources(useStaticMethod, settings.Object);
 

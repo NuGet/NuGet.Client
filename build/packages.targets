@@ -1,12 +1,12 @@
 <Project>
     <PropertyGroup>
         <MicrosoftBuildPackageVersion Condition="'$(MicrosoftBuildPackageVersion)' == ''">16.5.0-preview-19606-01</MicrosoftBuildPackageVersion>
-        <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">11.0.1</NewtonsoftJsonPackageVersion>
+        <NewtonsoftJsonPackageVersion Condition="$(NewtonsoftJsonPackageVersion) == ''">9.0.1</NewtonsoftJsonPackageVersion>
         <SystemPackagesVersion>4.3.0</SystemPackagesVersion>
         <VSComponentsVersion>16.4.280</VSComponentsVersion>
         <VSFrameworkVersion>16.5.29714.20</VSFrameworkVersion>
         <VSServicesVersion>16.153.0</VSServicesVersion>
-        <VSThreadingVersion>16.5.126</VSThreadingVersion>
+        <VSThreadingVersion>16.6.13</VSThreadingVersion>
     </PropertyGroup>
 
     <!-- Test and package versions -->
@@ -25,6 +25,7 @@
         <PackageReference Update="Microsoft.Build.Locator" Version="1.2.2" />
         <PackageReference Update="Microsoft.Build.Tasks.Core" Version="$(MicrosoftBuildPackageVersion)" />
         <PackageReference Update="Microsoft.Build.Utilities.Core" Version="$(MicrosoftBuildPackageVersion)" />
+        <PackageReference Update="Microsoft.DataAI.NuGetRecommender.Contracts" Version="2.1.0" />
         <PackageReference Update="Microsoft.Extensions.CommandLineUtils" Version="1.0.1" />
         <PackageReference Update="Microsoft.Internal.VisualStudio.Shell.Embeddable" Version="16.4.29305.180" />
         <PackageReference Update="Microsoft.ServiceHub.Framework" Version="2.3.56" />
@@ -58,7 +59,8 @@
         <PackageReference Update="Microsoft.VisualStudio.TextManager.Interop.10.0" Version="10.0.30319" />
         <PackageReference Update="Microsoft.VisualStudio.Threading" Version="$(VSThreadingVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Threading.Analyzers" Version="$(VSThreadingVersion)" />
-        <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="16.3.43" />
+        <PackageReference Update="Microsoft.VisualStudio.Workspace.VSIntegration" Version="16.6.55-preview-0003" />
+        <PackageReference Update="Microsoft.VisualStudio.Utilities" Version="16.5.29714.20" />
         <PackageReference Update="Microsoft.Web.Xdt" Version="2.1.2" />
         <PackageReference Update="Newtonsoft.Json" Version="$(NewtonsoftJsonPackageVersion)" />
         <PackageReference Update="System.Collections.Immutable" Version="1.5.0" />

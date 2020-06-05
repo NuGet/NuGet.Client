@@ -69,6 +69,12 @@ namespace NuGet.Configuration
 
                     case SettingElementType.Repository:
                         return new RepositoryItem(element, origin);
+
+                    case SettingElementType.FileCert:
+                        return new FileClientCertItem(element, origin);
+
+                    case SettingElementType.StoreCert:
+                        return new StoreClientCertItem(element, origin);
                 }
 
                 return new UnknownItem(element, origin);

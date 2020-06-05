@@ -130,13 +130,13 @@ namespace NuGet.Commands
 
             if (request.ProjectStyle == ProjectStyle.PackageReference || request.ProjectStyle == ProjectStyle.Standalone)
             {
-                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, BuildAssetsUtils.TargetsExtension);
+                var targetsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, BuildAssetsUtils.TargetsExtension);
                 if (!File.Exists(targetsFilePath))
                 {
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_TargetsFileNotOnDisk, request.Project.Name, targetsFilePath));
                     return false;
                 }
-                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, request, BuildAssetsUtils.PropsExtension);
+                var propsFilePath = BuildAssetsUtils.GetMSBuildFilePath(request.Project, BuildAssetsUtils.PropsExtension);
                 if (!File.Exists(propsFilePath))
                 {
                     request.Log.LogVerbose(string.Format(CultureInfo.CurrentCulture, Strings.Log_PropsFileNotOnDisk, request.Project.Name, propsFilePath));

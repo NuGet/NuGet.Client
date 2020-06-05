@@ -49,11 +49,14 @@ namespace NuGet.Packaging
             var filesAdded = new List<string>();
             var nupkgStartPosition = packageStream.Position;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 using (var packageReader = new PackageArchiveReader(packageStream, leaveStreamOpen: true))
                 {
                     var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(CancellationToken.None);
+                    packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
+
                     var installPath = packagePathResolver.GetInstallPath(packageIdentityFromNuspec);
                     var packageDirectoryInfo = Directory.CreateDirectory(installPath);
                     var packageDirectory = packageDirectoryInfo.FullName;
@@ -74,11 +77,6 @@ namespace NuGet.Packaging
                     }
                     catch (SignatureException)
                     {
-                        telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                         throw;
                     }
 
@@ -134,12 +132,8 @@ namespace NuGet.Packaging
                             packageExtractionContext,
                             token));
                     }
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                      packageExtractionContext.PackageSaveMode,
-                                      NuGetOperationStatus.Succeeded,
-                                      ExtractionSource.NuGetFolderProject,
-                                      packageIdentityFromNuspec);
 
+                    packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 }
 
                 return filesAdded;
@@ -175,10 +169,11 @@ namespace NuGet.Packaging
             var nupkgStartPosition = packageStream.Position;
             var filesAdded = new List<string>();
 
-
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
+                packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
                 try
                 {
@@ -196,11 +191,6 @@ namespace NuGet.Packaging
                 }
                 catch (SignatureException)
                 {
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                     throw;
                 }
 
@@ -246,12 +236,7 @@ namespace NuGet.Packaging
                         token));
                 }
 
-                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
-
+                packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 return filesAdded;
             }
         }
@@ -285,9 +270,11 @@ namespace NuGet.Packaging
             var extractionId = Guid.NewGuid();
             var filesAdded = new List<string>();
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.NuGetFolderProject);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var packageIdentityFromNuspec = await packageReader.GetIdentityAsync(token);
+                packageExtractionTelemetryEvent.LogPackageIdentity(packageIdentityFromNuspec);
 
                 try
                 {
@@ -305,11 +292,6 @@ namespace NuGet.Packaging
                 }
                 catch (SignatureException)
                 {
-                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
                     throw;
                 }
 
@@ -348,11 +330,7 @@ namespace NuGet.Packaging
                         token));
                 }
 
-                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.NuGetFolderProject,
-                                       packageIdentityFromNuspec);
+                packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                 return filesAdded;
             }
         }
@@ -394,7 +372,8 @@ namespace NuGet.Packaging
             var logger = packageExtractionContext.Logger;
             var extractionId = Guid.NewGuid();
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.DownloadResource, packageIdentity);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
 
                 var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
@@ -542,11 +521,6 @@ namespace NuGet.Packaging
                                         ex.Message));
                                 }
 
-                                telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Failed,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
                                 throw;
                             }
 
@@ -581,11 +555,7 @@ namespace NuGet.Packaging
 
                             logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.Succeeded,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
                         }
                         else
@@ -593,11 +563,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose("Lock not required - Package already installed "
                                                 + $"{packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                       packageExtractionContext.PackageSaveMode,
-                                       NuGetOperationStatus.NoOp,
-                                       ExtractionSource.DownloadResource,
-                                       packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.NoOp);
                             return false;
                         }
                     },
@@ -650,7 +616,8 @@ namespace NuGet.Packaging
 
             var logger = packageExtractionContext.Logger;
 
-            using (var telemetry = TelemetryActivity.CreateTelemetryActivityWithNewOperationId(parentId))
+            var packageExtractionTelemetryEvent = new PackageExtractionTelemetryEvent(packageExtractionContext.PackageSaveMode, NuGetOperationStatus.Failed, ExtractionSource.RestoreCommand, packageIdentity);
+            using (var telemetry = TelemetryActivity.Create(parentId, packageExtractionTelemetryEvent))
             {
                 var targetPath = versionFolderPathResolver.GetInstallPath(packageIdentity.Id, packageIdentity.Version);
                 var targetNuspec = versionFolderPathResolver.GetManifestFilePath(packageIdentity.Id, packageIdentity.Version);
@@ -747,11 +714,6 @@ namespace NuGet.Packaging
                                             ex.Message));
                                     }
 
-                                    telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                        packageExtractionContext.PackageSaveMode,
-                                        NuGetOperationStatus.Failed,
-                                        ExtractionSource.RestoreCommand,
-                                        packageIdentity);
                                     throw;
                                 }
                             }
@@ -865,11 +827,7 @@ namespace NuGet.Packaging
 
                             logger.LogVerbose($"Completed installation of {packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                packageExtractionContext.PackageSaveMode,
-                                NuGetOperationStatus.Succeeded,
-                                ExtractionSource.RestoreCommand,
-                                packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.Succeeded);
                             return true;
                         }
                         else
@@ -877,11 +835,7 @@ namespace NuGet.Packaging
                             logger.LogVerbose("Lock not required - Package already installed "
                                                 + $"{packageIdentity.Id} {packageIdentity.Version}");
 
-                            telemetry.TelemetryEvent = new PackageExtractionTelemetryEvent(
-                                packageExtractionContext.PackageSaveMode,
-                                NuGetOperationStatus.NoOp,
-                                ExtractionSource.RestoreCommand,
-                                packageIdentity);
+                            packageExtractionTelemetryEvent.SetResult(NuGetOperationStatus.NoOp);
                             return false;
                         }
                     },

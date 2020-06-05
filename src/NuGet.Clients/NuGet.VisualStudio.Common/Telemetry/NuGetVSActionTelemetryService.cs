@@ -33,5 +33,15 @@ namespace NuGet.VisualStudio
 
             _telemetrySession.PostEvent(telemetryData);
         }
+
+        public virtual IDisposable StartActivity(string activityName)
+        {
+            if (activityName == null)
+            {
+                throw new ArgumentNullException(nameof(activityName));
+            }
+
+            return new EtwLogActivity(activityName);
+        }
     }
 }

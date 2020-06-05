@@ -94,7 +94,7 @@
                     <Grid.RowDefinitions>
                       <RowDefinition x:Name="RowDefinition0" Height="Auto"/>
                     </Grid.RowDefinitions>
-                    <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="2,2,2,0" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
+                    <TabPanel x:Name="headerPanel" Background="Transparent" Grid.Column="0" IsItemsHost="true" Margin="0,0,0,0" Grid.Row="0" KeyboardNavigation.TabIndex="1" Panel.ZIndex="1"/>
                   </Grid>
                 </ControlTemplate>
               </Setter.Value>
@@ -102,7 +102,7 @@
           </Style>
         </TabControl.Resources>
 
-        <TabItem Name="tabBrowse" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Browse}" IsSelected="True"/>
+        <TabItem Name="tabBrowse" Tag="{x:Static nuget:ItemFilter.All}" Header="{x:Static nuget:Resources.Label_Browse}" IsSelected="True" />
         <TabItem Name="tabInstalled" Tag="{x:Static nuget:ItemFilter.Installed}">
           <AutomationProperties.Name>
             <MultiBinding StringFormat="{}{0}{1}">
@@ -169,7 +169,7 @@
     </Grid>
 
     <!-- search control and include prerelease checkbox -->
-    <Grid Grid.Row="2">
+    <Grid Grid.Row="2" Margin="20,0,0,0">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="*" MinWidth="269"/>
         <ColumnDefinition Width="0.01*" MinWidth="5" />

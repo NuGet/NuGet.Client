@@ -23,7 +23,7 @@
       <FilesToSign Include="$(SolutionPackagesFolder)lucene.net\3.0.3\lib\NET40\Lucene.Net.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
-      <FilesToSign Include="$(SolutionPackagesFolder)newtonsoft.json\11.0.1\lib\net45\Newtonsoft.Json.dll">
+      <FilesToSign Include="$(SolutionPackagesFolder)newtonsoft.json\9.0.1\lib\net45\Newtonsoft.Json.dll">
         <Authenticode>3PartySHA2</Authenticode>
       </FilesToSign>
       <FilesToSign Include="$(ArtifactsDirectory)microsoft.web.xdt\2.1.2\lib\net40\**\Microsoft.Web.XmlTransform.resources.dll">

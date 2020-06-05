@@ -651,6 +651,34 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
    <data name="Option_ConfigFile_Docs" xml:space="preserve">
     <value>The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see [Common NuGet Configurations](https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior).</value>
   </data>
+  <data name="Option_PackageSource" xml:space="preserve">
+    <value>Package source name.</value>
+  </data>
+  <data name="Option_Path" xml:space="preserve">
+    <value>Path to certificate file.</value>
+  </data>
+  <data name="Option_Password" xml:space="preserve">
+    <value>Password for the certificate, if needed.</value>
+  </data>
+  <data name="Option_StorePasswordInClearText" xml:space="preserve">
+    <value>Enables storing password for the certificate by disabling password encryption.</value>
+  </data>
+  <data name="Option_StoreLocation" xml:space="preserve">
+    <value>Certificate store location (see docs).</value>
+  </data>
+  <data name="Option_StoreName" xml:space="preserve">
+    <value>Certificate store name (see docs).</value>
+  </data>
+  <data name="Option_FindBy" xml:space="preserve">
+    <value>Search method to find certificate in certificate store (see docs).</value>
+  </data>
+  <data name="Option_FindValue" xml:space="preserve">
+    <value>Search the certificate store for the supplied value. Used with FindValue (see docs).</value>
+    <comment>Don't translate FindValue</comment>
+  </data>
+  <data name="Option_Force" xml:space="preserve">
+    <value>Skip certificate validation.</value>
+  </data>
   <data name="Add_Description" xml:space="preserve">
     <value>Add a NuGet source.</value>
   </data>
@@ -671,5 +699,17 @@ For more information, visit https://docs.nuget.org/docs/reference/command-line-r
   </data>
   <data name="Sources_Redirect" xml:space="preserve">
     <value>The proper command is '{0}'.</value>
+  </data>
+  <data name="ListClientCertCommandDescription" xml:space="preserve">
+    <value>Lists all the client certificates in the configuration.</value>
+  </data>
+  <data name="RemoveClientCertCommandDescription" xml:space="preserve">
+    <value>Removes the client certificate configuration that matches the given package source name.</value>
+  </data>
+  <data name="UpdateClientCertCommandDescription" xml:space="preserve">
+    <value>Updates the client certificate configuration that matches the given package source name.</value>
+  </data>
+  <data name="AddClientCertCommandDescription" xml:space="preserve">
+    <value>Adds a client certificate configuration that matches the given package source name.</value>
   </data>
 </root>

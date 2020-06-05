@@ -5408,6 +5408,10 @@ Oluşturma sırasında NuGet'in paketleri indirmesini önlemek için, Visual Stu
     <value>The action '{0}' is not recognized.</value>
     <comment>0 - action</comment>
   </data>
+  <data name="Error_ArgumentNotExpected" xml:space="preserve">
+    <value>The argument '{0}' is not expected.</value>
+    <comment>0 - argument name</comment>
+  </data>
   <data name="ProjectJsonPack_Deprecated" xml:space="preserve">
     <value>`project.json` pack is deprecated. Please consider migrating '{0}' to `PackageReference` and using the pack targets.</value>
     <comment>Do not localize project.json and `PackageReference` 

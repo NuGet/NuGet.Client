@@ -118,6 +118,7 @@
     <Compile Include="Resources\Resources.xaml.cs">
       <DependentUpon>Resources.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Telemetry\UpgradeInformationTelemetryEvent.cs" />
     <Compile Include="UserInterfaceService\DataStreamFromComStream.cs" />
     <Compile Include="UserInterfaceService\IModalProgressDialogSession.cs" />
     <Compile Include="UserInterfaceService\IUserSettingsManager.cs" />
@@ -541,6 +542,7 @@
       <SubType>Designer</SubType>
     </Content>
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <IncludeContentInPack>false</IncludeContentInPack>
   </PropertyGroup>
