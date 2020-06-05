@@ -11,6 +11,8 @@ Microsoft.IdentityModel.JsonWebTokens.dll
 Microsoft.IdentityModel.Logging.dll
 Microsoft.IdentityModel.Tokens.dll
 Microsoft.Internal.VisualStudio.Shell.Embeddable.dll
+Microsoft.ServiceHub.Client.dll
+Microsoft.ServiceHub.Resources.dll
 Microsoft.ServiceHub.Framework.dll
 Microsoft.ServiceHub.Framework.resources.dll
 Microsoft.TeamFoundation.Build.Client.dll
