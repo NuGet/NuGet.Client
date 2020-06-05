@@ -33,7 +33,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken ct)
         {
-            ct.ThrowIfCancellationRequested();
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
             return packageSources.PackageSourceProvider.LoadPackageSources().ToList();
@@ -41,7 +40,6 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken ct)
         {
-            ct.ThrowIfCancellationRequested();
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
             packageSources.PackageSourceProvider.SavePackageSources(sources);
@@ -53,11 +51,8 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (disposing)
                 {
-                    // TODO: dispose managed state (managed objects)
                 }
 
-                // TODO: free unmanaged resources (unmanaged objects) and override finalizer
-                // TODO: set large fields to null
                 _disposedValue = true;
             }
         }

@@ -17,7 +17,6 @@ namespace NuGet.PackageManagement.VisualStudio
     {
         public static async ValueTask<IServiceBroker> GetRemoteServiceBrokerAsync()
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
             var serviceBrokerContainer = await ServiceLocator.GetGlobalServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
             Assumes.NotNull(serviceBrokerContainer);
             return serviceBrokerContainer.GetFullAccessServiceBroker();

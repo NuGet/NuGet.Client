@@ -138,7 +138,7 @@ namespace NuGet.Options
             UpdateUI();
         }
 
-        internal async Task InitializeOnActivatedAsync()
+        internal async Task InitializeOnActivatedAsync(CancellationToken ct)
         {
             try
             {
@@ -150,7 +150,7 @@ namespace NuGet.Options
                 _initialized = true;
 
                 // get packages sources
-                _originalPackageSources = await GetAllPackageSourcesAsync();
+                _originalPackageSources = await GetAllPackageSourcesAsync(ct);
                 // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
                 var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
@@ -222,7 +222,7 @@ namespace NuGet.Options
         /// Persist the package sources, which was add/removed via the Options page, to the VS Settings store.
         /// This gets called when users click OK button.
         /// </summary>
-        internal async Task<bool> ApplyChangedSettingsAsync()
+        internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken ct)
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
@@ -243,7 +243,7 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    await SaveAllPackageSourcesAsync(packageSources);
+                    await SaveAllPackageSourcesAsync(packageSources, ct);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -669,36 +669,28 @@ namespace NuGet.Options
         }
 
 #nullable enable
-        private async Task<IReadOnlyList<PackageSource>> GetAllPackageSourcesAsync()
+        private async Task<IReadOnlyList<PackageSource>> GetAllPackageSourcesAsync(CancellationToken ct)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService);
-
-            if (nugetSourcesService != null)
+            using (var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct))
             {
-                using (nugetSourcesService)
+                if (nugetSourcesService != null)
                 {
-                    return await nugetSourcesService.GetPackageSourcesAsync(CancellationToken.None);
+                    return await nugetSourcesService.GetPackageSourcesAsync(ct);
                 }
             }
 
             return (IReadOnlyList<PackageSource>)Enumerable.Empty<PackageSource>();
         }
 
-        private async Task SaveAllPackageSourcesAsync(IReadOnlyList<PackageSource> packageSources)
+        private async Task SaveAllPackageSourcesAsync(IReadOnlyList<PackageSource> packageSources, CancellationToken ct)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
             var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService);
-
-            if (nugetSourcesService != null)
+            using (var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct))
             {
-                using (nugetSourcesService)
+                if (nugetSourcesService != null)
                 {
-                    await nugetSourcesService.SavePackageSourcesAsync(packageSources, CancellationToken.None);
+                    await nugetSourcesService.SavePackageSourcesAsync(packageSources, ct);
                 }
             }
         }

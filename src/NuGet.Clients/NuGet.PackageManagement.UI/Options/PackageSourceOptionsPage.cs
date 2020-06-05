@@ -6,8 +6,10 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.Runtime.InteropServices;
+using System.Threading;
 using System.Windows.Forms;
 using Microsoft.VisualStudio.Shell;
+using NuGet.PackageManagement.UI;
 using NuGet.VisualStudio;
 using Task = System.Threading.Tasks.Task;
 
@@ -26,25 +28,32 @@ namespace NuGet.Options
             base.OnActivate(e);
             PackageSourcesControl.Font = VsShellUtilities.GetEnvironmentFont(this);
 
-            // TODO: Do not wrap JTF.Run around brokered calls
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnActivateAsync(e));
+            DoCancelableOperationWithProgressUI(() =>
+            {
+                // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(Resources.PackageSourceOptions_OnActivated, async (progress, ct) => await OnActivateAsync(e, ct));
+
+            }, Resources.PackageSourceOptions_OnActivated);
         }
 
-        private async Task OnActivateAsync(CancelEventArgs e)
+        private async Task OnActivateAsync(CancelEventArgs e, CancellationToken ct)
         {
-            await PackageSourcesControl.InitializeOnActivatedAsync();
+            await PackageSourcesControl.InitializeOnActivatedAsync(ct);
         }
 
         protected override void OnApply(PageApplyEventArgs e)
         {
             // Do not need to call base.OnApply() here.
-            // TODO: Do not wrap JTF.Run around brokered calls
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () => await OnApplyAsync(e));
+            DoCancelableOperationWithProgressUI(() =>
+            {
+                // Normally we shouldn't wrap JTF around BrokeredCalls but this is in a cancelable operation already
+                NuGetUIThreadHelper.JoinableTaskFactory.Run(Resources.PackageSourceOptions_OnApply, async (progress, ct) => await OnApplyAsync(e, ct));
+            }, Resources.PackageSourceOptions_OnApply);
         }
 
-        private async Task OnApplyAsync(PageApplyEventArgs e)
+        private async Task OnApplyAsync(PageApplyEventArgs e, CancellationToken ct)
         {
-            bool wasApplied = await PackageSourcesControl.ApplyChangedSettingsAsync();
+            bool wasApplied = await PackageSourcesControl.ApplyChangedSettingsAsync(ct);
 
             if (!wasApplied)
             {

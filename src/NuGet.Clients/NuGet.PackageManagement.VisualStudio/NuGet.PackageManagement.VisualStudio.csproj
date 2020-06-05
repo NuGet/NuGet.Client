@@ -73,6 +73,10 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
+    <Compile Include="Services\NuGetRpcFormatterResolver.cs" />
+    <Compile Include="Services\NuGetServiceMessagePackRpcDescriptor.cs" />
+    <Compile Include="Services\INuGetSourcesService.cs" />
+    <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
     <Compile Include="Migrate\ProjectJsonToPackageRefMigrator.cs" />
@@ -138,6 +142,7 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="Projects\VsProjectJsonNuGetProject.cs" />
+    <Compile Include="Services\Converters\PackageSourceFormatter.cs" />
     <Compile Include="SourceControl\DefaultTFSSourceControlManager.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
