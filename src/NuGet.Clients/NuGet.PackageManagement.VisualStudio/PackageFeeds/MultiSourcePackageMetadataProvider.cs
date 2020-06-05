@@ -216,6 +216,10 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 return await getMetadataTask();
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 LogError(e);

@@ -250,6 +250,23 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     new[] { "1.0.0", "2.0.0", "2.0.1", "1.0.1" },
                     actualVersions);
             }
+            [Fact]
+            public async Task GetLatestPackageMetadataAsync_CancellationThrows()
+            {
+                // Arrange
+                var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
+
+                CancellationToken token = new CancellationToken(true);
+
+                // Act
+                Task task() => _target.GetLatestPackageMetadataAsync(
+                    TestPackageIdentity,
+                    testProject,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
+            }
         }
 
         public abstract class Tests
