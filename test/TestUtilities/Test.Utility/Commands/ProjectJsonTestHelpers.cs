@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using NuGet.Common;
+
 using NuGet.Frameworks;
 using NuGet.ProjectModel;
 
@@ -47,6 +47,26 @@ namespace NuGet.Commands.Test
                 dgSpec.AddProject(EnsureRestoreMetadata(child));
             }
 
+            return dgSpec;
+        }
+
+        /// <summary>
+        /// Creates a dg specs with all PackageReference and project.json projects to be restored.
+        /// </summary>
+        /// <param name="projects"></param>
+        /// <returns></returns>
+        public static DependencyGraphSpec GetDGSpecFromPackageSpecs(params PackageSpec[] projects)
+        {
+            var dgSpec = new DependencyGraphSpec();
+            foreach (var project in projects)
+            {
+                dgSpec.AddProject(project);
+                if (project.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ||
+                    project.RestoreMetadata.ProjectStyle == ProjectStyle.ProjectJson)
+                {
+                    dgSpec.AddRestore(project.RestoreMetadata.ProjectUniqueName);
+                }
+            }
             return dgSpec;
         }
 
@@ -102,12 +122,12 @@ namespace NuGet.Commands.Test
             updated.FilePath = projectPath;
 
             updated.RestoreMetadata = new ProjectRestoreMetadata();
-            updated.RestoreMetadata.CrossTargeting = updated.TargetFrameworks.Count > 0;
+            updated.RestoreMetadata.CrossTargeting = updated.TargetFrameworks.Count > 1;
             updated.RestoreMetadata.OriginalTargetFrameworks = updated.TargetFrameworks.Select(e => e.FrameworkName.GetShortFolderName()).ToList();
             updated.RestoreMetadata.OutputPath = projectDir;
             updated.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
             updated.RestoreMetadata.ProjectName = spec.Name;
-            updated.RestoreMetadata.ProjectUniqueName = spec.Name;
+            updated.RestoreMetadata.ProjectUniqueName = projectPath;
             updated.RestoreMetadata.ProjectPath = projectPath;
             updated.RestoreMetadata.ConfigFilePaths = new List<string>();
             updated.RestoreMetadata.CentralPackageVersionsEnabled = spec.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;

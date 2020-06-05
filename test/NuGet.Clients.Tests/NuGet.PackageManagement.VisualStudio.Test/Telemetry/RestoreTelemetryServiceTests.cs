@@ -46,6 +46,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: status,
                 packageCount: 2,
                 noOpProjectsCount: noopProjectsCount,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 new IntervalTracker("Activity"));
@@ -89,6 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 noOpProjectsCount: 0,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 tracker
@@ -102,7 +104,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(12, lastTelemetryEvent.Count);
+            Assert.Equal(13, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -115,7 +117,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(10, actual.Count);
+            Assert.Equal(11, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 

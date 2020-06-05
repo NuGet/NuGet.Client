@@ -8,10 +8,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.PackageReferenceRestoreDuration")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.PackagesConfigRestore")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.RestoreOperationChecks")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation")]
 [assembly: SuppressMessage("Build", "CA1802:Field 'EventName' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.EventName")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'bool PathValidator.IsValidLocalPath(string path)', validate parameter 'path' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.PathValidator.IsValidLocalPath(System.String)~System.Boolean")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'bool PathValidator.IsValidUncPath(string path)', validate parameter 'path' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.PathValidator.IsValidUncPath(System.String)~System.Boolean")]
