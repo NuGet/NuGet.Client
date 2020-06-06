@@ -191,9 +191,6 @@ namespace NuGet.Build.Tasks
                 UserAgent.SetUserAgentString(new UserAgentStringBuilder("NuGet Desktop MSBuild Task"));
 #endif
 
-                // This method has no effect on .NET Core.
-                NetworkProtocolUtility.ConfigureSupportedSslProtocols();
-
                 var restoreSummaries = new List<RestoreSummary>();
                 var providerCache = new RestoreCommandProvidersCache();
 
