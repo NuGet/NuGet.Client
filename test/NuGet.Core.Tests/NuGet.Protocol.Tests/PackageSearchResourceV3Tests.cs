@@ -106,6 +106,38 @@ namespace NuGet.Protocol.Tests
         }
 
         [Fact]
+        public async Task PackageSearchResourceV3_GetMetadataAsync_VersionsDownloadCount()
+        {
+            // Arrange
+            var responses = new Dictionary<string, string>();
+            responses.Add("https://api-v3search-0.nuget.org/query?q=entityframework&skip=0&take=1&prerelease=false&semVerLevel=2.0.0",
+                ProtocolUtility.GetResource("NuGet.Protocol.Tests.compiler.resources.EntityFrameworkSearch.json", GetType()));
+            responses.Add("http://testsource.com/v3/index.json", JsonData.IndexWithoutFlatContainer);
+
+            var repo = StaticHttpHandler.CreateSource("http://testsource.com/v3/index.json", Repository.Provider.GetCoreV3(), responses);
+
+            var resource = await repo.GetResourceAsync<PackageSearchResource>();
+
+            // Act
+            var packages = await resource.SearchAsync(
+                "entityframework",
+                new SearchFilter(false),
+                skip: 0,
+                take: 1,
+                log: NullLogger.Instance,
+                cancellationToken: CancellationToken.None);
+
+            var package = packages.SingleOrDefault();
+
+            var versions = await package.GetVersionsAsync();
+
+            // Assert
+            Assert.Equal(28390569, package.DownloadCount);
+            Assert.Equal(14, versions.Count());
+            Assert.Equal(64099, versions.First().DownloadCount);
+        }
+
+        [Fact]
         public async Task PackageSearchResourceV3_SearchEncoding()
         {
             // Arrange
