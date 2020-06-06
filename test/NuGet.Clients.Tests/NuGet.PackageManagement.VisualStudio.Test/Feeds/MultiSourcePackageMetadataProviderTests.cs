@@ -258,7 +258,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 // Arrange
                 var testProject = SetupProject(TestPackageIdentity, allowedVersions: null);
 
-                CancellationToken token = new CancellationToken(true);
+                CancellationToken token = new CancellationToken(canceled: true);
 
                 // Act
                 Task task() => _target.GetLatestPackageMetadataAsync(
@@ -270,10 +270,70 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 await Assert.ThrowsAsync<OperationCanceledException>(task);
             }
 
-            //GetPackageMetadataAsync
-            //GetPackageMetadataListAsync
-            //FetchAndMergeVersionsAndDeprecationMetadataAsync
-            //GetMetadataTaskSafeAsync          
+            [Fact]
+            public async Task GetPackageMetadataAsync_CancellationThrows()
+            {
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                Task task() => _target.GetPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
+            }
+
+            [Fact]
+            public async Task GetPackageMetadataListAsync_CancellationThrows()
+            {
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                Task task() => _target.GetPackageMetadataListAsync(
+                    TestPackageIdentity.Id,
+                    includePrerelease: true,
+                    includeUnlisted: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
+            }
+
+            [Fact]
+            public async Task GetLocalPackageMetadataAsync_CancellationThrows()
+            {
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                //Note: Private method MultiSourcePackageMetadataProvider.FetchAndMergeVersionsAndDeprecationMetadataAsync
+                // is called within this method, but this test does not enter into that logic.
+                Task task() => _target.GetLocalPackageMetadataAsync(
+                    TestPackageIdentity,
+                    includePrerelease: true,
+                    cancellationToken: token);
+
+                await Assert.ThrowsAsync<OperationCanceledException>(task);
+            }
+
+            [Fact]
+            public async Task GetMetadataTaskSafeAsync_CancellationThrows()
+            {
+                // Arrange
+                CancellationToken token = new CancellationToken(canceled: true);
+
+                // Act
+                Task< IPackageSearchMetadata> task() => _target.GetPackageMetadataAsync(
+                   TestPackageIdentity,
+                   includePrerelease: true,
+                   cancellationToken: token);
+
+                Task safeTask() => _target.GetMetadataTaskSafeAsync(() => task());
+
+                await Assert.ThrowsAsync<OperationCanceledException>(safeTask);
+            }
         }
     }
 }

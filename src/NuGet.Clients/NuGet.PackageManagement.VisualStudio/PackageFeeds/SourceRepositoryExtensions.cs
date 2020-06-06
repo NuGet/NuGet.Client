@@ -89,6 +89,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<IPackageSearchMetadata> GetPackageMetadataAsync(
             this SourceRepository sourceRepository, PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using (var sourceCacheContext = new SourceCacheContext())
@@ -114,6 +115,7 @@ namespace NuGet.PackageManagement.VisualStudio
                     .FirstOrDefault(p => p.Identity.Version == identity.Version)
                     ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
+                cancellationToken.ThrowIfCancellationRequested();
                 return packageMetadata.WithVersions(ToVersionInfo(packages, includePrerelease));
             }
         }
@@ -147,7 +149,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<IPackageSearchMetadata> GetLatestPackageMetadataAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, CancellationToken cancellationToken, VersionRange allowedVersions)
         {
-            //cancellationToken.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using (var sourceCacheContext = new SourceCacheContext())
@@ -164,16 +166,15 @@ namespace NuGet.PackageManagement.VisualStudio
                     Common.NullLogger.Instance,
                     cancellationToken);
 
-                //cancellationToken.ThrowIfCancellationRequested();
-
                 // filter packages based on allowed versions
                 var updatedPackages = packages.Where(p => allowedVersions.Satisfies(p.Identity.Version));
 
+                cancellationToken.ThrowIfCancellationRequested();
                 var highest = updatedPackages
                     .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                     .FirstOrDefault();
 
-                //cancellationToken.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
                 return highest?.WithVersions(ToVersionInfo(packages, includePrerelease));
             }
         }
@@ -181,6 +182,7 @@ namespace NuGet.PackageManagement.VisualStudio
         public static async Task<IEnumerable<IPackageSearchMetadata>> GetPackageMetadataListAsync(
             this SourceRepository sourceRepository, string packageId, bool includePrerelease, bool includeUnlisted, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var metadataResource = await sourceRepository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
 
             using (var sourceCacheContext = new SourceCacheContext())

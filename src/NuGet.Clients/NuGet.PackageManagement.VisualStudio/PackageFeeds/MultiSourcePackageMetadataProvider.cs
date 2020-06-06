@@ -54,6 +54,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
         public async Task<IPackageSearchMetadata> GetPackageMetadataAsync(PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(() => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
                 .ToList();
@@ -66,10 +67,12 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
+            cancellationToken.ThrowIfCancellationRequested();
             var master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
+            cancellationToken.ThrowIfCancellationRequested();
             return master.WithVersions(
                 asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
@@ -119,6 +122,7 @@ namespace NuGet.PackageManagement.VisualStudio
             bool includeUnlisted,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(()=> r.GetPackageMetadataListAsync(packageId, includePrerelease, includeUnlisted, cancellationToken)))
                 .ToArray();
@@ -126,13 +130,16 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
+            cancellationToken.ThrowIfCancellationRequested();
             var packages = completed.SelectMany(p => p);
 
+            cancellationToken.ThrowIfCancellationRequested();
             var uniquePackages = packages
                 .GroupBy(
                     m => m.Identity.Version,
                     (v, ms) => ms.First());
 
+            cancellationToken.ThrowIfCancellationRequested();
             return uniquePackages;
         }
 
@@ -144,6 +151,7 @@ namespace NuGet.PackageManagement.VisualStudio
             bool includePrerelease,
             CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var sources = new List<SourceRepository>();
 
             if (_localRepository != null)
@@ -159,6 +167,7 @@ namespace NuGet.PackageManagement.VisualStudio
             // Take the package from the first source it is found in
             foreach (var source in sources)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 var result = await source.GetPackageMetadataFromLocalSourceAsync(identity, cancellationToken);
 
                 if (result != null)
@@ -199,6 +208,7 @@ namespace NuGet.PackageManagement.VisualStudio
         private async Task<(IEnumerable<VersionInfo> versions, PackageDeprecationMetadata deprecationMetadata)> FetchAndMergeVersionsAndDeprecationMetadataAsync(
             PackageIdentity identity, bool includePrerelease, CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(
                     () => r.GetPackageMetadataAsync(identity, includePrerelease, cancellationToken)))
@@ -215,16 +225,16 @@ namespace NuGet.PackageManagement.VisualStudio
             return (await MergeVersionsAsync(identity, metadatas), await MergeDeprecationMetadataAsync(identity, metadatas));
         }
 
-        private async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T: class
+        internal async Task<T> GetMetadataTaskSafeAsync<T>(Func<Task<T>> getMetadataTask) where T: class
         {
             try
             {
                 return await getMetadataTask();
             }
-            //catch (OperationCanceledException)
-            //{
-            //    throw;
-            //}
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch (Exception e)
             {
                 LogError(e);
