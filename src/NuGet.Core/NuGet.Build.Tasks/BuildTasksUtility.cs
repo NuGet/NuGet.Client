@@ -29,7 +29,6 @@ using NuGet.Packaging.Signing;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
-using XmlUtility = NuGet.Common.XmlUtility;
 #endif
 
 namespace NuGet.Build.Tasks
