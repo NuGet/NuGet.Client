@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.ComponentModelHost;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.VisualStudio
@@ -30,13 +31,6 @@ namespace NuGet.VisualStudio
             return serviceProvider.GetService(typeof(TService)) as TService;
         }
 
-        public static TInterface GetService<TService, TInterface>(
-            this IServiceProvider serviceProvider) 
-            where TInterface : class
-        {
-            return serviceProvider.GetService(typeof(TService)) as TInterface;
-        }
-
         public static Task<EnvDTE.DTE> GetDTEAsync(
             this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
         {
@@ -54,21 +48,6 @@ namespace NuGet.VisualStudio
             where TService : class
         {
             return await site.GetServiceAsync(typeof(TService)) as TService;
-        }
-
-        public static async Task<TInterface> GetServiceAsync<TService, TInterface>(
-            this Microsoft.VisualStudio.Shell.IAsyncServiceProvider site)
-            where TInterface : class
-        {
-            var service = await site.GetServiceAsync(typeof(TService));
-
-            if (service != null)
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return service as TInterface;
-            }
-
-            return null;
         }
     }
 }
