@@ -9,7 +9,7 @@ using System.Xml.Linq;
 using NuGet.Test.Utility;
 using Xunit;
 
-namespace NuGet.Common.Test
+namespace NuGet.Shared.Test
 {
     public class XmlUtilityTests
     {
@@ -17,10 +17,10 @@ namespace NuGet.Common.Test
         public void Load_WhenFilePathIsNull_Throws()
         {
             //Act
-            var exception = Assert.Throws<ArgumentException>(() => XmlUtility.Load(filePath: null));
-
+            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(filePath: null));
+           
             //Assert
-            Assert.Equal("filePath", exception.ParamName);
+            Assert.Equal("inputUri", exception.ParamName);
         }
 
         [Fact]

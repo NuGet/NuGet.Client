@@ -33,7 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" />
+    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Composition">

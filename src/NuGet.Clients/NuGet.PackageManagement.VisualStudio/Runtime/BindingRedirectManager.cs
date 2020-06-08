@@ -245,7 +245,7 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             try
             {
-                return ProjectManagement.XmlUtility.GetOrCreateDocument(
+                return FileSystemUtility.GetOrCreateXmlDocument(
                     "configuration",
                     Path.GetDirectoryName(configFileFullPath),
                     Path.GetFileName(configFileFullPath),
