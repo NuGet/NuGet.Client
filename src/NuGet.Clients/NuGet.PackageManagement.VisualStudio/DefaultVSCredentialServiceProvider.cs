@@ -87,7 +87,10 @@ namespace NuGet.PackageManagement.VisualStudio
             }
 
             // Initialize the credential service.
-            var credentialService = new CredentialService(new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)), nonInteractive: false, handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
+            var credentialService = new CredentialService(
+                new AsyncLazy<IEnumerable<ICredentialProvider>>(() => System.Threading.Tasks.Task.FromResult((IEnumerable<ICredentialProvider>)credentialProviders)),
+                nonInteractive: KnownUIContexts.CloudEnvironmentConnectedContext.IsActive, // cannot only interact when cloudconnection is not active.
+                handlesDefaultCredentials: PreviewFeatureSettings.DefaultCredentialsAfterCredentialProviders);
 
             return credentialService;
         }
