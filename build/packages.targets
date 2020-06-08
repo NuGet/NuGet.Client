@@ -50,7 +50,7 @@
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" Version="16.0.0" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.3.DesignTime" Version="16.5.29616.81" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" Version="16.7.30014.49" />
-        <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.36" />
+        <PackageReference Update="Microsoft.VisualStudio.Telemetry" Version="16.3.59" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Data" Version="$(VSComponentsVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Text.Logic" Version="$(VSComponentsVersion)" />
         <PackageReference Update="Microsoft.VisualStudio.Text.UI" Version="$(VSComponentsVersion)" />
