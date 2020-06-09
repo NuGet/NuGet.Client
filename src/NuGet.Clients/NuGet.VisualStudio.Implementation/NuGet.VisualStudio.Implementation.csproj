@@ -33,7 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.ServiceHub.Framework" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.VisualStudio.Composition">
@@ -73,7 +73,7 @@
     </Compile>
   </ItemGroup>
 
-  <Import Project="$(BuildCommonDirectory)common.targets" />
+  <Import Project="$(BuildCommonDirectory)common.targets"/>
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>
