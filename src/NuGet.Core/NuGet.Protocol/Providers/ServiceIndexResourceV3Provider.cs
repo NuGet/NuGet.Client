@@ -141,6 +141,12 @@ namespace NuGet.Protocol
                             log,
                             token);
                     }
+                    catch (OperationCanceledException ex)
+                    {
+                        var message = ExceptionUtilities.DisplayMessage(ex);
+                        log.LogInformation(message);
+                        throw;
+                    }
                     catch (Exception ex) when (retry < maxRetries)
                     {
                         var message = string.Format(CultureInfo.CurrentCulture, Strings.Log_RetryingServiceIndex, url)
