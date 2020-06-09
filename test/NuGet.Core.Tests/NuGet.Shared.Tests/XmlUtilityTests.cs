@@ -17,7 +17,7 @@ namespace NuGet.Shared.Test
         public void Load_WhenFilePathIsNull_Throws()
         {
             //Act
-            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(filePath: null));
+            var exception = Assert.Throws<ArgumentNullException>(() => XmlUtility.Load(inputUri: null));
            
             //Assert
             Assert.Equal("inputUri", exception.ParamName);
