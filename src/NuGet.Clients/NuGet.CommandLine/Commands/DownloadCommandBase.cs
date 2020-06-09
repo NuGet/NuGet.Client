@@ -12,7 +12,7 @@ using NuGet.Commands;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Protocol;
-using XmlUtility = NuGet.Shared.XmlUtility;
+using NuGet.Shared;
 
 namespace NuGet.CommandLine
 {

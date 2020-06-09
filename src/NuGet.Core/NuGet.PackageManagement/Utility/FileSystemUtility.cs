@@ -12,7 +12,7 @@ using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
-using XmlUtility = NuGet.Shared.XmlUtility;
+using NuGet.Shared;
 
 namespace NuGet.ProjectManagement
 {

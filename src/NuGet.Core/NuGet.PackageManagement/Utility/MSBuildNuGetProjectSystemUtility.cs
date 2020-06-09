@@ -15,7 +15,7 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using XmlUtility = NuGet.Shared.XmlUtility;
+using NuGet.Shared;
 
 namespace NuGet.ProjectManagement
 {
