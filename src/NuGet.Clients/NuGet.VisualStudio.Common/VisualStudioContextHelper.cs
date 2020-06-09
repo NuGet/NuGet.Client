@@ -14,7 +14,8 @@ namespace NuGet.VisualStudio
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(token);
             IVsShell shell = await ServiceLocator.GetGlobalServiceAsync<SVsShell, IVsShell>();
-            return shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out object value) == VSConstants.S_OK &&
+            return shell != null &&
+                shell.GetProperty((int)__VSSPROPID11.VSSPROPID_ShellMode, out object value) == VSConstants.S_OK &&
                 value is int shellMode &&
                 shellMode == (int)__VSShellMode.VSSM_Server;
         }
