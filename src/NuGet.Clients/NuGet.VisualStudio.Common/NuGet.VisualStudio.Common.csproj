@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -34,6 +34,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Immutable.15.0" PrivateAssets="All" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.0.DesignTime" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.3.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.16.6.DesignTime" />
     <PackageReference Include="Microsoft.VisualStudio.Telemetry" />
     <PackageReference Include="Microsoft.VisualStudio.Text.Data" />
