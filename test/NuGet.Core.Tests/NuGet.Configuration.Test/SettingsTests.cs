@@ -2656,6 +2656,74 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        /// <summary>
+        /// We have 3 configs, one in the working directory, 2 in the user directory.
+        /// We always write to the furthest compatible config. In this case that means the additional config.
+        /// </summary>
+        [Fact]
+        public void AddOrUpdate_WithAdditionalUserSpecificConfigs_AddsToFurthestUserWideConfig()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var fileContentLocal = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""local"" />
+        <add key=""key2"" value=""local"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.config", mockBaseDirectory, fileContentLocal);
+
+                var fileContentUser = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key2"" value=""user"" />
+        <add key=""key3"" value=""user"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), fileContentUser);
+
+                var additionalUserConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key3"" value=""additional"" />
+        <add key=""key4"" value=""additional"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), additionalUserConfig);
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting(),
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Act
+                settings.AddOrUpdate("SectionName", new AddItem("newKey", "newValue"));
+                settings.SaveToDisk();
+
+                // Assert
+                var expectedPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Contoso.Config");
+
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key3"" value=""additional"" />
+        <add key=""key4"" value=""additional"" />
+        <add key=""newKey"" value=""newValue"" />
+    </SectionName>
+</configuration>");
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, expectedPath))).Should().Be(result);
+            }
+        }
+
         private static string GetOriginDirectoryPath()
         {
             if (RuntimeEnvironmentHelper.IsWindows)
