@@ -13,8 +13,6 @@ namespace NuGet.PackageManagement.VisualStudio
         public const string SourceProviderServiceName = "NuGet.SourceProviderService";
         public const string SourceProviderServiceVersion = "1.0.0";
 
-        public static readonly ServiceRpcDescriptor SourceProviderService = new NuGetServiceMessagePackRpcDescriptor(
-              new ServiceMoniker(SourceProviderServiceName, new Version(SourceProviderServiceVersion)),
-              ServiceJsonRpcDescriptor.MessageDelimiters.BigEndianInt32LengthHeader);
+        public static readonly ServiceRpcDescriptor SourceProviderService = new NuGetServiceMessagePackRpcDescriptor(new ServiceMoniker(SourceProviderServiceName, new Version(SourceProviderServiceVersion)));
     }
 }

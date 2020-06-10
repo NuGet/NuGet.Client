@@ -69,7 +69,6 @@ namespace NuGetVSExtension
         NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
         "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
-
     [ProvideBrokeredService(NuGetBrokeredServices.SourceProviderServiceName,
                             NuGetBrokeredServices.SourceProviderServiceVersion,
                             Audience = ServiceAudience.AllClientsIncludingGuests)]

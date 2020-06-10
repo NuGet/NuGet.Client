@@ -16,6 +16,12 @@ namespace NuGet.PackageManagement.VisualStudio
         private const string IsEnabledPropertyName = "isenabled";
         private const string IsMachineWidePropertyName = "ismachinewide";
 
+        internal static readonly IMessagePackFormatter<PackageSource?> Instance = new PackageSourceFormatter();
+
+        private PackageSourceFormatter()
+        {
+        }
+
         public PackageSource? Deserialize(ref MessagePackReader reader, MessagePackSerializerOptions options)
         {
             if (reader.TryReadNil())

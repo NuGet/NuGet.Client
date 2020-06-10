@@ -73,7 +73,6 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
-    <Compile Include="Services\NuGetRpcFormatterResolver.cs" />
     <Compile Include="Services\NuGetServiceMessagePackRpcDescriptor.cs" />
     <Compile Include="Services\INuGetSourcesService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
@@ -306,7 +305,6 @@
     <PackageReference Include="VSLangProj2" />
     <PackageReference Include="VSLangProj157" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

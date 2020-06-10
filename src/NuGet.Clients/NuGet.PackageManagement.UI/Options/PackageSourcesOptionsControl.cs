@@ -38,11 +38,14 @@ namespace NuGet.Options
         private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
         private IReadOnlyList<PackageSource> _originalPackageSources;
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+        private INuGetSourcesService _nugetSourcesService;
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
         {
             InitializeComponent();
-
+   
             _serviceProvider = serviceProvider;
 
             SetupEventHandlers();
@@ -70,6 +73,7 @@ namespace NuGet.Options
 
         private void SetupEventHandlers()
         {
+            Disposed += PackageSourcesOptionsControl_Disposed;
             NewPackageName.TextChanged += (o, e) => UpdateUI();
             NewPackageSource.TextChanged += (o, e) => UpdateUI();
             MoveUpButton.Click += (o, e) => MoveSelectedItem(-1);
@@ -149,8 +153,14 @@ namespace NuGet.Options
 
                 _initialized = true;
 
+                var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                _nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct);
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                Assumes.NotNull(_nugetSourcesService);
+
                 // get packages sources
-                _originalPackageSources = await GetAllPackageSourcesAsync(ct);
+                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(ct);
                 // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
                 var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
@@ -243,7 +253,7 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    await SaveAllPackageSourcesAsync(packageSources, ct);
+                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, ct);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -303,6 +313,8 @@ namespace NuGet.Options
             // clear this flag so that we will set up the bindings again when the option page is activated next time
             _initialized = false;
 
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
             _packageSources = null;
             ClearNameSource();
             UpdateUI();
@@ -661,40 +673,19 @@ namespace NuGet.Options
             return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
         }
 
+        private void PackageSourcesOptionsControl_Disposed(object sender, EventArgs e)
+        {
+            Disposed -= PackageSourcesOptionsControl_Disposed;
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
+        }
+
         private static bool IsPathRootedSafe(string path)
         {
             // Check to make sure path does not contain any invalid chars.
             // Otherwise, Path.IsPathRooted() will throw an ArgumentException.
             return path.IndexOfAny(Path.GetInvalidPathChars()) == -1 && Path.IsPathRooted(path);
         }
-
-#nullable enable
-        private async Task<IReadOnlyList<PackageSource>> GetAllPackageSourcesAsync(CancellationToken ct)
-        {
-            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct))
-            {
-                if (nugetSourcesService != null)
-                {
-                    return await nugetSourcesService.GetPackageSourcesAsync(ct);
-                }
-            }
-
-            return (IReadOnlyList<PackageSource>)Enumerable.Empty<PackageSource>();
-        }
-
-        private async Task SaveAllPackageSourcesAsync(IReadOnlyList<PackageSource> packageSources, CancellationToken ct)
-        {
-            var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
-            using (var nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct))
-            {
-                if (nugetSourcesService != null)
-                {
-                    await nugetSourcesService.SavePackageSourcesAsync(packageSources, ct);
-                }
-            }
-        }
-#nullable disable
     }
 
     internal enum TryUpdateSourceResults

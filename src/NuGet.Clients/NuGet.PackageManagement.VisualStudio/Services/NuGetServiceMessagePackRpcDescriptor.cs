@@ -5,6 +5,7 @@
 
 using System;
 using MessagePack;
+using MessagePack.Formatters;
 using MessagePack.Resolvers;
 using Microsoft;
 using Microsoft.ServiceHub.Framework;
@@ -14,23 +15,23 @@ namespace NuGet.PackageManagement.VisualStudio
 {
     internal class NuGetServiceMessagePackRpcDescriptor : ServiceJsonRpcDescriptor
     {
-        private static readonly IFormatterResolver Resolver;
+        private static readonly MessagePackSerializerOptions MessagePackSerializerOptions;
 
         static NuGetServiceMessagePackRpcDescriptor()
         {
-            Resolver = CompositeResolver.Create(new IFormatterResolver[] {
-                        NuGetRpcFormatterResolver.Instance,
-                        StandardResolver.Instance,
-             });
+            var formatters = new IMessagePackFormatter[] { PackageSourceFormatter.Instance };
+            var resolvers = new IFormatterResolver[] { MessagePackSerializerOptions.Standard.Resolver };
+
+            MessagePackSerializerOptions = MessagePackSerializerOptions.Standard.WithSecurity(MessagePackSecurity.UntrustedData).WithResolver(CompositeResolver.Create(formatters, resolvers));
         }
 
-        internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker, MessageDelimiters messageDelimiter)
-            : base(serviceMoniker, Formatters.MessagePack, messageDelimiter)
+        internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker)
+            : base(serviceMoniker, Formatters.MessagePack, MessageDelimiters.BigEndianInt32LengthHeader)
         {
         }
 
-        internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker, Type clientInterface, MessageDelimiters messageDelimiter)
-            : base(serviceMoniker, clientInterface, Formatters.MessagePack, messageDelimiter)
+        internal NuGetServiceMessagePackRpcDescriptor(ServiceMoniker serviceMoniker, Type clientInterface)
+            : base(serviceMoniker, clientInterface, Formatters.MessagePack, MessageDelimiters.BigEndianInt32LengthHeader)
         {
         }
 
@@ -46,9 +47,7 @@ namespace NuGet.PackageManagement.VisualStudio
             Assumes.True(Formatter == Formatters.MessagePack);
 
             MessagePackFormatter formatter = base.CreateFormatter() as MessagePackFormatter ?? new MessagePackFormatter();
-            var options = MessagePackSerializerOptions.Standard.WithResolver(Resolver).WithSecurity(MessagePackSecurity.UntrustedData);
-            formatter.SetMessagePackSerializerOptions(options);
-
+            formatter.SetMessagePackSerializerOptions(MessagePackSerializerOptions);
             return formatter;
         }
     }
