@@ -73,13 +73,13 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             });
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public void VerifyContructorSetsId()
         {
             Assert.StartsWith($"{typeof(VisualStudioAccountProvider).Name}", _provider.Id);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenIsProxyRequest_ThenReturnsNull()
         {
             // Arange
@@ -105,7 +105,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Null(cred.Credentials);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenNullUri_ThenThrowsArgumentException()
         {
             // Arange
@@ -128,7 +128,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                     CancellationToken.None));
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenEmptyKeychain_ThenPromptForCredentials()
         {
             // Arange
@@ -156,7 +156,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(cred.Credentials, _mockUserEnteredCredentials.Object); //get returned the user credentails
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenUriNotVSO_ThenReturnsNull()
         {
             // Arange
@@ -185,7 +185,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Null(cred.Credentials);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenUriNotHTTPS_ThenReturnsNotApplicable()
         {
             // Arange
@@ -215,7 +215,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Equal(CredentialStatus.ProviderNotApplicable, cred.Status);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenEmptyKeychainAndNonInteractive_ThenThrowsException()
         {
             // Arange
@@ -242,7 +242,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             Assert.Contains("No valid credentials", exception.Message);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenOneAccountInKeychain_ThenGetTokenFromAccount()
         {
             // Arange
@@ -277,7 +277,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                 Times.Once());
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenMultipleAccountsInKeychainButOneInTenant_ThenReturnsThatToken()
         {
             // Arange
@@ -322,7 +322,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenMultipleAccountsInKeychainNoneInTenant_ThenPromptsUserForAccount()
         {
             // Arange
@@ -372,7 +372,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenMultipleAccountsInKeychainAndTenant_ThenPrompsUserForAccount()
         {
             // Arange
@@ -422,7 +422,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Client.Engineering/issues/268")]
         public async Task Get_WhenOneAccountInKeychainWithoutAccessOnToTenantRetry_ThenPromptsUser()
         {
             // Arange
