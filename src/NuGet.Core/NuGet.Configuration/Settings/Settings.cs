@@ -603,7 +603,7 @@ namespace NuGet.Configuration
 
         private static string GetAdditionalUserWideConfigurationDirectory(string userSettingsDirectory)
         {
-            return Path.Combine(userSettingsDirectory, "config");
+            return Path.Combine(userSettingsDirectory, ConfigurationConstants.Config);
         }
 
         /// <summary>

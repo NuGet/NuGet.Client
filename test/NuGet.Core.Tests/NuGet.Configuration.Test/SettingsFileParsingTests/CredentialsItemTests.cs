@@ -301,7 +301,7 @@ namespace NuGet.Configuration.Test
                 // Assert
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in an uneditable config file.");
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 credentials.Password.Should().Be("pass");
             }

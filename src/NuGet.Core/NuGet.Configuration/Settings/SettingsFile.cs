@@ -36,11 +36,11 @@ namespace NuGet.Configuration
         /// <summary>
         /// Defines if the settings file is considered a machine wide settings file
         /// </summary>
-        /// <remarks>Machine wide settings files cannot be eddited.</remarks>
+        /// <remarks>Machine wide settings files cannot be edited.</remarks>
         internal bool IsMachineWide { get; }
 
         /// <summary>
-        /// Determines if the settings file is read only. 
+        /// Determines if the settings file is considered read-only from NuGet perspective.
         /// </summary>
         /// <remarks>User-wide configuration files imported from non-default locations are not considered editable.
         /// Note that this is different from <see cref="IsMachineWide"/>. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config. </remarks>

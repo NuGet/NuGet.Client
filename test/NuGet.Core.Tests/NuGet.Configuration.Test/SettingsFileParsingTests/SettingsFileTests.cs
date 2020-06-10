@@ -282,7 +282,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in a machine-wide NuGet.Config.");
+                ex.Message.Should().Be(Resources.CannotUpdateMachineWide);
 
                 settingsFile.SaveToDisk();
 
@@ -317,7 +317,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("section", new AddItem("SomeKey", "SomeValue")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in an uneditable config file.");
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 settingsFile.SaveToDisk();
 
@@ -623,7 +623,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.Remove("Section", item));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in an uneditable config file.");
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 settingsFile.SaveToDisk();
 
@@ -1064,7 +1064,6 @@ namespace NuGet.Configuration.Test
 
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-
                 // Set-up and Act
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: isMachineWide, isReadOnly: isReadOnlyInput);

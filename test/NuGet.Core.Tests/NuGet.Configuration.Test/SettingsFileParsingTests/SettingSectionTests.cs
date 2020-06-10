@@ -264,7 +264,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.AddOrUpdate("Section", new AddItem("key2", "value2")));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in an uneditable config file.");
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 section = settingsFile.GetSection("Section");
                 section.Should().NotBeNull();
@@ -386,7 +386,7 @@ namespace NuGet.Configuration.Test
                 var ex = Record.Exception(() => settingsFile.Remove("Section", child));
                 ex.Should().NotBeNull();
                 ex.Should().BeOfType<InvalidOperationException>();
-                ex.Message.Should().Be("Unable to update setting since it is in an uneditable config file.");
+                ex.Message.Should().Be(Resources.CannotUpdateReadOnlyConfig);
 
                 settingsFile.SaveToDisk();
 
