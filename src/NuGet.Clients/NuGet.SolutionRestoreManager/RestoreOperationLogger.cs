@@ -25,7 +25,7 @@ namespace NuGet.SolutionRestoreManager
     /// Aggregates logging and UI services consumed by the <see cref="SolutionRestoreJob"/>.
     /// </summary>
     [Export]
-    [PartCreationPolicy(CreationPolicy.Shared)]
+    [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class RestoreOperationLogger : LoggerBase, ILogger, IDisposable
     {
         private readonly IAsyncServiceProvider _asyncServiceProvider;
