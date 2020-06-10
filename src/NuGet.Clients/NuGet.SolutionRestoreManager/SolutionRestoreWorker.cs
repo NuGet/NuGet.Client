@@ -608,19 +608,15 @@ namespace NuGet.SolutionRestoreManager
 
                     // Setup MEF container.
                     AggregateCatalog catalog = new AggregateCatalog(
-                        new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly()),
-                        new AssemblyCatalog(typeof(OutputConsoleProvider).Assembly));
+                        new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly()));
                     CompositionContainer container = new CompositionContainer(catalog);
                     container.ComposeParts(this);
-                    var logger = container.GetExport<RestoreOperationLogger>();
-
-                    if (logger == null)
-                    {
-                        throw new  ArgumentException(nameof(logger));
-                    }
+                    Lazy<RestoreOperationLogger> logger = null;
 
                     try
                     {
+                        logger = container.GetExport<RestoreOperationLogger>();
+
                         // Start logging
                         await logger.Value.StartAsync(
                             request.RestoreSource,
