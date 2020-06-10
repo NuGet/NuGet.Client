@@ -105,6 +105,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (settingsFile.IsReadOnly || (currentSettings?.IsReadOnly ?? false))
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (currentSettings == null)
             {
                 SettingsFiles.Add(settingsFile);
@@ -169,7 +174,7 @@ namespace NuGet.Configuration
             : this(new List<SettingsFile> { new SettingsFile(root, fileName) }) { }
 
         public Settings(string root, string fileName, bool isMachineWide)
-            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide) })
+            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide, isReadOnly: false) })
         {
         }
 
@@ -204,7 +209,7 @@ namespace NuGet.Configuration
         {
             // Search for the furthest from the user that can be written
             // to that is not clearing the ones before it on the hierarchy
-            var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
+            var writteableSettingsFiles = Priority.Where(f => !f.IsReadOnly);
 
             var clearedSections = writteableSettingsFiles.Select(f => {
                 if(f.TryGetSection(sectionName, out var section))
@@ -366,7 +371,7 @@ namespace NuGet.Configuration
 
             foreach (var configFilePath in configFilePaths)
             {
-                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath));
+                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath, isReadOnly: true));
             }
 
             return new ImmutableSettings(LoadSettingsGivenSettingsFiles(settings));
@@ -492,7 +497,7 @@ namespace NuGet.Configuration
             {
                 // Priority gives you the settings file in the order you want to start reading them
                 var files = mwSettings.Priority.Select(
-                    s => ReadSettings(s.DirectoryPath, s.FileName, s.IsMachineWide, settingsLoadingContext));
+                    s => ReadSettings(s.DirectoryPath, s.FileName, s.IsMachineWide, settingsLoadingContext: settingsLoadingContext));
 
                 validSettingFiles.AddRange(files);
             }
@@ -566,7 +571,7 @@ namespace NuGet.Configuration
                 {
                     if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
                     {
-                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false);
+                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false, isAdditionalUserWideConfig: true);
                         if (settings != null)
                         {
                             yield return settings;
@@ -768,19 +773,19 @@ namespace NuGet.Configuration
             return Path.Combine(configDirectory, value);
         }
 
-        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false, SettingsLoadingContext settingsLoadingContext = null)
+        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false, bool isAdditionalUserWideConfig = false, SettingsLoadingContext settingsLoadingContext = null)
         {
             try
             {
                 if (settingsLoadingContext != null)
                 {
-                    return settingsLoadingContext.GetOrCreateSettingsFile(settingsPath, isMachineWideSettings);
+                    return settingsLoadingContext.GetOrCreateSettingsFile(settingsPath, isMachineWideSettings, isAdditionalUserWideConfig);
                 }
 
                 var tuple = GetFileNameAndItsRoot(settingsRoot, settingsPath);
                 var filename = tuple.Item1;
                 var root = tuple.Item2;
-                return new SettingsFile(root, filename, isMachineWideSettings);
+                return new SettingsFile(root, filename, isMachineWideSettings, isAdditionalUserWideConfig);
             }
             catch (XmlException)
             {

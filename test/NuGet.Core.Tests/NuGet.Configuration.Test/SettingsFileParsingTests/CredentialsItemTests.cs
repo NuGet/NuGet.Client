@@ -259,7 +259,7 @@ namespace NuGet.Configuration.Test
             // Arrange
             using (var mockBaseDirectory = TestDirectory.Create())
             {
-                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: true);
+                var origin = new SettingsFile(mockBaseDirectory, fileName: Settings.DefaultSettingsFileName, isMachineWide: true, isReadOnly: false);
 
                 var xelement = new XElement("name",
                                 new XElement("add", new XAttribute("key", "Username"), new XAttribute("value", "user")),

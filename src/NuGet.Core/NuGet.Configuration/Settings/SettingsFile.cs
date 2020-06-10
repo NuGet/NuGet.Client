@@ -40,6 +40,13 @@ namespace NuGet.Configuration
         internal bool IsMachineWide { get; }
 
         /// <summary>
+        /// Determines if the settings file is read only. 
+        /// </summary>
+        /// <remarks>User-wide configuration files imported from non-default locations are not considered editable.
+        /// Note that this is different from <see cref="IsMachineWide"/>. Every machine-wide config will return `true`. </remarks>
+        internal bool IsReadOnly { get; }
+
+        /// <summary>
         /// XML element for settings file
         /// </summary>
         private readonly XDocument _xDocument;
@@ -55,7 +62,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="directoryPath">path to the directory where the file is</param>
         public SettingsFile(string directoryPath)
-            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false)
+            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -65,7 +72,7 @@ namespace NuGet.Configuration
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
         public SettingsFile(string directoryPath, string fileName)
-            : this(directoryPath, fileName, isMachineWide: false)
+            : this(directoryPath, fileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -77,7 +84,8 @@ namespace NuGet.Configuration
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
         /// <param name="isMachineWide">specifies if the SettingsFile is machine wide</param>
-        public SettingsFile(string directoryPath, string fileName, bool isMachineWide)
+        /// <param name="isReadOnly">specifies if the SettingsFile is from the additional user wide configuration path.</param>
+        public SettingsFile(string directoryPath, string fileName, bool isMachineWide, bool isReadOnly)
         {
             if (string.IsNullOrEmpty(directoryPath))
             {
@@ -98,6 +106,7 @@ namespace NuGet.Configuration
             FileName = fileName;
             ConfigFilePath = Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
             IsMachineWide = isMachineWide;
+            IsReadOnly = IsMachineWide || isReadOnly;
 
             XDocument config = null;
             ExecuteSynchronized(() =>

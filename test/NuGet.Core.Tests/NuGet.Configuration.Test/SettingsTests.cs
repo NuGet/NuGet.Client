@@ -1111,7 +1111,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), @"<configuration></configuration>");
-                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true);
+                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true, isReadOnly: false);
                 var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
@@ -2658,7 +2658,7 @@ namespace NuGet.Configuration.Test
 
         /// <summary>
         /// We have 3 configs, one in the working directory, 2 in the user directory.
-        /// We always write to the furthest compatible config. In this case that means the additional config.
+        /// We always write to the furthest compatible write-able config. While the additional config is further, it's also not write-able.
         /// </summary>
         [Fact]
         public void AddOrUpdate_WithAdditionalUserSpecificConfigs_AddsToFurthestUserWideConfig()
@@ -2709,13 +2709,13 @@ namespace NuGet.Configuration.Test
                 settings.SaveToDisk();
 
                 // Assert
-                var expectedPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Contoso.Config");
+                var expectedPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config");
 
                 var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
 <configuration>
     <SectionName>
-        <add key=""key3"" value=""additional"" />
-        <add key=""key4"" value=""additional"" />
+        <add key=""key2"" value=""user"" />
+        <add key=""key3"" value=""user"" />
         <add key=""newKey"" value=""newValue"" />
     </SectionName>
 </configuration>");

@@ -213,7 +213,7 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act
                 var section = settingsFile.GetSection("Section");
@@ -294,7 +294,7 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
                 var configFileHash = SettingsTestUtils.GetFileHash(Path.Combine(mockBaseDirectory, nugetConfigPath));
 
-                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: true, isReadOnly: false);
 
                 // Act
                 var section = settingsFile.GetSection("Section");

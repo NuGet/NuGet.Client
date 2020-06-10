@@ -21,7 +21,7 @@ namespace NuGet.Configuration
             _semaphore = new SemaphoreSlim(initialCount: 1, maxCount: 1);
         }
 
-        internal SettingsFile GetOrCreateSettingsFile(string filePath, bool isMachineWide = false)
+        internal SettingsFile GetOrCreateSettingsFile(string filePath, bool isMachineWide = false, bool isReadOnly = false)
         {
             if (_isDisposed)
             {
@@ -47,7 +47,7 @@ namespace NuGet.Configuration
                 }
 
                 var file = new FileInfo(filePath);
-                settingsFile = new Lazy<SettingsFile>(() => new SettingsFile(file.DirectoryName, file.Name, isMachineWide));
+                settingsFile = new Lazy<SettingsFile>(() => new SettingsFile(file.DirectoryName, file.Name, isMachineWide, isReadOnly));
                 _settingsFiles.Add(settingsFile);
             }
             finally
