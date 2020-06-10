@@ -297,6 +297,6 @@
     <comment>0 - Package name</comment>
   </data>
   <data name="CannotUpdateReadOnlyConfig" xml:space="preserve">
-    <value>Unable to update setting since it is in uneditable configuration.</value>
+    <value>Unable to update setting since it is in an uneditable config file.</value>
   </data>
 </root>

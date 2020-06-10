@@ -124,7 +124,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Unable to update setting since it is in uneditable configuration..
+        ///   Looks up a localized string similar to Unable to update setting since it is in an uneditable config file..
         /// </summary>
         internal static string CannotUpdateReadOnlyConfig {
             get {
