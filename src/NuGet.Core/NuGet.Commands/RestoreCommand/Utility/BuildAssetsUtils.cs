@@ -176,7 +176,7 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
                 new XElement(Namespace + "ItemGroup",
                             new XAttribute("Condition", $" {ExcludeAllCondition} "),
-                            GenerateItem("SourceRoot", "$(NuGetPackageFolders)")));
+                            GenerateItem("SourceRoot", "$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))")));
         }
 
         /// <summary>

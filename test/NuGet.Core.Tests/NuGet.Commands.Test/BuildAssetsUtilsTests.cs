@@ -79,7 +79,7 @@ namespace NuGet.Commands.Test
             // Assert
             Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
             Assert.Equal(1, items.Count);
-            Assert.Equal("$(NuGetPackageFolders)", items["SourceRoot"]["Include"]);
+            Assert.Equal("$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))", items["SourceRoot"]["Include"]);
         }
 
         [Fact]
