@@ -34,6 +34,11 @@ namespace NuGet.Frameworks
         bool TryGetShortProfile(string frameworkIdentifier, string profile, out string profileShortName);
 
         /// <summary>
+        /// Get the official platform name from the short name.
+        /// </summary>
+        bool TryGetShortPlatform(string frameworkIdentifier, Version version, string platform, out string platformShortName);
+
+        /// <summary>
         /// Parses a version string using single digit rules if no dots exist
         /// </summary>
         bool TryGetVersion(string versionString, out Version version);
@@ -108,12 +113,12 @@ namespace NuGet.Frameworks
 
         /// <summary>
         /// The ascending order of frameworks should be based on the following ordered groups:
-        /// 
+        ///
         /// 1. Non-package-based frameworks in <see cref="IFrameworkMappings.NonPackageBasedFrameworkPrecedence"/>.
         /// 2. Other non-package-based frameworks.
         /// 3. Package-based frameworks in <see cref="IFrameworkMappings.PackageBasedFrameworkPrecedence"/>.
         /// 4. Other package-based frameworks.
-        /// 
+        ///
         /// For group #1 and #3, the order within the group is based on the order of the respective precedence list.
         /// For group #2 and #4, the order is the original order in the incoming list. This should later be made
         /// consistent between different input orderings by using the <see cref="NuGetFrameworkSorter"/>.

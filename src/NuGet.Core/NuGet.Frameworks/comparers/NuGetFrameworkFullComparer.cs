@@ -33,6 +33,8 @@ namespace NuGet.Frameworks
             return x.Version == y.Version
                    && StringComparer.OrdinalIgnoreCase.Equals(x.Framework, y.Framework)
                    && StringComparer.OrdinalIgnoreCase.Equals(x.Profile, y.Profile)
+                   && StringComparer.OrdinalIgnoreCase.Equals(x.Platform, y.Platform)
+                   && x.PlatformVersion == y.PlatformVersion
                    && !x.IsUnsupported;
         }
 

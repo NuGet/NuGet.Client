@@ -109,6 +109,13 @@ namespace NuGet.Commands
 
                 var isCpvmEnabled = _request.Project.RestoreMetadata?.CentralPackageVersionsEnabled ?? false;
                 telemetry.TelemetryEvent[IsCentralVersionManagementEnabled] = isCpvmEnabled;
+                if (isCpvmEnabled)
+                {
+                    _logger.LogInformation(string.Format(
+                          CultureInfo.CurrentCulture,
+                          Strings.CentralPackageVersionManagementInPreview,
+                          _request.Project.FilePath));
+                }
 
                 var restoreTime = Stopwatch.StartNew();
 

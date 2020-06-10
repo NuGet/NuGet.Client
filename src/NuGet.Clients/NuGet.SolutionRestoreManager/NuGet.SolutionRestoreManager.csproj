@@ -32,6 +32,7 @@
     <Compile Include="BrokeredServicesUtility.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Guids.cs" />
+    <Compile Include="ISolutionRestoreChecker.cs" />
     <Compile Include="ISolutionRestoreJob.cs" />
     <Compile Include="NuGetSolutionService.cs" />
     <Compile Include="PkgCmdID.cs" />
@@ -49,6 +50,7 @@
     <Compile Include="SolutionRestoreJob.cs" />
     <Compile Include="SolutionRestoreJobContext.cs" />
     <Compile Include="SolutionRestoreWorker.cs" />
+    <Compile Include="SolutionUpToDateChecker.cs" />
     <Compile Include="VerbosityLevel.cs" />
     <Compile Include="VSNominationUtilities.cs" />
     <Compile Include="VsSolutionRestoreService.cs" />

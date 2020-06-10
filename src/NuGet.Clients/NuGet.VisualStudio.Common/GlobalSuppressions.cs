@@ -1,14 +1,13 @@
-﻿// This file is used by Code Analysis to maintain SuppressMessage
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+// This file is used by Code Analysis to maintain SuppressMessage
 // attributes that are applied to this project.
 // Project-level suppressions either have no target or are given
 // a specific target and scoped to a namespace, type, member, etc.
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.PackageReferenceRestoreDuration")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.PackagesConfigRestore")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.RestoreOperationChecks")]
-[assembly: SuppressMessage("Build", "CA2211:Non-constant fields should not be visible", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.RestoreTelemetryEvent.SolutionDependencyGraphSpecCreation")]
 [assembly: SuppressMessage("Build", "CA1802:Field 'EventName' is declared as 'readonly' but is initialized with a constant value. Mark this field as 'const' instead.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.Telemetry.PackageSourceTelemetry.EventName")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'bool PathValidator.IsValidLocalPath(string path)', validate parameter 'path' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.PathValidator.IsValidLocalPath(System.String)~System.Boolean")]
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'bool PathValidator.IsValidUncPath(string path)', validate parameter 'path' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.PackageManagement.VisualStudio.PathValidator.IsValidUncPath(System.String)~System.Boolean")]
@@ -59,4 +58,4 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: SuppressMessage("Build", "CA1062:In externally visible method 'void OutputConsoleLogger.Log(ILogMessage message)', validate parameter 'message' is non-null before using it. If appropriate, throw an ArgumentNullException when the argument is null or add a Code Contract precondition asserting non-null argument.", Justification = "<Pending>", Scope = "member", Target = "~M:NuGet.VisualStudio.Common.OutputConsoleLogger.Log(NuGet.Common.ILogMessage)")]
 [assembly: SuppressMessage("Build", "CA1823:Unused field 'LogEntrySource'.", Justification = "<Pending>", Scope = "member", Target = "~F:NuGet.VisualStudio.Common.OutputConsoleLogger.LogEntrySource")]
 [assembly: SuppressMessage("Build", "CA1063:Provide an overridable implementation of Dispose(bool) on 'OutputConsoleLogger' or mark the type as sealed. A call to Dispose(false) should only clean up native resources. A call to Dispose(true) should clean up both managed and native resources.", Justification = "<Pending>", Scope = "type", Target = "~T:NuGet.VisualStudio.Common.OutputConsoleLogger")]
-[assembly: SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Need to unify event names to be same as ones produced from telemetry.", Scope = "member", Target = "~M:NuGet.VisualStudio.NuGetVSTelemetryService.StartActivity(System.String)~System.IDisposable")]
+[assembly: SuppressMessage("Globalization", "CA1308:Normalize strings to uppercase", Justification = "Need to unify event names to be same as ones produced from telemetry.", Scope = "member", Target = "~M:NuGet.VisualStudio.Telemetry.EtwLogActivity.#ctor(System.String)")]
