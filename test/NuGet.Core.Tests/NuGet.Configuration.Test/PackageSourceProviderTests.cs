@@ -1738,6 +1738,62 @@ namespace NuGet.Configuration.Test
             }
         }
 
+        [Fact]
+        public void SavePackageSources_WhenDisablingASourceFromReadOnlyConfig_DisablesInDefaultUserWideConfigInstead()
+        {
+            using (var directory = TestDirectory.Create())
+            {
+                // Arrange
+                var additionalConfigContents =
+                    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+        <add key=""Contoso""
+         value = ""https://contoso.test"" />
+    </packageSources>
+</configuration>
+";
+
+                var machineWideContents =
+    @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <packageSources>
+    </packageSources>
+</configuration>
+";
+
+                File.WriteAllText(Path.Combine(directory.Path, "machinewide.config"), machineWideContents);
+                var additionalConfigPath = Path.Combine(directory.Path, "TestingGlobalPath", "contoso.nuget.config");
+                Directory.CreateDirectory(Path.GetDirectoryName(additionalConfigPath));
+                File.WriteAllText(additionalConfigPath, additionalConfigContents);
+
+                var machineWideSetting = new Settings(directory.Path, "machinewide.config", isMachineWide: true);
+                var m = new Mock<IMachineWideSettings>();
+                m.SetupGet(obj => obj.Settings).Returns(machineWideSetting);
+
+                var settings = Settings.LoadSettings(
+                    new DirectoryInfo(directory),
+                    machineWideSettings: m.Object,
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+                var packageSourceProvider = new PackageSourceProvider(settings);
+                var sources = packageSourceProvider.LoadPackageSources().ToList();
+
+
+                // Act
+                sources.Count.Should().Be(2);
+                sources[1].IsEnabled = false;
+                packageSourceProvider.SavePackageSources(sources);
+
+                // Assert
+                var newSources = packageSourceProvider.LoadPackageSources().ToList();
+                Assert.False(newSources[1].IsEnabled);
+                Assert.Equal("Contoso", newSources[1].Name);
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(additionalConfigPath)).Should().Be(SettingsTestUtils.RemoveWhitespace(additionalConfigContents));
+            }
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]

@@ -26,7 +26,7 @@ namespace NuGet.Configuration
                    password,
                    storePasswordInClearText,
                    string.IsNullOrWhiteSpace(settingsFilePath)
-                       ? null // TODO NK - Do we know this?
+                       ? null
                        : new SettingsFile(Path.GetDirectoryName(settingsFilePath), Path.GetFileName(settingsFilePath), isMachineWide: false, isReadOnly: false))
         {
         }

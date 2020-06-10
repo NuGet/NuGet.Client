@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Xml.Linq;
-using NuGet.Shared;
 
 namespace NuGet.Configuration
 {
@@ -89,7 +88,6 @@ namespace NuGet.Configuration
             {
                 throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
             }
-
 
             if (!_mutableChildren.ContainsKey(setting) && !setting.IsEmpty())
             {
