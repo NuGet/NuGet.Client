@@ -1763,7 +1763,7 @@ namespace NuGet.Configuration.Test
 ";
 
                 File.WriteAllText(Path.Combine(directory.Path, "machinewide.config"), machineWideContents);
-                var additionalConfigPath = Path.Combine(directory.Path, "TestingGlobalPath", "contoso.nuget.config");
+                var additionalConfigPath = Path.Combine(directory.Path, "TestingGlobalPath", "config", "contoso.nuget.config");
                 Directory.CreateDirectory(Path.GetDirectoryName(additionalConfigPath));
                 File.WriteAllText(additionalConfigPath, additionalConfigContents);
 

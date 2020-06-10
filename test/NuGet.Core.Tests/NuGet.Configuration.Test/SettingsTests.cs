@@ -2559,7 +2559,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), additionalUserConfig);
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath", "config"), additionalUserConfig);
 
                 // Act
                 var settings = Settings.LoadSettings(
@@ -2620,7 +2620,7 @@ namespace NuGet.Configuration.Test
     </SectionName>
 </configuration>";
 
-                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), additionalUserConfig);
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath", "config"), additionalUserConfig);
 
                 // Act
                 var settings = Settings.LoadSettings(

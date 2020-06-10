@@ -564,14 +564,15 @@ namespace NuGet.Configuration
 
                 yield return userSpecificSettings;
 
-                // For backwards compatibility, we first return default user specific the non-default configs and then the additional files from the directory
+                // For backwards compatibility, we first return default user specific the non-default configs and then the additional files from the nested `config` directory
+                var additionalConfigurationPath = GetAdditionalUserWideConfigurationDirectory(userSettingsDir);
                 foreach (var file in FileSystemUtility
-                    .GetFilesRelativeToRoot(root: userSettingsDir, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly)
+                    .GetFilesRelativeToRoot(root: additionalConfigurationPath, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly)
                     .OrderBy(e => e, PathUtility.GetStringComparerBasedOnOS()))
                 {
                     if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
                     {
-                        var settings = ReadSettings(userSettingsDir, file, isMachineWideSettings: false, isAdditionalUserWideConfig: true);
+                        var settings = ReadSettings(additionalConfigurationPath, file, isMachineWideSettings: false, isAdditionalUserWideConfig: true);
                         if (settings != null)
                         {
                             yield return settings;
@@ -598,6 +599,11 @@ namespace NuGet.Configuration
             return useTestingGlobalPath
                 ? Path.Combine(rootDirectory, "TestingGlobalPath")
                 : NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        }
+
+        private static string GetAdditionalUserWideConfigurationDirectory(string userSettingsDirectory)
+        {
+            return Path.Combine(userSettingsDirectory, "config");
         }
 
         /// <summary>
