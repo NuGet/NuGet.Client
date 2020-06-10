@@ -13,13 +13,16 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Telemetry;
 using Mvs = Microsoft.VisualStudio.Shell;
 using Resx = NuGet.PackageManagement.UI;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -39,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// This exists only to facilitate unit testing.
-        /// It is triggered at <see cref="LoadItems(PackageItemListViewModel, CancellationToken)" />, just before it is finished
+        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, CancellationTokenSource, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -202,12 +205,26 @@ namespace NuGet.PackageManagement.UI
 
             var currentLoader = _loader;
 
-            _joinableTaskFactory.Value.RunAsync(async () =>
+            _joinableTaskFactory.Value.RunAsync(
+                    RepopulatePackageList(selectedPackageItem, loadCts, currentLoader, token)
+                )
+                .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
+                    nameof(InfiniteScrollList),
+                    nameof(RepopulatePackageList)
+                ));
+        }
+
+        private Func<Task> RepopulatePackageList(PackageItemListViewModel selectedPackageItem, CancellationTokenSource loadCts, IPackageItemLoader currentLoader, CancellationToken token)
+        {
+            return async () =>
             {
                 await TaskScheduler.Default;
 
                 var addedLoadingIndicator = false;
-
+                if (token.IsCancellationRequested == false)
+                {
+                    throw new OperationCanceledException();
+                }
                 try
                 {
                     // add Loading... indicator if not present
@@ -287,7 +304,7 @@ namespace NuGet.PackageManagement.UI
                 UpdateCheckBoxStatus();
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            });
+            };
         }
 
         private async Task LoadItemsCoreAsync(IPackageItemLoader currentLoader, CancellationToken token)
