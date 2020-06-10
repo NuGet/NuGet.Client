@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
@@ -21,19 +22,36 @@ namespace NuGet.PackageManagement.UI.Test
             _out = outputHelper;
         }
 
-        public void End()
+        public void Start()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task StartAsync()
         {
             throw new NotImplementedException();
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
+            _ = LogAsync(level, message, args);
+        }
+
+        public Task LogAsync(MessageLevel level, string message, params object[] args)
+        {
             _out.WriteLine($"[{level}] {string.Format(message, args)}");
+            return new Task(() => { });
         }
 
         public void Log(ILogMessage message)
         {
             Log(FromLogLevel(message.Level), message.Message);
+        }
+
+        public Task LogAsync(ILogMessage message)
+        {
+            Log(FromLogLevel(message.Level), message.Message);
+            return new Task(() => { });
         }
 
         public void ReportError(string message)
@@ -46,7 +64,12 @@ namespace NuGet.PackageManagement.UI.Test
             Log(MessageLevel.Error, message.Message);
         }
 
-        public void Start()
+        public void End()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task EndAsync()
         {
             throw new NotImplementedException();
         }
