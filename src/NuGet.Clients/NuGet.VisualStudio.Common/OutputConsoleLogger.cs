@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -16,7 +17,6 @@ namespace NuGet.VisualStudio.Common
     [PartCreationPolicy(CreationPolicy.Shared)]
     public class OutputConsoleLogger : INuGetUILogger, IDisposable
     {
-        private const string LogEntrySource = "NuGet Package Manager";
         private const string DTEProjectPage = "ProjectsAndSolution";
         private const string DTEEnvironmentCategory = "Environment";
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
@@ -30,7 +30,7 @@ namespace NuGet.VisualStudio.Common
         private EnvDTE.BuildEvents _buildEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
 
-        public IOutputConsole OutputConsole { get; private set; }
+        private AsyncLazy<IOutputConsole> _outputConsole;
 
         public Lazy<ErrorListTableDataSource> ErrorListTableDataSource { get; private set; }
 
@@ -58,7 +58,7 @@ namespace NuGet.VisualStudio.Common
 
             ErrorListTableDataSource = errorListDataSource;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            _outputConsole = AsyncLazy.New(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -67,7 +67,7 @@ namespace NuGet.VisualStudio.Common
                 _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 _solutionEvents = _dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
-                OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
+                return await consoleProvider.CreatePackageManagerConsoleAsync();
             });
         }
 
@@ -84,8 +84,9 @@ namespace NuGet.VisualStudio.Common
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await OutputConsole.WriteLineAsync(Resources.Finished);
-                await OutputConsole.WriteLineAsync(string.Empty);
+                var outputConsole = await _outputConsole;
+                await outputConsole.WriteLineAsync(Resources.Finished);
+                await outputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
@@ -104,7 +105,10 @@ namespace NuGet.VisualStudio.Common
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message));
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .Run(async () => (await _outputConsole).WriteLineAsync(message))
+                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
+                        nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(MessageLevel)}"));
             }
         }
 
@@ -115,7 +119,10 @@ namespace NuGet.VisualStudio.Common
                 || message.Level == LogLevel.Warning
                 || _verbosityLevel > DefaultVerbosityLevel)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
+                NuGetUIThreadHelper.JoinableTaskFactory
+                    .Run(async () => (await _outputConsole).WriteLineAsync(message.FormatWithCode()))
+                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
+                        nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(ILogMessage)}"));
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
@@ -143,8 +150,9 @@ namespace NuGet.VisualStudio.Common
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
             {
-                await OutputConsole.ActivateAsync();
-                await OutputConsole.ClearAsync();
+                var outputConsole = await _outputConsole;
+                await outputConsole.ActivateAsync();
+                await outputConsole.ClearAsync();
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
             });
