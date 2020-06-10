@@ -608,7 +608,8 @@ namespace NuGet.SolutionRestoreManager
 
                     // Setup MEF container.
                     AggregateCatalog catalog = new AggregateCatalog(
-                        new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly()));
+                        new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly()),
+                        new AssemblyCatalog(typeof(OutputConsoleProvider).Assembly));
                     CompositionContainer container = new CompositionContainer(catalog);
                     container.ComposeParts(this);
                     Lazy<RestoreOperationLogger> logger = null;
@@ -630,11 +631,15 @@ namespace NuGet.SolutionRestoreManager
                     }
                     finally
                     {
-                        // Complete all logging
-                        await logger.Value.StopAsync();
+                        if(logger != null)
+                        {
+                            // Complete all logging
+                            await logger.Value.StopAsync();
 
-                        // Explicitly release instance of logger using MEF container.
-                        container.ReleaseExport<RestoreOperationLogger>(logger);
+                            // Explicitly release instance of logger using MEF container.
+                            container.ReleaseExport<RestoreOperationLogger>(logger);
+                        }
+
                         container.Dispose();
                     }
                 }, jobCts.Token);
