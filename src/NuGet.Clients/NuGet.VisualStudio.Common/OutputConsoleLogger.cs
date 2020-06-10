@@ -38,19 +38,7 @@ namespace NuGet.VisualStudio.Common
         public OutputConsoleLogger(
             IOutputConsoleProvider consoleProvider,
             Lazy<ErrorListTableDataSource> errorListDataSource)
-            : this(AsyncServiceProvider.GlobalProvider, consoleProvider, errorListDataSource)
-        { }
-
-        public OutputConsoleLogger(
-            IAsyncServiceProvider asyncServiceProvider,
-            IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListDataSource)
         {
-            if (asyncServiceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(asyncServiceProvider));
-            }
-
             if (consoleProvider == null)
             {
                 throw new ArgumentNullException(nameof(consoleProvider));
@@ -62,7 +50,7 @@ namespace NuGet.VisualStudio.Common
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-                _dte = await asyncServiceProvider.GetDTEAsync();
+                _dte = await AsyncServiceProvider.GlobalProvider.GetDTEAsync();
                 _buildEvents = _dte.Events.BuildEvents;
                 _buildEvents.OnBuildBegin += (_, __) => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 _solutionEvents = _dte.Events.SolutionEvents;
