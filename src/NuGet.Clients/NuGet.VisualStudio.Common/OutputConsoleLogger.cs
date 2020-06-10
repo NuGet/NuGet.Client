@@ -9,7 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
-using NuGet.VisualStudio.Telemetry;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -80,20 +80,26 @@ namespace NuGet.VisualStudio.Common
             });
         }
 
-        public void End()
+        public void Start()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var outputConsole = await _outputConsole;
-                await outputConsole.WriteLineAsync(Resources.Finished);
-                await outputConsole.WriteLineAsync(string.Empty);
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(StartAsync);
+        }
 
-                // Give the error list focus
-                ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
-            });
+        public async Task StartAsync()
+        {
+            var outputConsole = await _outputConsole;
+            await outputConsole.ActivateAsync();
+            await outputConsole.ClearAsync();
+            _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
+            ErrorListTableDataSource.Value.ClearNuGetEntries();
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => LogAsync(level, message, args));
+        }
+
+        public async Task LogAsync(MessageLevel level, string message, params object[] args)
         {
             if (level == MessageLevel.Info
                 || level == MessageLevel.Error
@@ -105,24 +111,26 @@ namespace NuGet.VisualStudio.Common
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .Run(async () => (await _outputConsole).WriteLineAsync(message))
-                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
-                        nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(MessageLevel)}"));
+                var outputConsole = await _outputConsole;
+                await outputConsole.WriteLineAsync(message);
+
             }
         }
 
         public void Log(ILogMessage message)
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => LogAsync(message));
+        }
+
+        public async Task LogAsync(ILogMessage message)
         {
             if (message.Level == LogLevel.Information
                 || message.Level == LogLevel.Error
                 || message.Level == LogLevel.Warning
                 || _verbosityLevel > DefaultVerbosityLevel)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory
-                    .Run(async () => (await _outputConsole).WriteLineAsync(message.FormatWithCode()))
-                    .FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(
-                        nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(ILogMessage)}"));
+                var outputConsole = await _outputConsole;
+                await outputConsole.WriteLineAsync(message.FormatWithCode());
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
@@ -146,18 +154,6 @@ namespace NuGet.VisualStudio.Common
             return DefaultVerbosityLevel;
         }
 
-        public void Start()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
-            {
-                var outputConsole = await _outputConsole;
-                await outputConsole.ActivateAsync();
-                await outputConsole.ClearAsync();
-                _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
-                ErrorListTableDataSource.Value.ClearNuGetEntries();
-            });
-        }
-
         public void ReportError(string message)
         {
             var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
@@ -168,6 +164,21 @@ namespace NuGet.VisualStudio.Common
         {
             var errorListEntry = new ErrorListTableEntry(message);
             ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+        }
+
+        public void End()
+        {
+            NuGetUIThreadHelper.JoinableTaskFactory.Run(EndAsync);
+        }
+
+        public async Task EndAsync()
+        {
+            var outputConsole = await _outputConsole;
+            await outputConsole.WriteLineAsync(Resources.Finished);
+            await outputConsole.WriteLineAsync(string.Empty);
+
+            // Give the error list focus
+            ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
         }
     }
 }
