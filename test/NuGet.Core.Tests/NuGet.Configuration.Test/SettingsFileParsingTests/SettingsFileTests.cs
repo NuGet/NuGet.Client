@@ -1045,5 +1045,34 @@ namespace NuGet.Configuration.Test
                 expectedSettingsDict.Should().BeEmpty();
             }
         }
+
+        [Theory]
+        [InlineData(false, false, false)]
+        [InlineData(false, true, true)]
+        [InlineData(true, false, true)]
+        [InlineData(true, true, true)]
+        public void SettingsFile_Constructor_MachineWideConfigsAreReadOnly(bool isMachineWide, bool isReadOnlyInput, bool expected)
+        {
+            // Arrange
+            var nugetConfigPath = "NuGet.Config";
+            var config = @"
+<configuration>
+    <Section>
+        <add key='key0' value='value0' />
+    </Section>
+</configuration>";
+
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+
+                // Set-up and Act
+                SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, config);
+                var settingsFile = new SettingsFile(mockBaseDirectory, nugetConfigPath, isMachineWide: isMachineWide, isReadOnly: isReadOnlyInput);
+
+                // Assert
+                settingsFile.IsReadOnly.Should().Be(expected);
+                settingsFile.IsMachineWide.Should().Be(isMachineWide);
+            }
+        }
     }
 }

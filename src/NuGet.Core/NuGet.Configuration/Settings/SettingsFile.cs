@@ -43,7 +43,7 @@ namespace NuGet.Configuration
         /// Determines if the settings file is read only. 
         /// </summary>
         /// <remarks>User-wide configuration files imported from non-default locations are not considered editable.
-        /// Note that this is different from <see cref="IsMachineWide"/>. Every machine-wide config will return `true`. </remarks>
+        /// Note that this is different from <see cref="IsMachineWide"/>. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config. </remarks>
         internal bool IsReadOnly { get; }
 
         /// <summary>
@@ -83,8 +83,8 @@ namespace NuGet.Configuration
         /// if it doesn't exist it will create one with the default configuration.</remarks>
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
-        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide</param>
-        /// <param name="isReadOnly">specifies if the SettingsFile is from the additional user wide configuration path.</param>
+        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide.</param>
+        /// <param name="isReadOnly">specifies if the SettingsFile is read only. If the config is machine wide, the value passed here is irrelevant. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config.</param>
         public SettingsFile(string directoryPath, string fileName, bool isMachineWide, bool isReadOnly)
         {
             if (string.IsNullOrEmpty(directoryPath))
