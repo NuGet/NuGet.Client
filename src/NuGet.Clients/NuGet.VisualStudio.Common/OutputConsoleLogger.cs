@@ -23,15 +23,15 @@ namespace NuGet.VisualStudio.Common
 
         private const int DefaultVerbosityLevel = 2;
         private int _verbosityLevel;
-        private EnvDTE.DTE _dte;
+
+        private AsyncLazy<EnvDTE.DTE> _dte;
+        private AsyncLazy<IOutputConsole> _outputConsole;
+        private AsyncLazy<ErrorListTableDataSource> _errorListTableDataSource;
 
         // keeps a reference to BuildEvents so that our event handler
         // won't get disconnected because of GC.
         private EnvDTE.BuildEvents _buildEvents;
         private EnvDTE.SolutionEvents _solutionEvents;
-
-        private AsyncLazy<IOutputConsole> _outputConsole;
-        private AsyncLazy<ErrorListTableDataSource> _errorListTableDataSource;
 
         [ImportingConstructor]
         public OutputConsoleLogger(
@@ -43,25 +43,31 @@ namespace NuGet.VisualStudio.Common
                 throw new ArgumentNullException(nameof(consoleProvider));
             }
 
-            _errorListTableDataSource = AsyncLazy.New(async () =>
+            _dte = AsyncLazy.New(async () =>
             {
-                var errorListTableDataSourceValue = errorListTableDataSource.Value;
-
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                _dte = await AsyncServiceProvider.GlobalProvider.GetDTEAsync();
-                _buildEvents = _dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += (_, __) => { errorListTableDataSourceValue.ClearNuGetEntries(); };
-                _solutionEvents = _dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += () => { errorListTableDataSourceValue.ClearNuGetEntries(); };
-
-                return errorListTableDataSourceValue;
+                return await AsyncServiceProvider.GlobalProvider.GetDTEAsync();
             });
 
             _outputConsole = AsyncLazy.New(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 return await consoleProvider.CreatePackageManagerConsoleAsync();
+            });
+
+            _errorListTableDataSource = AsyncLazy.New(async () =>
+            {
+                var errorListTableDataSourceValue = errorListTableDataSource.Value;
+
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var dte = await _dte;
+                _buildEvents = dte.Events.BuildEvents;
+                _buildEvents.OnBuildBegin += (_, __) => { errorListTableDataSourceValue.ClearNuGetEntries(); };
+                _solutionEvents = dte.Events.SolutionEvents;
+                _solutionEvents.AfterClosing += () => { errorListTableDataSourceValue.ClearNuGetEntries(); };
+
+                return errorListTableDataSourceValue;
             });
         }
 
@@ -141,7 +147,8 @@ namespace NuGet.VisualStudio.Common
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            var properties = _dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
+            var dte = await _dte;
+            var properties = dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
             var value = properties.Item(MSBuildVerbosityKey).Value;
             if (value is int)
             {
