@@ -22,6 +22,9 @@ namespace NuGet.VisualStudio.Common
         private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
 
         private const int DefaultVerbosityLevel = 2;
+
+
+        private bool _validState;
         private int _verbosityLevel;
 
         private AsyncLazy<EnvDTE.DTE> _dte;
@@ -88,6 +91,11 @@ namespace NuGet.VisualStudio.Common
 
         public async Task StartAsync()
         {
+            if (_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(StartAsync)}: Invalid state of object.");
+            }
+
             var outputConsole = await _outputConsole;
             await outputConsole.ActivateAsync();
             await outputConsole.ClearAsync();
@@ -95,6 +103,7 @@ namespace NuGet.VisualStudio.Common
 
             var errorListTableDataSource = await _errorListTableDataSource;
             errorListTableDataSource.ClearNuGetEntries();
+            _validState = true;
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -104,6 +113,11 @@ namespace NuGet.VisualStudio.Common
 
         public async Task LogAsync(MessageLevel level, string message, params object[] args)
         {
+            if (!_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(LogAsync)}({nameof(MessageLevel)}): Invalid state of object.");
+            }
+
             if (level == MessageLevel.Info
                 || level == MessageLevel.Error
                 || level == MessageLevel.Warning
@@ -127,6 +141,11 @@ namespace NuGet.VisualStudio.Common
 
         public async Task LogAsync(ILogMessage message)
         {
+            if (!_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(LogAsync)}({nameof(ILogMessage)}): Invalid state of object.");
+            }
+
             if (message.Level == LogLevel.Information
              || message.Level == LogLevel.Error
              || message.Level == LogLevel.Warning
@@ -165,6 +184,11 @@ namespace NuGet.VisualStudio.Common
 
         public async Task ReportErrorAsync(string message)
         {
+            if (!_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(ReportErrorAsync)}({nameof(String)}): Invalid state of object.");
+            }
+
             var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
             var errorListTableDataSource = await _errorListTableDataSource;
             errorListTableDataSource.AddNuGetEntries(errorListEntry);
@@ -177,6 +201,11 @@ namespace NuGet.VisualStudio.Common
 
         public async Task ReportErrorAsync(ILogMessage message)
         {
+            if (!_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(ReportErrorAsync)}({nameof(ILogMessage)}): Invalid state of object.");
+            }
+
             var errorListEntry = new ErrorListTableEntry(message);
             var errorListTableDataSource = await _errorListTableDataSource;
             errorListTableDataSource.AddNuGetEntries(errorListEntry);
@@ -189,6 +218,12 @@ namespace NuGet.VisualStudio.Common
 
         public async Task EndAsync()
         {
+            if (!_validState)
+            {
+                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(EndAsync)}: Invalid state of object.");
+            }
+
+            _validState = false;
             var outputConsole = await _outputConsole;
             await outputConsole.WriteLineAsync(Resources.Finished);
             await outputConsole.WriteLineAsync(string.Empty);
