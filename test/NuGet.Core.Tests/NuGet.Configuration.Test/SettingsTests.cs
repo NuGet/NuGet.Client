@@ -1111,7 +1111,7 @@ namespace NuGet.Configuration.Test
             using (var mockBaseDirectory = TestDirectory.Create())
             {
                 SettingsTestUtils.CreateConfigurationFile("a1.config", Path.Combine(mockBaseDirectory, "nuget", "Config"), @"<configuration></configuration>");
-                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true);
+                var settingsFile = new SettingsFile(Path.Combine(mockBaseDirectory, "nuget", "Config"), "a1.config", isMachineWide: true, isReadOnly: false);
                 var settings = new Settings(new SettingsFile[] { settingsFile });
 
                 // Act
@@ -2517,6 +2517,210 @@ namespace NuGet.Configuration.Test
                 Assert.Throws<NotSupportedException>(() => settings.AddOrUpdate("name", new AddItem("key", "value")));
                 Assert.Throws<NotSupportedException>(() => settings.Remove("name", new AddItem("key", "value")));
                 Assert.Throws<NotSupportedException>(() => settings.SaveToDisk());
+            }
+        }
+
+        /// <summary>
+        /// We have 3 configs, one in the working directory, 2 in the user directory.
+        /// One of those is the default one and 1 is the additional config dropped in the directory.
+        /// The default config takes priority over the additional ones, so it's expected that values from the additional config are overwritten by the default ones.
+        /// </summary>
+        [Fact]
+        public void LoadSettings_WithAdditionalUserSpecificConfigs_ParsesInCorrectOrder()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var fileContentLocal = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+    <add key=""key1"" value=""local"" />
+    <add key=""key2"" value=""local"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.config", mockBaseDirectory, fileContentLocal);
+
+                var fileContentUser = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key2"" value=""user"" />
+        <add key=""key3"" value=""user"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), fileContentUser);
+
+                var additionalUserConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key3"" value=""additional"" />
+        <add key=""key4"" value=""additional"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath", "config"), additionalUserConfig);
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting(),
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Assert
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+
+                var item1 = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
+                item1.Should().NotBeNull();
+                item1.Value.Should().Be("local");
+
+                var item2 = section.GetFirstItemWithAttribute<AddItem>("key", "key2");
+                item2.Should().NotBeNull();
+                item2.Value.Should().Be("local");
+
+                var item3 = section.GetFirstItemWithAttribute<AddItem>("key", "key3");
+                item3.Should().NotBeNull();
+                item3.Value.Should().Be("user");
+
+                var item4 = section.GetFirstItemWithAttribute<AddItem>("key", "key4");
+                item4.Should().NotBeNull();
+                item4.Value.Should().Be("additional");
+            }
+        }
+
+        /// <summary>
+        /// We have 3 configs, one in the working directory, 2 in the user directory.
+        /// One of those is the default one and 1 is the additional config dropped in the directory.
+        /// The default config takes priority over the additional ones, so it's expected that values from the additional config are overwritten by the default ones.
+        /// </summary>
+        [Fact]
+        public void LoadSettings_WithAdditonalConfig_And_WithoutDefaultUserConfig_CreatesDefaultNuGetConfig()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var fileContentLocal = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+    <add key=""key1"" value=""local"" />
+    <add key=""key2"" value=""local"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.config", mockBaseDirectory, fileContentLocal);
+
+                var additionalUserConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key3"" value=""additional"" />
+        <add key=""key4"" value=""additional"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath", "config"), additionalUserConfig);
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting(),
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Assert
+                // The default config should still be created.
+                File.Exists(Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config")).Should().BeTrue();
+
+                // Ensure the configs are merged correctly.
+                var section = settings.GetSection("SectionName");
+                section.Should().NotBeNull();
+
+                var item1 = section.GetFirstItemWithAttribute<AddItem>("key", "key1");
+                item1.Should().NotBeNull();
+                item1.Value.Should().Be("local");
+
+                var item2 = section.GetFirstItemWithAttribute<AddItem>("key", "key2");
+                item2.Should().NotBeNull();
+                item2.Value.Should().Be("local");
+
+                var item3 = section.GetFirstItemWithAttribute<AddItem>("key", "key3");
+                item3.Should().NotBeNull();
+                item3.Value.Should().Be("additional");
+
+                var item4 = section.GetFirstItemWithAttribute<AddItem>("key", "key4");
+                item4.Should().NotBeNull();
+                item4.Value.Should().Be("additional");
+            }
+        }
+
+        /// <summary>
+        /// We have 3 configs, one in the working directory, 2 in the user directory.
+        /// We always write to the furthest compatible write-able config. While the additional config is further, it's also not write-able.
+        /// </summary>
+        [Fact]
+        public void AddOrUpdate_WithAdditionalUserSpecificConfigs_AddsToFurthestUserWideConfig()
+        {
+            // Arrange
+            using (var mockBaseDirectory = TestDirectory.Create())
+            {
+                var fileContentLocal = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key1"" value=""local"" />
+        <add key=""key2"" value=""local"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.config", mockBaseDirectory, fileContentLocal);
+
+                var fileContentUser = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key2"" value=""user"" />
+        <add key=""key3"" value=""user"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), fileContentUser);
+
+                var additionalUserConfig = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key3"" value=""additional"" />
+        <add key=""key4"" value=""additional"" />
+    </SectionName>
+</configuration>";
+
+                SettingsTestUtils.CreateConfigurationFile("NuGet.Contoso.Config", Path.Combine(mockBaseDirectory, "TestingGlobalPath"), additionalUserConfig);
+
+                // Act
+                var settings = Settings.LoadSettings(
+                    root: mockBaseDirectory,
+                    configFileName: null,
+                    machineWideSettings: new XPlatMachineWideSetting(),
+                    loadUserWideSettings: true,
+                    useTestingGlobalPath: true);
+
+                // Act
+                settings.AddOrUpdate("SectionName", new AddItem("newKey", "newValue"));
+                settings.SaveToDisk();
+
+                // Assert
+                var expectedPath = Path.Combine(mockBaseDirectory, "TestingGlobalPath", "NuGet.Config");
+
+                var result = SettingsTestUtils.RemoveWhitespace(@"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+    <SectionName>
+        <add key=""key2"" value=""user"" />
+        <add key=""key3"" value=""user"" />
+        <add key=""newKey"" value=""newValue"" />
+    </SectionName>
+</configuration>");
+
+                SettingsTestUtils.RemoveWhitespace(File.ReadAllText(Path.Combine(mockBaseDirectory, expectedPath))).Should().Be(result);
             }
         }
 

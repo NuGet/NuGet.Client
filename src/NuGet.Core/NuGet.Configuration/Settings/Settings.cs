@@ -105,6 +105,11 @@ namespace NuGet.Configuration
                 throw new InvalidOperationException(Resources.CannotUpdateMachineWide);
             }
 
+            if (settingsFile.IsReadOnly || (currentSettings?.IsReadOnly ?? false))
+            {
+                throw new InvalidOperationException(Resources.CannotUpdateReadOnlyConfig);
+            }
+
             if (currentSettings == null)
             {
                 SettingsFiles.Add(settingsFile);
@@ -169,7 +174,7 @@ namespace NuGet.Configuration
             : this(new List<SettingsFile> { new SettingsFile(root, fileName) }) { }
 
         public Settings(string root, string fileName, bool isMachineWide)
-            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide) })
+            : this(new List<SettingsFile>() { new SettingsFile(root, fileName, isMachineWide, isReadOnly: false) })
         {
         }
 
@@ -204,7 +209,7 @@ namespace NuGet.Configuration
         {
             // Search for the furthest from the user that can be written
             // to that is not clearing the ones before it on the hierarchy
-            var writteableSettingsFiles = Priority.Where(f => !f.IsMachineWide);
+            var writteableSettingsFiles = Priority.Where(f => !f.IsReadOnly);
 
             var clearedSections = writteableSettingsFiles.Select(f => {
                 if(f.TryGetSection(sectionName, out var section))
@@ -366,7 +371,7 @@ namespace NuGet.Configuration
 
             foreach (var configFilePath in configFilePaths)
             {
-                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath));
+                settings.Add(settingsLoadingContext.GetOrCreateSettingsFile(configFilePath, isReadOnly: true));
             }
 
             return new ImmutableSettings(LoadSettingsGivenSettingsFiles(settings));
@@ -485,18 +490,14 @@ namespace NuGet.Configuration
         {
             if (loadUserWideSettings)
             {
-                var userSpecific = LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext);
-                if (userSpecific != null)
-                {
-                    validSettingFiles.Add(userSpecific);
-                }
+                validSettingFiles.AddRange(LoadUserSpecificSettings(root, configFileName, useTestingGlobalPath, settingsLoadingContext));
             }
 
             if (machineWideSettings != null && machineWideSettings.Settings is Settings mwSettings && string.IsNullOrEmpty(configFileName))
             {
                 // Priority gives you the settings file in the order you want to start reading them
                 var files = mwSettings.Priority.Select(
-                    s => ReadSettings(s.DirectoryPath, s.FileName, s.IsMachineWide, settingsLoadingContext));
+                    s => ReadSettings(s.DirectoryPath, s.FileName, s.IsMachineWide, settingsLoadingContext: settingsLoadingContext));
 
                 validSettingFiles.AddRange(files);
             }
@@ -517,7 +518,15 @@ namespace NuGet.Configuration
             return new Settings(settingsFiles: validSettingFiles);
         }
 
-        private static SettingsFile LoadUserSpecificSettings(
+        /// <summary>
+        /// Load the user specific settings
+        /// </summary>
+        /// <param name="root"></param>
+        /// <param name="configFileName"></param>
+        /// <param name="useTestingGlobalPath"></param>
+        /// <param name="settingsLoadingContext"></param>
+        /// <returns></returns>
+        internal static IEnumerable<SettingsFile> LoadUserSpecificSettings(
             string root,
             string configFileName,
             bool useTestingGlobalPath,
@@ -527,30 +536,18 @@ namespace NuGet.Configuration
             // However, it is legal for it be empty in this method
             var rootDirectory = root ?? string.Empty;
 
-            // for the default location, allow case where file does not exist, in which case it'll end
-            // up being created if needed
-            SettingsFile userSpecificSettings = null;
             if (configFileName == null)
             {
-                var defaultSettingsFilePath = string.Empty;
-                if (useTestingGlobalPath)
+                string userSettingsDir = GetUserSettingsDirectory(rootDirectory, useTestingGlobalPath);
+                if(userSettingsDir == null)
                 {
-                    defaultSettingsFilePath = Path.Combine(rootDirectory, "TestingGlobalPath", DefaultSettingsFileName);
-                }
-                else
-                {
-                    var userSettingsDir = NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
-
-                    // If there is no user settings directory, return no settings
-                    if (userSettingsDir == null)
-                    {
-                        return null;
-                    }
-                    defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
+                    yield break;
                 }
 
-                userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
+                // If the default user config NuGet.Config does not exist, we need to create it.
+                var defaultSettingsFilePath = Path.Combine(userSettingsDir, DefaultSettingsFileName);
 
+                SettingsFile userSpecificSettings = ReadSettings(rootDirectory, defaultSettingsFilePath, settingsLoadingContext: settingsLoadingContext);
                 if (File.Exists(defaultSettingsFilePath) && userSpecificSettings.IsEmpty())
                 {
                     var trackFilePath = Path.Combine(Path.GetDirectoryName(defaultSettingsFilePath), NuGetConstants.AddV3TrackFile);
@@ -564,6 +561,24 @@ namespace NuGet.Configuration
                         userSpecificSettings.SaveToDisk();
                     }
                 }
+
+                yield return userSpecificSettings;
+
+                // For backwards compatibility, we first return default user specific the non-default configs and then the additional files from the nested `config` directory
+                var additionalConfigurationPath = GetAdditionalUserWideConfigurationDirectory(userSettingsDir);
+                foreach (var file in FileSystemUtility
+                    .GetFilesRelativeToRoot(root: additionalConfigurationPath, filters: SupportedMachineWideConfigExtension, searchOption: SearchOption.TopDirectoryOnly)
+                    .OrderBy(e => e, PathUtility.GetStringComparerBasedOnOS()))
+                {
+                    if (!PathUtility.GetStringComparerBasedOnOS().Equals(DefaultSettingsFileName, file))
+                    {
+                        var settings = ReadSettings(additionalConfigurationPath, file, isMachineWideSettings: false, isAdditionalUserWideConfig: true);
+                        if (settings != null)
+                        {
+                            yield return settings;
+                        }
+                    }
+                }
             }
             else
             {
@@ -575,10 +590,20 @@ namespace NuGet.Configuration
                     throw new InvalidOperationException(message);
                 }
 
-                userSpecificSettings = ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
+                yield return ReadSettings(rootDirectory, configFileName, settingsLoadingContext: settingsLoadingContext);
             }
+        }
 
-            return userSpecificSettings;
+        private static string GetUserSettingsDirectory(string rootDirectory, bool useTestingGlobalPath)
+        {
+            return useTestingGlobalPath
+                ? Path.Combine(rootDirectory, "TestingGlobalPath")
+                : NuGetEnvironment.GetFolderPath(NuGetFolderPath.UserSettingsDirectory);
+        }
+
+        private static string GetAdditionalUserWideConfigurationDirectory(string userSettingsDirectory)
+        {
+            return Path.Combine(userSettingsDirectory, ConfigurationConstants.Config);
         }
 
         /// <summary>
@@ -754,19 +779,19 @@ namespace NuGet.Configuration
             return Path.Combine(configDirectory, value);
         }
 
-        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false, SettingsLoadingContext settingsLoadingContext = null)
+        private static SettingsFile ReadSettings(string settingsRoot, string settingsPath, bool isMachineWideSettings = false, bool isAdditionalUserWideConfig = false, SettingsLoadingContext settingsLoadingContext = null)
         {
             try
             {
                 if (settingsLoadingContext != null)
                 {
-                    return settingsLoadingContext.GetOrCreateSettingsFile(settingsPath, isMachineWideSettings);
+                    return settingsLoadingContext.GetOrCreateSettingsFile(settingsPath, isMachineWideSettings, isAdditionalUserWideConfig);
                 }
 
                 var tuple = GetFileNameAndItsRoot(settingsRoot, settingsPath);
                 var filename = tuple.Item1;
                 var root = tuple.Item2;
-                return new SettingsFile(root, filename, isMachineWideSettings);
+                return new SettingsFile(root, filename, isMachineWideSettings, isAdditionalUserWideConfig);
             }
             catch (XmlException)
             {

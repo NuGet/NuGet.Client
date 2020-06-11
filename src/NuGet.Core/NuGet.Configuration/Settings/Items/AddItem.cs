@@ -77,7 +77,7 @@ namespace NuGet.Configuration
 
         public void AddOrUpdateAdditionalAttribute(string attributeName, string value)
         {
-            if (Origin != null && Origin.IsMachineWide)
+            if (Origin != null && Origin.IsReadOnly)
             {
                 return;
             }

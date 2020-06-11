@@ -36,8 +36,15 @@ namespace NuGet.Configuration
         /// <summary>
         /// Defines if the settings file is considered a machine wide settings file
         /// </summary>
-        /// <remarks>Machine wide settings files cannot be eddited.</remarks>
+        /// <remarks>Machine wide settings files cannot be edited.</remarks>
         internal bool IsMachineWide { get; }
+
+        /// <summary>
+        /// Determines if the settings file is considered read-only from NuGet perspective.
+        /// </summary>
+        /// <remarks>User-wide configuration files imported from non-default locations are not considered editable.
+        /// Note that this is different from <see cref="IsMachineWide"/>. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config. </remarks>
+        internal bool IsReadOnly { get; }
 
         /// <summary>
         /// XML element for settings file
@@ -55,7 +62,7 @@ namespace NuGet.Configuration
         /// </summary>
         /// <param name="directoryPath">path to the directory where the file is</param>
         public SettingsFile(string directoryPath)
-            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false)
+            : this(directoryPath, Settings.DefaultSettingsFileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -65,7 +72,7 @@ namespace NuGet.Configuration
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
         public SettingsFile(string directoryPath, string fileName)
-            : this(directoryPath, fileName, isMachineWide: false)
+            : this(directoryPath, fileName, isMachineWide: false, isReadOnly: false)
         {
         }
 
@@ -76,8 +83,9 @@ namespace NuGet.Configuration
         /// if it doesn't exist it will create one with the default configuration.</remarks>
         /// <param name="directoryPath">path to the directory where the file is</param>
         /// <param name="fileName">name of config file</param>
-        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide</param>
-        public SettingsFile(string directoryPath, string fileName, bool isMachineWide)
+        /// <param name="isMachineWide">specifies if the SettingsFile is machine wide.</param>
+        /// <param name="isReadOnly">specifies if the SettingsFile is read only. If the config is machine wide, the value passed here is irrelevant. <see cref="IsReadOnly"/> will return <see langword="true"/> for every machine-wide config.</param>
+        public SettingsFile(string directoryPath, string fileName, bool isMachineWide, bool isReadOnly)
         {
             if (string.IsNullOrEmpty(directoryPath))
             {
@@ -98,6 +106,7 @@ namespace NuGet.Configuration
             FileName = fileName;
             ConfigFilePath = Path.GetFullPath(Path.Combine(DirectoryPath, FileName));
             IsMachineWide = isMachineWide;
+            IsReadOnly = IsMachineWide || isReadOnly;
 
             XDocument config = null;
             ExecuteSynchronized(() =>
