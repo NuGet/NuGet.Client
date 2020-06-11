@@ -7,6 +7,8 @@
     <NETCoreWPFProject>true</NETCoreWPFProject>
     <TestProject>true</TestProject>
     <Description>Unit and integration tests for NuGet.PackageManagement.UI.</Description>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
   </PropertyGroup>
 
   <ItemGroup>
@@ -35,6 +37,7 @@
     <Compile Include="Converters\VersionToStringConverterTests.cs" />
     <Compile Include="ConverterTests.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="MockedVS.cs" />
     <Compile Include="Models\DetailControlModelTests.cs" />
     <Compile Include="Models\PackageItemListViewModelTests.cs" />
     <Compile Include="Models\PreviewWindowModelTests.cs" />
@@ -62,6 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" Version="15.9.5" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
