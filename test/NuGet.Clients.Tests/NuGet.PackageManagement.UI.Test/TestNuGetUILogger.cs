@@ -29,18 +29,19 @@ namespace NuGet.PackageManagement.UI.Test
 
         public Task StartAsync()
         {
-            throw new NotImplementedException();
+            Start();
+            return Task.CompletedTask;
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            _ = LogAsync(level, message, args);
+            _out.WriteLine($"[{level}] {string.Format(message, args)}");
         }
 
         public Task LogAsync(MessageLevel level, string message, params object[] args)
         {
-            _out.WriteLine($"[{level}] {string.Format(message, args)}");
-            return new Task(() => { });
+            Log(level, message, args);
+            return Task.CompletedTask;
         }
 
         public void Log(ILogMessage message)
@@ -51,7 +52,7 @@ namespace NuGet.PackageManagement.UI.Test
         public Task LogAsync(ILogMessage message)
         {
             Log(FromLogLevel(message.Level), message.Message);
-            return new Task(() => { });
+            return Task.CompletedTask;
         }
 
         public void ReportError(string message)
@@ -59,9 +60,21 @@ namespace NuGet.PackageManagement.UI.Test
             Log(MessageLevel.Error, message);
         }
 
+        public Task ReportErrorAsync(string message)
+        {
+            ReportError(message);
+            return Task.CompletedTask;
+        }
+
         public void ReportError(ILogMessage message)
         {
             Log(MessageLevel.Error, message.Message);
+        }
+
+        public Task ReportErrorAsync(ILogMessage message)
+        {
+            ReportError(message);
+            return Task.CompletedTask;
         }
 
         public void End()
@@ -71,7 +84,8 @@ namespace NuGet.PackageManagement.UI.Test
 
         public Task EndAsync()
         {
-            throw new NotImplementedException();
+            End();
+            return Task.CompletedTask;
         }
 
         private MessageLevel FromLogLevel(LogLevel logLevel)

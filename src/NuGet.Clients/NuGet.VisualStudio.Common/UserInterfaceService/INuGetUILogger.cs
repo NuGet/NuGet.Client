@@ -18,8 +18,10 @@ namespace NuGet.PackageManagement.VisualStudio
         Task LogAsync(ILogMessage message);
 
         void ReportError(string message);
+        Task ReportErrorAsync(string message);
 
         void ReportError(ILogMessage message);
+        Task ReportErrorAsync(ILogMessage message);
 
         void End();
         Task EndAsync();
