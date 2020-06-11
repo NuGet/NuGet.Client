@@ -42,7 +42,7 @@ namespace NuGet.PackageManagement.UI
 
         /// <summary>
         /// This exists only to facilitate unit testing.
-        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, CancellationTokenSource, IPackageItemLoader, CancellationToken) " />, just before it is finished
+        /// It is triggered at <see cref="RepopulatePackageList(PackageItemListViewModel, IPackageItemLoader, CancellationToken) " />, just before it is finished
         /// </summary>
         internal event EventHandler LoadItemsCompleted;
 
@@ -217,9 +217,9 @@ namespace NuGet.PackageManagement.UI
         private async Task RepopulatePackageList(PackageItemListViewModel selectedPackageItem, IPackageItemLoader currentLoader, CancellationTokenSource loadCts)
         {
             await TaskScheduler.Default;
-               
+
             var addedLoadingIndicator = false;
-                
+
             try
             {
                 // add Loading... indicator if not present
@@ -230,7 +230,7 @@ namespace NuGet.PackageManagement.UI
                 }
 
                 await LoadItemsCoreAsync(currentLoader, loadCts.Token);
-                    
+
                 await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                 if (selectedPackageItem != null)
@@ -278,8 +278,7 @@ namespace NuGet.PackageManagement.UI
             finally
             {
                 if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                    && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred
-                    && _loadingStatusIndicator.Status != LoadingStatus.Cancelled)
+                    && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
                 {
                     // Ideally, After a search, it should report its status, and
                     // do not keep the LoadingStatus.Loading forever.
