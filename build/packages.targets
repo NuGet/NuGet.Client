@@ -14,7 +14,7 @@
     <!-- Test and package versions -->
     <PropertyGroup>
         <FluentAssertionsVersion>4.19.4</FluentAssertionsVersion>
-        <MoqVersion>4.12.0</MoqVersion>
+        <MoqVersion>4.14.1</MoqVersion>
         <TestSDKVersion>15.5.0</TestSDKVersion>
         <XunitVersion>2.4.1</XunitVersion>
     </PropertyGroup>
@@ -97,6 +97,7 @@
         <PackageReference Update="Microsoft.PowerShell.3.ReferenceAssemblies" Version="1.0.0" />
         <PackageReference Update="Microsoft.Test.Apex.VisualStudio" Version="16.3.29131.53-pre" />
         <PackageReference Update="Microsoft.VisualStudio.ProjectSystem" Version="15.0.751" PrivateAssets="All" />
+        <PackageReference Update="Microsoft.VisualStudio.Sdk.TestFramework" Version="16.5.4-beta" />
         <PackageReference Update="Microsoft.VisualStudio.Shell.Interop.15.0.DesignTime" Version="15.0.26932" />
         <PackageReference Update="Moq" Version="$(MoqVersion)" />
         <PackageReference Update="NuGet.Core" Version="2.14.0-rtm-832" />
