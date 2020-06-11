@@ -154,6 +154,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Apply standard properties in a property group.
+        /// Additionally add a SourceRoot item to point to the package folders.
         /// </summary>
         public static void AddNuGetProperties(
             XDocument doc,
@@ -172,7 +173,10 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
                             GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
-                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
+                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
+                new XElement(Namespace + "ItemGroup",
+                            new XAttribute("Condition", $" {ExcludeAllCondition} "),
+                            GenerateItem("SourceRoot", "$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))")));
         }
 
         /// <summary>
@@ -197,6 +201,11 @@ namespace NuGet.Commands
             return new XElement(Namespace + propertyName,
                             new XAttribute("Condition", $" '$({propertyName})' == '' "),
                             content);
+        }
+
+        internal static XElement GenerateItem(string itemName, string path)
+        {
+            return new XElement(Namespace + itemName, new XAttribute("Include", path));
         }
 
         public static XElement GenerateImport(string path)
