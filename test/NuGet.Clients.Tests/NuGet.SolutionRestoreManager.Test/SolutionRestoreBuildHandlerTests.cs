@@ -85,7 +85,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task QueryDelayBuildAction_ShouldNotRestoreOnBuild_ProjectUpToDateMark()
         {
             var settings = Mock.Of<ISettings>();
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var restoreWorker = Mock.Of<I>();
             var buildManager = Mock.Of<IVsSolutionBuildManager3>();
             var restoreChecker = Mock.Of<ISolutionRestoreChecker>();
 

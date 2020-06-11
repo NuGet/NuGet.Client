@@ -18,7 +18,6 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Common;
-using NuGetConsole;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 using Task = System.Threading.Tasks.Task;
 
@@ -605,42 +604,27 @@ namespace NuGet.SolutionRestoreManager
                 return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
                 {
                     var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
-
-                    // Setup MEF container.
-                    AggregateCatalog catalog = new AggregateCatalog(
-                        new AssemblyCatalog(System.Reflection.Assembly.GetExecutingAssembly()),
-                        new AssemblyCatalog(typeof(OutputConsoleProvider).Assembly));
-                    CompositionContainer container = new CompositionContainer(catalog);
-                    container.ComposeParts(this);
-                    Lazy<RestoreOperationLogger> logger = null;
-
-                    try
+                    var outputConsoleProvider = componentModel.GetService<IOutputConsoleProvider>();
+                    using (var logger = new RestoreOperationLogger(outputConsoleProvider))
                     {
-                        logger = container.GetExport<RestoreOperationLogger>();
+                        try
+                        {
+                            // Start logging
+                            await logger.StartAsync(
+                                request.RestoreSource,
+                                _errorListTableDataSource,
+                                JoinableTaskFactory,
+                                jobCts);
 
-                        // Start logging
-                        await logger.Value.StartAsync(
-                            request.RestoreSource,
-                            _errorListTableDataSource,
-                            JoinableTaskFactory,
-                            jobCts);
-
-                        // Run restore
-                        var job = componentModel.GetService<ISolutionRestoreJob>();
-                        return await job.ExecuteAsync(request, _restoreJobContext, logger.Value, jobCts.Token);
-                    }
-                    finally
-                    {
-                        if(logger != null)
+                            // Run restore
+                            var job = componentModel.GetService<ISolutionRestoreJob>();
+                            return await job.ExecuteAsync(request, _restoreJobContext, logger, jobCts.Token);
+                        }
+                        finally
                         {
                             // Complete all logging
-                            await logger.Value.StopAsync();
-
-                            // Explicitly release instance of logger using MEF container.
-                            container.ReleaseExport<RestoreOperationLogger>(logger);
+                            await logger.StopAsync();
                         }
-
-                        container.Dispose();
                     }
                 }, jobCts.Token);
             }

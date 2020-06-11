@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,8 +23,6 @@ namespace NuGet.SolutionRestoreManager
     /// <summary>
     /// Aggregates logging and UI services consumed by the <see cref="SolutionRestoreJob"/>.
     /// </summary>
-    [Export]
-    [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class RestoreOperationLogger : LoggerBase, ILogger, IDisposable
     {
         private readonly IAsyncServiceProvider _asyncServiceProvider;
@@ -51,7 +48,6 @@ namespace NuGet.SolutionRestoreManager
         // of VS. From 0 (quiet) to 4 (Diagnostic).
         public int OutputVerbosity { get; private set; }
 
-        [ImportingConstructor]
         public RestoreOperationLogger(
             IOutputConsoleProvider outputConsoleProvider)
             : this(AsyncServiceProvider.GlobalProvider, outputConsoleProvider)

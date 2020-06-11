@@ -58,10 +58,6 @@
     <Compile Include="VsSolutionRestoreStatusProvider.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\NuGet.Console\NuGet.Console.csproj">
-      <Project>{50E33DA2-AF14-486D-81B8-BD8409744A38}</Project>
-      <Name>NuGet.Console</Name>
-    </ProjectReference>
     <ProjectReference Include="..\NuGet.PackageManagement.VisualStudio\NuGet.PackageManagement.VisualStudio.csproj">
       <Project>{306cddfa-ff0b-4299-930c-9ec6c9308160}</Project>
       <Name>NuGet.PackageManagement.VisualStudio</Name>
