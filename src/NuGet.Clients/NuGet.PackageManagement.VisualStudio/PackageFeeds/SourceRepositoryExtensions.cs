@@ -115,7 +115,6 @@ namespace NuGet.PackageManagement.VisualStudio
                     .FirstOrDefault(p => p.Identity.Version == identity.Version)
                     ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
-                cancellationToken.ThrowIfCancellationRequested();
                 return packageMetadata.WithVersions(ToVersionInfo(packages, includePrerelease));
             }
         }
@@ -169,12 +168,10 @@ namespace NuGet.PackageManagement.VisualStudio
                 // filter packages based on allowed versions
                 var updatedPackages = packages.Where(p => allowedVersions.Satisfies(p.Identity.Version));
 
-                cancellationToken.ThrowIfCancellationRequested();
                 var highest = updatedPackages
                     .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                     .FirstOrDefault();
 
-                cancellationToken.ThrowIfCancellationRequested();
                 return highest?.WithVersions(ToVersionInfo(packages, includePrerelease));
             }
         }

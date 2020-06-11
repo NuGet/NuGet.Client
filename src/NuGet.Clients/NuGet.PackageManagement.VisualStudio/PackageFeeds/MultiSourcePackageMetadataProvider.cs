@@ -67,12 +67,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            cancellationToken.ThrowIfCancellationRequested();
             var master = completed.FirstOrDefault(m => !string.IsNullOrEmpty(m.Summary))
                 ?? completed.FirstOrDefault()
                 ?? PackageSearchMetadataBuilder.FromIdentity(identity).Build();
 
-            cancellationToken.ThrowIfCancellationRequested();
             return master.WithVersions(
                 asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
@@ -91,14 +89,12 @@ namespace NuGet.PackageManagement.VisualStudio
             var matchedPackageReferences = packageReferences
                 .Where(r => StringComparer.OrdinalIgnoreCase.Equals(r.PackageIdentity.Id, identity.Id));
 
-            cancellationToken.ThrowIfCancellationRequested();
             // Allowed version range for current package across all selected projects
             // Picks the first non-default range
             var allowedVersions = matchedPackageReferences
                 .Select(r => r.AllowedVersions)
                 .FirstOrDefault(v => v != null) ?? VersionRange.All;
 
-            cancellationToken.ThrowIfCancellationRequested();
             var tasks = _sourceRepositories
                 .Select(r => GetMetadataTaskSafeAsync(() => r.GetLatestPackageMetadataAsync(identity.Id, includePrerelease, cancellationToken, allowedVersions)))
                 .ToArray();
@@ -106,12 +102,10 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            cancellationToken.ThrowIfCancellationRequested();
             var highest = completed
                 .OrderByDescending(e => e.Identity.Version, VersionComparer.VersionRelease)
                 .FirstOrDefault();
 
-            cancellationToken.ThrowIfCancellationRequested();
             return highest?.WithVersions(
                 asyncValueFactory: () => MergeVersionsAsync(identity, completed));
         }
@@ -130,16 +124,13 @@ namespace NuGet.PackageManagement.VisualStudio
             var completed = (await Task.WhenAll(tasks))
                 .Where(m => m != null);
 
-            cancellationToken.ThrowIfCancellationRequested();
             var packages = completed.SelectMany(p => p);
 
-            cancellationToken.ThrowIfCancellationRequested();
             var uniquePackages = packages
                 .GroupBy(
                     m => m.Identity.Version,
                     (v, ms) => ms.First());
 
-            cancellationToken.ThrowIfCancellationRequested();
             return uniquePackages;
         }
 
