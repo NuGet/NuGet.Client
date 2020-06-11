@@ -729,7 +729,10 @@ namespace NuGet.PackageManagement.UI
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
 
                 await SearchPackagesAndRefreshUpdateCountAsync(
                     searchText: _windowSearchHost.SearchQuery.SearchString,
