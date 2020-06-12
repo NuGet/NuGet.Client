@@ -286,9 +286,6 @@ namespace NuGet.Commands
                     summaryRequest.InputPath,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
-            // TODO NK - This is dumb. We read the assets file for no good reason here.
-            // Even if we actually don't need these errors in Visual Studio. We should use the messages from the cache file.
-
             // Remote the summary messages from the assets file. This will be removed later.
             var messages = restoreResult.Result.LockFile?.LogMessages
                 .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();

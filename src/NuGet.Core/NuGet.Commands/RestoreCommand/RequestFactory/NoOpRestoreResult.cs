@@ -23,7 +23,7 @@ namespace NuGet.Commands
                 cacheFile: cacheFile, cacheFilePath: cacheFilePath, packagesLockFilePath:null, packagesLockFile:null, dependencyGraphSpecFilePath: null, dependencyGraphSpec: null, projectStyle: projectStyle, elapsedTime: elapsedTime)
         {
             _lockFileLazy = lockFileLazy ?? throw new ArgumentNullException(nameof(lockFileLazy));
-            LogMessages = cacheFile?.LogMessages;
+            LogMessages = cacheFile?.LogMessages ?? new List<IAssetsLogMessage>();
         }
 
         public override LockFile LockFile => _lockFileLazy.Value;
