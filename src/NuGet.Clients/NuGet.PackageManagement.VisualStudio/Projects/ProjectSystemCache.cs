@@ -346,6 +346,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache[projectNames.CustomUniqueName] = projectNames;
             _projectNamesCache[projectNames.UniqueName] = projectNames;
             _projectNamesCache[projectNames.FullName] = projectNames;
+            _projectNamesCache[projectNames.ProjectId] = projectNames;
         }
 
         public bool TryGetProjectNameByShortName(string name, out ProjectNames projectNames)
@@ -434,6 +435,7 @@ namespace NuGet.PackageManagement.VisualStudio
             _projectNamesCache.Remove(projectNames.CustomUniqueName);
             _projectNamesCache.Remove(projectNames.UniqueName);
             _projectNamesCache.Remove(projectNames.FullName);
+            _projectNamesCache.Remove(projectNames.ProjectId);
             _primaryCache.Remove(projectNames.FullName);
         }
 

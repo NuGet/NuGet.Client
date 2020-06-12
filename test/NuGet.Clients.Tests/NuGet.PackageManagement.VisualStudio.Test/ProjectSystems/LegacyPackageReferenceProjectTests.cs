@@ -817,7 +817,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: "projectName",
                         uniqueName: "projectName",
                         shortName: "projectName",
-                        customUniqueName: "projectName");
+                        customUniqueName: "projectName",
+                        projectId: Guid.NewGuid().ToString());
 
             var vsProjectAdapter = new TestVSProjectAdapter(
                         "projectPath",

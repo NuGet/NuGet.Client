@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.VisualStudio
 {
@@ -14,16 +14,30 @@ namespace NuGet.VisualStudio
     /// </summary>
     public class ProjectNames : IEquatable<ProjectNames>
     {
-        public string FullName { get; private set; }
-        public string UniqueName { get; private set; }
-        public string ShortName { get; private set; }
-        public string CustomUniqueName { get; private set; }
+        /// <summary>The full path and filename of the project.</summary>
+        public string FullName { get; }
+
+        /// <summary>The relative path and filename from the solution to the project.</summary>
+        /// <remarks>If the solution is in <c>c:\sln\solution.sln</c> and the project is in <c>c:\sln\project\project.csproj</c>, this value will be <c>project\project.csproj</c>.</remarks>
+        public string UniqueName { get; }
+
+        /// <summary>The project's name</summary>
+        /// <remarks>Generally this is the project's filename with the extension removed.</remarks>
+        public string ShortName { get; }
+
+        /// <summary>The "human readable" unique name.</summary>
+        /// <remarks>Generally, it's the unique name with the project's extension removed.</remarks>
+        public string CustomUniqueName { get; }
+
+        /// <summary>The project GUID</summary>
+        public string ProjectId { get; }
 
         public ProjectNames(
             string fullName,
             string uniqueName,
             string shortName,
-            string customUniqueName)
+            string customUniqueName,
+            string projectId)
         {
             if (string.IsNullOrEmpty(fullName))
             {
@@ -45,10 +59,16 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(customUniqueName));
             }
 
+            if (string.IsNullOrEmpty(projectId))
+            {
+                throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectId));
+            }
+
             FullName = fullName;
             UniqueName = uniqueName;
             ShortName = shortName;
             CustomUniqueName = customUniqueName;
+            ProjectId = projectId;
         }
 
         /// <summary>
@@ -56,25 +76,30 @@ namespace NuGet.VisualStudio
         /// </summary>
         /// <param name="dteProject">DTE project to get project names for.</param>
         /// <returns>New instance of <see cref="ProjectNames"/>.</returns>
-        public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject)
+        public static async Task<ProjectNames> FromDTEProjectAsync(EnvDTE.Project dteProject, IVsSolution5 vsSolution5)
         {
             Assumes.Present(dteProject);
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
+            var fullname = dteProject.FullName;
+            var uniqueName = EnvDTEProjectInfoUtility.GetUniqueName(dteProject);
+            var shortName = EnvDTEProjectInfoUtility.GetName(dteProject);
+            var customUniqueName = await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(dteProject);
+            var projectId = GetProjectGuid(fullname, vsSolution5);
+
             return new ProjectNames(
-                fullName: dteProject.FullName,
-                uniqueName: EnvDTEProjectInfoUtility.GetUniqueName(dteProject),
-                shortName: EnvDTEProjectInfoUtility.GetName(dteProject),
-                customUniqueName: await EnvDTEProjectInfoUtility.GetCustomUniqueNameAsync(dteProject));
+                fullName: fullname,
+                uniqueName: uniqueName,
+                shortName: shortName,
+                customUniqueName: customUniqueName,
+                projectId: projectId);
         }
 
-        public static ProjectNames FromFullProjectPath(string name)
+        private static string GetProjectGuid(string fullname, IVsSolution5 vsSolution5)
         {
-            return new ProjectNames(
-                fullName: name,
-                uniqueName: name,
-                shortName: Path.GetFileNameWithoutExtension(name),
-                customUniqueName: name);
+            ThreadHelper.ThrowIfNotOnUIThread();
+            var guid = vsSolution5.GetGuidOfProjectFile(fullname);
+            return guid.ToString();
         }
 
         /// <summary>
