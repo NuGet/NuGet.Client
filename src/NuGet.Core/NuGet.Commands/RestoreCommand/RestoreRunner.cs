@@ -286,8 +286,8 @@ namespace NuGet.Commands
                     summaryRequest.InputPath,
                     DatetimeUtility.ToReadableTimeFormat(result.ElapsedTime)));
             }
-            // Remote the summary messages from the assets file. This will be removed later.
-            var messages = restoreResult.Result.LockFile?.LogMessages
+            // Remote the summary messages from the assets file.
+            var messages = restoreResult.Result.LogMessages
                 .Select(e => new RestoreLogMessage(e.Level, e.Code, e.Message)) ?? Enumerable.Empty<RestoreLogMessage>();
 
             // Build the summary
