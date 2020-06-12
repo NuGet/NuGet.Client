@@ -57,6 +57,12 @@ namespace NuGet.Commands
         public TimeSpan ElapsedTime { get; }
 
         /// <summary>
+        /// The log messages raised during this restore operation
+        /// </summary>
+        /// <remarks>The messages here are usually sources from the <see cref="LockFile"/> in full restores or <see cref="CacheFile"/> for no-op restores.</remarks>
+        public virtual IList<IAssetsLogMessage> LogMessages { get; internal set; }
+
+        /// <summary>
         ///  Cache File. The previous cache file for this project
         /// </summary>
         private CacheFile CacheFile { get; }
@@ -113,6 +119,7 @@ namespace NuGet.Commands
             _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
+            LogMessages = lockFile.LogMessages;
         }
 
         /// <summary>
