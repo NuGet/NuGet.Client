@@ -731,7 +731,7 @@ namespace NuGet.PackageManagement.UI
         {
             NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
 
                 _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
             });
@@ -816,39 +816,55 @@ namespace NuGet.PackageManagement.UI
             }
             else //Invalidate cache
             {
+                Model.CachedUpdates = null;
                 FlagTabAsLoaded(filterToRender, isLoaded: false);
             }
 
             var packageFeeds = await GetPackageFeedsAsync(searchText, loadContext);
 
-            var loader = new PackageItemLoader(
-                loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
-            var loadingMessage = string.IsNullOrWhiteSpace(searchText)
-                ? Resx.Resources.Text_Loading
-                : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
-
-            // Set a new cancellation token source which will be used to cancel this task in case
-            // new loading task starts or manager ui is closed while loading packages.
-            _loadCts = new CancellationTokenSource();
-
-            // start SearchAsync task for initial loading of packages
-            var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
-            // this will wait for searchResultTask to complete instead of creating a new task
-            await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
-
-            if (pSearchCallback != null && searchTask != null)
+            try
             {
-                var searchResult = await searchResultTask;
-                pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
-            }
+                var loader = new PackageItemLoader(
+                    loadContext, packageFeeds.mainFeed, searchText, IncludePrerelease, packageFeeds.recommenderFeed);
+                var loadingMessage = string.IsNullOrWhiteSpace(searchText)
+                    ? Resx.Resources.Text_Loading
+                    : string.Format(CultureInfo.CurrentCulture, Resx.Resources.Text_Searching, searchText);
 
-            // When not using Cache, refresh all Counts on the Updates an
-            if (!useCachedPackages)
+                // Set a new cancellation token source which will be used to cancel this task in case
+                // new loading task starts or manager ui is closed while loading packages.
+                _loadCts = new CancellationTokenSource();
+
+                // start SearchAsync task for initial loading of packages
+                var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
+                // this will wait for searchResultTask to complete instead of creating a new task
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
+
+                if (pSearchCallback != null && searchTask != null)
+                {
+                    var searchResult = await searchResultTask;
+                    pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
+                }
+
+                // When not using Cache, refresh all Counts on the Updates an
+                if (!useCachedPackages)
+                {
+                    RefreshInstalledAndUpdatesTabs();
+                }
+
+                FlagTabAsLoaded(filterToRender);
+
+                //Loading Installed tab should also consider the Updates tab as loaded to indicate UI filtering is ready.
+                if (filterToRender == ItemFilter.Installed)
+                {
+                    FlagTabAsLoaded(ItemFilter.UpdatesAvailable);
+                }
+            }
+            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
             {
-                RefreshInstalledAndUpdatesTabs();
+                //Invalidate cache.
+                Model.CachedUpdates = null;
+                FlagTabAsLoaded(filterToRender, isLoaded: false);
             }
-
-            FlagTabAsLoaded(filterToRender);
         }
 
         /// <summary>
@@ -882,15 +898,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        //private bool IsTabLoaded(ItemFilter filterToCheck)
-        //{
-        //    switch (filterToCheck)
-        //    {
-        //        case ItemFilter.Installed: return _installedTabIsLoaded;
-        //        case ItemFilter.UpdatesAvailable: return _updatesTabIsLoaded;
-        //        default: return false;
-        //    }
-        //}
+        private void ResetTabLoadFlags()
+        {
+            _installedTabIsLoaded = false;
+            _updatesTabIsLoaded = false;
+        }
 
         private void RefreshInstalledAndUpdatesTabs()
         {
@@ -903,7 +915,9 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
+                //TODO: dupe
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
+                //TODO: dupe
                 var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, recommendPackages: false);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
@@ -1148,7 +1162,10 @@ namespace NuGet.PackageManagement.UI
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
-                _loadCts = new CancellationTokenSource();
+                var loadCts = new CancellationTokenSource();
+                var oldCts = Interlocked.Exchange(ref _loadCts, loadCts);
+                oldCts?.Cancel();
+                oldCts?.Dispose();
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
@@ -1480,8 +1497,18 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
-            RefreshConsolidatablePackagesCount();
+            try //TODO: is this necessary?
+            {
+                SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
+                RefreshConsolidatablePackagesCount();
+            }
+            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
+            {
+                //Invalidate cache.
+                Model.CachedUpdates = null;
+                ResetTabLoadFlags();
+                throw;
+            }
         }
 
         internal void InstallPackage(string packageId, NuGetVersion version)
