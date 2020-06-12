@@ -65,7 +65,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" Version="16.5.4-beta" />
+    <PackageReference Include="Microsoft.VisualStudio.Sdk.TestFramework" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
   </ItemGroup>
 
@@ -91,7 +91,4 @@
 
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
-  <ItemGroup>
-    <PackageReference Update="Moq" Version="4.14.1" />
-  </ItemGroup>
 </Project>
