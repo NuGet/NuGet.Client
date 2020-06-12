@@ -208,8 +208,6 @@ namespace NuGet.PackageManagement.UI
             {
                 // don't make recommendations if we are not able to read the environment variable
             }
-            var gen = PackageList._list.ItemContainerGenerator;
-            gen.StatusChanged += Gen_StatusChanged;
         }
 
         private void SolutionManager_ProjectsUpdated(object sender, NuGetProjectEventArgs e)
@@ -1584,34 +1582,6 @@ namespace NuGet.PackageManagement.UI
         private TimeSpan GetTimeSinceLastUserAction()
         {
             return _sinceUserAction.Elapsed;
-        }
-
-        protected override void OnRender(System.Windows.Media.DrawingContext drawingContext)
-        {
-            base.OnRender(drawingContext);
-            var timestamp = GetTimeSinceLastUserAction();
-            _performanceMetrics.TimeSinceOnRender = timestamp;
-        }
-
-        private void Gen_StatusChanged(object sender, EventArgs e)
-        {
-            ItemContainerGenerator gen = sender as ItemContainerGenerator;
-
-            if (gen.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
-            {
-                var timestamp = GetTimeSinceLastUserAction();
-                _performanceMetrics.TimeSinceContainersGenerated = timestamp;
-            }
-        }
-
-
-        private void GridSplitter_MouseDoubleClick(object sender, MouseButtonEventArgs e)
-        {
-            var telemetryEvent = new TelemetryEvent("PMUI_TabSwitch_PerformanceMetrics");
-
-            _performanceMetrics.WriteTelemetry(telemetryEvent);
-
-            TelemetryActivity.EmitTelemetryEvent(telemetryEvent);
         }
     }
 }
