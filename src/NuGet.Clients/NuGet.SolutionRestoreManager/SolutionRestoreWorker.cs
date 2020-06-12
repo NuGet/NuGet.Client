@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.ComponentModel.Composition;
-using System.ComponentModel.Composition.Hosting;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -65,6 +64,7 @@ namespace NuGet.SolutionRestoreManager
         private Common.ILogger Logger => _logger.Value;
 
         private Lazy<ErrorListTableDataSource> _errorListTableDataSource;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         public Task<bool> CurrentRestoreOperation => _activeRestoreTask;
 
@@ -86,12 +86,14 @@ namespace NuGet.SolutionRestoreManager
             Lazy<INuGetLockService> lockService,
             [Import("VisualStudioActivityLogger")]
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            Lazy<ErrorListTableDataSource> errorListTableDataSource,
+            Lazy<IOutputConsoleProvider> outputConsoleProvider)
             : this(AsyncServiceProvider.GlobalProvider,
                   solutionManager,
                   lockService,
                   logger,
-                  errorListTableDataSource)
+                  errorListTableDataSource,
+                  outputConsoleProvider)
         { }
 
         public SolutionRestoreWorker(
@@ -99,7 +101,8 @@ namespace NuGet.SolutionRestoreManager
             Lazy<IVsSolutionManager> solutionManager,
             Lazy<INuGetLockService> lockService,
             Lazy<Common.ILogger> logger,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            Lazy<ErrorListTableDataSource> errorListTableDataSource,
+            Lazy<IOutputConsoleProvider> outputConsoleProvider)
         {
             if (asyncServiceProvider == null)
             {
@@ -126,11 +129,17 @@ namespace NuGet.SolutionRestoreManager
                 throw new ArgumentNullException(nameof(errorListTableDataSource));
             }
 
+            if (outputConsoleProvider == null)
+            {
+                throw new ArgumentNullException(nameof(outputConsoleProvider));
+            }
+
             _asyncServiceProvider = asyncServiceProvider;
             _solutionManager = solutionManager;
             _lockService = lockService;
             _logger = logger;
             _errorListTableDataSource = errorListTableDataSource;
+            _outputConsoleProvider = outputConsoleProvider;
 
             var joinableTaskContextNode = new JoinableTaskContextNode(ThreadHelper.JoinableTaskContext);
             _joinableCollection = joinableTaskContextNode.CreateCollection();
@@ -604,8 +613,7 @@ namespace NuGet.SolutionRestoreManager
                 return await _lockService.Value.ExecuteNuGetOperationAsync(async () =>
                 {
                     var componentModel = await _componentModel.GetValueAsync(jobCts.Token);
-                    var outputConsoleProvider = componentModel.GetService<IOutputConsoleProvider>();
-                    using (var logger = new RestoreOperationLogger(outputConsoleProvider))
+                    using (var logger = new RestoreOperationLogger(_outputConsoleProvider))
                     {
                         try
                         {
