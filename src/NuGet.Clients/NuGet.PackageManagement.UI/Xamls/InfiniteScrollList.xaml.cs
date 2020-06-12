@@ -13,8 +13,6 @@ using System.Windows.Controls;
 using System.Windows.Data;
 using System.Windows.Input;
 using System.Windows.Media;
-using Microsoft;
-using Microsoft.TeamFoundation.VersionControl.Client;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
@@ -128,6 +126,15 @@ namespace NuGet.PackageManagement.UI
             get
             {
                 return CollectionViewSource.GetDefaultView(Items);
+            }
+        }
+
+        private int FilterCount
+        {
+            get
+            {
+                var filteredCollectionView = new ListCollectionView(Items) { Filter = CollectionView.Filter };
+                return filteredCollectionView.Count;
             }
         }
 
@@ -667,20 +674,13 @@ namespace NuGet.PackageManagement.UI
                 return;
             }
 
-            int packageCount;
-            if (Items.Count == 0)
+            int packageCount = FilterCount;// CollectionView.Count;
+
+            if (packageCount > 0)
             {
-                packageCount = 0;
-            }
-            else
-            {
-                if (Items[Items.Count - 1] == _loadingStatusIndicator)
+                if (Items[packageCount - 1] == _loadingStatusIndicator)
                 {
-                    packageCount = Items.Count - 1;
-                }
-                else
-                {
-                    packageCount = Items.Count;
+                    packageCount--;
                 }
             }
 
@@ -770,7 +770,7 @@ namespace NuGet.PackageManagement.UI
             {
                 var first = _scrollViewer.VerticalOffset;
                 var last = _scrollViewer.ViewportHeight + first;
-                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                if (_scrollViewer.ViewportHeight > 0 && last >= FilterCount)
                 {
                     LoadItems(selectedPackageItem: null, token: CancellationToken.None);
                 }
