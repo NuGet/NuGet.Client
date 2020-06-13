@@ -18,7 +18,7 @@ namespace NuGet.ProjectManagement
 {
     public static class FileSystemUtility
     {
-        public static XDocument GetOrCreateXmlDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
+        internal static XDocument GetOrCreateXmlDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
         {
             if (File.Exists(Path.Combine(root, path)))
             {
