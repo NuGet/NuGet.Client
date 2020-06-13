@@ -25,7 +25,7 @@ namespace NuGet.Commands
     /// </summary>
     public class SourceRepositoryDependencyProvider : IRemoteDependencyProvider
     {
-        private readonly object _lock = new object();
+        private object _lock = new object();
         private readonly SourceRepository _sourceRepository;
         private readonly ILogger _logger;
         private readonly SourceCacheContext _cacheContext;
@@ -34,6 +34,7 @@ namespace NuGet.Commands
         private bool _ignoreFailedSources;
         private bool _ignoreWarning;
         private bool _isFallbackFolderSource;
+        private bool _initialized;
 
         private readonly ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>> _dependencyInfoCache
             = new ConcurrentDictionary<LibraryRangeCacheKey, AsyncLazy<LibraryDependencyInfo>>();
@@ -479,15 +480,15 @@ namespace NuGet.Commands
             {
                 var resource = await _sourceRepository.GetResourceAsync<FindPackageByIdResource>();
 
-                lock (_lock)
-                {
-                    if (_findPackagesByIdResource == null)
+                LazyInitializer.EnsureInitialized(ref _findPackagesByIdResource,
+                    ref _initialized,
+                    ref _lock,
+                    () =>
                     {
                         AddLocalV3ResourceOptions(resource);
-
-                        _findPackagesByIdResource = resource;
-                    }
-                }
+                        // Only once
+                        return resource;
+                    });
             }
         }
 
