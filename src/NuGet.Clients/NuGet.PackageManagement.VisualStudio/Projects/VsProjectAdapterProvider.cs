@@ -7,37 +7,49 @@ using System.Threading.Tasks;
 using Microsoft;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using NuGet.VisualStudio;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
     [Export(typeof(IVsProjectAdapterProvider))]
     internal class VsProjectAdapterProvider : IVsProjectAdapterProvider
     {
-        private readonly Lazy<IDeferredProjectWorkspaceService> _workspaceService = null;
         private readonly IVsProjectThreadingService _threadingService;
-
-        private readonly Lazy<IVsSolution5> _vsSolution5;
+        private readonly AsyncLazy<IDeferredProjectWorkspaceService> _workspaceService;
+        private readonly AsyncLazy<IVsSolution5> _vsSolution5;
 
         [ImportingConstructor]
         public VsProjectAdapterProvider(
-            [Import(typeof(SVsServiceProvider))]
-            IServiceProvider serviceProvider,
-            Lazy<IDeferredProjectWorkspaceService> workspaceService,
-            IVsProjectThreadingService threadingService)
+            IVsProjectThreadingService threadingService,
+            [Import(typeof(SAsyncServiceProvider))]
+            IAsyncServiceProvider serviceProvider)
+            : this(
+                  threadingService,
+                  new AsyncLazy<IDeferredProjectWorkspaceService>(() => serviceProvider.GetServiceAsync<IDeferredProjectWorkspaceService>(), threadingService.JoinableTaskFactory),
+                  new AsyncLazy<IVsSolution5>(() => serviceProvider.GetServiceAsync<SVsSolution, IVsSolution5>(), threadingService.JoinableTaskFactory))
         {
-            Assumes.Present(serviceProvider);
+        }
+
+        internal VsProjectAdapterProvider(
+            IVsProjectThreadingService threadingService,
+            AsyncLazy<IDeferredProjectWorkspaceService> workspaceService,
+            AsyncLazy<IVsSolution5> vsSolution5)
+        {
             Assumes.Present(threadingService);
             Assumes.Present(workspaceService);
+            Assumes.Present(vsSolution5);
 
-            _workspaceService = workspaceService;
             _threadingService = threadingService;
-            _vsSolution5 = new Lazy<IVsSolution5>(() => serviceProvider.GetService<SVsSolution, IVsSolution5>());
+            _workspaceService = workspaceService;
+            _vsSolution5 = vsSolution5;
         }
 
         public async Task<bool> EntityExistsAsync(string filePath)
         {
-            return await _workspaceService.Value.EntityExistsAsync(filePath);
+            var workspaceService = await _workspaceService.GetValueAsync();
+            return await workspaceService.EntityExistsAsync(filePath);
         }
 
         public IVsProjectAdapter CreateAdapterForFullyLoadedProject(EnvDTE.Project dteProject)
@@ -50,6 +62,10 @@ namespace NuGet.PackageManagement.VisualStudio
         {
             Assumes.Present(dteProject);
 
+            // Get services while we might be on background thread
+            var vsSolution5 = await _vsSolution5.GetValueAsync();
+
+            // switch to main thread and use services we know must be done on main thread.
             await _threadingService.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             var vsHierarchyItem = VsHierarchyItem.FromDteProject(dteProject);
@@ -59,7 +75,7 @@ namespace NuGet.PackageManagement.VisualStudio
             var vsBuildProperties = new VsProjectBuildProperties(
                 dteProject, buildStorageProperty, _threadingService);
 
-            var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, _vsSolution5.Value);
+            var projectNames = await ProjectNames.FromDTEProjectAsync(dteProject, vsSolution5);
             var fullProjectPath = EnvDTEProjectInfoUtility.GetFullProjectPath(dteProject);
 
             return new VsProjectAdapter(
