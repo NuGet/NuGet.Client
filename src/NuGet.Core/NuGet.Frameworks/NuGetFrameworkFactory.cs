@@ -92,18 +92,19 @@ namespace NuGet.Frameworks
             // if the first part is a special framework, ignore the rest
             if (!TryParseSpecialFramework(parts[0], out result))
             {
-                string platform = null;
-                if (!mappings.TryGetIdentifier(parts[0], out platform))
+                string framework = null;
+                if (!mappings.TryGetIdentifier(parts[0], out framework))
                 {
-                    platform = parts[0];
+                    framework = parts[0];
                 }
 
                 var version = new Version(0, 0);
                 string profile = null;
+                string platform = null;
+                var platformVersion = new Version(0, 0);
 
                 var versionPart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Version=", StringComparison.OrdinalIgnoreCase) == 0));
                 var profilePart = SingleOrDefaultSafe(parts.Where(s => s.IndexOf("Profile=", StringComparison.OrdinalIgnoreCase) == 0));
-
                 if (!string.IsNullOrEmpty(versionPart))
                 {
                     var versionString = versionPart.Split('=')[1].TrimStart('v');
@@ -127,7 +128,7 @@ namespace NuGet.Frameworks
                     profile = profilePart.Split('=')[1];
                 }
 
-                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, platform)
+                if (StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Portable, framework)
                     && !string.IsNullOrEmpty(profile)
                     && profile.Contains("-"))
                 {
@@ -139,7 +140,15 @@ namespace NuGet.Frameworks
                         profile));
                 }
 
-                result = new NuGetFramework(platform, version, profile);
+                if (version.Major >= 5
+                    && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.NetCoreApp, framework))
+                {
+                    result = new NuGetFramework(framework, version, platform ?? string.Empty, platformVersion ?? FrameworkConstants.EmptyVersion);
+                }
+                else
+                {
+                    result = new NuGetFramework(framework, version, profile);
+                }
             }
 
             return result;
@@ -196,7 +205,7 @@ namespace NuGet.Frameworks
                             || mappings.TryGetVersion(parts.Item2, out version))
                         {
                             var profileShort = parts.Item3;
-                            
+
                             if (version.Major >= 5
                                 && StringComparer.OrdinalIgnoreCase.Equals(FrameworkConstants.FrameworkIdentifiers.Net, framework))
                             {
@@ -204,10 +213,22 @@ namespace NuGet.Frameworks
                                 framework = FrameworkConstants.FrameworkIdentifiers.NetCoreApp;
                                 if (!string.IsNullOrEmpty(profileShort))
                                 {
-                                    bool validProfile = FrameworkConstants.FrameworkProfiles.Contains(profileShort);
-                                    if (validProfile)
+                                    // Find a platform version if it exists and yank it out
+                                    var platformChars = profileShort;
+                                    var versionStart = 0;
+                                    while (versionStart < platformChars.Length
+                                           && IsLetterOrDot(platformChars[versionStart]))
                                     {
-                                        result = new NuGetFramework(framework, version, profileShort.ToLower());
+                                        versionStart++;
+                                    }
+                                    string platform = versionStart > 0 ? profileShort.Substring(0, versionStart) : profileShort;
+                                    string platformVersionString = versionStart > 0 ? profileShort.Substring(versionStart, profileShort.Length - versionStart) : null;
+
+                                    // Parse the version if it's there.
+                                    Version platformVersion = FrameworkConstants.EmptyVersion;
+                                    if ((string.IsNullOrEmpty(platformVersionString) || mappings.TryGetVersion(platformVersionString, out platformVersion)))
+                                    {
+                                        result = new NuGetFramework(framework, version, platform ?? string.Empty, platformVersion ?? FrameworkConstants.EmptyVersion);
                                     }
                                     else
                                     {
@@ -216,7 +237,7 @@ namespace NuGet.Frameworks
                                 }
                                 else
                                 {
-                                    result = new NuGetFramework(framework, version, string.Empty);
+                                    result = new NuGetFramework(framework, version, string.Empty, FrameworkConstants.EmptyVersion);
                                 }
                             }
                             else

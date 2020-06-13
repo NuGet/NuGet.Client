@@ -97,6 +97,15 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The project {0} is using CentralPackageVersionManagement, a NuGet preview feature..
+        /// </summary>
+        internal static string CentralPackageVersionManagementInPreview {
+            get {
+                return ResourceManager.GetString("CentralPackageVersionManagementInPreview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0}File path: {1}.
         /// </summary>
         internal static string ClientCertificatesFileCertFilePath {
@@ -268,7 +277,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client certificate configured for the package source &apos;{0}&apos; is already exist.
+        ///   Looks up a localized string similar to Client certificate configured for the package source &apos;{0}&apos; already exists..
         /// </summary>
         internal static string Error_ClientCertificateAlreadyExist {
             get {
@@ -295,7 +304,7 @@ namespace NuGet.Commands {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Client certificate configured for the package source &apos;{0}&apos; cannot be modified do to a type mismatch.
+        ///   Looks up a localized string similar to Client certificate configured for the package source &apos;{0}&apos; cannot be modified due to a type mismatch..
         /// </summary>
         internal static string Error_ClientCertificateTypeMismatch {
             get {

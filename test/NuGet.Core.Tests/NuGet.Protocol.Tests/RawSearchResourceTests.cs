@@ -31,15 +31,29 @@ namespace NuGet.Protocol.Tests
 
             var httpSource = new TestHttpSource(new PackageSource(serviceAddress), responses);
 
+#pragma warning disable CS0618
             var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) });
+#pragma warning restore CS0618
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
                 SupportedFrameworks = new string[] { ".NETFramework,Version=v4.5" }
             };
 
+            var skip = 0;
+            var take = 1;
+
             // Act
-            var packages = await searchResource.Search("azure b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+#pragma warning disable CS0618
+            var packages = await searchResource.Search(
+#pragma warning restore CS0618
+                "azure b",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        CancellationToken.None);
+
             var packagesArray = packages.ToArray();
 
             // Assert
@@ -65,15 +79,27 @@ namespace NuGet.Protocol.Tests
             // throw if sync .Read is used
             httpSource.StreamWrapper = (stream) => new NoSyncReadStream(stream);
 
+#pragma warning disable CS0618
             var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) });
+#pragma warning restore CS0618
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
                 SupportedFrameworks = new string[] { ".NETFramework,Version=v4.5" }
             };
+            var skip = 0;
+            var take = 1;
 
             // Act
-            var packages = await searchResource.Search("azure b", searchFilter, 0, 1, NullLogger.Instance, CancellationToken.None);
+#pragma warning disable 618
+            var packages = await searchResource.Search(
+#pragma warning restore 618
+                "azure b",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        CancellationToken.None);
             var packagesArray = packages.ToArray();
 
             // Assert
@@ -99,7 +125,9 @@ namespace NuGet.Protocol.Tests
 
             httpSource.StreamWrapper = (stream) => new NoSyncReadStream(stream);
 
+#pragma warning disable 618
             var searchResource = new RawSearchResourceV3(httpSource, new Uri[] { new Uri(serviceAddress) });
+#pragma warning restore 618
 
             var searchFilter = new SearchFilter(includePrerelease: false)
             {
@@ -108,10 +136,21 @@ namespace NuGet.Protocol.Tests
 
             var tokenSource = new CancellationTokenSource();
             tokenSource.Cancel();
+            var skip = 0;
+            var take = 1;
 
             // Act/Assert
             await Assert.ThrowsAsync<TaskCanceledException>(() =>
-               searchResource.Search("Sentry", searchFilter, 0, 1, NullLogger.Instance, tokenSource.Token));
+#pragma warning disable 618
+                searchResource.Search(
+#pragma warning restore 618
+                    "Sentry",
+                        searchFilter,
+                        skip,
+                        take,
+                        NullLogger.Instance,
+                        tokenSource.Token));
+
         }
     }
 }

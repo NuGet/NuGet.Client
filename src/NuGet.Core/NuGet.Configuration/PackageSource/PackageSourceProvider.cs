@@ -745,7 +745,9 @@ namespace NuGet.Configuration
         private Dictionary<string, SourceItem> GetExistingSettingsLookup()
         {
             var sourcesSection = Settings.GetSection(ConfigurationConstants.PackageSources);
-            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(c => !c.Origin?.IsMachineWide ?? true).ToList();
+            var existingSettings = sourcesSection?.Items.OfType<SourceItem>().Where(
+                c => !(c.Origin == null || c.Origin.IsReadOnly || c.Origin.IsMachineWide))
+                .ToList();
 
             var existingSettingsLookup = new Dictionary<string, SourceItem>(StringComparer.OrdinalIgnoreCase);
             if (existingSettings != null)

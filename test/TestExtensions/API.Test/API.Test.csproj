@@ -24,7 +24,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" />
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.Internal.VisualStudio.Shell.Embeddable" ExcludeAssets="build"/>
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ServiceHub.Framework" />
 </ItemGroup>
 
   <ItemGroup>

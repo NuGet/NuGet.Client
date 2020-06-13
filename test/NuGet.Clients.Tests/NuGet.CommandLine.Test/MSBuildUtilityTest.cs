@@ -86,6 +86,23 @@ namespace NuGet.CommandLine.Test
             Assert.Equal(expectedPath, directory);
         }
 
+        // Test the GetMsBuildDirectoryInternal returns the highest version, ignoring the path, if "latest" is specified.
+        [Theory]
+        [MemberData("HighestPathWithLowVersionMatchData", MemberType = typeof(ToolsetDataSource))]
+        public void HighestVersionSelectedIfLatestSpecified(List<MsBuildToolset> toolsets, string lowVersionPath, string expectedPath)
+        {
+            // Arrange
+            // Act
+            var directory = MsBuildUtility.GetMsBuildDirectoryInternal(
+                userVersion: "latest",
+                console: null,
+                installedToolsets: toolsets.OrderByDescending(t => t),
+                getMsBuildPathInPathVar: (reader) => lowVersionPath).Path;
+
+            // Assert
+            Assert.Equal(expectedPath, directory);
+        }
+
         // Tests that GetMsBuildDirectoryInternal returns path of the toolset whose toolset version matches
         // the userVersion. Also tests that, when userVersion is just a number, it can be matched with version 
         // userVersion + ".0". And non-numeric/case insensitive tests.
@@ -494,6 +511,16 @@ namespace NuGet.CommandLine.Test
                     new object[] { CombinedToolsets_MsBuild15AndVSTestToolsets, Toolset15_Wed_LongVersion.Path}
                 };
 
+            private static readonly List<object[]> _highestPathWithLowVersionMatchData
+                = new List<object[]>
+                {
+                    new object[] { LegacyToolsets, Toolset12.Path, Toolset14.Path },
+                    new object[] { CombinedToolsets_AscDate_ShortVersion, Toolset15_Mon_ShortVersion.Path, Toolset15_Wed_ShortVersion.Path },
+                    new object[] { CombinedToolsets_DescDate_ShortVersion, Toolset15_Mon_ShortVersion.Path, Toolset15_Wed_ShortVersion.Path },
+                    new object[] { CombinedToolsets_AscDate_LongVersion, Toolset15_Mon_LongVersion.Path, Toolset15_Wed_LongVersion.Path },
+                    new object[] { CombinedToolsets_DescDate_LongVersion, Toolset15_Mon_LongVersion.Path,Toolset15_Wed_LongVersion.Path }
+                };
+
             public static IEnumerable<object[]> HighestPathData => _highestPathData;
             public static IEnumerable<object[]> PathMatchData => _pathMatchData;
             public static IEnumerable<object[]> VersionMatchData => _versionMatchData;
@@ -501,6 +528,7 @@ namespace NuGet.CommandLine.Test
             public static IEnumerable<object[]> NonNumericVersionMatchData => _nonNumericVersionMatchData;
             public static IEnumerable<object[]> NonNumericVersionMatchFailureData => _nonNumericVersionMatchFailureData;
             public static IEnumerable<object[]> InvalidToolsetData => _invalidToolsetData;
+            public static IEnumerable<object[]> HighestPathWithLowVersionMatchData => _highestPathWithLowVersionMatchData;
 
         }
     }

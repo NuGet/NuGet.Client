@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.Configuration;
-using NuGet.Frameworks;
 using NuGet.LibraryModel;
 using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
@@ -55,6 +54,32 @@ namespace NuGet.Commands.Test
 
             // Assert
             Assert.Equal(path, props["ProjectAssetsFile"]);
+        }
+
+        [Fact]
+        public void AddNuGetProperty_WithPackageFolders_AddsSourceRootItem()
+        {
+            // Arrange
+            var packageFolders = @"/tmp/gpf;/tmp/fallbackFolder";
+
+            var doc = BuildAssetsUtils.GenerateEmptyImportsFile();
+
+            // Act
+            BuildAssetsUtils.AddNuGetProperties(
+                doc,
+                packageFolders: packageFolders.Split(';'),
+                string.Empty,
+                ProjectStyle.PackageReference,
+                "/tmp/test/project.assets.json",
+                success: true);
+
+            var props = TargetsUtility.GetMSBuildProperties(doc);
+            var items = TargetsUtility.GetMSBuildItems(doc);
+
+            // Assert
+            Assert.Equal(packageFolders, props["NuGetPackageFolders"]);
+            Assert.Equal(1, items.Count);
+            Assert.Equal("$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))", items["SourceRoot"]["Include"]);
         }
 
         [Fact]
@@ -622,7 +647,6 @@ namespace NuGet.Commands.Test
         public async Task BuildAssetsUtils_GeneratePathProperty()
         {
             using (var pathContext = new SimpleTestPathContext())
-            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var identity = new PackageIdentity("packagea", NuGetVersion.Parse("1.0.0"));
@@ -638,17 +662,20 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var spec = ToolRestoreUtility.GetSpec(
-                    Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
-                    "a",
-                    VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    pathContext.UserPackagesFolder,
-                    new List<string>() { pathContext.FallbackFolder },
-                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    projectWideWarningProperties: null);
+                const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""netcoreapp1.0"": {
+                            ""dependencies"": {
+                            }
+                        }
+                    }
+                }";
+                var projectName = "a";
+                var rootProjectsPath = pathContext.WorkingDirectory;
+                var projectDirectory = Path.Combine(rootProjectsPath, projectName);
 
-                spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+                var spec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, Path.Combine(projectDirectory, projectName)).WithTestRestoreMetadata();
 
                 spec.Dependencies.Add(new LibraryDependency
                 {
@@ -704,7 +731,7 @@ namespace NuGet.Commands.Test
                     ProjectStyle = spec.RestoreMetadata.ProjectStyle
                 };
 
-                var assetsFilePath = Path.Combine(randomProjectDirectory, "obj", "project.assets.json");
+                var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
 
                 // Act
                 var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);
@@ -732,7 +759,6 @@ namespace NuGet.Commands.Test
         public async Task BuildAssetsUtils_GeneratePathPropertyForTools(bool hasTools)
         {
             using (var pathContext = new SimpleTestPathContext())
-            using (var randomProjectDirectory = TestDirectory.Create())
             {
                 // Arrange
                 var identity = new PackageIdentity("packagea", NuGetVersion.Parse("1.0.0"));
@@ -748,17 +774,20 @@ namespace NuGet.Commands.Test
 
                 var logger = new TestLogger();
 
-                var spec = ToolRestoreUtility.GetSpec(
-                    Path.Combine(pathContext.SolutionRoot, "tool", "fake.csproj"),
-                    "a",
-                    VersionRange.Parse("1.0.0"),
-                    NuGetFramework.Parse("netcoreapp1.0"),
-                    pathContext.UserPackagesFolder,
-                    new List<string>() { pathContext.FallbackFolder },
-                    new List<PackageSource>() { new PackageSource(pathContext.PackageSource) },
-                    projectWideWarningProperties: null);
+                const string referenceSpec = @"
+                {
+                    ""frameworks"": {
+                        ""netcoreapp1.0"": {
+                            ""dependencies"": {
+                            }
+                        }
+                    }
+                }";
+                var projectName = "a";
+                var rootProjectsPath = pathContext.WorkingDirectory;
+                var projectDirectory = Path.Combine(rootProjectsPath, projectName);
 
-                spec.RestoreMetadata.ProjectStyle = ProjectStyle.PackageReference;
+                var spec = JsonPackageSpecReader.GetPackageSpec(referenceSpec, projectName, Path.Combine(projectDirectory, projectName)).WithTestRestoreMetadata();
 
                 spec.Dependencies.Add(new LibraryDependency
                 {
@@ -814,7 +843,7 @@ namespace NuGet.Commands.Test
                     ProjectStyle = spec.RestoreMetadata.ProjectStyle
                 };
 
-                var assetsFilePath = Path.Combine(randomProjectDirectory, "obj", "project.assets.json");
+                var assetsFilePath = Path.Combine(projectDirectory, "obj", "project.assets.json");
 
                 // Act
                 var outputFiles = BuildAssetsUtils.GetMSBuildOutputFiles(spec, lockFile, targetGraphs, repositories, restoreRequest, assetsFilePath, true, logger);

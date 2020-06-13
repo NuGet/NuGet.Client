@@ -57,6 +57,11 @@ Some of the other points are summarized below:
 
 * Package Manager Console operations - The PowerShell cmdlets are defined in the [NuGet.PackageManagement.Cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\NuGet.PackageManagement.PowerShellCmdlets.csproj) project, more specifically in the [cmdlets](..\src\NuGet.Clients\NuGet.PackageManagement.PowerShellCmdlets\Cmdlets) folder.
 
+#### Investigating NuGet and project-system interactions
+
+When investigating Visual Studio PackageReference restore with SDK-based projects, you can set an environment variable respected by the [project-system](https://github.com/dotnet/project-system/pull/3027) that would dump the nomination data each time a project is nominated.
+Set `PROJECTSYSTEM_PROJECTOUTPUTPANEENABLED=1` and look for a new category enabled in the Output window.
+
 ## Debugging and testing the NuGet MSBuild functionality
 
 Exactly two NuGet functionalities are available in MSBuild, `restore` and `pack`.

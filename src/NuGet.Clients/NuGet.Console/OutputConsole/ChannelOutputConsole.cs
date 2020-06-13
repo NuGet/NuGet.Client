@@ -28,8 +28,9 @@ namespace NuGetConsole
         private readonly string _channelId;
         private readonly string _channelOutputName;
         private readonly JoinableTaskFactory _joinableTaskFactory;
-
+#pragma warning disable ISB001 // This is disposed in the dispose method
         private AsyncLazy<ServiceBrokerClient> _serviceBrokerClient;
+#pragma warning restore ISB001 // This is disposed in the dispose method
         private PipeWriter _channelPipeWriter;
         private bool _disposedValue = false;
 
