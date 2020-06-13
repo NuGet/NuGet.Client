@@ -21,7 +21,7 @@ namespace NuGet.ProjectManagement
 {
     public static class MSBuildNuGetProjectSystemUtility
     {
-        internal static XDocument GetOrCreateXmlDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
+        public static XDocument GetOrCreateXmlDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             if (File.Exists(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path)))
             {
