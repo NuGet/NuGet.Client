@@ -26,7 +26,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
-
+        
+#if IS_DESKTOP
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
@@ -66,6 +67,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
                 }
             }
         }
+#endif
 
         [Theory]
         [InlineData(SigningCertificateUsage.V1)]
