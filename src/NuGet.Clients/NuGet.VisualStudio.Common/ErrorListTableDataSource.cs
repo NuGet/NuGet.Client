@@ -5,14 +5,13 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Shell.TableControl;
 using Microsoft.VisualStudio.Shell.TableManager;
-using NuGet.VisualStudio;
 using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
-
 
 namespace NuGet.VisualStudio.Common
 {
@@ -24,7 +23,7 @@ namespace NuGet.VisualStudio.Common
     [PartCreationPolicy(CreationPolicy.Shared)]
     public sealed class ErrorListTableDataSource : ITableDataSource, IDisposable
     {
-        private readonly object _initLockObj = new object();
+        private object _initLockObj = new object();
         private readonly object _subscribeLockObj = new object();
         private readonly IAsyncServiceProvider _asyncServiceProvider = AsyncServiceProvider.GlobalProvider;
         private IReadOnlyList<TableSubscription> _subscriptions = new List<TableSubscription>();
@@ -205,23 +204,23 @@ namespace NuGet.VisualStudio.Common
             if (!_initialized)
             {
                 // Double check around locking since this is called often.
-                lock (_initLockObj)
-                {
-                    if (!_initialized)
+                LazyInitializer.EnsureInitialized(ref _tableManager,
+                    ref _initialized,
+                    ref _initLockObj,
+                    () =>
                     {
+                        ITableManager tableManager = null;
                         NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
                         {
                             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
                             // Get the error list service from the UI thread
                             _errorList = await _asyncServiceProvider.GetServiceAsync<SVsErrorList, IErrorList>();
-                            _tableManager = _errorList.TableControl.Manager;
-
-                            _tableManager.AddSource(this);
-                            _initialized = true;
+                            tableManager = _errorList.TableControl.Manager;
+                            tableManager.AddSource(this);
                         });
-                    }
-                }
+                        return tableManager;
+                    });
             }
         }
 
