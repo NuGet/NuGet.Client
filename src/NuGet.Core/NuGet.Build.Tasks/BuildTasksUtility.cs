@@ -620,7 +620,7 @@ namespace NuGet.Build.Tasks
             {
                 try
                 {
-                    XDocument xDocument = XmlUtility.Load(projectConfigFilePath);
+                    XDocument xDocument = Shared.XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }

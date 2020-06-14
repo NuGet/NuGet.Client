@@ -15,19 +15,18 @@ using NuGet.Frameworks;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
-using NuGet.Shared;
 
 namespace NuGet.ProjectManagement
 {
     public static class MSBuildNuGetProjectSystemUtility
     {
-        internal static XDocument GetOrCreateXmlDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
+        internal static XDocument GetOrCreateDocument(XName rootName, string path, IMSBuildProjectSystem msBuildNuGetProjectSystem)
         {
             if (File.Exists(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path)))
             {
                 try
                 {
-                    return XmlUtility.Load(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path), LoadOptions.PreserveWhitespace);
+                    return Shared.XmlUtility.Load(Path.Combine(msBuildNuGetProjectSystem.ProjectFullPath, path), LoadOptions.PreserveWhitespace);
                 }
                 catch (FileNotFoundException) { }
             }

@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Build.Utilities;
 using NuGet.ProjectManagement;
-using NuGet.Shared;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.PackageManagement.VisualStudio
 {

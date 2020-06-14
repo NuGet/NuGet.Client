@@ -8,34 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using NuGet.Common;
 using NuGet.PackageManagement;
 using NuGet.Packaging;
-using NuGet.Shared;
 
 namespace NuGet.ProjectManagement
 {
     public static class FileSystemUtility
     {
-        public static XDocument GetOrCreateXmlDocument(XName rootName, string root, string path, INuGetProjectContext nuGetProjectContext)
-        {
-            if (File.Exists(Path.Combine(root, path)))
-            {
-                try
-                {
-                    return XmlUtility.Load(Path.Combine(root, path), LoadOptions.PreserveWhitespace);
-                }
-                catch (FileNotFoundException) { }
-            }
-
-            var document = new XDocument(new XElement(rootName));
-            // Add it to the file system
-            AddFile(root, path, document.Save, nuGetProjectContext);
-
-            return document;
-        }
-
         public static void MakeWritable(string fullPath)
         {
             if (File.Exists(fullPath))
