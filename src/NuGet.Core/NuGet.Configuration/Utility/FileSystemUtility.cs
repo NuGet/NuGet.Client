@@ -12,7 +12,7 @@ namespace NuGet.Configuration
 {
     internal static class FileSystemUtility
     {
-        internal static XDocument GetOrCreateXmlDocument(XDocument content, string fullPath)
+        internal static XDocument GetOrCreateDocument(XDocument content, string fullPath)
         {
             if (File.Exists(fullPath))
             {
