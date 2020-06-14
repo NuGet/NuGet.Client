@@ -18,10 +18,10 @@ using NuGet.PackageManagement;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
-using NuGet.Shared;
 using NuGet.Versioning;
 using NuGet.VisualStudio.Implementation.Resources;
 using Task = System.Threading.Tasks.Task;
+using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.VisualStudio
 {

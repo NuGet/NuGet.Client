@@ -1,15 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using NuGet.Common;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Xml.Linq;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml.Linq;
+using NuGet.Common;
 
 namespace NuGet.ProjectManagement
 {
@@ -71,7 +71,7 @@ namespace NuGet.ProjectManagement
             // Get the xml fragment
             var xmlFragment = await GetXmlAsync(streamTaskFactory, projectSystem, cancellationToken);
 
-            var transformDocument = MSBuildNuGetProjectSystemUtility.GetOrCreateXmlDocument(xmlFragment.Name, targetPath, projectSystem);
+            var transformDocument = MSBuildNuGetProjectSystemUtility.GetOrCreateDocument(xmlFragment.Name, targetPath, projectSystem);
 
             // Do a merge
             transformDocument.Root.MergeWith(xmlFragment, _nodeActions);
@@ -116,7 +116,7 @@ namespace NuGet.ProjectManagement
             // Get the xml snippet
             var xmlFragment = await GetXmlAsync(streamTaskFactory, projectSystem, cancellationToken);
 
-            var document = FileSystemUtility.GetOrCreateXmlDocument(xmlFragment.Name,
+            var document = XmlUtility.GetOrCreateDocument(xmlFragment.Name,
                 projectSystem.ProjectFullPath,
                 targetPath,
                 projectSystem.NuGetProjectContext);
