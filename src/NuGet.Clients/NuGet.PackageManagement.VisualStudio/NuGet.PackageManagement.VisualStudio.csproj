@@ -5,7 +5,6 @@
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <PackProject>true</PackProject>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <ProjectGuid>{306CDDFA-FF0B-4299-930C-9EC6C9308160}</ProjectGuid>
     <OutputType>Library</OutputType>
@@ -16,7 +15,6 @@
     <Description>NuGet's Visual Studio functionalities, integrations and utilities.</Description>
     <ResolveNuGetPackages>true</ResolveNuGetPackages>
     <TargetFrameworkVersion>$(NETFXTargetFrameworkVersion)</TargetFrameworkVersion>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);NU5104</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(VisualStudioVersion)' == '16.0'">
