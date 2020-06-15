@@ -420,7 +420,7 @@ $@"<?xml version=""1.0"" encoding=""utf-8""?>
             }
         }
 
-        [PlatformTheory(Platform.Windows, Skip="https://github.com/NuGet/Home/issues/9674")]
+        [PlatformTheory(Platform.Windows)]
         [InlineData(true)]
         [InlineData(false)]
         public async Task MsbuildRestore_StaticGraphEvaluation_CleanupAssetsForUnsupportedProjectsAsync(bool cleanupAssetsForUnsupportedProjects)

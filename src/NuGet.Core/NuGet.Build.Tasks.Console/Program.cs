@@ -62,23 +62,30 @@ namespace NuGet.Build.Tasks.Console
             MSBuildFeatureFlags.EnableCacheFileEnumerations = true;
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
-
-            // Only wire up an AssemblyResolve event handler if being debugged or running under a unit test
-            if (debug || string.Equals(Environment.GetEnvironmentVariable("UNIT_TEST_RESTORE_TASK"), bool.TrueString, StringComparison.OrdinalIgnoreCase))
+#if NETFRAMEWORK
+            if (AppDomain.CurrentDomain.Id == 1)
             {
-                // The App.config contains relative paths to MSBuild which won't work for locally built copies so an AssemblyResolve event
-                // handler is used in order to locate the MSBuild assemblies
-                string msbuildDirectory = arguments.MSBuildExeFilePath.DirectoryName;
+                // MSBuild.exe.config has binding redirects that change from time to time and its very hard to make sure that NuGet.Build.Tasks.Console.exe.config is correct.
+                // It also can be different per instance of Visual Studio so when running unit tests it always needs to match that instance of MSBuild
+                // The code below runs this EXE in an AppDomain as if its MSBuild.exe so the assembly search location is next to MSBuild.exe and all binding redirects are used
+                // allowing this process to evaluate MSBuild projects as if it is MSBuild.exe
+                var thisAssembly = Assembly.GetExecutingAssembly();
 
-                AppDomain.CurrentDomain.AssemblyResolve += (sender, resolveArgs) =>
-                {
-                    var assemblyName = new AssemblyName(resolveArgs.Name);
+                AppDomain appDomain = AppDomain.CreateDomain(
+                    thisAssembly.FullName,
+                    securityInfo: null,
+                    info: new AppDomainSetup
+                    {
+                        ApplicationBase = arguments.MSBuildExeFilePath.DirectoryName,
+                        ConfigurationFile = Path.Combine(arguments.MSBuildExeFilePath.DirectoryName, "MSBuild.exe.config")
+                    });
 
-                    var path = Path.Combine(msbuildDirectory, $"{assemblyName.Name}.dll");
-
-                    return File.Exists(path) ? Assembly.LoadFrom(path) : null;
-                };
+                return appDomain
+                    .ExecuteAssembly(
+                        thisAssembly.Location,
+                        args);
             }
+#endif
 
             using (var dependencyGraphSpecGenerator = new MSBuildStaticGraphRestore(debug: debug))
             {
