@@ -58,7 +58,7 @@ namespace NuGet.CommandLine.Test
             }
         }
 
-        [Fact]
+        [PlatformFact(Platform.Windows)]
         public void VerifyCommand_WithAuthorSignedPackage_FailsGracefully()
         {
             var nugetExe = Util.GetNuGetExePath();
