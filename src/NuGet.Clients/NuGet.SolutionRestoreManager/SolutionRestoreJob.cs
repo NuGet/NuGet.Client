@@ -257,6 +257,7 @@ namespace NuGet.SolutionRestoreManager
                     // Emit telemetry event for restore operation
                     EmitRestoreTelemetryEvent(
                         projects,
+                        forceRestore,
                         restoreSource,
                         startTime,
                         duration.TotalSeconds,
@@ -267,6 +268,7 @@ namespace NuGet.SolutionRestoreManager
         }
 
         private void EmitRestoreTelemetryEvent(IEnumerable<NuGetProject> projects,
+            bool forceRestore,
             RestoreOperationSource source,
             DateTimeOffset startTime,
             double duration,
@@ -281,6 +283,7 @@ namespace NuGet.SolutionRestoreManager
             var restoreTelemetryEvent = new RestoreTelemetryEvent(
                 _nuGetProjectContext.OperationId.ToString(),
                 projectIds,
+                forceRestore,
                 source,
                 startTime,
                 _status,
