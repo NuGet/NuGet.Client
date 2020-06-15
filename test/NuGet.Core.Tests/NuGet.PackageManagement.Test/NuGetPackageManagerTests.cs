@@ -26,7 +26,9 @@ using NuGet.Protocol.Core.Types;
 using NuGet.Resolver;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
+#if IS_DESKTOP
 using NuGet.VisualStudio;
+#endif
 using Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
@@ -6062,6 +6064,7 @@ namespace NuGet.Test
             }
         }
 
+#if IS_DESKTOP
         [Fact]
         public async Task TestPacMan_PreviewInstallPackage_PackagesConfig_RaiseTelemetryEvents()
         {
@@ -6675,6 +6678,7 @@ namespace NuGet.Test
                     Any(p => (string)p["SubStepName"] == TelemetryConstants.ExecuteActionStepName));
             }
         }
+#endif
 
         [Fact]
         public async Task TestPacManPreviewInstallPackage_WithGlobalPackageFolder()
@@ -7041,6 +7045,7 @@ namespace NuGet.Test
             }
         }
 
+#if IS_DESKTOP
         private class TestNuGetVSTelemetryService : NuGetVSTelemetryService
         {
             private ITelemetrySession _telemetrySession;
@@ -7076,5 +7081,6 @@ namespace NuGet.Test
                 _telemetrySession.PostEvent(telemetryData);
             }
         }
+#endif
     }
 }
