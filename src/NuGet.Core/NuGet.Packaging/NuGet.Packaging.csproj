@@ -47,13 +47,6 @@
     <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Dynamic.Runtime" />
-    <!-- TODO - remove this when temporary patching is no longer necessary. See https://github.com/nuget/home/issues/8952 -->
-    <PackageReference Include="System.Security.Cryptography.Pkcs" />
-    <PackageReference Include="System.Security.Cryptography.Cng" />
-  </ItemGroup>
-
   <ItemGroup>
     <Compile Update="Signing\DerEncoding\SR.Designer.cs">
       <DesignTime>True</DesignTime>
@@ -95,7 +88,7 @@
       <LastGenOutput>NuGetResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
-  
+
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

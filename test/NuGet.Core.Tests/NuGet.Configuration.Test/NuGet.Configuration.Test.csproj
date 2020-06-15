@@ -19,9 +19,7 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" />
     <PackageReference Include="System.Security.Cryptography.ProtectedData" />
-    <PackageReference Include="System.Threading.Tasks.Parallel" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
