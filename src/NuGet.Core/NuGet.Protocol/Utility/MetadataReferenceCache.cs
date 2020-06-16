@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -14,7 +14,7 @@ namespace NuGet.Protocol
     /// </summary>
     public class MetadataReferenceCache
     {
-        private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
+        private readonly HashSet<string> _stringCache = new HashSet<string>(StringComparer.Ordinal);
         private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
 
@@ -35,14 +35,12 @@ namespace NuGet.Protocol
                 return string.Empty;
             }
 
-            string cachedValue;
-            if (!_stringCache.TryGetValue(s, out cachedValue))
+            if (!_stringCache.Contains(s))
             {
-                _stringCache.Add(s, s);
-                cachedValue = s;
+                _stringCache.Add(s);
             }
 
-            return cachedValue;
+            return s;
         }
 
         /// <summary>
@@ -76,7 +74,7 @@ namespace NuGet.Protocol
         /// <summary>
         /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
         /// </summary>
-        public static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+        public static HashSet<Type> CachableTypes => new HashSet<Type>(CachableTypesMap.Keys);
 
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
