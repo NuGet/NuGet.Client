@@ -63,7 +63,7 @@ namespace NuGet.Build.Tasks.Console
             MSBuildFeatureFlags.LoadAllFilesAsReadonly = true;
             MSBuildFeatureFlags.SkipEagerWildcardEvaluations = true;
 #if NETFRAMEWORK
-            if (AppDomain.CurrentDomain.Id == 1)
+            if (AppDomain.CurrentDomain.IsDefaultAppDomain())
             {
                 // MSBuild.exe.config has binding redirects that change from time to time and its very hard to make sure that NuGet.Build.Tasks.Console.exe.config is correct.
                 // It also can be different per instance of Visual Studio so when running unit tests it always needs to match that instance of MSBuild
