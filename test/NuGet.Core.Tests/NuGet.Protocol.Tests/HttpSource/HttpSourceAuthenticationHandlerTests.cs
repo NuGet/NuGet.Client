@@ -492,7 +492,7 @@ namespace NuGet.Protocol.Tests
             yield return new object[] { multipartFormDataContent };
         }
 
-        [Theory]
+        [Theory(Skip = "https://github.com/NuGet/Home/issues/9685")]
         [MemberData(nameof(GetHttpContent))]
         public async Task SendAsync_RetryWithClonedPostRequest(HttpContent httpContent)
         {
