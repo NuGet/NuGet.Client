@@ -1,9 +1,5 @@
 <Project>
   <PropertyGroup>
-    <!-- This project is marked as shipping = true because the nupkg created out of this is utilized for the VS Test Perf Lab and thus needs to be signed -->
-    <IsPackable>true</IsPackable>
-    <Shipping>true</Shipping>
-    <PackProject>true</PackProject>
     <SkipAnalyzers>true</SkipAnalyzers>
   </PropertyGroup>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.test.props" />

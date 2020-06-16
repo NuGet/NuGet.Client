@@ -5,8 +5,6 @@
   <PropertyGroup>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
-    <PackProject>true</PackProject>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <AutoUnifyAssemblyReferences>true</AutoUnifyAssemblyReferences>
     <Description>Package Management UI elements for Visual Studio, Package Manager UI, Migrator, Options dialog.</Description>
     <RestoreNuGetPackages>true</RestoreNuGetPackages>
@@ -542,7 +540,4 @@
     </Content>
   </ItemGroup>
   <ItemGroup />
-  <PropertyGroup>
-    <IncludeContentInPack>false</IncludeContentInPack>
-  </PropertyGroup>
 </Project>
