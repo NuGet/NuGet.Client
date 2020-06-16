@@ -1,9 +1,10 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
 using System.Xml;
 using System.Xml.Linq;
+using static NuGet.Shared.XmlUtility;
 
 namespace NuGet.ProjectManagement
 {
@@ -15,7 +16,7 @@ namespace NuGet.ProjectManagement
             {
                 try
                 {
-                    return Shared.XmlUtility.Load(Path.Combine(root, path), LoadOptions.PreserveWhitespace);
+                    return Load(Path.Combine(root, path), LoadOptions.PreserveWhitespace);
                 }
                 catch (FileNotFoundException) { }
             }
