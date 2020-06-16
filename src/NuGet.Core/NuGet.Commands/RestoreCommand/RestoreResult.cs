@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -119,7 +121,7 @@ namespace NuGet.Commands
             _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
-            LogMessages = lockFile.LogMessages;
+            LogMessages = lockFile?.LogMessages ?? new List<IAssetsLogMessage>();
         }
 
         /// <summary>
