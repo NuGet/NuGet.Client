@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
@@ -394,7 +395,7 @@ namespace Test.Utility.Signing
             var request = new CertificateRequest(subjectDN, algorithm, hashAlgorithm, RSASignaturePadding.Pkcs1);
 
             request.CertificateExtensions.Add(
-                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0,  critical: true));
+                new X509BasicConstraintsExtension(certificateAuthority: true, hasPathLengthConstraint: false, pathLengthConstraint: 0, critical: true));
             request.CertificateExtensions.Add(
                 new X509SubjectKeyIdentifierExtension(request.PublicKey, critical: false));
             request.CertificateExtensions.Add(
@@ -664,25 +665,14 @@ namespace Test.Utility.Signing
         //So if we use APIs above to verify the results of chain.build, we should use AssertOfflineRevocation 
         public static void AssertOfflineRevocation(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string offlineRevocation;
+            string offlineRevocation = X509ChainStatusFlags.OfflineRevocation.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                offlineRevocation = "The revocation function was unable to check revocation because the revocation server was offline";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                offlineRevocation = "An incomplete certificate revocation check occurred.";
-            }
-            else
-            {
-                offlineRevocation = "unable to get certificate CRL";
-            }
-
-            Assert.Contains(issues, issue =>
+            bool isOfflineRevocation = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(offlineRevocation));
+                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == offlineRevocation).Any());
+
+            Assert.True(isOfflineRevocation);
         }
 
         //We will change the original X509ChainStatus.StatusInformation of OfflineRevocation to VerifyCertTrustOfflineWhileRevocationModeOffline or VerifyCertTrustOfflineWhileRevocationModeOnline in Signature.cs and Timestamp.cs
@@ -710,48 +700,26 @@ namespace Test.Utility.Signing
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel, NuGetLogCode code)
         {
-            string revocationStatusUnknown;
+            string revocationStatusUnknown = X509ChainStatusFlags.RevocationStatusUnknown.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                revocationStatusUnknown = "The revocation function was unable to check revocation for the certificate";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                revocationStatusUnknown = "An incomplete certificate revocation check occurred.";
-            }
-            else
-            {
-                revocationStatusUnknown = "unable to get certificate CRL";
-            }
-            
-            Assert.Contains(issues, issue =>
+            bool isRevocationStatusUnknown = issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(revocationStatusUnknown));
+                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == revocationStatusUnknown).Any());
+
+            Assert.True(isRevocationStatusUnknown);
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, NuGetLogCode code, LogLevel logLevel)
         {
-            string untrustedRoot;
+            string untrustedRoot = X509ChainStatusFlags.UntrustedRoot.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                untrustedRoot = "A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                untrustedRoot = "The certificate was not trusted.";
-            }
-            else
-            {
-                untrustedRoot = "self signed certificate";
-            }
-
-            Assert.Contains(issues, issue =>
+            bool isUntrustedRoot = issues.Any(issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(untrustedRoot));
+                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == untrustedRoot).Any()); ;
+
+            Assert.True(isUntrustedRoot);
         }
 
         public static void AssertUntrustedRoot(IEnumerable<ILogMessage> issues, LogLevel logLevel)
@@ -761,25 +729,14 @@ namespace Test.Utility.Signing
 
         public static void AssertNotTimeValid(IEnumerable<ILogMessage> issues, LogLevel logLevel)
         {
-            string notTimeValid;
+            string notTimeValid = X509ChainStatusFlags.NotTimeValid.ToString();
 
-            if (RuntimeEnvironmentHelper.IsWindows)
-            {
-                notTimeValid = "A required certificate is not within its validity period when verifying against the current system clock or the timestamp in the signed file";
-            }
-            else if (RuntimeEnvironmentHelper.IsMacOSX)
-            {
-                notTimeValid = "An expired certificate was detected.";
-            }
-            else
-            {
-                notTimeValid = "certificate has expired";
-            }
-            
-            Assert.Contains(issues, issue =>
+            bool isNotTimeValid = issues.Any(issue =>
                 issue.Code == NuGetLogCode.NU3018 &&
                 issue.Level == logLevel &&
-                issue.Message.Contains(notTimeValid));
+                issue.Message.Split(new[] { ' ', ':' }).Where(WORDEXTFLAGS => WORDEXTFLAGS == notTimeValid).Any());
+
+            Assert.True(isNotTimeValid);
         }
 
         public static string AddSignatureLogPrefix(string log, PackageIdentity package, string source)
