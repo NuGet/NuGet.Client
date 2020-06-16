@@ -216,7 +216,7 @@ namespace NuGet.CommandLine
 
             // environment variables control showing dialogs
             bool cannotShowDialog = string.Equals(Environment.GetEnvironmentVariable("CODESPACES"), bool.TrueString, StringComparison.OrdinalIgnoreCase)
-                || string.Equals(Environment.GetEnvironmentVariable("NUGET_CANNOT_SHOW_DIALOG"), bool.TrueString, StringComparison.OrdinalIgnoreCase);
+                || string.Equals(Environment.GetEnvironmentVariable("NUGET_EXE_NO_DIALOG"), bool.TrueString, StringComparison.OrdinalIgnoreCase);
 
             var securePluginProviders = await (new SecurePluginCredentialProviderBuilder(PluginManager.Instance, canShowDialog: !cannotShowDialog, logger: Console)).BuildAllAsync();
 
