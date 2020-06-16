@@ -22,9 +22,9 @@ namespace NuGet.PackageManagement.VisualStudio
 
         [ImportingConstructor]
         public VsProjectAdapterProvider(
-            IVsProjectThreadingService threadingService,
             [Import(typeof(SAsyncServiceProvider))]
-            IAsyncServiceProvider serviceProvider)
+            IAsyncServiceProvider serviceProvider,
+            IVsProjectThreadingService threadingService)
             : this(
                   threadingService,
                   new AsyncLazy<IDeferredProjectWorkspaceService>(() => serviceProvider.GetServiceAsync<IDeferredProjectWorkspaceService>(), threadingService.JoinableTaskFactory),

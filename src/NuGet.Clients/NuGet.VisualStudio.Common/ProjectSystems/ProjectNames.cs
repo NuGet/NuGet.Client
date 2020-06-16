@@ -64,11 +64,16 @@ namespace NuGet.VisualStudio
                 throw new ArgumentException(Resources.Argument_Cannot_Be_Null_Or_Empty, nameof(projectId));
             }
 
+            if (!Guid.TryParse(projectId, out var projectGuid) || projectGuid == Guid.Empty)
+            {
+                throw new ArgumentException(Resources.Argument_Invalid_GUID, nameof(projectId));
+            }
+
             FullName = fullName;
             UniqueName = uniqueName;
             ShortName = shortName;
             CustomUniqueName = customUniqueName;
-            ProjectId = projectId;
+            ProjectId = projectGuid.ToString(); // normalize the project id, just in case.
         }
 
         /// <summary>
