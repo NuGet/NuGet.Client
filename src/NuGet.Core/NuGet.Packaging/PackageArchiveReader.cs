@@ -381,7 +381,7 @@ namespace NuGet.Packaging
         public override bool CanVerifySignedPackages(SignedPackageVerifierSettings verifierSettings)
         {
 #if IS_SIGNING_SUPPORTED
-            // Mono support has been deprioritized, so verification on Mono is not enabled
+            // Mono support has been deprioritized, so verification on Mono is not enabled, tracking issue: https://github.com/NuGet/Home/issues/9027
             if (RuntimeEnvironmentHelper.IsMono)
             {
                 return false;
