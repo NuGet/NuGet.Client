@@ -27,9 +27,9 @@ namespace NuGet.CommandLine.FuncTest.Commands
         private static readonly string _NU3008 = "NU3008: {0}";
         private static readonly string _NU3027Message = "The signature should be timestamped to enable long-term signature validity after the certificate has expired.";
         private static readonly string _NU3027 = "NU3027: {0}";
-        private static readonly string _NU3012Message = "The author primary signature found a chain building issue: The certificate is revoked.";
+        private static readonly string _NU3012Message = "The author primary signature found a chain building issue: Revoked: The certificate is revoked.";
         private static readonly string _NU3012 = "NU3012: {0}";
-        private static readonly string _NU3018Message = "The author primary signature found a chain building issue: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
+        private static readonly string _NU3018Message = "The author primary signature found a chain building issue: UntrustedRoot: A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider.";
         private static readonly string _NU3018 = "NU3018: {0}";
 
         private SignCommandTestFixture _testFixture;

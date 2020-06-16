@@ -98,17 +98,17 @@ namespace NuGet.Packaging.Test
                 Assert.Equal(1, logger.Errors);
                 SigningTestUtility.AssertUntrustedRoot(logger.LogMessages, LogLevel.Error);
 
-                SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                 if (RuntimeEnvironmentHelper.IsWindows)
                 {
                     Assert.Equal(2, logger.Warnings);
-                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
                 }
                 else if (RuntimeEnvironmentHelper.IsLinux)
                 {
 #if NETCORE5_0
                     Assert.Equal(2, logger.Warnings);
-                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
 #else
                     Assert.Equal(1, logger.Warnings);
 #endif
@@ -149,7 +149,7 @@ namespace NuGet.Packaging.Test
 #if !NETCORE5_0
                 if (RuntimeEnvironmentHelper.IsLinux)
                 {
-                    SigningTestUtility.AssertOfflineRevocation(logger.LogMessages, LogLevel.Warning);
+                    SigningTestUtility.AssertRevocationStatusUnknown(logger.LogMessages, LogLevel.Warning);
                 }
 #endif
             }
