@@ -13,6 +13,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Moq;
 using NuGet.Configuration;
+using NuGet.Test.Utility;
 using Xunit;
 
 namespace NuGet.Protocol.Tests
@@ -493,7 +494,7 @@ namespace NuGet.Protocol.Tests
         }
 
         //Skipped Linux: https://github.com/NuGet/Home/issues/9685
-        [PlatformTheory(platforms: new string[] { Platform.Windows, Platform.Darwin })]
+        [PlatformTheory(Platform.Windows, Platform.Darwin)]
         [MemberData(nameof(GetHttpContent))]
         public async Task SendAsync_RetryWithClonedPostRequest(HttpContent httpContent)
         {
