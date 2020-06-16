@@ -7,11 +7,9 @@ $ConfigureJson = Join-Path $Artifacts configure.json
 $BuiltInVsWhereExe = "${Env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe"
 $VSVersion = $env:VisualStudioVersion
 $DotNetExe = Join-Path $CLIRoot 'dotnet.exe'
-$XunitConsole = Join-Path $NuGetClientRoot 'packages\xunit.runner.console\2.1.0\tools\xunit.console.exe'
 $ILMerge = Join-Path $NuGetClientRoot 'packages\ilmerge\2.14.1208\tools\ILMerge.exe'
 
 Set-Alias dotnet $DotNetExe
-Set-Alias xunit $XunitConsole
 Set-Alias ilmerge $ILMerge
 
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
@@ -176,7 +174,7 @@ Function Install-DotnetCLI {
         Version = 'latest'
         Channel = $CliBranchForTesting.Trim()
     }
-    
+
     $DotNetExe = Join-Path $cli.Root 'dotnet.exe';
 
     if ([Environment]::Is64BitOperatingSystem) {
@@ -222,7 +220,7 @@ Function Get-LatestVisualStudioRoot {
         $script:FallbackVSVersion = "$majorVersion.0"
 
         return $installationPath
-    } 
+    }
 
     Error-Log "Could not find a compatible Visual Studio Version because $BuiltInVsWhereExe does not exist" -Fatal
 }
