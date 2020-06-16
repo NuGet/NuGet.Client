@@ -492,7 +492,8 @@ namespace NuGet.Protocol.Tests
             yield return new object[] { multipartFormDataContent };
         }
 
-        [PlatformTheory(SkipPlatform = Platform.Linux, Skip = "https://github.com/NuGet/Home/issues/9685")]
+        //Skipped Linux: https://github.com/NuGet/Home/issues/9685
+        [PlatformTheory(platforms: new string[] { Platform.Windows, Platform.Darwin })]
         [MemberData(nameof(GetHttpContent))]
         public async Task SendAsync_RetryWithClonedPostRequest(HttpContent httpContent)
         {
