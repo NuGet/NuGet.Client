@@ -124,7 +124,7 @@ namespace NuGet.XPlat.FuncTest
             Assert.Equal(1, exitCode);
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertAddCommand_Fail_StoreCertificateNotExist()
         {
@@ -155,7 +155,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateAbsolute()
         {
@@ -192,7 +192,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateNotExistForce()
         {
@@ -232,7 +232,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertAddCommand_Success_FileCertificateRelative()
         {
@@ -273,7 +273,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertAddCommand_Success_StoreCertificate()
         {
@@ -387,7 +387,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertListCommand_Success_NotEmptyList()
         {
@@ -457,7 +457,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertRemoveCommand_Success_ItemCertificate()
         {
@@ -585,7 +585,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertUpdateCommand_Success_FileCertificateForce()
         {
@@ -686,7 +686,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, SkipMono = true)]
         public void ClientCertUpdatedCommand_Fail_FileCertificateNotExist()
         {
@@ -763,7 +763,7 @@ namespace NuGet.XPlat.FuncTest
             }
         }
 
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, Platform.Linux, SkipMono = true)]
         public void ClientCertUpdatedCommand_Fail_StoreCertificateNotExist()
         {

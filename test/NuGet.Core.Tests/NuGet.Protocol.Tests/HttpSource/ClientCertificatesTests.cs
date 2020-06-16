@@ -14,7 +14,7 @@ namespace NuGet.Protocol.Tests
 {
     public class ClientCertificatesTests
     {
-        // https://github.com/NuGet/Home/issues/9684
+        // Skip: https://github.com/NuGet/Home/issues/9684
         [PlatformFact(Platform.Windows, Platform.Linux)]
         public void EnsurePackageSourceClientCertificatesForwardedToV3HttpClientHandler()
         {
