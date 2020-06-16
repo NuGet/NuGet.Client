@@ -213,7 +213,12 @@ namespace NuGet.CommandLine
             var pluginProviders = new PluginCredentialProviderBuilder(extensionLocator, Settings, Console)
                 .BuildAll(Verbosity.ToString())
                 .ToList();
-            var securePluginProviders = await (new SecurePluginCredentialProviderBuilder(PluginManager.Instance, canShowDialog: true, logger: Console)).BuildAllAsync();
+
+            // environment variables control showing dialogs
+            bool cannotShowDialog = string.Equals(Environment.GetEnvironmentVariable("CODESPACES"), bool.TrueString, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(Environment.GetEnvironmentVariable("NUGET_CANNOT_SHOW_DIALOG"), bool.TrueString, StringComparison.OrdinalIgnoreCase);
+
+            var securePluginProviders = await (new SecurePluginCredentialProviderBuilder(PluginManager.Instance, canShowDialog: !cannotShowDialog, logger: Console)).BuildAllAsync();
 
             providers.Add(new CredentialProviderAdapter(new SettingsCredentialProvider(SourceProvider, Console)));
             providers.AddRange(securePluginProviders);
