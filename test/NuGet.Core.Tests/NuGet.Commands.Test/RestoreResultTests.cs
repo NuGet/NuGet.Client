@@ -7,10 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Linq;
 using Xunit;
-using NuGet.Commands;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
-using FluentAssertions.Common;
+using NuGet.Common;
+using FluentAssertions;
+using System.Collections.Generic;
 
 namespace NuGet.Commands.Test
 {
@@ -148,7 +149,7 @@ namespace NuGet.Commands.Test
                 var result = new NoOpRestoreResult(
                     success: true,
                     lockFilePath: path,
-                    new Lazy<LockFile>(() => new LockFile()), 
+                    new Lazy<LockFile>(() => new LockFile()),
                     cacheFile: new CacheFile("NotSoRandomString"),
                     cacheFilePath: cachePath,
                     projectStyle: ProjectStyle.Unknown,
@@ -288,6 +289,124 @@ namespace NuGet.Commands.Test
                     logger.VerboseMessages);
                 Assert.True(File.Exists(dgSpecPath));
             }
+        }
+
+        [Fact]
+        public void WhenRestoreResult_LogMessagesAreSourcedFromTheAssetsFile()
+        {
+            // Arrange
+            var expectedLogLevel = NuGetLogCode.NU1500;
+            var assetsLogMessage = new AssetsLogMessage(LogLevel.Error, expectedLogLevel, "a");
+            var cacheLogMessage = new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1501, "a");
+
+            var lockFile = new LockFile();
+            lockFile.LogMessages.Add(assetsLogMessage);
+
+            var cacheFile = new CacheFile("hash")
+            {
+                Success = true,
+                LogMessages = new List<IAssetsLogMessage>() { cacheLogMessage },
+            };
+
+            // Act 
+            var result = new RestoreResult(
+                success: true,
+                restoreGraphs: null,
+                compatibilityCheckResults: null,
+                lockFile: lockFile,
+                previousLockFile: null,
+                lockFilePath: "project.assets.json",
+                msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                cacheFile: cacheFile,
+                cacheFilePath: null,
+                packagesLockFilePath: null,
+                packagesLockFile: null,
+                dependencyGraphSpecFilePath: null,
+                dependencyGraphSpec: null,
+                projectStyle: ProjectStyle.PackageReference,
+                elapsedTime: TimeSpan.MinValue);
+
+            // Assert
+            result.LogMessages.Should().NotBeNull();
+            result.LogMessages.Should().HaveCount(1);
+            result.LogMessages.Single().Code.Should().Be(expectedLogLevel);
+        }
+
+        [Fact]
+        public void WhenNoOpRestoreResult_LogMessagesAreSourcedFromTheCacheFile()
+        {
+            // Arrange
+            var expectedLogLevel = NuGetLogCode.NU1500;
+            var assetsLogMessage = new AssetsLogMessage(LogLevel.Error, NuGetLogCode.NU1501, "a");
+            var cacheLogMessage = new AssetsLogMessage(LogLevel.Error, expectedLogLevel, "a");
+
+            var lockFile = new LockFile();
+            lockFile.LogMessages.Add(assetsLogMessage);
+
+            var cacheFile = new CacheFile("hash")
+            {
+                Success = true,
+                LogMessages = new List<IAssetsLogMessage>() { cacheLogMessage },
+            };
+
+            // Act
+            var result = new NoOpRestoreResult(
+                   success: true,
+                   lockFilePath: "project.assets.json",
+                   new Lazy<LockFile>(() => lockFile),
+                   cacheFile: cacheFile,
+                   cacheFilePath: "cachepath",
+                   projectStyle: ProjectStyle.PackageReference,
+                   elapsedTime: TimeSpan.MinValue);
+
+            // Assert
+            result.LogMessages.Should().NotBeNull();
+            result.LogMessages.Should().HaveCount(1);
+            result.LogMessages.Single().Code.Should().Be(expectedLogLevel);
+        }
+
+        [Fact]
+        public void WhenRestoreResult_WithNullAssetsFile_LogMessagesAreEmpty()
+        {
+            // Arrange & Act
+            var result = new RestoreResult(
+                success: true,
+                restoreGraphs: null,
+                compatibilityCheckResults: null,
+                lockFile: null,
+                previousLockFile: null,
+                lockFilePath: "project.assets.json",
+                msbuildFiles: Enumerable.Empty<MSBuildOutputFile>(),
+                cacheFile: null,
+                cacheFilePath: null,
+                packagesLockFilePath: null,
+                packagesLockFile: null,
+                dependencyGraphSpecFilePath: null,
+                dependencyGraphSpec: null,
+                projectStyle: ProjectStyle.PackageReference,
+                elapsedTime: TimeSpan.MinValue);
+
+            // Assert
+            result.LogMessages.Should().NotBeNull();
+            result.LogMessages.Should().HaveCount(0);
+        }
+
+        [Fact]
+        public void WhenNoOpRestoreResult_WithNullCacheFile_LogMessagesAreEmpty()
+        {
+            // Arrange & Act
+            var result = new NoOpRestoreResult(
+                   success: true,
+                   lockFilePath: "project.assets.json",
+                   new Lazy<LockFile>(() => null),
+                   cacheFile: null,
+                   cacheFilePath: "cachepath",
+                   projectStyle: ProjectStyle.PackageReference,
+                   elapsedTime: TimeSpan.MinValue);
+
+            // Assert
+            result.LogMessages.Should().NotBeNull();
+            result.LogMessages.Should().HaveCount(0);
         }
     }
 }
