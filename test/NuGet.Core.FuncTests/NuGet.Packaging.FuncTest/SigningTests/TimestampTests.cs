@@ -89,10 +89,9 @@ namespace NuGet.Packaging.FuncTest
                     else
                     {
                         errors.Count().Should().Be(2);
-                        SigningTestUtility.AssertRevocationStatusUnknown(errors, LogLevel.Error, NuGetLogCode.NU3028);
+                        SigningTestUtility.AssertOfflineRevocationOnlineMode(errors, LogLevel.Error, NuGetLogCode.NU3028);
                     }
-                    
-                    SigningTestUtility.AssertOfflineRevocationOnlineMode(errors, LogLevel.Error, NuGetLogCode.NU3028);
+                    SigningTestUtility.AssertRevocationStatusUnknown(errors, LogLevel.Error, NuGetLogCode.NU3028);
                 }
             }
         }
