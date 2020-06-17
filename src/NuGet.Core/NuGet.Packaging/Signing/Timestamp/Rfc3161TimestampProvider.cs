@@ -72,7 +72,7 @@ namespace NuGet.Packaging.Signing
         /// <summary>
         /// Timestamps data present in the TimestampRequest.
         /// </summary>
-        public async Task<SignedCms> GetTimestampAsync(TimestampRequest request, ILogger logger, CancellationToken token)
+        internal async Task<SignedCms> GetTimestampAsync(TimestampRequest request, ILogger logger, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
