@@ -1486,7 +1486,7 @@ namespace NuGet.PackageManagement.UI
         private void PackageList_UpdateButtonClicked(PackageItemListViewModel[] selectedPackages)
         {
             var packagesToUpdate = selectedPackages
-                .Select(package => new PackageIdentity(package.Id, package.Version))
+                .Select(package => new PackageIdentity(package.Id, package.LatestVersion))
                 .ToList();
 
             UpdatePackage(packagesToUpdate);
