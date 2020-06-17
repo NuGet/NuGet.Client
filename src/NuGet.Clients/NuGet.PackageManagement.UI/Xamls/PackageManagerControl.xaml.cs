@@ -733,7 +733,6 @@ namespace NuGet.PackageManagement.UI
 
                 _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
             });
-            //.FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(PackageManagerControl), nameof(SearchPackagesAndRefreshUpdateCount)));
         }
 
         /// <summary>

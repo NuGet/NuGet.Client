@@ -202,7 +202,7 @@ namespace NuGet.PackageManagement.UI
             _selectedCount = 0;
 
             // triggers the package list loader
-            LoadItems(selectedPackageItem, token, applyUIFilterUpdatesAvailable: tabToRender == ItemFilter.UpdatesAvailable);
+            LoadItems(selectedPackageItem, token);
         }
 
         /// <summary>
@@ -223,7 +223,7 @@ namespace NuGet.PackageManagement.UI
             _list.SelectedItem = selectedItem ?? PackageItemsFiltered.FirstOrDefault();
         }
 
-        private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token, bool applyUIFilterUpdatesAvailable = false)
+        private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token)
         {
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
@@ -329,13 +329,10 @@ namespace NuGet.PackageManagement.UI
 
             _joinableTaskFactory.Value.RunAsync(async () =>
             {
-                await TaskScheduler.Default;
-
                 try
                 {
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                    //**********************************************************************************
                     if (itemFilter == ItemFilter.UpdatesAvailable)
                     {
                         ApplyItemsFilterForUpdatesAvailable();
@@ -345,12 +342,6 @@ namespace NuGet.PackageManagement.UI
                         //Show all the items, without an Update filter.
                         ClearItemsFilter();
                     }
-
-                    //TODO: remove
-                    //if (_ltbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
-                    //{
-                    //    _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
-                    //}
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
@@ -365,7 +356,6 @@ namespace NuGet.PackageManagement.UI
                     _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
                     _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
 
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;

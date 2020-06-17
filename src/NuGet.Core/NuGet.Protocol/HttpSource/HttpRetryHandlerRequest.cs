@@ -23,7 +23,6 @@ namespace NuGet.Protocol
             CompletionOption = HttpCompletionOption.ResponseHeadersRead;
             MaxTries = DefaultMaxTries;
 
-            //TODO remove this!
 #if DEBUG
             RequestTimeout = TimeSpan.FromSeconds(300);
             RetryDelay = TimeSpan.FromMilliseconds(800);
