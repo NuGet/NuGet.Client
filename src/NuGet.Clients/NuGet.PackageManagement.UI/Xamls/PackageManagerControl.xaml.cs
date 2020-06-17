@@ -1157,6 +1157,8 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                _packageList.LoadOnScrolling = _topPanel.Filter != ItemFilter.Installed
+                                            && _topPanel.Filter != ItemFilter.UpdatesAvailable;
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
@@ -1427,6 +1429,10 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
+                    //Invalidate cache.
+                    Model.CachedUpdates = null;
+                    ResetTabLoadFlags();
+
                     _actionCompleted?.Invoke(this, EventArgs.Empty);
                     NuGetEventTrigger.Instance.TriggerEvent(NuGetEvent.PackageOperationEnd);
                     IsEnabled = true;

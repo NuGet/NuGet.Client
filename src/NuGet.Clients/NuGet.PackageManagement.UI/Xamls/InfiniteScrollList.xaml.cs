@@ -96,20 +96,8 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        // Indicates wether check boxes are enabled on packages
-        private bool _checkBoxesEnabled;
-
-        public bool CheckBoxesEnabled
-        {
-            get
-            {
-                return _checkBoxesEnabled;
-            }
-            set
-            {
-                _checkBoxesEnabled = value;
-            }
-        }
+        public bool LoadOnScrolling { get; set; }
+        public bool CheckBoxesEnabled { get; set; }
 
         public bool IsSolution { get; set; }
 
@@ -122,14 +110,9 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private List<PackageItemListViewModel> ItemsFiltered
-        {
-            get
-            {
-                return CollectionView.OfType<PackageItemListViewModel>().ToList();
-            }
-        }
-
+        /// <summary>
+        /// Count of Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
+        /// </summary>
         private int FilterCount
         {
             get
@@ -137,17 +120,37 @@ namespace NuGet.PackageManagement.UI
                 if (CollectionView.Filter != null)
                 {
                     var listCollectionView = (ListCollectionView)CollectionView;
-                    return listCollectionView.Count;
+                    return listCollectionView.OfType<PackageItemListViewModel>().Count();
                 }
                 else
                 {
-                    return Items.Count;
+                    return Items.OfType<PackageItemListViewModel>().Count();
                 }
             }
         }
 
-        public IEnumerable<PackageItemListViewModel> PackageItemsFiltered => ItemsFiltered.ToArray();
+        /// <summary>
+        /// All loaded Items (excluding Loading indicator) regardless of filtering.
+        /// </summary>
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
+
+        /// <summary>
+        /// Items (excluding Loading indicator) that are currently shown after applying any UI filtering.
+        /// </summary>
+        public IEnumerable<PackageItemListViewModel> PackageItemsFiltered
+        {
+            get
+            {
+                if (CollectionView.Filter != null)
+                {
+                    return CollectionView.OfType<PackageItemListViewModel>();
+                }
+                else
+                {
+                    return PackageItems;
+                }
+            }
+        }
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
 
@@ -247,11 +250,8 @@ namespace NuGet.PackageManagement.UI
 
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                    //If we refreshed, then any filter should be cleared.
-                    if (!applyUIFilterUpdatesAvailable)
-                    {
-                        ClearItemsFilter();
-                    }
+                    //Any UI filter should be cleared when Loading.
+                    ClearItemsFilter();
 
                     if (selectedPackageItem != null)
                     {
@@ -272,7 +272,6 @@ namespace NuGet.PackageManagement.UI
                     _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
 
                     _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
 
                     _loadingStatusBar.SetCancelled();
                     _loadingStatusBar.Visibility = Visibility.Visible;
@@ -332,17 +331,8 @@ namespace NuGet.PackageManagement.UI
             {
                 await TaskScheduler.Default;
 
-                var addedLoadingIndicator = false;
-
                 try
                 {
-                    // TODO: REMOVE: add Loading... indicator if not present
-                    if (!Items.Contains(_loadingStatusIndicator))
-                    {
-                        Items.Add(_loadingStatusIndicator);
-                        addedLoadingIndicator = true;
-                    }
-
                     await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     //**********************************************************************************
@@ -400,18 +390,19 @@ namespace NuGet.PackageManagement.UI
                 }
                 finally
                 {
-                    if (_loadingStatusIndicator.Status != LoadingStatus.NoItemsFound
-                        && _loadingStatusIndicator.Status != LoadingStatus.ErrorOccurred)
+                    //If no items are shown in the filter, indicate in the list that no packages are found.
+                    if (FilterCount == 0)
                     {
-                        // Ideally, After a search, it should report its status and,
-                        // do not keep the LoadingStatus.Loading forever.
-                        // This is a workaround.
-                        var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                        if (FilterCount == emptyListCount)
+                        if (!Items.Contains(_loadingStatusIndicator))
                         {
-                            _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                            Items.Add(_loadingStatusIndicator);
                         }
-                        else
+                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                    }
+                    else
+                    {
+                        //There are packages, but since no loading will occur, there's no need for an indicator.
+                        if (Items.Contains(_loadingStatusIndicator))
                         {
                             Items.Remove(_loadingStatusIndicator);
                         }
@@ -682,24 +673,16 @@ namespace NuGet.PackageManagement.UI
         // Update the status of the _selectAllPackages check box and the Update button.
         private void UpdateCheckBoxStatus()
         {
+            // The current tab is not "Updates".
             if (!CheckBoxesEnabled)
             {
-                // the current tab is not "updates"
                 _updateButtonContainer.Visibility = Visibility.Collapsed;
                 return;
             }
 
-            int packageCount = FilterCount;// CollectionView.Count;
+            //Are any packages shown with the current filter?
+            int packageCount = FilterCount;
 
-            if (packageCount > 0)
-            {
-                if (Items[packageCount - 1] == _loadingStatusIndicator)
-                {
-                    packageCount--;
-                }
-            }
-
-            // update the container's visibility
             _updateButtonContainer.Visibility =
                 packageCount > 0 ?
                 Visibility.Visible :
@@ -781,13 +764,16 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
+            if (LoadOnScrolling)
             {
-                var first = _scrollViewer.VerticalOffset;
-                var last = _scrollViewer.ViewportHeight + first;
-                if (_scrollViewer.ViewportHeight > 0 && last >= FilterCount)
+                if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
                 {
-                    LoadItems(selectedPackageItem: null, token: CancellationToken.None);
+                    var first = _scrollViewer.VerticalOffset;
+                    var last = _scrollViewer.ViewportHeight + first;
+                    if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
+                    {
+                        LoadItems(selectedPackageItem: null, token: CancellationToken.None);
+                    }
                 }
             }
         }
