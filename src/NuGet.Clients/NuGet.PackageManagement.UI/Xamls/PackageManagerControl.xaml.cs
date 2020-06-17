@@ -801,8 +801,6 @@ namespace NuGet.PackageManagement.UI
         {
             await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
-            //If we're on the Updates tab, actually load the Installed tab's data and apply a filter.
-            //ItemFilter filterToLoad = _topPanel.Filter == ItemFilter.UpdatesAvailable ? ItemFilter.Installed : _topPanel.Filter;
             ItemFilter filterToRender = _topPanel.Filter;
 
             var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
@@ -856,7 +854,7 @@ namespace NuGet.PackageManagement.UI
                     FlagTabAsLoaded(ItemFilter.UpdatesAvailable);
                 }
             }
-            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
                 //Invalidate cache.
                 Model.CachedUpdates = null;
@@ -1192,11 +1190,6 @@ namespace NuGet.PackageManagement.UI
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
-
-                Dispatcher.BeginInvoke(new Action(() =>
-                {
-                    _performanceMetrics.TimeSinceDispatcher = GetTimeSinceLastUserAction();
-                }), DispatcherPriority.Input);
             }
         }
 
