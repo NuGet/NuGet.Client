@@ -31,7 +31,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using NuGet.Protocol;
 using Microsoft.VisualStudio.Experimentation;
-using System.Windows.Threading;
 
 namespace NuGet.PackageManagement.UI
 {
@@ -104,7 +103,6 @@ namespace NuGet.PackageManagement.UI
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
         private readonly Stopwatch _sinceUserAction;
-        private PerformanceMetrics _performanceMetrics;
         private bool _installedTabIsLoaded;
         private bool _updatesTabIsLoaded;
 
@@ -120,7 +118,6 @@ namespace NuGet.PackageManagement.UI
             VSThreadHelper.ThrowIfNotOnUIThread();
             _sinceLastRefresh = Stopwatch.StartNew();
             _sinceUserAction = new Stopwatch();
-            _performanceMetrics = new PerformanceMetrics();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -346,7 +343,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, PerformanceMetrics performanceMetrics = null)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, TimeSpan? timeSinceLastUserAction = null)
         {
             TelemetryActivity.EmitTelemetryEvent(
                                 new PackageManagerUIRefreshEvent(
@@ -356,7 +353,7 @@ namespace NuGet.PackageManagement.UI
                                     status,
                                     _topPanel.Filter.ToString(),
                                     timeSpan,
-                                    performanceMetrics));
+                                    timeSinceLastUserAction));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -369,7 +366,7 @@ namespace NuGet.PackageManagement.UI
             }
             return elapsed;
         }
-
+      
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -1149,7 +1146,7 @@ namespace NuGet.PackageManagement.UI
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
-            RestartUserActionMetrics();
+            RestartUserActionClock();
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -1184,7 +1181,6 @@ namespace NuGet.PackageManagement.UI
                     }
 
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
-                    _performanceMetrics.TimeSinceSearchCompleted = GetTimeSinceLastUserAction();
                 }
 
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
@@ -1571,9 +1567,8 @@ namespace NuGet.PackageManagement.UI
                                 nameof(UpgradeButton_Click)));
         }
 
-        private void RestartUserActionMetrics()
+        private void RestartUserActionClock()
         {
-            _performanceMetrics = new PerformanceMetrics();
             _sinceUserAction.Restart();
         }
 

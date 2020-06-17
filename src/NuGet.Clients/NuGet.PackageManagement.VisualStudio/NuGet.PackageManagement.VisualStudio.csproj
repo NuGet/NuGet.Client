@@ -161,7 +161,6 @@
     <Compile Include="SourceControl\VsSourceControlTracker.cs" />
     <Compile Include="Telemetry\NuGetProjectType.cs" />
     <Compile Include="Telemetry\PackageManagerUIRefreshEvent.cs" />
-    <Compile Include="Telemetry\PerformanceMetrics.cs" />
     <Compile Include="Telemetry\ProjectTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchPageTelemetryEvent.cs" />
     <Compile Include="Telemetry\SearchSelectionTelemetryEvent.cs" />
