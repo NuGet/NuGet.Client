@@ -632,10 +632,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance, vsSolution2);
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance, asyncLazySolution2);
 
             // Act
             var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
@@ -673,10 +674,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance, vsSolution2);
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance, asyncLazySolution2);
 
             // Act
             var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
@@ -1401,10 +1403,11 @@ namespace NuGet.SolutionRestoreManager.Test
             var projectFullPath = cps.ProjectFullPath;
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance, vsSolution2);
+                cache, restoreWorker, NullLogger.Instance, asyncLazySolution2);
 
             var result = await service.NominateProjectAsync(projectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None);
 
@@ -1694,10 +1697,11 @@ namespace NuGet.SolutionRestoreManager.Test
             var completedRestoreTask = Task.FromResult(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance, vsSolution2);
+                cache, restoreWorker, NullLogger.Instance, asyncLazySolution2);
 
             // Act
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
@@ -2074,9 +2078,10 @@ namespace NuGet.SolutionRestoreManager.Test
             {
                 logger = new Mock<ILogger>();
             }
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, vsSolution2);
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2);
 
             return service.NominateProjectAsync(projectFullPath, pri, cancellationToken);
         }
@@ -2103,9 +2108,10 @@ namespace NuGet.SolutionRestoreManager.Test
             {
                 logger = new Mock<ILogger>();
             }
-            var vsSolution2 = Mock.Of<Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, vsSolution2);
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2);
 
             return service.NominateProjectAsync(projectFullPath, pri, cancellationToken);
         }
