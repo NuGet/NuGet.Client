@@ -687,7 +687,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
         }
 
         public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
@@ -700,7 +700,7 @@ namespace Test.Utility.Signing
             Assert.Contains(issues, issue =>
                 issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
