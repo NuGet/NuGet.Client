@@ -31,6 +31,9 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     {
         private readonly IVsProjectThreadingService _threadingService;
 
+        private static readonly string _projectGuid1 = Guid.NewGuid().ToString();
+        private static readonly string _projectGuid2 = Guid.NewGuid().ToString();
+
         public LegacyPackageReferenceRestoreUtilityTests(DispatcherThreadFixture fixture)
         {
             Assumes.Present(fixture);
@@ -67,7 +70,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -86,7 +90,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
                     var legacyPRProject = new LegacyPackageReferenceProject(
                         vsProjectAdapter,
-                        Guid.NewGuid().ToString(),
+                        projectNames.ProjectId,
                         projectServices,
                         _threadingService);
                     testSolutionManager.NuGetProjects.Add(legacyPRProject);
@@ -156,7 +160,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -185,7 +190,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -296,7 +302,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -425,7 +432,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -577,7 +585,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -665,7 +674,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -798,7 +808,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -920,7 +931,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
@@ -1078,7 +1090,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1098,7 +1111,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1177,7 +1191,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1271,7 +1286,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
 
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
@@ -1376,7 +1392,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1405,7 +1422,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1525,7 +1543,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathC,
                         uniqueName: Path.GetFileName(fullProjectPathC),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathC),
-                        customUniqueName: Path.GetFileName(fullProjectPathC));
+                        customUniqueName: Path.GetFileName(fullProjectPathC),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterC = new TestVSProjectAdapter(
                         fullProjectPathC,
                         projectNamesC,
@@ -1553,7 +1572,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1589,7 +1609,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -1711,7 +1732,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectAPath,
                         uniqueName: Path.GetFileName(fullProjectAPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectAPath),
-                        customUniqueName: Path.GetFileName(fullProjectAPath));
+                        customUniqueName: Path.GetFileName(fullProjectAPath),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectAPath,
                         projectANames,
@@ -1742,7 +1764,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectBPath,
                         uniqueName: Path.GetFileName(fullProjectBPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectBPath),
-                        customUniqueName: Path.GetFileName(fullProjectBPath));
+                        customUniqueName: Path.GetFileName(fullProjectBPath),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectBPath,
                         projectBNames,
@@ -1873,7 +1896,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathB,
                         uniqueName: Path.GetFileName(fullProjectPathB),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathB),
-                        customUniqueName: Path.GetFileName(fullProjectPathB));
+                        customUniqueName: Path.GetFileName(fullProjectPathB),
+                        projectId: _projectGuid2);
                     var vsProjectAdapterB = new TestVSProjectAdapter(
                         fullProjectPathB,
                         projectNamesB,
@@ -1904,7 +1928,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPathA,
                         uniqueName: Path.GetFileName(fullProjectPathA),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPathA),
-                        customUniqueName: Path.GetFileName(fullProjectPathA));
+                        customUniqueName: Path.GetFileName(fullProjectPathA),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPathA,
                         projectNamesA,
@@ -2040,7 +2065,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath2,
                         uniqueName: Path.GetFileName(fullProjectPath2),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath2),
-                        customUniqueName: Path.GetFileName(fullProjectPath2));
+                        customUniqueName: Path.GetFileName(fullProjectPath2),
+                        projectId: _projectGuid2);
                     var vsProjectAdapter2 = new TestVSProjectAdapter(
                         fullProjectPath2,
                         projectNames2,
@@ -2069,7 +2095,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath1,
                         uniqueName: Path.GetFileName(fullProjectPath1),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath1),
-                        customUniqueName: Path.GetFileName(fullProjectPath1));
+                        customUniqueName: Path.GetFileName(fullProjectPath1),
+                        projectId: _projectGuid1);
                     var vsProjectAdapterA = new TestVSProjectAdapter(
                         fullProjectPath1,
                         projectNames1,
@@ -2180,7 +2207,8 @@ namespace NuGet.PackageManagement.VisualStudio.Test
                         fullName: fullProjectPath,
                         uniqueName: Path.GetFileName(fullProjectPath),
                         shortName: Path.GetFileNameWithoutExtension(fullProjectPath),
-                        customUniqueName: Path.GetFileName(fullProjectPath));
+                        customUniqueName: Path.GetFileName(fullProjectPath),
+                        projectId: _projectGuid2);
                     var vsProjectAdapter = new TestVSProjectAdapter(
                         fullProjectPath,
                         projectNames,
