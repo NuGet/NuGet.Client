@@ -764,7 +764,7 @@ EndGlobal";
         [PlatformFact(Platform.Windows)]
         public void RestoreCommand_DisplaysCPVMInPreviewMessageIfCPVMEnabled()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
             {
                 // Arrange
                 var projectName = "ClassLibrary1";
@@ -805,7 +805,7 @@ EndGlobal";
         [PlatformFact(Platform.Windows)]
         public void RestoreCommand_DoesNotDisplayCPVMInPreviewMessageIfCPVMNotEnabled()
         {
-            using (var testDirectory = TestDirectory.Create())
+            using (var testDirectory = _msbuildFixture.CreateTestDirectory())
             {
                 // Arrange
                 var projectName = "ClassLibrary1";
