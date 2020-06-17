@@ -122,15 +122,31 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        private List<PackageItemListViewModel> ItemsFiltered
+        {
+            get
+            {
+                return CollectionView.OfType<PackageItemListViewModel>().ToList();
+            }
+        }
+
         private int FilterCount
         {
             get
             {
-                var listCollectionView = (ListCollectionView)CollectionView;
-                return listCollectionView.Count;
+                if (CollectionView.Filter != null)
+                {
+                    var listCollectionView = (ListCollectionView)CollectionView;
+                    return listCollectionView.Count;
+                }
+                else
+                {
+                    return Items.Count;
+                }
             }
         }
 
+        public IEnumerable<PackageItemListViewModel> PackageItemsFiltered => ItemsFiltered.ToArray();
         public IEnumerable<PackageItemListViewModel> PackageItems => Items.OfType<PackageItemListViewModel>().ToArray();
 
         public PackageItemListViewModel SelectedPackageItem => _list.SelectedItem as PackageItemListViewModel;
@@ -196,12 +212,12 @@ namespace NuGet.PackageManagement.UI
             if (selectedItem != null)
             {
                 // select the the previously selected item if it still exists.
-                selectedItem = PackageItems
+                selectedItem = PackageItemsFiltered
                     .FirstOrDefault(item => item.Id.Equals(selectedItem.Id, StringComparison.OrdinalIgnoreCase));
             }
 
             // select the first item if none was selected before
-            _list.SelectedItem = selectedItem ?? PackageItems.FirstOrDefault();
+            _list.SelectedItem = selectedItem ?? PackageItemsFiltered.FirstOrDefault();
         }
 
         private void LoadItems(PackageItemListViewModel selectedPackageItem, CancellationToken token, bool applyUIFilterUpdatesAvailable = false)
@@ -339,6 +355,12 @@ namespace NuGet.PackageManagement.UI
                         //Show all the items, without an Update filter.
                         ClearItemsFilter();
                     }
+
+                    //TODO: remove
+                    //if (_ltbLoading.Text != _loadingStatusIndicator.LocalizedStatus)
+                    //{
+                    //    _ltbLoading.Text = _loadingStatusIndicator.LocalizedStatus;
+                    //}
                 }
                 catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
@@ -385,7 +407,7 @@ namespace NuGet.PackageManagement.UI
                         // do not keep the LoadingStatus.Loading forever.
                         // This is a workaround.
                         var emptyListCount = addedLoadingIndicator ? 1 : 0;
-                        if (Items.Count == emptyListCount)
+                        if (FilterCount == emptyListCount)
                         {
                             _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
                         }
@@ -633,7 +655,7 @@ namespace NuGet.PackageManagement.UI
         {
             // in this case, we only need to update PackageStatus of
             // existing items in the package list
-            foreach (var package in PackageItems)
+            foreach (var package in PackageItemsFiltered)
             {
                 package.UpdatePackageStatus(installedPackages);
             }
@@ -799,7 +821,7 @@ namespace NuGet.PackageManagement.UI
 
         private void _updateButton_Click(object sender, RoutedEventArgs e)
         {
-            var selectedPackages = PackageItems.Where(p => p.Selected).ToArray();
+            var selectedPackages = PackageItemsFiltered.Where(p => p.Selected).ToArray();
             UpdateButtonClicked(selectedPackages);
         }
 
