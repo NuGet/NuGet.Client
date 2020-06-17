@@ -126,8 +126,8 @@ namespace NuGet.PackageManagement.UI
         {
             get
             {
-                var filteredCollectionView = new ListCollectionView(Items) { Filter = CollectionView.Filter };
-                return filteredCollectionView.Count;
+                var listCollectionView = (ListCollectionView)CollectionView;
+                return listCollectionView.Count;
             }
         }
 
