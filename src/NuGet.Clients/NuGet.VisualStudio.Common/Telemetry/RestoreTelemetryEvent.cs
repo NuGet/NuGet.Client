@@ -22,6 +22,7 @@ namespace NuGet.VisualStudio
         public RestoreTelemetryEvent(
             string operationId,
             string[] projectIds,
+            bool forceRestore,
             RestoreOperationSource source,
             DateTimeOffset startTime,
             NuGetOperationStatus status,
@@ -35,6 +36,7 @@ namespace NuGet.VisualStudio
             base[nameof(OperationSource)] = source;
             base[nameof(NoOpProjectsCount)] = noOpProjectsCount;
             base[UpToDateProjectCount] = upToDateProjectsCount;
+            base[nameof(ForceRestore)] = forceRestore;
 
             foreach (var (intervalName, intervalDuration) in intervalTimingTracker.GetIntervals())
             {
@@ -47,5 +49,7 @@ namespace NuGet.VisualStudio
         public RestoreOperationSource OperationSource => (RestoreOperationSource)base[nameof(OperationSource)];
 
         public int NoOpProjectsCount => (int)base[nameof(NoOpProjectsCount)];
+
+        public bool ForceRestore => (bool)base[nameof(ForceRestore)];
     }
 }
