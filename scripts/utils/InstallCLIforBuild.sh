@@ -35,7 +35,6 @@ chmod +x $installDir/dotnet-install.sh
 # Issue 8936 - DISABLED TEMPORARILY $installDir/dotnet-install.sh -i $installDir -c $Channel -v $Version
 chmod +x scripts/funcTests/dotnet-install.sh
 scripts/funcTests/dotnet-install.sh -i $installDir -c $Channel -v $Version 
-#$installDir/dotnet-install.sh -i $installDir -c $Channel -v $Version
 
 echo "Add ${installDir} to PATH"
 PATH=$PATH:${installDir}

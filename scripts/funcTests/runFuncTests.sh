@@ -37,13 +37,11 @@ chmod +x scripts/funcTests/dotnet-install.sh
 # Get recommended version for bootstrapping testing version
 # Issue 8936 - DISABLED TEMPORARILY cli/dotnet-install.sh -i cli -c 2.2
 scripts/funcTests/dotnet-install.sh -i cli -c 2.2 -NoPath
-# cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
 
 DOTNET="$(pwd)/cli/dotnet"
 
 
 echo "dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting"
-
 # run it twice so dotnet cli can expand and decompress without affecting the result of the target
 dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting
 DOTNET_BRANCHES="$(dotnet msbuild build/config.props /v:m /nologo /t:GetCliBranchForTesting)"
@@ -71,9 +69,6 @@ echo "initial dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 
 echo "================="
 
-# install SDK2 runtime as we encounter problems on running dotnet vstest command when only download SDK3.
-cli/dotnet-install.sh -runtime dotnet -Channel 2.2 -i cli -NoPath
-
 echo "Deleting .NET Core temporary files"
 rm -rf "/tmp/"dotnet.*
 
@@ -81,7 +76,7 @@ echo "second dotnet cli install finished at `date -u +"%Y-%m-%dT%H:%M:%S"`"
 echo "================="
 
 #restore solution packages
-$DOTNET msbuild -t:restore "$DIR/build/bootstrap.proj"
+dotnet msbuild -t:restore "$DIR/build/bootstrap.proj"
 if [ $? -ne 0 ]; then
 	echo "Restore failed!!"
 	exit 1
