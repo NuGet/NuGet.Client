@@ -904,9 +904,7 @@ namespace NuGet.PackageManagement.UI
 
                 _topPanel.UpdateDeprecationStatusOnInstalledTab(installedDeprecatedPackagesCount: 0);
                 _topPanel.UpdateCountOnUpdatesTab(count: 0);
-                //TODO: dupe
                 var loadContext = new PackageLoadContext(ActiveSources, Model.IsSolution, Model.Context);
-                //TODO: dupe
                 var packageFeeds = await CreatePackageFeedAsync(loadContext, ItemFilter.UpdatesAvailable, _uiLogger, recommendPackages: false);
                 var loader = new PackageItemLoader(
                     loadContext, packageFeeds.mainFeed, includePrerelease: IncludePrerelease, recommenderPackageFeed: packageFeeds.recommenderFeed);
@@ -1483,12 +1481,12 @@ namespace NuGet.PackageManagement.UI
         private void ExecuteRestartSearchCommand(object sender, ExecutedRoutedEventArgs e)
         {
             EmitRefreshEvent(GetTimeSinceLastRefreshAndRestart(), RefreshOperationSource.RestartSearchCommand, RefreshOperationStatus.Success);
-            try //TODO: is this necessary?
+            try
             {
                 SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: false);
                 RefreshConsolidatablePackagesCount();
             }
-            catch (OperationCanceledException) //when (_loadCts.IsCancellationRequested)
+            catch (OperationCanceledException)
             {
                 //Invalidate cache.
                 Model.CachedUpdates = null;
