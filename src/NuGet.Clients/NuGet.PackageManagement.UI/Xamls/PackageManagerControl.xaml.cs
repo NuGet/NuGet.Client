@@ -102,7 +102,6 @@ namespace NuGet.PackageManagement.UI
 
         private readonly Guid _sessionGuid = Guid.NewGuid();
         private readonly Stopwatch _sinceLastRefresh;
-        private readonly Stopwatch _sinceUserAction;
         private bool _installedTabIsLoaded;
         private bool _updatesTabIsLoaded;
 
@@ -117,7 +116,6 @@ namespace NuGet.PackageManagement.UI
         {
             VSThreadHelper.ThrowIfNotOnUIThread();
             _sinceLastRefresh = Stopwatch.StartNew();
-            _sinceUserAction = new Stopwatch();
 
             _uiLogger = uiLogger;
             Model = model;
@@ -343,7 +341,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, TimeSpan? timeSinceLastUserAction = null)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status)
         {
             TelemetryActivity.EmitTelemetryEvent(
                                 new PackageManagerUIRefreshEvent(
@@ -352,8 +350,7 @@ namespace NuGet.PackageManagement.UI
                                     refreshOperationSource,
                                     status,
                                     _topPanel.Filter.ToString(),
-                                    timeSpan,
-                                    timeSinceLastUserAction));
+                                    timeSpan));
         }
 
         private TimeSpan GetTimeSinceLastRefreshAndRestart()
@@ -366,7 +363,7 @@ namespace NuGet.PackageManagement.UI
             }
             return elapsed;
         }
-      
+
         private void InitializeFilterList(UserSettings settings)
         {
             if (settings != null)
@@ -1146,7 +1143,6 @@ namespace NuGet.PackageManagement.UI
 
         private void Filter_SelectionChanged(object sender, FilterChangedEventArgs e)
         {
-            RestartUserActionClock();
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
@@ -1188,8 +1184,6 @@ namespace NuGet.PackageManagement.UI
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
         }
-
-
 
         /// <summary>
         /// Refreshes the control after packages are installed or uninstalled.
@@ -1565,16 +1559,6 @@ namespace NuGet.PackageManagement.UI
                             TelemetryUtility.CreateFileAndForgetEventName(
                                 nameof(PackageManagerControl),
                                 nameof(UpgradeButton_Click)));
-        }
-
-        private void RestartUserActionClock()
-        {
-            _sinceUserAction.Restart();
-        }
-
-        private TimeSpan GetTimeSinceLastUserAction()
-        {
-            return _sinceUserAction.Elapsed;
         }
     }
 }

@@ -16,8 +16,7 @@ namespace NuGet.PackageManagement.Telemetry
             RefreshOperationSource refreshSource,
             RefreshOperationStatus refreshStatus,
             string tab,
-            TimeSpan timeSinceLastRefresh,
-            TimeSpan? timeSinceLastUserAction = null) : base(EventName)
+            TimeSpan timeSinceLastRefresh) : base(EventName)
         {
             base["ParentId"] = parentId.ToString();
             base["IsSolutionLevel"] = isSolutionLevel;
@@ -25,10 +24,6 @@ namespace NuGet.PackageManagement.Telemetry
             base["RefreshStatus"] = refreshStatus;
             base["Tab"] = tab;
             base["TimeSinceLastRefresh"] = timeSinceLastRefresh.TotalMilliseconds;
-            if (timeSinceLastUserAction.HasValue)
-            {
-                base["TimeSinceLastUserAction"] = timeSinceLastUserAction.Value.TotalMilliseconds;
-            }
         }
     }
 
