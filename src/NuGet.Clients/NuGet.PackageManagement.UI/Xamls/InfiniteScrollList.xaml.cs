@@ -96,7 +96,6 @@ namespace NuGet.PackageManagement.UI
             });
         }
 
-        public bool LoadOnScrolling { get; set; }
         public bool CheckBoxesEnabled { get; set; }
 
         public bool IsSolution { get; set; }
@@ -164,8 +163,7 @@ namespace NuGet.PackageManagement.UI
             string loadingMessage,
             INuGetUILogger logger,
             Task<SearchResult<IPackageSearchMetadata>> searchResultTask,
-            CancellationToken token,
-            ItemFilter? tabToRender = null)
+            CancellationToken token)
         {
             if (loader == null)
             {
@@ -754,16 +752,13 @@ namespace NuGet.PackageManagement.UI
 
         private void ScrollViewer_ScrollChanged(object sender, ScrollChangedEventArgs e)
         {
-            if (LoadOnScrolling)
+            if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
             {
-                if (_loader?.State.LoadingStatus == LoadingStatus.Ready)
+                var first = _scrollViewer.VerticalOffset;
+                var last = _scrollViewer.ViewportHeight + first;
+                if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
                 {
-                    var first = _scrollViewer.VerticalOffset;
-                    var last = _scrollViewer.ViewportHeight + first;
-                    if (_scrollViewer.ViewportHeight > 0 && last >= Items.Count)
-                    {
-                        LoadItems(selectedPackageItem: null, token: CancellationToken.None);
-                    }
+                    LoadItems(selectedPackageItem: null, token: CancellationToken.None);
                 }
             }
         }

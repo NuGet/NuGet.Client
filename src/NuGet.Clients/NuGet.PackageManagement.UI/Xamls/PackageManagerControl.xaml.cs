@@ -826,7 +826,7 @@ namespace NuGet.PackageManagement.UI
                 // start SearchAsync task for initial loading of packages
                 var searchResultTask = loader.SearchAsync(continuationToken: null, cancellationToken: _loadCts.Token);
                 // this will wait for searchResultTask to complete instead of creating a new task
-                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token, filterToRender);
+                await _packageList.LoadItemsAsync(loader, loadingMessage, _uiLogger, searchResultTask, _loadCts.Token);
 
                 if (pSearchCallback != null && searchTask != null)
                 {
@@ -1145,8 +1145,6 @@ namespace NuGet.PackageManagement.UI
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
-                _packageList.LoadOnScrolling = _topPanel.Filter != ItemFilter.Installed
-                                            && _topPanel.Filter != ItemFilter.UpdatesAvailable;
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
