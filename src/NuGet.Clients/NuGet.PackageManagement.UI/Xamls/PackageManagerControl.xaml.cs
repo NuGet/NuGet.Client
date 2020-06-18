@@ -721,12 +721,12 @@ namespace NuGet.PackageManagement.UI
 
         private void FilterPackages()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
+            //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            //{
+            //    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
 
                 _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-            });
+            //});
         }
 
         /// <summary>

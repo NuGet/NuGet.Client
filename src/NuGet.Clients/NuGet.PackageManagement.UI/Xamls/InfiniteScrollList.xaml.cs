@@ -325,13 +325,13 @@ namespace NuGet.PackageManagement.UI
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
-            _joinableTaskFactory.Value.RunAsync(async () =>
+            //_joinableTaskFactory.Value.RunAsync(async () =>
+            //{
+            try
             {
-                try
-                {
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                //        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
-                    if (itemFilter == ItemFilter.UpdatesAvailable)
+                if (itemFilter == ItemFilter.UpdatesAvailable)
                     {
                         ApplyItemsFilterForUpdatesAvailable();
                     }
@@ -346,7 +346,7 @@ namespace NuGet.PackageManagement.UI
                     loadCts.Cancel();
                     loadCts.Dispose();
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     // The user cancelled the login, but treat as a load error in UI
                     // So the retry button and message is displayed
@@ -366,7 +366,7 @@ namespace NuGet.PackageManagement.UI
                     // Write stack to activity log
                     Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
 
-                    await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
+                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
 
                     var errorMessage = ExceptionUtilities.DisplayMessage(ex);
                     _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
@@ -400,7 +400,7 @@ namespace NuGet.PackageManagement.UI
                 UpdateCheckBoxStatus();
 
                 LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            });
+            //});
         }
 
         private void ApplyItemsFilterForUpdatesAvailable()
