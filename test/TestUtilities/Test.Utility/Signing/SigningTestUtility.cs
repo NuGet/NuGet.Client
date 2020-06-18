@@ -679,18 +679,28 @@ namespace Test.Utility.Signing
         //So if we use APIs above to verify the results of chain.build, we should use assert AssertOfflineRevocationOnlineMode and AssertOfflineRevocationOfflineMode
         public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
         {
+            AssertOfflineRevocationOnlineMode(issues, logLevel, NuGetLogCode.NU3018);
+        }
+
+        public static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
+        {
             Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
+                issue.Code == code &&
                 issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOnline));
         }
 
         public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
         {
+            AssertOfflineRevocationOfflineMode(issues, LogLevel.Information, NuGetLogCode.Undefined);
+        }
+
+        public static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel, NuGetLogCode code)
+        {
             Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.Undefined &&
-                issue.Level == LogLevel.Information &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
+                issue.Code == code &&
+                issue.Level == logLevel &&
+                issue.Message.Contains(NuGet.Packaging.Strings.VerifyCertTrustOfflineWhileRevocationModeOffline));
         }
 
         public static void AssertRevocationStatusUnknown(IEnumerable<ILogMessage> issues, LogLevel logLevel)
