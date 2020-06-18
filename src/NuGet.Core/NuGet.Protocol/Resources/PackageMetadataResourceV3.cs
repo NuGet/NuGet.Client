@@ -76,8 +76,10 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var range = new VersionRange(package.Version, true, package.Version, true);
+            var includePrerelease = true;
+            var includeUnlisted = true;
 
-            return (await GetMetadata(package.Id, true, true, range, sourceCacheContext, log, token)).SingleOrDefault();
+            return (await GetMetadata(package.Id, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token)).SingleOrDefault();
         }
 
         private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadata(
