@@ -26,7 +26,12 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         {
             return new ValueTask<object>(
                 new NuGetProjectServices(
-                    new Microsoft.VisualStudio.Threading.AsyncLazy<IProjectSystemCache>(() => _serviceProvider.GetServiceAsync<IProjectSystemCache>(), _joinableTaskFactory)));
+                    new Microsoft.VisualStudio.Threading.AsyncLazy<IProjectSystemCache>(async () =>
+                    {
+                        //var cache = _serviceProvider.GetServiceAsync<IProjectSystemCache>();
+                        var cache = await ServiceLocator.GetInstanceAsync<IProjectSystemCache>();
+                        return cache;
+                    }, _joinableTaskFactory)));
         }
     }
 }
