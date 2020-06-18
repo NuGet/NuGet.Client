@@ -70,6 +70,16 @@ namespace NuGet.Protocol
             return parsed;
         }
 
+        /// <summary>
+        /// Query nuget package list from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping gian JObject in memory we use strong types.
+        /// </summary>
+        /// <param name="packageId">PackageId for package we're looking.</param>
+        /// <param name="includePrerelease">Whether to include PreRelease versions into result.</param>
+        /// <param name="includeUnlisted">Whether to include Unlisted versions into result.</param>
+        /// <param name="sourceCacheContext">SourceCacheContext for cache.</param>
+        /// <param name="log">Logger Instance.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns></returns>
         private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadata(
             string packageId,
             bool includePrerelease,
@@ -135,6 +145,13 @@ namespace NuGet.Protocol
             return results;
         }
 
+        /// <summary>
+        /// Process RegistrationIndex and return list of RegistrationPages.
+        /// </summary>
+        /// <typeparam name="T">Generic type</typeparam>
+        /// <param name="httpSourceResult">HttpSourceResult type object which comes from HttpSource, used for get stream.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns></returns>
         internal async Task<T> ProcessRegistrationIndexAsync<T>(HttpSourceResult httpSourceResult, CancellationToken token)
         {
             var jsonSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
@@ -149,12 +166,17 @@ namespace NuGet.Protocol
             }
         }
 
-        private void PopulateMetaData(PackageSearchMetadataRegistration catalogEntry)
-        {
-            catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
-            catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
-        }
-
+        /// <summary>
+        /// Query RegistrationIndex from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping gian JObject in memory we use strong types.
+        /// </summary>
+        /// <param name="httpSource">Httpsource instance</param>
+        /// <param name="registrationUri">Package registration url</param>
+        /// <param name="packageId">PackageId for package we're looking.</param>
+        /// <param name="cacheContext">CacheContext for cache.</param>
+        /// <param name="processAsync">Func expression used for HttpSource.cs</param>
+        /// <param name="log">Logger Instance.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns></returns>
         private async Task<RegistrationIndexResult> LoadRangesAsync(
             HttpSource httpSource,
             Uri registrationUri,
@@ -186,6 +208,18 @@ namespace NuGet.Protocol
             };
         }
 
+        /// <summary>
+        /// Process RegistrationIndex 
+        /// </summary>
+        /// <param name="httpSource">Httpsource instance.</param>
+        /// <param name="rangeUri">Paged registration index url address.</param>
+        /// <param name="packageId">PackageId for package we're checking.</param>
+        /// <param name="lower">Lower bound of nuget package.</param>
+        /// <param name="upper">Upper bound of nuget package.</param>
+        /// <param name="httpSourceCacheContext">SourceCacheContext for cache.</param>
+        /// <param name="log">Logger Instance.</param>
+        /// <param name="token">Cancellation token.</param>
+        /// <returns></returns>
         private async Task<RegistrationPage> GetRegistratioIndexPageAsync(
             HttpSource httpSource,
             string rangeUri,
@@ -215,6 +249,14 @@ namespace NuGet.Protocol
             return registrationPage;
         }
 
+        /// <summary>
+        /// Process RegistrationPage
+        /// </summary>
+        /// <param name="registrationPage">Nuget registration page.</param>
+        /// <param name="results">Used to return nuget result.</param>
+        /// <param name="range">Nuget version range.</param>
+        /// <param name="includePrerelease">Whether to include PreRelease versions into result.</param>
+        /// <param name="includeUnlisted">Whether to include Unlisted versions into result.</param>
         private void ProcessRegistrationPage(
             RegistrationPage registrationPage,
             List<PackageSearchMetadataRegistration> results,
@@ -236,7 +278,10 @@ namespace NuGet.Protocol
                     //{
                     //    catalogEntry.PackageContent = registrationLeaf.PackageContent;
                     //}
-                    PopulateMetaData(catalogEntry);
+
+                    catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
+                    catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
+
                     results.Add(catalogEntry);
                 }
             }
