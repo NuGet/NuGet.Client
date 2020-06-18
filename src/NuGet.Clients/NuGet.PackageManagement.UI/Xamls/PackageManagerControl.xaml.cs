@@ -834,7 +834,7 @@ namespace NuGet.PackageManagement.UI
                     pSearchCallback.ReportComplete(searchTask, (uint)searchResult.RawItemsCount);
                 }
 
-                // When not using Cache, refresh all Counts on the Updates an
+                // When not using Cache, refresh all Counts.
                 if (!useCachedPackages)
                 {
                     RefreshInstalledAndUpdatesTabs();
