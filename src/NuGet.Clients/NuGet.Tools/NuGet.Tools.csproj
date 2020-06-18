@@ -101,6 +101,10 @@
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj">
+      <Project>{6af72bee-70f0-48b2-bd63-0e80d9747342}</Project>
+      <Name>NuGet.VisualStudio.Contracts</Name>
+    </ProjectReference>
     <!-- NuGet.VisualStudio.Implementation is referenced only to enable generation of .pkgdef entries via ProvideCodeBaseAttribute. -->
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
