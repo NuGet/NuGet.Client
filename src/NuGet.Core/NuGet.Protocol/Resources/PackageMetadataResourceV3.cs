@@ -37,39 +37,6 @@ namespace NuGet.Protocol
             _packageDetailsUriResource = packageDetailsUriResource;
         }
 
-        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
-            string packageId,
-            bool includePrerelease,
-            bool includeUnlisted,
-            SourceCacheContext sourceCacheContext,
-            Common.ILogger log,
-            CancellationToken token)
-        {
-            return await GetMetadata(packageId, includePrerelease, includeUnlisted, sourceCacheContext, log, token);
-        }
-
-        public override async Task<IPackageSearchMetadata> GetMetadataAsync(
-            PackageIdentity package,
-            SourceCacheContext sourceCacheContext,
-            Common.ILogger log,
-            CancellationToken token)
-        {
-            var metadata = await _regResource.GetPackageMetadata(package, sourceCacheContext, log, token);
-            if (metadata != null)
-            {
-                return ParseMetadata(metadata);
-            }
-            return null;
-        }
-
-        private PackageSearchMetadataRegistration ParseMetadata(JObject metadata)
-        {
-            var parsed = metadata.FromJToken<PackageSearchMetadataRegistration>();
-            parsed.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(parsed.PackageId, parsed.Version);
-            parsed.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(parsed.PackageId, parsed.Version);
-            return parsed;
-        }
-
         /// <summary>
         /// Query nuget package list from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping gian JObject in memory we use strong types.
         /// </summary>
@@ -79,8 +46,8 @@ namespace NuGet.Protocol
         /// <param name="sourceCacheContext">SourceCacheContext for cache.</param>
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns></returns>
-        private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadata(
+        /// <returns>List of package meta data.</returns>
+        public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
@@ -88,9 +55,42 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
+            var range = VersionRange.All; // This value preset for Consolidate UI.
+
+            return await GetMetadata(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
+        }
+
+        /// <summary>
+        /// Returns the registration blob for the id and version
+        /// </summary>
+        /// <param name="package"></param>
+        /// <param name="sourceCacheContext"></param>
+        /// <param name="log"></param>
+        /// <param name="token"></param>
+        /// <returns>Package meta data.</returns>
+        /// <remarks>The inlined entries are potentially going away soon</remarks>
+        public override async Task<IPackageSearchMetadata> GetMetadataAsync(
+            PackageIdentity package,
+            SourceCacheContext sourceCacheContext,
+            Common.ILogger log,
+            CancellationToken token)
+        {
+            var range = new VersionRange(package.Version, true, package.Version, true);
+
+            return (await GetMetadata(package.Id, true, true, range, sourceCacheContext, log, token)).SingleOrDefault();
+        }
+
+        private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadata(
+            string packageId,
+            bool includePrerelease,
+            bool includeUnlisted,
+            VersionRange range,
+            SourceCacheContext sourceCacheContext,
+            ILogger log,
+            CancellationToken token)
+        {
             var metadataCache = new MetadataReferenceCache();
             var registrationUri = _regResource.GetUri(packageId);
-            var range = VersionRange.All; // This value preset for Consolidate UI.
 
             var registrationIndexResult = await LoadRangesAsync(
                 _client,
