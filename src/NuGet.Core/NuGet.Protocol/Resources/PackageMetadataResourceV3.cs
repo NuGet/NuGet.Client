@@ -88,6 +88,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
+            var metadataCache = new MetadataReferenceCache();
             var registrationUri = _regResource.GetUri(packageId);
             var range = VersionRange.All; // This value preset for Consolidate UI.
 
@@ -133,11 +134,11 @@ namespace NuGet.Protocol
                             throw new InvalidDataException(registrationUri.AbsoluteUri);
                         }
 
-                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease,includeUnlisted);
+                        ProcessRegistrationPage(leafRegistrationPage, results, range, includePrerelease,includeUnlisted, metadataCache);
                     }
                     else
                     {
-                        ProcessRegistrationPage(registrationPage, results, range, includePrerelease, includeUnlisted);
+                        ProcessRegistrationPage(registrationPage, results, range, includePrerelease, includeUnlisted, metadataCache);
                     }
                 }
             }
@@ -261,7 +262,8 @@ namespace NuGet.Protocol
             RegistrationPage registrationPage,
             List<PackageSearchMetadataRegistration> results,
             VersionRange range, bool includePrerelease,
-            bool includeUnlisted)
+            bool includeUnlisted,
+            MetadataReferenceCache metadataCache)
         {
             foreach (var registrationLeaf in registrationPage.Items)
             {
@@ -281,7 +283,7 @@ namespace NuGet.Protocol
 
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
-
+                    metadataCache.GetObject(catalogEntry);
                     results.Add(catalogEntry);
                 }
             }
