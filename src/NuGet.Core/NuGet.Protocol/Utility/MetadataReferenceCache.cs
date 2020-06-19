@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -17,6 +17,8 @@ namespace NuGet.Protocol
         private readonly Dictionary<string, string> _stringCache = new Dictionary<string, string>(StringComparer.Ordinal);
         private readonly Dictionary<Type, PropertyInfo[]> _propertyCache = new Dictionary<Type, PropertyInfo[]>();
         private readonly Dictionary<string, NuGetVersion> _versionCache = new Dictionary<string, NuGetVersion>(StringComparer.Ordinal);
+        private readonly Dictionary<Type, MethodInfo> _stringMethodsCache = new Dictionary<Type, MethodInfo>();
+        private readonly Type _metadataReferenceCacheType = typeof(MetadataReferenceCache);
 
         /// <summary>
         /// Checks if <paramref name="s"/> already exists in the cache.
@@ -36,6 +38,7 @@ namespace NuGet.Protocol
             }
 
             string cachedValue;
+            
             if (!_stringCache.TryGetValue(s, out cachedValue))
             {
                 _stringCache.Add(s, s);
@@ -97,12 +100,28 @@ namespace NuGet.Protocol
                 _propertyCache.Add(typeKey, properties);
             }
 
+            if (!_stringMethodsCache.ContainsKey(typeof(MetadataReferenceCache)))
+            {
+                // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
+                var stringPropertyType = typeof(string);
+                var method = _metadataReferenceCacheType.GetTypeInfo()
+                        .DeclaredMethods.FirstOrDefault(
+                            m =>
+                                m.Name == CachableTypesMap[stringPropertyType] &&
+                                m.GetParameters().Select(p => p.ParameterType).SequenceEqual(new Type[] { stringPropertyType }));
+                _stringMethodsCache.Add(_metadataReferenceCacheType, method);
+            }
+
             for (var i=0; i < properties.Length; i++)
             {
                 var property = properties[i];
 
                 var value = property.GetMethod.Invoke(input, null);
-                var cachedValue =
+
+                var cachedValue = property.PropertyType == typeof(string) ?
+                    _stringMethodsCache[_metadataReferenceCacheType]
+                    .Invoke(this, new[] { value })
+                    :
                     typeof(MetadataReferenceCache).GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>
