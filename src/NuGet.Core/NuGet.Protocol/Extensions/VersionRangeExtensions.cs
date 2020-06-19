@@ -7,13 +7,13 @@ namespace NuGet.Protocol.Extensions
 {
     internal static class VersionRangeExtensions
     {
-        public static bool IsItemRangeRequired(this VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
+        public static bool IsRegistrationPageVersionRangeCheckRequired(this VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
-            var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
-                maxVersion: catalogItemUpper, includeMaxVersion: true);
-
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {
+                var catalogItemVersionRange = new VersionRange(minVersion: catalogItemLower, includeMinVersion: true,
+                    maxVersion: catalogItemUpper, includeMaxVersion: true);
+
                 return catalogItemVersionRange.Satisfies(dependencyRange.MinVersion) || catalogItemVersionRange.Satisfies(dependencyRange.MaxVersion);
             }
             else

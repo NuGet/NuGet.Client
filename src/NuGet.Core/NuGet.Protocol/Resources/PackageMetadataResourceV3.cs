@@ -57,11 +57,11 @@ namespace NuGet.Protocol
         {
             var range = VersionRange.All; // This value was already preset for Package Manager UI.
 
-            return await GetMetadata(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
+            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
         }
 
         /// <summary>
-        /// Returns the registration blob for the id and version
+        /// Returns the registration metadata for the id and version
         /// </summary>
         /// <param name="package"></param>
         /// <param name="sourceCacheContext"></param>
@@ -83,10 +83,12 @@ namespace NuGet.Protocol
             var includePrerelease = true;
             var includeUnlisted = true;
 
-            return (await GetMetadata(package.Id, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token)).SingleOrDefault();
+            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
+
+            return packageMetaDatas.SingleOrDefault();
         }
 
-        private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadata(
+        private async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
             string packageId,
             bool includePrerelease,
             bool includeUnlisted,
@@ -103,7 +105,7 @@ namespace NuGet.Protocol
                 registrationUri,
                 packageId,
                 sourceCacheContext,
-                async httpSourceResult => await ProcessRegistrationIndexAsync<RegistrationIndex>(httpSourceResult, token),
+                httpSourceResult => ProcessRegistrationIndexAsync<RegistrationIndex>(httpSourceResult, token),
                 log,
                 token);
 
@@ -128,7 +130,7 @@ namespace NuGet.Protocol
                 var lower = NuGetVersion.Parse(registrationPage.Lower);
                 var upper = NuGetVersion.Parse(registrationPage.Upper);
 
-                if (range.IsItemRangeRequired(lower, upper))
+                if (range.IsRegistrationPageVersionRangeCheckRequired(lower, upper))
                 {
                     if (registrationPage.Items == null)
                     {
@@ -231,7 +233,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private async Task<RegistrationPage> GetRegistratioIndexPageAsync(
+        private Task<RegistrationPage> GetRegistratioIndexPageAsync(
             HttpSource httpSource,
             string rangeUri,
             string packageId,
@@ -242,7 +244,7 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var packageIdLowerCase = packageId.ToLowerInvariant();
-            var registrationPage = await httpSource.GetAsync(
+            var registrationPage = httpSource.GetAsync(
                             new HttpSourceCachedRequest(
                                 rangeUri,
                                 $"list_{packageIdLowerCase}_range_{lower.ToNormalizedString()}-{upper.ToNormalizedString()}",
