@@ -105,7 +105,7 @@ namespace NuGet.Protocol
                 registrationUri,
                 packageId,
                 sourceCacheContext,
-                httpSourceResult => ProcessRegistrationIndexAsync<RegistrationIndex>(httpSourceResult, token),
+                httpSourceResult => DeserializeStreamDataAsync<RegistrationIndex>(httpSourceResult.Stream, token),
                 log,
                 token);
 
@@ -155,19 +155,19 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Process RegistrationIndex and return list of RegistrationPages.
+        /// Deserialize stream from RegistrationIndex/RegistrationPage and return list of RegistrationPages or RegistrationPage.
         /// </summary>
         /// <typeparam name="T">Generic type</typeparam>
-        /// <param name="httpSourceResult">HttpSourceResult type object which comes from HttpSource, used for get stream.</param>
+        /// <param name="stream">Stream data to read.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private async Task<T> ProcessRegistrationIndexAsync<T>(HttpSourceResult httpSourceResult, CancellationToken token)
+        private async Task<T> DeserializeStreamDataAsync<T>(Stream stream, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
 
             var jsonSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
 
-            using (var streamReader = new StreamReader(httpSourceResult.Stream))
+            using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
                 var registrationIndex = jsonSerializer
@@ -252,10 +252,7 @@ namespace NuGet.Protocol
                             {
                                 IgnoreNotFounds = true,
                             },
-                            async httpSourceResult =>
-                            {
-                                return await ProcessRegistrationIndexAsync<RegistrationPage>(httpSourceResult, token);
-                            },
+                            httpSourceResult => DeserializeStreamDataAsync<RegistrationPage>(httpSourceResult.Stream, token),
                             log,
                             token);
 
