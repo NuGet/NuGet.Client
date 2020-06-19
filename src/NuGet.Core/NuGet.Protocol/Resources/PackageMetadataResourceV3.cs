@@ -38,7 +38,7 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query nuget package list from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping gian JObject in memory we use strong types.
+        /// Query nuget package list from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping giant JObject in memory we use strong types.
         /// </summary>
         /// <param name="packageId">PackageId for package we're looking.</param>
         /// <param name="includePrerelease">Whether to include PreRelease versions into result.</param>
@@ -55,7 +55,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var range = VersionRange.All; // This value preset for Consolidate UI.
+            var range = VersionRange.All; // This value was already preset for Package Manager UI.
 
             return await GetMetadata(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
         }
@@ -75,7 +75,11 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var range = new VersionRange(package.Version, true, package.Version, true);
+            var includeMinVersion = true;
+            var includeMaxVersion = true;
+
+            var range = new VersionRange(package.Version, includeMinVersion, package.Version, includeMaxVersion);
+
             var includePrerelease = true;
             var includeUnlisted = true;
 
@@ -155,8 +159,10 @@ namespace NuGet.Protocol
         /// <param name="httpSourceResult">HttpSourceResult type object which comes from HttpSource, used for get stream.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        internal async Task<T> ProcessRegistrationIndexAsync<T>(HttpSourceResult httpSourceResult, CancellationToken token)
+        private async Task<T> ProcessRegistrationIndexAsync<T>(HttpSourceResult httpSourceResult, CancellationToken token)
         {
+            token.ThrowIfCancellationRequested();
+
             var jsonSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
 
             using (var streamReader = new StreamReader(httpSourceResult.Stream))
@@ -170,7 +176,7 @@ namespace NuGet.Protocol
         }
 
         /// <summary>
-        /// Query RegistrationIndex from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping gian JObject in memory we use strong types.
+        /// Query RegistrationIndex from nuget server for Package Manager UI. This implementation optimized for performance so instead of keeping giant JObject in memory we use strong types.
         /// </summary>
         /// <param name="httpSource">Httpsource instance</param>
         /// <param name="registrationUri">Package registration url</param>
@@ -190,7 +196,9 @@ namespace NuGet.Protocol
             CancellationToken token)
         {
             var packageIdLowerCase = packageId.ToLowerInvariant();
-            var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, 0);
+            var retryCount = 0;
+
+            var httpSourceCacheContext = HttpSourceCacheContext.Create(cacheContext, retryCount);
 
             var index = await httpSource.GetAsync(
                 new HttpSourceCachedRequest(
@@ -267,22 +275,16 @@ namespace NuGet.Protocol
             bool includeUnlisted,
             MetadataReferenceCache metadataCache)
         {
-            foreach (var registrationLeaf in registrationPage.Items)
+            foreach (RegistrationLeafItem registrationLeaf in registrationPage.Items)
             {
-                var catalogEntry = registrationLeaf.CatalogEntry;
-                var version = catalogEntry.Version;
-                var listed = catalogEntry.IsListed;
+                PackageSearchMetadataRegistration catalogEntry = registrationLeaf.CatalogEntry;
+                NuGetVersion version = catalogEntry.Version;
+                bool listed = catalogEntry.IsListed;
 
                 if (range.Satisfies(catalogEntry.Version)
                     && (includePrerelease || !version.IsPrerelease)
                     && (includeUnlisted || listed))
                 {
-                    //// add in the download url
-                    //if (registrationLeaf.PackageContent != null)
-                    //{
-                    //    catalogEntry.PackageContent = registrationLeaf.PackageContent;
-                    //}
-
                     catalogEntry.ReportAbuseUrl = _reportAbuseResource?.GetReportAbuseUrl(catalogEntry.PackageId, catalogEntry.Version);
                     catalogEntry.PackageDetailsUrl = _packageDetailsUriResource?.GetUri(catalogEntry.PackageId, catalogEntry.Version);
                     metadataCache.GetObject(catalogEntry);

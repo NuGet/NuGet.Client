@@ -88,7 +88,7 @@ namespace NuGet.Protocol
         {
             // Get all properties that contain both a Get method and a Set method and can be cached.
             PropertyInfo[] properties;
-            var typeKey = typeof(T);
+            Type typeKey = typeof(T);
 
             if (!_propertyCache.TryGetValue(typeKey, out properties))
             {
@@ -103,8 +103,8 @@ namespace NuGet.Protocol
             if (!_stringMethodsCache.ContainsKey(typeof(MetadataReferenceCache)))
             {
                 // Doing reflection everytime is expensive so cache it for string type which is all this MetadataReferenceCache about.
-                var stringPropertyType = typeof(string);
-                var method = _metadataReferenceCacheType.GetTypeInfo()
+                Type stringPropertyType = typeof(string);
+                MethodInfo method = _metadataReferenceCacheType.GetTypeInfo()
                         .DeclaredMethods.FirstOrDefault(
                             m =>
                                 m.Name == CachableTypesMap[stringPropertyType] &&
@@ -114,11 +114,11 @@ namespace NuGet.Protocol
 
             for (var i=0; i < properties.Length; i++)
             {
-                var property = properties[i];
+                PropertyInfo property = properties[i];
 
-                var value = property.GetMethod.Invoke(input, null);
+                object value = property.GetMethod.Invoke(input, null);
 
-                var cachedValue = property.PropertyType == typeof(string) ?
+                object cachedValue = property.PropertyType == typeof(string) ?
                     _stringMethodsCache[_metadataReferenceCacheType]
                     .Invoke(this, new[] { value })
                     :
