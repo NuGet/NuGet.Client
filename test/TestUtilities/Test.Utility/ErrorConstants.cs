@@ -8,6 +8,6 @@ namespace Test.Utility
         public const int ERROR_OPERATION_ABORTED = 995;
         public const int ERROR_INVALID_HANDLE = 6;
         public const int ERROR_INVALID_FUNCTION = 1;
-        public const int ERROR_OPERATION_ABORTED_MONO = 500;
+        public const int ERROR_OPERATION_ABORTED_UNIX = 500;
     }
 }
