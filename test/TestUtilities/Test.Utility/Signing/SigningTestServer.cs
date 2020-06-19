@@ -135,7 +135,9 @@ namespace Test.Utility.Signing
                     if (ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_HANDLE ||
                         ex.ErrorCode == ErrorConstants.ERROR_INVALID_FUNCTION ||
-                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_MONO)
+                        RuntimeEnvironmentHelper.IsMono && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX ||
+                        RuntimeEnvironmentHelper.IsLinux && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX ||
+                        RuntimeEnvironmentHelper.IsMacOSX && ex.ErrorCode == ErrorConstants.ERROR_OPERATION_ABORTED_UNIX)
                     {
                         return;
                     }
