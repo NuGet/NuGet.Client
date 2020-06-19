@@ -55,7 +55,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var range = VersionRange.All; // This value was already preset for Package Manager UI.
+            var range = VersionRange.All; // We get all versions for package and later filter down the road get ones we need.
 
             return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
         }
