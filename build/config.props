@@ -39,7 +39,7 @@
 
     <!-- .NET Core SDK Insertion Logic -->
     <!--We don't have .NET5 installed on CI, so we need to get version from CliVersionForBuilding and install it-->
-    <CliVersionForBuilding>"master 5.0.100-preview.5.20279.10"</CliVersionForBuilding>
+    <CliVersionForBuilding>"master 5.0.100-preview.4.20258.7"</CliVersionForBuilding>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' != ''">$(OverrideCliBranchForTesting)</CliBranchForTesting>
     <CliBranchForTesting Condition="'$(OverrideCliBranchForTesting)' == ''">master;3.1</CliBranchForTesting>
     <CliTargetBranches Condition="'$(OverrideCliTargetBranches)' != ''">$(OverrideCliTargetBranches)</CliTargetBranches>
