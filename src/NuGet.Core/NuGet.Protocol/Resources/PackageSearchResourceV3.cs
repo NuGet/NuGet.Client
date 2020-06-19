@@ -83,19 +83,19 @@ namespace NuGet.Protocol
 
         private static IEnumerable<VersionInfo> GetVersions(PackageSearchMetadata metadata, SearchFilter filter)
         {
-            var versions = metadata.ParsedVersions;
-
-            // TODO: in v2, we only have download count for all versions, not per version.
-            // To be consistent, in v3, we also use total download count for now.
-            var totalDownloadCount = versions.Select(v => v.DownloadCount).Sum();
-            versions = versions
-                .Select(v => v.Version)
-                .Where(v => filter.IncludePrerelease || !v.IsPrerelease)
-                .Concat(new[] { metadata.Version })
-                .Distinct()
-                .Select(v => new VersionInfo(v, totalDownloadCount))
-                .ToArray();
-
+            var uniqueVersions = new HashSet<Versioning.NuGetVersion>();
+            var versions = new List<VersionInfo>();
+            foreach (var ver in metadata.ParsedVersions)
+            {
+                if ((filter.IncludePrerelease || !ver.Version.IsPrerelease) && uniqueVersions.Add(ver.Version))
+                {
+                    versions.Add(new VersionInfo(ver.Version, ver.DownloadCount));
+                }
+            }
+            if (uniqueVersions.Add(metadata.Version))
+            {
+                versions.Add(new VersionInfo(metadata.Version, metadata.DownloadCount));
+            }
             return versions;
         }
 
