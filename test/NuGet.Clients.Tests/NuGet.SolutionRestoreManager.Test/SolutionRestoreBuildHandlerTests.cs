@@ -26,7 +26,7 @@ namespace NuGet.SolutionRestoreManager.Test
             _jtf = fixture.JoinableTaskFactory;
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9701")]
         public async Task QueryDelayBuildAction_CleanBuild()
         {
             var settings = Mock.Of<ISettings>();
@@ -53,7 +53,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9701")]
         public async Task QueryDelayBuildAction_ShouldNotRestoreOnBuild_NoOps()
         {
             var settings = Mock.Of<ISettings>();
@@ -81,7 +81,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9701")]
         public async Task QueryDelayBuildAction_ShouldNotRestoreOnBuild_ProjectUpToDateMark()
         {
             var settings = Mock.Of<ISettings>();
@@ -109,7 +109,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 .Verify(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
-        [Fact]
+        [Fact(Skip = "https://github.com/NuGet/Home/issues/9701")]
         public async Task QueryDelayBuildAction_ShouldRestoreOnBuild()
         {
             var settings = Mock.Of<ISettings>();
