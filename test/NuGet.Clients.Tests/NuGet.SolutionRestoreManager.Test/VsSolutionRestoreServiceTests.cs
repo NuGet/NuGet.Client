@@ -26,6 +26,7 @@ using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Collection(DispatcherThreadCollection.CollectionName)]
     public class VsSolutionRestoreServiceTests : IDisposable
     {
         private readonly TestDirectory _testDirectory;
