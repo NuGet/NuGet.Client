@@ -1,12 +1,13 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,6 +23,7 @@ using Test.Utility.Signing;
 using Xunit;
 using BcAccuracy = Org.BouncyCastle.Asn1.Tsp.Accuracy;
 using DotNetUtilities = Org.BouncyCastle.Security.DotNetUtilities;
+using HashAlgorithmName = NuGet.Common.HashAlgorithmName;
 
 namespace NuGet.Packaging.FuncTest
 {
@@ -144,10 +146,9 @@ namespace NuGet.Packaging.FuncTest
             };
             var bcCertificate = ca.IssueCertificate(issueOptions);
 
-            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
+            using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, keyPair))
             {
-                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
                 var notAfter = certificate.NotAfter.ToUniversalTime();
 
                 var packageContext = new SimpleTestPackageContext();
@@ -200,11 +201,9 @@ namespace NuGet.Packaging.FuncTest
             var bcCertificate = ca.IssueCertificate(issueOptions);
 
             using (testServer.RegisterResponder(timestampService))
-            using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
             using (var directory = TestDirectory.Create())
+            using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, keyPair))
             {
-                certificate.PrivateKey = DotNetUtilities.ToRSA(keyPair.Private as RsaPrivateCrtKeyParameters);
-
                 var packageContext = new SimpleTestPackageContext();
                 var signedPackagePath = await SignedArchiveTestUtility.AuthorSignPackageAsync(
                     certificate,
@@ -820,8 +819,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -858,8 +856,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -895,8 +892,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -934,8 +930,7 @@ namespace NuGet.Packaging.FuncTest
                 var status = await provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
                 Assert.Equal(SignatureVerificationStatus.Disallowed, status.Trust);
-                Assert.True(status.Issues.Where(i => i.Level == Common.LogLevel.Error)
-                    .Any(i => i.Message.Contains(_untrustedChainCertError)));
+                SigningTestUtility.AssertUntrustedRoot(status.Issues, LogLevel.Error);
             }
         }
 
@@ -1044,10 +1039,17 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 settings);
 
-            Assert.Equal(2, matchingIssues.Count);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
 
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1060,10 +1062,16 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 _verifyCommandSettings);
 
-            Assert.Equal(2, matchingIssues.Count);
-
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1117,10 +1125,17 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Warning,
                 settings);
 
-            Assert.Equal(2, matchingIssues.Count);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(1, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(2, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
 
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1147,8 +1162,12 @@ namespace NuGet.Packaging.FuncTest
                 LogLevel.Information,
                 settings);
 
-            AssertOfflineRevocationOfflineMode(matchingIssues);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.Undefined, LogLevel.Information);
+            if (!RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                SigningTestUtility.AssertOfflineRevocationOfflineMode(matchingIssues);
+            }
+
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Information, NuGetLogCode.Undefined);
         }
 
         [CIOnlyFact]
@@ -1160,10 +1179,16 @@ namespace NuGet.Packaging.FuncTest
                 _verifyCommandSettings,
                 "ExpiredPrimaryAndTimestampCertificatesWithUnavailableRevocationInfo.nupkg");
 
-            Assert.Equal(4, matchingIssues.Count);
-
-            AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
-            AssertRevocationStatusUnknown(matchingIssues, NuGetLogCode.NU3018, LogLevel.Warning);
+            if (RuntimeEnvironmentHelper.IsMacOSX)
+            {
+                Assert.Equal(2, matchingIssues.Count);
+            }
+            else
+            {
+                Assert.Equal(4, matchingIssues.Count);
+                SigningTestUtility.AssertOfflineRevocationOnlineMode(matchingIssues, LogLevel.Warning);
+            }
+            SigningTestUtility.AssertRevocationStatusUnknown(matchingIssues, LogLevel.Warning, NuGetLogCode.NU3018);
         }
 
         [CIOnlyFact]
@@ -1183,8 +1208,7 @@ namespace NuGet.Packaging.FuncTest
                 result.IsValid.Should().BeFalse();
                 resultsWithErrors.Count().Should().Be(1);
                 totalErrorIssues.Count().Should().Be(1);
-                totalErrorIssues.First().Code.Should().Be(NuGetLogCode.NU3028);
-                totalErrorIssues.First().Message.Should().Contain("A certificate chain processed, but terminated in a root certificate which is not trusted by the trust provider");
+                SigningTestUtility.AssertUntrustedRoot(totalErrorIssues, NuGetLogCode.NU3028, LogLevel.Error);
             }
         }
 
@@ -1353,7 +1377,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -1377,32 +1401,28 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateAuthorSignedPackageAsync(
-                        certificate,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
@@ -1632,7 +1652,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task GetTrustResultAsync_WithRevokedPrimaryCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -1656,32 +1676,28 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
+                    certificate,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateRepositoryPrimarySignedPackageAsync(
-                        certificate,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task GetTrustResultAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
@@ -1993,7 +2009,7 @@ namespace NuGet.Packaging.FuncTest
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true)]
             [InlineData(false)]
             public async Task VerifyAsync_WithRevokedCountersignatureCertificate_ReturnsSuspectAsync(bool allowEverything)
@@ -2017,34 +2033,30 @@ namespace NuGet.Packaging.FuncTest
                 var bcCertificate = certificateAuthority.IssueCertificate(issueCertificateOptions);
                 var timestampService = await _fixture.GetDefaultTrustedTimestampServiceAsync();
 
-                using (var certificate = new X509Certificate2(bcCertificate.GetEncoded()))
+                using (X509Certificate2 certificate = CertificateUtilities.GetCertificateWithPrivateKey(bcCertificate, issueCertificateOptions.KeyPair))
+                using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
+                    _fixture.TrustedTestCertificate.Source.Cert,
+                    certificate,
+                    timestampService.Url,
+                    timestampService.Url))
+                using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
                 {
-                    certificate.PrivateKey = DotNetUtilities.ToRSA(issueCertificateOptions.KeyPair.Private as RsaPrivateCrtKeyParameters);
+                    await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
 
-                    using (var test = await Test.CreateAuthorSignedRepositoryCountersignedPackageAsync(
-                        _fixture.TrustedTestCertificate.Source.Cert,
-                        certificate,
-                        timestampService.Url,
-                        timestampService.Url))
-                    using (var packageReader = new PackageArchiveReader(test.PackageFile.FullName))
-                    {
-                        await certificateAuthority.OcspResponder.WaitForResponseExpirationAsync(bcCertificate);
+                    certificateAuthority.Revoke(
+                        bcCertificate,
+                        RevocationReason.KeyCompromise,
+                        DateTimeOffset.UtcNow.AddHours(-1));
 
-                        certificateAuthority.Revoke(
-                            bcCertificate,
-                            RevocationReason.KeyCompromise,
-                            DateTimeOffset.UtcNow.AddHours(-1));
+                    var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
 
-                        var primarySignature = await packageReader.GetPrimarySignatureAsync(CancellationToken.None);
+                    var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
 
-                        var status = await _provider.GetTrustResultAsync(packageReader, primarySignature, settings, CancellationToken.None);
-
-                        Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
-                    }
+                    Assert.Equal(SignatureVerificationStatus.Suspect, status.Trust);
                 }
             }
 
-            [CIOnlyTheory]
+            [PlatformTheory(Platform.Windows, Platform.Linux)] // https://github.com/NuGet/Home/issues/9501
             [InlineData(true, SignatureVerificationStatus.Valid)]
             [InlineData(false, SignatureVerificationStatus.Disallowed)]
             public async Task VerifyAsync_WithRevokedTimestampCertificate_ReturnsStatusAsync(
@@ -2244,30 +2256,6 @@ namespace NuGet.Packaging.FuncTest
             }
         }
 
-        private static void AssertOfflineRevocationOnlineMode(IEnumerable<SignatureLog> issues, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.NU3018 &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the revocation server could not be reached. For more information, visit https://aka.ms/certificateRevocationMode."));
-        }
-
-        private static void AssertOfflineRevocationOfflineMode(IEnumerable<SignatureLog> issues)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == NuGetLogCode.Undefined &&
-                issue.Level == LogLevel.Information &&
-                issue.Message.Contains("The revocation function was unable to check revocation because the certificate is not available in the cached certificate revocation list and NUGET_CERT_REVOCATION_MODE environment variable has been set to offline. For more information, visit https://aka.ms/certificateRevocationMode."));
-        }
-
-        private static void AssertRevocationStatusUnknown(IEnumerable<SignatureLog> issues, NuGetLogCode code, LogLevel logLevel)
-        {
-            Assert.Contains(issues, issue =>
-                issue.Code == code &&
-                issue.Level == logLevel &&
-                issue.Message.Contains("The revocation function was unable to check revocation for the certificate."));
-        }
-
         private static byte[] GetResource(string name)
         {
             return ResourceTestUtility.GetResourceBytes(
@@ -2301,11 +2289,12 @@ namespace NuGet.Packaging.FuncTest
         private static IDisposable TrustRootCertificate(IX509CertificateChain certificateChain)
         {
             var rootCertificate = certificateChain.Last();
+            StoreLocation storeLocation = CertificateStoreUtilities.GetTrustedCertificateStoreLocation();
 
             return TrustedTestCert.Create(
                 new X509Certificate2(rootCertificate),
                 StoreName.Root,
-                StoreLocation.LocalMachine,
+                storeLocation,
                 maximumValidityPeriod: TimeSpan.MaxValue);
         }
     }

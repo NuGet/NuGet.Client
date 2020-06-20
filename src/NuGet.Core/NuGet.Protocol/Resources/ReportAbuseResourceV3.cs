@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -33,8 +33,13 @@ namespace NuGet.Protocol
         public Uri GetReportAbuseUrl(string id, NuGetVersion version)
         {
             var uriString = _uriTemplate
+#if NETCOREAPP
+               .Replace("{id}", id, StringComparison.OrdinalIgnoreCase)
+               .Replace("{version}", version.ToNormalizedString(), StringComparison.OrdinalIgnoreCase);
+#else
                .Replace("{id}", id)
                .Replace("{version}", version.ToNormalizedString());
+#endif
 
             return new Uri(uriString);
         }

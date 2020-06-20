@@ -50,8 +50,13 @@ namespace NuGet.Protocol
         public Uri GetUri(string id, NuGetVersion version)
         {
             var uriString = _template
+#if NETCOREAPP
+               .Replace("{id}", id, StringComparison.OrdinalIgnoreCase)
+               .Replace("{version}", version.ToNormalizedString(), StringComparison.OrdinalIgnoreCase);
+#else
                .Replace("{id}", id)
                .Replace("{version}", version.ToNormalizedString());
+#endif
 
             return new Uri(uriString);
         }

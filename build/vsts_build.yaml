@@ -63,6 +63,16 @@ jobs:
         Write-Host "##vso[task.setvariable variable=FullVstsBuildNumber;isOutput=true]$FullBuildNumber"
 
   - task: PowerShell@1
+    displayName: "Get SDK Version For Build"
+    name: "getSDKVersionForBuild"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        $msbuildExe = 'C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\MSBuild\Current\bin\msbuild.exe'
+        $SDKVersionForBuild = & $msbuildExe $env:BUILD_REPOSITORY_LOCALPATH\build\config.props /v:m /nologo /t:GetCliVersionForBuilding
+        Write-Host "##vso[task.setvariable variable=SDKVersionForBuild;isOutput=true]$SDKVersionForBuild"
+
+  - task: PowerShell@1
     displayName: "Add Build Tags"
     inputs:
       scriptType: "inlineScript"
@@ -78,6 +88,7 @@ jobs:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
     VsTargetChannel: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetChannel']]
     VsTargetMajorVersion: $[dependencies.Initialize_Build.outputs['updatebuildnumber.VsTargetMajorVersion']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     LocalizedLanguageCount: "13"
 
   pool:
@@ -94,12 +105,25 @@ jobs:
 
   steps:
   - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
     displayName: "Update Build Number"
     inputs:
       scriptType: "inlineScript"
       inlineScript: |
         Write-Host "##vso[build.updatebuildnumber]$env:FullVstsBuildNumber"
         Get-ChildItem Env: | Sort-Object Name | Format-Table -Wrap -AutoSize
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
 
   - task: NuGetToolInstaller@0
     displayName: "Use NuGet 5.0.0"
@@ -548,10 +572,11 @@ jobs:
 
 - job: Functional_Tests_On_Windows
   dependsOn: Initialize_Build
-  timeoutInMinutes: 90
+  timeoutInMinutes: 120
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunFunctionalTestsOnWindows'], 'true')) "
   pool:
     name: VSEng-MicroBuildVS2019
@@ -566,6 +591,19 @@ jobs:
         SkipDesktopAssemblies: "true"
 
   steps:
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -631,9 +669,10 @@ jobs:
 
 - job: Tests_On_Linux
   dependsOn: Initialize_Build
-  timeoutInMinutes: 15
+  timeoutInMinutes: 45
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
     MSBUILDDISABLENODEREUSE: 1
   condition: "and(succeeded(),eq(variables['RunTestsOnLinux'], 'true')) "
   pool:
@@ -641,6 +680,23 @@ jobs:
     demands: sh
 
   steps:
+
+  - task: ShellScript@2
+    displayName: "Install .NET 5.0 for build"
+    continueOnError: "true"
+    inputs:
+      scriptPath: "scripts/utils/InstallCLIforBuild.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+      args: '$(SDKVersionForBuild)'
+
+  - task: PowerShell@2
+    displayName: "Define variables"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
+
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -685,11 +741,21 @@ jobs:
   timeoutInMinutes: 75
   variables:
     FULLVSTSBUILDNUMBER: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunTestsOnMac'], 'true')) "
   pool:
     vmImage: macos-latest
 
   steps:
+  - task: ShellScript@2
+    displayName: "Install .NET 5.0 for build"
+    continueOnError: "true"
+    inputs:
+      scriptPath: "scripts/utils/InstallCLIforBuild.sh"
+      disableAutoCwd: "true"
+      cwd: "$(Build.Repository.LocalPath)"
+      args: '$(SDKVersionForBuild)'
+
   - task: PowerShell@2
     displayName: "Update Build Number"
     inputs:
@@ -698,6 +764,13 @@ jobs:
         Write-Host "##vso[build.updatebuildnumber]$env:FULLVSTSBUILDNUMBER"
       failOnStderr: "true"
     condition: "always()"
+
+  - task: PowerShell@2
+    displayName: "Define variables"
+    inputs:
+      targetType: "inline"
+      script: |
+        Write-Host "##vso[task.setvariable variable=PATH]${env:AGENT_TEMPDIRECTORY}/dotnet/:${env:PATH}"
 
   - task: DownloadBuildArtifacts@0
     displayName: "Download NuGet.CommandLine.Test artifacts"
@@ -741,6 +814,7 @@ jobs:
   timeoutInMinutes: 150
   variables:
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunEndToEndTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
@@ -749,6 +823,19 @@ jobs:
     - Allow_NuGet_E2E_Tests -equals true
 
   steps:
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
+
   - task: PowerShell@1
     displayName: "Print Environment Variables"
     inputs:
@@ -840,6 +927,7 @@ jobs:
   variables:
     BuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.BuildNumber']]
     FullVstsBuildNumber: $[dependencies.Initialize_Build.outputs['updatebuildnumber.FullVstsBuildNumber']]
+    SDKVersionForBuild: $[dependencies.Initialize_Build.outputs['getSDKVersionForBuild.SDKVersionForBuild']]
   condition: "and(succeeded(),eq(variables['RunApexTests'], 'true')) "
   pool:
     name: DDNuGet-Windows
@@ -865,6 +953,24 @@ jobs:
     inputs:
       artifactName: "$(VsixPublishDir)"
       downloadPath: "$(Build.Repository.LocalPath)/artifacts"
+
+  - task: NuGetToolInstaller@0
+    displayName: "Use NuGet 4.5.0"
+    inputs:
+      versionSpec: "4.5.0"
+
+  - task: PowerShell@1
+    inputs:
+      scriptName: "$(Build.Repository.LocalPath)\\scripts\\utils\\InstallCLIforBuild.ps1"
+      arguments: '$(SDKVersionForBuild)'
+    displayName: "Install .NET 5.0 for build"
+
+  - task: PowerShell@1
+    displayName: "Define variables"
+    inputs:
+      scriptType: "inlineScript"
+      inlineScript: |
+        Write-Host "##vso[task.setvariable variable=Path]${env:AGENT_TEMPDIRECTORY}\dotnet\;${env:Path}"
 
   - task: MSBuild@1
     displayName: "Bootstrap NuGet packages"
@@ -905,14 +1011,6 @@ jobs:
   #         }
   #       $(System.DefaultWorkingDirectory)\\VSCollect.exe -zip:$(EndToEndResultsDropPath)\\apex-collectlogs.zip
   #   condition: "failed()"
-
-  - task: MSBuild@1
-    displayName: "Restore for VS2019"
-    inputs:
-      solution: "build\\build.proj"
-      msbuildVersion: "16.0"
-      configuration: "$(BuildConfiguration)"
-      msbuildArguments: "/t:RestoreVS /p:BuildNumber=$(BuildNumber)"
 
   - task: NuGetCommand@2
     displayName: "Add Apex Feed Source"
