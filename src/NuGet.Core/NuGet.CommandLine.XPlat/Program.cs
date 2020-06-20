@@ -54,16 +54,7 @@ namespace NuGet.CommandLine.XPlat
             if (args.Contains(DebugOption) || string.Equals(bool.TrueString, debugNuGetXPlat, StringComparison.OrdinalIgnoreCase))
             {
                 args = args.Where(arg => !StringComparer.OrdinalIgnoreCase.Equals(arg, DebugOption)).ToArray();
-
-                Console.WriteLine("Waiting for debugger to attach.");
-                Console.WriteLine($"Process ID: {Process.GetCurrentProcess().Id}");
-
-                while (!Debugger.IsAttached)
-                {
-                    System.Threading.Thread.Sleep(100);
-                }
-
-                Debugger.Break();
+                Debugger.Launch();
             }
 #endif
 

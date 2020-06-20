@@ -79,7 +79,8 @@ Function Add-NuGetToCLI {
     $sdk_path = $sdkLocation
     
     $nugetXplatArtifactsPath = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.CommandLine.XPlat', $VSVersion, 'bin', $Configuration, $NETCoreApp)
-    $nugetBuildTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Console', $VSVersion, 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.Console.dll')
+    $nugetBuildTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks', $VSVersion, 'bin', $Configuration, $NETStandard, 'NuGet.Build.Tasks.dll')
+    $nugetBuildTasksConsole = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Console', $VSVersion, 'bin', $Configuration, $NETCoreApp, 'NuGet.Build.Tasks.Console.dll')
     $nugetTargets = [System.IO.Path]::Combine($NuGetClientRoot, 'src', 'NuGet.Core', 'NuGet.Build.Tasks', 'NuGet.targets')
     $nugetExTargets = [System.IO.Path]::Combine($NuGetClientRoot, 'src', 'NuGet.Core', 'NuGet.Build.Tasks', 'NuGet.RestoreEx.targets')
     $ilmergedCorePackTasks = [System.IO.Path]::Combine($NuGetClientRoot, 'artifacts', 'NuGet.Build.Tasks.Pack', $VSVersion, 'bin', $Configuration, $NETStandard, "ilmerge", "NuGet.Build.Tasks.Pack.dll")
@@ -95,6 +96,11 @@ Function Add-NuGetToCLI {
 
     if (-Not (Test-Path $nugetBuildTasks)) {
         Write-Error "$nugetBuildTasks not found!"
+        return;
+    }
+
+    if (-Not (Test-Path $nugetBuildTasksConsole)) {
+        Write-Error "$nugetBuildTasksConsole not found!"
         return;
     }
 
@@ -148,6 +154,10 @@ Function Add-NuGetToCLI {
     $buildTasksDest = "$($sdk_path)\NuGet.Build.Tasks.dll" 
     Write-Host "Moving to - $($buildTasksDest)"
     Copy-Item $nugetBuildTasks $buildTasksDest
+
+    $buildTasksConsoleDest = "$($sdk_path)\NuGet.Build.Tasks.Console.dll" 
+    Write-Host "Moving to - $($buildTasksConsoleDest)"
+    Copy-Item $nugetBuildTasksConsole $buildTasksConsoleDest
 
     $nugetTargetsDest = "$($sdk_path)\NuGet.targets" 
     Write-Host "Moving to - $($nugetTargetsDest)"
