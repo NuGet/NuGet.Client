@@ -94,7 +94,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageInPackagesConfig(VisualStudio, nuProject, "newtonsoft.json", "9.0.1", XunitLogger);
         }
 
-        [StaFact]
+        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
         public void UninstallPackageFromUI()
         {
             // Arrange
@@ -123,7 +123,7 @@ namespace NuGet.Tests.Apex
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, project, "newtonsoft.json", XunitLogger);
         }
 
-        [StaFact(Skip = "https://github.com/NuGet/Home/issues/9701")]
+        [StaFact]
         public void UpdatePackageFromUI()
         {
             // Arrange
