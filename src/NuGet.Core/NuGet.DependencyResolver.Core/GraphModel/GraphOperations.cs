@@ -328,10 +328,12 @@ namespace NuGet.DependencyResolver
 
             var tracker = Cache<TItem>.RentTracker();
             Func<GraphNode<TItem>, bool> skipNode = null;
-            var hasCentralTransitiveDependencies = root.HasCentralTransitiveDependencies();
+
+            var centralTransitiveNodes = root.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
+            var hasCentralTransitiveDependencies = centralTransitiveNodes.Count > 0;
             if (hasCentralTransitiveDependencies)
             {
-                skipNode = (node) => { return node.Item.IsCentralTransitive && node.Disposition == Disposition.Rejected; };
+                skipNode = (node) => { return node.Item.IsCentralTransitive; };
             }
 
             while (incomplete && --patience != 0)
@@ -339,32 +341,31 @@ namespace NuGet.DependencyResolver
                 // Create a picture of what has not been rejected yet
                 root.ForEach(true, (node, state, context) => WalkTreeRejectNodesOfRejectedNodes(state, node, context), tracker, skipNode);
 
-                // Inform tracker of ambiguity beneath nodes that are not resolved yet
-                root.ForEach(WalkState.Walking, (node, state, context) => WalkTreeMarkAmbiguousNodes(node, state, context), tracker, skipNode);
-
-                if(hasCentralTransitiveDependencies)
-                {
-                    root.DetectAndMarkAmbiguousCentralTransitiveDependencies(tracker);
-                }
-
-                // Now mark unambiguous nodes as accepted or rejected
-                root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), CreateState(tracker, acceptedLibraries), skipNode);
-
                 if (hasCentralTransitiveDependencies)
                 {
                     // Some of the central transitive nodes may be rejected now because their parents were rejected
                     // Reject them accordingly
-                    root.RejectCentralTransitiveBecauseOfRejectedParents();
+                    RejectCentralTransitiveBecauseOfRejectedParents(tracker, centralTransitiveNodes);
                 }
 
-                incomplete = root.ForEachGlobalState(false, (node, state) => state || node.Disposition == Disposition.Acceptable, skipNode);
+                // Inform tracker of ambiguity beneath nodes that are not resolved yet
+                root.ForEach(WalkState.Walking, (node, state, context) => WalkTreeMarkAmbiguousNodes(node, state, context), tracker);
+
+                if (hasCentralTransitiveDependencies)
+                {
+                    root.DetectAndMarkAmbiguousCentralTransitiveDependencies(tracker, centralTransitiveNodes);
+                }
+
+                root.ForEach(true, (node, state, context) => WalkTreeAcceptOrRejectNodes(context, state, node), CreateState(tracker, acceptedLibraries));
+
+                incomplete = root.ForEachGlobalState(false, (node, state) => state || node.Disposition == Disposition.Acceptable);
 
                 tracker.Clear();
             }
 
             Cache<TItem>.ReleaseTracker(tracker);
 
-            root.ForEach((node, context) => WalkTreeDectectConflicts(node, context), CreateState(versionConflicts, acceptedLibraries), skipNode);
+            root.ForEach((node, context) => WalkTreeDectectConflicts(node, context), CreateState(versionConflicts, acceptedLibraries));
 
             Cache<TItem>.ReleaseDictionary(acceptedLibraries);
 
@@ -816,48 +817,69 @@ namespace NuGet.DependencyResolver
             };
         }
 
-        private static void DetectAndMarkAmbiguousCentralTransitiveDependencies<TItem>(this GraphNode<TItem> root, Tracker<TItem> tracker)
+        private static void DetectAndMarkAmbiguousCentralTransitiveDependencies<TItem>(this GraphNode<TItem> root, Tracker<TItem> tracker, List<GraphNode<TItem>> centralTransitiveNodes)
         {
             // if a central transitive node has all parents disputed or ambiguous mark it and its children ambiguous
-            root.InnerNodes
-                .Where(x => x.Item.IsCentralTransitive && x.Disposition == Disposition.Acceptable)
-                .ForEach(n =>
+            foreach (var n in centralTransitiveNodes.Where(x => x.Item.IsCentralTransitive && x.Disposition == Disposition.Acceptable))
+            {
+                if (!n.ParentNodes.Any(p => !(tracker.IsDisputed(p.Item) || tracker.IsAmbiguous(p.Item))))
                 {
-                    if (!n.ParentNodes.Any(p => !(tracker.IsDisputed(p.Item) || tracker.IsAmbiguous(p.Item))))
-                    {
-                        tracker.MarkAmbiguous(n.Item);
-                        n.ForEach(x => tracker.MarkAmbiguous(x.Item));
-                    }
-                });
+                    tracker.MarkAmbiguous(n.Item);
+                    n.ForEach(x => tracker.MarkAmbiguous(x.Item));
+                }
+            };
         }
 
-        private static void RejectCentralTransitiveBecauseOfRejectedParents<TItem>(this GraphNode<TItem> root)
+        private static void RejectCentralTransitiveBecauseOfRejectedParents<TItem>(Tracker<TItem> tracker, List<GraphNode<TItem>> centralTransitiveNodes)
         {
+            HashSet<GraphNode<TItem>> internalContext = new HashSet<GraphNode<TItem>>();
+
+            // reject nodes of rejected nodes for the central transitive nodes and track nodes that were not yet rejected
+            foreach (var ctn in centralTransitiveNodes)
+            {
+                ctn.ForEach(true, (node, state, context) => WalkTreeRejectNodesOfRejectedNodes(state, node, context), internalContext);
+            }
+
             // If a node has its parents rejected, reject the node and its children
             // Need to do this in a loop because more nodes can be rejected as their parents become rejected
             bool continueToReject = true;
-            var centralTransitiveInnerNodes = root.InnerNodes.Where(n => n.Item.IsCentralTransitive).ToList();
             while (continueToReject)
             {
-                var nodesWithDispositionChangedToRejected = centralTransitiveInnerNodes
-                   .Where((n) =>
+                var nodesWithDispositionChangedToRejected = centralTransitiveNodes
+                   .Where((ctn) =>
                    {
-                       if (n.Disposition != Disposition.Rejected && n.AreParentsRejected())
+                       if (ctn.Disposition == Disposition.Acceptable && ctn.AreParentsRejected())
                        {
-                           n.Disposition = Disposition.Rejected;
+                           ctn.Disposition = Disposition.Rejected;
+                           ctn.ForEach(nn => nn.Disposition = Disposition.Rejected);
                            return true;
                        }
                        return false;
                    });
 
-                nodesWithDispositionChangedToRejected.ForEach(node => node.ForEach(n => n.Disposition = Disposition.Rejected));
                 continueToReject = nodesWithDispositionChangedToRejected.Any();
+            }
+
+            // now add all the not rejected nodes to the tracker
+            foreach (var node in internalContext)
+            {
+                if (node.Disposition != Disposition.Rejected)
+                {
+                    tracker.Track(node.Item);
+                }
             }
         }
 
-        private static bool HasCentralTransitiveDependencies<TItem>(this GraphNode<TItem> root)
+        private static bool WalkTreeRejectNodesOfRejectedNodes<TItem>(bool state, GraphNode<TItem> node, HashSet<GraphNode<TItem>> context)
         {
-            return root.InnerNodes.Any(n => n.Item.IsCentralTransitive);
+            if (!state || node.Disposition == Disposition.Rejected)
+            {
+                // Mark all nodes as rejected if they aren't already marked
+                node.Disposition = Disposition.Rejected;
+                return false;
+            }
+            context.Add(node);
+            return true;
         }
 
         // Box Drawing Unicode characters:

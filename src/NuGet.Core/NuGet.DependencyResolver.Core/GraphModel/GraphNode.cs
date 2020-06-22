@@ -40,7 +40,7 @@ namespace NuGet.DependencyResolver
                 return false;
             }
 
-            return ParentNodes.IsAddingCompleted && !ParentNodes.Where(parent => parent.Disposition != Disposition.Rejected).Any();
+            return ParentNodes.IsAddingCompleted && !ParentNodes.Any(parent => parent.Disposition != Disposition.Rejected);
         }
 
         public override string ToString()
