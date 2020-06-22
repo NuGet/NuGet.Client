@@ -5,18 +5,18 @@ using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.VisualStudio.Contracts;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
-    internal class NuGetProjectServices : INuGetProjectServices
+    internal class NuGetProjectService : INuGetProjectService
     {
-        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IProjectSystemCache> _projectSystemCache;
+        private readonly IProjectSystemCache _projectSystemCache;
 
-        public NuGetProjectServices(
-            Microsoft.VisualStudio.Threading.AsyncLazy<IProjectSystemCache> projectSystemCache)
+        public NuGetProjectService(IProjectSystemCache projectSystemCache)
         {
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
         }
@@ -30,16 +30,14 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 
             await TaskScheduler.Default;
 
-            var projectSystemCache = await _projectSystemCache.GetValueAsync(cancellationToken);
-
-            if (!projectSystemCache.TryGetNuGetProject(project, out var nuGetProject))
+            if (!_projectSystemCache.TryGetNuGetProject(project, out var nuGetProject))
             {
-                return ContractsFactory.CreateGetInstalledPackagesResult(GetInstalledPackageResultStatus.ProjectNotReady, packages: null);
+                return NuGetContractsFactory.CreateGetInstalledPackagesResult(GetInstalledPackageResultStatus.ProjectNotReady, packages: null);
             }
 
             var status = GetInstalledPackageResultStatus.Successful;
 
-            if (projectSystemCache.TryGetProjectRestoreInfo(project, out _, out var nominationMessages))
+            if (_projectSystemCache.TryGetProjectRestoreInfo(project, out _, out var nominationMessages))
             {
                 if (nominationMessages?.Any(m => m.Level == LogLevel.Error) == true)
                 {
@@ -52,15 +50,31 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             var installedPackages = packageReferences.Select(ToNuGetInstalledPackage)
                 .ToList();
 
-            return ContractsFactory.CreateGetInstalledPackagesResult(status, installedPackages);
+            return NuGetContractsFactory.CreateGetInstalledPackagesResult(status, installedPackages);
         }
 
         private NuGetInstalledPackage ToNuGetInstalledPackage(Packaging.PackageReference packageReference)
         {
             var id = packageReference.PackageIdentity.Id;
-            var version = packageReference.AllowedVersions.MinVersion.ToNormalizedString();
 
-            return ContractsFactory.CreateNuGetInstalledPackage(id, version);
+            var versionRange = packageReference.AllowedVersions;
+            string requestedRange;
+            string requestedVersion;
+            if (versionRange != null)
+            {
+                requestedRange =
+                    packageReference.AllowedVersions.OriginalString // most packages
+                    ?? packageReference.AllowedVersions.ToShortString(); // implicit packages
+                requestedVersion = versionRange.MinVersion.OriginalVersion ?? versionRange.MinVersion.ToNormalizedString();
+            }
+            else
+            {
+                // packages.config project
+                requestedRange = packageReference.PackageIdentity.Version.OriginalVersion;
+                requestedVersion = requestedRange;
+            }
+
+            return NuGetContractsFactory.CreateNuGetInstalledPackage(id, requestedRange, requestedVersion);
         }
     }
 }

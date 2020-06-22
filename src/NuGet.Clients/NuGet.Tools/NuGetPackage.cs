@@ -173,7 +173,7 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(serviceProvider: this, joinableTaskFactory: ThreadHelper.JoinableTaskFactory);
+            var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(ThreadHelper.JoinableTaskFactory);
             brokeredServiceContainer.Proffer(NuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
         }
 

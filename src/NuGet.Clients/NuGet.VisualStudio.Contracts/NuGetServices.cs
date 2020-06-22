@@ -5,24 +5,16 @@ using Microsoft.ServiceHub.Framework;
 
 namespace NuGet.VisualStudio.Contracts
 {
-    /// <summary>
-    /// 
-    /// </summary>
+    /// <summary>Strings and service descriptors to use NuGet.VisualStudio.Contracts extensibility.</summary>
     public static class NuGetServices
     {
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary>Service name for the NuGetProjectService service.</summary>
         public const string NuGetProjectServiceName = "Microsoft.VisualStudio.NuGet.NuGetProjectService";
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary>Version 1.0 string.</summary>
         public const string Version1 = "1.0";
 
-        /// <summary>
-        /// 
-        /// </summary>
+        /// <summary>Service descriptor for <see cref="INuGetProjectService"/> version 1</summary>
         public static ServiceRpcDescriptor NuGetProjectServiceV1 { get; } = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(NuGetProjectServiceName, new System.Version(Version1)),
             ServiceJsonRpcDescriptor.Formatters.MessagePack,
