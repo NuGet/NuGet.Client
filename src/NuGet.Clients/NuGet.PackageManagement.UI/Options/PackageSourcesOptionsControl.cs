@@ -19,6 +19,7 @@ using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Options
@@ -39,7 +40,7 @@ namespace NuGet.Options
         private bool _initialized;
         private IReadOnlyList<PackageSource> _originalPackageSources;
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-        private INuGetSourcesService _nugetSourcesService;
+        private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
@@ -142,7 +143,7 @@ namespace NuGet.Options
             UpdateUI();
         }
 
-        internal async Task InitializeOnActivatedAsync(CancellationToken ct)
+        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -155,12 +156,12 @@ namespace NuGet.Options
 
                 var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
 #pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
-                _nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetBrokeredServices.SourceProviderService, cancellationToken: ct);
+                _nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken);
 #pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
                 Assumes.NotNull(_nugetSourcesService);
 
                 // get packages sources
-                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(ct);
+                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
                 // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
                 var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
@@ -232,7 +233,7 @@ namespace NuGet.Options
         /// Persist the package sources, which was add/removed via the Options page, to the VS Settings store.
         /// This gets called when users click OK button.
         /// </summary>
-        internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken ct)
+        internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken cancellationToken)
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
@@ -253,7 +254,7 @@ namespace NuGet.Options
             {
                 if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, ct);
+                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, cancellationToken);
                 }
             }
             // Thrown during creating or saving NuGet.Config.

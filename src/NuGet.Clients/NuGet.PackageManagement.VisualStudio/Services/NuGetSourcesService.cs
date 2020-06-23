@@ -14,6 +14,7 @@ using Microsoft.ServiceHub.Framework.Services;
 using NuGet.Configuration;
 using NuGet.Protocol.Core.Types;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -24,21 +25,21 @@ namespace NuGet.PackageManagement.VisualStudio
         private readonly IServiceBroker _serviceBroker;
         private readonly AuthorizationServiceClient _authorizationServiceClient;
 
-        public NuGetSourcesService(ServiceActivationOptions options, IServiceBroker sb, AuthorizationServiceClient ac, CancellationToken ct)
+        public NuGetSourcesService(ServiceActivationOptions options, IServiceBroker serviceBroker, AuthorizationServiceClient authorizationServiceClient, CancellationToken cancellationToken)
         {
             _options = options;
-            _serviceBroker = sb;
-            _authorizationServiceClient = ac;
+            _serviceBroker = serviceBroker;
+            _authorizationServiceClient = authorizationServiceClient;
         }
 
-        public async ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken ct)
+        public async ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken cancellationToken)
         {
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
             return packageSources.PackageSourceProvider.LoadPackageSources().ToList();
         }
 
-        public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken ct)
+        public async ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken cancellationToken)
         {
             var packageSources = await ServiceLocator.GetInstanceAsync<ISourceRepositoryProvider>();
             Assumes.NotNull(packageSources);
@@ -51,6 +52,7 @@ namespace NuGet.PackageManagement.VisualStudio
             {
                 if (disposing)
                 {
+                    _authorizationServiceClient?.Dispose();
                 }
 
                 _disposedValue = true;

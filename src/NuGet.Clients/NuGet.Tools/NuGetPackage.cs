@@ -23,6 +23,7 @@ using NuGet.PackageManagement.UI;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
 using NuGet.VisualStudio.Telemetry;
 using NuGetConsole;
 using NuGetConsole.Implementation;
@@ -69,9 +70,7 @@ namespace NuGetVSExtension
         NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,
         "{" + GuidList.guidNuGetPkgString + "}")]
     [Guid(GuidList.guidNuGetPkgString)]
-    [ProvideBrokeredService(NuGetBrokeredServices.SourceProviderServiceName,
-                            NuGetBrokeredServices.SourceProviderServiceVersion,
-                            Audience = ServiceAudience.AllClientsIncludingGuests)]
+    [ProvideBrokeredService("NuGet.SourceProviderService", "1.0.0", Audience = ServiceAudience.AllClientsIncludingGuests)] // This matches what is found in NuGet.VisualStudio.Internal.Contracts\NuGetServices.cs
     public sealed class NuGetPackage : AsyncPackage, IVsPackageExtensionProvider, IVsPersistSolutionOpts
     {
         // It is displayed in the Help - About box of Visual Studio
@@ -171,10 +170,8 @@ namespace NuGetVSExtension
                 },
                 ThreadHelper.JoinableTaskFactory);
 
-
             var brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            brokeredServiceContainer.Proffer(NuGetBrokeredServices.SourceProviderService,
-                                             (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, ct)));
+            brokeredServiceContainer.Proffer(NuGetServices.SourceProviderService, (mk, options, sb, ac, ct) => new ValueTask<object>(new NuGetSourcesService(options, sb, ac, ct)));
         }
 
         /// <summary>

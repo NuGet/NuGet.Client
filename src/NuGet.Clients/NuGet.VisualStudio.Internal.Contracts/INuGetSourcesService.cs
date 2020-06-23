@@ -9,11 +9,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using NuGet.Configuration;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.VisualStudio.Internal.Contracts
 {
     public interface INuGetSourcesService : IDisposable
     {
-        ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken ct);
-        ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken ct);
+        ValueTask<IReadOnlyList<PackageSource>> GetPackageSourcesAsync(CancellationToken cancellationToken);
+        ValueTask SavePackageSourcesAsync(IReadOnlyList<PackageSource> sources, CancellationToken cancellationToken);
     }
 }

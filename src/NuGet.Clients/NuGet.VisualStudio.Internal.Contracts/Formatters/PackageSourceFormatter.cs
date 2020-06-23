@@ -7,7 +7,7 @@ using MessagePack;
 using MessagePack.Formatters;
 using NuGet.Configuration;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class PackageSourceFormatter : IMessagePackFormatter<PackageSource?>
     {

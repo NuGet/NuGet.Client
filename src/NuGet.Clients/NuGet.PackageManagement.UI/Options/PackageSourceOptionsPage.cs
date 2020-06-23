@@ -36,9 +36,9 @@ namespace NuGet.Options
             }, Resources.PackageSourceOptions_OnActivated);
         }
 
-        private async Task OnActivateAsync(CancelEventArgs e, CancellationToken ct)
+        private async Task OnActivateAsync(CancelEventArgs e, CancellationToken cancellationToken)
         {
-            await PackageSourcesControl.InitializeOnActivatedAsync(ct);
+            await PackageSourcesControl.InitializeOnActivatedAsync(cancellationToken);
         }
 
         protected override void OnApply(PageApplyEventArgs e)
@@ -51,9 +51,9 @@ namespace NuGet.Options
             }, Resources.PackageSourceOptions_OnApply);
         }
 
-        private async Task OnApplyAsync(PageApplyEventArgs e, CancellationToken ct)
+        private async Task OnApplyAsync(PageApplyEventArgs e, CancellationToken cancellationToken)
         {
-            bool wasApplied = await PackageSourcesControl.ApplyChangedSettingsAsync(ct);
+            bool wasApplied = await PackageSourcesControl.ApplyChangedSettingsAsync(cancellationToken);
 
             if (!wasApplied)
             {

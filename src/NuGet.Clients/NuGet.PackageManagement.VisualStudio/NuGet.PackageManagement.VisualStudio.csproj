@@ -3,7 +3,6 @@
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.legacy.props" />
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <NewtonsoftJsonPackageVersion>12.0.2</NewtonsoftJsonPackageVersion>
     <Shipping>true</Shipping>
     <IncludeInVSIX>true</IncludeInVSIX>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -73,8 +72,6 @@
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="PackageFeeds\RecommenderPackageFeed.cs" />
-    <Compile Include="Services\NuGetServiceMessagePackRpcDescriptor.cs" />
-    <Compile Include="Services\INuGetSourcesService.cs" />
     <Compile Include="Services\NuGetSourcesService.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProject.cs" />
     <Compile Include="Projects\LegacyPackageReferenceProjectProvider.cs" />
@@ -132,7 +129,6 @@
     <Compile Include="ProjectServices\VsProjectScriptHostService.cs" />
     <Compile Include="Prompts\DeprecatedFrameworkModel.cs" />
     <Compile Include="Prompts\DotnetDeprecatedPrompt.cs" />
-    <Compile Include="Services\NuGetBrokeredServices.cs" />
     <Compile Include="Services\NuGetLockService.cs" />
     <Compile Include="Projects\VsMSBuildNuGetProject.cs" />
     <Compile Include="ICredentialServiceProvider.cs" />
@@ -141,7 +137,6 @@
     <Compile Include="IDE\VSPackageRestoreManager.cs" />
     <Compile Include="IDE\VSProductUpdateService.cs" />
     <Compile Include="Projects\VsProjectJsonNuGetProject.cs" />
-    <Compile Include="Services\Converters\PackageSourceFormatter.cs" />
     <Compile Include="SourceControl\DefaultTFSSourceControlManager.cs" />
     <Compile Include="SourceControl\VSSourceControlManagerProvider.cs" />
     <Compile Include="OptionsPageActivator.cs" />
@@ -240,6 +235,10 @@
     <ProjectReference Include="..\NuGet.VisualStudio.Common\NuGet.VisualStudio.Common.csproj">
       <Project>{eea49a74-6efc-410e-9745-bad367ac151d}</Project>
       <Name>NuGet.VisualStudio.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Internal.Contracts\NuGet.VisualStudio.Internal.Contracts.csproj">
+      <Project>{deebf1a1-1c21-4e9e-8ce3-1eb21381ff1e}</Project>
+      <Name>NuGet.VisualStudio.Internal.Contracts</Name>
     </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio\NuGet.VisualStudio.csproj">
       <Project>{e5556bc6-a7fd-4d8e-8a7d-7648df1d7471}</Project>

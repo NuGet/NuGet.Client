@@ -11,7 +11,7 @@ using Microsoft;
 using Microsoft.ServiceHub.Framework;
 using StreamJsonRpc;
 
-namespace NuGet.PackageManagement.VisualStudio
+namespace NuGet.VisualStudio.Internal.Contracts
 {
     internal class NuGetServiceMessagePackRpcDescriptor : ServiceJsonRpcDescriptor
     {
