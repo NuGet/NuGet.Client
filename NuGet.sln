@@ -24,7 +24,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Shared", "Shared", "{DE23D0
 		Shared\HashCodeCombiner.cs = Shared\HashCodeCombiner.cs
 		Shared\TypeExtensions.cs = Shared\TypeExtensions.cs
 		Shared\TypeInfo.cs = Shared\TypeInfo.cs
-		Shared\XmlUtility.cs = Shared\XmlUtility.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{D1549653-9631-4E16-9967-55427174A0DC}"

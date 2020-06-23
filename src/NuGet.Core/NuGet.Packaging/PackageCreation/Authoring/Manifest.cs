@@ -12,7 +12,6 @@ using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Packaging.PackageCreation.Resources;
 using NuGet.Packaging.Xml;
-using NuGet.Shared;
 
 namespace NuGet.Packaging
 {
@@ -115,7 +114,7 @@ namespace NuGet.Packaging
             XDocument document;
             if (propertyProvider == null)
             {
-                document = XmlUtility.Load(stream);
+                document = XmlUtility.LoadSafe(stream, ignoreWhiteSpace: true);
             }
             else
             {

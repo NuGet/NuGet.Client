@@ -10,7 +10,6 @@ using System.Reflection;
 using System.Runtime.Versioning;
 using Microsoft.Build.Utilities;
 using NuGet.ProjectManagement;
-using XmlUtility = NuGet.Shared.XmlUtility;
 
 namespace NuGet.PackageManagement.VisualStudio
 {
@@ -193,7 +192,7 @@ namespace NuGet.PackageManagement.VisualStudio
 
                     using (var stream = File.OpenRead(FileSystemUtility.GetFullPath(referenceAssembliesPath, FrameworkListFileName)))
                     {
-                        var document = XmlUtility.Load(stream);
+                        var document = XmlUtility.LoadSafe(stream);
                         var root = document.Root;
                         if (root.Name.LocalName.Equals("FileList", StringComparison.OrdinalIgnoreCase))
                         {
