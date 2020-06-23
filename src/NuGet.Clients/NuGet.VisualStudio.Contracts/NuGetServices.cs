@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.ServiceHub.Framework;
+using StreamJsonRpc;
 
 namespace NuGet.VisualStudio.Contracts
 {
-    /// <summary>Strings and service descriptors to use NuGet.VisualStudio.Contracts extensibility.</summary>
+    /// <summary>Constants and service descriptors to use NuGet.VisualStudio.Contracts extensibility.</summary>
     public static class NuGetServices
     {
         /// <summary>Service name for the NuGetProjectService service.</summary>
@@ -13,6 +14,10 @@ namespace NuGet.VisualStudio.Contracts
 
         /// <summary>Version 1.0 string.</summary>
         public const string Version1 = "1.0";
+
+        /// <summary></summary>
+        /// <remarks>Used in <see cref="RemoteInvocationException.ErrorCode"/></remarks>
+        public const int ArgumentException = 1;
 
         /// <summary>Service descriptor for <see cref="INuGetProjectService"/> version 1</summary>
         public static ServiceRpcDescriptor NuGetProjectServiceV1 { get; } = new ServiceJsonRpcDescriptor(

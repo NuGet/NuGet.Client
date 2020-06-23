@@ -16,15 +16,19 @@ namespace NuGet.VisualStudio.Contracts
         /// </remarks>
         public string RequestedRange { get; }
 
-        /// <summary>The lowest version allowed by the <see cref="RequestedRange"/></summary>
-        public string RequestedVersion { get; }
+        /// <summary>The installed package version</summary>
+        /// <remarks>
+        /// If the project uses packages.config, this will be the same as requested range.
+        /// If the project uses PackageReference, this will be the resolved version.
+        /// </remarks>
+        public string Version { get; }
 
         // This class will hopefully use C# record types when that language feature becomes available, so make the constructor not-public, to prevent breaking change when records come out.
-        internal NuGetInstalledPackage(string id, string requestedRange, string requestedVersion)
+        internal NuGetInstalledPackage(string id, string requestedRange, string version)
         {
             Id = id;
             RequestedRange = requestedRange;
-            RequestedVersion = requestedVersion;
+            Version = version;
         }
     }
 }

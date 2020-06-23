@@ -3,6 +3,7 @@
 
 using System.Threading;
 using System.Threading.Tasks;
+using StreamJsonRpc;
 
 namespace NuGet.VisualStudio.Contracts
 {
@@ -14,7 +15,11 @@ namespace NuGet.VisualStudio.Contracts
         /// <param name="projectId">Project ID (GUID).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The list of packages in the project.</returns>
-        /// <exception cref="System.ArgumentException">When projectId is not a guid.</exception>
-        Task<GetInstalledPackagesResult> GetInstalledPackagesAsync(string projectId, CancellationToken cancellationToken);
+        /// <exception cref="RemoteInvocationException" />
+        /// <remarks>
+        /// When projectId is not a GUID, <see cref="RemoteInvocationException.ErrorCode"/> is set to <see cref="NuGetServices.ArgumentException"/>.
+        /// </remarks>
+        Task<InstalledPackagesResult> GetInstalledPackagesAsync(string projectId, CancellationToken cancellationToken);
+
     }
 }

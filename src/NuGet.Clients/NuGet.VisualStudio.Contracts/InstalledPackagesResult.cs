@@ -5,18 +5,18 @@ using System.Collections.Generic;
 
 namespace NuGet.VisualStudio.Contracts
 {
-    /// <summary>Result of a call to INuGetProjectServices.GetInstalledPackagesAsync</summary>
-    public sealed class GetInstalledPackagesResult
+    /// <summary>Result of a call to <see cref="INuGetProjectService.GetInstalledPackagesAsync(string, System.Threading.CancellationToken)"/></summary>
+    public sealed class InstalledPackagesResult
     {
         /// <summary>The status of the result</summary>
-        public GetInstalledPackageResultStatus Status { get; }
+        public InstalledPackageResultStatus Status { get; }
 
         /// <summary>List of packages in the project</summary>
         /// <remarks>May be null if <see cref="Status"/> was not successful</remarks>
         public IReadOnlyCollection<NuGetInstalledPackage> Packages { get; }
 
         // This class will hopefully use C# record types when that language feature becomes available, so make the constructor not-public, to prevent breaking change when records come out.
-        internal GetInstalledPackagesResult(GetInstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
+        internal InstalledPackagesResult(InstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
         {
             Status = status;
             Packages = packages;

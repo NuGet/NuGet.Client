@@ -11,18 +11,18 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     public class NuGetBrokeredServiceFactory
     {
-        private readonly JoinableTaskFactory _joinableTaskFactory;
+        private readonly AsyncLazy<IProjectSystemCache> _projectSystemCache;
 
-        public NuGetBrokeredServiceFactory(JoinableTaskFactory joinableTaskFactory)
+        public NuGetBrokeredServiceFactory(AsyncLazy<IProjectSystemCache> projectSystemCache)
         {
-            _joinableTaskFactory = joinableTaskFactory ?? throw new ArgumentNullException(nameof(joinableTaskFactory));
+            _projectSystemCache = projectSystemCache?? throw new ArgumentNullException(nameof(projectSystemCache));
         }
 
         public async ValueTask<object> CreateNuGetProjectServiceV1(ServiceMoniker moniker, ServiceActivationOptions options, IServiceBroker serviceBroker, CancellationToken cancellationToken)
         {
-            var projectSystemCache = await ServiceLocator.GetInstanceAsync<IProjectSystemCache>();
+            var projectSystemCache = await _projectSystemCache.GetValueAsync(cancellationToken);
 
-            return new NuGetProjectService(projectSystemCache);
+            return new ValueTask<object>(new NuGetProjectService(projectSystemCache));
         }
     }
 }

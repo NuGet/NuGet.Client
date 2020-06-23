@@ -3,8 +3,8 @@
 
 namespace NuGet.VisualStudio.Contracts
 {
-    /// <summary>The status of the result</summary>
-    public enum GetInstalledPackageResultStatus
+    /// <summary>The status of a <see cref="InstalledPackagesResult"/> result</summary>
+    public enum InstalledPackageResultStatus
     {
         /// <summary>Unknown status</summary>
         /// <remarks>Probably represents a bug in the method that created the result.</remarks>

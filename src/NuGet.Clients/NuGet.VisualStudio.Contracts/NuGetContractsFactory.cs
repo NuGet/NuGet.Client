@@ -12,20 +12,20 @@ namespace NuGet.VisualStudio.Contracts
         /// <summary>Create a <see cref="NuGetInstalledPackage"/></summary>
         /// <param name="id">Package Id</param>
         /// <param name="requestedRange">The requested range</param>
-        /// <param name="requestedVersion">The requested version</param>
+        /// <param name="version">The installed version</param>
         /// <returns><see cref="NuGetInstalledPackage"/></returns>
-        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string requestedVersion)
+        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string version)
         {
-            return new NuGetInstalledPackage(id, requestedRange, requestedVersion);
+            return new NuGetInstalledPackage(id, requestedRange, version);
         }
 
-        /// <summary>Create a <see cref="GetInstalledPackageResultStatus"/></summary>
-        /// <param name="status"><see cref="GetInstalledPackageResultStatus"/></param>
+        /// <summary>Create a <see cref="InstalledPackageResultStatus"/></summary>
+        /// <param name="status"><see cref="InstalledPackageResultStatus"/></param>
         /// <param name="packages">Read-only collection of <see cref="NuGetInstalledPackage"/></param>
-        /// <returns><see cref="GetInstalledPackagesResult"/></returns>
-        public static GetInstalledPackagesResult CreateGetInstalledPackagesResult(GetInstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
+        /// <returns><see cref="InstalledPackagesResult"/></returns>
+        public static InstalledPackagesResult CreateGetInstalledPackagesResult(InstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
         {
-            return new GetInstalledPackagesResult(status, packages);
+            return new InstalledPackagesResult(status, packages);
         }
     }
 }

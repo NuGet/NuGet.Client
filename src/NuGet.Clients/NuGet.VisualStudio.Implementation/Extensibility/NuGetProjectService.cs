@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.VisualStudio.Contracts;
+using StreamJsonRpc;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
@@ -21,27 +22,35 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
         }
 
-        public async Task<GetInstalledPackagesResult> GetInstalledPackagesAsync(string project, CancellationToken cancellationToken)
+        public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(string project, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(project))
+            try
             {
-                throw new ArgumentNullException(paramName: nameof(project));
+                var projectGuid = Guid.Parse(project);
+
+                // normalize guid, just in case.
+                project = projectGuid.ToString();
+            }
+            catch (Exception e) when (e is FormatException || e is ArgumentNullException)
+            {
+                throw new RemoteInvocationException(e.Message, NuGetServices.ArgumentException, errorData: null);
             }
 
+            // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
             await TaskScheduler.Default;
 
             if (!_projectSystemCache.TryGetNuGetProject(project, out var nuGetProject))
             {
-                return NuGetContractsFactory.CreateGetInstalledPackagesResult(GetInstalledPackageResultStatus.ProjectNotReady, packages: null);
+                return NuGetContractsFactory.CreateGetInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
             }
 
-            var status = GetInstalledPackageResultStatus.Successful;
+            var status = InstalledPackageResultStatus.Successful;
 
             if (_projectSystemCache.TryGetProjectRestoreInfo(project, out _, out var nominationMessages))
             {
                 if (nominationMessages?.Any(m => m.Level == LogLevel.Error) == true)
                 {
-                    status = GetInstalledPackageResultStatus.ProjectInvalid;
+                    status = InstalledPackageResultStatus.ProjectInvalid;
                 }
             }
 
