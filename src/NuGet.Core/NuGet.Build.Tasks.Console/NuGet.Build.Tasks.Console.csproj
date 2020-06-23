@@ -14,7 +14,7 @@
     <PackProject>true</PackProject>
     <SkipShared>true</SkipShared>
     <Description>NuGet Build tasks for MSBuild and dotnet restore. Contains restore logic using the MSBuild static graph functionality.</Description>
-    <NoWarn>$(NoWarn);CS1591;NU5100</NoWarn>
+    <NoWarn>$(NoWarn);CS1591;NU5100;NU5128;NU5104</NoWarn>
     <XPLATProject>true</XPLATProject>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);PackBuildOutputs</TargetsForTfmSpecificContentInPackage>
@@ -65,7 +65,7 @@
   <Target Name="PackBuildOutputs">
     <ItemGroup>
       <TfmSpecificPackageFile Include="$(TargetPath)" PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
-      <TfmSpecificPackageFile Include="$(ProjectRuntimeConfigFilePath)" Condition="'$(TargetFramework)' == '$(NetCoreTargetFramework)'" PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
+      <TfmSpecificPackageFile Include="$(ProjectRuntimeConfigFilePath)" Condition=" '$(IsCore)' == 'true' " PackagePath="contentFiles\any\$(TargetFramework)\" PackageCopyToOutput="true" />
     </ItemGroup>
   </Target>
 
