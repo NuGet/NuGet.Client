@@ -173,8 +173,8 @@ namespace NuGetVSExtension
                 ThreadHelper.JoinableTaskFactory);
 
             IBrokeredServiceContainer brokeredServiceContainer = await this.GetServiceAsync<SVsBrokeredServiceContainer, IBrokeredServiceContainer>();
-            var lazyProjectSystemCache = new AsyncLazy<IProjectSystemCache>(() => ServiceLocator.GetInstanceAsync<IProjectSystemCache>(), ThreadHelper.JoinableTaskFactory);
-            var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazyProjectSystemCache);
+            var lazySolutionManager = new AsyncLazy<IVsSolutionManager>(() => ServiceLocator.GetInstanceAsync<IVsSolutionManager>(), ThreadHelper.JoinableTaskFactory);
+            var nuGetBrokeredServiceFactory = new NuGetBrokeredServiceFactory(lazySolutionManager);
             brokeredServiceContainer.Proffer(NuGetServices.NuGetProjectServiceV1, nuGetBrokeredServiceFactory.CreateNuGetProjectServiceV1);
         }
 

@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
+using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Contracts;
 using StreamJsonRpc;
 
@@ -15,21 +18,21 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     internal class NuGetProjectService : INuGetProjectService
     {
-        private readonly IProjectSystemCache _projectSystemCache;
+        private readonly IVsSolutionManager _solutionManager;
 
-        public NuGetProjectService(IProjectSystemCache projectSystemCache)
+        public NuGetProjectService(IVsSolutionManager solutionManager)
         {
-            _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
-        public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(string project, CancellationToken cancellationToken)
+        public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(string projectId, CancellationToken cancellationToken)
         {
             try
             {
-                var projectGuid = Guid.Parse(project);
+                var projectGuid = Guid.Parse(projectId);
 
                 // normalize guid, just in case.
-                project = projectGuid.ToString();
+                projectId = projectGuid.ToString();
             }
             catch (Exception e) when (e is FormatException || e is ArgumentNullException)
             {
@@ -39,22 +42,25 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
             await TaskScheduler.Default;
 
-            if (!_projectSystemCache.TryGetNuGetProject(project, out var nuGetProject))
+            NuGetProject project = await _solutionManager.GetNuGetProjectAsync(projectId);
+            if (project == null)
             {
                 return NuGetContractsFactory.CreateGetInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
             }
 
             var status = InstalledPackageResultStatus.Successful;
 
-            if (_projectSystemCache.TryGetProjectRestoreInfo(project, out _, out var nominationMessages))
+            if (project is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
             {
-                if (nominationMessages?.Any(m => m.Level == LogLevel.Error) == true)
+                var cacheContext = new DependencyGraphCacheContext();
+                var (_, messages) = await buildIntegratedNuGetProject.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext);
+                if (messages?.Any(m => m.Level == LogLevel.Error) == true)
                 {
                     status = InstalledPackageResultStatus.ProjectInvalid;
                 }
             }
 
-            var packageReferences = await nuGetProject.GetInstalledPackagesAsync(cancellationToken);
+            var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
 
             var installedPackages = packageReferences.Select(ToNuGetInstalledPackage)
                 .ToList();

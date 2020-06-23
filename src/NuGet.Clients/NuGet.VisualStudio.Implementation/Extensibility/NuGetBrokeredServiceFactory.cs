@@ -6,23 +6,24 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.ServiceHub.Framework;
 using Microsoft.VisualStudio.Threading;
+using NuGet.PackageManagement.VisualStudio;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
     public class NuGetBrokeredServiceFactory
     {
-        private readonly AsyncLazy<IProjectSystemCache> _projectSystemCache;
+        private readonly AsyncLazy<IVsSolutionManager> _solutionManager;
 
-        public NuGetBrokeredServiceFactory(AsyncLazy<IProjectSystemCache> projectSystemCache)
+        public NuGetBrokeredServiceFactory(AsyncLazy<IVsSolutionManager> solutionManager)
         {
-            _projectSystemCache = projectSystemCache?? throw new ArgumentNullException(nameof(projectSystemCache));
+            _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
         public async ValueTask<object> CreateNuGetProjectServiceV1(ServiceMoniker moniker, ServiceActivationOptions options, IServiceBroker serviceBroker, CancellationToken cancellationToken)
         {
-            var projectSystemCache = await _projectSystemCache.GetValueAsync(cancellationToken);
+            var solutionManager = await _solutionManager.GetValueAsync(cancellationToken);
 
-            return new ValueTask<object>(new NuGetProjectService(projectSystemCache));
+            return new NuGetProjectService(solutionManager);
         }
     }
 }
