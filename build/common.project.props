@@ -49,7 +49,7 @@
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\5.0.0-beta.20159.1\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20065.7\tools\netcoreapp2.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
-    <NoWarn>$(NoWarn);NU5105;NU5048;NU5128;NU5104</NoWarn>
+    <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Defaults -->
