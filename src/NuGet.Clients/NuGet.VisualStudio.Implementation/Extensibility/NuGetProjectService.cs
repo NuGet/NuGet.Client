@@ -2,13 +2,16 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Contracts;
@@ -49,47 +52,66 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             }
 
             var status = InstalledPackageResultStatus.Successful;
+            List<NuGetInstalledPackage> installedPackages;
 
-            if (project is BuildIntegratedNuGetProject buildIntegratedNuGetProject)
+            if (project is BuildIntegratedNuGetProject packageReferenceProject)
             {
                 var cacheContext = new DependencyGraphCacheContext();
-                var (_, messages) = await buildIntegratedNuGetProject.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext);
+                var (packageSpecs, messages) = await packageReferenceProject.GetPackageSpecsAndAdditionalMessagesAsync(cacheContext);
                 if (messages?.Any(m => m.Level == LogLevel.Error) == true)
                 {
                     status = InstalledPackageResultStatus.ProjectInvalid;
                 }
+
+                var packageSpec = packageSpecs.Single(s => s.RestoreMetadata.ProjectStyle == ProjectModel.ProjectStyle.PackageReference || s.RestoreMetadata.ProjectStyle == ProjectModel.ProjectStyle.ProjectJson);
+                var packagesPath = VSRestoreSettingsUtilities.GetPackagesPath(NullSettings.Instance, packageSpec);
+                FallbackPackagePathResolver pathResolver = new FallbackPackagePathResolver(packagesPath, VSRestoreSettingsUtilities.GetFallbackFolders(NullSettings.Instance, packageSpec));
+
+                var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
+
+                installedPackages = packageReferences.Select(p => ToNuGetInstalledPackage(p, pathResolver))
+                    .ToList();
             }
+            else if (project is MSBuildNuGetProject packagesConfigProject)
+            {
+                FolderNuGetProject packagesFolder = packagesConfigProject.FolderNuGetProject;
 
-            var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
+                var packageReferences = await project.GetInstalledPackagesAsync(cancellationToken);
 
-            var installedPackages = packageReferences.Select(ToNuGetInstalledPackage)
-                .ToList();
+                installedPackages = packageReferences.Select(p => ToNuGetInstalledPackage(p, packagesFolder))
+                    .ToList();
+            }
+            else
+            {
+                // unknown/unsupported project type
+                installedPackages = new List<NuGetInstalledPackage>(0);
+            }
 
             return NuGetContractsFactory.CreateGetInstalledPackagesResult(status, installedPackages);
         }
 
-        private NuGetInstalledPackage ToNuGetInstalledPackage(Packaging.PackageReference packageReference)
+        private NuGetInstalledPackage ToNuGetInstalledPackage(Packaging.PackageReference packageReference, FallbackPackagePathResolver pathResolver)
         {
             var id = packageReference.PackageIdentity.Id;
 
             var versionRange = packageReference.AllowedVersions;
-            string requestedRange;
-            string requestedVersion;
-            if (versionRange != null)
-            {
-                requestedRange =
-                    packageReference.AllowedVersions.OriginalString // most packages
-                    ?? packageReference.AllowedVersions.ToShortString(); // implicit packages
-                requestedVersion = versionRange.MinVersion.OriginalVersion ?? versionRange.MinVersion.ToNormalizedString();
-            }
-            else
-            {
-                // packages.config project
-                requestedRange = packageReference.PackageIdentity.Version.OriginalVersion;
-                requestedVersion = requestedRange;
-            }
+            string requestedRange =
+                packageReference.AllowedVersions.OriginalString // most packages
+                ?? packageReference.AllowedVersions.ToShortString();
+            string version = versionRange.MinVersion.OriginalVersion ?? versionRange.MinVersion.ToNormalizedString();
+            var installPath = pathResolver.GetPackageDirectory(id, version);
 
-            return NuGetContractsFactory.CreateNuGetInstalledPackage(id, requestedRange, requestedVersion);
+            return NuGetContractsFactory.CreateNuGetInstalledPackage(id, requestedRange, version, installPath);
+        }
+
+        private NuGetInstalledPackage ToNuGetInstalledPackage(Packaging.PackageReference packageReference, FolderNuGetProject packagesFolder)
+        {
+            var id = packageReference.PackageIdentity.Id;
+            string requestedRange = packageReference.PackageIdentity.Version.OriginalVersion;
+            string version = requestedRange;
+            var installPath = packagesFolder.GetInstalledPath(packageReference.PackageIdentity);
+
+            return NuGetContractsFactory.CreateNuGetInstalledPackage(id, requestedRange, version, installPath);
         }
     }
 }

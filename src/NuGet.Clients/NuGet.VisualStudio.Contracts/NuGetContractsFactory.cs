@@ -13,10 +13,11 @@ namespace NuGet.VisualStudio.Contracts
         /// <param name="id">Package Id</param>
         /// <param name="requestedRange">The requested range</param>
         /// <param name="version">The installed version</param>
+        /// <param name="installPath">The package install path</param>
         /// <returns><see cref="NuGetInstalledPackage"/></returns>
-        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string version)
+        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string version, string installPath)
         {
-            return new NuGetInstalledPackage(id, requestedRange, version);
+            return new NuGetInstalledPackage(id, requestedRange, version, installPath);
         }
 
         /// <summary>Create a <see cref="InstalledPackageResultStatus"/></summary>

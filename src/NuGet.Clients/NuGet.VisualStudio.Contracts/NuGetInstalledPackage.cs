@@ -23,12 +23,17 @@ namespace NuGet.VisualStudio.Contracts
         /// </remarks>
         public string Version { get; }
 
+        /// <summary>Path to the extracted package</summary>
+        /// <remarks>When Visual Studio is connected to a Codespaces or Live Share environment, the path will be for the remote envionrment, not local.</remarks>
+        public string InstallPath { get; }
+
         // This class will hopefully use C# record types when that language feature becomes available, so make the constructor not-public, to prevent breaking change when records come out.
-        internal NuGetInstalledPackage(string id, string requestedRange, string version)
+        internal NuGetInstalledPackage(string id, string requestedRange, string version, string installPath)
         {
             Id = id;
             RequestedRange = requestedRange;
             Version = version;
+            InstallPath = installPath;
         }
     }
 }
