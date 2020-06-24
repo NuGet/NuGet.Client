@@ -29,7 +29,15 @@ namespace NuGet.CommandLine.FuncTest.Commands
             var nugetexe = Util.GetNuGetExePath();
 
             using (var server = new MockServer())
+            using (var config = new SimpleTestPathContext())
             {
+
+                CommandRunner.Run(
+                    nugetexe,
+                    config.WorkingDirectory,
+                    $"source add -name mockSource -source {server.Uri}v3/index.json -configfile {config.NuGetConfig}",
+                    waitForExit: true);
+
                 string index = $@"
 {{""version"": ""3.0.0"",
   ""resources"": [
@@ -89,9 +97,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 }}]
 }}";
 
-
-                server.Get.Add("/search/query?q=logging&skip=0&take=20&prerelease=false&semVerLevel=2.0.0", r => queryResult
-                );
+                server.Get.Add("/search/query?q=logging&skip=0&take=20&prerelease=false&semverLevel=2.0.0", r => queryResult);
 
 
                 server.Start();
@@ -105,7 +111,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 var result = CommandRunner.Run(
                     nugetexe,
-                    Directory.GetCurrentDirectory(),
+                    config.WorkingDirectory,
                     string.Join(" ", args),
                     waitForExit: true);
 
@@ -113,7 +119,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
                 // Assert
                 Assert.True(0 == result.Item1, $"{result.Item2} {result.Item3}");
-                Assert.Contains("foo", result.Item2);
+                Assert.Contains("foo", $"{result.Item2} {result.Item3}");
             }
         }
 

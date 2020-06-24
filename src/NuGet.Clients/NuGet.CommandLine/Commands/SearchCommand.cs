@@ -62,7 +62,7 @@ namespace NuGet.CommandLine
             {
                 using (Process myProcess = new Process())
                 {
-                    myProcess.StartInfo.FileName = "cmd";
+                    myProcess.StartInfo.FileName = "cmd"; // TODO: Move outside the loop
                     myProcess.StartInfo.Arguments = "/c more";
                     myProcess.StartInfo.UseShellExecute = false;
                     myProcess.StartInfo.RedirectStandardInput = true;

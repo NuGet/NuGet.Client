@@ -108,6 +108,7 @@ namespace NuGet.Protocol
                     Common.ILogger log,
                     CancellationToken cancellationToken)
         {
+            Console.Error.WriteLine($"Found {_searchEndpoints.Length} search endpoints.");
             for (var i = 0; i < _searchEndpoints.Length; i++)
             {
                 var endpoint = _searchEndpoints[i];
@@ -151,6 +152,7 @@ namespace NuGet.Protocol
                 var searchResult = default(T);
                 try
                 {
+                    Console.Error.WriteLine($"Querying {queryUrl.Uri}");
                     searchResult = await getResultAsync(queryUrl.Uri);
                 }
                 catch (OperationCanceledException)
