@@ -58,44 +58,55 @@ namespace NuGet.CommandLine.FuncTest.Commands
 
 
 
-                string queryResult = $@"{{
-""@context"": {{
-""@vocab"": ""http://schema.nuget.org/schema#"",
-""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
-}},
-""totalHits"": 396,
-""data"": [
-{{
-""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
-""@type"": ""Package"",
-""registration"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
-""id"": ""Newtonsoft.Json"",
-""version"": ""12.0.3"",
-""description"": ""Json.NET is a popular high-performance JSON framework for .NET"",
-""summary"": """",
-""title"": ""Json.NET"",
-""iconUrl"": ""https://api.nuget.org/v3-flatcontainer/newtonsoft.json/12.0.3/icon"",
-""licenseUrl"": ""https://www.nuget.org/packages/Newtonsoft.Json/12.0.3/license"",
-""projectUrl"": ""https://www.newtonsoft.com/json"",
-""tags"": [
-""json""
-],
-""authors"": [
-""James Newton-King""
-],
-""totalDownloads"": 531607259,
-""verified"": true,
-""packageTypes"": [
-{{
-""name"": ""Dependency""
-}}
-],
-""versions"": [{{
-""version"": ""3.5.8"",
-""downloads"": 461992,
-""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/3.5.8.json""
-}}]
-}}";
+                string queryResult = $@"
+                {{
+                    ""@context"":
+                    {{
+                        ""@vocab"": ""http://schema.nuget.org/schema#"",
+                        ""@base"": ""https://api.nuget.org/v3/registration5-semver1/""
+                    }},
+                    ""totalHits"": 396,
+                    ""data"": [
+                    {{
+                        ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
+                        ""@type"": ""Package"",
+                        ""registration"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/index.json"",
+                        ""id"": ""Newtonsoft.Json"",
+                        ""version"": ""12.0.3"",
+                        ""description"": ""Json.NET is a popular high-performance JSON framework for .NET"",
+                        ""summary"": """",
+                        ""title"": ""Json.NET"",
+                        ""iconUrl"": ""https://api.nuget.org/v3-flatcontainer/newtonsoft.json/12.0.3/icon"",
+                        ""licenseUrl"": ""https://www.nuget.org/packages/Newtonsoft.Json/12.0.3/license"",
+                        ""projectUrl"": ""https://www.newtonsoft.com/json"",
+
+                        ""tags"": [
+                            ""json""
+                        ],
+
+                        ""authors"": [
+                        ""James Newton-King""
+                        ],
+
+                        ""totalDownloads"": 531607259,
+                        ""verified"": true,
+
+                        ""packageTypes"": [
+                        {{
+                            ""name"": ""Dependency""
+                        }}
+                        ],
+
+                        ""versions"": [
+                        {{
+                            ""version"": ""3.5.8"",
+                            ""downloads"": 461992,
+                            ""@id"": ""https://api.nuget.org/v3/registration5-semver1/newtonsoft.json/3.5.8.json""
+                        }}
+                        ]
+                    }}
+                    ]
+                }}";
 
                 server.Get.Add("/search/query?q=logging&skip=0&take=20&prerelease=true&semVerLevel=2.0.0", r => queryResult);
 
