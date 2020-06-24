@@ -69,7 +69,7 @@ namespace NuGet.Protocol
                 var lower = NuGetVersion.Parse(item["lower"].ToString());
                 var upper = NuGetVersion.Parse(item["upper"].ToString());
 
-                if (range.IsRegistrationPageVersionRangeCheckRequired(lower, upper))
+                if (range.CheckIfVersionRangeRequiredRegistrationPage(lower, upper))
                 {
                     JToken items;
                     if (!item.TryGetValue("items", out items))

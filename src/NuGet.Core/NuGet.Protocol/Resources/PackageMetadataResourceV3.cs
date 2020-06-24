@@ -8,7 +8,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using NuGet.Common;
 using NuGet.Packaging.Core;
 using NuGet.Protocol.Core.Types;
@@ -37,16 +36,13 @@ namespace NuGet.Protocol
             _packageDetailsUriResource = packageDetailsUriResource;
         }
 
-        /// <summary>
-        /// Query nuget package list from nuget server for Consolidate UI. This implementation optimized for performance so instead of keeping giant JObject in memory we use strong types.
-        /// </summary>
         /// <param name="packageId">PackageId for package we're looking.</param>
         /// <param name="includePrerelease">Whether to include PreRelease versions into result.</param>
         /// <param name="includeUnlisted">Whether to include Unlisted versions into result.</param>
         /// <param name="sourceCacheContext">SourceCacheContext for cache.</param>
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
-        /// <returns>List of package meta data.</returns>
+        /// <returns>List of package metadata.</returns>
         public override async Task<IEnumerable<IPackageSearchMetadata>> GetMetadataAsync(
             string packageId,
             bool includePrerelease,
@@ -55,9 +51,7 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var range = VersionRange.All; // We get all versions for package and later filter down the road get ones we need.
-
-            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
+            return await GetMetadataAsync(packageId, includePrerelease, includeUnlisted, range : VersionRange.All, sourceCacheContext, log, token);
         }
 
         /// <summary>
@@ -75,15 +69,8 @@ namespace NuGet.Protocol
             Common.ILogger log,
             CancellationToken token)
         {
-            var includeMinVersion = true;
-            var includeMaxVersion = true;
-
-            var range = new VersionRange(package.Version, includeMinVersion, package.Version, includeMaxVersion);
-
-            var includePrerelease = true;
-            var includeUnlisted = true;
-
-            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease, includeUnlisted, range, sourceCacheContext, log, token);
+            var range = new VersionRange(package.Version, includeMinVersion : true, package.Version, includeMaxVersion : true);
+            var packageMetaDatas = await GetMetadataAsync(package.Id, includePrerelease : true, includeUnlisted : true, range, sourceCacheContext, log, token);
 
             return packageMetaDatas.SingleOrDefault();
         }
@@ -100,7 +87,7 @@ namespace NuGet.Protocol
             var metadataCache = new MetadataReferenceCache();
             var registrationUri = _regResource.GetUri(packageId);
 
-            var registrationIndexResult = await LoadRangesAsync(
+            var registrationIndexResult = await LoadRegistrationIndexAsync(
                 _client,
                 registrationUri,
                 packageId,
@@ -122,7 +109,7 @@ namespace NuGet.Protocol
 
             foreach (var registrationPage in registrationIndex.Items)
             {
-                if(registrationPage==null)
+                if (registrationPage == null)
                 {
                     throw new InvalidDataException(registrationUri.AbsoluteUri);
                 }
@@ -130,14 +117,14 @@ namespace NuGet.Protocol
                 var lower = NuGetVersion.Parse(registrationPage.Lower);
                 var upper = NuGetVersion.Parse(registrationPage.Upper);
 
-                if (range.IsRegistrationPageVersionRangeCheckRequired(lower, upper))
+                if (range.CheckIfVersionRangeRequiredRegistrationPage(lower, upper))
                 {
                     if (registrationPage.Items == null)
                     {
                         var rangeUri = registrationPage.Url;
                         var leafRegistrationPage = await GetRegistratioIndexPageAsync(_client, rangeUri, packageId, lower, upper, httpSourceCacheContext, log, token);
 
-                        if(registrationPage==null)
+                        if (registrationPage == null)
                         {
                             throw new InvalidDataException(registrationUri.AbsoluteUri);
                         }
@@ -188,7 +175,7 @@ namespace NuGet.Protocol
         /// <param name="log">Logger Instance.</param>
         /// <param name="token">Cancellation token.</param>
         /// <returns></returns>
-        private async Task<RegistrationIndexResult> LoadRangesAsync(
+        private async Task<RegistrationIndexResult> LoadRegistrationIndexAsync(
             HttpSource httpSource,
             Uri registrationUri,
             string packageId,

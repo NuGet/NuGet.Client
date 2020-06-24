@@ -79,7 +79,12 @@ namespace NuGet.Protocol
         /// <summary>
         /// <see cref="IEnumerable{Type}"/> containing all types that can be cached.
         /// </summary>
-        public static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+        internal static IEnumerable<Type> CachableTypes => CachableTypesMap.Keys;
+
+        /// <summary>
+        /// <see cref="IEnumerable{Type}"/> containing string type methods can be cached.
+        /// </summary>
+        internal Dictionary<Type, MethodInfo> CachableMethodTypes => _stringMethodsCache;
 
         /// <summary>
         /// Iterates through the properties of <paramref name="input"/> that are either <see cref="string"/>s, <see cref="DateTimeOffset"/>s, or <see cref="NuGetVersion"/>s and checks them against the cache.
@@ -115,7 +120,6 @@ namespace NuGet.Protocol
             for (var i=0; i < properties.Length; i++)
             {
                 PropertyInfo property = properties[i];
-
                 object value = property.GetMethod.Invoke(input, null);
 
                 object cachedValue = property.PropertyType == typeof(string) ?
