@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
-    [ProvideToolWindow(typeof(PackageManagerToolWindowPane), Style = VsDockStyle.Tabbed, DocumentLikeTool = true, Window = EnvDTE.Constants.vsCATIDDocument)]
     public class PackageManagerToolWindowPane : ToolWindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
@@ -66,10 +65,13 @@ namespace NuGet.PackageManagement.UI
 
         public int OnClose(ref uint pgrfSaveOptions)
         {
-            _content.SaveSettings();
-            _content.Model.Context.UserSettingsManager.PersistSettings();
+            _content?.SaveSettings();
+            _content?.Model.Context.UserSettingsManager.PersistSettings();
 
             pgrfSaveOptions = (uint)__FRAMECLOSE.FRAMECLOSE_NoSave;
+
+            Dispose();
+
             return VSConstants.S_OK;
         }
 
