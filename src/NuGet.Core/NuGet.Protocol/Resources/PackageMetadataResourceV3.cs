@@ -117,7 +117,7 @@ namespace NuGet.Protocol
                 var lower = NuGetVersion.Parse(registrationPage.Lower);
                 var upper = NuGetVersion.Parse(registrationPage.Upper);
 
-                if (range.CheckIfVersionRangeRequiredRegistrationPage(lower, upper))
+                if (range.DoesRangeSatisfies(lower, upper))
                 {
                     if (registrationPage.Items == null)
                     {
