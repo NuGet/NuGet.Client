@@ -43,7 +43,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
   ""resources"": [
     {{
       ""@id"": ""{server.Uri + "search/query"}"",
-      ""@type"": ""SearchQueryService"",
+      ""@type"": ""SearchQueryService/Versioned"",
       ""comment"": ""Query endpoint of NuGet Search service (primary)""
     }}
     ],
@@ -97,7 +97,7 @@ namespace NuGet.CommandLine.FuncTest.Commands
 }}]
 }}";
 
-                server.Get.Add("/search/query?q=logging&skip=0&take=20&prerelease=false&semverLevel=2.0.0", r => queryResult);
+                server.Get.Add("/search/query?q=logging&skip=0&take=20&prerelease=true&semVerLevel=2.0.0", r => queryResult);
 
 
                 server.Start();
