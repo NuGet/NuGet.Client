@@ -15,7 +15,6 @@ using NuGet.Packaging;
 using NuGet.ProjectManagement;
 using NuGet.ProjectManagement.Projects;
 using NuGet.VisualStudio.Contracts;
-using StreamJsonRpc;
 
 namespace NuGet.VisualStudio.Implementation.Extensibility
 {
@@ -28,27 +27,15 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
         }
 
-        public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(string projectId, CancellationToken cancellationToken)
+        public async Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken)
         {
-            try
-            {
-                var projectGuid = Guid.Parse(projectId);
-
-                // normalize guid, just in case.
-                projectId = projectGuid.ToString();
-            }
-            catch (Exception e) when (e is FormatException || e is ArgumentNullException)
-            {
-                throw new RemoteInvocationException(e.Message, NuGetServices.ArgumentException, errorData: null);
-            }
-
             // Just in case we're on the UI thread, switch to background thread. Very low cost (does not schedule new task) if already on background thread.
             await TaskScheduler.Default;
 
-            NuGetProject project = await _solutionManager.GetNuGetProjectAsync(projectId);
+            NuGetProject project = await _solutionManager.GetNuGetProjectAsync(projectId.ToString());
             if (project == null)
             {
-                return NuGetContractsFactory.CreateGetInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
+                return NuGetContractsFactory.CreateInstalledPackagesResult(InstalledPackageResultStatus.ProjectNotReady, packages: null);
             }
 
             var status = InstalledPackageResultStatus.Successful;
@@ -87,7 +74,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
                 installedPackages = new List<NuGetInstalledPackage>(0);
             }
 
-            return NuGetContractsFactory.CreateGetInstalledPackagesResult(status, installedPackages);
+            return NuGetContractsFactory.CreateInstalledPackagesResult(status, installedPackages);
         }
 
         private NuGetInstalledPackage ToNuGetInstalledPackage(Packaging.PackageReference packageReference, FallbackPackagePathResolver pathResolver)

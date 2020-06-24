@@ -4,6 +4,7 @@
 namespace NuGet.VisualStudio.Contracts
 {
     /// <summary>Information about an installed package</summary>
+    /// <remarks>To create an instance, use <see cref="NuGetContractsFactory.CreateNuGetInstalledPackage"/>.</remarks>
     public sealed class NuGetInstalledPackage
     {
         /// <summary>The package id.</summary>
@@ -24,7 +25,10 @@ namespace NuGet.VisualStudio.Contracts
         public string Version { get; }
 
         /// <summary>Path to the extracted package</summary>
-        /// <remarks>When Visual Studio is connected to a Codespaces or Live Share environment, the path will be for the remote envionrment, not local.</remarks>
+        /// <remarks>
+        /// When Visual Studio is connected to a Codespaces or Live Share environment, the path will be for the remote envionrment, not local.
+        /// This may be null if the package was not restored successfully.
+        /// </remarks>
         public string InstallPath { get; }
 
         // This class will hopefully use C# record types when that language feature becomes available, so make the constructor not-public, to prevent breaking change when records come out.

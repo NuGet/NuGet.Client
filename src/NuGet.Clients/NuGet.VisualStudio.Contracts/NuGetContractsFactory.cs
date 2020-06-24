@@ -24,7 +24,7 @@ namespace NuGet.VisualStudio.Contracts
         /// <param name="status"><see cref="InstalledPackageResultStatus"/></param>
         /// <param name="packages">Read-only collection of <see cref="NuGetInstalledPackage"/></param>
         /// <returns><see cref="InstalledPackagesResult"/></returns>
-        public static InstalledPackagesResult CreateGetInstalledPackagesResult(InstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
+        public static InstalledPackagesResult CreateInstalledPackagesResult(InstalledPackageResultStatus status, IReadOnlyCollection<NuGetInstalledPackage> packages)
         {
             return new InstalledPackagesResult(status, packages);
         }

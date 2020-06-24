@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using StreamJsonRpc;
 
 namespace NuGet.VisualStudio.Contracts
 {
@@ -15,11 +15,6 @@ namespace NuGet.VisualStudio.Contracts
         /// <param name="projectId">Project ID (GUID).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The list of packages in the project.</returns>
-        /// <exception cref="RemoteInvocationException" />
-        /// <remarks>
-        /// When projectId is not a GUID, <see cref="RemoteInvocationException.ErrorCode"/> is set to <see cref="NuGetServices.ArgumentException"/>.
-        /// </remarks>
-        Task<InstalledPackagesResult> GetInstalledPackagesAsync(string projectId, CancellationToken cancellationToken);
-
+        Task<InstalledPackagesResult> GetInstalledPackagesAsync(Guid projectId, CancellationToken cancellationToken);
     }
 }

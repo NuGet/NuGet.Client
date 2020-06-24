@@ -5,7 +5,8 @@ using System.Collections.Generic;
 
 namespace NuGet.VisualStudio.Contracts
 {
-    /// <summary>Result of a call to <see cref="INuGetProjectService.GetInstalledPackagesAsync(string, System.Threading.CancellationToken)"/></summary>
+    /// <summary>Result of a call to <see cref="INuGetProjectService.GetInstalledPackagesAsync"/></summary>
+    /// <remarks>To create an instance, use <see cref="NuGetContractsFactory.CreateInstalledPackagesResult"/>.</remarks>
     public sealed class InstalledPackagesResult
     {
         /// <summary>The status of the result</summary>
