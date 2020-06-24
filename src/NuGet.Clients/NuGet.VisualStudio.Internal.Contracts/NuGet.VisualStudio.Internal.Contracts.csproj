@@ -9,12 +9,17 @@
     <Shipping>true</Shipping>
     <IncludeInVsix>true</IncludeInVsix>
     <RootNamespace>NuGet.VisualStudio.Internal.Contracts</RootNamespace>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.VisualStudio.RpcContracts" />
     <PackageReference Include="Newtonsoft.Json" Version="$(NewtonsoftJsonVersionCore)" NoWarn="NU1605" PrivateAssets="all" ExcludeAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\NuGet.Core\NuGet.Configuration\NuGet.Configuration.csproj" />
   </ItemGroup>
   <Import Project="$(BuildCommonDirectory)common.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />

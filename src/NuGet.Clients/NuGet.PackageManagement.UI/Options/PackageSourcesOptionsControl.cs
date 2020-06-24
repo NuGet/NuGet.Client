@@ -8,6 +8,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using Microsoft;
 using Microsoft.VisualStudio;
@@ -15,8 +17,10 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Configuration;
 using NuGet.PackageManagement.UI;
-using NuGet.Protocol.Core.Types;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.VisualStudio;
+using NuGet.VisualStudio.Internal.Contracts;
+using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.Options
 {
@@ -30,28 +34,21 @@ namespace NuGet.Options
     /// </remarks>
     public partial class PackageSourcesOptionsControl : UserControl
     {
-        private readonly Configuration.IPackageSourceProvider _packageSourceProvider;
         private BindingSource _packageSources;
         private BindingSource _machineWidepackageSources;
         private readonly IServiceProvider _serviceProvider;
         private bool _initialized;
+        private IReadOnlyList<PackageSource> _originalPackageSources;
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+        private INuGetSourcesService _nugetSourcesService; // Store proxy object in case the dialog is up and we lose connection we wont grab the local proxy and try to save to that
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
 
         public PackageSourcesOptionsControl(IServiceProvider serviceProvider)
-            : this(ServiceLocator.GetInstance<ISourceRepositoryProvider>(), serviceProvider)
-        {
-        }
-
-        public PackageSourcesOptionsControl(ISourceRepositoryProvider sourceRepositoryProvider, IServiceProvider serviceProvider)
         {
             InitializeComponent();
-
-            if (sourceRepositoryProvider == null)
-            {
-                throw new ArgumentNullException("sourceRepositoryProvider");
-            }
-
+   
             _serviceProvider = serviceProvider;
-            _packageSourceProvider = sourceRepositoryProvider.PackageSourceProvider;
+
             SetupEventHandlers();
 
             UpdateDPI();
@@ -77,6 +74,7 @@ namespace NuGet.Options
 
         private void SetupEventHandlers()
         {
+            Disposed += PackageSourcesOptionsControl_Disposed;
             NewPackageName.TextChanged += (o, e) => UpdateUI();
             NewPackageSource.TextChanged += (o, e) => UpdateUI();
             MoveUpButton.Click += (o, e) => MoveSelectedItem(-1);
@@ -145,7 +143,7 @@ namespace NuGet.Options
             UpdateUI();
         }
 
-        internal void InitializeOnActivated()
+        internal async Task InitializeOnActivatedAsync(CancellationToken cancellationToken)
         {
             try
             {
@@ -156,8 +154,16 @@ namespace NuGet.Options
 
                 _initialized = true;
 
+                var remoteBroker = await BrokeredServicesUtilities.GetRemoteServiceBrokerAsync();
+#pragma warning disable ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                _nugetSourcesService = await remoteBroker.GetProxyAsync<INuGetSourcesService>(NuGetServices.SourceProviderService, cancellationToken: cancellationToken);
+#pragma warning restore ISB001 // Dispose of proxies, disposed in disposing event or in ClearSettings
+                Assumes.NotNull(_nugetSourcesService);
+
                 // get packages sources
-                var allPackageSources = _packageSourceProvider.LoadPackageSources().ToList();
+                _originalPackageSources = await _nugetSourcesService.GetPackageSourcesAsync(cancellationToken);
+                // packageSources and machineWidePackageSources are deep cloned when created, no need to worry about re-querying for sources to diff changes
+                var allPackageSources = _originalPackageSources;
                 var packageSources = allPackageSources.Where(ps => !ps.IsMachineWide).ToList();
                 var machineWidePackageSources = allPackageSources.Where(ps => ps.IsMachineWide).ToList();
                 //_activeSource = _packageSourceProvider.ActivePackageSource;
@@ -227,31 +233,28 @@ namespace NuGet.Options
         /// Persist the package sources, which was add/removed via the Options page, to the VS Settings store.
         /// This gets called when users click OK button.
         /// </summary>
-        internal bool ApplyChangedSettings()
+        internal async Task<bool> ApplyChangedSettingsAsync(CancellationToken cancellationToken)
         {
             // if user presses Enter after filling in Name/Source but doesn't click Update
             // the options will be closed without adding the source, try adding before closing
             // Only apply if nothing was updated or the update was successfull
             var result = TryUpdateSource();
-            if (result != TryUpdateSourceResults.NotUpdated
-                &&
-                result != TryUpdateSourceResults.Unchanged
-                &&
+            if (result != TryUpdateSourceResults.NotUpdated &&
+                result != TryUpdateSourceResults.Unchanged &&
                 result != TryUpdateSourceResults.Successful)
             {
                 return false;
             }
 
             // get package sources as ordered list
-            var packageSources = PackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList();
-            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<Configuration.PackageSource>().ToList());
+            var packageSources = PackageSourcesListBox.Items.Cast<PackageSource>().ToList();
+            packageSources.AddRange(MachineWidePackageSourcesListBox.Items.Cast<PackageSource>().ToList());
 
             try
             {
-                var existingSources = _packageSourceProvider.LoadPackageSources().ToList();
-                if (SourcesChanged(existingSources, packageSources))
+                if (SourcesChanged(_originalPackageSources, packageSources))
                 {
-                    _packageSourceProvider.SavePackageSources(packageSources);
+                    await _nugetSourcesService.SavePackageSourcesAsync(packageSources, cancellationToken);
                 }
             }
             // Thrown during creating or saving NuGet.Config.
@@ -284,7 +287,7 @@ namespace NuGet.Options
         }
 
         // Returns true if there are no changes between existingSources and packageSources.
-        private static bool SourcesChanged(List<Configuration.PackageSource> existingSources, List<Configuration.PackageSource> packageSources)
+        private static bool SourcesChanged(IReadOnlyList<PackageSource> existingSources, IReadOnlyList<PackageSource> packageSources)
         {
             if (existingSources.Count != packageSources.Count)
             {
@@ -293,9 +296,8 @@ namespace NuGet.Options
 
             for (int i = 0; i < existingSources.Count; ++i)
             {
-                if (!existingSources[i].Equals(packageSources[i])
-                    ||
-                    existingSources[i].IsEnabled != packageSources[i].IsEnabled)
+                if (!existingSources[i].Equals(packageSources[i]) ||
+                     existingSources[i].IsEnabled != packageSources[i].IsEnabled)
                 {
                     return true;
                 }
@@ -312,6 +314,8 @@ namespace NuGet.Options
             // clear this flag so that we will set up the bindings again when the option page is activated next time
             _initialized = false;
 
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
             _packageSources = null;
             ClearNameSource();
             UpdateUI();
@@ -370,14 +374,14 @@ namespace NuGet.Options
         {
             var name = NewPackageName.Text.Trim();
             var source = NewPackageSource.Text.Trim();
-            if (String.IsNullOrWhiteSpace(name)
-                && String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(name)
+                && string.IsNullOrWhiteSpace(source))
             {
                 return TryUpdateSourceResults.NotUpdated;
             }
 
             // validate name
-            if (String.IsNullOrWhiteSpace(name))
+            if (string.IsNullOrWhiteSpace(name))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_NameRequired, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageName);
@@ -385,7 +389,7 @@ namespace NuGet.Options
             }
 
             // validate source
-            if (String.IsNullOrWhiteSpace(source))
+            if (string.IsNullOrWhiteSpace(source))
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_SourceRequried, Resources.ShowWarning_Title);
                 SelectAndFocus(NewPackageSource);
@@ -416,7 +420,7 @@ namespace NuGet.Options
             // check to see if name has already been added
             // also make sure it's not the same as the aggregate source ('All')
             bool hasName = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                 String.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
+                                                 string.Equals(name, ps.Name, StringComparison.CurrentCultureIgnoreCase));
             if (hasName)
             {
                 MessageHelper.ShowWarningMessage(Resources.ShowWarning_UniqueName, Resources.ShowWarning_Title);
@@ -426,7 +430,7 @@ namespace NuGet.Options
 
             // check to see if source has already been added
             bool hasSource = sourcesList.Any(ps => ps != selectedPackageSource &&
-                                                   String.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
+                                                   string.Equals(PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(source),
                                                                  PackageManagement.VisualStudio.PathValidator.GetCanonicalPath(ps.Source),
                                                                  StringComparison.OrdinalIgnoreCase));
             if (hasSource)
@@ -449,8 +453,8 @@ namespace NuGet.Options
 
         private void ClearNameSource()
         {
-            NewPackageName.Text = String.Empty;
-            NewPackageSource.Text = String.Empty;
+            NewPackageName.Text = string.Empty;
+            NewPackageSource.Text = string.Empty;
             NewPackageName.Focus();
         }
 
@@ -552,7 +556,7 @@ namespace NuGet.Options
                 && e.Y <= currentListBox.PreferredHeight)
             {
                 var source = (Configuration.PackageSource)currentListBox.Items[index];
-                string newToolTip = !String.IsNullOrEmpty(source.Description) ?
+                string newToolTip = !string.IsNullOrEmpty(source.Description) ?
                     source.Description :
                     source.Source;
                 string currentToolTip = packageListToolTip.GetToolTip(currentListBox);
@@ -593,8 +597,8 @@ namespace NuGet.Options
             }
             else
             {
-                NewPackageName.Text = String.Empty;
-                NewPackageSource.Text = String.Empty;
+                NewPackageName.Text = string.Empty;
+                NewPackageSource.Text = string.Empty;
             }
         }
 
@@ -668,6 +672,13 @@ namespace NuGet.Options
 
             // fallback to MyDocuments folder
             return Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+        }
+
+        private void PackageSourcesOptionsControl_Disposed(object sender, EventArgs e)
+        {
+            Disposed -= PackageSourcesOptionsControl_Disposed;
+            _nugetSourcesService?.Dispose();
+            _nugetSourcesService = null;
         }
 
         private static bool IsPathRootedSafe(string path)
