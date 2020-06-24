@@ -9,6 +9,8 @@
   - Visual Studio extension development.
   - Desktop development with C++
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
+- [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
+  - Pls note the preview.5 has an issue https://github.com/dotnet/sdk/issues/11862, so do not use preview.5
 - Git
 - Windows Powershell v3.0+
 
