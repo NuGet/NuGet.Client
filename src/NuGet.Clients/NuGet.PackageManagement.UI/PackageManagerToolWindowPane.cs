@@ -8,7 +8,6 @@ using Microsoft.VisualStudio.Shell.Interop;
 
 namespace NuGet.PackageManagement.UI
 {
-    [ProvideToolWindow(typeof(PackageManagerToolWindowPane), Style = VsDockStyle.Tabbed, DocumentLikeTool = true, Window = EnvDTE.Constants.vsCATIDDocument)]
     public class PackageManagerToolWindowPane : ToolWindowPane, IVsWindowFrameNotify3
     {
         private PackageManagerControl _content;
