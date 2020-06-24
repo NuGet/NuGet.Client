@@ -915,4 +915,10 @@ Please see https://aka.ms/troubleshoot_nuget_cache for more help.</value>
   <data name="Status_Ready" xml:space="preserve">
     <value>Package list loaded</value>
   </data>
+  <data name="PackageSourceOptions_OnActivated" xml:space="preserve">
+    <value>Getting Package Sources...</value>
+  </data>
+  <data name="PackageSourceOptions_OnApply" xml:space="preserve">
+    <value>Applying changes...</value>
+  </data>
 </root>
