@@ -1155,11 +1155,11 @@ namespace NuGet.PackageManagement.UI
 
                 var switchedFromInstalledOrUpdatesTab = e.PreviousFilter.HasValue &&
                     (e.PreviousFilter == ItemFilter.Installed || e.PreviousFilter == ItemFilter.UpdatesAvailable);
-                var switchedToInitializedInstalledOrUpdatesTab = (_topPanel.Filter == ItemFilter.Installed && _installedTabIsLoaded)
-                    || (_topPanel.Filter == ItemFilter.UpdatesAvailable && _updatesTabIsLoaded);
+                var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.UpdatesAvailable || _topPanel.Filter == ItemFilter.Installed;
+                var installedAndUpdatesTabsLoaded = _installedTabIsLoaded && _updatesTabIsLoaded;
 
-                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they've loaded once before.
-                if (switchedFromInstalledOrUpdatesTab && switchedToInitializedInstalledOrUpdatesTab)
+                //Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
+                if (switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabsLoaded)
                 {
                     //UI can apply filtering.
                     FilterPackages();
@@ -1174,7 +1174,6 @@ namespace NuGet.PackageManagement.UI
 
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 }
-
                 EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
