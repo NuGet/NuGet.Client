@@ -871,7 +871,6 @@ namespace NuGet.DependencyResolver.Tests
             Assert.True(resultTake1);
             Assert.False(resultTake2);
             Assert.Equal(2, centralNode.ParentNodes.Count);
-            Assert.True(centralNode.ParentNodes.IsAddingCompleted);
             var parentLibraryNames = centralNode.ParentNodes.Select(p => p.Key.Name).OrderBy( n => n).ToArray();
             Assert.Equal("parentname1", parentLibraryNames[0]);
             Assert.Equal("parentname2", parentLibraryNames[1]);
@@ -1117,6 +1116,8 @@ namespace NuGet.DependencyResolver.Tests
                     .DependsOn("C", version200);
             provider.Package("C", version200)
                     .DependsOn("H", version200);
+            // add H 2.0.0 to the feed
+            provider.Package("H", version200);
 
             // A -> -> G 1.0.0 -> H 1.0.0(this will be rejected) -> D 1.0.0
             provider.Package("A", version100)
@@ -1129,6 +1130,7 @@ namespace NuGet.DependencyResolver.Tests
             // D 2.0.0 -> I 2.0.0
             provider.Package("D", version200)
                    .DependsOn("I", version200);
+            provider.Package("I", version200);
 
             // Simulates the existence of a D centrally defined package that is not direct dependency
             provider.Package("A", version100)

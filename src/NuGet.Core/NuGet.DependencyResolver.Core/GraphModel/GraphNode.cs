@@ -15,7 +15,7 @@ namespace NuGet.DependencyResolver
             Key = key;
             InnerNodes = new List<GraphNode<TItem>>();
             Disposition = Disposition.Acceptable;
-            ParentNodes = new BlockingCollection<GraphNode<TItem>>();
+            ParentNodes = new List<GraphNode<TItem>>();
         }
 
         public LibraryRange Key { get; set; }
@@ -27,20 +27,25 @@ namespace NuGet.DependencyResolver
         /// <summary>
         /// Used in case that a node is removed from its outernode and needs to keep reference of its parents.
         /// </summary>
-        internal BlockingCollection<GraphNode<TItem>> ParentNodes { get; }
+        internal IList<GraphNode<TItem>> ParentNodes { get; }
 
-        /// <summary>
-        /// For a node that has an <see cref="Disposition.Acceptable"/> <see cref="Disposition"/>
-        /// If all its parents are Rejected the node <see cref="Disposition"/> will be changed to <see cref="Disposition.Rejected"/>
-        /// </summary>
         internal bool AreParentsRejected()
         {
-            if (ParentNodes.Count == 0)
+            var pCount = ParentNodes.Count;
+            if (pCount == 0)
             {
                 return false;
             }
 
-            return ParentNodes.IsAddingCompleted && !ParentNodes.Any(parent => parent.Disposition != Disposition.Rejected);
+            for (int i = 0; i < pCount; i++)
+            {
+                if (ParentNodes[i].Disposition != Disposition.Rejected)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public override string ToString()

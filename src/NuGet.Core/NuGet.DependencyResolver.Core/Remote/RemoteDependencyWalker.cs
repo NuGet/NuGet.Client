@@ -479,7 +479,6 @@ namespace NuGet.DependencyResolver
                 {
                     node.ParentNodes.Add(parent);
                 }
-                node.ParentNodes.CompleteAdding();
             }
         }
     }
