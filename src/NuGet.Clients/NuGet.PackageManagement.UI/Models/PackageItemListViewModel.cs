@@ -438,10 +438,10 @@ namespace NuGet.PackageManagement.UI
 
         public void UpdatePackageStatus(IEnumerable<PackageCollectionItem> installedPackages)
         {
-            // Get the minimum version installed in any target project/solution
+            // Get the maximum version installed in any target project/solution
             InstalledVersion = installedPackages
                 .GetPackageVersions(Id)
-                .MinOrDefault();
+                .MaxOrDefault();
 
             // Set auto referenced to true any reference for the given id contains the flag.
             AutoReferenced = installedPackages.IsAutoReferenced(Id);

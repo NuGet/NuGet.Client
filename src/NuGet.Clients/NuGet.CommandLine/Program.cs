@@ -99,8 +99,6 @@ namespace NuGet.CommandLine
                 ServicePointManager.DefaultConnectionLimit = 1;
             }
 
-            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
-
             var console = new Console();
             var fileSystem = new CoreV2.NuGet.PhysicalFileSystem(workingDirectory);
 

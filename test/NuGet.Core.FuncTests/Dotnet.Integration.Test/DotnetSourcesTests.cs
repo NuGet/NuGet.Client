@@ -151,7 +151,7 @@ namespace Dotnet.Integration.Test
         public void Sources_WhenAddingSourceWithCredentialsToUserConfigFile_CredentialsWereAddedAndEncryptedInUserConfigFile()
         {
             // Arrange
-            using (var configFileDirectory = TestDirectory.Create())
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -182,7 +182,7 @@ namespace Dotnet.Integration.Test
                 var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
-                Assert.True(result.Success);
+                Assert.True(result.Success, result.AllOutput);
 
                 var settings = Settings.LoadDefaultSettings(
                     configFileDirectory,
@@ -217,7 +217,7 @@ namespace Dotnet.Integration.Test
         public void Sources_WhenEnablingADisabledSource_SourceBecameEnabled()
         {
             // Arrange
-            using (var configFileDirectory = TestDirectory.Create())
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -260,7 +260,7 @@ namespace Dotnet.Integration.Test
                 Assert.False(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(Directory.GetCurrentDirectory(), string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
@@ -293,7 +293,7 @@ namespace Dotnet.Integration.Test
         public void Sources_WhenDisablingAnEnabledSource_SourceBecameDisabled()
         {
             // Arrange
-            using (var configFileDirectory = TestDirectory.Create())
+            using (var configFileDirectory = _fixture.CreateTestDirectory())
             {
                 var configFileName = "nuget.config";
                 var configFilePath = Path.Combine(configFileDirectory, configFileName);
@@ -333,7 +333,7 @@ namespace Dotnet.Integration.Test
                 Assert.True(source.IsEnabled);
 
                 // Main Act
-                var result = _fixture.RunDotnet(Directory.GetCurrentDirectory(), string.Join(" ", args), ignoreExitCode: true);
+                var result = _fixture.RunDotnet(configFileDirectory, string.Join(" ", args), ignoreExitCode: true);
 
                 // Assert
                 Assert.True(result.ExitCode == 0);
@@ -414,40 +414,43 @@ namespace Dotnet.Integration.Test
         /// <param name="commandName">The nuget.exe command name to verify, without "nuget.exe" at the beginning</param>
         public void TestCommandInvalidArguments(string command, int badCommandIndex)
         {
-            // Act
-            var result = _fixture.RunDotnet(Directory.GetCurrentDirectory(), command, ignoreExitCode: true);
-
-            var commandSplit = command.Split(' ');
-
-            // Break the test if no proper command is found
-            if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
-                Assert.True(false, "command not found");
-
-            // 0th - "nuget"
-            // 1st - "source"
-            // 2nd - action
-            // 3rd - nextParam
-            string badCommand = commandSplit[badCommandIndex];
-
-            // Assert command
-            Assert.Contains("'" + badCommand + "'", result.Output, StringComparison.InvariantCultureIgnoreCase);
-
-
-            // Assert invalid argument message
-            string invalidMessage;
-            if (badCommand.StartsWith("-"))
+            using (var testDirectory = _fixture.CreateTestDirectory())
             {
-                invalidMessage = "error: Unrecognized option";
-            }
-            else
-            {
-                invalidMessage = "error: Unrecognized command";
-            }
+                // Act
+                var result = _fixture.RunDotnet(testDirectory, command, ignoreExitCode: true);
 
-            // Verify Exit code
-            VerifyResultFailure(result, invalidMessage);
-            // Verify traits of help message in stdout
-            Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
+                var commandSplit = command.Split(' ');
+
+                // Break the test if no proper command is found
+                if (commandSplit.Length < 1 || string.IsNullOrEmpty(commandSplit[0]))
+                    Assert.True(false, "command not found");
+
+                // 0th - "nuget"
+                // 1st - "source"
+                // 2nd - action
+                // 3rd - nextParam
+                string badCommand = commandSplit[badCommandIndex];
+
+                // Assert command
+                Assert.Contains("'" + badCommand + "'", result.Output, StringComparison.InvariantCultureIgnoreCase);
+
+
+                // Assert invalid argument message
+                string invalidMessage;
+                if (badCommand.StartsWith("-"))
+                {
+                    invalidMessage = "error: Unrecognized option";
+                }
+                else
+                {
+                    invalidMessage = "error: Unrecognized command";
+                }
+
+                // Verify Exit code
+                VerifyResultFailure(result, invalidMessage);
+                // Verify traits of help message in stdout
+                Assert.Contains("Specify --help for a list of available options and commands.", result.Output);
+            }
         }
 
         /// <summary>

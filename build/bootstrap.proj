@@ -7,6 +7,8 @@
         <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     </PropertyGroup>
 
+    <!-- After changing versions here, run configure.ps1 -->
+
     <ItemGroup>
         <PackageDownload Include="ILMerge" version="[3.0.21]" />
         <PackageDownload Include="Lucene.Net" version="[3.0.3]" />
@@ -14,11 +16,14 @@
         <PackageDownload Include="Microsoft.Build" version="[15.1.262-preview5]" />
         <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Feed" version="[5.0.0-beta.20159.1]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
         <PackageDownload Include="Microsoft.DotNet.Maestro.Tasks" version="[1.1.0-beta.20065.7]" />  <!-- for publishing to the .NET Core build asset registry (BAR) -->
-        <PackageDownload Include="Microsoft.VisualStudio.Composition" version="[15.8.98]" />
-        <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.0.201-pre-g7d366164d0]" />
+        <PackageDownload Include="Microsoft.VisualStudio.Composition" version="[16.4.11]" />
+        <PackageDownload Include="Microsoft.VisualStudio.Imaging.Interop.14.0.DesignTime" version="[14.3.26930]" />
+        <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem" version="[16.7.156-pre]" />
+        <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed" version="[16.7.0-beta1-65318-02]" />
+        <PackageDownload Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS" version="[16.7.0-beta1-65318-02]" />
         <PackageDownload Include="Microsoft.Web.Xdt" version="[2.1.2]" />
         <PackageDownload Include="Newtonsoft.Json" version="[9.0.1]" />
-        <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[4.9.2]" />
+        <PackageDownload Include="NuGet.Build.Tasks.Pack" version="[5.6.0]" />
         <PackageDownload Include="NuGet.Client.EndToEnd.TestData" version="[1.0.0]" />
         <PackageDownload Include="NuGet.Core" version="[2.14.0-rtm-832]" />
         <PackageDownload Include="NuGetValidator" version="[2.0.2]" />

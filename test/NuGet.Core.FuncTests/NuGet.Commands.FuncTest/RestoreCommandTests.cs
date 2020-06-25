@@ -1857,8 +1857,6 @@ namespace NuGet.Commands.FuncTest
             }
         }
 
-#if IS_DESKTOP
-        // TODO: To work on coreclr we need to address https://github.com/NuGet/Home/issues/7588
         [Fact]
         public void RestoreCommand_PathTooLongException()
         {
@@ -1868,9 +1866,9 @@ namespace NuGet.Commands.FuncTest
                 new PackageSource(NuGetConstants.V3FeedUrl)
             };
 
-            using(var packagesDir = TestDirectory.Create())
-            using(var projectDir = TestDirectory.Create())
-            using(var cacheContext = new SourceCacheContext())
+            using (var packagesDir = TestDirectory.Create())
+            using (var projectDir = TestDirectory.Create())
+            using (var cacheContext = new SourceCacheContext())
             {
                 var configJson = JObject.Parse(@"
                 {
@@ -1886,7 +1884,18 @@ namespace NuGet.Commands.FuncTest
                 var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", specPath);
 
                 var logger = new TestLogger();
-                var request = new TestRestoreRequest(spec, sources, packagesDir + new string('_', 300), cacheContext, logger)
+                string longPath = packagesDir + new string('_', 300);
+                try
+                {
+                    // This test is pointless if the machine has long paths enabled.
+                    Path.GetFullPath(longPath);
+                    return;
+                }
+                catch (PathTooLongException)
+                {
+                }
+
+                var request = new TestRestoreRequest(spec, sources, longPath, cacheContext, logger)
                 {
                     LockFilePath = Path.Combine(projectDir, "project.lock.json")
                 };
@@ -1897,7 +1906,6 @@ namespace NuGet.Commands.FuncTest
                 new Func<Task>(async () => await command.ExecuteAsync()).ShouldThrow<PathTooLongException>();
             }
         }
-#endif
 
         [Fact]
         public async Task RestoreCommand_RestoreExactVersionWithFailingSourceAsync()
@@ -2897,6 +2905,87 @@ namespace NuGet.Commands.FuncTest
                 {
                     assembly.Properties.Should().Contain(new KeyValuePair<string, string>(LockFileItem.AliasesProperty, "invalid-alias:yes"));
                 }
+            }
+        }
+
+        [Fact]
+        public async Task RestoreCommand_WhenRestoreNoOps_TheAssetsFileIsNotRead()
+        {
+            using (var pathContext = new SimpleTestPathContext())
+            using (var context = new SourceCacheContext())
+            {
+                var configJson = JObject.Parse(@"
+                {
+                    ""frameworks"": {
+                        ""net5.0"": {
+                            ""dependencies"": {
+                                ""A"": {
+                                    ""version"" : ""1.0.0"",
+                                }
+                            }
+                        }
+                    }
+                }");
+
+                // Arrange
+                var packageA = new SimpleTestPackageContext("a", "1.0.0");
+                packageA.Files.Clear();
+                packageA.AddFile("lib/net5.0/a.dll");
+
+                await SimpleTestPackageUtility.CreateFolderFeedV3Async(
+                    pathContext.PackageSource,
+                    PackageSaveMode.Defaultv3,
+                    packageA);
+
+                var sources = new List<PackageSource>
+                {
+                    new PackageSource(pathContext.PackageSource)
+                };
+                var logger = new TestLogger();
+
+                var projectDirectory = Path.Combine(pathContext.SolutionRoot, "TestProject");
+                var cachingSourceProvider = new CachingSourceProvider(new PackageSourceProvider(NullSettings.Instance));
+
+                var spec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var dgSpec = new DependencyGraphSpec();
+                dgSpec.AddProject(spec);
+                dgSpec.AddRestore(spec.Name);
+
+                var request = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                    AllowNoOp = true,
+                };
+                var command = new RestoreCommand(request);
+
+                // Preconditions
+                var result = await command.ExecuteAsync();
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+
+                // Modify the assets file. No-op restore should not read the assets file, if it does, it will throw.
+                File.WriteAllText(Path.Combine(spec.RestoreMetadata.OutputPath, "project.assets.json"), "<xml> </xml>");
+                var newSpec = JsonPackageSpecReader.GetPackageSpec(configJson.ToString(), "TestProject", Path.Combine(projectDirectory, "project.csproj")).WithTestRestoreMetadata();
+                var newDgSpec = new DependencyGraphSpec();
+                newDgSpec.AddProject(newSpec);
+                newDgSpec.AddRestore(newSpec.Name);
+
+                var newRequest = new TestRestoreRequest(spec, sources, pathContext.UserPackagesFolder, logger)
+                {
+                    ProjectStyle = ProjectStyle.PackageReference,
+                    DependencyGraphSpec = dgSpec,
+                    AllowNoOp = true,
+                };
+                var newCommand = new RestoreCommand(newRequest);
+
+                // Act
+                result = await newCommand.ExecuteAsync();
+                // Assert
+
+                await result.CommitAsync(logger, CancellationToken.None);
+                result.Success.Should().BeTrue(because: logger.ShowMessages());
+                result.Should().BeAssignableTo<NoOpRestoreResult>(because: "This should be a no-op restore.");
             }
         }
 

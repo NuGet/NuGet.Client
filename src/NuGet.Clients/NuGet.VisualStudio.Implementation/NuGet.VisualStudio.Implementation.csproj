@@ -9,10 +9,10 @@
     <Description>Implementation of the NuGet.VisualStudio extensibility APIs.</Description>
     <Guid>9623cf30-192c-4864-b419-29649169ae30</Guid>
     <ImportedFromTypeLib>NuGet.VisualStudio.Implementation</ImportedFromTypeLib>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
     <Reference Include="System.Net.Http.WebRequest" />
@@ -32,11 +32,23 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ServiceHub.Framework" />
   </ItemGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.Composition">
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.composition\16.4.11\lib\net472\Microsoft.VisualStudio.Composition.dll</HintPath>
+    </Reference>
     <Reference Include="Microsoft.VisualStudio.ProjectSystem">
-      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.0.201-pre-g7d366164d0\lib\net46\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.VS">
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem\16.7.156-pre\lib\net472\Microsoft.VisualStudio.ProjectSystem.VS.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed">
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem.managed\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.ProjectSystem.Managed.VS">
+      <HintPath>$(EnlistmentRoot)\packages\microsoft.visualstudio.projectsystem.managed.vs\16.7.0-beta1-65318-02\lib\net472\Microsoft.VisualStudio.ProjectSystem.Managed.VS.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -44,13 +56,23 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>CommonResources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
+    <EmbeddedResource Update="Resources\VsResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>VsResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
     <Compile Update="CommonResources.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>CommonResources.resx</DependentUpon>
     </Compile>
+    <Compile Update="Resources\VsResources.Designer.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>VsResources.resx</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>
+  <Import Project="$(BuildCommonDirectory)embedinterop.targets" />
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 </Project>

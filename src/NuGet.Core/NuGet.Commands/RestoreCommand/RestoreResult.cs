@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,7 @@ using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
+using NuGet.Shared;
 
 namespace NuGet.Commands
 {
@@ -55,6 +57,12 @@ namespace NuGet.Commands
         /// Restore time
         /// </summary>
         public TimeSpan ElapsedTime { get; }
+
+        /// <summary>
+        /// The log messages raised during this restore operation
+        /// </summary>
+        /// <remarks>The messages here are usually sources from the <see cref="LockFile"/> in full restores or <see cref="CacheFile"/> for no-op restores.</remarks>
+        public virtual IList<IAssetsLogMessage> LogMessages { get; internal set; }
 
         /// <summary>
         ///  Cache File. The previous cache file for this project
@@ -113,6 +121,7 @@ namespace NuGet.Commands
             _dependencyGraphSpec = dependencyGraphSpec;
             ProjectStyle = projectStyle;
             ElapsedTime = elapsedTime;
+            LogMessages = lockFile?.LogMessages ?? new List<IAssetsLogMessage>();
         }
 
         /// <summary>

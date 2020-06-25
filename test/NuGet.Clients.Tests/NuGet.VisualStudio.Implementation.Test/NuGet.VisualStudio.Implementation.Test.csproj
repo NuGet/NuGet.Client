@@ -54,7 +54,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.ServiceHub.Framework" NoWarn="NU1605"/>
+    <PackageReference Include="Microsoft.ServiceHub.Framework" />
 </ItemGroup>
 
   <Import Project="$(BuildCommonDirectory)common.targets"/>

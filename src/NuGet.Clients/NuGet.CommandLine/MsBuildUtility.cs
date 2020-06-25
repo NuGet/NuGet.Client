@@ -469,8 +469,9 @@ namespace NuGet.CommandLine
         }
 
         /// <summary>
-        /// Returns the msbuild directory. If <paramref name="userVersion"/> is null, then the directory containing
-        /// the highest installed msbuild version is returned. Otherwise, the directory containing msbuild
+        /// Returns the msbuild directory. If <paramref name="userVersion"/> is "latest", then the directory containing
+        /// the highest installed msbuild version is returned. If <paramref name="userVersion"/> is null,
+        /// the Env variable has priority over the highest installed version. Otherwise, the directory containing msbuild
         /// whose version matches <paramref name="userVersion"/> is returned. If no match is found,
         /// an exception will be thrown. Note that we use Microsoft.Build types as
         /// </summary>
@@ -572,7 +573,12 @@ namespace NuGet.CommandLine
 
             var toolsetsContainingMSBuild = GetToolsetsContainingValidMSBuildInstallation(installedToolsets);
 
-            if (string.IsNullOrEmpty(userVersion))
+            if(string.Equals(userVersion, "latest", StringComparison.OrdinalIgnoreCase))
+            {
+                //If "latest", take the default(highest) path, ignoring $PATH
+                toolset = toolsetsContainingMSBuild.FirstOrDefault();
+            }
+            else if (string.IsNullOrEmpty(userVersion))
             {
                 var msbuildPathInPath = getMsBuildPathInPathVar(EnvironmentVariableWrapper.Instance);
                 toolset = GetToolsetFromPath(msbuildPathInPath, toolsetsContainingMSBuild);
@@ -630,7 +636,7 @@ namespace NuGet.CommandLine
             //Combine msbuild version paths
             var msBuildPathOnMono14 = Path.Combine(msbuildBasePathOnMono, "14.1", "bin");
             var msBuildPathOnMono15 = Path.Combine(msbuildBasePathOnMono, "15.0", "bin");
-            if (string.IsNullOrEmpty(userVersion))
+            if (string.IsNullOrEmpty(userVersion) || string.Equals(userVersion, "latest", StringComparison.OrdinalIgnoreCase))
             {
                 return new[] {
                         new MsBuildToolset(version: "15.0", path: msBuildPathOnMono15),

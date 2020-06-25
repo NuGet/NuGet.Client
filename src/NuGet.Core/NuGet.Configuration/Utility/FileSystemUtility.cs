@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -29,7 +29,7 @@ namespace NuGet.Configuration
             return File.Exists(Path.Combine(root, file));
         }
 
-        internal static IEnumerable<string> GetFilesRelativeToRoot(string root, string path, string[] filters = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
+        internal static IEnumerable<string> GetFilesRelativeToRoot(string root, string path = "", string[] filters = null, SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
             path = EnsureTrailingSlash(Path.Combine(root, path));
             if (filters == null || !filters.Any())

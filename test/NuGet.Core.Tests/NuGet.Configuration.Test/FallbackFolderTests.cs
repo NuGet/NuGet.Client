@@ -172,13 +172,11 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
 
-                var machineWiderFolderSettings = new Settings(machineWide);
-                var machineWideSettings = new TestMachineWideSettings(machineWiderFolderSettings);
-
-                var settings = Settings.LoadDefaultSettings(
-                    subFolder,
-                    configFileName: null,
-                    machineWideSettings: machineWideSettings);
+                var settings = Settings.LoadSettingsGivenConfigPaths(new[] {
+                    Path.Combine(subFolder, nugetConfigPath),
+                    Path.Combine(mockBaseDirectory, nugetConfigPath),
+                    Path.Combine(machineWide, nugetConfigPath)
+                });
 
                 // Act
                 var actual = SettingsUtility
@@ -232,13 +230,11 @@ namespace NuGet.Configuration.Test
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, mockBaseDirectory, configB);
                 SettingsTestUtils.CreateConfigurationFile(nugetConfigPath, machineWide, configC);
 
-                var machineWiderFolderSettings = new Settings(machineWide);
-                var machineWideSettings = new TestMachineWideSettings(machineWiderFolderSettings);
-
-                var settings = Settings.LoadDefaultSettings(
-                    subFolder,
-                    configFileName: null,
-                    machineWideSettings: machineWideSettings);
+                var settings = Settings.LoadSettingsGivenConfigPaths(new[] {
+                    Path.Combine(subFolder, nugetConfigPath),
+                    Path.Combine(mockBaseDirectory, nugetConfigPath),
+                    Path.Combine(machineWide, nugetConfigPath)
+                });
 
                 // Act
                 var paths = SettingsUtility.GetFallbackPackageFolders(settings).ToArray();

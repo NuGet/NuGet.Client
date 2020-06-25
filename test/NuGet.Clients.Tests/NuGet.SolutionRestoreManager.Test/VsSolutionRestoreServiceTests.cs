@@ -8,6 +8,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using FluentAssertions;
+using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Threading;
 using Moq;
 using NuGet.Commands;
 using NuGet.Common;
@@ -24,6 +26,7 @@ using static NuGet.Frameworks.FrameworkConstants;
 
 namespace NuGet.SolutionRestoreManager.Test
 {
+    [Collection(DispatcherThreadCollection.CollectionName)]
     public class VsSolutionRestoreServiceTests : IDisposable
     {
         private readonly TestDirectory _testDirectory;
@@ -45,34 +48,13 @@ namespace NuGet.SolutionRestoreManager.Test
         {
             var cps = NewCpsProject();
 
-            var cache = Mock.Of<IProjectSystemCache>();
-
-            Mock.Get(cache)
-                .Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>(),
-                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Returns(true);
-
-            var completedRestoreTask = Task.FromResult(true);
-
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            Mock.Get(restoreWorker)
-                .Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    CancellationToken.None))
-                .Returns(completedRestoreTask);
-
-            var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance);
+            var restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
 
             // Act
-            var actualRestoreTask = isV2Nomination ? service.NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None)
-                : service.NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo, CancellationToken.None);
+            var actualRestoreTask = isV2Nomination ? NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None, restoreWorker: restoreWorker)
+                : NominateProjectAsync(cps.ProjectFullPath, cps.ProjectRestoreInfo, CancellationToken.None, restoreWorker: restoreWorker);
 
-            Assert.Same(completedRestoreTask, actualRestoreTask);
-
-            Mock.Get(restoreWorker)
+            restoreWorker
                 .Verify(
                     x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), CancellationToken.None),
                     Times.Once(),
@@ -651,9 +633,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance, asyncLazySolution2);
 
             // Act
             var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
@@ -691,9 +675,11 @@ namespace NuGet.SolutionRestoreManager.Test
 
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
+                cache, restoreWorker, NuGet.Common.NullLogger.Instance, asyncLazySolution2);
 
             // Act
             var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
@@ -1418,9 +1404,11 @@ namespace NuGet.SolutionRestoreManager.Test
             var projectFullPath = cps.ProjectFullPath;
             var cache = Mock.Of<IProjectSystemCache>();
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance);
+                cache, restoreWorker, NullLogger.Instance, asyncLazySolution2);
 
             var result = await service.NominateProjectAsync(projectFullPath, cps.ProjectRestoreInfo2, CancellationToken.None);
 
@@ -1710,9 +1698,11 @@ namespace NuGet.SolutionRestoreManager.Test
             var completedRestoreTask = Task.FromResult(true);
 
             var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
 
             var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance);
+                cache, restoreWorker, NullLogger.Instance, asyncLazySolution2);
 
             // Act
             _ = Assert.ThrowsAsync<ArgumentNullException>(async () => await service.NominateProjectAsync(@"F:\project\project.csproj", (IVsProjectRestoreInfo)null, CancellationToken.None));
@@ -1724,8 +1714,10 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_InvalidTargetFrameworkMoniker_Succeeds()
         {
             // Arrange
+            const string projectFullPath = @"f:\project\project.csproj";
             IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
-            var cache = new Mock<IProjectSystemCache>();
+
+            var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
@@ -1736,15 +1728,9 @@ namespace NuGet.SolutionRestoreManager.Test
                 })
                 .Returns(true);
 
-            var restoreWorker = new Mock<ISolutionRestoreWorker>();
-            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(true));
+            var restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
 
             var logger = new Mock<ILogger>();
-
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
 
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
@@ -1760,7 +1746,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 }));
 
             // Act
-            var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
+            var result = await NominateProjectAsync(projectFullPath, projectRestoreInfo, CancellationToken.None, cache: cache, restoreWorker: restoreWorker, logger: logger);
 
             // Assert
             Assert.True(result);
@@ -1775,8 +1761,11 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_InvalidDependencyVersion_Succeeds()
         {
             // Arrange
+            const string projectFullPath = @"f:\project\project.csproj";
+
             IReadOnlyList<IAssetsLogMessage> additionalMessages = null;
-            var cache = new Mock<IProjectSystemCache>();
+
+            var cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
             cache.Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
@@ -1787,15 +1776,9 @@ namespace NuGet.SolutionRestoreManager.Test
                 })
                 .Returns(true);
 
-            var restoreWorker = new Mock<ISolutionRestoreWorker>();
-            restoreWorker.Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    It.IsAny<CancellationToken>()))
-                .Returns(Task.FromResult(true));
-
             var logger = new Mock<ILogger>();
 
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
+            var restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
 
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
@@ -1817,7 +1800,7 @@ namespace NuGet.SolutionRestoreManager.Test
                 }));
 
             // Act
-            var result = await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None);
+            var result = await NominateProjectAsync(projectFullPath, projectRestoreInfo, CancellationToken.None, cache: cache, restoreWorker: restoreWorker, logger: logger);
 
             // Assert
             Assert.True(result);
@@ -1832,22 +1815,11 @@ namespace NuGet.SolutionRestoreManager.Test
         public async Task NominateProjectAsync_CancelledToken_ThrowsOperationCanceledException()
         {
             // Arrange
-            var cache = new Mock<IProjectSystemCache>();
-            cache.Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>(),
-                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Returns(true);
-
             var restoreWorker = new Mock<ISolutionRestoreWorker>();
             restoreWorker.Setup(x => x.ScheduleRestoreAsync(
                     It.IsAny<SolutionRestoreRequest>(),
                     It.IsAny<CancellationToken>()))
                 .Returns(Task.FromException<bool>(new OperationCanceledException()));
-
-            var logger = new Mock<ILogger>();
-
-            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object);
 
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var projectRestoreInfo = new VsProjectRestoreInfo2(@"f:\project\",
@@ -1863,14 +1835,14 @@ namespace NuGet.SolutionRestoreManager.Test
                 }));
 
             // Act & Assert
-            await Assert.ThrowsAsync<OperationCanceledException>(async () => await service.NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None));
+            await Assert.ThrowsAsync<OperationCanceledException>(async () => await NominateProjectAsync(@"f:\project\project.csproj", projectRestoreInfo, CancellationToken.None, restoreWorker: restoreWorker));
         }
 
         [Fact]
         public void ToPackageSpec_CentralVersions_AreAddedToThePackageSpecIfCPVMIsEnabled()
         {
             // Arrange
-            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
 
             var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
@@ -1912,7 +1884,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public void ToPackageSpec_CentralVersions_CPVMIsEnabled_NoPackageVersions()
         {
             // Arrange
-            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
 
             var targetFrameworks = new VsTargetFrameworkInfo3[] { new VsTargetFrameworkInfo3(
@@ -1931,7 +1903,7 @@ namespace NuGet.SolutionRestoreManager.Test
             // Assert
             var tfm = result.TargetFrameworks.First();
 
-            Assert.Equal(0, tfm.CentralPackageVersions.Count);        
+            Assert.Equal(0, tfm.CentralPackageVersions.Count);
             Assert.True(result.RestoreMetadata.CentralPackageVersionsEnabled);
         }
 
@@ -1945,7 +1917,7 @@ namespace NuGet.SolutionRestoreManager.Test
         public void ToPackageSpec_CentralVersions_AreNotAddedToThePackageSpecIfCPVMIsNotEnabled(string packRefVersion, string managePackageVersionsCentrally)
         {
             // Arrange
-            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC");
+            ProjectNames projectName = new ProjectNames(@"f:\project\project.csproj", "project", "project.csproj", "prjectC", Guid.NewGuid().ToString());
             var emptyReferenceItems = Array.Empty<VsReferenceItem>();
             var packageReferenceProperties = packRefVersion == null ?
                 new VsReferenceProperties() :
@@ -1980,39 +1952,6 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal(1, tfm.Dependencies.Count);
             Assert.Equal(expectedPackageReferenceVersion, tfm.Dependencies.First().LibraryRange.VersionRange.ToNormalizedString());
             Assert.False(result.RestoreMetadata.CentralPackageVersionsEnabled);
-        }
-
-        private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
-            string projectFullPath, IVsProjectRestoreInfo pri)
-        {
-            DependencyGraphSpec capturedRestoreSpec = null;
-
-            var cache = Mock.Of<IProjectSystemCache>();
-            Mock.Get(cache)
-                .Setup(x => x.AddProjectRestoreInfo(
-                    It.IsAny<ProjectNames>(),
-                    It.IsAny<DependencyGraphSpec>(),
-                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
-                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>(
-                    (_, dg, __) => { capturedRestoreSpec = dg; })
-                .Returns(true);
-
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            Mock.Get(restoreWorker)
-                .Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    CancellationToken.None))
-                .ReturnsAsync(true);
-
-            var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NuGet.Common.NullLogger.Instance);
-
-            // Act
-            var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
-
-            Assert.True(result, "Project restore nomination should succeed.");
-
-            return capturedRestoreSpec;
         }
 
         [Theory]
@@ -2058,13 +1997,22 @@ namespace NuGet.SolutionRestoreManager.Test
             Assert.Equal("Core", actualProjectSpec.TargetFrameworks.First().Dependencies.First().Aliases);
         }
 
+        private delegate void TryGetProjectNamesCallback(string projectPath, out ProjectNames projectNames);
+        private delegate bool TryGetProjectNamesReturns(string projectPath, out ProjectNames projectNames);
+
         private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
-            string projectFullPath, IVsProjectRestoreInfo2 pri)
+            string projectFullPath,
+            IVsProjectRestoreInfo pri,
+            Mock<IProjectSystemCache> cache = null)
         {
             DependencyGraphSpec capturedRestoreSpec = null;
 
-            var cache = Mock.Of<IProjectSystemCache>();
-            Mock.Get(cache)
+            if (cache == null)
+            {
+                cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
+            }
+
+            cache
                 .Setup(x => x.AddProjectRestoreInfo(
                     It.IsAny<ProjectNames>(),
                     It.IsAny<DependencyGraphSpec>(),
@@ -2073,22 +2021,139 @@ namespace NuGet.SolutionRestoreManager.Test
                     (_, dg, __) => { capturedRestoreSpec = dg; })
                 .Returns(true);
 
-            var restoreWorker = Mock.Of<ISolutionRestoreWorker>();
-            Mock.Get(restoreWorker)
-                .Setup(x => x.ScheduleRestoreAsync(
-                    It.IsAny<SolutionRestoreRequest>(),
-                    CancellationToken.None))
-                .ReturnsAsync(true);
-
-            var service = new VsSolutionRestoreService(
-                cache, restoreWorker, NullLogger.Instance);
-
             // Act
-            var result = await service.NominateProjectAsync(projectFullPath, pri, CancellationToken.None);
+            var result = await NominateProjectAsync(projectFullPath, pri, CancellationToken.None, cache: cache);
 
             Assert.True(result, "Project restore nomination should succeed.");
 
             return capturedRestoreSpec;
+        }
+
+        private async Task<DependencyGraphSpec> CaptureNominateResultAsync(
+            string projectFullPath,
+            IVsProjectRestoreInfo2 pri,
+            Mock<IProjectSystemCache> cache = null)
+        {
+            DependencyGraphSpec capturedRestoreSpec = null;
+
+            if (cache == null)
+            {
+                cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
+            }
+
+            cache
+                .Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
+                .Callback<ProjectNames, DependencyGraphSpec, IReadOnlyList<IAssetsLogMessage>>(
+                    (_, dg, __) => { capturedRestoreSpec = dg; });
+
+            // Act
+            var result = await NominateProjectAsync(projectFullPath, pri, CancellationToken.None, cache: cache);
+
+            Assert.True(result, "Project restore nomination should succeed.");
+
+            return capturedRestoreSpec;
+        }
+
+        private Task<bool> NominateProjectAsync(
+            string projectFullPath,
+            IVsProjectRestoreInfo pri,
+            CancellationToken cancellationToken,
+            Mock<IProjectSystemCache> cache = null,
+            Mock<ISolutionRestoreWorker> restoreWorker = null,
+            Mock<ILogger> logger = null)
+        {
+            if (cache == null)
+            {
+                cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
+            }
+
+            if (restoreWorker == null)
+            {
+                restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
+            }
+
+            if (logger == null)
+            {
+                logger = new Mock<ILogger>();
+            }
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2);
+
+            return service.NominateProjectAsync(projectFullPath, pri, cancellationToken);
+        }
+
+        private Task<bool> NominateProjectAsync(
+            string projectFullPath,
+            IVsProjectRestoreInfo2 pri,
+            CancellationToken cancellationToken,
+            Mock<IProjectSystemCache> cache = null,
+            Mock<ISolutionRestoreWorker> restoreWorker = null,
+            Mock<ILogger> logger = null)
+        {
+            if (cache == null)
+            {
+                cache = CreateDefaultIProjectSystemCacheMock(projectFullPath);
+            }
+
+            if (restoreWorker == null)
+            {
+                restoreWorker = CreateDefaultISolutionRestoreWorkerMock();
+            }
+
+            if (logger == null)
+            {
+                logger = new Mock<ILogger>();
+            }
+            var vsSolution2 = Mock.Of<IVsSolution2>();
+            var asyncLazySolution2 = new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => Task.FromResult(vsSolution2));
+
+            var service = new VsSolutionRestoreService(cache.Object, restoreWorker.Object, logger.Object, asyncLazySolution2);
+
+            return service.NominateProjectAsync(projectFullPath, pri, cancellationToken);
+        }
+
+        private Mock<IProjectSystemCache> CreateDefaultIProjectSystemCacheMock(string projectFullPath)
+        {
+            var projectNames = new ProjectNames(
+                fullName: projectFullPath,
+                uniqueName: Path.GetFileName(projectFullPath),
+                shortName: Path.GetFileNameWithoutExtension(projectFullPath),
+                customUniqueName: Path.GetFileName(projectFullPath),
+                projectId: Guid.NewGuid().ToString());
+
+            var cache = new Mock<IProjectSystemCache>();
+            cache
+                .Setup(x => x.TryGetProjectNames(projectFullPath, out It.Ref<ProjectNames>.IsAny))
+                .Returns(new TryGetProjectNamesReturns((string projectPath, out ProjectNames pn) =>
+                {
+                    pn = projectNames;
+                    return true;
+                }));
+
+            cache
+                .Setup(x => x.AddProjectRestoreInfo(
+                    It.IsAny<ProjectNames>(),
+                    It.IsAny<DependencyGraphSpec>(),
+                    It.IsAny<IReadOnlyList<IAssetsLogMessage>>()))
+                .Returns(true);
+
+            return cache;
+        }
+
+        private Mock<ISolutionRestoreWorker> CreateDefaultISolutionRestoreWorkerMock()
+        {
+            var restoreWorker = new Mock<ISolutionRestoreWorker>();
+
+            restoreWorker
+                .Setup(x => x.ScheduleRestoreAsync(It.IsAny<SolutionRestoreRequest>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync(true);
+
+            return restoreWorker;
         }
 
         private TestContext NewCpsProject(

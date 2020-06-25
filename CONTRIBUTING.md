@@ -9,6 +9,8 @@
   - Visual Studio extension development.
   - Desktop development with C++
 - [Windows 10 SDK](https://dev.windows.com/en-US/downloads/windows-10-sdk)
+- [.NET 5.0 SDK](https://dotnet.microsoft.com/download/dotnet/5.0)
+  - Please note the preview.5 has an issue that's a blocker for our repository [11862](https://github.com/dotnet/sdk/issues/11862). Avoid .NET 5 preview.5
 - Git
 - Windows Powershell v3.0+
 
@@ -18,8 +20,14 @@
 
 1. [Open an issue here](https://github.com/NuGet/Home/issues) and get some feedback from the NuGet team.
 1. Follow the instructions in [Code](#code)
-1. Make your change, and add tests.
+1. Make your change, and add tests. Please name your branch `dev-<userid>-<very-short-title>`.
 1. Create a [pull request](https://github.com/NuGet/NuGet.Client/pulls).
+    * Create a new issue if you cannot find an existing one [NuGet/Home](https://github.com/NuGet/Home/issues). 
+    * Keep the pull request template, and link to an issue. 
+    * Use a meaningful PR title, not the auto-generated title based on the branch name.
+    * All PRs created by someone outside the NuGet team will be assigned the `Community` label, and a team member will be assigned as the PR shepherd, who will be responsible for making sure the PR gets reviewed (even if they don't review it themselves), and periodically check the PR for progress.
+      * PRs from forks do not trigger CI automatically. Someone in the team needs to apply the "Approved for CI", which will build only the current commit. If changes are pushed to the branch, the "Approved for CI" label needs to be removed and re-applied.
+    * If the NuGet team requests changes and the PR author does not respond within 1 month, a reminder will be added. If no action is taken within 2 months of the reminder, the PR will be closed due to inactivity.
 1. _One-time_: Sign the contributor license agreement, if you haven't signed it before. The [.NET Foundation Bot](https://github.com/dnfclas) will comment on the pull request you just created and guide you on how to sign the CLA.
 1. Submit a doc pull request to the [docs.microsoft-com.nuget](https://github.com/NuGet/docs.microsoft.com-nuget/) repo, if this is a new feature or behavior change.
 
@@ -98,7 +106,10 @@ NuGet members may contribute directly to the main remote.
 
 - [Workflow](docs/workflow.md)
 - [Coding Guidelines](docs/coding-guidelines.md)
+- [Project Overview](docs/project-overview.md)
 - [Debugging](docs/debugging.md)
+- [New Feature Guide](docs/feature-guide.md)
+- [Design Review guide](docs/design-review-guide.md)
 
 ## Docs generation
 

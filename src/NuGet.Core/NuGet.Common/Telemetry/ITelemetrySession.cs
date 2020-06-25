@@ -3,11 +3,11 @@
 
 namespace NuGet.Common
 {
-    /// <summary>
-    /// Interface to post telemetry events.
-    /// </summary>
+    /// <summary> Telemetry session. </summary>
     public interface ITelemetrySession
     {
+        /// <summary> Post a telemetry event to current telemetry session. </summary>
+        /// <param name="telemetryEvent"> Telemetry event. </param>
         void PostEvent(TelemetryEvent telemetryEvent);
     }
 }

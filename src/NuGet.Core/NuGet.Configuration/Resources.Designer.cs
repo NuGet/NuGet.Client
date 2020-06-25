@@ -124,7 +124,16 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to There are several client certificate configurations associated to same package source(s): {0}.
+        ///   Looks up a localized string similar to Unable to update setting since it is in an uneditable config file..
+        /// </summary>
+        internal static string CannotUpdateReadOnlyConfig {
+            get {
+                return ResourceManager.GetString("CannotUpdateReadOnlyConfig", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to There are multiple client certificate configurations associated with the same package source(s): {0}.
         /// </summary>
         internal static string ClientCertificateDuplicateConfiguration {
             get {
@@ -205,7 +214,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Certificate for &apos;{0}&apos; package source was not found in &apos;{1}.{2}&apos; storage by &apos;{3}&apos; criteria with &apos;{4}&apos; value..
+        ///   Looks up a localized string similar to Certificate for the package source &apos;{0}&apos; was not found in &apos;{1}.{2}&apos; storage by &apos;{3}&apos; criteria with &apos;{4}&apos; value..
         /// </summary>
         internal static string Error_StoreCertCertificateNotFound {
             get {
@@ -214,7 +223,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to It is denied to use password and clearTextPassword at the same time..
+        ///   Looks up a localized string similar to Password and ClearTextPassword cannot be used at the same time..
         /// </summary>
         internal static string FileCertItemPasswordAndClearTextPasswordAtSameTime {
             get {
@@ -223,7 +232,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to From file client certificate configuration password for &apos;{0}&apos; package source cannot be decrypted.
+        ///   Looks up a localized string similar to Client certificate configuration password for the package source &apos;{0}&apos; cannot be decrypted.
         /// </summary>
         internal static string FileCertItemPasswordCannotBeDecrypted {
             get {
@@ -232,7 +241,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fileCert path attribute points on non existing file..
+        ///   Looks up a localized string similar to A fileCert path specified a file that does not exist..
         /// </summary>
         internal static string FileCertItemPathFileNotExist {
             get {
@@ -241,7 +250,7 @@ namespace NuGet.Configuration {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to A fileCert item path not set..
+        ///   Looks up a localized string similar to A fileCert item path was not set..
         /// </summary>
         internal static string FileCertItemPathFileNotSet {
             get {

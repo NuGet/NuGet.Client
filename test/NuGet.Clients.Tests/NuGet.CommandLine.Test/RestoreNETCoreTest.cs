@@ -8,10 +8,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-
 using FluentAssertions;
 using Newtonsoft.Json.Linq;
-
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -20,7 +18,6 @@ using NuGet.Packaging.Core;
 using NuGet.ProjectModel;
 using NuGet.Test.Utility;
 using NuGet.Versioning;
-
 using Xunit;
 using Xunit.Abstractions;
 
@@ -1617,8 +1614,8 @@ namespace NuGet.CommandLine.Test
 
                 var propsItemGroups = propsXML.Root.Elements().Where(e => e.Name.LocalName == "ItemGroup").ToList();
 
-                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[0].Attribute(XName.Get("Condition")).Value.Trim());
-                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'net4' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[1].Attribute(XName.Get("Condition")).Value.Trim());
+                Assert.Equal("'$(TargetFramework)' == 'netstandard1.3' AND '$(ExcludeRestorePackageImports)' != 'true'", propsItemGroups[2].Attribute(XName.Get("Condition")).Value.Trim());
             }
         }
 
@@ -6775,6 +6772,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6828,6 +6827,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -6898,6 +6899,8 @@ namespace NuGet.CommandLine.Test
 
                 xml.Save(projectA.ProjectPath);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 // Act
                 var r = Util.RestoreSolution(pathContext);
 
@@ -6957,6 +6960,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7022,6 +7027,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7136,6 +7143,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7152,6 +7161,7 @@ namespace NuGet.CommandLine.Test
                 Directory.Delete(packagePath, true);
 
                 Assert.False(Directory.Exists(packagePath), $"{packageX.ToString()} should not be installed anymore.");
+
 
                 // Act
                 r = Util.RestoreSolution(pathContext);
@@ -7193,6 +7203,8 @@ namespace NuGet.CommandLine.Test
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
 
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
+
                 var r = Util.RestoreSolution(pathContext);
 
                 // Preconditions
@@ -7206,6 +7218,7 @@ namespace NuGet.CommandLine.Test
                 var packagePath = Path.Combine(pathContext.UserPackagesFolder, packageX.Identity.Id, packageX.Version);
                 Assert.True(Directory.Exists(packagePath), $"{packageX.ToString()} is not installed");
                 Assert.Contains("Writing cache file", r.Item2);
+
 
                 // Act
                 r = Util.RestoreSolution(pathContext);
@@ -7251,6 +7264,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7315,6 +7330,8 @@ namespace NuGet.CommandLine.Test
 
                 solution.Projects.Add(projectA);
                 solution.Create(pathContext.SolutionRoot);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7389,6 +7406,8 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectB.ProjectPath);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);
@@ -7480,6 +7499,8 @@ namespace NuGet.CommandLine.Test
                                     attributes);
 
                 xml.Save(projectA.ProjectPath);
+
+                Util.CreateTempGlobalJson(pathContext.SolutionRoot);
 
                 // Act
                 var r = Util.RestoreSolution(pathContext);

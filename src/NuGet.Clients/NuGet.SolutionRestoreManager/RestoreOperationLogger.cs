@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Concurrent;
-using System.ComponentModel.Composition;
 using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,12 +23,10 @@ namespace NuGet.SolutionRestoreManager
     /// <summary>
     /// Aggregates logging and UI services consumed by the <see cref="SolutionRestoreJob"/>.
     /// </summary>
-    [Export]
-    [PartCreationPolicy(CreationPolicy.NonShared)]
     internal sealed class RestoreOperationLogger : LoggerBase, ILogger, IDisposable
     {
         private readonly IAsyncServiceProvider _asyncServiceProvider;
-        private readonly IOutputConsoleProvider _outputConsoleProvider;
+        private readonly Lazy<IOutputConsoleProvider> _outputConsoleProvider;
 
         // Queue of (bool reportProgress, bool showAsOutputMessage, ILogMessage logMessage)
         private readonly ConcurrentQueue<Tuple<bool, bool, ILogMessage>> _loggedMessages = new ConcurrentQueue<Tuple<bool, bool, ILogMessage>>();
@@ -51,9 +48,8 @@ namespace NuGet.SolutionRestoreManager
         // of VS. From 0 (quiet) to 4 (Diagnostic).
         public int OutputVerbosity { get; private set; }
 
-        [ImportingConstructor]
         public RestoreOperationLogger(
-            IOutputConsoleProvider outputConsoleProvider)
+            Lazy<IOutputConsoleProvider> outputConsoleProvider)
             : this(AsyncServiceProvider.GlobalProvider, outputConsoleProvider)
         { }
 
@@ -61,7 +57,7 @@ namespace NuGet.SolutionRestoreManager
 
         public RestoreOperationLogger(
             IAsyncServiceProvider asyncServiceProvider,
-            IOutputConsoleProvider outputConsoleProvider)
+            Lazy<IOutputConsoleProvider> outputConsoleProvider)
             : base(LogLevel.Debug)
         {
             Assumes.Present(asyncServiceProvider);
@@ -99,14 +95,14 @@ namespace NuGet.SolutionRestoreManager
                 switch (_operationSource)
                 {
                     case RestoreOperationSource.Implicit: // background auto-restore
-                        _outputConsole = await _outputConsoleProvider.CreatePackageManagerConsoleAsync();
+                        _outputConsole = await _outputConsoleProvider.Value.CreatePackageManagerConsoleAsync();
                         break;
                     case RestoreOperationSource.OnBuild:
-                        _outputConsole = await _outputConsoleProvider.CreateBuildOutputConsoleAsync();
+                        _outputConsole = await _outputConsoleProvider.Value.CreateBuildOutputConsoleAsync();
                         await _outputConsole.ActivateAsync();
                         break;
                     case RestoreOperationSource.Explicit:
-                        _outputConsole = await _outputConsoleProvider.CreatePackageManagerConsoleAsync();
+                        _outputConsole = await _outputConsoleProvider.Value.CreatePackageManagerConsoleAsync();
                         await _outputConsole.ActivateAsync();
                         await _outputConsole.ClearAsync();
                         break;

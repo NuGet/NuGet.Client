@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.Internal.VisualStudio.Diagnostics;
 using NuGet.Common;
 using NuGet.VisualStudio.Telemetry;
 
@@ -42,25 +41,7 @@ namespace NuGet.VisualStudio
                 throw new ArgumentNullException(nameof(activityName));
             }
 
-            return new EtwLogActivity((VSTelemetrySession.VSEventNamePrefix + activityName).ToLowerInvariant().Replace('/', '_'));
-        }
-
-        private class EtwLogActivity : IDisposable
-        {
-            private readonly VsEtwActivity _activity;
-
-            public EtwLogActivity(string activityName)
-            {
-                if (VsEtwLogging.IsProviderEnabled(VsEtwKeywords.Ide, VsEtwLevel.Information))
-                {
-                    _activity = VsEtwLogging.CreateActivity(activityName, VsEtwKeywords.Ide, VsEtwLevel.Information);
-                }
-            }
-
-            void IDisposable.Dispose()
-            {
-                _activity?.Dispose();
-            }
+            return new EtwLogActivity(activityName);
         }
     }
 }

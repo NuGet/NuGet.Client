@@ -154,6 +154,7 @@ namespace NuGet.Commands
 
         /// <summary>
         /// Apply standard properties in a property group.
+        /// Additionally add a SourceRoot item to point to the package folders.
         /// </summary>
         public static void AddNuGetProperties(
             XDocument doc,
@@ -172,7 +173,10 @@ namespace NuGet.Commands
                             GenerateProperty("NuGetPackageRoot", ReplacePathsWithMacros(repositoryRoot)),
                             GenerateProperty("NuGetPackageFolders", string.Join(";", packageFolders)),
                             GenerateProperty("NuGetProjectStyle", projectStyle.ToString()),
-                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())));
+                            GenerateProperty("NuGetToolVersion", MinClientVersionUtility.GetNuGetClientVersion().ToFullString())),
+                new XElement(Namespace + "ItemGroup",
+                            new XAttribute("Condition", $" {ExcludeAllCondition} "),
+                            GenerateItem("SourceRoot", "$([MSBuild]::EnsureTrailingSlash($(NuGetPackageFolders)))")));
         }
 
         /// <summary>
@@ -197,6 +201,11 @@ namespace NuGet.Commands
             return new XElement(Namespace + propertyName,
                             new XAttribute("Condition", $" '$({propertyName})' == '' "),
                             content);
+        }
+
+        internal static XElement GenerateItem(string itemName, string path)
+        {
+            return new XElement(Namespace + itemName, new XAttribute("Include", path));
         }
 
         public static XElement GenerateImport(string path)
@@ -363,6 +372,7 @@ namespace NuGet.Commands
             return result;
         }
 
+        [Obsolete("This method looks at the RestoreRequest. It is expected that the PackageSpec contains all the relevant information the RestoreRequest would. Use GetMSBuildFilePath(PackageSpec project, string extension) instead.")]
         public static string GetMSBuildFilePath(PackageSpec project, RestoreRequest request, string extension)
         {
             string path;
@@ -382,6 +392,26 @@ namespace NuGet.Commands
             return path;
         }
 
+        public static string GetMSBuildFilePath(PackageSpec project, string extension)
+        {
+            string path;
+
+            if (project.RestoreMetadata?.ProjectStyle == ProjectStyle.PackageReference || project.RestoreMetadata?.ProjectStyle == ProjectStyle.DotnetToolReference)
+            {
+                // PackageReference style projects
+                var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
+                path = Path.Combine(project.RestoreMetadata.OutputPath, $"{projFileName}.nuget.g{extension}");
+            }
+            else
+            {
+                // Project.json style projects
+                var dir = Path.GetDirectoryName(project.FilePath);
+                path = Path.Combine(dir, $"{project.Name}.nuget{extension}");
+            }
+            return path;
+
+        }
+
         public static string GetMSBuildFilePathForPackageReferenceStyleProject(PackageSpec project, string extension)
         {
             var projFileName = Path.GetFileName(project.RestoreMetadata.ProjectPath);
@@ -399,8 +429,8 @@ namespace NuGet.Commands
             ILogger log)
         {
             // Generate file names
-            var targetsPath = GetMSBuildFilePath(project, request, TargetsExtension);
-            var propsPath = GetMSBuildFilePath(project, request, PropsExtension);
+            var targetsPath = GetMSBuildFilePath(project, TargetsExtension);
+            var propsPath = GetMSBuildFilePath(project, PropsExtension);
 
             // Targets files contain a macro for the repository root. If only the user package folder was used
             // allow a replacement. If fallback folders were used the macro cannot be applied.
@@ -758,7 +788,11 @@ namespace NuGet.Commands
 
         private static XElement GeneratePackagePathProperty(LocalPackageInfo localPackageInfo)
         {
+#if NETCOREAPP
+            return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_", StringComparison.Ordinal)}", localPackageInfo.ExpandedPath);
+#else
             return GenerateProperty($"Pkg{localPackageInfo.Id.Replace(".", "_")}", localPackageInfo.ExpandedPath);
+#endif
         }
     }
 }

@@ -9,67 +9,37 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 {
     public class IntervalTrackerTests
     {
-
         [Fact]
-        public void GetIntervals_WhenNoIntervalsAreCaptured_ReturnsEmpty()
+        public void GetIntervals_When_no_intervals_are_captured_It_returns_empty()
         {
-            // Setup
-            var tracker = new IntervalTracker();
-
-            // Act - do nothing
-
-            // Assert
+            var tracker = new IntervalTracker("Activity");
             Assert.Equal(0, tracker.GetIntervals().Count());
         }
 
         [Fact]
-        public void GetIntervals_WhenNoEndIntervalMeasureIsCalled_ReturnsEmpty()
+        public void GetIntervals_When_one_interval_is_not_disposed_It_returns_empty()
         {
-            // Setup
-            var tracker = new IntervalTracker();
-
-            // Act - do nothing
-            tracker.StartIntervalMeasure();
-            tracker.StartIntervalMeasure();
-            tracker.StartIntervalMeasure();
-            // Assert
+            var tracker = new IntervalTracker("Activity");
+            _ = tracker.Start("foo");
             Assert.Equal(0, tracker.GetIntervals().Count());
         }
 
         [Fact]
-        public void GetIntervals_WhenStartIntervalIsNotCalled_IntervalsAreEmpty()
+        public void IntervalTracker_All_properly_disposed_intervals_are_captured()
         {
-            // Setup
-            var tracker = new IntervalTracker();
+            var tracker = new IntervalTracker("Activity");
 
-            // Act - do nothing
-            tracker.EndIntervalMeasure("one");
-            tracker.EndIntervalMeasure("two");
-            // Assert
+            using (tracker.Start("first"))
+            {
+            }
 
-            var allTimings = tracker.GetIntervals().ToList();
+            using (tracker.Start("second"))
+            {
+            }
 
-            Assert.Equal(2, allTimings.Count);
-            Assert.True(allTimings.All(e => e.Item2.Equals(0)));
-        }
-
-        [Fact]
-        public void IntervalTracker_AllIntervalsAreCaptured()
-        {
-            // Setup
-            var tracker = new IntervalTracker();
-
-            // Act
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure("first");
-
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure("second");
-
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure("third");
-
-            // Assert
+            using (tracker.Start("third"))
+            {
+            }
 
             var allTimings = tracker.GetIntervals().ToList();
 

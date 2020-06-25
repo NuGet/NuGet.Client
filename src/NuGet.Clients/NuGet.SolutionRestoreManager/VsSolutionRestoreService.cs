@@ -10,13 +10,18 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft;
+using Microsoft.VisualStudio;
+using Microsoft.VisualStudio.Shell;
+using Microsoft.VisualStudio.Shell.Interop;
 using NuGet.Commands;
 using NuGet.Common;
 using NuGet.Configuration;
+using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectModel;
 using NuGet.Shared;
 using NuGet.VisualStudio;
 using NuGet.VisualStudio.Telemetry;
+using IAsyncServiceProvider = Microsoft.VisualStudio.Shell.IAsyncServiceProvider;
 
 namespace NuGet.SolutionRestoreManager
 {
@@ -34,17 +39,35 @@ namespace NuGet.SolutionRestoreManager
         private readonly IProjectSystemCache _projectSystemCache;
         private readonly ISolutionRestoreWorker _restoreWorker;
         private readonly ILogger _logger;
+        private readonly Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> _vsSolution2;
 
         [ImportingConstructor]
         public VsSolutionRestoreService(
             IProjectSystemCache projectSystemCache,
             ISolutionRestoreWorker restoreWorker,
-            [Import("VisualStudioActivityLogger")]
-            ILogger logger)
+            [Import(nameof(VisualStudioActivityLogger))]
+            ILogger logger,
+            [Import(typeof(SAsyncServiceProvider))]
+            IAsyncServiceProvider serviceProvider
+            )
+            : this(
+                  projectSystemCache,
+                  restoreWorker,
+                  logger,
+                  new Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2>(() => serviceProvider.GetServiceAsync<SVsSolution, IVsSolution2>(), NuGetUIThreadHelper.JoinableTaskFactory))
+        {
+        }
+
+        internal VsSolutionRestoreService(
+            IProjectSystemCache projectSystemCache,
+            ISolutionRestoreWorker restoreWorker,
+            ILogger logger,
+            Microsoft.VisualStudio.Threading.AsyncLazy<IVsSolution2> vsSolution2)
         {
             _projectSystemCache = projectSystemCache ?? throw new ArgumentNullException(nameof(projectSystemCache));
             _restoreWorker = restoreWorker ?? throw new ArgumentNullException(nameof(restoreWorker));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+            _vsSolution2 = vsSolution2 ?? throw new ArgumentNullException(nameof(vsSolution2));
         }
 
         public Task<bool> CurrentRestoreOperation => _restoreWorker.CurrentRestoreOperation;
@@ -80,7 +103,7 @@ namespace NuGet.SolutionRestoreManager
         /// <param name="token"></param>
         /// <remarks>Exactly one of projectRestoreInfos has to null.</remarks>
         /// <returns>The task that scheduled restore</returns>
-        private Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
+        private async Task<bool> NominateProjectAsync(string projectUniqueName, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2, CancellationToken token)
         {
             if (string.IsNullOrEmpty(projectUniqueName))
             {
@@ -117,7 +140,11 @@ namespace NuGet.SolutionRestoreManager
                 _logger.LogInformation(
                     $"The nominate API is called for '{projectUniqueName}'.");
 
-                var projectNames = ProjectNames.FromFullProjectPath(projectUniqueName);
+                if (!_projectSystemCache.TryGetProjectNames(projectUniqueName, out ProjectNames projectNames))
+                {
+                    projectNames = await GetProjectNamesAsync(projectUniqueName, token);
+                }
+
                 DependencyGraphSpec dgSpec;
                 IReadOnlyList<IAssetsLogMessage> nominationErrors = null;
                 try
@@ -149,7 +176,7 @@ namespace NuGet.SolutionRestoreManager
                     SolutionRestoreRequest.OnUpdate(),
                     token);
 
-                return restoreTask;
+                return await restoreTask;
             }
             catch (OperationCanceledException)
             {
@@ -159,8 +186,35 @@ namespace NuGet.SolutionRestoreManager
             {
                 _logger.LogError(e.ToString());
                 TelemetryUtility.EmitException(nameof(VsSolutionRestoreService), nameof(NominateProjectAsync), e);
-                return Task.FromResult(false);
+                return false;
             }
+        }
+
+        private async Task<ProjectNames> GetProjectNamesAsync(string projectUniqueName, CancellationToken cancellationToken)
+        {
+            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            cancellationToken.ThrowIfCancellationRequested();
+
+            IVsSolution2 sln = await _vsSolution2.GetValueAsync(cancellationToken);
+            ErrorHandler.ThrowOnFailure(sln.GetProjectOfUniqueName(projectUniqueName, out IVsHierarchy project));
+            ErrorHandler.ThrowOnFailure(sln.GetGuidOfProject(project, out Guid guid));
+            ErrorHandler.ThrowOnFailure(sln.GetUniqueNameOfProject(project, out string uniqueName));
+
+            string shortName = Path.GetFileNameWithoutExtension(projectUniqueName);
+
+            // Note this does not match what is generated by VsProjectAdapterProvider from the DTE project, but we haven't got any bug reports yet.
+            // https://github.com/NuGet/Home/issues/9690
+            string customUniqueName = uniqueName;
+
+            var projectNames = new ProjectNames(
+                fullName: projectUniqueName,
+                uniqueName: uniqueName,
+                shortName: shortName,
+                customUniqueName: customUniqueName,
+                projectId: guid.ToString());
+
+            return projectNames;
         }
 
         private static DependencyGraphSpec ToDependencyGraphSpec(ProjectNames projectNames, IVsProjectRestoreInfo projectRestoreInfo, IVsProjectRestoreInfo2 projectRestoreInfo2)

@@ -70,6 +70,15 @@ namespace NuGet.VisualStudio {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to The argument is not a valid GUID..
+        /// </summary>
+        internal static string Argument_Invalid_GUID {
+            get {
+                return ResourceManager.GetString("Argument_Invalid_GUID", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Value must be greater than or equal to {0}..
         /// </summary>
         internal static string Argument_Must_Be_GreaterThanOrEqualTo {

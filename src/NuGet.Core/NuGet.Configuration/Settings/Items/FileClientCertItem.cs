@@ -27,7 +27,7 @@ namespace NuGet.Configuration
                    storePasswordInClearText,
                    string.IsNullOrWhiteSpace(settingsFilePath)
                        ? null
-                       : new SettingsFile(Path.GetDirectoryName(settingsFilePath), Path.GetFileName(settingsFilePath), false))
+                       : new SettingsFile(Path.GetDirectoryName(settingsFilePath), Path.GetFileName(settingsFilePath), isMachineWide: false, isReadOnly: false))
         {
         }
 

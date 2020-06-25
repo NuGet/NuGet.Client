@@ -14,9 +14,13 @@
     <NETFXTargetFrameworkVersion>v4.7.2</NETFXTargetFrameworkVersion>
     <NETFXTargetFramework>net472</NETFXTargetFramework>
     <NETCoreTargetFramework>netcoreapp2.1</NETCoreTargetFramework>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">netcoreapp2.1</NETCoreTargetFrameworks>
+    <NETCoreTargetFrameworks Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">netcoreapp2.1;netcoreapp5.0</NETCoreTargetFrameworks>
+    <NETCoreTestTargetFrameworks>netcoreapp3.1;netcoreapp5.0</NETCoreTestTargetFrameworks>
     <NetStandardVersion>netstandard2.0</NetStandardVersion>
-    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFramework)</TargetFrameworksExe>
-    <TargetFrameworksLibrary>$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksExe>$(NETFXTargetFramework);$(NETCoreTargetFrameworks)</TargetFrameworksExe>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' != 'true' ">$(NETFXTargetFramework);$(NetStandardVersion)</TargetFrameworksLibrary>
+    <TargetFrameworksLibrary  Condition=" '$(RequiresSigningXplatAPIs)' == 'true' ">$(NETFXTargetFramework);$(NetStandardVersion);netcoreapp5.0</TargetFrameworksLibrary>
     <RepositoryRootDirectory>$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\</RepositoryRootDirectory>
     <BuildCommonDirectory>$(RepositoryRootDirectory)build\</BuildCommonDirectory>
     <SolutionFile>$(RepositoryRootDirectory)$(RepositoryName).sln</SolutionFile>
@@ -29,10 +33,10 @@
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' != 'true' ">$(ArtifactsDirectory)nupkgs\</NupkgOutputDirectory>
     <NupkgOutputDirectory Condition=" '$(BuildRTM)' == 'true' ">$(ArtifactsDirectory)ReleaseNupkgs\</NupkgOutputDirectory>
     <SolutionPackagesFolder>$(RepositoryRootDirectory)packages\</SolutionPackagesFolder>
-    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console\2.4.1\tools\net452\xunit.console.x86.exe</XunitConsoleExePath>
+    <XunitConsoleExePath>$(SolutionPackagesFolder)xunit.runner.console\2.4.1\tools\net472\xunit.console.x86.exe</XunitConsoleExePath>
     <ILMergeExePath>$(SolutionPackagesFolder)ilmerge\3.0.21\tools\net452\ILMerge.exe</ILMergeExePath>
     <XunitXmlLoggerDirectory>$(SolutionPackagesFolder)xunitxml.testlogger\2.0.0\build\_common</XunitXmlLoggerDirectory>
-    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)nuget.build.tasks.pack\4.9.2\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)nuget.build.tasks.pack\4.9.2\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
+    <NuGetBuildTasksPackTargets Condition="Exists('$(SolutionPackagesFolder)nuget.build.tasks.pack\5.6.0\build\NuGet.Build.Tasks.Pack.targets')">$(SolutionPackagesFolder)nuget.build.tasks.pack\5.6.0\build\NuGet.Build.Tasks.Pack.targets</NuGetBuildTasksPackTargets>
     <EnlistmentRoot>$(RepositoryRootDirectory)</EnlistmentRoot>
     <EnlistmentRootSrc>$(RepositoryRootDirectory)src</EnlistmentRootSrc>
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">$(RepositoryRootDirectory)</SolutionDir>
@@ -45,7 +49,7 @@
     <IsBuildOnlyXPLATProjects>$(DotNetBuildFromSource)</IsBuildOnlyXPLATProjects>
     <MicrosoftDotNetBuildTasksFeedFilePath>$(SolutionPackagesFolder)microsoft.dotnet.build.tasks.feed\5.0.0-beta.20159.1\tools\netcoreapp2.1\Microsoft.DotNet.Build.Tasks.Feed.dll</MicrosoftDotNetBuildTasksFeedFilePath>
     <MicrosoftDotNetMaestroTasksFilePath>$(SolutionPackagesFolder)microsoft.dotnet.maestro.tasks\1.1.0-beta.20065.7\tools\netcoreapp2.1\Microsoft.DotNet.Maestro.Tasks.dll</MicrosoftDotNetMaestroTasksFilePath>
-    <NoWarn>$(NoWarn);NU5105</NoWarn>
+    <NoWarn>$(NoWarn);NU5105;NU5048</NoWarn>
   </PropertyGroup>
 
   <!-- Defaults -->

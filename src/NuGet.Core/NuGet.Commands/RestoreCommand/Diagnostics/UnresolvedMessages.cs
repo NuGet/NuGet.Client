@@ -74,7 +74,11 @@ namespace NuGet.Commands
             {
                 // Project
                 // Check if the name is a path and if it exists. All project paths should have been normalized and converted to full paths before this.
+#if NETCOREAPP
+                if (unresolved.Name.IndexOf(Path.DirectorySeparatorChar, StringComparison.Ordinal) > -1 && File.Exists(unresolved.Name))
+#else
                 if (unresolved.Name.IndexOf(Path.DirectorySeparatorChar) > -1 && File.Exists(unresolved.Name))
+#endif
                 {
                     // File exists but the dg spec did not contain the spec
                     code = NuGetLogCode.NU1105;

@@ -91,9 +91,6 @@ namespace NuGet.CommandLine.XPlat
 
             XPlatUtility.SetUserAgent();
 
-            // This method has no effect on .NET Core.
-            NetworkProtocolUtility.ConfigureSupportedSslProtocols();
-
             app.OnExecute(() =>
             {
                 app.ShowHelp();

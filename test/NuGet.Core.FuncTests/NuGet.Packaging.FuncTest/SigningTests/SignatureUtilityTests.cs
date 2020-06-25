@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if IS_DESKTOP
+#if IS_SIGNING_SUPPORTED
 
 using System;
 using System.Collections.Generic;
@@ -26,7 +26,8 @@ namespace NuGet.Packaging.FuncTest.SigningTests
         {
             _fixture = fixture ?? throw new ArgumentNullException(nameof(fixture));
         }
-
+        
+#if IS_DESKTOP
         [Fact]
         public async Task GetTimestampCertificateChain_WithNoSigningCertificateUsage_Throws()
         {
@@ -66,6 +67,7 @@ namespace NuGet.Packaging.FuncTest.SigningTests
                 }
             }
         }
+#endif
 
         [Theory]
         [InlineData(SigningCertificateUsage.V1)]

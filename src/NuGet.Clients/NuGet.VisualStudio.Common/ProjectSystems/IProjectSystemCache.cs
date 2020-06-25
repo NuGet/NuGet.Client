@@ -11,8 +11,8 @@ namespace NuGet.VisualStudio
 {
     /// <summary>
     /// Project system data cache that stores project metadata indexed by multiple names,
-    /// e.g. EnvDTE.Project can be retrieved by name (if non-conflicting), unique name or 
-    /// custom unique name.
+    /// e.g. EnvDTE.Project can be retrieved by name (if non-conflicting), unique name,
+    /// custom unique name, or project id (guid).
     /// </summary>
     public interface IProjectSystemCache
     {
@@ -31,7 +31,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Retrieves instance of <see cref="NuGetProject"/> associated with project name.
         /// </summary>
-        /// <param name="name">Project name, full path or unique name.</param>
+        /// <param name="name">Project name, full path, unique name, or project id (guid).</param>
         /// <param name="nuGetProject">Desired project object, not initialized if not found.</param>
         /// <returns>True if found, false otherwise.</returns>
         bool TryGetNuGetProject(string name, out NuGetProject nuGetProject);
@@ -39,7 +39,7 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Retrieves instance of <see cref="IVsProjectAdapter"/> associated with project name.
         /// </summary>
-        /// <param name="name">Project name, full path or unique name.</param>
+        /// <param name="name">Project name, full path, unique name, or project id (guid).</param>
         /// <param name="vsProjectAdapter">Desired project adapter, not initialized if not found.</param>
         /// <returns>True if found, false otherwise.</returns>
         bool TryGetVsProjectAdapter(string name, out IVsProjectAdapter vsProjectAdapter);
@@ -47,14 +47,14 @@ namespace NuGet.VisualStudio
         /// <summary>
         /// Retrieves project restore info as of <see cref="PackageSpec"/> associated with project name.
         /// </summary>
-        /// <param name="name">Project name, full path or unique name.</param>
+        /// <param name="name">Project name, full path, unique name, or project id (guid).</param>
         /// <param name="projectRestoreInfo">Desired project restore info object, or null if not found.</param>
         /// <param name="nominationMessages"></param>
         /// <returns>True if found, false otherwise.</returns>
         bool TryGetProjectRestoreInfo(string name, out DependencyGraphSpec projectRestoreInfo, out IReadOnlyList<IAssetsLogMessage> nominationMessages);
 
         /// <summary>
-        /// Finds a project name by short name, unique name or custom unique name.
+        /// Finds a project name by short name, unique name, unique name, or project id (guid).
         /// </summary>
         /// <param name="name">Project name, full path or unique name.</param>
         /// <param name="projectNames">Primary key if found.</param>

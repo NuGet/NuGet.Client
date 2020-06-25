@@ -12,13 +12,19 @@ namespace NuGet.PackageManagement.VisualStudio.Test
     public class RestoreTelemetryServiceTests
     {
         [Theory]
-        [InlineData(RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded)]
-        [InlineData(RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded)]
-        [InlineData(RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp)]
-        [InlineData(RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp)]
-        [InlineData(RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed)]
-        [InlineData(RestoreOperationSource.Explicit, NuGetOperationStatus.Failed)]
-        public void RestoreTelemetryService_EmitRestoreEvent_OperationSucceed(RestoreOperationSource source, NuGetOperationStatus status)
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded)]
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp)]
+        [InlineData(false, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed)]
+        [InlineData(false, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Succeeded)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Succeeded)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.NoOp)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.NoOp)]
+        [InlineData(true, RestoreOperationSource.OnBuild, NuGetOperationStatus.Failed)]
+        [InlineData(true, RestoreOperationSource.Explicit, NuGetOperationStatus.Failed)]
+        public void RestoreTelemetryService_EmitRestoreEvent_OperationSucceed(bool forceRestore, RestoreOperationSource source, NuGetOperationStatus status)
         {
             // Arrange
             var telemetrySession = new Mock<ITelemetrySession>();
@@ -41,14 +47,16 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
+                forceRestore: forceRestore,
                 source: source,
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: status,
                 packageCount: 2,
                 noOpProjectsCount: noopProjectsCount,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
-                new IntervalTracker());
+                new IntervalTracker("Activity"));
             var service = new NuGetVSTelemetryService(telemetrySession.Object);
 
             // Act
@@ -69,23 +77,28 @@ namespace NuGet.PackageManagement.VisualStudio.Test
             telemetrySession
                 .Setup(x => x.PostEvent(It.IsAny<TelemetryEvent>()))
                 .Callback<TelemetryEvent>(x => lastTelemetryEvent = x);
-            var tracker = new IntervalTracker();
+            var tracker = new IntervalTracker("Activity");
 
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(first);
-            tracker.StartIntervalMeasure();
-            tracker.EndIntervalMeasure(second);
+            using (tracker.Start(first))
+            {
+            }
+
+            using (tracker.Start(second))
+            {
+            }
 
             var operationId = Guid.NewGuid().ToString();
 
             var restoreTelemetryData = new RestoreTelemetryEvent(
                 operationId,
                 projectIds: new[] { Guid.NewGuid().ToString() },
+                forceRestore: false,
                 source: RestoreOperationSource.OnBuild,
                 startTime: DateTimeOffset.Now.AddSeconds(-3),
                 status: NuGetOperationStatus.Succeeded,
                 packageCount: 1,
                 noOpProjectsCount: 0,
+                upToDateProjectsCount: 0,
                 endTime: DateTimeOffset.Now,
                 duration: 2.10,
                 tracker
@@ -99,7 +112,7 @@ namespace NuGet.PackageManagement.VisualStudio.Test
 
             Assert.NotNull(lastTelemetryEvent);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, lastTelemetryEvent.Name);
-            Assert.Equal(12, lastTelemetryEvent.Count);
+            Assert.Equal(14, lastTelemetryEvent.Count);
 
             Assert.Equal(restoreTelemetryData.OperationSource.ToString(), lastTelemetryEvent["OperationSource"].ToString());
 
@@ -112,11 +125,12 @@ namespace NuGet.PackageManagement.VisualStudio.Test
         {
             Assert.NotNull(actual);
             Assert.Equal(RestoreTelemetryEvent.RestoreActionEventName, actual.Name);
-            Assert.Equal(10, actual.Count);
+            Assert.Equal(12, actual.Count);
 
             Assert.Equal(expected.OperationSource.ToString(), actual["OperationSource"].ToString());
 
             Assert.Equal(expected.NoOpProjectsCount, (int)actual["NoOpProjectsCount"]);
+            Assert.Equal(expected.ForceRestore, (bool)actual["ForceRestore"]);
 
             TestTelemetryUtility.VerifyTelemetryEventData(operationId, expected, actual);
         }

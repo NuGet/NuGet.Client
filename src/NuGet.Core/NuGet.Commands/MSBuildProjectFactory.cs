@@ -259,12 +259,20 @@ namespace NuGet.Commands
             }
             var projectName = Path.GetFileName(projectDirectory);
             var targetPath = Path.Combine(SourcesFolder, projectName);
+#if NETCOREAPP
+            if (sourcePath.Contains(projectDirectory, StringComparison.Ordinal))
+#else
             if (sourcePath.Contains(projectDirectory))
+#endif
             {
                 // This is needed because Path.GetDirectoryName returns a path with Path.DirectorySepartorChar
                 var projectDirectoryWithSeparatorChar = PathUtility.GetPathWithDirectorySeparator(projectDirectory);
 
+#if NETCOREAPP
+                var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty, StringComparison.Ordinal);
+#else
                 var relativePath = Path.GetDirectoryName(sourcePath).Replace(projectDirectoryWithSeparatorChar, string.Empty);
+#endif
                 if (!string.IsNullOrEmpty(relativePath) && PathUtility.IsDirectorySeparatorChar(relativePath[0]))
                 {
                     relativePath = relativePath.Substring(1, relativePath.Length - 1);
