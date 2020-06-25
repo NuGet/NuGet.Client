@@ -330,86 +330,48 @@ namespace NuGet.PackageManagement.UI
 
         internal void FilterItems(ItemFilter itemFilter, CancellationToken token)
         {
+            if (!Items.Contains(_loadingStatusIndicator))
+            {
+                Items.Add(_loadingStatusIndicator);
+            }
+            _loadingStatusIndicator.Status = LoadingStatus.Loading;
+
             // If there is another async loading process - cancel it.
             var loadCts = CancellationTokenSource.CreateLinkedTokenSource(token);
             Interlocked.Exchange(ref _loadCts, loadCts)?.Cancel();
 
-            //_joinableTaskFactory.Value.RunAsync(async () =>
-            //{
             try
             {
-                //        await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
                 if (itemFilter == ItemFilter.UpdatesAvailable)
-                    {
-                        ApplyItemsFilterForUpdatesAvailable();
-                    }
-                    else
-                    {
-                        //Show all the items, without an Update filter.
-                        ClearItemsFilter();
-                    }
-                }
-                catch (OperationCanceledException) when (!loadCts.IsCancellationRequested)
                 {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-
-                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    // The user cancelled the login, but treat as a load error in UI
-                    // So the retry button and message is displayed
-                    // Do not log to the activity log, since it is not a NuGet error
-                    _logger.Log(ProjectManagement.MessageLevel.Error, Resx.Resources.Text_UserCanceled);
-
-                    _loadingStatusIndicator.SetError(Resx.Resources.Text_UserCanceled);
-
-                    _loadingStatusBar.SetCancelled();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
+                    ApplyItemsFilterForUpdatesAvailable();
                 }
-                catch (Exception ex) when (!loadCts.IsCancellationRequested)
+                else
                 {
-                    loadCts.Cancel();
-                    loadCts.Dispose();
-
-                    // Write stack to activity log
-                    Mvs.ActivityLog.LogError(LogEntrySource, ex.ToString());
-
-                    //await _joinableTaskFactory.Value.SwitchToMainThreadAsync();
-
-                    var errorMessage = ExceptionUtilities.DisplayMessage(ex);
-                    _logger.Log(ProjectManagement.MessageLevel.Error, errorMessage);
-
-                    _loadingStatusIndicator.SetError(errorMessage);
-
-                    _loadingStatusBar.SetError();
-                    _loadingStatusBar.Visibility = Visibility.Visible;
+                    //Show all the items, without an Update filter.
+                    ClearItemsFilter();
                 }
-                finally
+            }
+            finally
+            {
+                //If no items are shown in the filter, indicate in the list that no packages are found.
+                if (FilterCount == 0)
                 {
-                    //If no items are shown in the filter, indicate in the list that no packages are found.
-                    if (FilterCount == 0)
+                    _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
+                }
+                else
+                {
+                    //There are packages, but since no loading will occur, there's no need for an indicator.
+                    if (Items.Contains(_loadingStatusIndicator))
                     {
-                        if (!Items.Contains(_loadingStatusIndicator))
-                        {
-                            Items.Add(_loadingStatusIndicator);
-                        }
-                        _loadingStatusIndicator.Status = LoadingStatus.NoItemsFound;
-                    }
-                    else
-                    {
-                        //There are packages, but since no loading will occur, there's no need for an indicator.
-                        if (Items.Contains(_loadingStatusIndicator))
-                        {
-                            Items.Remove(_loadingStatusIndicator);
-                        }
+                        Items.Remove(_loadingStatusIndicator);
                     }
                 }
+            }
 
-                UpdateCheckBoxStatus();
+            UpdateCheckBoxStatus();
 
-                LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
-            //});
+            LoadItemsCompleted?.Invoke(this, EventArgs.Empty);
         }
 
         private void ApplyItemsFilterForUpdatesAvailable()

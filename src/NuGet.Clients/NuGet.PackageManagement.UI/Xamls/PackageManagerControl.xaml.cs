@@ -719,16 +719,6 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void FilterPackages()
-        {
-            //NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
-            //{
-            //    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync(_loadCts.Token);
-
-                _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
-            //});
-        }
-
         /// <summary>
         /// This method is called from several event handlers. So, consolidating the use of JTF.Run in this method
         /// </summary>
@@ -1165,7 +1155,7 @@ namespace NuGet.PackageManagement.UI
                 if (switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabsLoaded)
                 {
                     //UI can apply filtering.
-                    FilterPackages();
+                    _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
                 }
                 else //Refresh tab from Cache.
                 {
