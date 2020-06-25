@@ -29,7 +29,7 @@ using NuGet.Packaging.Signing;
 using NuGet.PackageManagement;
 using NuGet.ProjectManagement;
 using NuGet.Shared;
-using static NuGet.Shared.XmlUtility;
+using XmlUtility = NuGet.Common.XmlUtility;
 #endif
 
 namespace NuGet.Build.Tasks
@@ -621,7 +621,7 @@ namespace NuGet.Build.Tasks
             {
                 try
                 {
-                    XDocument xDocument = Load(projectConfigFilePath);
+                    XDocument xDocument = XmlUtility.Load(projectConfigFilePath);
                     var reader = new PackagesConfigReader(xDocument);
                     return reader.GetPackages(allowDuplicatePackageIds);
                 }
