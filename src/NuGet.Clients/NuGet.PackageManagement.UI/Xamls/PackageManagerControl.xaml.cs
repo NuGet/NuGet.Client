@@ -1144,7 +1144,10 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
+
+                // Hide the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;
+                _packageList._updateButtonContainer.Visibility = _topPanel.Filter == ItemFilter.UpdatesAvailable ? Visibility.Visible : Visibility.Collapsed;
 
                 // Set a new cancellation token source which will be used to cancel this task in case
                 // new loading task starts or manager ui is closed while loading packages.
