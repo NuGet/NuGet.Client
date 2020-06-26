@@ -73,11 +73,11 @@ namespace NuGet.Tests.Apex
                 solutionService.CreateEmptySolution("project", testContext.SolutionRoot);
 
                 // Act
-                var vsPathContext = nugetTestService.CreateUserWidePathContext();
+                var userPackagesFolder = nugetTestService.GetUserPackagesFolderFromUserWideContext();
 
                 // Assert
                 // The global packages folder should not be the one configured by the test context!
-                vsPathContext.UserPackageFolder.Should().NotBe(testContext.UserPackagesFolder);
+                userPackagesFolder.Should().NotBe(testContext.UserPackagesFolder);
             }
         }
 
@@ -96,11 +96,11 @@ namespace NuGet.Tests.Apex
                 var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
                 // Act
-                var vsPathContext = nugetTestService.CreateUserWidePathContext();
+                var userPackagesFolder = nugetTestService.GetUserPackagesFolderFromUserWideContext();
 
                 // Assert
                 // The global packages folder should not be the one configured by the test context!
-                vsPathContext.UserPackageFolder.Should().NotBe(testContext.UserPackagesFolder);
+                userPackagesFolder.Should().NotBe(testContext.UserPackagesFolder);
             }
         }
     }

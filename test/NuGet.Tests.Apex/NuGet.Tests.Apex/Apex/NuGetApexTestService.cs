@@ -217,10 +217,10 @@ namespace NuGet.Tests.Apex
             return pmconsole != null;
         }
 
-        public IVsPathContext CreateUserWidePathContext()
+        public string GetUserPackagesFolderFromUserWideContext()
         {
             PathContextProvider2.TryCreateUserWideContext(out var pathContext);
-            return pathContext;
+            return pathContext.UserPackageFolder;
         }
     }
 }
