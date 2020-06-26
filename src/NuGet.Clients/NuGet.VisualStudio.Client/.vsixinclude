@@ -8,6 +8,7 @@ NuGet.SolutionRestoreManager.dll
 NuGet.Tools.dll
 NuGet.VisualStudio.dll
 NuGet.VisualStudio.Common.dll
+NuGet.VisualStudio.Contracts.dll
 NuGet.VisualStudio.Interop.dll
 NuGet.VisualStudio.Implementation.dll
 NuGet.VisualStudio.Internal.Contracts.dll

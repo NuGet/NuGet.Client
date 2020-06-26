@@ -241,6 +241,10 @@
       <NgenArchitecture>X86</NgenArchitecture>
       <NgenPriority>$(NgenPriorityDefault)</NgenPriority>
     </ProjectReference>
+    <ProjectReference Include="..\NuGet.VisualStudio.Contracts\NuGet.VisualStudio.Contracts.csproj">
+      <Project>{6af72bee-70f0-48b2-bd63-0e80d9747342}</Project>
+      <Name>NuGet.VisualStudio.Contracts</Name>
+    </ProjectReference>
     <ProjectReference Include="..\NuGet.VisualStudio.Implementation\NuGet.VisualStudio.Implementation.csproj">
       <Project>{9623cf30-192c-4864-b419-29649169ae30}</Project>
       <Name>NuGet.VisualStudio.Implementation</Name>
