@@ -341,7 +341,7 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
-        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status)
+        private void EmitRefreshEvent(TimeSpan timeSpan, RefreshOperationSource refreshOperationSource, RefreshOperationStatus status, bool isUIFiltering = false)
         {
             TelemetryActivity.EmitTelemetryEvent(
                                 new PackageManagerUIRefreshEvent(
@@ -350,6 +350,7 @@ namespace NuGet.PackageManagement.UI
                                     refreshOperationSource,
                                     status,
                                     _topPanel.Filter.ToString(),
+                                    isUIFiltering,
                                     timeSpan));
         }
 
@@ -1151,8 +1152,10 @@ namespace NuGet.PackageManagement.UI
                 var switchedToInstalledOrUpdatesTab = _topPanel.Filter == ItemFilter.UpdatesAvailable || _topPanel.Filter == ItemFilter.Installed;
                 var installedAndUpdatesTabsLoaded = _installedTabIsLoaded && _updatesTabIsLoaded;
 
+                var isUiFiltering = switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabsLoaded;
+
                 //Installed and Updates tabs don't need to be refreshed when switching between the two, if they're both loaded.
-                if (switchedFromInstalledOrUpdatesTab && switchedToInstalledOrUpdatesTab && installedAndUpdatesTabsLoaded)
+                if (isUiFiltering)
                 {
                     //UI can apply filtering.
                     _packageList.FilterItems(_topPanel.Filter, _loadCts.Token);
@@ -1167,7 +1170,7 @@ namespace NuGet.PackageManagement.UI
 
                     SearchPackagesAndRefreshUpdateCount(useCacheForUpdates: true);
                 }
-                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success);
+                EmitRefreshEvent(timeSpan, RefreshOperationSource.FilterSelectionChanged, RefreshOperationStatus.Success, isUiFiltering);
 
                 _detailModel.OnFilterChanged(e.PreviousFilter, _topPanel.Filter);
             }
