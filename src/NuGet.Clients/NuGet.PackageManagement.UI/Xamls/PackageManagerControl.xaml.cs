@@ -1135,6 +1135,7 @@ namespace NuGet.PackageManagement.UI
             if (_initialized)
             {
                 var timeSpan = GetTimeSinceLastRefreshAndRestart();
+                _packageList.ResetLoadingStatusIndicator();
 
                 // Hide the Update controls when the current tab is not "Updates".
                 _packageList.CheckBoxesEnabled = _topPanel.Filter == ItemFilter.UpdatesAvailable;

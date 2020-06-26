@@ -792,5 +792,10 @@ namespace NuGet.PackageManagement.UI
         {
             _loadingStatusBar.Visibility = Visibility.Hidden;
         }
+
+        public void ResetLoadingStatusIndicator()
+        {
+            _loadingStatusIndicator.Reset(string.Empty);
+        }
     }
 }
