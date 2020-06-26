@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using FluentAssertions;
 using Microsoft.Test.Apex.VisualStudio.Solution;
+using Microsoft.VisualStudio.OLE.Interop;
+using NuGet.Test.Utility;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -53,6 +56,52 @@ namespace NuGet.Tests.Apex
 
             // Assert
             CommonUtility.AssertPackageNotInPackagesConfig(VisualStudio, projExt, "newtonsoft.json", XunitLogger);
+        }
+
+
+        [StaFact]
+        public void IVSPathContextProvider2_WithEmptySolution_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded()
+        {
+            // Arrange
+            using (var testContext = new SimpleTestPathContext())
+            {
+                EnsureVisualStudioHost();
+                var dte = VisualStudio.Dte;
+                var solutionService = VisualStudio.Get<SolutionService>();
+                var nugetTestService = GetNuGetTestService();
+
+                solutionService.CreateEmptySolution("project", testContext.SolutionRoot);
+
+                // Act
+                nugetTestService.PathContextProvider2.TryCreateUserWideContext(out var vsPathContext);
+
+                // Assert
+                // The global packages folder should not be the one configured by the test context!
+                vsPathContext.UserPackageFolder.Should().NotBe(testContext.UserPackagesFolder);
+            }
+        }
+
+        [StaFact]
+        public void IVSPathContextProvider2_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded()
+        {
+            // Arrange
+            using (var testContext = new SimpleTestPathContext())
+            {
+                EnsureVisualStudioHost();
+                var dte = VisualStudio.Dte;
+                var solutionService = VisualStudio.Get<SolutionService>();
+                var nugetTestService = GetNuGetTestService();
+
+                solutionService.CreateEmptySolution("project", testContext.SolutionRoot);
+                var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
+
+                // Act
+                nugetTestService.PathContextProvider2.TryCreateUserWideContext(out var vsPathContext);
+
+                // Assert
+                // The global packages folder should not be the one configured by the test context!
+                vsPathContext.UserPackageFolder.Should().NotBe(testContext.UserPackagesFolder);
+            }
         }
     }
 }
