@@ -19,7 +19,7 @@ namespace NuGet.VisualStudio.Implementation.Extensibility
         public NuGetBrokeredServiceFactory(AsyncLazy<IVsSolutionManager> solutionManager, AsyncLazy<ISettings> settings)
         {
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
-            _settings = settings;
+            _settings = settings ?? throw new ArgumentNullException(nameof(settings));
         }
 
         public async ValueTask<object> CreateNuGetProjectServiceV1(ServiceMoniker moniker, ServiceActivationOptions options, IServiceBroker serviceBroker, CancellationToken cancellationToken)

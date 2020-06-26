@@ -67,7 +67,7 @@ namespace NuGetVSExtension
     [ProvideAutoLoad(GuidList.guidAutoLoadNuGetString, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.ProjectRetargeting_string, PackageAutoLoadFlags.BackgroundLoad)]
     [ProvideAutoLoad(VSConstants.UICONTEXT.SolutionOrProjectUpgrading_string, PackageAutoLoadFlags.BackgroundLoad)]
-    [ProvideBrokeredService(NuGetServices.NuGetProjectServiceName, NuGetServices.Version1, Audience = ServiceAudience.Process)]
+    [ProvideBrokeredService(NuGetServices.NuGetProjectServiceName, NuGetServices.Version1, Audience = ServiceAudience.AllClientsIncludingGuests)]
     [FontAndColorsRegistration(
         "Package Manager Console",
         NuGetConsole.GuidList.GuidPackageManagerConsoleFontAndColorCategoryString,

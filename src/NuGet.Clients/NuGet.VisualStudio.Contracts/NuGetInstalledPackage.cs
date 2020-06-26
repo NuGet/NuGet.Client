@@ -14,6 +14,7 @@ namespace NuGet.VisualStudio.Contracts
         /// <remarks>
         /// If the project uses packages.config, this will be same as the installed package version.
         /// If the project uses PackageReference, this is the version string in the project file, which may not match the resolved package version, and may not be single version string.
+        /// If the project uses PackageReference, and the package is a transitive dependency, the value will be null.
         /// </remarks>
         public string RequestedRange { get; }
 
