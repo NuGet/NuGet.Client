@@ -55,9 +55,10 @@ namespace NuGet.VisualStudio
         /// <code>True</code> if operation has succeeded and context was created.
         /// <code>False</code> otherwise.
         /// </returns>
-        /// <throws>
-        /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
-        /// </throws>
-        bool TryCreateUserWideContext(out IVsPathContext vsPathContext);
+        /// <exception cref="InvalidOperationException">When we fail to create a context and return appropriate error message</exception>
+        /// <remarks>
+        /// This method can be safely invoked from a background thread. Do note that this method might switch to the UI thread internally, so be mindful of blocking the UI thread on this.
+        /// </remarks>
+        bool TryCreateNoSolutionContext(out IVsPathContext vsPathContext);
     }
 }

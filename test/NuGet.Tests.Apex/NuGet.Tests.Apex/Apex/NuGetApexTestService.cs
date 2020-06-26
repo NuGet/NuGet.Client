@@ -219,7 +219,7 @@ namespace NuGet.Tests.Apex
 
         public string GetUserPackagesFolderFromUserWideContext()
         {
-            PathContextProvider2.TryCreateUserWideContext(out var pathContext);
+            PathContextProvider2.TryCreateNoSolutionContext(out var pathContext);
             return pathContext.UserPackageFolder;
         }
     }

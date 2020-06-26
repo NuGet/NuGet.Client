@@ -80,28 +80,5 @@ namespace NuGet.Tests.Apex
                 userPackagesFolder.Should().NotBe(testContext.UserPackagesFolder);
             }
         }
-
-        [StaFact]
-        public void IVSPathContextProvider2_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded()
-        {
-            // Arrange
-            using (var testContext = new SimpleTestPathContext())
-            {
-                EnsureVisualStudioHost();
-                var dte = VisualStudio.Dte;
-                var solutionService = VisualStudio.Get<SolutionService>();
-                var nugetTestService = GetNuGetTestService();
-
-                solutionService.CreateEmptySolution("project", testContext.SolutionRoot);
-                var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
-
-                // Act
-                var userPackagesFolder = nugetTestService.GetUserPackagesFolderFromUserWideContext();
-
-                // Assert
-                // The global packages folder should not be the one configured by the test context!
-                userPackagesFolder.Should().NotBe(testContext.UserPackagesFolder);
-            }
-        }
     }
 }
