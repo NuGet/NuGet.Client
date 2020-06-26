@@ -10,9 +10,9 @@ using Xunit.Abstractions;
 
 namespace NuGet.Tests.Apex
 {
-    public class IVsPackageInstallerTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
+    public class IVsServicesTestCase : SharedVisualStudioHostTestClass, IClassFixture<VisualStudioHostFixtureFactory>
     {
-        public IVsPackageInstallerTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
+        public IVsServicesTestCase(VisualStudioHostFixtureFactory visualStudioHostFixtureFactory, ITestOutputHelper output)
             : base(visualStudioHostFixtureFactory, output)
         {
         }

@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<assemblies timestamp="06/26/2020 03:00:12">
+  <assembly name="C:\Users\Roki2\Documents\Code\NuGet\NuGet.Client\test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\16.0\Debug\NuGet.Tests.Apex.DLL" environment="32-bit .NET 4.0.30319.42000 [collection-per-class, parallel (8 threads)]" test-framework="xUnit.net 2.4.1.0" run-date="2020-06-26" run-time="03:00:00" config-file="C:\Users\Roki2\Documents\Code\NuGet\NuGet.Client\test\NuGet.Tests.Apex\NuGet.Tests.Apex\bin\16.0\Debug\NuGet.Tests.Apex.dll.config" total="1" passed="1" failed="0" skipped="0" time="11.928" errors="0">
+    <errors />
+    <collection total="1" passed="1" failed="0" skipped="0" name="SharedVSHost" time="11.853">
+      <test name="NuGet.Tests.Apex.IVsServicesTestCase.IVSPathContextProvider2_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded" type="NuGet.Tests.Apex.IVsServicesTestCase" method="IVSPathContextProvider2_WhenTryCreateUserWideContextIsCalled_SolutionWideConfigurationIsNotIncluded" time="11.8532257" result="Pass">
+        <output><![CDATA[[test] info: Package Manager Output Window Pane contents:  
+]]></output>
+      </test>
+    </collection>
+  </assembly>
+</assemblies>
