@@ -1,7 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 
 namespace NuGet.VisualStudio
 {
@@ -42,5 +44,18 @@ namespace NuGet.VisualStudio
         /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
         /// </throws>
         bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 context);
+
+        /// <summary>
+        /// Attempts to create an instance of <see cref="IVsPathContext2"/> for the solution.
+        /// </summary>
+        /// <returns>
+        /// <code>True</code> if operation has succeeded and context was created.
+        /// <code>False</code> otherwise.
+        /// </returns>
+        /// <throws>
+        /// <code>ArgumentNullException</code> if solutionDirectory is passed as null.
+        /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
+        /// </throws>
+        Task<Tuple<bool, IVsPathContext2>> TryCreateUserWideContext();
     }
 }
