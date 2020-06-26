@@ -152,12 +152,10 @@ namespace NuGet.Protocol
         {
             token.ThrowIfCancellationRequested();
 
-            var jsonSerializer = JsonSerializer.Create(JsonExtensions.ObjectSerializationSettings);
-
             using (var streamReader = new StreamReader(stream))
             using (var jsonReader = new JsonTextReader(streamReader))
             {
-                var registrationIndex = jsonSerializer
+                var registrationIndex = JsonExtensions.JsonObjectSerializer
                     .Deserialize<T>(jsonReader);
 
                 return await Task.FromResult(registrationIndex);
