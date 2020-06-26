@@ -7,7 +7,7 @@ namespace NuGet.Protocol.Extensions
 {
     internal static class VersionRangeExtensions
     {
-        public static bool DoesRangeSatisfies(this VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
+        public static bool DoesRangeSatisfy(this VersionRange dependencyRange, NuGetVersion catalogItemLower, NuGetVersion catalogItemUpper)
         {
             if (dependencyRange.HasLowerAndUpperBounds) // Mainly to cover the '!dependencyRange.IsMaxInclusive && !dependencyRange.IsMinInclusive' case
             {
