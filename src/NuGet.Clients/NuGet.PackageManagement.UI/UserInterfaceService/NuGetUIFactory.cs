@@ -32,7 +32,7 @@ namespace NuGet.PackageManagement.UI
         private Lazy<IOptionsPageActivator> OptionsPageActivator { get; set; }
 
         [Import]
-        private INuGetUILogger OutputConsoleLogger { get; set; }
+        private INuGetUILoggerFactory OutputConsoleLoggerFactory { get; set; }
 
         [ImportMany]
         private IEnumerable<Lazy<NuGet.VisualStudio.IVsPackageManagerProvider, IOrderable>> PackageManagerProviders { get; set; }
@@ -58,12 +58,11 @@ namespace NuGet.PackageManagement.UI
         [ImportingConstructor]
         public NuGetUIFactory(
             ICommonOperations commonOperations,
-            INuGetUILogger logger,
+            INuGetUILoggerFactory loggerFactory,
             ISourceControlManagerProvider sourceControlManagerProvider)
         {
             ProjectContext = new NuGetUIProjectContext(
                 commonOperations,
-                logger,
                 sourceControlManagerProvider);
         }
 
@@ -81,7 +80,7 @@ namespace NuGet.PackageManagement.UI
                     ClientPolicyContext.GetClientPolicy(Settings.Value, adapterLogger),
                     adapterLogger);
 
-            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLogger);
+            return new NuGetUI(CommonOperations, ProjectContext, uiContext, OutputConsoleLoggerFactory);
         }
 
         private INuGetUIContext CreateUIContext(params NuGetProject[] projects)

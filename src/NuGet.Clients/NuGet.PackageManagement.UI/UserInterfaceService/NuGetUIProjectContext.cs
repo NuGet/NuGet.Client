@@ -13,26 +13,17 @@ namespace NuGet.PackageManagement.UI
 {
     public sealed class NuGetUIProjectContext : INuGetProjectContext
     {
-        private readonly INuGetUILogger _logger;
-
         public FileConflictAction FileConflictAction { get; set; }
 
         public NuGetUIProjectContext(
             ICommonOperations commonOperations,
-            INuGetUILogger logger,
             ISourceControlManagerProvider sourceControlManagerProvider)
         {
-            if (logger == null)
-            {
-                throw new ArgumentNullException(nameof(logger));
-            }
-
             if (sourceControlManagerProvider == null)
             {
                 throw new ArgumentNullException(nameof(sourceControlManagerProvider));
             }
 
-            _logger = logger;
             SourceControlManagerProvider = sourceControlManagerProvider;
 
             if (commonOperations != null)
@@ -41,9 +32,11 @@ namespace NuGet.PackageManagement.UI
             }
         }
 
+        internal INuGetUILogger Logger { get; set; }
+
         public void Log(MessageLevel level, string message, params object[] args)
         {
-            _logger.Log(level, message, args);
+            Logger.Log(level, message, args);
         }
 
         public FileConflictAction ShowFileConflictResolution(string message)
@@ -94,17 +87,17 @@ namespace NuGet.PackageManagement.UI
 
         public void ReportError(string message)
         {
-            _logger.ReportError(message);
+            Logger.ReportError(message);
         }
 
         public void Log(ILogMessage message)
         {
-            _logger.Log(message);
+            Logger.Log(message);
         }
 
         public void ReportError(ILogMessage message)
         {
-            _logger.ReportError(message);
+            Logger.ReportError(message);
         }
 
         public NuGetActionType ActionType { get; set; }

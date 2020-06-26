@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
@@ -27,21 +26,9 @@ namespace NuGet.PackageManagement.UI.Test
             throw new NotImplementedException();
         }
 
-        public Task StartAsync()
-        {
-            Start();
-            return Task.CompletedTask;
-        }
-
         public void Log(MessageLevel level, string message, params object[] args)
         {
             _out.WriteLine($"[{level}] {string.Format(message, args)}");
-        }
-
-        public Task LogAsync(MessageLevel level, string message, params object[] args)
-        {
-            Log(level, message, args);
-            return Task.CompletedTask;
         }
 
         public void Log(ILogMessage message)
@@ -49,21 +36,9 @@ namespace NuGet.PackageManagement.UI.Test
             Log(FromLogLevel(message.Level), message.Message);
         }
 
-        public Task LogAsync(ILogMessage message)
-        {
-            Log(FromLogLevel(message.Level), message.Message);
-            return Task.CompletedTask;
-        }
-
         public void ReportError(string message)
         {
             Log(MessageLevel.Error, message);
-        }
-
-        public Task ReportErrorAsync(string message)
-        {
-            ReportError(message);
-            return Task.CompletedTask;
         }
 
         public void ReportError(ILogMessage message)
@@ -71,21 +46,8 @@ namespace NuGet.PackageManagement.UI.Test
             Log(MessageLevel.Error, message.Message);
         }
 
-        public Task ReportErrorAsync(ILogMessage message)
+        public void Dispose()
         {
-            ReportError(message);
-            return Task.CompletedTask;
-        }
-
-        public void End()
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task EndAsync()
-        {
-            End();
-            return Task.CompletedTask;
         }
 
         private MessageLevel FromLogLevel(LogLevel logLevel)

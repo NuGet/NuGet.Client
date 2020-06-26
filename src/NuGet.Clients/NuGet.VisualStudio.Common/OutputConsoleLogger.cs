@@ -2,10 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.ComponentModel.Composition;
 using System.Globalization;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
@@ -13,111 +10,50 @@ using Task = System.Threading.Tasks.Task;
 
 namespace NuGet.VisualStudio.Common
 {
-    [Export(typeof(INuGetUILogger))]
-    [PartCreationPolicy(CreationPolicy.Shared)]
-    public class OutputConsoleLogger : INuGetUILogger, IDisposable
+    public sealed class OutputConsoleLogger : INuGetUILogger
     {
-        private const string DTEProjectPage = "ProjectsAndSolution";
-        private const string DTEEnvironmentCategory = "Environment";
-        private const string MSBuildVerbosityKey = "MSBuildOutputVerbosity";
-
         private const int DefaultVerbosityLevel = 2;
 
-
-        private bool _validState;
         private int _verbosityLevel;
 
-        private AsyncLazy<EnvDTE.DTE> _dte;
-        private AsyncLazy<IOutputConsole> _outputConsole;
-        private AsyncLazy<ErrorListTableDataSource> _errorListTableDataSource;
+        private readonly IOutputConsole _outputConsole;
+        private readonly ErrorListTableDataSource _errorListTableDataSource;
 
-        // keeps a reference to BuildEvents so that our event handler
-        // won't get disconnected because of GC.
-        private EnvDTE.BuildEvents _buildEvents;
-        private EnvDTE.SolutionEvents _solutionEvents;
-
-        [ImportingConstructor]
         public OutputConsoleLogger(
-            IOutputConsoleProvider consoleProvider,
-            Lazy<ErrorListTableDataSource> errorListTableDataSource)
+            IOutputConsole outputConsole,
+            ErrorListTableDataSource errorListTableDataSource,
+            int verbosityLevel)
         {
-            if (consoleProvider == null)
-            {
-                throw new ArgumentNullException(nameof(consoleProvider));
-            }
-
-            _dte = AsyncLazy.New(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return await AsyncServiceProvider.GlobalProvider.GetDTEAsync();
-            });
-
-            _outputConsole = AsyncLazy.New(async () =>
-            {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                return await consoleProvider.CreatePackageManagerConsoleAsync();
-            });
-
-            _errorListTableDataSource = AsyncLazy.New(async () =>
-            {
-                var errorListTableDataSourceValue = errorListTableDataSource.Value;
-
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-                var dte = await _dte;
-                _buildEvents = dte.Events.BuildEvents;
-                _buildEvents.OnBuildBegin += (_, __) => { errorListTableDataSourceValue.ClearNuGetEntries(); };
-                _solutionEvents = dte.Events.SolutionEvents;
-                _solutionEvents.AfterClosing += () => { errorListTableDataSourceValue.ClearNuGetEntries(); };
-
-                return errorListTableDataSourceValue;
-            });
+            _outputConsole = outputConsole;
+            _errorListTableDataSource = errorListTableDataSource;
+            _verbosityLevel = verbosityLevel;
         }
 
-        public void Dispose()
+        void IDisposable.Dispose()
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
             {
-                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-                var errorListTableDataSource = await _errorListTableDataSource;
-                errorListTableDataSource.Dispose();
+                await DisposeAsync();
+                GC.SuppressFinalize(this);
             });
         }
 
-        public void Start()
+        private async Task DisposeAsync()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(StartAsync);
+            await _outputConsole.WriteLineAsync(Resources.Finished);
+            await _outputConsole.WriteLineAsync(string.Empty);
+
+            // Give the error list focus
+            _errorListTableDataSource.BringToFrontIfSettingsPermit();
         }
 
-        public async Task StartAsync()
-        {
-            if (_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(StartAsync)}: Invalid state of object.");
-            }
-
-            var outputConsole = await _outputConsole;
-            await outputConsole.ActivateAsync();
-            await outputConsole.ClearAsync();
-            _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
-
-            var errorListTableDataSource = await _errorListTableDataSource;
-            errorListTableDataSource.ClearNuGetEntries();
-            _validState = true;
-        }
-
-        public void Log(MessageLevel level, string message, params object[] args)
+        void INuGetUILogger.Log(MessageLevel level, string message, params object[] args)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(() => LogAsync(level, message, args));
         }
 
-        public async Task LogAsync(MessageLevel level, string message, params object[] args)
+        private async Task LogAsync(MessageLevel level, string message, params object[] args)
         {
-            if (!_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(LogAsync)}({nameof(MessageLevel)}): Invalid state of object.");
-            }
-
             if (level == MessageLevel.Info
                 || level == MessageLevel.Error
                 || level == MessageLevel.Warning
@@ -128,109 +64,43 @@ namespace NuGet.VisualStudio.Common
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                var outputConsole = await _outputConsole;
-                await outputConsole.WriteLineAsync(message);
+                await _outputConsole.WriteLineAsync(message);
 
             }
         }
 
-        public void Log(ILogMessage message)
+        void INuGetUILogger.Log(ILogMessage message)
         {
             NuGetUIThreadHelper.JoinableTaskFactory.Run(() => LogAsync(message));
         }
 
-        public async Task LogAsync(ILogMessage message)
+        private async Task LogAsync(ILogMessage message)
         {
-            if (!_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(LogAsync)}({nameof(ILogMessage)}): Invalid state of object.");
-            }
-
             if (message.Level == LogLevel.Information
              || message.Level == LogLevel.Error
              || message.Level == LogLevel.Warning
              || _verbosityLevel > DefaultVerbosityLevel)
             {
-                var outputConsole = await _outputConsole;
-                await outputConsole.WriteLineAsync(message.FormatWithCode());
+                await _outputConsole.WriteLineAsync(message.FormatWithCode());
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
                 {
-                    ReportError(message);
+                    ((INuGetUILogger)this).ReportError(message);
                 }
             }
         }
 
-        private async Task<int> GetMSBuildVerbosityLevelAsync()
+        void INuGetUILogger.ReportError(string message)
         {
-            await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
-
-            var dte = await _dte;
-            var properties = dte.get_Properties(DTEEnvironmentCategory, DTEProjectPage);
-            var value = properties.Item(MSBuildVerbosityKey).Value;
-            if (value is int)
-            {
-                return (int)value;
-            }
-
-            return DefaultVerbosityLevel;
-        }
-
-        public void ReportError(string message)
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ReportErrorAsync(message));
-        }
-
-        public async Task ReportErrorAsync(string message)
-        {
-            if (!_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(ReportErrorAsync)}({nameof(String)}): Invalid state of object.");
-            }
-
             var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-            var errorListTableDataSource = await _errorListTableDataSource;
-            errorListTableDataSource.AddNuGetEntries(errorListEntry);
+            _errorListTableDataSource.AddNuGetEntries(errorListEntry);
         }
 
-        public void ReportError(ILogMessage message)
+        void INuGetUILogger.ReportError(ILogMessage message)
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(() => ReportErrorAsync(message));
-        }
-
-        public async Task ReportErrorAsync(ILogMessage message)
-        {
-            if (!_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(ReportErrorAsync)}({nameof(ILogMessage)}): Invalid state of object.");
-            }
-
             var errorListEntry = new ErrorListTableEntry(message);
-            var errorListTableDataSource = await _errorListTableDataSource;
-            errorListTableDataSource.AddNuGetEntries(errorListEntry);
-        }
-
-        public void End()
-        {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(EndAsync);
-        }
-
-        public async Task EndAsync()
-        {
-            if (!_validState)
-            {
-                throw new InvalidOperationException($"{nameof(OutputConsoleLogger)}.{nameof(EndAsync)}: Invalid state of object.");
-            }
-
-            _validState = false;
-            var outputConsole = await _outputConsole;
-            await outputConsole.WriteLineAsync(Resources.Finished);
-            await outputConsole.WriteLineAsync(string.Empty);
-
-            // Give the error list focus
-            var errorListTableDataSource = await _errorListTableDataSource;
-            errorListTableDataSource.BringToFrontIfSettingsPermit();
+            _errorListTableDataSource.AddNuGetEntries(errorListEntry);
         }
     }
 }

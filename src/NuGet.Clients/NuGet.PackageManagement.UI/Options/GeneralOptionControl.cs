@@ -13,6 +13,8 @@ using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
 using NuGet.VisualStudio;
 
+#pragma warning disable IDE1006 // Existing code, uses WinForms naming conventions.
+
 namespace NuGet.Options
 {
     public partial class GeneralOptionControl : UserControl
@@ -20,7 +22,7 @@ namespace NuGet.Options
         private readonly ISettings _settings;
         private bool _initialized;
         private readonly IServiceProvider _serviceprovider;
-        private readonly INuGetUILogger _outputConsoleLogger;
+        private readonly INuGetUILoggerFactory _outputConsoleLoggerFactory;
         private readonly LocalsCommandRunner _localsCommandRunner;
 
         public GeneralOptionControl(IServiceProvider serviceProvider)
@@ -33,7 +35,7 @@ namespace NuGet.Options
             InitializeComponent();
             _settings = ServiceLocator.GetInstance<Configuration.ISettings>();
             _serviceprovider = serviceProvider;
-            _outputConsoleLogger = ServiceLocator.GetInstance<INuGetUILogger>();
+            _outputConsoleLoggerFactory = ServiceLocator.GetInstance<INuGetUILoggerFactory>();
             _localsCommandRunner = new LocalsCommandRunner();
             AutoScroll = true;
             Debug.Assert(_settings != null);
@@ -158,24 +160,24 @@ namespace NuGet.Options
             UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
             var arguments = new List<string> { "all" };
             var settings = ServiceLocator.GetInstance<ISettings>();
-            var logError = new LocalsArgs.Log(LogError);
-            var logInformation = new LocalsArgs.Log(LogInformation);
-            var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
-            _outputConsoleLogger.Start();
-            try
+
+            using (var outputConsoleLogger = _outputConsoleLoggerFactory.Create())
             {
-                _localsCommandRunner.ExecuteCommand(localsArgs);
-                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
-            }
-            catch (Exception ex)
-            {
-                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
-                LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
-                ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
-            }
-            finally
-            {
-                _outputConsoleLogger.End();
+                var logError = new LocalsArgs.Log(message => outputConsoleLogger.Log(MessageLevel.Error, message));
+                var logInformation = new LocalsArgs.Log(message => outputConsoleLogger.Log(MessageLevel.Info, message));
+                var localsArgs = new LocalsArgs(arguments, settings, logInformation, logError, clear: true, list: false);
+
+                try
+                {
+                    _localsCommandRunner.ExecuteCommand(localsArgs);
+                    UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                }
+                catch (Exception ex)
+                {
+                    UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                    outputConsoleLogger.Log(MessageLevel.Error, string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
+                    ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
+                }
             }
         }
 
@@ -184,18 +186,8 @@ namespace NuGet.Options
             localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
             localsCommandStatusText.Text = statusText;
-            localsCommandStatusText.Anchor = AnchorStyles.Top|AnchorStyles.Left;
+            localsCommandStatusText.Anchor = AnchorStyles.Top | AnchorStyles.Left;
             localsCommandStatusText.Refresh();
-        }
-
-        private void LogError(string message)
-        {
-            _outputConsoleLogger.Log(MessageLevel.Error, message);
-        }
-
-        private void LogInformation(string message)
-        {
-            _outputConsoleLogger.Log(MessageLevel.Info, message);
         }
 
         private void OnLocalsCommandStatusTextLinkClicked(object sender, LinkClickedEventArgs e)

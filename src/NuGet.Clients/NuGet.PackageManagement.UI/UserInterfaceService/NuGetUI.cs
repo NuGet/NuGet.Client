@@ -25,17 +25,18 @@ namespace NuGet.PackageManagement.UI
         public const string LogEntrySource = "NuGet Package Manager";
 
         private readonly NuGetUIProjectContext _projectContext;
+        private INuGetUILogger _logger;
 
         public NuGetUI(
             ICommonOperations commonOperations,
             NuGetUIProjectContext projectContext,
             INuGetUIContext context,
-            INuGetUILogger logger)
+            INuGetUILoggerFactory loggerFactory)
         {
             CommonOperations = commonOperations;
             _projectContext = projectContext;
             UIContext = context;
-            UILogger = logger;
+            UILoggerFactory = loggerFactory;
 
             // set default values of properties
             FileConflictAction = FileConflictAction.PromptUser;
@@ -184,19 +185,21 @@ namespace NuGet.PackageManagement.UI
         public void BeginOperation()
         {
             _projectContext.FileConflictAction = FileConflictAction;
-            UILogger.Start();
+            _logger = UILoggerFactory.Create();
+            _projectContext.Logger = _logger;
         }
 
         public void EndOperation()
         {
-            UILogger.End();
+            _logger.Dispose();
+            _projectContext.Logger = null;
         }
 
         public ICommonOperations CommonOperations { get; }
 
         public INuGetUIContext UIContext { get; }
 
-        public INuGetUILogger UILogger { get; }
+        public INuGetUILoggerFactory UILoggerFactory { get; }
 
         public INuGetProjectContext ProjectContext => _projectContext;
 
@@ -343,7 +346,7 @@ namespace NuGet.PackageManagement.UI
                         {
                             if (message.Level == LogLevel.Error || message.Level == LogLevel.Warning)
                             {
-                                UILogger.ReportError(message);
+                                _logger.ReportError(message);
                             }
                         }
                     }
@@ -353,7 +356,7 @@ namespace NuGet.PackageManagement.UI
                     ProjectContext.Log(MessageLevel.Error, ex.ToString());
                 }
 
-                UILogger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
+                _logger.ReportError(ExceptionUtilities.DisplayMessage(ex, indent: false));
             }
         }
 
@@ -361,7 +364,7 @@ namespace NuGet.PackageManagement.UI
         {
             if (!string.IsNullOrEmpty(ex.Message))
             {
-                UILogger.ReportError(ex.AsLogMessage());
+                _logger.ReportError(ex.AsLogMessage());
                 ProjectContext.Log(ex.AsLogMessage());
             }
 
@@ -370,8 +373,8 @@ namespace NuGet.PackageManagement.UI
                 var errorList = result.GetErrorIssues().ToList();
                 var warningList = result.GetWarningIssues().ToList();
 
-                errorList.ForEach(p => UILogger.ReportError(p));
-                warningList.ForEach(p => UILogger.ReportError(p));
+                errorList.ForEach(p => _logger.ReportError(p));
+                warningList.ForEach(p => _logger.ReportError(p));
 
                 errorList.ForEach(p => ProjectContext.Log(p));
                 warningList.ForEach(p => ProjectContext.Log(p));
