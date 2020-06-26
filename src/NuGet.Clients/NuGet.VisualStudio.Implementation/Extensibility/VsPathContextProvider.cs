@@ -339,6 +339,9 @@ namespace NuGet.VisualStudio
 
         private async Task<IVsPathContext> TryCreateUserWideContextAsync()
         {
+            // It's acceptable to cache these results cause currently:
+            // 1. We do not reload configs
+            // 2. There is no way to edit gpf/fallback folders through the PM UI.
             var settings = await _userWideSettings.GetValueAsync();
             var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings));
             return outputPathContext;
