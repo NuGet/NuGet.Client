@@ -55,6 +55,8 @@ namespace NuGet.Tests.Apex
 
         protected internal IVsUIShell UIShell => VisualStudioObjectProviders.GetService<SVsUIShell, IVsUIShell>();
 
+        protected internal IVsPathContextProvider2 PathContextProvider2 => VisualStudioObjectProviders.GetComponentModelService<IVsPathContextProvider2>();
+
         /// <summary>
         /// Wait for all nominations and auto restore to complete.
         /// This uses an Action to log since the xunit logger is not fully serializable.

@@ -36,7 +36,6 @@ namespace NuGet.VisualStudio
     {
         private readonly IAsyncServiceProvider _asyncServiceprovider;
         private readonly Lazy<ISettings> _settings;
-        private readonly Lazy<IMachineWideSettings> _machineWideSettings;
         private readonly Lazy<IVsSolutionManager> _solutionManager;
         private readonly Lazy<ILogger> _logger;
         private readonly Microsoft.VisualStudio.Threading.AsyncLazy<ISettings> _userWideSettings;
@@ -70,9 +69,11 @@ namespace NuGet.VisualStudio
             _settings = settings ?? throw new ArgumentNullException(nameof(settings));
             _solutionManager = solutionManager ?? throw new ArgumentNullException(nameof(solutionManager));
             _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-            _machineWideSettings = machineWideSettings ?? throw new ArgumentNullException(nameof(machineWideSettings));
             _getLockFileOrNullAsync = BuildIntegratedProjectUtility.GetLockFileOrNull;
-
+            if (machineWideSettings == null)
+            {
+                throw new ArgumentNullException(nameof(machineWideSettings));
+            }
             _projectContext = new Lazy<INuGetProjectContext>(() => new VSAPIProjectContext
             {
                 PackageExtractionContext = new PackageExtractionContext(
@@ -327,11 +328,20 @@ namespace NuGet.VisualStudio
             return supportedProjects;
         }
 
-        public async Task<Tuple<bool, IVsPathContext2>> TryCreateUserWideContext()
+        public bool TryCreateUserWideContext(out IVsPathContext2 vsPathContext)
+        {
+            // invoke async operation from within synchronous method
+            vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
+
+            return vsPathContext != null;
+
+        }
+
+        private async Task<IVsPathContext2> TryCreateUserWideContextAsync()
         {
             var settings = await _userWideSettings.GetValueAsync();
             var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings));
-            return new Tuple<bool, IVsPathContext2>(outputPathContext != null, outputPathContext);
+            return outputPathContext;
         }
     }
 }
