@@ -46,7 +46,9 @@ namespace NuGet.VisualStudio
         bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 context);
 
         /// <summary>
-        /// Attempts to create an instance of <see cref="IVsPathContext"/> containing only the user wide and machine wide configurations..
+        /// Attempts to create an instance of <see cref="IVsPathContext"/> containing only the user wide and machine wide configurations.
+        /// If a solution is loaded, note that the values in the path context might not be the actual effective values for the solution.
+        /// If a customer has overriden the `globalPackagesFolder` key or cleared the `fallbackPackageFolders`, these values will be incorrect.
         /// </summary>
         /// <returns>
         /// <code>True</code> if operation has succeeded and context was created.
