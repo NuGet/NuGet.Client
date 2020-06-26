@@ -14,10 +14,11 @@ namespace NuGet.VisualStudio.Contracts
         /// <param name="requestedRange">The requested range</param>
         /// <param name="version">The installed version</param>
         /// <param name="installPath">The package install path</param>
+        /// <param name="directDependency">The package a direct dependency of the project</param>
         /// <returns><see cref="NuGetInstalledPackage"/></returns>
-        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string version, string installPath)
+        public static NuGetInstalledPackage CreateNuGetInstalledPackage(string id, string requestedRange, string version, string installPath, bool directDependency)
         {
-            return new NuGetInstalledPackage(id, requestedRange, version, installPath);
+            return new NuGetInstalledPackage(id, requestedRange, version, installPath, directDependency);
         }
 
         /// <summary>Create a <see cref="InstalledPackageResultStatus"/></summary>

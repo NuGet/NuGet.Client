@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), 'README.md'))\build\common.props" />
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
@@ -10,6 +10,7 @@
     <IncludeInVsix>true</IncludeInVsix>
     <IncludeNuGetSharedFiles>true</IncludeNuGetSharedFiles>
     <RootNamespace>NuGet.VisualStudio.Contracts</RootNamespace>
+    <Description>RPC contracts for NuGet's Visual Studio Service Broker extensibility APIs.</Description>
   </PropertyGroup>
 
   <ItemGroup>

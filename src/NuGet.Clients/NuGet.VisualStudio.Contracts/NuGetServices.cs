@@ -15,10 +15,6 @@ namespace NuGet.VisualStudio.Contracts
         /// <summary>Version 1.0 string.</summary>
         public const string Version1 = "1.0";
 
-        /// <summary></summary>
-        /// <remarks>Used in <see cref="RemoteInvocationException.ErrorCode"/></remarks>
-        public const int ArgumentException = 1;
-
         /// <summary>Service descriptor for <see cref="INuGetProjectService"/> version 1</summary>
         public static ServiceRpcDescriptor NuGetProjectServiceV1 { get; } = new ServiceJsonRpcDescriptor(
             new ServiceMoniker(NuGetProjectServiceName, new System.Version(Version1)),

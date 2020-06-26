@@ -31,13 +31,20 @@ namespace NuGet.VisualStudio.Contracts
         /// </remarks>
         public string InstallPath { get; }
 
+        /// <summary>This package a direct dependency of the project</summary>
+        /// <remarks>
+        /// packages.config do not support transitive dependencies, so all packages will have this property set to true, even if the package was installed because it was a dependency of a package that the customer selected for install.
+        /// </remarks>
+        public bool DirectDependency { get; }
+
         // This class will hopefully use C# record types when that language feature becomes available, so make the constructor not-public, to prevent breaking change when records come out.
-        internal NuGetInstalledPackage(string id, string requestedRange, string version, string installPath)
+        internal NuGetInstalledPackage(string id, string requestedRange, string version, string installPath, bool directDependency)
         {
             Id = id;
             RequestedRange = requestedRange;
             Version = version;
             InstallPath = installPath;
+            DirectDependency = directDependency;
         }
     }
 }
