@@ -216,5 +216,11 @@ namespace NuGet.Tests.Apex
             var pmconsole = NuGetApexConsoleTestService.GetApexTestConsole();
             return pmconsole != null;
         }
+
+        public IVsPathContext CreateUserWidePathContext()
+        {
+            PathContextProvider2.TryCreateUserWideContext(out var pathContext);
+            return pathContext;
+        }
     }
 }

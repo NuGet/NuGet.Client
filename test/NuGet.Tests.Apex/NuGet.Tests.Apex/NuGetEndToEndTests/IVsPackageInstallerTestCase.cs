@@ -73,7 +73,7 @@ namespace NuGet.Tests.Apex
                 solutionService.CreateEmptySolution("project", testContext.SolutionRoot);
 
                 // Act
-                nugetTestService.PathContextProvider2.TryCreateUserWideContext(out var vsPathContext);
+                var vsPathContext = nugetTestService.CreateUserWidePathContext();
 
                 // Assert
                 // The global packages folder should not be the one configured by the test context!
@@ -96,7 +96,7 @@ namespace NuGet.Tests.Apex
                 var projExt = solutionService.AddProject(ProjectLanguage.CSharp, ProjectTemplate.ClassLibrary, ProjectTargetFramework.V46, "TestProject");
 
                 // Act
-                nugetTestService.PathContextProvider2.TryCreateUserWideContext(out var vsPathContext);
+                var vsPathContext = nugetTestService.CreateUserWidePathContext();
 
                 // Assert
                 // The global packages folder should not be the one configured by the test context!

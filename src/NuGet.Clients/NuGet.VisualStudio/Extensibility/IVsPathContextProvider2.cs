@@ -46,7 +46,7 @@ namespace NuGet.VisualStudio
         bool TryCreateSolutionContext(string solutionDirectory, out IVsPathContext2 context);
 
         /// <summary>
-        /// Attempts to create an instance of <see cref="IVsPathContext2"/> containing only the user wide and machine wide configurations..
+        /// Attempts to create an instance of <see cref="IVsPathContext"/> containing only the user wide and machine wide configurations..
         /// </summary>
         /// <returns>
         /// <code>True</code> if operation has succeeded and context was created.
@@ -55,6 +55,6 @@ namespace NuGet.VisualStudio
         /// <throws>
         /// <code>InvalidOperationException</code> when it fails to create a context and return appropriate error message.
         /// </throws>
-        bool TryCreateUserWideContext(out IVsPathContext2 vsPathContext);
+        bool TryCreateUserWideContext(out IVsPathContext vsPathContext);
     }
 }

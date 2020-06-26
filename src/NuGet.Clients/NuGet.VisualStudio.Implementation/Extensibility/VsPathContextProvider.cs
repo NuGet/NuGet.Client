@@ -328,7 +328,7 @@ namespace NuGet.VisualStudio
             return supportedProjects;
         }
 
-        public bool TryCreateUserWideContext(out IVsPathContext2 vsPathContext)
+        public bool TryCreateUserWideContext(out IVsPathContext vsPathContext)
         {
             // invoke async operation from within synchronous method
             vsPathContext = NuGetUIThreadHelper.JoinableTaskFactory.Run(() => TryCreateUserWideContextAsync());
@@ -337,7 +337,7 @@ namespace NuGet.VisualStudio
 
         }
 
-        private async Task<IVsPathContext2> TryCreateUserWideContextAsync()
+        private async Task<IVsPathContext> TryCreateUserWideContextAsync()
         {
             var settings = await _userWideSettings.GetValueAsync();
             var outputPathContext = new VsPathContext(NuGetPathContext.Create(settings));
