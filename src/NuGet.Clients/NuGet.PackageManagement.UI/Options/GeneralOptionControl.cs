@@ -144,7 +144,7 @@ namespace NuGet.Options
             //not impement now
         }
 
-        private void packageRestoreConsentCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void OnPackageRestoreConsentCheckBoxCheckedChanged(object sender, EventArgs e)
         {
             packageRestoreAutomaticCheckBox.Enabled = packageRestoreConsentCheckBox.Checked;
             if (!packageRestoreConsentCheckBox.Checked)
@@ -153,9 +153,9 @@ namespace NuGet.Options
             }
         }
 
-        private void localsCommandButton_OnClick(object sender, EventArgs e)
+        private void OnLocalsCommandButtonOnClick(object sender, EventArgs e)
         {
-            updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
+            UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandWorking), visibility: true);
             var arguments = new List<string> { "all" };
             var settings = ServiceLocator.GetInstance<ISettings>();
             var logError = new LocalsArgs.Log(LogError);
@@ -165,11 +165,11 @@ namespace NuGet.Options
             try
             {
                 _localsCommandRunner.ExecuteCommand(localsArgs);
-                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
+                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandSuccess, DateTime.Now.ToString(Resources.Culture)), visibility: true);
             }
             catch (Exception ex)
             {
-                updateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
+                UpdateLocalsCommandStatusText(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message), visibility: true);
                 LogError(string.Format(Resources.ShowMessage_LocalsCommandFailure, DateTime.Now.ToString(Resources.Culture), ex.Message));
                 ActivityLog.LogError(NuGetUI.LogEntrySource, ex.ToString());
             }
@@ -179,7 +179,7 @@ namespace NuGet.Options
             }
         }
 
-        private void updateLocalsCommandStatusText(string statusText, bool visibility)
+        private void UpdateLocalsCommandStatusText(string statusText, bool visibility)
         {
             localsCommandStatusText.AccessibleName = statusText;
             localsCommandStatusText.Visible = visibility;
@@ -198,12 +198,12 @@ namespace NuGet.Options
             _outputConsoleLogger.Log(MessageLevel.Info, message);
         }
 
-        private void localsCommandStatusText_LinkClicked(object sender, LinkClickedEventArgs e)
+        private void OnLocalsCommandStatusTextLinkClicked(object sender, LinkClickedEventArgs e)
         {
             Process.Start(e.LinkText);
         }
 
-        private void localsCommandStatusText_ContentChanged(object sender, ContentsResizedEventArgs e)
+        private void OnLocalsCommandStatusTextContentChanged(object sender, ContentsResizedEventArgs e)
         {
             localsCommandStatusText.Height = e.NewRectangle.Height + localsCommandStatusText.Margin.Top + localsCommandStatusText.Margin.Bottom;
         }
