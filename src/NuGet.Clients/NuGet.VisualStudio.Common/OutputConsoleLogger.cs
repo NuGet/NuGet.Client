@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Shell;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
 using NuGet.ProjectManagement;
+using NuGet.VisualStudio.Telemetry;
 
 namespace NuGet.VisualStudio.Common
 {
@@ -58,7 +59,7 @@ namespace NuGet.VisualStudio.Common
 
             ErrorListTableDataSource = errorListDataSource;
 
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
@@ -68,28 +69,33 @@ namespace NuGet.VisualStudio.Common
                 _solutionEvents = _dte.Events.SolutionEvents;
                 _solutionEvents.AfterClosing += () => { ErrorListTableDataSource.Value.ClearNuGetEntries(); };
                 OutputConsole = await consoleProvider.CreatePackageManagerConsoleAsync();
-            });
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(OutputConsoleLogger)));
         }
 
         public void Dispose()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async () =>
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
                 await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
                 ErrorListTableDataSource.Value.Dispose();
-            });
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(Dispose)));
         }
 
         public void End()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 await OutputConsole.WriteLineAsync(Resources.Finished);
                 await OutputConsole.WriteLineAsync(string.Empty);
 
                 // Give the error list focus
                 ErrorListTableDataSource.Value.BringToFrontIfSettingsPermit();
-            });
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(End)));
         }
 
         public void Log(MessageLevel level, string message, params object[] args)
@@ -104,7 +110,12 @@ namespace NuGet.VisualStudio.Common
                     message = string.Format(CultureInfo.CurrentCulture, message, args);
                 }
 
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await OutputConsole.WriteLineAsync(message);
+                }
+                ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(MessageLevel)}"));
             }
         }
 
@@ -115,7 +126,12 @@ namespace NuGet.VisualStudio.Common
                 || message.Level == LogLevel.Warning
                 || _verbosityLevel > DefaultVerbosityLevel)
             {
-                NuGetUIThreadHelper.JoinableTaskFactory.Run(() => OutputConsole.WriteLineAsync(message.FormatWithCode()));
+                NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+                {
+                    await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+                    await OutputConsole.WriteLineAsync(message.FormatWithCode());
+                }
+                ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(Log)}/{nameof(ILogMessage)}"));
 
                 if (message.Level == LogLevel.Error ||
                     message.Level == LogLevel.Warning)
@@ -141,25 +157,40 @@ namespace NuGet.VisualStudio.Common
 
         public void Start()
         {
-            NuGetUIThreadHelper.JoinableTaskFactory.Run(async delegate
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
             {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
                 await OutputConsole.ActivateAsync();
                 await OutputConsole.ClearAsync();
                 _verbosityLevel = await GetMSBuildVerbosityLevelAsync();
                 ErrorListTableDataSource.Value.ClearNuGetEntries();
-            });
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), nameof(Start)));
         }
 
         public void ReportError(string message)
         {
-            var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
-            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var errorListEntry = new ErrorListTableEntry(message, LogLevel.Error);
+                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(ReportError)}/{nameof(String)}"));
         }
 
         public void ReportError(ILogMessage message)
         {
-            var errorListEntry = new ErrorListTableEntry(message);
-            ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            NuGetUIThreadHelper.JoinableTaskFactory.RunAsync(async () =>
+            {
+                await NuGetUIThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+                var errorListEntry = new ErrorListTableEntry(message);
+                ErrorListTableDataSource.Value.AddNuGetEntries(errorListEntry);
+            }
+            ).FileAndForget(TelemetryUtility.CreateFileAndForgetEventName(nameof(OutputConsoleLogger), $"{nameof(ReportError)}/{nameof(ILogMessage)}"));
         }
     }
 }
