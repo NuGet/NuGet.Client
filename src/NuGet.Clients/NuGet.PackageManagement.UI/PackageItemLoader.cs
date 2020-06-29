@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Threading;
 using NuGet.Common;
 using NuGet.PackageManagement.VisualStudio;
+using NuGet.ProjectManagement;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
@@ -310,7 +311,7 @@ namespace NuGet.PackageManagement.UI
                         PrefixReserved = metadata.PrefixReserved && !IsMultiSource,
                         DeprecationMetadata = AsyncLazy.New(metadata.GetDeprecationMetadataAsync),
                         Recommended = index < _recommendedCount,
-                        PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata) ?.PackageReader,
+                        PackageReader = (metadata as PackageSearchMetadataBuilder.ClonedPackageSearchMetadata)?.PackageReader,
                     };
 
                     listItem.UpdatePackageStatus(_installedPackages);
@@ -318,10 +319,11 @@ namespace NuGet.PackageManagement.UI
                     if (!_context.IsSolution && _context.PackageManagerProviders.Any())
                     {
                         listItem.ProvidersLoader = AsyncLazy.New(
-                            () => AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(
-                                _context.PackageManagerProviders,
-                                listItem.Id,
-                                _context.Projects[0]));
+                            async () =>
+                            {
+                                var uniqueProjectName = await NuGetProject.GetUniqueNameOrNameAsync(_context.Projects[0], CancellationToken.None);
+                                return await AlternativePackageManagerProviders.CalculateAlternativePackageManagersAsync(_context.PackageManagerProviders, listItem.Id, uniqueProjectName);
+                            });
                     }
 
                     return listItem;
