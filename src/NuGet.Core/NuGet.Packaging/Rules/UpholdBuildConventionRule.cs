@@ -31,33 +31,33 @@ namespace NuGet.Packaging.Rules
             var packageId = builder.NuspecReader.GetId();
             var filesInPackage = builder.GetFiles();
 
-            var violations = IdentifyViolators(filesInPackage, packageId);
-            var warning = GenerateWarning(violations);
+            var expectedFiles = FindAbsentExpectedFiles(filesInPackage, packageId);
+            var warning = GenerateWarning(expectedFiles);
             return warning == null
                 ? Array.Empty<PackagingLogMessage>()
                 : new[] { warning };
         }
 
-        internal PackagingLogMessage GenerateWarning(ICollection<ConventionViolator> conventionViolators)
+        internal PackagingLogMessage GenerateWarning(ICollection<ExpectedFile> expectedFiles)
         {
-            if (conventionViolators.Count == 0)
+            if (expectedFiles.Count == 0)
             {
                 return null;
             }
 
             var warningMessage = new StringBuilder();
-            foreach (var conViolator in conventionViolators)
+            foreach (var expectedFile in expectedFiles)
             {
-                warningMessage.AppendLine(string.Format(MessageFormat, conViolator.Extension, conViolator.Path, conViolator.ExpectedPath));
+                warningMessage.AppendLine(string.Format(MessageFormat, expectedFile.Extension, expectedFile.Path, expectedFile.ExpectedPath));
             }
 
             var message = PackagingLogMessage.CreateWarning(warningMessage.ToString(), NuGetLogCode.NU5129);
             return message;
         }
 
-        internal List<ConventionViolator> IdentifyViolators(IEnumerable<string> files, string packageId)
+        internal List<ExpectedFile> FindAbsentExpectedFiles(IEnumerable<string> files, string packageId)
         {
-            var violations = new List<ConventionViolator>();
+            var expectedFiles = new List<ExpectedFile>();
 
             var normalizedFiles = files.Select(PathUtility.GetPathWithForwardSlashes);
             var msbuildFiles = normalizedFiles.Where(EndsWithMsbuildFileExtension);
@@ -76,21 +76,26 @@ namespace NuGet.Packaging.Rules
                         if (!extension.Any(file => string.Equals(expectedFileName, file, StringComparison.OrdinalIgnoreCase)))
                         {
                             string packageFolder = tfm.Key == string.Empty ? buildFolder.Key : buildFolder.Key + tfm.Key + '/';
-                            violations.Add(new ConventionViolator(packageFolder, extension.Key, expectedFileName));
+                            expectedFiles.Add(new ExpectedFile(packageFolder, extension.Key, expectedFileName));
                         }
                     }
                 }
             }
 
-            violations.Sort(ConventionViolatorComparer.Instance);
+            expectedFiles.Sort(ExpectedFileComparer.Instance);
 
-            return violations;
+            return expectedFiles;
         }
 
         private string GetTfm(string file)
         {
+#if NETCOREAPP
+            var index1 = file.IndexOf('/', StringComparison.Ordinal);
+            var index2 = file.IndexOf('/', index1 + 1);
+#else
             var index1 = file.IndexOf('/');
             var index2 = file.IndexOf('/', index1 + 1);
+#endif
             if (index2 == -1)
             {
                 return string.Empty;
@@ -104,7 +109,11 @@ namespace NuGet.Packaging.Rules
 
         private string GetBuildFolder(string file)
         {
+#if NETCOREAPP
+            var index = file.IndexOf('/', StringComparison.Ordinal);
+#else
             var index = file.IndexOf('/');
+#endif
             return file.Substring(0, index + 1);
         }
 
@@ -134,7 +143,7 @@ namespace NuGet.Packaging.Rules
             return false;
         }
 
-        internal class ConventionViolator
+        internal class ExpectedFile
         {
             public string Path { get; }
 
@@ -142,9 +151,8 @@ namespace NuGet.Packaging.Rules
 
             public string ExpectedPath { get; }
 
-            public ConventionViolator(string filePath, string extension, string expectedFile)
+            public ExpectedFile(string filePath, string extension, string expectedFile)
             {
-#if DEBUG
                 if (filePath[filePath.Length - 1] != '/' && filePath[filePath.Length - 1] != '\\')
                 {
                     throw new ArgumentException("Path must end with directory separator", nameof(filePath));
@@ -154,7 +162,6 @@ namespace NuGet.Packaging.Rules
                 {
                     throw new ArgumentException("Extension must include period character", nameof(extension));
                 }
-#endif
 
                 Path = filePath;
                 Extension = extension;
@@ -162,11 +169,11 @@ namespace NuGet.Packaging.Rules
             }
         }
 
-        internal class ConventionViolatorComparer : IComparer<ConventionViolator>
+        internal class ExpectedFileComparer : IComparer<ExpectedFile>
         {
-            internal static ConventionViolatorComparer Instance { get; } = new ConventionViolatorComparer();
+            internal static ExpectedFileComparer Instance { get; } = new ExpectedFileComparer();
 
-            public int Compare(ConventionViolator x, ConventionViolator y)
+            public int Compare(ExpectedFile x, ExpectedFile y)
             {
                 var result = string.Compare(x.Path, y.Path, StringComparison.Ordinal);
                 if (result != 0)

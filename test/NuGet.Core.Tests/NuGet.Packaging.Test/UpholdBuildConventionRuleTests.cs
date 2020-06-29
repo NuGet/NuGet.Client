@@ -33,14 +33,14 @@ namespace NuGet.Packaging.Test
 
         [Theory]
         [MemberData(nameof(WarningNotRaisedData))]
-        public void IdentifyViolators_PackageWithCorrectlyNamedMSBuildFile_DoesNotFindViolations(string[] files)
+        public void FindAbsentExpectedFiles_PackageWithCorrectlyNamedMSBuildFile_FindsZero(string[] files)
         {
             //Arrange
             string packageId = "packageId";
 
             //Act
             var rule = new UpholdBuildConventionRule();
-            var actual = rule.IdentifyViolators(files, packageId);
+            var actual = rule.FindAbsentExpectedFiles(files, packageId);
 
             //Assert
             Assert.Empty(actual);
@@ -68,21 +68,21 @@ namespace NuGet.Packaging.Test
 
         [Theory]
         [MemberData(nameof(WarningRaisedData))]
-        public void IdentifyViolators_PackageWithIncorrectlyNamedMSBuildFile_FindsViolations(string[] files)
+        public void FindAbsentExpectedFiles_PackageWithIncorrectlyNamedMSBuildFile_FindsOne(string[] files)
         {
             //Arrange
             string packageId = "packageId";
 
             //Act
             var rule = new UpholdBuildConventionRule();
-            var issues = rule.IdentifyViolators(files, packageId);
+            var issues = rule.FindAbsentExpectedFiles(files, packageId);
 
             //Assert
             Assert.Single(issues);
         }
 
         [Fact]
-        public void IdentifyViolators_PackageWithFileNameSimilarToBuildDirectory_DoesNotWarn()
+        public void FindAbsentExpectedFiles_PackageWithFileNameSimilarToBuildDirectory_DoesNotWarn()
         {
             // Arrange
             var packageId = "PackageId";
@@ -94,14 +94,14 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
             Assert.Empty(actual);
         }
 
         [Fact]
-        public void IdentifyViolators_NonCompliantFileInBuildRoot_ExpectedPathIsBuildRoot()
+        public void FindAbsentExpectedFiles_NonCompliantFileInBuildRoot_ExpectedPathIsBuildRoot()
         {
             // Arrange
             var files = new[]
@@ -112,16 +112,16 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
-            var violation = Assert.Single(actual);
-            Assert.Equal("build/", violation.Path);
-            Assert.Equal("build/packageId.props", violation.ExpectedPath);
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/", expectedFile.Path);
+            Assert.Equal("build/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void IdentifyViolators_NonCompliantFileInNonTfmPath_ExpectedPathIsBuildRoot()
+        public void FindAbsentExpectedFiles_NonCompliantFileInNonTfmPath_ExpectedPathIsBuildRoot()
         {
             // Arrange
             var files = new[]
@@ -132,16 +132,16 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
-            var violation = Assert.Single(actual);
-            Assert.Equal("build/", violation.Path);
-            Assert.Equal("build/packageId.props", violation.ExpectedPath);
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/", expectedFile.Path);
+            Assert.Equal("build/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void IdentifyViolators_NonCompliantFileInTfmPath_ExpectedPathIsBuildRoot()
+        public void FindAbsentExpectedFiles_NonCompliantFileInTfmPath_ExpectedPathIsBuildRoot()
         {
             // Arrange
             var files = new[]
@@ -152,16 +152,16 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
-            var violation = Assert.Single(actual);
-            Assert.Equal("build/net5.0/", violation.Path);
-            Assert.Equal("build/net5.0/packageId.props", violation.ExpectedPath);
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/net5.0/", expectedFile.Path);
+            Assert.Equal("build/net5.0/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void IdentifyViolators_NonCompliantFileInTfmSubDirectory_ExpectedPathIsBuildRoot()
+        public void FindAbsentExpectedFiles_NonCompliantFileInTfmSubDirectory_ExpectedPathIsBuildRoot()
         {
             // Arrange
             var files = new[]
@@ -172,16 +172,16 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
-            var violation = Assert.Single(actual);
-            Assert.Equal("build/net5.0/", violation.Path);
-            Assert.Equal("build/net5.0/packageId.props", violation.ExpectedPath);
+            UpholdBuildConventionRule.ExpectedFile expectedFile = Assert.Single(actual);
+            Assert.Equal("build/net5.0/", expectedFile.Path);
+            Assert.Equal("build/net5.0/packageId.props", expectedFile.ExpectedPath);
         }
 
         [Fact]
-        public void IdentifyViolators_MultiplePropsInOneDirectory_GeneratesOneViolation()
+        public void FindAbsentExpectedFiles_MultiplePropsInOneDirectory_FindsOne()
         {
             // Arrange
             var files = new[]
@@ -193,7 +193,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
             Assert.Equal(1, actual.Count);
@@ -202,7 +202,7 @@ namespace NuGet.Packaging.Test
         [Theory]
         [InlineData("build/")]
         [InlineData("build/net5.0/")]
-        public void IdentifyViolators_MultiplePropsInSubDirectories_GeneratesOneViolation(string pathToTest)
+        public void FindAbsentExpectedFiles_MultiplePropsInSubDirectories_FindsOne(string pathToTest)
         {
             // Arrange
             var files = new[]
@@ -215,14 +215,14 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
             Assert.Equal(1, actual.Count);
         }
 
         [Fact]
-        public void IdentifyViolators_DifferentPathSeparators_GroupTogether()
+        public void FindAbsentExpectedFiles_DifferentPathSeparators_GroupTogether()
         {
             // Arrange
             var files = new[]
@@ -234,7 +234,7 @@ namespace NuGet.Packaging.Test
 
             // Act
             var target = new UpholdBuildConventionRule();
-            var actual = target.IdentifyViolators(files, packageId);
+            var actual = target.FindAbsentExpectedFiles(files, packageId);
 
             // Assert
             Assert.Equal(1, actual.Count);
@@ -246,7 +246,7 @@ namespace NuGet.Packaging.Test
             //Arrange
             var issues = new[]
             {
-                new UpholdBuildConventionRule.ConventionViolator("build/net45/", ".props", "build/net45/packageId.props")
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".props", "build/net45/packageId.props")
             };
 
             //Act
@@ -265,13 +265,13 @@ namespace NuGet.Packaging.Test
         public void GenerateWarnings_MultipleIssues_MultiLineMessage()
         {
             //Arrange
-            var issues = new List<UpholdBuildConventionRule.ConventionViolator>
+            var issues = new List<UpholdBuildConventionRule.ExpectedFile>
             {
-                new UpholdBuildConventionRule.ConventionViolator("build/net45/", ".props", "build/net45/packageId.props"),
-                new UpholdBuildConventionRule.ConventionViolator("build/net45/", ".targets", "build/net45/packageId.targets")
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".props", "build/net45/packageId.props"),
+                new UpholdBuildConventionRule.ExpectedFile("build/net45/", ".targets", "build/net45/packageId.targets")
             };
 
-            issues.Sort(UpholdBuildConventionRule.ConventionViolatorComparer.Instance);
+            issues.Sort(UpholdBuildConventionRule.ExpectedFileComparer.Instance);
 
             //Act
             var target = new UpholdBuildConventionRule();
