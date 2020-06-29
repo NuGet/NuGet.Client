@@ -1,4 +1,4 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
     <RequiresSigningXplatAPIs>true</RequiresSigningXplatAPIs>
   </PropertyGroup>
@@ -21,10 +21,6 @@
 
   <ItemGroup>
     <ProjectReference Include="$(TestUtilitiesDirectory)Test.Utility\Test.Utility.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(IsCore)' == 'true' ">
-    <PackageReference Include="System.Diagnostics.TraceSource" Version="$(SystemPackagesVersion)" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == '$(NETFXTargetFramework)' ">
