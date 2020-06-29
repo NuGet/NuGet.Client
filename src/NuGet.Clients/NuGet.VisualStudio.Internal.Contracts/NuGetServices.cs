@@ -14,6 +14,8 @@ namespace NuGet.VisualStudio.Internal.Contracts
         private const string NuGetSolutionServiceVersion = "1.0.0";
         private const string SourceProviderServiceName = "NuGet.SourceProviderService";
         private const string SourceProviderServiceVersion = "1.0.0";
+        private const string ProjectManagerProviderServiceName = "NuGet.ProjectManagerService";
+        private const string ProjectManagerServiceVersion = "1.0.0";
 
         /// <summary>
         /// A service descriptor for the NuGetSolutionService service. 
@@ -24,5 +26,6 @@ namespace NuGet.VisualStudio.Internal.Contracts
             ServiceJsonRpcDescriptor.MessageDelimiters.HttpLikeHeaders);
 
         public static readonly ServiceRpcDescriptor SourceProviderService = new NuGetServiceMessagePackRpcDescriptor(new ServiceMoniker(SourceProviderServiceName, new Version(SourceProviderServiceVersion)));
+        public static readonly ServiceRpcDescriptor ProjectManagerService = new NuGetServiceMessagePackRpcDescriptor(new ServiceMoniker(ProjectManagerProviderServiceName, new Version(ProjectManagerServiceVersion)));
     }
 }
